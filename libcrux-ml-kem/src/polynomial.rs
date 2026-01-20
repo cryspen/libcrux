@@ -3,6 +3,9 @@ pub(crate) use crate::vector::{
     VECTORS_IN_RING_ELEMENT,
 };
 
+#[cfg(hax)]
+use hax_lib::int::ToInt;
+
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
     [
@@ -49,7 +52,15 @@ pub(crate) mod spec {
 
     #[hax_lib::requires(is_bounded_vector(b1, vec).and(b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
-    pub(crate) fn is_bounded_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
+    pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
+    }
+
+    #[hax_lib::requires(is_bounded_poly(b1, p).and(b1 <= b2))]
+    #[hax_lib::ensures(|_| is_bounded_poly(b2, p))]
+    pub(crate) fn is_bounded_poly_higher<Vector: Operations>(p: &PolynomialRingElement<Vector>, b1: usize, b2: usize) {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
         );
@@ -84,6 +95,21 @@ pub(crate) fn sub_bounded<Vector: Operations>(
         r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
     );
     Vector::sub(vec1, vec2)
+}
+
+#[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 100 --split_queries always")]
+#[hax_lib::requires(spec::is_bounded_vector(b, &vec).and(c > -32768 && b.to_int() * c.abs().to_int() < 32768.to_int()))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(b*c.abs() as usize, &result))]
+pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
+    vec: Vector,
+    b: usize,
+    c: i16
+) -> Vector {
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
+    Vector::multiply_by_constant(vec, c)
 }
 
 #[allow(non_snake_case)]
@@ -290,7 +316,7 @@ fn subtract_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
 
         let diff = sub_bounded(myself.coefficients[i], 4095, &coefficient_normal_form, 3328);
-        spec::is_bounded_higher(&diff, 7423, 28296);
+        spec::is_bounded_vector_higher(&diff, 7423, 28296);
         hax_lib::assert_prop!(spec::is_bounded_vector(28296, &diff));
         let red = Vector::barrett_reduce(diff);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
@@ -343,7 +369,7 @@ fn add_message_error_reduce<Vector: Operations>(
 
         let sum2 = add_bounded(coefficient_normal_form, 3328, &sum1, 6656);
         hax_lib::assert_prop!(spec::is_bounded_vector(9984, &sum2));
-        spec::is_bounded_higher(&sum2, 9984, 28296);
+        spec::is_bounded_vector_higher(&sum2, 9984, 28296);
         let red = Vector::barrett_reduce(sum2);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         result.coefficients[i] = red;
@@ -380,7 +406,7 @@ fn add_error_reduce<Vector: Operations>(
 
         let sum = add_bounded(coefficient_normal_form, 3328, &error.coefficients[j], 7);
         hax_lib::assert_prop!(spec::is_bounded_vector(3335, &sum));
-        spec::is_bounded_higher(&sum, 3335, 28296);
+        spec::is_bounded_vector_higher(&sum, 3335, 28296);
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;
@@ -425,7 +451,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 
         let sum = add_bounded(coefficient_normal_form, 3328, &error.coefficients[j], 3328);
         hax_lib::assert_prop!(spec::is_bounded_vector(6656, &sum));
-        spec::is_bounded_higher(&sum, 6656, 28296);
+        spec::is_bounded_vector_higher(&sum, 6656, 28296);
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;

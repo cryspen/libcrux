@@ -238,7 +238,7 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\ Spec.Utils.is_i16b 1664 $zeta1 /\ 
                 Spec.Utils.is_i16b 1664 $zeta2 /\ Spec.Utils.is_i16b 1664 $zeta3 /\
-                Spec.Utils.is_i16b_array_opaque (4803+5*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (7*3328) ${vec}"#
         )
     }
 
@@ -250,13 +250,13 @@ pub(crate) mod spec {
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque(4803+6*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque(8*3328) ${result}"#)
     }
 
     pub(crate) fn ntt_layer_2_step_pre(vec: &[i16; 16], zeta0: i16, zeta1: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\ Spec.Utils.is_i16b 1664 $zeta1 /\ 
-                Spec.Utils.is_i16b_array_opaque (4803+4*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (6*3328) ${vec}"#
         )
     }
 
@@ -266,13 +266,13 @@ pub(crate) mod spec {
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (4803+5*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) ${result}"#)
     }
 
     pub(crate) fn ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" Spec.Utils.is_i16b 1664 $zeta0 /\
-                Spec.Utils.is_i16b_array_opaque (4803+3*3328) ${vec}"#
+                Spec.Utils.is_i16b_array_opaque (5*3328) ${vec}"#
         )
     }
 
@@ -281,7 +281,7 @@ pub(crate) mod spec {
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (4803+4*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) ${result}"#)
     }
 
     pub(crate) fn inv_ntt_layer_1_step_pre(

@@ -262,46 +262,46 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                       Spec.Utils.is_i16b_array_opaque (4803+5*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (4803+6*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (8*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
         );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+6*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (8*3328))"#
         );
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array_opaque (4803+4*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (4803+5*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
         );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+5*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
         );
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array_opaque (4803+3*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (4803+4*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (5*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+3*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (5*3328))"#
         );
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4803+4*3328))"#
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
         );
         ntt_layer_3_step(a, zeta)
     }
