@@ -323,7 +323,9 @@ macro_rules! pqcp_unpacked_api {
                 crypto_kem_keypair_derand_struct(key_pair, randomness)
             }
 
-            /// Generate an unpacked ML-KEM 512 public key from the private key
+            /// Generate an unpacked ML-KEM
+            #[doc = $variant]
+            /// public key from the private key
             pub fn crypto_kem_pk_from_sk(pk: &mut $pk_type_unpacked, sk: &$sk_type_unpacked) {
                 *pk = sk.public_key().clone()
             }

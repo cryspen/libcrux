@@ -36,9 +36,9 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         // We need to provide a definition or post-condition for ${u8::count_ones}
         assume (v (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) <= 8);
         assume (v (cast (${u8::count_ones} ${good}.[ sz 1 ]) <: usize) <= 8);
-        assume (Core.Ops.Index.f_index_pre output ({
-                    Core.Ops.Range.f_start = cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize;
-                    Core.Ops.Range.f_end = (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
+        assume (Core_models.Ops.Index.f_index_pre output ({
+                    Core_models.Ops.Range.f_start = cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize;
+                    Core_models.Ops.Range.f_end = (cast (${u8::count_ones} ${good}.[ sz 0 ]) <: usize) +! sz 8 }))"#
     );
 
     // Each bit (and its corresponding position) represents an element we

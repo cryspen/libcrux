@@ -4,10 +4,7 @@
 
 use tls_codec::{Deserialize, Serialize, SerializeBytes, Size};
 
-use crate::handshake::{
-    ciphersuite::CiphersuiteName,
-    dhkem::{DHPrivateKey, DHPublicKey},
-};
+use crate::handshake::ciphersuite::CiphersuiteName;
 
 /// Functionality and associated types that are shared in common
 /// between initiator and responde ciphersuites.
@@ -17,7 +14,4 @@ pub(crate) trait CiphersuiteBase {
     type SharedSecret: SerializeBytes + Size;
 
     fn name(&self) -> CiphersuiteName;
-
-    fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey;
-    fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey;
 }

@@ -20,16 +20,16 @@ concurrency:
 jobs:
   build-intel-mac:
     if: ${{ github.event_name != 'merge_group' }}
-    runs-on: macos-13
+    runs-on: macos-15-intel
     defaults:
       run:
         shell: bash
         working-directory: crates/primitives/aead
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly-2024-12-14
+        run: rustup toolchain install nightly
 
       - name: 🔨 Build
         run: |
@@ -59,13 +59,13 @@ jobs:
         working-directory: crates/primitives/aead
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
       - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly-2024-12-14
+        run: rustup toolchain install nightly
 
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
@@ -101,21 +101,14 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
-      # TODO: https://github.com/cryspen/libcrux/issues/717
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly-2024-12-14 test --release --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
       # - name: ⬆ Upload build
       #   uses: ./.github/actions/upload_artifacts
       #   with:
       #     name: build_${{ matrix.os }}_${{ matrix.bits }}
-
-      # We get false positives here.
-      # TODO: Figure out what is going on here
-      # - name: 🏃🏻 Asan Linux
-      #   if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
-      #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
 
       # Test ...
 

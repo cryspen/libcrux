@@ -6,7 +6,7 @@ use tls_codec::{
     TlsSize, VLByteSlice, VLBytes,
 };
 
-use crate::{aead::AEADKey, traits::Channel};
+use crate::{aead::AEADKeyNonce, traits::Channel};
 
 use super::{Session, SessionError as Error};
 
@@ -42,9 +42,9 @@ struct TransportMessage {
 /// results in an error.
 pub struct Transport {
     /// Key used for AEAD-encrypting messages to be sent
-    send_key: AEADKey,
+    send_key: AEADKeyNonce,
     /// Key used for AEAD-decrypting received messages
-    recv_key: AEADKey,
+    recv_key: AEADKeyNonce,
     /// Identifier sent with each message on this channel. Stays constant
     /// during the lifetime of the channel
     channel_identifier: u64,
@@ -110,8 +110,12 @@ impl Channel<Error> for Transport {
 
         let bytes_deserialized = message.tls_serialized_len();
 
-        self.recv_key
-            .decrypt_out(message.ciphertext.as_slice(), &message.tag, &[], out)?;
+        self.recv_key.decrypt_out(
+            message.ciphertext.as_slice(),
+            &message.tag,
+            &[],
+            &mut out[..message.ciphertext.as_slice().len()],
+        )?;
 
         let out_bytes_written = message.ciphertext.as_slice().len();
 
@@ -124,15 +128,15 @@ const R2I_CHANNEL_KEY_LABEL: &[u8] = b"r2i channel key";
 
 // skChanneli2r = KDF(skCS, "i2r channel key" | pk_binder | channel_counter)
 // skChannelr2i = KDF(skCS, "r2i channel key" | pk_binder | channel_counter)
-fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEADKey, Error> {
+fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEADKeyNonce, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct ChannelKeyInfo<'a> {
         domain_separator: &'static [u8],
-        pk_binder: &'a [u8],
+        pk_binder: Option<&'a [u8]>,
         counter: u64,
     }
 
-    AEADKey::new(
+    AEADKeyNonce::new(
         &session.session_key.key,
         &ChannelKeyInfo {
             domain_separator: if IS_INITIATOR {
@@ -140,19 +144,23 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
             } else {
                 R2I_CHANNEL_KEY_LABEL
             },
-            pk_binder: session.pk_binder.as_slice(),
+            pk_binder: session
+                .pk_binder
+                .as_ref()
+                .map(|pk_binder| pk_binder.as_slice()),
             counter: session.channel_counter,
         }
         .tls_serialize()
         .map_err(Error::Serialize)?,
+        session.aead_type,
     )
     .map_err(|e| e.into())
 }
 
-pub(super) fn derive_i2r_channel_key(session: &Session) -> Result<AEADKey, Error> {
+pub(super) fn derive_i2r_channel_key(session: &Session) -> Result<AEADKeyNonce, Error> {
     derive_channel_key::<true>(session)
 }
 
-pub(super) fn derive_r2i_channel_key(session: &Session) -> Result<AEADKey, Error> {
+pub(super) fn derive_r2i_channel_key(session: &Session) -> Result<AEADKeyNonce, Error> {
     derive_channel_key::<false>(session)
 }

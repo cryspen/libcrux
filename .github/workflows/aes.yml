@@ -36,7 +36,7 @@ jobs:
         working-directory: crates/algorithms/aesgcm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: taiki-e/install-action@cargo-hack
 
       - name: Update dependencies
@@ -120,14 +120,14 @@ jobs:
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   build-intel-macos:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     defaults:
       run:
         shell: bash
         working-directory: crates/algorithms/aesgcm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Update dependencies
         run: cargo update
@@ -152,7 +152,7 @@ jobs:
         working-directory: crates/algorithms/aesgcm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: 🛠️ Setup Rust Nightly
         run: |

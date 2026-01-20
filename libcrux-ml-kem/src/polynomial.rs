@@ -34,7 +34,7 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
     (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
     createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_6081346371236564305.f_repr 
+                                (Seq.index (i2._super_i2.f_repr 
                                     (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
 let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
     {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -186,7 +186,7 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
     let _myself = myself.coefficients;
     hax_lib::fstar!(
         r#"assert(forall (v: v_Vector).
-        i0.f_to_i16_array v == i0._super_6081346371236564305.f_repr v)"#
+        i0.f_to_i16_array v == i0._super_i2.f_repr v)"#
     );
 
     for i in 0..myself.coefficients.len() {
@@ -736,5 +736,118 @@ mod tests {
         re_decoded.to_i16_array(&mut i16s2);
 
         assert_eq!(i16s, i16s2);
+    }
+
+    #[cfg(feature = "simd128")]
+    #[test]
+    fn encoding_interop_portable_neon() {
+        use crate::vector::{Operations, SIMD128Vector};
+
+        type RePortable = PolynomialRingElement<PortableVector>;
+        let mut re_portable = RePortable::ZERO();
+        re_portable.coefficients[0] = PortableVector::from_i16_array(&[0xAB; 16]);
+        re_portable.coefficients[15] = PortableVector::from_i16_array(&[0xCD; 16]);
+
+        let mut portable_bytes = [0u8; RePortable::num_bytes()];
+        re_portable.to_bytes(&mut portable_bytes);
+
+        type ReNeon = PolynomialRingElement<SIMD128Vector>;
+        let mut re_neon = ReNeon::ZERO();
+        re_neon.coefficients[0] = SIMD128Vector::from_i16_array(&[0xAB; 16]);
+        re_neon.coefficients[15] = SIMD128Vector::from_i16_array(&[0xCD; 16]);
+
+        let mut neon_bytes = [0u8; ReNeon::num_bytes()];
+        re_neon.to_bytes(&mut neon_bytes);
+
+        assert_eq!(portable_bytes, neon_bytes);
+
+        let re_portable_decoded = RePortable::from_bytes(&neon_bytes);
+        let re_neon_decoded = ReNeon::from_bytes(&portable_bytes);
+
+        // Compare
+        let mut i16s_re_portable = [0; RePortable::num_bytes() / 2];
+        re_portable.to_i16_array(&mut i16s_re_portable);
+
+        let mut i16s_re_portable_decoded = [0; RePortable::num_bytes() / 2];
+        re_portable_decoded.to_i16_array(&mut i16s_re_portable_decoded);
+
+        assert_eq!(i16s_re_portable, i16s_re_portable_decoded);
+
+        let mut i16s_re_neon = [0; ReNeon::num_bytes() / 2];
+        re_neon.to_i16_array(&mut i16s_re_neon);
+
+        let mut i16s_re_neon_decoded = [0; ReNeon::num_bytes() / 2];
+        re_neon_decoded.to_i16_array(&mut i16s_re_neon_decoded);
+
+        assert_eq!(i16s_re_neon, i16s_re_neon_decoded);
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn encoding_avx2() {
+        use crate::vector::{Operations, SIMD256Vector};
+
+        type RingElement = PolynomialRingElement<SIMD256Vector>;
+        let mut re = RingElement::ZERO();
+        re.coefficients[0] = SIMD256Vector::from_i16_array(&[0xAB; 16]);
+        re.coefficients[15] = SIMD256Vector::from_i16_array(&[0xCD; 16]);
+
+        let mut bytes = [0u8; RingElement::num_bytes()];
+        re.to_bytes(&mut bytes);
+
+        let re_decoded = RingElement::from_bytes(&bytes);
+
+        // Compare
+        let mut i16s = [0; RingElement::num_bytes() / 2];
+        re.to_i16_array(&mut i16s);
+
+        let mut i16s2 = [0; RingElement::num_bytes() / 2];
+        re_decoded.to_i16_array(&mut i16s2);
+
+        assert_eq!(i16s, i16s2);
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn encoding_interop_portable_avx2() {
+        use crate::vector::{Operations, SIMD256Vector};
+
+        type RePortable = PolynomialRingElement<PortableVector>;
+        let mut re_portable = RePortable::ZERO();
+        re_portable.coefficients[0] = PortableVector::from_i16_array(&[0xAB; 16]);
+        re_portable.coefficients[15] = PortableVector::from_i16_array(&[0xCD; 16]);
+
+        let mut portable_bytes = [0u8; RePortable::num_bytes()];
+        re_portable.to_bytes(&mut portable_bytes);
+
+        type ReAvx2 = PolynomialRingElement<SIMD256Vector>;
+        let mut re_avx2 = ReAvx2::ZERO();
+        re_avx2.coefficients[0] = SIMD256Vector::from_i16_array(&[0xAB; 16]);
+        re_avx2.coefficients[15] = SIMD256Vector::from_i16_array(&[0xCD; 16]);
+
+        let mut avx2_bytes = [0u8; ReAvx2::num_bytes()];
+        re_avx2.to_bytes(&mut avx2_bytes);
+
+        assert_eq!(portable_bytes, avx2_bytes);
+
+        let re_portable_decoded = RePortable::from_bytes(&avx2_bytes);
+        let re_avx2_decoded = ReAvx2::from_bytes(&portable_bytes);
+
+        // Compare
+        let mut i16s_re_portable = [0; RePortable::num_bytes() / 2];
+        re_portable.to_i16_array(&mut i16s_re_portable);
+
+        let mut i16s_re_portable_decoded = [0; RePortable::num_bytes() / 2];
+        re_portable_decoded.to_i16_array(&mut i16s_re_portable_decoded);
+
+        assert_eq!(i16s_re_portable, i16s_re_portable_decoded);
+
+        let mut i16s_re_avx2 = [0; ReAvx2::num_bytes() / 2];
+        re_avx2.to_i16_array(&mut i16s_re_avx2);
+
+        let mut i16s_re_avx2_decoded = [0; ReAvx2::num_bytes() / 2];
+        re_avx2_decoded.to_i16_array(&mut i16s_re_avx2_decoded);
+
+        assert_eq!(i16s_re_avx2, i16s_re_avx2_decoded);
     }
 }

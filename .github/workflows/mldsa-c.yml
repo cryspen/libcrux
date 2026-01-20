@@ -22,7 +22,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -63,7 +63,7 @@ jobs:
         working-directory: libcrux-ml-dsa
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Extract C (header only)
         run: |
@@ -85,12 +85,12 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: header-only-c-extraction-ml-dsa
           path: ~/mldsa-c-extraction
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Diff Extraction
         run: |
@@ -112,7 +112,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: header-only-c-extraction-ml-dsa
 

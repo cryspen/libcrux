@@ -32,11 +32,11 @@ fi
 if [[ -n "$BORINGSSL_HOME" ]]; then
   echo "Copying the files into $BORINGSSL_HOME/third_party/libcrux/"
 
-  cp cg/libcrux_*.h $BORINGSSL_HOME/third_party/libcrux/
-  cp cg/code_gen.txt $BORINGSSL_HOME/third_party/libcrux/
-  cp -r cg/intrinsics $BORINGSSL_HOME/third_party/libcrux/
+  cp generated/libcrux_*.h $BORINGSSL_HOME/third_party/libcrux/
+  cp generated/code_gen.txt $BORINGSSL_HOME/third_party/libcrux/
+  cp -r generated/intrinsics $BORINGSSL_HOME/third_party/libcrux/
 
   # We use special files here.
-  cp cg/boring/eurydice_glue.h $BORINGSSL_HOME/third_party/libcrux/
-  cp -r cg/boring/karamel $BORINGSSL_HOME/third_party/libcrux/
+  cp generated/boring/eurydice_glue.h $BORINGSSL_HOME/third_party/libcrux/
+  cp -r generated/boring/karamel $BORINGSSL_HOME/third_party/libcrux/
 fi

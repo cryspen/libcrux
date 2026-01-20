@@ -2,13 +2,13 @@
 set -e
 
 function extract_all() {
-    extract sys/platform \
+    extract crates/sys/platform \
         into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
         fstar --z3rlimit 80 --interfaces "+**"
     
-    extract fstar-helpers/core-models into fstar
+    extract crates/utils/libcrux-core-models into fstar
 
-    extract libcrux-intrinsics \
+    extract crates/utils/intrinsics \
         -C --features simd128,simd256 ";" \
         into fstar --z3rlimit 80
     

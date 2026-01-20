@@ -3,11 +3,11 @@ name: SHA3 - hax
 on:
   merge_group:
     paths:
-      - "libcrux-sha3/**"
+      - "crates/algorithms/sha3/**"
   pull_request:
     branches: ["dev", "main"]
     paths:
-      - "libcrux-sha3/**"
+      - "crates/algorithms/sha3/**"
 
   schedule:
     - cron: "0 0 * * *"
@@ -38,14 +38,13 @@ jobs:
       - get-hax-ref
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
-          fstar: v2025.02.17
 
       - name: 🏃 Extract SHA3 crate
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: ./hax.py extract
 
       - name: ↑ Upload F* extraction (standard)
@@ -63,14 +62,14 @@ jobs:
       - get-hax-ref
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
-          fstar: v2025.02.17
+          fstar: v2025.12.15
 
       - name: 🏃 Extract SHA3 crate (portable)
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: ./hax.py extract --portable
 
       - name: ↑ Upload F* extraction (portable)
@@ -88,19 +87,19 @@ jobs:
       - extract-portable
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
-          fstar: v2025.02.17
+          fstar: v2025.12.15
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: fstar-extractions-portable
           path: .
 
       - name: 🏃 Lax SHA3 crate (portable)
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: ./hax.py prove --admit
 
   sha3-extract-hax-status:

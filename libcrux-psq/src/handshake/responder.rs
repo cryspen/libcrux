@@ -6,47 +6,50 @@ use tls_codec::{
 };
 
 use crate::{
-    aead::AEADKey,
-    handshake::ciphersuite::{
-        responder::ResponderCiphersuite, traits::CiphersuiteBase, CiphersuiteName,
+    aead::{AEADKeyNonce, AeadType},
+    handshake::{
+        ciphersuite::{responder::ResponderCiphersuite, CiphersuiteName},
+        derive_k1_sig,
+        transcript::verify_tx1,
+        types::Authenticator,
+        InnerMessage, K2IkmRegistrationSig,
     },
-    session::{Session, SessionError},
+    session::{Session, SessionBinding, SessionError},
     traits::{Channel, IntoSession},
 };
 
 use super::{
-    derive_k0, derive_k1,
+    derive_k0, derive_k1_dh,
     dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
     initiator::InitiatorInnerPayload,
-    transcript::{tx1, tx2, Transcript},
+    transcript::{tx2, Transcript},
     write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut, K2IkmQuery,
-    K2IkmRegistration, ToTransportState,
+    K2IkmRegistrationDh, ToTransportState,
 };
 
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
 pub(crate) enum InitiatorOuterPayload {
     Query(VLBytes),
-    Registration(HandshakeMessage),
+    Registration(InnerMessage),
 }
 
 #[derive(Debug)]
 pub(crate) struct RespondQueryState {
     pub(crate) tx0: Transcript,
-    pub(crate) k0: AEADKey,
+    pub(crate) k0: AEADKeyNonce,
     pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
 }
 
-#[derive(Debug)]
 pub(crate) struct RespondRegistrationState {
     pub(crate) tx1: Transcript,
-    pub(crate) k1: AEADKey,
+    pub(crate) k1: AEADKeyNonce,
     pub(crate) initiator_ephemeral_ecdh_pk: DHPublicKey,
-    pub(crate) initiator_longterm_ecdh_pk: DHPublicKey,
+    pub(crate) initiator_authenticator: Authenticator,
     pub(crate) pq: bool,
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) enum ResponderState {
     #[default]
     InProgress, // A placeholder while computing the next state
@@ -59,7 +62,7 @@ pub(crate) enum ResponderState {
 pub struct Responder<'a, Rng: CryptoRng> {
     pub(crate) state: ResponderState,
     ciphersuite: ResponderCiphersuite<'a>,
-    working_ciphersuite: CiphersuiteName,
+    working_ciphersuite: Option<CiphersuiteName>,
     recent_keys: VecDeque<DHPublicKey>,
     recent_keys_upper_bound: usize,
     context: &'a [u8],
@@ -81,7 +84,46 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
-    pub fn new(
+    /// Returns the most recent initiator authenticator for out-of-band verification, if any.
+    ///
+    /// A responder in it's initial state or a responder that has processed an
+    /// initiator query message returns `None`, as it does not have an
+    /// initiator authenticator.
+    ///
+    /// A responder that has processed a registration initiator's first
+    /// message will respond with the authenticator included in the message by
+    /// the initiator:
+    ///
+    /// - For DH-based authentication, this will be the long-term ECDH public
+    ///   key `pk_I` provided by the initiator. If the authenticator continues the
+    ///   handshake, `pk_I` will be part of the session key derivation.
+    /// - For signature-based authentication, this will be the signature verification
+    ///   key `vk_I` provided by the initiator. At this point of the handshake the
+    ///   initiator has provided a valid signature of the running handshake
+    ///   transcript (`tx1`) under `vk_I`. If the authenticator continues the
+    ///   handshake, `vk_I` will be part of the session key derivation.
+    pub fn initiator_authenticator(&self) -> Option<Authenticator> {
+        match &self.state {
+            ResponderState::InProgress
+            | ResponderState::Initial
+            | ResponderState::RespondQuery(_) => None,
+            ResponderState::RespondRegistration(state) => {
+                Some(state.initiator_authenticator.clone())
+            }
+            ResponderState::ToTransport(state) => state.initiator_authenticator.clone(),
+        }
+    }
+
+    /// Abort an in-progress handshake.
+    ///
+    /// At any point in the handshake, the responder state can be
+    /// reset to abort the handshake.
+    pub fn abort_handshake(&mut self) {
+        self.state = ResponderState::Initial {};
+        self.working_ciphersuite = None;
+    }
+
+    pub(crate) fn new(
         ciphersuite: ResponderCiphersuite<'a>,
         context: &'a [u8],
         aad: &'a [u8],
@@ -92,7 +134,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Self {
             state: ResponderState::Initial {},
             ciphersuite,
-            working_ciphersuite: CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+            working_ciphersuite: None,
             context,
             aad,
             rng,
@@ -105,39 +147,19 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn derive_query_key(
         &self,
         tx0: &Transcript,
-        k0: &AEADKey,
+        k0: &AEADKeyNonce,
         responder_ephemeral_ecdh_pk: &DHPublicKey,
         responder_ephemeral_ecdh_sk: &DHPrivateKey,
         initiator_ephemeral_ecdh_pk: &DHPublicKey,
-    ) -> Result<(Transcript, AEADKey), Error> {
+    ) -> Result<(Transcript, AEADKeyNonce), Error> {
         let tx2 = tx2(tx0, responder_ephemeral_ecdh_pk)?;
         let k2 = derive_k2_query_responder(
             k0,
             initiator_ephemeral_ecdh_pk,
             responder_ephemeral_ecdh_sk,
-            self.ciphersuite.own_ecdh_decapsulation_key(),
+            &self.ciphersuite.kex.sk,
             &tx2,
-        )?;
-
-        Ok((tx2, k2))
-    }
-
-    fn derive_registration_key(
-        &self,
-        tx1: &Transcript,
-        k1: &AEADKey,
-        responder_ephemeral_ecdh_pk: &DHPublicKey,
-        responder_ephemeral_ecdh_sk: &DHPrivateKey,
-        initiator_longterm_ecdh_pk: &DHPublicKey,
-        initiator_ephemeral_ecdh_pk: &DHPublicKey,
-    ) -> Result<(Transcript, AEADKey), Error> {
-        let tx2 = tx2(tx1, responder_ephemeral_ecdh_pk)?;
-        let k2 = derive_k2_registration_responder(
-            k1,
-            &tx2,
-            initiator_longterm_ecdh_pk,
-            initiator_ephemeral_ecdh_pk,
-            responder_ephemeral_ecdh_sk,
+            AeadType::ChaCha20Poly1305,
         )?;
 
         Ok((tx2, k2))
@@ -146,13 +168,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn decrypt_outer_message(
         &self,
         initiator_outer_message: &HandshakeMessage,
-    ) -> Result<(InitiatorOuterPayload, Transcript, AEADKey), Error> {
+    ) -> Result<(InitiatorOuterPayload, Transcript, AEADKeyNonce), Error> {
         let (tx0, mut k0) = derive_k0(
             &initiator_outer_message.pk,
-            self.ciphersuite.own_ecdh_encapsulation_key(),
-            self.ciphersuite.own_ecdh_decapsulation_key(),
+            &self.ciphersuite.kex.pk,
+            &self.ciphersuite.kex.sk,
             self.context,
             true,
+            self.ciphersuite.aead_type(),
         )?;
 
         let initiator_payload: InitiatorOuterPayload = k0.decrypt_deserialize(
@@ -167,38 +190,59 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     fn decrypt_inner_message(
         &self,
         tx0: &Transcript,
-        k0: &AEADKey,
-        initiator_inner_message: &HandshakeMessage,
-    ) -> Result<(InitiatorInnerPayload, Transcript, AEADKey, bool), Error> {
-        // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
-        let pq_encapsulation = self
-            .working_ciphersuite
+        k0: &AEADKeyNonce,
+        initiator_inner_message: &InnerMessage,
+    ) -> Result<
+        (
+            InitiatorInnerPayload,
+            Transcript,
+            AEADKeyNonce,
+            Authenticator,
+            bool,
+        ),
+        Error,
+    > {
+        let Some(working_ciphersuite) = self.working_ciphersuite else {
+            return Err(Error::ResponderState);
+        };
+
+        let pq_encapsulation_deserialized = working_ciphersuite
             .deserialize_encapsulation(initiator_inner_message.pq_encapsulation.as_ref())?;
 
-        let pq_shared_secret = pq_encapsulation
+        let (authenticator, tx1) = verify_tx1(
+            tx0,
+            &initiator_inner_message.auth,
+            if pq_encapsulation_deserialized.is_some() {
+                self.ciphersuite.pq.encapsulation_key()
+            } else {
+                None
+            },
+            initiator_inner_message.pq_encapsulation.as_slice(),
+        )?;
+
+        let pq_shared_secret = pq_encapsulation_deserialized
             .as_ref()
             .as_ref()
             .map(|enc| self.ciphersuite.pq_decapsulate(enc))
             .transpose()?;
 
-        let tx1 = tx1(
-            tx0,
-            &initiator_inner_message.pk,
-            if pq_encapsulation.is_some() {
-                self.ciphersuite.own_pq_encapsulation_key()
-            } else {
-                None
-            },
-            initiator_inner_message.pq_encapsulation.as_ref(),
-        )?;
-
-        let mut k1 = derive_k1(
-            k0,
-            self.ciphersuite.own_ecdh_decapsulation_key(),
-            &initiator_inner_message.pk,
-            pq_shared_secret,
-            &tx1,
-        )?;
+        let mut k1 = match &initiator_inner_message.auth {
+            super::AuthMessage::Dh(dhpublic_key) => derive_k1_dh(
+                k0,
+                &self.ciphersuite.kex.sk,
+                dhpublic_key,
+                pq_shared_secret,
+                &tx1,
+                self.ciphersuite.aead_type(),
+            ),
+            super::AuthMessage::Sig { vk: _, signature } => derive_k1_sig(
+                k0,
+                pq_shared_secret,
+                &tx1,
+                signature,
+                self.ciphersuite.aead_type(),
+            ),
+        }?;
 
         let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(
             initiator_inner_message.ciphertext.as_slice(),
@@ -206,7 +250,108 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             initiator_inner_message.aad.as_slice(),
         )?;
 
-        Ok((inner_payload, tx1, k1, pq_encapsulation.is_some()))
+        Ok((
+            inner_payload,
+            tx1,
+            k1,
+            authenticator,
+            pq_encapsulation_deserialized.is_some(),
+        ))
+
+        // match initiator_inner_message.auth {
+        //     InnerMessage::DHAuth(pk) => {
+        //         // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
+        //         let pq_encapsulation_deserialized = working_ciphersuite
+        //             .deserialize_encapsulation(initiator_inner_message.pq_encapsulation.as_ref())?;
+
+        //         let tx1 = tx1_dh(
+        //             tx0,
+        //             pk,
+        //             if pq_encapsulation_deserialized.is_some() {
+        //                 self.ciphersuite.pq.encapsulation_key()
+        //             } else {
+        //                 None
+        //             },
+        //             pq_encapsulation.as_slice(),
+        //         )?;
+
+        //         let pq_shared_secret = pq_encapsulation_deserialized
+        //             .as_ref()
+        //             .as_ref()
+        //             .map(|enc| self.ciphersuite.pq_decapsulate(enc))
+        //             .transpose()?;
+
+        //         let mut k1 = derive_k1_dh(
+        //             k0,
+        //             &self.ciphersuite.kex.sk,
+        //             pk,
+        //             pq_shared_secret,
+        //             &tx1,
+        //             self.ciphersuite.aead_type(),
+        //         )?;
+
+        //         let inner_payload: InitiatorInnerPayload =
+        //             k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
+
+        //         Ok((
+        //             inner_payload,
+        //             tx1,
+        //             k1,
+        //             Authenticator::Dh(pk.clone()),
+        //             pq_encapsulation_deserialized.is_some(),
+        //         ))
+        //     }
+        //     InnerMessage::SigAuth {
+        //         vk,
+        //         signature,
+        //         ciphertext,
+        //         tag,
+        //         aad,
+        //         pq_encapsulation,
+        //     } => {
+        //         // Whether we attempt to do a decapsulation is decided by the working ciphersuite.
+        //         let pq_encapsulation_deserialized =
+        //             working_ciphersuite.deserialize_encapsulation(pq_encapsulation.as_ref())?;
+
+        //         let tx1 = tx1_sig(
+        //             tx0,
+        //             vk,
+        //             if pq_encapsulation_deserialized.is_some() {
+        //                 self.ciphersuite.pq.encapsulation_key()
+        //             } else {
+        //                 None
+        //             },
+        //             pq_encapsulation.as_slice(),
+        //         )?;
+
+        //         self.ciphersuite.verify(vk, &tx1, signature)?;
+
+        //         let pq_shared_secret = pq_encapsulation_deserialized
+        //             .as_ref()
+        //             .as_ref()
+        //             .map(|enc| self.ciphersuite.pq_decapsulate(enc))
+        //             .transpose()?;
+
+        //         let mut k1 = derive_k1_sig(
+        //             k0,
+        //             pq_shared_secret,
+        //             &tx1,
+        //             signature,
+        //             self.ciphersuite.aead_type(),
+        //         )?;
+
+        //         let inner_payload: InitiatorInnerPayload =
+        //             k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
+
+        //         Ok((
+        //             inner_payload,
+        //             tx1,
+        //             k1,
+        //             Authenticator::Sig(vk.clone()),
+        //             pq_encapsulation_deserialized.is_some(),
+        //         ))
+        //     }
+        // }
     }
 
     fn registration(
@@ -217,25 +362,38 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         responder_ephemeral_ecdh_pk: DHPublicKey,
         state: RespondRegistrationState,
     ) -> Result<usize, Error> {
-        let (tx2, mut k2) = self.derive_registration_key(
-            &state.tx1,
-            &state.k1,
-            &responder_ephemeral_ecdh_pk,
-            &responder_ephemeral_ecdh_sk,
-            &state.initiator_longterm_ecdh_pk,
-            &state.initiator_ephemeral_ecdh_pk,
-        )?;
+        let tx2 = tx2(&state.tx1, &responder_ephemeral_ecdh_pk)?;
+        let mut k2 = match &state.initiator_authenticator {
+            Authenticator::Dh(dhpublic_key) => derive_k2_registration_responder_dh(
+                &state.k1,
+                &tx2,
+                dhpublic_key,
+                &state.initiator_ephemeral_ecdh_pk,
+                &responder_ephemeral_ecdh_sk,
+                self.ciphersuite.aead_type(),
+            )?,
+            Authenticator::Sig(_) => derive_k2_registration_responder_sig(
+                &state.k1,
+                &tx2,
+                &state.initiator_ephemeral_ecdh_pk,
+                &responder_ephemeral_ecdh_sk,
+                self.ciphersuite.aead_type(),
+            )?,
+        };
 
         let outer_payload = ResponderRegistrationPayloadOut(VLByteSlice(payload));
         let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
+
+        let Some(working_ciphersuite) = self.working_ciphersuite else {
+            return Err(Error::ResponderState);
+        };
 
         let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: self.working_ciphersuite,
+            ciphersuite: working_ciphersuite,
         };
 
         let out_len = out_msg
@@ -246,7 +404,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ToTransportState {
                 tx2,
                 k2,
-                initiator_ecdh_pk: Some(state.initiator_longterm_ecdh_pk),
+                initiator_authenticator: Some(state.initiator_authenticator),
                 pq: state.pq,
             }
             .into(),
@@ -279,8 +437,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ciphertext: VLByteSlice(&ciphertext),
             tag,
             aad: VLByteSlice(self.aad),
-            pq_encapsulation: VLByteSlice(&[]),
-            ciphersuite: CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256,
+            ciphersuite: CiphersuiteName::query_ciphersuite(),
         };
 
         out_msg
@@ -291,6 +448,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         Ok(out_msg.tls_serialized_len())
     }
 
+    /// Error or reset responder
     fn ciphersuite_mismatch(&mut self, bytes_deserialized: usize) -> Result<(usize, usize), Error> {
         if self.error_on_ciphersuite_mismatch {
             Err(Error::UnsupportedCiphersuite)
@@ -345,14 +503,12 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
         let bytes_deserialized = initiator_outer_message.tls_serialized_len();
 
         // Set the working ciphersuite for this handshake.
-        self.working_ciphersuite = if let Some(ciphersuite) = initiator_outer_message
+        self.working_ciphersuite = initiator_outer_message
             .ciphersuite
-            .coerce_compatible(&self.ciphersuite)
-        {
-            ciphersuite
-        } else {
+            .coerce_compatible(&self.ciphersuite);
+        if self.working_ciphersuite.is_none() {
             return self.ciphersuite_mismatch(bytes_deserialized);
-        };
+        }
 
         // Check that the ephemeral key was not in the most recent keys.
         if self.recent_keys.contains(&initiator_outer_message.pk) {
@@ -385,20 +541,16 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
             }
 
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
-                if initiator_inner_message.ciphersuite != initiator_outer_message.ciphersuite {
-                    // The inner and outer ciphersuites must agree.
-                    return Err(Error::InvalidMessage);
-                }
                 // Decrypt the inner message payload.
                 match self.decrypt_inner_message(&tx0, &k0, &initiator_inner_message) {
-                    Ok((initiator_inner_payload, tx1, k1, pq)) => {
+                    Ok((initiator_inner_payload, tx1, k1, initiator_authenticator, pq)) => {
                         // We're ready to respond to the registration message.
                         self.state = ResponderState::RespondRegistration(
                             RespondRegistrationState {
                                 tx1,
                                 k1,
                                 initiator_ephemeral_ecdh_pk: initiator_outer_message.pk,
-                                initiator_longterm_ecdh_pk: initiator_inner_message.pk,
+                                initiator_authenticator,
                                 pq,
                             }
                             .into(),
@@ -423,21 +575,24 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
             return Err(SessionError::IntoSession);
         };
 
-        let Some(initiator_ecdh_pk) = take(&mut state.initiator_ecdh_pk) else {
+        let Some(initiator_authenticator) = take(&mut state.initiator_authenticator) else {
             return Err(SessionError::IntoSession);
         };
 
         Session::new(
             state.tx2,
             state.k2,
-            &initiator_ecdh_pk,
-            self.ciphersuite.own_ecdh_encapsulation_key(),
-            if state.pq {
-                self.ciphersuite.own_pq_encapsulation_key()
-            } else {
-                None
-            },
+            Some(SessionBinding {
+                initiator_authenticator: &initiator_authenticator,
+                responder_ecdh_pk: &self.ciphersuite.kex.pk,
+                responder_pq_pk: if state.pq {
+                    self.ciphersuite.own_pq_encapsulation_key()
+                } else {
+                    None
+                },
+            }),
             false,
+            self.ciphersuite.aead_type(),
         )
     }
 
@@ -447,35 +602,53 @@ impl<'a, Rng: CryptoRng> IntoSession for Responder<'a, Rng> {
 }
 
 // K2 = KDF(K1 | g^cy | g^xy, tx2)
-pub(super) fn derive_k2_registration_responder(
-    k1: &AEADKey,
+pub(super) fn derive_k2_registration_responder_dh(
+    k1: &AEADKeyNonce,
     tx2: &Transcript,
     initiator_longterm_pk: &DHPublicKey,
     initiator_ephemeral_pk: &DHPublicKey,
     responder_ephemeral_sk: &DHPrivateKey,
-) -> Result<AEADKey, Error> {
-    let responder_ikm = K2IkmRegistration {
+    aead_type: AeadType,
+) -> Result<AEADKeyNonce, Error> {
+    let responder_ikm = K2IkmRegistrationDh {
         k1,
         g_cy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_longterm_pk)?,
         g_xy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2)?)
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
+}
+
+// K2 = KDF(K1 | g^xy, tx2)
+pub(super) fn derive_k2_registration_responder_sig(
+    k1: &AEADKeyNonce,
+    tx2: &Transcript,
+    initiator_ephemeral_pk: &DHPublicKey,
+    responder_ephemeral_sk: &DHPrivateKey,
+    aead_type: AeadType,
+) -> Result<AEADKeyNonce, Error> {
+    let responder_ikm = K2IkmRegistrationSig {
+        k1,
+        g_xy: &DHSharedSecret::derive(responder_ephemeral_sk, initiator_ephemeral_pk)?,
+    };
+
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
 }
 
 // K2 = KDF(K0 | g^xs | g^xy, tx2)
 pub(super) fn derive_k2_query_responder(
-    k0: &AEADKey,
+    k0: &AEADKeyNonce,
     initiator_ephemeral_ecdh_pk: &DHPublicKey,
     responder_ephemeral_ecdh_sk: &DHPrivateKey,
     responder_longterm_ecdh_sk: &DHPrivateKey,
     tx2: &Transcript,
-) -> Result<AEADKey, Error> {
+    aead_type: AeadType,
+) -> Result<AEADKeyNonce, Error> {
     let responder_ikm = K2IkmQuery {
         k0,
         g_xs: &DHSharedSecret::derive(responder_longterm_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
         g_xy: &DHSharedSecret::derive(responder_ephemeral_ecdh_sk, initiator_ephemeral_ecdh_pk)?,
     };
 
-    Ok(AEADKey::new(&responder_ikm, tx2)?)
+    Ok(AEADKeyNonce::new(&responder_ikm, tx2, aead_type)?)
 }
