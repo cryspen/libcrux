@@ -17,12 +17,12 @@ default = ["std"]
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits = { version = "=0.0.4", path = "../../../traits/" }
+libcrux-traits.workspace = true
 
 [dev-dependencies]
 criterion = "0.8"
 rand = "0.9"
-libcrux-traits = { version = "=0.0.4", path = "../../../traits/", features = ["generic-tests"] }
+libcrux-traits = { workspace = true, features = ["generic-tests"] }
 
 [[bench]]
 name = "blake2"
