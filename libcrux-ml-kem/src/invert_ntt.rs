@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{spec, add_bounded, sub_bounded, zeta},
-    vector::{FIELD_ELEMENTS_IN_VECTOR, Operations, PolynomialRingElement},
+    polynomial::{add_bounded, spec, sub_bounded, zeta},
+    vector::{Operations, PolynomialRingElement, FIELD_ELEMENTS_IN_VECTOR},
 };
 
 #[cfg(hax)]
@@ -26,10 +26,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                         if i >= round {
                             spec::is_bounded_vector(4 * 3328, &re.coefficients[i])
                         } else {
-                            spec::is_bounded_vector(
-                                3328,
-                                &re.coefficients[i],
-                            )
+                            spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
                         hax_lib::fstar_prop_expr!(r#"True"#)
@@ -74,10 +71,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
                         if i >= round {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         } else {
-                            spec::is_bounded_vector(
-                                3328,
-                                &re.coefficients[i],
-                            )
+                            spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
                         hax_lib::fstar_prop_expr!(r#"True"#)
@@ -112,10 +106,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
                         if i >= round {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         } else {
-                            spec::is_bounded_vector(
-                                3328,
-                                &re.coefficients[i],
-                            )
+                            spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
                         hax_lib::fstar_prop_expr!(r#"True"#)
@@ -125,7 +116,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
         });
 
         *zeta_i -= 1;
-        
+
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], zeta(*zeta_i));
     }
@@ -186,10 +177,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                         if i >= (round * step * 2) / 16 {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         } else {
-                            spec::is_bounded_vector(
-                                3328,
-                                &re.coefficients[i],
-                            )
+                            spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
                         hax_lib::fstar_prop_expr!(r#"True"#)
@@ -211,10 +199,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                         if (i >= j && i < offset_vec + step_vec) || (i >= j + step_vec) {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         } else {
-                            spec::is_bounded_vector(
-                                3328,
-                                &re.coefficients[i],
-                            )
+                            spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
                         hax_lib::fstar_prop_expr!(r#"True"#)

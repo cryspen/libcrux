@@ -1,6 +1,9 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{spec, PolynomialRingElement, VECTORS_IN_RING_ELEMENT, add_bounded, multiply_by_constant_bounded, sub_bounded, zeta},
+    polynomial::{
+        add_bounded, multiply_by_constant_bounded, spec, sub_bounded, zeta, PolynomialRingElement,
+        VECTORS_IN_RING_ELEMENT,
+    },
     vector::Operations,
 };
 
@@ -236,9 +239,7 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
                     if (i >= j && i < step) || (i >= j + step) {
                         spec::is_bounded_vector(3, &re.coefficients[i])
                     } else {
-                        spec::is_bounded_vector(4803,
-                            &re.coefficients[i],
-                        )
+                        spec::is_bounded_vector(4803, &re.coefficients[i])
                     }
                 } else {
                     true.to_prop()

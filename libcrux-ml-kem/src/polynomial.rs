@@ -35,10 +35,11 @@ pub(crate) mod spec {
 
     use crate::vector::{Operations, PolynomialRingElement};
 
-    pub(crate) fn are_eq_vectors<Vector: Operations>(vec1: &Vector, vec2: &Vector) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(
-            r#"$vec1 == $vec2"#
-        )
+    pub(crate) fn are_eq_vectors<Vector: Operations>(
+        vec1: &Vector,
+        vec2: &Vector,
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"$vec1 == $vec2"#)
     }
 
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
@@ -67,7 +68,11 @@ pub(crate) mod spec {
 
     #[hax_lib::requires(is_bounded_poly(b1, p).and(b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_poly(b2, p))]
-    pub(crate) fn is_bounded_poly_higher<Vector: Operations>(p: &PolynomialRingElement<Vector>, b1: usize, b2: usize) {
+    pub(crate) fn is_bounded_poly_higher<Vector: Operations>(
+        p: &PolynomialRingElement<Vector>,
+        b1: usize,
+        b2: usize,
+    ) {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
         );
@@ -111,7 +116,7 @@ pub(crate) fn sub_bounded<Vector: Operations>(
 pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
     vec: Vector,
     b: usize,
-    c: i16
+    c: i16,
 ) -> Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
