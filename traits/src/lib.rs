@@ -26,5 +26,7 @@ pub mod aead;
 pub mod digest;
 pub mod ecdh;
 pub mod kem;
+pub mod signature;
 
 pub use libcrux_secrets;
+pub use rand;

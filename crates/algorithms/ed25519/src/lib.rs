@@ -8,5 +8,6 @@ mod hacl {
 }
 
 mod impl_hacl;
+pub(crate) mod key_centric_apis;
 
 pub use impl_hacl::*;

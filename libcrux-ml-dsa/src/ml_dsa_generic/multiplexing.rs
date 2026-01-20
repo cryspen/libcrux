@@ -12,6 +12,7 @@ macro_rules! parameter_set {
             #[cfg(all(feature = "simd256", feature = $feature))]
             use instantiations::avx2::$parameter_module::{
                 generate_key_pair as generate_key_pair_avx2, sign as sign_avx2,
+                sign_mut as sign_mut_avx2,
                 sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
                 verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
             };
@@ -24,6 +25,7 @@ macro_rules! parameter_set {
             #[cfg(all(feature = "simd128", feature = $feature))]
             use instantiations::neon::$parameter_module::{
                 generate_key_pair as generate_key_pair_neon, sign as sign_neon,
+                sign_mut as sign_mut_neon,
                 sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
                 verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
             };
@@ -39,6 +41,7 @@ macro_rules! parameter_set {
             #[cfg(all(not(feature = "simd256"), feature = $feature))]
             use instantiations::portable::$parameter_module::{
                 generate_key_pair as generate_key_pair_avx2, sign as sign_avx2,
+                sign_mut as sign_mut_avx2,
                 sign_pre_hashed_shake128 as sign_pre_hashed_shake128_avx2, verify as verify_avx2,
                 verify_pre_hashed_shake128 as verify_pre_hashed_shake128_avx2,
             };
@@ -51,6 +54,7 @@ macro_rules! parameter_set {
             #[cfg(all(not(feature = "simd128"), feature = $feature))]
             use instantiations::portable::$parameter_module::{
                 generate_key_pair as generate_key_pair_neon, sign as sign_neon,
+                sign_mut as sign_mut_neon,
                 sign_pre_hashed_shake128 as sign_pre_hashed_shake128_neon, verify as verify_neon,
                 verify_pre_hashed_shake128 as verify_pre_hashed_shake128_neon,
             };
@@ -113,6 +117,28 @@ macro_rules! parameter_set {
                         message,
                         context,
                         randomness,
+                    )
+                }
+            }
+
+            pub(crate) fn sign_mut(
+                signing_key: &[u8; SIGNING_KEY_SIZE],
+                message: &[u8],
+                context: &[u8],
+                randomness: [u8; SIGNING_RANDOMNESS_SIZE],
+                signature: &mut [u8; SIGNATURE_SIZE],
+            ) -> Result<(), SigningError> {
+                if libcrux_platform::simd256_support() {
+                    sign_mut_avx2(signing_key, message, context, randomness, signature)
+                } else if libcrux_platform::simd128_support() {
+                    sign_mut_neon(signing_key, message, context, randomness, signature)
+                } else {
+                    instantiations::portable::$parameter_module::sign_mut(
+                        signing_key,
+                        message,
+                        context,
+                        randomness,
+                        signature,
                     )
                 }
             }

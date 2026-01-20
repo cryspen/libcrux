@@ -18,7 +18,7 @@ pub enum Error {
 #[derive(Default, Clone, Copy)]
 #[cfg_attr(feature = "codec", derive(TlsSerialize, TlsDeserialize, TlsSize))]
 pub struct VerificationKey {
-    value: [u8; 32],
+    pub(crate) value: [u8; 32],
 }
 
 impl VerificationKey {
@@ -42,7 +42,16 @@ impl AsRef<[u8; 32]> for VerificationKey {
 /// An Ed25519 private, signing  key
 #[derive(Default)]
 pub struct SigningKey {
-    value: [u8; 32],
+    pub(crate) value: [u8; 32],
+}
+
+#[repr(transparent)]
+/// An Ed25519 signature
+pub struct Signature(pub(crate) [u8; 64]);
+impl From<[u8; 64]> for Signature {
+    fn from(value: [u8; 64]) -> Self {
+        Signature(value)
+    }
 }
 
 impl SigningKey {
@@ -114,10 +123,16 @@ pub fn secret_to_public(pk: &mut [u8; 32], sk: &[u8; 32]) {
     crate::hacl::ed25519::secret_to_public(pk, sk)
 }
 
+/// An Ed25519 key pair.
+pub struct Ed25519KeyPair {
+    /// An Ed25519 signing key
+    pub signing_key: SigningKey,
+    /// An Ed25519 verification key
+    pub verification_key: VerificationKey,
+}
+
 #[cfg(feature = "rand")]
-pub fn generate_key_pair(
-    rng: &mut impl rand_core::CryptoRng,
-) -> Result<(SigningKey, VerificationKey), Error> {
+pub fn generate_key_pair(rng: &mut impl rand_core::CryptoRng) -> Result<Ed25519KeyPair, Error> {
     use rand_core::TryRngCore;
 
     const LIMIT: usize = 100;
@@ -143,5 +158,8 @@ pub fn generate_key_pair(
 
     secret_to_public(&mut pk, &sk);
 
-    Ok((SigningKey { value: sk }, VerificationKey { value: pk }))
+    Ok(Ed25519KeyPair {
+        signing_key: SigningKey { value: sk },
+        verification_key: VerificationKey { value: pk },
+    })
 }

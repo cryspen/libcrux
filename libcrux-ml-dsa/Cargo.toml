@@ -22,6 +22,9 @@ libcrux-sha3 = { version = "0.0.5", path = "../crates/algorithms/sha3" }
 libcrux-intrinsics = { version = "0.0.4", path = "../crates/utils/intrinsics" }
 libcrux-platform = { version = "0.0.3", path = "../crates/sys/platform" }
 libcrux-macros = { version = "=0.0.3",  path = "../crates/utils/macros" }
+libcrux-traits = { version = "=0.0.4", path = "../traits/" }
+libcrux-secrets = { version = "=0.0.4", path = "../crates/utils/secrets" }
+rand = { version = "0.9", default-features = false, optional = true }
 hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [
     "derive",
@@ -46,11 +49,20 @@ pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 libcrux-core-models = { path = "../crates/utils/libcrux-core-models", version = "0.0.4" }
 
 [features]
+rand = ["dep:rand"]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]
 simd128 = ["libcrux-sha3/simd128", "libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-sha3/simd256", "libcrux-intrinsics/simd256"]
 acvp = []                                                        # expose internal API for ACVP testing
 test-utils = []                                                  # exposing internal functions for testing
+
+
+# This doesn't check the secret independence of the implementation, but sets the
+# exposed API into secret independence checking mode.
+expose-secret-independence = [
+    "libcrux-secrets/check-secret-independence",
+    "libcrux-traits/check-secret-independence",
+]
 
 # Features for the different key sizes of ML-DSA
 mldsa44 = []

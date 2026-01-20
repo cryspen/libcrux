@@ -39,3 +39,6 @@ pub mod ml_dsa_65;
 
 #[cfg(feature = "mldsa87")]
 pub mod ml_dsa_87;
+
+#[cfg(not(hax))]
+pub(crate) mod key_centric_apis;

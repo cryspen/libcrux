@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use benchmarks::util::*;
 use libcrux_ecdsa::{
-    p256::{Nonce, PrivateKey, PublicKey},
+    p256::{Nonce, SigningKey, VerificationKey},
     DigestAlgorithm,
 };
 
@@ -19,7 +19,7 @@ fn sign(c: &mut Criterion) {
                 let mut rng = rand::rng();
 
                 let sk: [u8; 32] = hex_str_to_array(SK_HEX);
-                let sk = PrivateKey::try_from(&sk).unwrap();
+                let sk = SigningKey::try_from(&sk).unwrap();
                 let nonce = Nonce::random(&mut rng).unwrap();
                 let msg = b"sample";
 
@@ -93,9 +93,9 @@ fn verify(c: &mut Criterion) {
                 let mut rng = rand::rng();
 
                 let pk = hex_str_to_bytes(PK_HEX);
-                let pk = PublicKey::try_from(pk.as_slice()).unwrap();
+                let pk = VerificationKey::try_from(pk.as_slice()).unwrap();
                 let sk: [u8; 32] = hex_str_to_array(SK_HEX);
-                let sk = PrivateKey::try_from(&sk).unwrap();
+                let sk = SigningKey::try_from(&sk).unwrap();
                 let nonce = Nonce::random(&mut rng).unwrap();
                 let msg = b"sample";
                 let sig = libcrux_ecdsa::p256::sign(DigestAlgorithm::Sha256, &msg[..], &sk, &nonce)
