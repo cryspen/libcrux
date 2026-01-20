@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::zeta,
-    vector::{Operations, FIELD_ELEMENTS_IN_VECTOR, PolynomialRingElement},
+    vector::{Operations, PolynomialRingElement, FIELD_ELEMENTS_IN_VECTOR},
 };
 
 #[inline(always)]
