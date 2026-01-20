@@ -16,8 +16,8 @@ libcrux-poly1305 = { version = "=0.0.4", path = "../poly1305/", features = [
 ] }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
-libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
+libcrux-traits.workspace = true
+libcrux-secrets.workspace = true
 
 [dev-dependencies]
 hex = { version = "0.4.3", features = ["serde"] }

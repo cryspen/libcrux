@@ -15,9 +15,9 @@ expose-hacl = []
 
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
-libcrux-traits = { version = "=0.0.4", path = "../../../traits/" }
+libcrux-traits.workspace = true
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-sha2 = { version = "=0.0.4", path = "../sha2", features = [
+libcrux-sha2 = { workspace = true, features = [
     "expose-hacl",
 ] }
 
