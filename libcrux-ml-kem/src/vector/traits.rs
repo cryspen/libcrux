@@ -19,6 +19,7 @@ pub trait Repr: Copy + Clone {
 #[cfg(any(eurydice, not(hax)))]
 pub trait Repr {}
 
+#[allow(dead_code, unused_variables)]
 pub(crate) mod spec {
     pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(

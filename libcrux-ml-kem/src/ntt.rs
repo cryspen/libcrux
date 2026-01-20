@@ -16,7 +16,6 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     _initial_coefficient_bound: usize, // This can be used for specifying the range of values allowed in re
 ) {
-    let _re_init = re.clone();
     let _zeta_i_init = *zeta_i;
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {

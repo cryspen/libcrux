@@ -4,7 +4,7 @@ pub(crate) use crate::vector::{
 };
 
 #[cfg(hax)]
-use hax_lib::int::ToInt;
+use hax_lib::{int::ToInt, prop::ToProp};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
     hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
@@ -25,14 +25,21 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b 1664 result"#))]
+#[hax_lib::ensures(|result| result >= -1664 && result <= 1664)]
 pub fn zeta(i: usize) -> i16 {
     ZETAS_TIMES_MONTGOMERY_R[i]
 }
 
+#[allow(dead_code, unused_variables)]
 pub(crate) mod spec {
 
     use crate::vector::{Operations, PolynomialRingElement};
+
+    pub(crate) fn are_eq_vectors<Vector: Operations>(vec1: &Vector, vec2: &Vector) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"$vec1 == $vec2"#
+        )
+    }
 
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
@@ -243,10 +250,10 @@ fn add_to_ring_element<Vector: Operations, const K: usize>(
                         &myself.coefficients[j].repr(),
                     )
                 } else {
-                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                    spec::are_eq_vectors(&myself.coefficients[j], &_myself[j])
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
