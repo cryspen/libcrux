@@ -16,7 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits.workspace = true
-libcrux-kem = { version = "=0.0.4", path = "../libcrux-kem", features = [
+libcrux-kem = { workspace = true, features = [
     "codec",
 ] }
 libcrux-chacha20poly1305 = { version = "0.0.4", path = "../crates/algorithms/chacha20poly1305" }
