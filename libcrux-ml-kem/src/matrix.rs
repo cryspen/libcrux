@@ -48,13 +48,13 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
 #[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Polynomial in
+    fstar!(r#"let open Libcrux_ml_kem.Vector in
         let secret_spec = to_spec_vector_t $secret_as_ntt in
         let u_spec = to_spec_vector_t $u_as_ntt in
         let v_spec = to_spec_poly_t $v in
         to_spec_poly_t $res ==
             Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt (vector_dot_product_ntt #$K secret_spec u_spec))) /\
-        Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $res"#)
+        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $res"#)
 )]
 pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     v: &PolynomialRingElement<Vector>,
@@ -79,14 +79,14 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
 #[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Polynomial in
+    fstar!(r#"let open Libcrux_ml_kem.Vector in
         let tt_spec = to_spec_vector_t $t_as_ntt in
         let r_spec = to_spec_vector_t $r_as_ntt in
         let e2_spec = to_spec_poly_t $error_2 in
         let m_spec = to_spec_poly_t $message in
         let res_spec = to_spec_poly_t $res in
         res_spec == Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #$K tt_spec r_spec) e2_spec) m_spec) /\
-        Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 $res"#)
+        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $res"#)
 )]
 pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     t_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -113,16 +113,16 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"
     Spec.MLKEM.is_rank $K /\
     (forall (i:nat). i < v $K ==>
-        Libcrux_ml_kem.Polynomial.is_bounded_poly 7 (Seq.index ${error_1} i))"#))]
+        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 7) (Seq.index ${error_1} i))"#))]
 #[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Polynomial in
+    fstar!(r#"let open Libcrux_ml_kem.Vector in
         let a_spec = to_spec_matrix_t $a_as_ntt in
         let r_spec = to_spec_vector_t $r_as_ntt in
         let e_spec = to_spec_vector_t $error_1 in
         let res_spec = to_spec_vector_t $res in
         res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
         (forall (i:nat). i < v $K ==>
-            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index $res i))"#)
+            Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index $res i))"#)
 )]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
@@ -154,14 +154,14 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
 #[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Polynomial in
+    fstar!(r#"let open Libcrux_ml_kem.Vector in
         to_spec_vector_t ${t_as_ntt}_future =
              Spec.MLKEM.compute_As_plus_e_ntt
                (to_spec_matrix_t $matrix_A) 
                (to_spec_vector_t $s_as_ntt) 
                (to_spec_vector_t $error_as_ntt) /\
         (forall (i: nat). i < v $K ==>
-            Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index ${t_as_ntt}_future i))"#)
+            Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index ${t_as_ntt}_future i))"#)
 )]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     t_as_ntt: &mut [PolynomialRingElement<Vector>; K],

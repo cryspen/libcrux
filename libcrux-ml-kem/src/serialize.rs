@@ -7,7 +7,7 @@ use crate::{
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector 3328 $a"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector (sz 3328) $a"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) >= 0 /\
     v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array $result) i) < v ${crate::vector::FIELD_MODULUS}"#))]
@@ -17,7 +17,7 @@ pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|result|
     fstar!(r#"$result ==
         Spec.MLKEM.compress_then_encode_message (Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $re)"#)
@@ -28,7 +28,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..16 {
         hax_lib::loop_invariant!(|i: usize| {
-            fstar!("v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re")
+            fstar!("v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re")
         });
         hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
 
@@ -61,7 +61,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|result|
     fstar!(r#"$result ==
         Spec.MLKEM.byte_encode 12 (Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $re)"#)
@@ -75,7 +75,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"v $i >= 0 /\ v $i <= 16 /\
-            v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#
+            v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#
             )
         });
         hax_lib::fstar!(r#"assert (24 * v $i + 24 <= 384)"#);
@@ -128,6 +128,9 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(24).enumerate() {
             let coefficient = Vector::deserialize_12(bytes);
+            hax_lib::fstar!(
+                r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 4095)"#
+        )   ;
             re.coefficients[i] = Vector::cond_subtract_3329(coefficient);
         }
     }
@@ -146,7 +149,7 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 )]
 #[hax_lib::ensures(|result|
     fstar!(r#"forall (i:nat). i < v $K ==>
-        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 (Seq.index $result i)"#)
+        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index $result i)"#)
 )]
 pub(super) fn deserialize_ring_elements_reduced_out<const K: usize, Vector: Operations>(
     public_key: &[u8],
@@ -184,7 +187,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"v $OUT_LEN == 320 /\ Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328  $re"#))]
+#[hax_lib::requires(fstar!(r#"v $OUT_LEN == 320 /\ Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328)  $re"#))]
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
@@ -194,7 +197,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"v $i >= 0 /\ v $i <= 16 /\
-            v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#
+            v $i < 16 ==> Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#
             )
         });
         hax_lib::fstar!(r#"assert (20 * v $i + 20 <= 320)"#);
@@ -225,7 +228,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"(v $COMPRESSION_FACTOR == 10 \/ v $COMPRESSION_FACTOR == 11) /\
-    v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\ Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#))]
+    v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\ Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|result|
     fstar!(r#"$result == Spec.MLKEM.compress_then_byte_encode (v $COMPRESSION_FACTOR)
         (Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $re)"#)
@@ -252,7 +255,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"Seq.length $serialized == 128 /\
-    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#))]
+    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"${serialized_future.len()} == ${serialized.len()}"#)
 )]
@@ -267,7 +270,7 @@ fn compress_then_serialize_4<Vector: Operations>(
             fstar!(
                 r#"v $i >= 0 /\ v $i <= 16 /\
             v $i < 16 ==> (Seq.length serialized == 128 /\ 
-                           Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re)"#
+                           Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re)"#
             )
         });
         hax_lib::fstar!(r#"assert (8 * v $i + 8 <= 128)"#);
@@ -304,7 +307,7 @@ fn compress_then_serialize_5<Vector: Operations>(
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank v_K /\ 
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_V_COMPRESSION_FACTOR v_K /\
     Seq.length $out == v $OUT_LEN /\ v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\
-    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly 3328 $re"#))]
+    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|_|
     fstar!(r#"${out_future.len()} == ${out.len()} /\
         ${out}_future == Spec.MLKEM.compress_then_encode_v #v_K

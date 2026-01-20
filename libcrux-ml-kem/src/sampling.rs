@@ -258,10 +258,8 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires((ETA == 2 || ETA == 3) && randomness.len() == ETA * 64)]
-#[hax_lib::ensures(|result| fstar!(r#"(forall (i:nat). i < 8 ==> Libcrux_ml_kem.Ntt.ntt_layer_7_pre
-    (${result}.f_coefficients.[ sz i ]) (${result}.f_coefficients.[ sz i +! sz 8 ])) /\
-    Libcrux_ml_kem.Polynomial.is_bounded_poly 7 ${result} /\
-    Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result ==
+#[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 7) ${result} /\
+    Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $result ==
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],

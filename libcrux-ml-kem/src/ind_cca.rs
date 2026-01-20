@@ -503,8 +503,8 @@ pub(crate) mod unpacked {
         let unpacked_public_key_future = future(unpacked_public_key);
         {fstar!(r#"let (public_key_hash, (seed, (deserialized_pk, (matrix_A, valid)))) =
             Spec.MLKEM.ind_cca_unpack_public_key $K ${public_key}.f_value in (valid ==>
-            Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.A} == matrix_A) /\
-        Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.t_as_ntt} == deserialized_pk /\
+            Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.A} == matrix_A) /\
+        Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${unpacked_public_key_future.ind_cpa_public_key.t_as_ntt} == deserialized_pk /\
         ${unpacked_public_key_future.ind_cpa_public_key.seed_for_A} == seed /\
         ${unpacked_public_key_future.public_key_hash} == public_key_hash"#)}})
     ]
@@ -546,13 +546,13 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
+                Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index 
                     ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
             fstar!(r#"let ${self_} = self in            
             ${serialized}_future.f_value == 
                 Seq.append (Spec.MLKEM.vector_encode_12 #$K
-                    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
+                    (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector
                         ${self_.ind_cpa_public_key.t_as_ntt}))
                 ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
@@ -573,12 +573,12 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index
+                Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index
                     ${self_.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
             fstar!(r#"let ${self_} = self in
             ${res.value} == Seq.append (Spec.MLKEM.vector_encode_12 #$K
-                            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
+                            (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector
                                 ${self_.ind_cpa_public_key.t_as_ntt}))
                         ${self_.ind_cpa_public_key.seed_for_A})"#)
         )]
@@ -689,13 +689,13 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
+                Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index 
                     ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|_|
             fstar!(r#"let ${self_} = self in
             ${serialized}_future.f_value == 
                 Seq.append (Spec.MLKEM.vector_encode_12 #$K
-                    (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
+                    (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector
                         ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
                 ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
@@ -713,12 +713,12 @@ pub(crate) mod unpacked {
         Spec.MLKEM.is_rank $K /\
             $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
             (forall (i:nat). i < v $K ==>
-                Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index
+                Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index
                     ${self_.public_key.ind_cpa_public_key.t_as_ntt} i))"#))]
         #[ensures(|res|
             fstar!(r#"let ${self_} = self in
             ${res}.f_value == Seq.append (Spec.MLKEM.vector_encode_12 #$K
-                            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector
+                            (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector
                                 ${self_.public_key.ind_cpa_public_key.t_as_ntt}))
                         ${self_.public_key.ind_cpa_public_key.seed_for_A})"#)
         )]
@@ -861,7 +861,7 @@ pub(crate) mod unpacked {
     #[hax_lib::ensures(|result|
         fstar!(r#"let ((m_A, public_key_hash), implicit_rejection_value), valid =
             Spec.MLKEM.ind_cca_unpack_generate_keypair $K $randomness in
-        valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector
+        valid ==> Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector
             ${out}_future.f_public_key.f_ind_cpa_public_key.f_A == m_A /\
         ${out}_future.f_public_key.f_public_key_hash == public_key_hash /\
         ${out}_future.f_private_key.f_implicit_rejection_value == implicit_rejection_value"#))
@@ -895,8 +895,8 @@ pub(crate) mod unpacked {
             r#"let (ind_cpa_keypair_randomness, _) = split $randomness Spec.MLKEM.v_CPA_KEY_GENERATION_SEED_SIZE in
         let ((((_, _), matrix_A_as_ntt), _), sufficient_randomness) =
             Spec.MLKEM.ind_cpa_generate_keypair_unpacked $K ind_cpa_keypair_randomness in
-        let m_v_A = Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector $A in
-        let m_f_A = Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector out.f_public_key.f_ind_cpa_public_key.f_A in
+        let m_v_A = Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector $A in
+        let m_f_A = Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector out.f_public_key.f_ind_cpa_public_key.f_A in
         let m_A:Spec.MLKEM.matrix $K = createi $K (Spec.MLKEM.matrix_A_as_ntt_i matrix_A_as_ntt) in
         assert (forall (i: nat). i < v $K ==>
             (forall (j: nat). j < v $K ==>
@@ -937,8 +937,8 @@ pub(crate) mod unpacked {
     #[hax_lib::ensures(|(ciphertext_result, shared_secret_array)|
         fstar!(r#"let (ciphertext, shared_secret) =
             Spec.MLKEM.ind_cca_unpack_encapsulate $K ${public_key}.f_public_key_hash
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${public_key.ind_cpa_public_key.t_as_ntt})
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key.ind_cpa_public_key.A})
+            (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${public_key.ind_cpa_public_key.t_as_ntt})
+            (Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector ${public_key.ind_cpa_public_key.A})
             $randomness in
         ${ciphertext_result}.f_value == ciphertext /\
         $shared_secret_array == shared_secret"#))
@@ -1031,9 +1031,9 @@ pub(crate) mod unpacked {
             Spec.MLKEM.ind_cca_unpack_decapsulate $K ${key_pair.public_key.public_key_hash}
             ${key_pair.private_key.implicit_rejection_value}
             ${ciphertext.value}
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair.private_key.ind_cpa_private_key.secret_as_ntt})
-            (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.t_as_ntt})
-            (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.A})"#))
+            (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${key_pair.private_key.ind_cpa_private_key.secret_as_ntt})
+            (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.t_as_ntt})
+            (Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector ${key_pair.public_key.ind_cpa_public_key.A})"#))
     ]
     pub(crate) fn decapsulate<
         const K: usize,
