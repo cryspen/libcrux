@@ -74,8 +74,18 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         state: KeccakXofState<1, 168, u64>,
     }
 
+    /// CSHAKE128 Iterative state
+    pub struct CShake128It {
+        state: KeccakXofState<1, 168, u64>,
+    }
+
     /// SHAKE256 Xof state
     pub struct Shake256Xof {
+        state: KeccakXofState<1, 136, u64>,
+    }
+
+    /// CSHAKE256 Iterative state
+    pub struct CShake256It {
         state: KeccakXofState<1, 136, u64>,
     }
 
@@ -115,6 +125,26 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
     }
 
+    impl CShake128It {
+        /// CShake128 new state
+        pub fn new() -> Self {
+            Self {
+                state: KeccakXofState::<1, 168, u64>::new(),
+            }
+        }
+
+        /// CShake128 absorb
+        pub fn absorb(&mut self, input: &[u8]) {
+            self.state.absorb(&[input]);
+        }
+
+        /// CShake128 absorb final
+        pub fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+            self.state.absorb_final::<0x4u8>(&[input]);
+            self.state.squeeze(out);
+        }
+    }
+
     /// Shake256 XOF in absorb state
     impl Xof<136> for Shake256Xof {
         /// Shake256 new state
@@ -136,6 +166,26 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
 
         /// Shake256 squeeze
         fn squeeze(&mut self, out: &mut [u8]) {
+            self.state.squeeze(out);
+        }
+    }
+
+    impl CShake256It {
+        /// CShake256 new state
+        pub fn new() -> Self {
+            Self {
+                state: KeccakXofState::<1, 136, u64>::new(),
+            }
+        }
+
+        /// CShake256 absorb
+        pub fn absorb(&mut self, input: &[u8]) {
+            self.state.absorb(&[input]);
+        }
+
+        /// CShake256 absorb final
+        pub fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+            self.state.absorb_final::<0x4u8>(&[input]);
             self.state.squeeze(out);
         }
     }
