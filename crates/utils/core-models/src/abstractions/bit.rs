@@ -17,7 +17,7 @@
 //! # Examples
 //!
 //! ```rust
-//! use ore_models::abstractions::bit::{Bit, MachineInteger};
+//! use core_models::abstractions::bit::{Bit, MachineInteger};
 //!
 //! // Extract the 3rd bit (0-indexed) from an integer.
 //! let bit = Bit::of_int(42, 2);
