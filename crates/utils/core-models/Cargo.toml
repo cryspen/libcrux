@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-core-models"
+name = "core-models"
 description = "Models of the Rust core library"
 version = "0.0.4"
 readme = "readme.md"
