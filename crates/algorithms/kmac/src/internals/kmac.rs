@@ -55,7 +55,8 @@ pub fn compute_kmac_128<'a>(
     let tag_length = tag_length << 3;
 
     // Assert RATE can be casted to u8
-    const { assert!(RATE < 256) };
+    // XXX: Unfortunately const blocks are not supported by hax.
+    // const { assert!(RATE < 256) };
 
     // Left bytepad
     state.absorb(&left_encode_byte(RATE as u8));
@@ -118,7 +119,8 @@ pub fn compute_kmac_256<'a>(
     let mut b = [0u8; 9];
 
     // Assert RATE can be casted to u8
-    const { assert!(RATE < 256) };
+    // XXX: Unfortunately const blocks are not supported by hax.
+    // const { assert!(RATE < 256) };
 
     // Left bytepad
     state.absorb(&left_encode_byte(RATE as u8));
