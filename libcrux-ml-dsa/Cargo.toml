@@ -1,7 +1,7 @@
 [package]
 name = "libcrux-ml-dsa"
 description = "Libcrux ML-DSA implementation"
-version = "0.0.6-pre.1"
+version = "0.0.6"
 readme = "README.md"
 
 authors.workspace = true
@@ -43,7 +43,7 @@ libcrux-kats = { path = "../crates/testing/kats", features = [
 pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
 [target.'cfg(hax)'.dependencies]
-core-models = { path = "../crates/utils/core-models", version = "0.0.5-pre.1" }
+core-models = { path = "../crates/utils/core-models", version = "0.0.5" }
 
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]

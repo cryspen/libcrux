@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [#1297](https://github.com/cryspen/libcrux/pull/1297): Update dependencies
 - [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependency `libcrux-sha3`
 
 ## [0.0.4] (2025-11-05)
