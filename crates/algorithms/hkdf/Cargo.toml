@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-hkdf"
-version = "0.0.4"
+version = "0.0.5-pre.1"
 description = "Libcrux HKDF implementation"
 readme = "Readme.md"
 
