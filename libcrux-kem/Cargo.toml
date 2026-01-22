@@ -20,9 +20,9 @@ libcrux-ml-kem = { version = "=0.0.6-pre.1", path = "../libcrux-ml-kem", default
     "default-no-std",
 ] }
 libcrux-sha3.workspace = true
-libcrux-ecdh = { version = "=0.0.4", path = "../libcrux-ecdh", default-features = false }
-libcrux-curve25519 = { version = "=0.0.4", path = "../crates/algorithms/curve25519", default-features = false }
-libcrux-p256 = { version = "=0.0.4", path = "../crates/algorithms/p256", default-features = false }
+libcrux-ecdh = { version = "=0.0.5-pre.1", path = "../libcrux-ecdh", default-features = false }
+libcrux-curve25519 = { version = "=0.0.5-pre.1", path = "../crates/algorithms/curve25519", default-features = false }
+libcrux-p256 = { version = "=0.0.5-pre.1", path = "../crates/algorithms/p256", default-features = false }
 libcrux-traits.workspace = true
 rand = { version = "0.9", default-features = false }
 tls_codec = { version = "0.4.2", features = [

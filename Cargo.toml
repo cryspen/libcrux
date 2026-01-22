@@ -65,7 +65,7 @@ libcrux-hkdf = { version = "=0.0.4", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.5-pre.1", path = "crates/algorithms/hmac" }
 libcrux-sha2 = { version = "=0.0.5-pre.1", path = "crates/algorithms/sha2" }
 libcrux-ed25519 = { version = "=0.0.4", path = "crates/algorithms/ed25519" }
-libcrux-ecdh = { version = "=0.0.4", path = "libcrux-ecdh" }
+libcrux-ecdh = { version = "=0.0.5-pre.1", path = "libcrux-ecdh" }
 libcrux-ml-kem = { version = "=0.0.6-pre.1", path = "libcrux-ml-kem" }
 libcrux-sha3 = { version = "=0.0.6-pre.1", path = "crates/algorithms/sha3" }
 libcrux-kem = { version = "=0.0.5-pre.1", path = "libcrux-kem" }

@@ -11,7 +11,7 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-p256 = { version = "=0.0.4", path = "../p256", features = [
+libcrux-p256 = { version = "=0.0.5-pre.1", path = "../p256", features = [
     "expose-hacl",
 ] }
 libcrux-sha2.workspace = true
