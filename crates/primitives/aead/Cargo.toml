@@ -11,8 +11,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-chacha20poly1305 = { version = "0.0.5-pre.1", path = "../../algorithms/chacha20poly1305", optional = true }
-libcrux-aesgcm = { version = "0.0.6-pre.1", path = "../../algorithms/aesgcm", optional = true }
+libcrux-chacha20poly1305 = { version = "0.0.5", path = "../../algorithms/chacha20poly1305", optional = true }
+libcrux-aesgcm = { version = "0.0.6", path = "../../algorithms/aesgcm", optional = true }
 libcrux-secrets.workspace = true
 libcrux-traits = { workspace = true, optional = true }
 
