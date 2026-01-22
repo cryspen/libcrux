@@ -50,6 +50,13 @@ impl AsRef<[u8]> for DHPublicKey {
     }
 }
 
+/// Import a Diffie-Hellman public key from raw bytes.
+impl DHPublicKey {
+    pub fn from_bytes(value: &[u8; 32]) -> Self {
+        Self(Vec::from(value))
+    }
+}
+
 /// A wrapper around a KEM private key.
 pub struct DHPrivateKey(Vec<u8>);
 
@@ -85,6 +92,16 @@ impl DHPrivateKey {
                 .expect("secret key is honestly generated X25519 key"),
         )
     }
+
+    /// Import a Diffie-Hellman private key from raw bytes.
+    pub fn from_bytes(value: &[u8; 32]) -> Result<Self, Error> {
+        // Test whether the key is already clamped to make sure it can't be misused.
+        if value[0] & 7 != 0 || value[31] & 128 != 0 || value[31] & 64 != 1 {
+            Err(Error::InvalidDHSecret)
+        } else {
+            Ok(Self(Vec::from(value)))
+        }
+    }
 }
 
 /// A wrapper for Diffie-Hellman key pairs.
@@ -102,10 +119,21 @@ impl ProvideAuthenticator for DHKeyPair {
 }
 
 impl DHKeyPair {
-    /// Generate a fresh Diffie-Hellman key pair
+    /// Generate a fresh Diffie-Hellman key pair.
     pub fn new(rng: &mut impl CryptoRng) -> Self {
         let sk = DHPrivateKey::new(rng);
         let pk = sk.to_public();
         Self { sk, pk }
+    }
+}
+
+impl From<DHPrivateKey> for DHKeyPair {
+    /// Derive a Diffie-Hellman public key from a private key
+    /// and build a wrapper around both.
+    fn from(sk: DHPrivateKey) -> Self {
+        Self {
+            pk: sk.to_public(),
+            sk: sk,
+        }
     }
 }
