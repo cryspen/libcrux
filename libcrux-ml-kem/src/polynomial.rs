@@ -58,6 +58,7 @@ pub(crate) mod spec {
         )
     }
 
+
     #[hax_lib::requires(is_bounded_vector(b1, vec).and(b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
@@ -227,42 +228,27 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// sum of their constituent coefficients.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"
-        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-         (let lhs_i = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz i ]) in
-          let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
-          Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
-#[hax_lib::ensures(|_| fstar!(r#"
-        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-         (let lhs_i = i0._super_6081346371236564305.f_repr (${myself}.f_coefficients.[ sz i ]) in
-          let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
-          let result_i = i0._super_6081346371236564305.f_repr (${myself}_future.f_coefficients.[ sz i ]) in
-          Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
-fn add_to_ring_element<Vector: Operations, const K: usize>(
+#[hax_lib::requires((_bound <= 4* 3328).to_prop().and(spec::is_bounded_poly(_bound, &myself).and(spec::is_bounded_poly(3328, &rhs))))]
+#[hax_lib::ensures(|_| spec::is_bounded_poly(_bound+3328, &future(myself)))]
+fn add_to_ring_element<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
+    _bound: usize, // Used to state properties about the bound on myself
 ) {
-    #[cfg(hax)]
-    let _myself = myself.coefficients;
-
-    for i in 0..myself.coefficients.len() {
+    for i in 0..16 {
         hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
             if j < 16 {
                 if j < i {
-                    crate::vector::traits::spec::add_post(
-                        &_myself[j].repr(),
-                        &rhs.coefficients[j].repr(),
-                        &myself.coefficients[j].repr(),
-                    )
+                    spec::is_bounded_vector(_bound + 3328, &myself.coefficients[j])
                 } else {
-                    spec::are_eq_vectors(&myself.coefficients[j], &_myself[j])
+                    spec::is_bounded_vector(_bound, &myself.coefficients[j])
                 }
             } else {
                 true.to_prop()
             }
         }));
 
-        myself.coefficients[i] = Vector::add(myself.coefficients[i], &rhs.coefficients[i]);
+        myself.coefficients[i] = add_bounded(myself.coefficients[i], _bound, &rhs.coefficients[i], 3328);
     }
 }
 
@@ -279,10 +265,10 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
                 if j < i {
                     spec::is_bounded_vector(3328, &myself.coefficients[j])
                 } else {
-                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                    spec::is_bounded_vector(28296, &myself.coefficients[j])
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
@@ -307,10 +293,10 @@ fn subtract_reduce<Vector: Operations>(
                 if j < i {
                     spec::is_bounded_vector(3328, &b.coefficients[j])
                 } else {
-                    fstar!(r#"${b}.f_coefficients.[ j ] == ${_b}.[ j ]"#)
+                    true.to_prop()
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
@@ -355,10 +341,10 @@ fn add_message_error_reduce<Vector: Operations>(
                 if j < i {
                     spec::is_bounded_vector(3328, &result.coefficients[j])
                 } else {
-                    fstar!(r#"${result}.f_coefficients.[ j ] == ${_result}.[ j ]"#)
+                    spec::is_bounded_vector(3328, &myself.coefficients[j])
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
@@ -406,10 +392,10 @@ fn add_error_reduce<Vector: Operations>(
                 if j < i {
                     spec::is_bounded_vector(3328, &myself.coefficients[j])
                 } else {
-                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                    true.to_prop()
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
@@ -426,9 +412,10 @@ fn add_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (i0._super_6081346371236564305.f_repr ${result}) /\
-                (forall i. i < 16 ==> ((v (Seq.index (i0._super_6081346371236564305.f_repr ${result}) i) % 3329)==
-                                       (v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}) i) * 1353 * 169) % 3329))"#))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(3328, &result).and(
+                                hax_lib::fstar_prop_expr!(r#"(forall i. i < 16 ==> 
+                                       ((v (Seq.index (i0._super_6081346371236564305.f_repr ${result}) i) % 3329)==
+                                       (v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}) i) * 1353 * 169) % 3329))"#)))]
 fn to_standard_domain<T: Operations>(vector: T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
@@ -450,10 +437,10 @@ fn add_standard_error_reduce<Vector: Operations>(
                 if j < i {
                     spec::is_bounded_vector(3328, &myself.coefficients[j])
                 } else {
-                    fstar!(r#"${myself}.f_coefficients.[ j ] == ${_myself}.[ j ]"#)
+                    true.to_prop()
                 }
             } else {
-                fstar!(r#"True"#)
+                true.to_prop()
             }
         }));
 
@@ -580,19 +567,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
-    #[requires(fstar!(r#"
-        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-            (let lhs_i = i0._super_6081346371236564305.f_repr (self.f_coefficients.[ sz i ]) in
-            let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
-            Libcrux_ml_kem.Vector.Traits.Spec.add_pre lhs_i rhs_i)"#))]
-    #[ensures(|_| fstar!(r#"
-        forall (i:nat). i < v ${VECTORS_IN_RING_ELEMENT} ==>
-            (let lhs_i = i0._super_6081346371236564305.f_repr (self.f_coefficients.[ sz i ]) in
-            let rhs_i = i0._super_6081346371236564305.f_repr (${rhs}.f_coefficients.[ sz i ]) in
-            let result_i = i0._super_6081346371236564305.f_repr (self_e_future.f_coefficients.[ sz i ]) in
-            Libcrux_ml_kem.Vector.Traits.Spec.add_post lhs_i rhs_i result_i)"#))]
-    pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
-        add_to_ring_element::<Vector, K>(self, rhs);
+    #[hax_lib::requires((_b <= 4* 3328).to_prop().and(spec::is_bounded_poly(_b, &self).and(spec::is_bounded_poly(3328, &rhs))))]
+    #[hax_lib::ensures(|_| spec::is_bounded_poly(_b + 3328, &future(self)))]
+    pub(crate) fn add_to_ring_element(&mut self, rhs: &Self, _b: usize) {
+        add_to_ring_element::<Vector>(self, rhs, _b);
     }
 
     #[inline(always)]

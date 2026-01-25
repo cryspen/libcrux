@@ -286,7 +286,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, re))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)))]
 // #[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector ${re}_future ==

@@ -1,6 +1,6 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
-    polynomial::PolynomialRingElement, vector::Operations,
+    polynomial::{spec, PolynomialRingElement}, vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -72,6 +72,8 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                                spec::is_bounded_poly(3328, &result[i]))))]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seeds: &[[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {

@@ -1,42 +1,82 @@
 use crate::{
     hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
-    polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,
+    polynomial::{spec, PolynomialRingElement}, sampling::sample_from_xof, vector::Operations,
 };
+
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
 
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"let (matrix_A, valid) = Spec.MLKEM.sample_matrix_A_ntt (Seq.slice $seed 0 32) in
-        valid ==> (
-        if $transpose then Libcrux_ml_kem.Vector.to_spec_matrix_t ${A_transpose}_future == matrix_A
-        else Libcrux_ml_kem.Vector.to_spec_matrix_t ${A_transpose}_future == Spec.MLKEM.matrix_transpose matrix_A)"#)
-)]
+#[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning")]
+#[hax_lib::requires(K <= 4)]
+#[hax_lib::ensures(|res| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                            hax_lib::forall(|j:usize| hax_lib::implies(j < K, 
+                                spec::is_bounded_poly(3328, &(future(A_transpose)[i][j])))))))]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
     seed: &[u8; 34],
     transpose: bool,
 ) {
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| 
+            if transpose {
+                hax_lib::forall(|k: usize| hax_lib::implies(k < K,
+                    hax_lib::forall(|l: usize| hax_lib::implies(l < K,
+                        if k < i {
+                            spec::is_bounded_poly(3328, &A_transpose[l][k])
+                        } else {
+                            true.to_prop()
+                        }
+                    ))))
+            } else {
+                hax_lib::forall(|k: usize| hax_lib::implies(k < K,
+                    hax_lib::forall(|l: usize| hax_lib::implies(l < K,
+                        if k < i {
+                            spec::is_bounded_poly(3328, &A_transpose[k][l])
+                        } else {
+                            true.to_prop()
+                        }
+                    ))))
+            }
+        );
+
         let mut seeds = [seed.clone(); K];
         for j in 0..K {
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
         let sampled = sample_from_xof::<K, Vector, Hasher>(&seeds);
-        cloop! {
-            for (j, sample) in sampled.into_iter().enumerate() {
-                // A[i][j] = A_transpose[j][i]
+        for j in 0..K {
+            hax_lib::loop_invariant!(|j: usize| 
                 if transpose {
-                    A_transpose[j][i] = sample;
-                } else {
-                    A_transpose[i][j] = sample;
+                    hax_lib::forall(|k: usize| hax_lib::implies(k < K,
+                        hax_lib::forall(|l: usize| hax_lib::implies(l < K,
+                            if k < i || (k == i && l < j) {
+                                spec::is_bounded_poly(3328, &A_transpose[l][k])
+                            } else {
+                                true.to_prop()
+                            }
+                        ))))
                 }
+                else {
+                    hax_lib::forall(|k: usize| hax_lib::implies(k < K,
+                        hax_lib::forall(|l: usize| hax_lib::implies(l < K,
+                            if k < i || (k == i && l < j) {
+                                spec::is_bounded_poly(3328, &A_transpose[k][l])
+                            } else {
+                                true.to_prop()
+                            }
+                        ))))
+                });
+            // A[i][j] = A_transpose[j][i]
+            if transpose {
+                A_transpose[j][i] = sampled[j];
+            } else {
+                A_transpose[i][j] = sampled[j];
             }
         }
     }
-    ()
 }
 
 /// The following functions compute various expressions involving
@@ -45,17 +85,13 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 
 /// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Vector in
-        let secret_spec = to_spec_vector_t $secret_as_ntt in
-        let u_spec = to_spec_vector_t $u_as_ntt in
-        let v_spec = to_spec_poly_t $v in
-        to_spec_poly_t $res ==
-            Spec.MLKEM.(poly_sub v_spec (poly_inv_ntt (vector_dot_product_ntt #$K secret_spec u_spec))) /\
-        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $res"#)
-)]
+#[hax_lib::requires((K <= 4).to_prop().and(
+        spec::is_bounded_poly(4095, v).and(
+            hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                spec::is_bounded_poly(3328, &secret_as_ntt[i]).and(
+                    spec::is_bounded_poly(3328, &u_as_ntt[i])
+))))))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
 pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     v: &PolynomialRingElement<Vector>,
     secret_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -63,9 +99,13 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 ) -> PolynomialRingElement<Vector> {
     let mut result = PolynomialRingElement::<Vector>::ZERO();
 
+    hax_lib::assert_prop!(spec::is_bounded_poly(0, &result));
+
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| spec::is_bounded_poly(i * 3328, &result));
+        
         let product = secret_as_ntt[i].ntt_multiply(&u_as_ntt[i]);
-        result.add_to_ring_element::<K>(&product);
+        result.add_to_ring_element(&product, i * 3328);
     }
 
     invert_ntt_montgomery::<K, Vector>(&mut result);
@@ -98,7 +138,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 
     for i in 0..K {
         let product = t_as_ntt[i].ntt_multiply(&r_as_ntt[i]);
-        result.add_to_ring_element::<K>(&product);
+        result.add_to_ring_element(&product, i * 3328);
     }
 
     invert_ntt_montgomery::<K, Vector>(&mut result);
@@ -136,7 +176,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
             cloop! {
                 for (j, a_element) in row.iter().enumerate() {
                     let product = a_element.ntt_multiply(&r_as_ntt[j]);
-                    result[i].add_to_ring_element::<K>(&product);
+                    result[i].add_to_ring_element(&product, j * 3328);
                 }
             }
 
@@ -177,7 +217,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
             cloop! {
                 for (j, matrix_element) in row.iter().enumerate() {
                     let product = matrix_element.ntt_multiply(&s_as_ntt[j]);
-                    t_as_ntt[i].add_to_ring_element::<K>(&product);
+                    t_as_ntt[i].add_to_ring_element(&product, j * 3328);
                 }
             }
             t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
