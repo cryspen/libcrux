@@ -1,6 +1,9 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
-    polynomial::{spec, PolynomialRingElement}, vector::Operations,
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    hash_functions::*,
+    helper::cloop,
+    polynomial::{spec, PolynomialRingElement},
+    vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function

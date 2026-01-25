@@ -1,6 +1,10 @@
 use crate::{
-    hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
-    polynomial::{spec, PolynomialRingElement}, sampling::sample_from_xof, vector::Operations,
+    hash_functions::Hash,
+    helper::cloop,
+    invert_ntt::invert_ntt_montgomery,
+    polynomial::{spec, PolynomialRingElement},
+    sampling::sample_from_xof,
+    vector::Operations,
 };
 
 #[cfg(hax)]
@@ -11,7 +15,7 @@ use hax_lib::prop::ToProp;
 #[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning")]
 #[hax_lib::requires(K <= 4)]
 #[hax_lib::ensures(|res| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
-                            hax_lib::forall(|j:usize| hax_lib::implies(j < K, 
+                            hax_lib::forall(|j:usize| hax_lib::implies(j < K,
                                 spec::is_bounded_poly(3328, &(future(A_transpose)[i][j])))))))]
 pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     A_transpose: &mut [[PolynomialRingElement<Vector>; K]; K],
@@ -19,27 +23,39 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
     transpose: bool,
 ) {
     for i in 0..K {
-        hax_lib::loop_invariant!(|i: usize| 
-            if transpose {
-                hax_lib::forall(|k: usize| hax_lib::implies(k < K,
-                    hax_lib::forall(|l: usize| hax_lib::implies(l < K,
-                        if k < i {
-                            spec::is_bounded_poly(3328, &A_transpose[l][k])
-                        } else {
-                            true.to_prop()
-                        }
-                    ))))
-            } else {
-                hax_lib::forall(|k: usize| hax_lib::implies(k < K,
-                    hax_lib::forall(|l: usize| hax_lib::implies(l < K,
-                        if k < i {
-                            spec::is_bounded_poly(3328, &A_transpose[k][l])
-                        } else {
-                            true.to_prop()
-                        }
-                    ))))
-            }
-        );
+        hax_lib::loop_invariant!(|i: usize| if transpose {
+            hax_lib::forall(|k: usize| {
+                hax_lib::implies(
+                    k < K,
+                    hax_lib::forall(|l: usize| {
+                        hax_lib::implies(
+                            l < K,
+                            if k < i {
+                                spec::is_bounded_poly(3328, &A_transpose[l][k])
+                            } else {
+                                true.to_prop()
+                            },
+                        )
+                    }),
+                )
+            })
+        } else {
+            hax_lib::forall(|k: usize| {
+                hax_lib::implies(
+                    k < K,
+                    hax_lib::forall(|l: usize| {
+                        hax_lib::implies(
+                            l < K,
+                            if k < i {
+                                spec::is_bounded_poly(3328, &A_transpose[k][l])
+                            } else {
+                                true.to_prop()
+                            },
+                        )
+                    }),
+                )
+            })
+        });
 
         let mut seeds = [seed.clone(); K];
         for j in 0..K {
@@ -48,27 +64,39 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
         }
         let sampled = sample_from_xof::<K, Vector, Hasher>(&seeds);
         for j in 0..K {
-            hax_lib::loop_invariant!(|j: usize| 
-                if transpose {
-                    hax_lib::forall(|k: usize| hax_lib::implies(k < K,
-                        hax_lib::forall(|l: usize| hax_lib::implies(l < K,
-                            if k < i || (k == i && l < j) {
-                                spec::is_bounded_poly(3328, &A_transpose[l][k])
-                            } else {
-                                true.to_prop()
-                            }
-                        ))))
-                }
-                else {
-                    hax_lib::forall(|k: usize| hax_lib::implies(k < K,
-                        hax_lib::forall(|l: usize| hax_lib::implies(l < K,
-                            if k < i || (k == i && l < j) {
-                                spec::is_bounded_poly(3328, &A_transpose[k][l])
-                            } else {
-                                true.to_prop()
-                            }
-                        ))))
-                });
+            hax_lib::loop_invariant!(|j: usize| if transpose {
+                hax_lib::forall(|k: usize| {
+                    hax_lib::implies(
+                        k < K,
+                        hax_lib::forall(|l: usize| {
+                            hax_lib::implies(
+                                l < K,
+                                if k < i || (k == i && l < j) {
+                                    spec::is_bounded_poly(3328, &A_transpose[l][k])
+                                } else {
+                                    true.to_prop()
+                                },
+                            )
+                        }),
+                    )
+                })
+            } else {
+                hax_lib::forall(|k: usize| {
+                    hax_lib::implies(
+                        k < K,
+                        hax_lib::forall(|l: usize| {
+                            hax_lib::implies(
+                                l < K,
+                                if k < i || (k == i && l < j) {
+                                    spec::is_bounded_poly(3328, &A_transpose[k][l])
+                                } else {
+                                    true.to_prop()
+                                },
+                            )
+                        }),
+                    )
+                })
+            });
             // A[i][j] = A_transpose[j][i]
             if transpose {
                 A_transpose[j][i] = sampled[j];
@@ -103,7 +131,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 
     for i in 0..K {
         hax_lib::loop_invariant!(|i: usize| spec::is_bounded_poly(i * 3328, &result));
-        
+
         let product = secret_as_ntt[i].ntt_multiply(&u_as_ntt[i]);
         result.add_to_ring_element(&product, i * 3328);
     }

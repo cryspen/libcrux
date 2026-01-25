@@ -58,7 +58,6 @@ pub(crate) mod spec {
         )
     }
 
-
     #[hax_lib::requires(is_bounded_vector(b1, vec).and(b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
@@ -248,7 +247,8 @@ fn add_to_ring_element<Vector: Operations>(
             }
         }));
 
-        myself.coefficients[i] = add_bounded(myself.coefficients[i], _bound, &rhs.coefficients[i], 3328);
+        myself.coefficients[i] =
+            add_bounded(myself.coefficients[i], _bound, &rhs.coefficients[i], 3328);
     }
 }
 
