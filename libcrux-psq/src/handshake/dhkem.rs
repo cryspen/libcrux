@@ -96,7 +96,7 @@ impl DHPrivateKey {
     /// Import a Diffie-Hellman private key from raw bytes.
     pub fn from_bytes(value: &[u8; 32]) -> Result<Self, Error> {
         // Test whether the key is already clamped to make sure it can't be misused.
-        if value[0] & 7 != 0 || value[31] & 128 != 0 || value[31] & 64 != 64 {
+        if !libcrux_ecdh::validate_scalar(libcrux_ecdh::Algorithm::X25519, value).is_ok() {
             Err(Error::InvalidDHSecret)
         } else {
             Ok(Self(Vec::from(value)))
