@@ -1,9 +1,6 @@
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    hash_functions::*,
-    helper::cloop,
-    polynomial::PolynomialRingElement,
-    vector::Operations,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, helper::cloop,
+    polynomial::PolynomialRingElement, vector::Operations,
 };
 
 #[cfg(hax)]

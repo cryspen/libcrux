@@ -276,7 +276,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_7(re);
 
     let mut zeta_i = 1;
-    
+
     #[cfg(hax)]
     spec::is_bounded_poly_higher(re, 4803, 2 * 3328);
 
@@ -316,7 +316,7 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
     ntt_at_layer_2(&mut zeta_i, re, 6 * 3328);
     ntt_at_layer_1(&mut zeta_i, re, 7 * 3328);
 
-     #[cfg(hax)]
+    #[cfg(hax)]
     spec::is_bounded_poly_higher(re, 8 * 3328, 28296);
 
     re.poly_barrett_reduce()

@@ -324,7 +324,7 @@ fn subtract_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
 
         let diff = sub_bounded(myself.coefficients[i], 4095, &coefficient_normal_form, 3328);
-        
+
         #[cfg(hax)]
         spec::is_bounded_vector_higher(&diff, 7423, 28296);
 
@@ -423,7 +423,7 @@ fn add_error_reduce<Vector: Operations>(
         hax_lib::assert_prop!(spec::is_bounded_vector(3335, &sum));
         #[cfg(hax)]
         spec::is_bounded_vector_higher(&sum, 3335, 28296);
-        
+
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;
@@ -472,7 +472,7 @@ fn add_standard_error_reduce<Vector: Operations>(
         hax_lib::assert_prop!(spec::is_bounded_vector(6656, &sum));
         #[cfg(hax)]
         spec::is_bounded_vector_higher(&sum, 6656, 28296);
-        
+
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;

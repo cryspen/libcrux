@@ -1,9 +1,6 @@
 use crate::{
-    hash_functions::Hash,
-    invert_ntt::invert_ntt_montgomery,
-    polynomial::PolynomialRingElement,
-    sampling::sample_from_xof,
-    vector::Operations,
+    hash_functions::Hash, invert_ntt::invert_ntt_montgomery, polynomial::PolynomialRingElement,
+    sampling::sample_from_xof, vector::Operations,
 };
 
 #[cfg(hax)]
