@@ -5,7 +5,8 @@
 
 use classic_mceliece_rust::{
     decapsulate_boxed, encapsulate_boxed, keypair_boxed, Ciphertext as Ct, PublicKey as Pk,
-    SecretKey as Sk, SharedSecret as Ss,
+    SecretKey as Sk, SharedSecret as Ss, CRYPTO_PUBLICKEYBYTES as MCELIECE_PUBLIC_KEY_LEN,
+    CRYPTO_SECRETKEYBYTES as MCELIECE_SECRET_KEY_LEN,
 };
 
 use libcrux_traits::kem::{KEMError, KeyPair as KEMKeyPair, KEM};
@@ -48,8 +49,31 @@ impl Size for Ciphertext {
 /// A wrapper around the `classic_mceliece_rust` type `PublicKey`.
 pub struct PublicKey(pub(crate) Pk<'static>);
 
+impl From<Box<[u8; MCELIECE_PUBLIC_KEY_LEN]>> for PublicKey {
+    fn from(value: Box<[u8; MCELIECE_PUBLIC_KEY_LEN]>) -> Self {
+        Self(Pk::from(value))
+    }
+}
+
+impl AsRef<[u8]> for PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
 /// A wrapper around the `classic_mceliece_rust` type `SecretKey`.
 pub struct SecretKey(pub(crate) Sk<'static>);
+
+impl AsRef<[u8]> for SecretKey {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+impl From<Box<[u8; MCELIECE_SECRET_KEY_LEN]>> for SecretKey {
+    fn from(value: Box<[u8; MCELIECE_SECRET_KEY_LEN]>) -> Self {
+        Self(Sk::from(value))
+    }
+}
 
 /// A key pair wrapper type.
 pub struct KeyPair {
