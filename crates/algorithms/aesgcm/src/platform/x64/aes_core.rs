@@ -1,12 +1,10 @@
-use core::arch::x86_64::*;
-
 use libcrux_intrinsics::avx2::{
     mm_aesenc_si128, mm_aesenclast_si128, mm_aeskeygenassist_si128, mm_loadu_si128,
-    mm_setzero_si128, mm_shuffle_epi32, mm_slli_si128, mm_storeu_si128_u8, mm_xor_si128,
+    mm_setzero_si128, mm_shuffle_epi32, mm_slli_si128, mm_storeu_si128_u8, mm_xor_si128, Vec128,
 };
 
 /// The avx2 state.
-pub(crate) type State = __m128i;
+pub(crate) type State = Vec128;
 
 #[inline]
 fn new_state() -> State {
@@ -120,22 +118,21 @@ impl crate::platform::AESState for State {
 }
 
 #[cfg(feature = "std")]
-#[allow(unsafe_code)]
 #[test]
 fn test() {
-    unsafe {
-        let x = _mm_set_epi32(3, 2, 1, 0);
-        let y = _mm_shuffle_epi32(x, 0xaa);
-        let w = _mm_slli_si128(x, 4);
-        let mut z: [i32; 4] = [0; 4];
-        _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, x);
+    use libcrux_intrinsics::avx2::{mm_set_epi32, mm_storeu_si128_i32};
 
-        std::eprintln!("{:?}", z);
-        _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, w);
+    let x = mm_set_epi32(3, 2, 1, 0);
+    let y = mm_shuffle_epi32::<0xaa>(x);
+    let w = mm_slli_si128::<4>(x);
+    let mut z: [i32; 4] = [0; 4];
+    mm_storeu_si128_i32(&mut z, x);
 
-        std::eprintln!("shift right 4 {:?}", z);
-        _mm_storeu_si128(z.as_mut_ptr() as *mut __m128i, y);
+    std::eprintln!("{:?}", z);
+    mm_storeu_si128_i32(&mut z, w);
 
-        std::eprintln!("shuffle aa {:?}", z);
-    }
+    std::eprintln!("shift right 4 {:?}", z);
+    mm_storeu_si128_i32(&mut z, y);
+
+    std::eprintln!("shuffle aa {:?}", z);
 }

@@ -1,8 +1,6 @@
-use core::arch::x86_64::*;
-
 use libcrux_intrinsics::avx2::{
-    mm_clmulepi64_si128, mm_slli_si128, mm_srli_si128, mm_unpackhi_epi64, mm_unpacklo_epi64,
-    mm_xor_si128,
+    mm_clmulepi64_si128, mm_loadu_si128_u128, mm_slli_si128, mm_srli_si128, mm_storeu_si128_u128,
+    mm_unpackhi_epi64, mm_unpacklo_epi64, mm_xor_si128, Vec128,
 };
 
 // XXX: A lot of the code below is shared with NEON. Refactor!
@@ -13,18 +11,20 @@ use libcrux_intrinsics::avx2::{
 pub(crate) struct FieldElement(pub(super) u128);
 
 impl FieldElement {
-    /// Transmute `u128` and `__m128i`.
+    /// Transmute `u128` and `Vec128`.
     #[inline]
     #[allow(unsafe_code)]
-    fn transmute(&self) -> __m128i {
-        unsafe { core::mem::transmute(self.0) }
+    fn transmute(&self) -> Vec128 {
+        mm_loadu_si128_u128(&self.0)
     }
 
     /// Convert a vec to self.
     #[inline]
     #[allow(unsafe_code)]
-    fn from_vec128(vec: __m128i) -> Self {
-        unsafe { core::mem::transmute(vec) }
+    fn from_vec128(vec: Vec128) -> Self {
+        let mut out = 0;
+        mm_storeu_si128_u128(&mut out, vec);
+        Self(out)
     }
 }
 
@@ -69,8 +69,8 @@ fn mul_wide(elem: &FieldElement, other: &FieldElement) -> (FieldElement, FieldEl
     // The Karatsuba trick computes the middle term using the other two products:
     // (a_lo*b_hi ^ a_hi*b_lo) = (a_lo^a_hi)*(b_lo^b_hi) ^ a_lo*b_lo ^ a_hi*b_hi
 
-    let a: __m128i = elem.transmute();
-    let b: __m128i = other.transmute();
+    let a: Vec128 = elem.transmute();
+    let b: Vec128 = other.transmute();
 
     // 1. Calculate the low and high 128-bit parts of the product in parallel.
     //    p_lo = a_lo * b_lo
@@ -149,15 +149,17 @@ impl crate::platform::GF128FieldElement for FieldElement {
 }
 
 #[allow(unsafe_code)]
-#[cfg(feature = "std")]
 #[test]
 fn test_transmute() {
-    let x = 1u128 << 64 ^ 2u128;
-    let xv: __m128i = unsafe { core::mem::transmute(x) };
-    let xv: __m128i = unsafe { _mm_slli_si128(xv, 8) };
-    let x: u128 = unsafe { core::mem::transmute(xv) };
-    std::eprintln!("trans {:x}", x);
-    let mut u64s = [0u64; 2];
-    unsafe { _mm_storeu_si128(u64s.as_mut_ptr() as *mut __m128i, xv) };
-    std::eprintln!("store {:?}", u64s)
+    let x = FieldElement((1u128 << 64) + 698234);
+    let xv = x.transmute();
+    let xu128 = FieldElement::from_vec128(xv).0;
+    assert_eq!(x.0, xu128);
+
+    let x = FieldElement(1u128 << 64 ^ 2u128);
+    let xv = x.transmute();
+    let xv = mm_slli_si128::<8>(xv);
+    let x_l8 = FieldElement::from_vec128(xv);
+
+    assert_eq!(x_l8.0, x.0 << 64);
 }
