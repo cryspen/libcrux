@@ -67,6 +67,32 @@ class extractAction(argparse.Action):
             cwd=".",
             env=hax_env,
         )
+        
+        include_str = " ".join(includes)
+        interface_include = " ".join(includes)
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "-C",
+            "--features",
+            "simd128,simd256",
+            ";",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {
+            'RUSTFLAGS': "--cfg pre_core_models"
+        }
+        shell(
+            cargo_hax_into,
+            cwd="../sha3",
+            env=hax_env,
+        )
+
         return None
 
 
