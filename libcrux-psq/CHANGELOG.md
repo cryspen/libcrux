@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- [#1298](https://github.com/cryspen/libcrux/pull/1298): Propagate import/export functions from CMC crate (https://github.com/georgio)
+
 ## [0.0.6] (2026-01-22)
 
-- [#1294](https://github.com/cryspen/libcrux/pull/1294): Allow import of X25519 private and public keys
+- [#1294](https://github.com/cryspen/libcrux/pull/1294): Allow import of X25519 private and public keys (https://github.com/georgio)
 - [#1278](https://github.com/cryspen/libcrux/pull/1278): Allow import of secrets into sessions. (Breaking, since session binding to principal public keys is now optional.)
 - [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependencies `libcrux-sha3`, `libcrux-ml-kem`, `libcrux-ml-dsa`
 - [#1248](https://github.com/cryspen/libcrux/pull/1248):
