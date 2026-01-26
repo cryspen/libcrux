@@ -71,9 +71,9 @@ libcrux-ml-kem = { version = "=0.0.6", path = "libcrux-ml-kem" }
 libcrux-sha3 = { version = "=0.0.6", path = "crates/algorithms/sha3" }
 libcrux-kem = { version = "=0.0.5", path = "libcrux-kem" }
 libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
-libcrux-aead = { verstion = "=0.0.5-pre.1", path = "crates/primitives/aead" }
-libcrux-blake2 = { verstion = "=0.0.5-pre.1", path = "crates/algorithms/blake2" }
-libcrux-p256 = { verstion = "=0.0.5", path = "crates/algorithms/p256" }
+libcrux-aead = { version = "=0.0.5-pre.1", path = "crates/primitives/aead" }
+libcrux-blake2 = { version = "=0.0.5-pre.1", path = "crates/algorithms/blake2" }
+libcrux-p256 = { version = "=0.0.5", path = "crates/algorithms/p256" }
 
 [package]
 name = "libcrux"
