@@ -30,6 +30,7 @@ pub fn zeta(i: usize) -> i16 {
     ZETAS_TIMES_MONTGOMERY_R[i]
 }
 
+#[cfg(hax)]
 #[allow(dead_code, unused_variables)]
 pub(crate) mod spec {
 
@@ -87,13 +88,13 @@ pub(crate) mod spec {
 }
 
 #[inline(always)]
-#[hax_lib::requires(spec::is_bounded_vector(b1, &vec1).and(spec::is_bounded_vector(b2, vec2).and(b1 < 32768 && b2 < 32768 && b1 + b2 < 32768)))]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(b1+b2, &result).and(crate::vector::traits::spec::add_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
+#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1).and(spec::is_bounded_vector(_b2, vec2).and(_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result).and(crate::vector::traits::spec::add_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
 pub(crate) fn add_bounded<Vector: Operations>(
     vec1: Vector,
-    b1: usize,
+    _b1: usize,
     vec2: &Vector,
-    b2: usize,
+    _b2: usize,
 ) -> Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
@@ -102,13 +103,13 @@ pub(crate) fn add_bounded<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(spec::is_bounded_vector(b1, &vec1).and(spec::is_bounded_vector(b2, vec2).and(b1 < 32768 && b2 < 32768 && b1 + b2 < 32768)))]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(b1+b2, &result).and(crate::vector::traits::spec::sub_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
+#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1).and(spec::is_bounded_vector(_b2, vec2).and(_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result).and(crate::vector::traits::spec::sub_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
 pub(crate) fn sub_bounded<Vector: Operations>(
     vec1: Vector,
-    b1: usize,
+    _b1: usize,
     vec2: &Vector,
-    b2: usize,
+    _b2: usize,
 ) -> Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
@@ -118,11 +119,11 @@ pub(crate) fn sub_bounded<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 100 --split_queries always")]
-#[hax_lib::requires(spec::is_bounded_vector(b, &vec).and(c > -32768 && b.to_int() * c.abs().to_int() < 32768.to_int()))]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(b*c.abs() as usize, &result))]
+#[hax_lib::requires(spec::is_bounded_vector(_b, &vec).and(c > -32768 && _b.to_int() * c.abs().to_int() < 32768.to_int()))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(_b*c.abs() as usize, &result))]
 pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
     vec: Vector,
-    b: usize,
+    _b: usize,
     c: i16,
 ) -> Vector {
     hax_lib::fstar!(
@@ -323,7 +324,10 @@ fn subtract_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
 
         let diff = sub_bounded(myself.coefficients[i], 4095, &coefficient_normal_form, 3328);
+        
+        #[cfg(hax)]
         spec::is_bounded_vector_higher(&diff, 7423, 28296);
+
         hax_lib::assert_prop!(spec::is_bounded_vector(28296, &diff));
         let red = Vector::barrett_reduce(diff);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
@@ -375,8 +379,11 @@ fn add_message_error_reduce<Vector: Operations>(
         hax_lib::assert_prop!(spec::is_bounded_vector(6656, &sum1));
 
         let sum2 = add_bounded(coefficient_normal_form, 3328, &sum1, 6656);
+
         hax_lib::assert_prop!(spec::is_bounded_vector(9984, &sum2));
+        #[cfg(hax)]
         spec::is_bounded_vector_higher(&sum2, 9984, 28296);
+
         let red = Vector::barrett_reduce(sum2);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         result.coefficients[i] = red;
@@ -412,8 +419,11 @@ fn add_error_reduce<Vector: Operations>(
             Vector::montgomery_multiply_by_constant(myself.coefficients[j], 1441);
 
         let sum = add_bounded(coefficient_normal_form, 3328, &error.coefficients[j], 7);
+
         hax_lib::assert_prop!(spec::is_bounded_vector(3335, &sum));
+        #[cfg(hax)]
         spec::is_bounded_vector_higher(&sum, 3335, 28296);
+        
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;
@@ -458,8 +468,11 @@ fn add_standard_error_reduce<Vector: Operations>(
         let coefficient_normal_form = to_standard_domain::<Vector>(myself.coefficients[j]);
 
         let sum = add_bounded(coefficient_normal_form, 3328, &error.coefficients[j], 3328);
+
         hax_lib::assert_prop!(spec::is_bounded_vector(6656, &sum));
+        #[cfg(hax)]
         spec::is_bounded_vector_higher(&sum, 6656, 28296);
+        
         let red = Vector::barrett_reduce(sum);
         hax_lib::assert_prop!(spec::is_bounded_vector(3328, &red));
         myself.coefficients[j] = red;

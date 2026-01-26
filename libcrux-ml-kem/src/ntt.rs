@@ -1,7 +1,7 @@
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{
-        add_bounded, multiply_by_constant_bounded, spec, sub_bounded, zeta, PolynomialRingElement,
+        add_bounded, multiply_by_constant_bounded, sub_bounded, zeta, PolynomialRingElement,
         VECTORS_IN_RING_ELEMENT,
     },
     vector::Operations,
@@ -9,6 +9,9 @@ use crate::{
 
 #[cfg(hax)]
 use hax_lib::prop::ToProp;
+
+#[cfg(hax)]
+use crate::polynomial::spec;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
@@ -273,7 +276,10 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_7(re);
 
     let mut zeta_i = 1;
+    
+    #[cfg(hax)]
     spec::is_bounded_poly_higher(re, 4803, 2 * 3328);
+
     ntt_at_layer_4_plus(&mut zeta_i, re, 6, 2 * 3328);
     ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3 * 3328);
     ntt_at_layer_4_plus(&mut zeta_i, re, 4, 4 * 3328);
@@ -281,7 +287,9 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     ntt_at_layer_2(&mut zeta_i, re, 6 * 3328);
     ntt_at_layer_1(&mut zeta_i, re, 7 * 3328);
 
+    #[cfg(hax)]
     spec::is_bounded_poly_higher(re, 8 * 3328, 28296);
+
     re.poly_barrett_reduce()
 }
 
@@ -308,6 +316,8 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
     ntt_at_layer_2(&mut zeta_i, re, 6 * 3328);
     ntt_at_layer_1(&mut zeta_i, re, 7 * 3328);
 
+     #[cfg(hax)]
     spec::is_bounded_poly_higher(re, 8 * 3328, 28296);
+
     re.poly_barrett_reduce()
 }

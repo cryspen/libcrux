@@ -2,9 +2,12 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     hash_functions::*,
     helper::cloop,
-    polynomial::{spec, PolynomialRingElement},
+    polynomial::PolynomialRingElement,
     vector::Operations,
 };
+
+#[cfg(hax)]
+use crate::polynomial::spec;
 
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation

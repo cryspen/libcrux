@@ -1,14 +1,16 @@
 use crate::{
     hash_functions::Hash,
-    helper::cloop,
     invert_ntt::invert_ntt_montgomery,
-    polynomial::{spec, PolynomialRingElement},
+    polynomial::PolynomialRingElement,
     sampling::sample_from_xof,
     vector::Operations,
 };
 
 #[cfg(hax)]
 use hax_lib::prop::ToProp;
+
+#[cfg(hax)]
+use crate::polynomial::spec;
 
 #[inline(always)]
 #[allow(non_snake_case)]

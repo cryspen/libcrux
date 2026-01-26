@@ -1,11 +1,14 @@
 use crate::{
     hax_utils::hax_debug_assert,
-    polynomial::{add_bounded, spec, sub_bounded, zeta},
+    polynomial::{add_bounded, sub_bounded, zeta},
     vector::{Operations, PolynomialRingElement, FIELD_ELEMENTS_IN_VECTOR},
 };
 
 #[cfg(hax)]
 use hax_lib::prop::ToProp;
+
+#[cfg(hax)]
+use crate::polynomial::spec;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
@@ -132,7 +135,10 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 ) -> (Vector, Vector) {
     let b_minus_a = sub_bounded(b, 3328, &a, 3328);
     let a_plus_b = add_bounded(a, 3328, &b, 3328);
+
+    #[cfg(hax)]
     spec::is_bounded_vector_higher(&a_plus_b, 6656, 28296);
+
     a = Vector::barrett_reduce(a_plus_b);
     b = Vector::montgomery_multiply_by_constant(b_minus_a, zeta_r);
     (a, b)
@@ -230,6 +236,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
         .into_iter()
         .all(|coefficient| coefficient.abs() <= (K as i16) * 3328));
 
+    #[cfg(hax)]
     spec::is_bounded_poly_higher(re, K * 3328, 4 * 3328);
 
     let mut zeta_i = super::constants::COEFFICIENTS_IN_RING_ELEMENT / 2;
