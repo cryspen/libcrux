@@ -42,6 +42,13 @@ pub(crate) mod spec {
         hax_lib::fstar_prop_expr!(r#"$vec1 == $vec2"#)
     }
 
+    pub(crate) fn are_eq_polys<Vector: Operations>(
+        poly1: &PolynomialRingElement<Vector>,
+        poly2: &PolynomialRingElement<Vector>,
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"$poly1 == $poly2"#)
+    }
+
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"Spec.Utils.is_i16b_array_opaque (v b) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
@@ -125,10 +132,12 @@ pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(0, &result))]
 fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 0)"#
+    );
     PolynomialRingElement {
-        // https://github.com/hacspec/hax/issues/27
-        // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
         coefficients: [Vector::ZERO(); 16],
     }
 }
@@ -498,6 +507,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &myself).and(spec::is_bounded_poly(3328, &rhs)))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
 fn ntt_multiply<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
@@ -505,6 +515,10 @@ fn ntt_multiply<Vector: Operations>(
     let mut out = ZERO();
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            hax_lib::implies(j < i, spec::is_bounded_vector(3328, &out.coefficients[j]))
+        }));
+
         out.coefficients[i] = Vector::ntt_multiply(
             &myself.coefficients[i],
             &rhs.coefficients[i],
@@ -523,10 +537,9 @@ fn ntt_multiply<Vector: Operations>(
 #[hax_lib::attributes]
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
+    #[ensures(|result| spec::is_bounded_poly(0, &result))]
     pub(crate) fn ZERO() -> Self {
-        Self {
-            coefficients: [Vector::ZERO(); 16],
-        }
+        ZERO()
     }
 
     /// Size of a ring element in bytes.
@@ -596,18 +609,21 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     #[requires(spec::is_bounded_poly(7, &error))]
+    #[ensures(|result| spec::is_bounded_poly(3328, &future(self)))]
     pub(crate) fn add_error_reduce(&mut self, error: &Self) {
         add_error_reduce(self, error);
     }
 
     #[inline(always)]
     #[requires(spec::is_bounded_poly(3328, &error))]
+    #[ensures(|result| spec::is_bounded_poly(3328, &future(self)))]
     pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
         add_standard_error_reduce(self, error);
     }
 
     #[inline(always)]
     #[requires(spec::is_bounded_poly(3328, &self).and(spec::is_bounded_poly(3328, &rhs)))]
+    #[ensures(|result| spec::is_bounded_poly(3328, &result))]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         ntt_multiply(self, rhs)
     }

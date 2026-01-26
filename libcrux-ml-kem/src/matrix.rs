@@ -113,6 +113,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 
 /// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires((K <= 4).to_prop().and(
         spec::is_bounded_poly(4095, v).and(
             hax_lib::forall(|i:usize| hax_lib::implies(i < K,
@@ -144,18 +145,15 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Vector in
-        let tt_spec = to_spec_vector_t $t_as_ntt in
-        let r_spec = to_spec_vector_t $r_as_ntt in
-        let e2_spec = to_spec_poly_t $error_2 in
-        let m_spec = to_spec_poly_t $message in
-        let res_spec = to_spec_poly_t $res in
-        res_spec == Spec.MLKEM.(poly_add (poly_add (vector_dot_product_ntt #$K tt_spec r_spec) e2_spec) m_spec) /\
-        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $res"#)
-)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+#[hax_lib::requires((K <= 4).to_prop().and(
+        spec::is_bounded_poly(3328, message).and(
+            spec::is_bounded_poly(3328, error_2).and(
+                hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                    spec::is_bounded_poly(3328, &t_as_ntt[i]).and(
+                        spec::is_bounded_poly(3328, &r_as_ntt[i])
+)))))))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
 pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     t_as_ntt: &[PolynomialRingElement<Vector>; K],
     r_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -165,6 +163,8 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     let mut result = PolynomialRingElement::<Vector>::ZERO();
 
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| spec::is_bounded_poly(i * 3328, &result));
+
         let product = t_as_ntt[i].ntt_multiply(&r_as_ntt[i]);
         result.add_to_ring_element(&product, i * 3328);
     }
@@ -177,21 +177,15 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"
-    Spec.MLKEM.is_rank $K /\
-    (forall (i:nat). i < v $K ==>
-        Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 7) (Seq.index ${error_1} i))"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Vector in
-        let a_spec = to_spec_matrix_t $a_as_ntt in
-        let r_spec = to_spec_vector_t $r_as_ntt in
-        let e_spec = to_spec_vector_t $error_1 in
-        let res_spec = to_spec_vector_t $res in
-        res_spec == Spec.MLKEM.(vector_add (vector_inv_ntt (matrix_vector_mul_ntt a_spec r_spec)) e_spec) /\
-        (forall (i:nat). i < v $K ==>
-            Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index $res i))"#)
-)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+#[hax_lib::requires((K <= 4).to_prop().and(
+        hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+            spec::is_bounded_poly(7, &error_1[i]).and(
+                spec::is_bounded_poly(3328, &r_as_ntt[i]).and(
+                    hax_lib::forall(|j:usize| hax_lib::implies(j < K,
+                        spec::is_bounded_poly(3328, &a_as_ntt[i][j])))))))))]
+#[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                                spec::is_bounded_poly(3328, &result[i]))))]
 pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
     a_as_ntt: &[[PolynomialRingElement<Vector>; K]; K],
     r_as_ntt: &[PolynomialRingElement<Vector>; K],
@@ -199,57 +193,75 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 ) -> [PolynomialRingElement<Vector>; K] {
     let mut result = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
 
-    cloop! {
-        for (i, row) in a_as_ntt.iter().enumerate() {
-            cloop! {
-                for (j, a_element) in row.iter().enumerate() {
-                    let product = a_element.ntt_multiply(&r_as_ntt[j]);
-                    result[i].add_to_ring_element(&product, j * 3328);
+    for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
+            if j < K {
+                if j < i {
+                    spec::is_bounded_poly(3328, &result[j])
+                } else {
+                    spec::is_bounded_poly(0, &result[j])
                 }
+            } else {
+                true.to_prop()
             }
+        }));
 
-            invert_ntt_montgomery::<K, Vector>(&mut result[i]);
-            result[i].add_error_reduce(&error_1[i]);
+        #[cfg(hax)]
+        let _result = result;
+
+        for j in 0..K {
+            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &result[i]).and(
+                hax_lib::forall(|k: usize| {
+                    hax_lib::implies(k < K && k != i, spec::are_eq_polys(&result[k], &_result[k]))
+                })
+            ));
+
+            let product = a_as_ntt[i][j].ntt_multiply(&r_as_ntt[j]);
+            result[i].add_to_ring_element(&product, j * 3328);
         }
+        invert_ntt_montgomery::<K, Vector>(&mut result[i]);
+        result[i].add_error_reduce(&error_1[i]);
     }
-
     result
 }
 
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K"#))]
-#[hax_lib::ensures(|res|
-    fstar!(r#"let open Libcrux_ml_kem.Vector in
-        to_spec_vector_t ${t_as_ntt}_future =
-             Spec.MLKEM.compute_As_plus_e_ntt
-               (to_spec_matrix_t $matrix_A) 
-               (to_spec_vector_t $s_as_ntt) 
-               (to_spec_vector_t $error_as_ntt) /\
-        (forall (i: nat). i < v $K ==>
-            Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index ${t_as_ntt}_future i))"#)
-)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+#[hax_lib::requires((K <= 4).to_prop().and(
+        hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+            spec::is_bounded_poly(3328, &error_as_ntt[i]).and(
+                spec::is_bounded_poly(3328, &s_as_ntt[i]).and(
+                    hax_lib::forall(|j:usize| hax_lib::implies(j < K,
+                        spec::is_bounded_poly(3328, &matrix_A[i][j])))))))))]
+#[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                                spec::is_bounded_poly(3328, &future(t_as_ntt)[i]))))]
 pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
     t_as_ntt: &mut [PolynomialRingElement<Vector>; K],
     matrix_A: &[[PolynomialRingElement<Vector>; K]; K],
     s_as_ntt: &[PolynomialRingElement<Vector>; K],
     error_as_ntt: &[PolynomialRingElement<Vector>; K],
 ) {
-    cloop! {
-        for (i, row) in matrix_A.iter().enumerate() {
-            // This may be externally provided memory. Ensure that `t_as_ntt`
-            // is all 0.
-            t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
-            cloop! {
-                for (j, matrix_element) in row.iter().enumerate() {
-                    let product = matrix_element.ntt_multiply(&s_as_ntt[j]);
-                    t_as_ntt[i].add_to_ring_element(&product, j * 3328);
-                }
-            }
-            t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
+    for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| hax_lib::implies(
+            j < i,
+            spec::is_bounded_poly(3328, &t_as_ntt[j])
+        )));
+
+        t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
+
+        for j in 0..K {
+            hax_lib::loop_invariant!(
+                |j: usize| spec::is_bounded_poly(j * 3328, &t_as_ntt[i]).and(hax_lib::forall(
+                    |k: usize| hax_lib::implies(k < i, spec::is_bounded_poly(3328, &t_as_ntt[k]))
+                ))
+            );
+
+            let product = matrix_A[i][j].ntt_multiply(&s_as_ntt[j]);
+            t_as_ntt[i].add_to_ring_element(&product, j * 3328);
         }
-    };
-    ()
+
+        t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
+    }
 }
