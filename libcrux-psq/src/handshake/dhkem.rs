@@ -133,7 +133,7 @@ impl From<DHPrivateKey> for DHKeyPair {
     fn from(sk: DHPrivateKey) -> Self {
         Self {
             pk: sk.to_public(),
-            sk: sk,
+            sk,
         }
     }
 }
