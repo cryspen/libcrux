@@ -13,9 +13,7 @@ use crate::handshake::{
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.
-///
-/// We don't directly expose this.
-pub(crate) struct DHSharedSecret(Vec<u8>);
+pub struct DHSharedSecret(Vec<u8>);
 
 impl AsRef<[u8]> for DHSharedSecret {
     fn as_ref(&self) -> &[u8] {
@@ -101,6 +99,12 @@ impl DHPrivateKey {
         } else {
             Ok(Self(Vec::from(value)))
         }
+    }
+
+    /// Perform a Diffie-Hellman exchange between `self` and `remote_public_key`
+    /// to produce a `DHSharedSecret`
+    pub fn diffie_hellman(&self, remote_public_key: &DHPublicKey) -> Result<DHSharedSecret, Error> {
+        DHSharedSecret::derive(self, remote_public_key)
     }
 }
 
