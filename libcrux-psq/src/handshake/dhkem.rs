@@ -27,6 +27,7 @@ impl AsRef<[u8]> for DHSharedSecret {
     Hash,
     PartialEq,
     Clone,
+    Copy,
     TlsDeserializeBytes,
     TlsSerializeBytes,
     TlsSize,
@@ -34,7 +35,7 @@ impl AsRef<[u8]> for DHSharedSecret {
     TlsDeserialize,
 )]
 /// A wrapper around a KEM public key.
-pub struct DHPublicKey(Vec<u8>);
+pub struct DHPublicKey([u8; 32]);
 
 impl ProvideAuthenticator for DHPublicKey {
     fn authenticator(&self) -> super::types::Authenticator {
@@ -51,7 +52,7 @@ impl AsRef<[u8]> for DHPublicKey {
 /// Import a Diffie-Hellman public key from raw bytes.
 impl DHPublicKey {
     pub fn from_bytes(value: &[u8; 32]) -> Self {
-        Self(Vec::from(value))
+        Self(*value)
     }
 }
 
@@ -87,6 +88,8 @@ impl DHPrivateKey {
     pub fn to_public(&self) -> DHPublicKey {
         DHPublicKey(
             secret_to_public(libcrux_ecdh::Algorithm::X25519, &self.0)
+                .expect("secret key is honestly generated X25519 key")
+                .try_into()
                 .expect("secret key is honestly generated X25519 key"),
         )
     }
