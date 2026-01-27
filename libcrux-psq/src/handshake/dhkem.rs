@@ -125,6 +125,11 @@ impl DHKeyPair {
         let pk = sk.to_public();
         Self { sk, pk }
     }
+
+    /// Provide reference to the Diffie-Hellman private key.
+    pub fn sk(&self) -> &DHPrivateKey {
+        &self.sk
+    }
 }
 
 impl From<DHPrivateKey> for DHKeyPair {
@@ -133,7 +138,7 @@ impl From<DHPrivateKey> for DHKeyPair {
     fn from(sk: DHPrivateKey) -> Self {
         Self {
             pk: sk.to_public(),
-            sk: sk,
+            sk,
         }
     }
 }
