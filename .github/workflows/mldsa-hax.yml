@@ -94,7 +94,7 @@ jobs:
         run: |
           nix profile install ./hax
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2025.02.17
+        run: nix profile install github:FStarLang/FStar/v2025.12.15
 
       - uses: actions/download-artifact@v7
         with:
