@@ -3,6 +3,10 @@
 ⚠️ NOTE: This crate serves as an internal dependency to other `libcrux`
 crates and SHOULD NOT be used directly.
 
+## `no_std` support
+
+This crate supports `no_std` targets, but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 
