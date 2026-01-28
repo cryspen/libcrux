@@ -74,9 +74,18 @@ impl libcrux_traits::kem::arrayref::Kem<DK_LEN, EK_LEN, EK_LEN, SS_LEN, DK_LEN, 
 libcrux_traits::kem::slice::impl_trait!(X25519 => EK_LEN, DK_LEN, EK_LEN, EK_LEN, DK_LEN, DK_LEN);
 
 /// Clamp a scalar.
-fn clamp(scalar: &mut [u8; DK_LEN]) {
+pub fn clamp(scalar: &mut [u8; DK_LEN]) {
     // We clamp the key already to make sure it can't be misused.
     scalar[0] &= 248u8;
     scalar[31] &= 127u8;
     scalar[31] |= 64u8;
+}
+
+/// Test whether a scalar is already clamped, error indicating that it is not.
+pub fn is_clamped(scalar: &[u8; DK_LEN]) -> Result<(), Error> {
+    if scalar[0] & 7 != 0 || scalar[31] & 128 != 0 || scalar[31] & 64 != 64 {
+        Err(Error)
+    } else {
+        Ok(())
+    }
 }
