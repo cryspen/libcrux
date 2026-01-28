@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Allow `no_alloc` support & add minimal `README.md`
+- [#1309](https://github.com/cryspen/libcrux/pull/1309): Allow `no_alloc` support & add minimal `README.md`
 
 ## [0.0.5] (2026-01-22)
 
