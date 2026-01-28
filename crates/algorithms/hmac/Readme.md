@@ -2,6 +2,10 @@
 
 This crate implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
 
+## `no_std` support
+
+This crate supports `no_std` targets, but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 
