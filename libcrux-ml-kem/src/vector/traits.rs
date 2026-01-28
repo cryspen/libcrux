@@ -5,6 +5,9 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1
 pub const BARRETT_SHIFT: i32 = 26;
 pub const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
+
 // We define a trait that allows us to talk about the contents of a vector.
 // This is used extensively in pre- and post-conditions to reason about the code.
 // The trait is duplicated for Eurydice to avoid the trait inheritance between Operations and Repr
@@ -22,7 +25,6 @@ pub trait Repr {}
 #[cfg(hax)]
 #[allow(dead_code, unused_variables)]
 pub(crate) mod spec {
-    use crate::cfg;
 
     pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
@@ -633,6 +635,9 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Rejection sampling
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result| result <= 16 && future(out).len() == 16)]
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }

@@ -5,10 +5,12 @@ use super::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(input.len() == 24 && output.len() == 16)]
-#[hax_lib::ensures(|res|
-        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $res <= 16"#)
-    )]
+#[hax_lib::ensures(|result| (future(output).len() == 16 && result <= 16).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(output)[j] >= 0 && future(output)[j] <= 3328))))]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 

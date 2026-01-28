@@ -3,7 +3,6 @@ SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst \
 
 ADMIT_MODULES = Libcrux_ml_kem.Ind_cpa.fst \
 	      Libcrux_ml_kem.Ind_cca.Unpacked.fst \
-	      Libcrux_ml_kem.Sampling.fst \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \
               Libcrux_ml_kem.Vector.Neon.Compress.fst \
               Libcrux_ml_kem.Vector.Neon.fsti \

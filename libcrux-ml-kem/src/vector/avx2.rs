@@ -7,6 +7,9 @@ mod ntt;
 mod sampling;
 mod serialize;
 
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
+
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::before(interface, "noeq")]
 #[hax_lib::fstar::after(interface,"let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
@@ -643,7 +646,10 @@ impl Operations for SIMD256Vector {
 
     #[inline(always)]
     #[requires(input.len() == 24 && out.len() == 16)]
-    #[ensures(|result| result <= 16 && future(out).len() == 16)]
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
     fn rej_sample(input: &[u8], out: &mut [i16]) -> usize {
         sampling::rejection_sample(input, out)
     }
