@@ -44,9 +44,6 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before("
-instance add_instance t: Core_models.Ops.Index.t_Index (FStar.Seq.Base.seq t)
-        Rust_primitives.Integers.usize = Core_models.Slice.impl__index t Rust_primitives.Integers.USIZE")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"${t.len()} == ${t1.len()} /\
     (forall i. forall j. 
@@ -60,32 +57,35 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     #[cfg(hax)]
     let (old_t, old_t1) = { (t.to_vec(), t1.to_vec()) };
 
+    #[cfg(hax)]
+    use hax_lib::prop::*;
+
     for i in 0..t.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"
-            ${t.len()} == ${old_t.len()} /\
-            ${t1.len()} == ${old_t1.len()} /\
-            (forall j. j >= v i ==> 
-                (Seq.index t j == Seq.index old_t j /\
-                 Seq.index t1 j == Seq.index old_t1 j))
-            "#
-        ));
+        hax_lib::loop_invariant!(|i: usize| Prop::from(
+            t.len() == old_t.len() && t1.len() == old_t1.len()
+        )
+        .and(forall(|j: usize| implies(
+            j >= i && j < old_t.len(),
+            fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+        ))));
 
         for j in 0..t[i].simd_units.len() {
-            hax_lib::loop_invariant!(|j: usize| fstar!(
-                r#"
-                ${t.len()} == ${old_t.len()} /\
-                ${t1.len()} == ${old_t1.len()} /\
-                (forall j. j > v i ==> 
-                    (Seq.index t j == Seq.index old_t j /\
-                     Seq.index t1 j == Seq.index old_t1 j)) /\
-                (forall k. k >= v j ==> 
-                    (Seq.index (Seq.index t (v i)).f_simd_units k ==
-                     Seq.index (Seq.index old_t (v i)).f_simd_units k /\
-                     Seq.index (Seq.index t1 (v i)).f_simd_units k ==
-                     Seq.index (Seq.index old_t1 (v i)).f_simd_units k))
-                "#
-            ));
+            hax_lib::loop_invariant!(|j: usize| Prop::from(
+                t.len() == old_t.len() && t1.len() == old_t1.len()
+            )
+            .and(forall(|j: usize| implies(
+                j > i && j < old_t.len(),
+                fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+            )))
+            .and(forall(|k: usize| implies(
+                k >= j && k < crate::simd::traits::SIMD_UNITS_IN_RING_ELEMENT,
+                fstar!(
+                    r#"
+                        ${t[i].simd_units[k]} == ${old_t[i].simd_units[k]} /\
+                        ${t1[i].simd_units[k]} == ${old_t1[i].simd_units[k]}
+                    "#
+                )
+            ))));
 
             SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
