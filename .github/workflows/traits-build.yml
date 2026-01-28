@@ -85,9 +85,30 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
+  build-no_std:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: traits
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Add no_std target
+        run: rustup target add thumbv6m-none-eabi
+        
+      - name: Update dependencies
+        run: cargo update
+
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo check --lib --verbose --target thumbv6m-none-eabi
+
   traits-build-status:
     if: ${{ always() }}
-    needs: [build]
+    needs: [build, build-no_std]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

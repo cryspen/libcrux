@@ -1,5 +1,9 @@
 # Curve 25519
 
+## `no_std` support
+
+This crate supports `no_std` targets, but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 

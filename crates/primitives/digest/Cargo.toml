@@ -2,7 +2,7 @@
 description = "Digest library"
 name = "libcrux-digest"
 readme = "Readme.md"
-version = "0.0.4"
+version = "0.0.5"
 
 authors.workspace = true
 edition.workspace = true
@@ -11,7 +11,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-blake2 = { version = "0.0.4", path = "../../algorithms/blake2", optional = true }
+libcrux-blake2 = { workspace = true, optional = true }
 libcrux-sha2 = { workspace = true, optional = true }
 libcrux-sha3 = { workspace = true, optional = true }
 libcrux-traits = { workspace = true, optional = true }

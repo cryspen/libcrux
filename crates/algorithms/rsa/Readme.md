@@ -1,5 +1,11 @@
 # RSA-PSS
 
+This crate contains an implementation of RSA-PSS.
+
+## `no_std` support
+
+This crate supports `no_std` targets, but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 
