@@ -1,5 +1,9 @@
 # ECDSA
 
+## `no_std` support
+
+This crate supports `no_std` targets (using `--no-default-features`), but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 
