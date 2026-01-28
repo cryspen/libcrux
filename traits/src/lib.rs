@@ -1,5 +1,6 @@
 #![no_std]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
 // NOTE: This Digest trait and the new `digest` trait APIs overlap to some extent.
