@@ -4,12 +4,10 @@ const KMAC_LABEL: &[u8; 4] = b"KMAC";
 const LABEL_LEN: usize = KMAC_LABEL.len() << 3;
 
 // From https://github.com/hoxxep/MACs/blob/kmac-submission/kmac/src/encoding.rs
-pub(crate) fn num_encoding_size(num: usize) -> u8 {
+pub(crate) fn zero_bytes(num: usize) -> u8 {
     let zero_bits = (num | 1usize).leading_zeros();
     let zero_bits = (zero_bits % 64) as u8;
-    debug_assert!(zero_bits < 64u8);
-    let bits = 64u8 - zero_bits;
-    (bits + 7) / 8
+    zero_bits / 8
 }
 
 #[inline(always)]
@@ -19,22 +17,30 @@ pub(crate) fn left_encode_byte(num: u8) -> [u8; 2] {
 
 #[inline(always)]
 pub(crate) fn left_encode(num: usize, buffer: &mut [u8; 9]) -> &[u8] {
-    let encoding_size = num_encoding_size(num);
-    debug_assert!(encoding_size < 9);
-    let encoding_length = encoding_size as usize;
+    let zero_size = zero_bytes(num);
+    let zero_length = zero_size as usize;
+    let be_bytes = num.to_be_bytes();
+    let encoding_length = be_bytes.len() - zero_length;
+    let encoding_size = encoding_length as u8;
+    debug_assert!(0 < encoding_length);
+    debug_assert!(encoding_length <= 8);
     let output_length = encoding_length + 1;
     buffer[0] = encoding_size;
-    buffer[1..output_length].copy_from_slice(&num.to_be_bytes()[8 - encoding_length..]);
+    buffer[1..output_length].copy_from_slice(&be_bytes[zero_length..]);
     &buffer[..output_length]
 }
 
 #[inline(always)]
 pub(crate) fn right_encode(num: usize, buffer: &mut [u8; 9]) -> &[u8] {
-    let encoding_size = num_encoding_size(num);
-    debug_assert!(encoding_size < 9);
-    let encoding_length = encoding_size as usize;
+    let zero_size = zero_bytes(num);
+    let zero_length = zero_size as usize;
+    let be_bytes = num.to_be_bytes();
+    let encoding_length = be_bytes.len() - zero_length;
+    let encoding_size = encoding_length as u8;
+    debug_assert!(0 < encoding_length);
+    debug_assert!(encoding_length <= 8);
     let output_length = encoding_length + 1;
-    buffer[0..encoding_length].copy_from_slice(&num.to_be_bytes()[8 - encoding_length..]);
+    buffer[0..encoding_length].copy_from_slice(&be_bytes[zero_length..]);
     buffer[encoding_length] = encoding_size;
     &buffer[..output_length]
 }
