@@ -352,120 +352,188 @@ pub mod arithmetic {
     /// Add (vector).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vaddq_s16.html)
     #[hax_lib::opaque]
-    pub fn vaddq_s16(_a: int16x8_t, _b: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vaddq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i].wrapping_add(b_lanes[i])), 16)
     }
 
     /// Add (vector).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vaddq_u32.html)
     #[hax_lib::opaque]
-    pub fn vaddq_u32(_a: uint32x4_t, _b: uint32x4_t) -> uint32x4_t {
-        unimplemented!()
+    pub fn vaddq_u32(a: uint32x4_t, b: uint32x4_t) -> uint32x4_t {
+        let a_lanes: [u32; 4] = a.to_vec().try_into().unwrap();
+        let b_lanes: [u32; 4] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| a_lanes[i].wrapping_add(b_lanes[i])), 32)
     }
 
     /// Subtract (vector).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vsubq_s16.html)
     #[hax_lib::opaque]
-    pub fn vsubq_s16(_a: int16x8_t, _b: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vsubq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i].wrapping_sub(b_lanes[i])), 16)
     }
 
     /// Multiply by scalar.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmulq_n_s16.html)
     #[hax_lib::opaque]
-    pub fn vmulq_n_s16(_a: int16x8_t, _b: i16) -> int16x8_t {
-        unimplemented!()
+    pub fn vmulq_n_s16(a: int16x8_t, b: i16) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i].wrapping_mul(b)), 16)
     }
 
     /// Multiply by scalar.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmulq_n_u16.html)
     #[hax_lib::opaque]
-    pub fn vmulq_n_u16(_a: uint16x8_t, _b: u16) -> uint16x8_t {
-        unimplemented!()
+    pub fn vmulq_n_u16(a: uint16x8_t, b: u16) -> uint16x8_t {
+        let a_lanes: [u16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i].wrapping_mul(b)), 16)
     }
 
     /// Multiply by scalar.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmulq_n_u32.html)
     #[hax_lib::opaque]
-    pub fn vmulq_n_u32(_a: uint32x4_t, _b: u32) -> uint32x4_t {
-        unimplemented!()
+    pub fn vmulq_n_u32(a: uint32x4_t, b: u32) -> uint32x4_t {
+        let a_lanes: [u32; 4] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| a_lanes[i].wrapping_mul(b)), 32)
     }
 
     /// Multiply (vector).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmulq_s16.html)
     #[hax_lib::opaque]
-    pub fn vmulq_s16(_a: int16x8_t, _b: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vmulq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i].wrapping_mul(b_lanes[i])), 16)
     }
 
     /// Signed saturating doubling multiply returning high half.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vqdmulhq_n_s16.html)
     #[hax_lib::opaque]
-    pub fn vqdmulhq_n_s16(_a: int16x8_t, _b: i16) -> int16x8_t {
-        unimplemented!()
+    pub fn vqdmulhq_n_s16(a: int16x8_t, b: i16) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| {
+            // Doubling multiply, then take high half with saturation
+            let product = (a_lanes[i] as i32) * (b as i32) * 2;
+            let high = product >> 16;
+            if high > i16::MAX as i32 {
+                i16::MAX
+            } else if high < i16::MIN as i32 {
+                i16::MIN
+            } else {
+                high as i16
+            }
+        }), 16)
     }
 
     /// Signed saturating doubling multiply returning high half.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vqdmulhq_s16.html)
     #[hax_lib::opaque]
-    pub fn vqdmulhq_s16(_a: int16x8_t, _b: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vqdmulhq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| {
+            let product = (a_lanes[i] as i32) * (b_lanes[i] as i32) * 2;
+            let high = product >> 16;
+            if high > i16::MAX as i32 {
+                i16::MAX
+            } else if high < i16::MIN as i32 {
+                i16::MIN
+            } else {
+                high as i16
+            }
+        }), 16)
     }
 
     /// Signed saturating doubling multiply returning high half.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vqdmulhq_n_s32.html)
     #[hax_lib::opaque]
-    pub fn vqdmulhq_n_s32(_a: int32x4_t, _b: i32) -> int32x4_t {
-        unimplemented!()
+    pub fn vqdmulhq_n_s32(a: int32x4_t, b: i32) -> int32x4_t {
+        let a_lanes: [i32; 4] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            let product = (a_lanes[i] as i64) * (b as i64) * 2;
+            let high = (product >> 32) as i64;
+            if high > i32::MAX as i64 {
+                i32::MAX
+            } else if high < i32::MIN as i64 {
+                i32::MIN
+            } else {
+                high as i32
+            }
+        }), 32)
     }
 
     /// Signed multiply long (vector, by element).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmull_s16.html)
     #[hax_lib::opaque]
-    pub fn vmull_s16(_a: int16x4_t, _b: int16x4_t) -> int32x4_t {
-        unimplemented!()
+    pub fn vmull_s16(a: int16x4_t, b: int16x4_t) -> int32x4_t {
+        let a_lanes: [i16; 4] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 4] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            (a_lanes[i] as i32) * (b_lanes[i] as i32)
+        }), 32)
     }
 
     /// Signed multiply long (upper half).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmull_high_s16.html)
     #[hax_lib::opaque]
-    pub fn vmull_high_s16(_a: int16x8_t, _b: int16x8_t) -> int32x4_t {
-        unimplemented!()
+    pub fn vmull_high_s16(a: int16x8_t, b: int16x8_t) -> int32x4_t {
+        // Multiply upper 4 elements
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            (a_lanes[i + 4] as i32) * (b_lanes[i + 4] as i32)
+        }), 32)
     }
 
     /// Signed multiply-accumulate long (vector, by element).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmlal_s16.html)
     #[hax_lib::opaque]
-    pub fn vmlal_s16(_a: int32x4_t, _b: int16x4_t, _c: int16x4_t) -> int32x4_t {
-        unimplemented!()
+    pub fn vmlal_s16(a: int32x4_t, b: int16x4_t, c: int16x4_t) -> int32x4_t {
+        let a_lanes: [i32; 4] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 4] = b.to_vec().try_into().unwrap();
+        let c_lanes: [i16; 4] = c.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            a_lanes[i].wrapping_add((b_lanes[i] as i32) * (c_lanes[i] as i32))
+        }), 32)
     }
 
     /// Signed multiply-accumulate long (upper half).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vmlal_high_s16.html)
     #[hax_lib::opaque]
-    pub fn vmlal_high_s16(_a: int32x4_t, _b: int16x8_t, _c: int16x8_t) -> int32x4_t {
-        unimplemented!()
+    pub fn vmlal_high_s16(a: int32x4_t, b: int16x8_t, c: int16x8_t) -> int32x4_t {
+        let a_lanes: [i32; 4] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        let c_lanes: [i16; 8] = c.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            a_lanes[i].wrapping_add((b_lanes[i + 4] as i32) * (c_lanes[i + 4] as i32))
+        }), 32)
     }
 
     /// Add across vector (horizontal add).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vaddv_u16.html)
     #[hax_lib::opaque]
-    pub fn vaddv_u16(_a: uint16x4_t) -> u16 {
-        unimplemented!()
+    pub fn vaddv_u16(a: uint16x4_t) -> u16 {
+        let a_lanes: [u16; 4] = a.to_vec().try_into().unwrap();
+        a_lanes.iter().fold(0u16, |acc, &x| acc.wrapping_add(x))
     }
 
     /// Add across vector (horizontal add).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vaddvq_s16.html)
     #[hax_lib::opaque]
-    pub fn vaddvq_s16(_a: int16x8_t) -> i16 {
-        unimplemented!()
+    pub fn vaddvq_s16(a: int16x8_t) -> i16 {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        a_lanes.iter().fold(0i16, |acc, &x| acc.wrapping_add(x))
     }
 
     /// Add across vector (horizontal add).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vaddvq_u16.html)
     #[hax_lib::opaque]
-    pub fn vaddvq_u16(_a: uint16x8_t) -> u16 {
-        unimplemented!()
+    pub fn vaddvq_u16(a: uint16x8_t) -> u16 {
+        let a_lanes: [u16; 8] = a.to_vec().try_into().unwrap();
+        a_lanes.iter().fold(0u16, |acc, &x| acc.wrapping_add(x))
     }
 }
 
@@ -480,78 +548,125 @@ pub mod shift {
     /// Shift right (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshrq_n_s16.html)
     #[hax_lib::opaque]
-    pub fn vshrq_n_s16<const N: i32>(_a: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vshrq_n_s16<const N: i32>(a: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i] >> N), 16)
     }
 
     /// Shift right (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshrq_n_u16.html)
     #[hax_lib::opaque]
-    pub fn vshrq_n_u16<const N: i32>(_a: uint16x8_t) -> uint16x8_t {
-        unimplemented!()
+    pub fn vshrq_n_u16<const N: i32>(a: uint16x8_t) -> uint16x8_t {
+        let a_lanes: [u16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i] >> N), 16)
     }
 
     /// Shift right (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshrq_n_u32.html)
     #[hax_lib::opaque]
-    pub fn vshrq_n_u32<const N: i32>(_a: uint32x4_t) -> uint32x4_t {
-        unimplemented!()
+    pub fn vshrq_n_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
+        let a_lanes: [u32; 4] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| a_lanes[i] >> N), 32)
     }
 
     /// Shift right (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshrq_n_u64.html)
     #[hax_lib::opaque]
-    pub fn vshrq_n_u64<const N: i32>(_a: uint64x2_t) -> uint64x2_t {
-        unimplemented!()
+    pub fn vshrq_n_u64<const N: i32>(a: uint64x2_t) -> uint64x2_t {
+        let a_lanes: [u64; 2] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 2, _>(|i| a_lanes[i] >> N), 64)
     }
 
     /// Shift left (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshlq_n_s16.html)
     #[hax_lib::opaque]
-    pub fn vshlq_n_s16<const N: i32>(_a: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vshlq_n_s16<const N: i32>(a: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| a_lanes[i] << N), 16)
     }
 
     /// Shift left (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshlq_n_u32.html)
     #[hax_lib::opaque]
-    pub fn vshlq_n_u32<const N: i32>(_a: uint32x4_t) -> uint32x4_t {
-        unimplemented!()
+    pub fn vshlq_n_u32<const N: i32>(a: uint32x4_t) -> uint32x4_t {
+        let a_lanes: [u32; 4] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| a_lanes[i] << N), 32)
     }
 
     /// Shift left (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshlq_n_u64.html)
     #[hax_lib::opaque]
-    pub fn vshlq_n_u64<const N: i32>(_a: uint64x2_t) -> uint64x2_t {
-        unimplemented!()
+    pub fn vshlq_n_u64<const N: i32>(a: uint64x2_t) -> uint64x2_t {
+        let a_lanes: [u64; 2] = a.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 2, _>(|i| a_lanes[i] << N), 64)
     }
 
-    /// Shift left (register).
+    /// Shift left (register). Negative shift values shift right.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshlq_s16.html)
     #[hax_lib::opaque]
-    pub fn vshlq_s16(_a: int16x8_t, _b: int16x8_t) -> int16x8_t {
-        unimplemented!()
+    pub fn vshlq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| {
+            // The shift amount is taken from the low 8 bits, interpreted as signed
+            let shift = (b_lanes[i] as i8) as i32;
+            if shift >= 16 {
+                0
+            } else if shift >= 0 {
+                a_lanes[i] << shift
+            } else if shift > -16 {
+                a_lanes[i] >> (-shift)
+            } else {
+                // For signed, large negative shifts give sign extension
+                if a_lanes[i] < 0 { -1 } else { 0 }
+            }
+        }), 16)
     }
 
-    /// Shift left (register).
+    /// Shift left (register). Negative shift values shift right.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vshlq_u16.html)
     #[hax_lib::opaque]
-    pub fn vshlq_u16(_a: uint16x8_t, _b: int16x8_t) -> uint16x8_t {
-        unimplemented!()
+    pub fn vshlq_u16(a: uint16x8_t, b: int16x8_t) -> uint16x8_t {
+        let a_lanes: [u16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        BitVec::from_slice(&core::array::from_fn::<_, 8, _>(|i| {
+            // The shift amount is taken from the low 8 bits, interpreted as signed
+            let shift = (b_lanes[i] as i8) as i32;
+            if shift >= 16 || shift <= -16 {
+                0
+            } else if shift >= 0 {
+                a_lanes[i] << shift
+            } else {
+                a_lanes[i] >> (-shift)
+            }
+        }), 16)
     }
 
     /// Shift left and insert (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vsliq_n_s32.html)
     #[hax_lib::opaque]
-    pub fn vsliq_n_s32<const N: i32>(_a: int32x4_t, _b: int32x4_t) -> int32x4_t {
-        unimplemented!()
+    pub fn vsliq_n_s32<const N: i32>(a: int32x4_t, b: int32x4_t) -> int32x4_t {
+        // Insert shifted b into a, keeping low N bits of a
+        let a_lanes: [i32; 4] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i32; 4] = b.to_vec().try_into().unwrap();
+        let mask = if N >= 32 { 0 } else { !0i32 << N };
+        BitVec::from_slice(&core::array::from_fn::<_, 4, _>(|i| {
+            let shifted_b = if N >= 32 { 0 } else { b_lanes[i] << N };
+            (a_lanes[i] & !mask) | (shifted_b & mask)
+        }), 32)
     }
 
     /// Shift left and insert (immediate).
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vsliq_n_s64.html)
     #[hax_lib::opaque]
-    pub fn vsliq_n_s64<const N: i32>(_a: int64x2_t, _b: int64x2_t) -> int64x2_t {
-        unimplemented!()
+    pub fn vsliq_n_s64<const N: i32>(a: int64x2_t, b: int64x2_t) -> int64x2_t {
+        let a_lanes: [i64; 2] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i64; 2] = b.to_vec().try_into().unwrap();
+        let mask = if N >= 64 { 0 } else { !0i64 << N };
+        BitVec::from_slice(&core::array::from_fn::<_, 2, _>(|i| {
+            let shifted_b = if N >= 64 { 0 } else { b_lanes[i] << N };
+            (a_lanes[i] & !mask) | (shifted_b & mask)
+        }), 64)
     }
 }
 
@@ -566,15 +681,26 @@ pub mod compare {
     /// Compare greater than or equal.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vcgeq_s16.html)
     #[hax_lib::opaque]
-    pub fn vcgeq_s16(_a: int16x8_t, _b: int16x8_t) -> uint16x8_t {
-        unimplemented!()
+    pub fn vcgeq_s16(a: int16x8_t, b: int16x8_t) -> uint16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        // Returns all 1s (0xFFFF) if true, all 0s if false
+        let result: [u16; 8] = core::array::from_fn(|i| {
+            if a_lanes[i] >= b_lanes[i] { 0xFFFF } else { 0 }
+        });
+        BitVec::from_slice(&result, 16)
     }
 
     /// Compare less than or equal.
     /// [Rust Documentation](https://doc.rust-lang.org/core/arch/aarch64/fn.vcleq_s16.html)
     #[hax_lib::opaque]
-    pub fn vcleq_s16(_a: int16x8_t, _b: int16x8_t) -> uint16x8_t {
-        unimplemented!()
+    pub fn vcleq_s16(a: int16x8_t, b: int16x8_t) -> uint16x8_t {
+        let a_lanes: [i16; 8] = a.to_vec().try_into().unwrap();
+        let b_lanes: [i16; 8] = b.to_vec().try_into().unwrap();
+        let result: [u16; 8] = core::array::from_fn(|i| {
+            if a_lanes[i] <= b_lanes[i] { 0xFFFF } else { 0 }
+        });
+        BitVec::from_slice(&result, 16)
     }
 }
 
@@ -979,8 +1105,18 @@ pub mod tbl {
 
     /// Table lookup (single table, 128-bit).
     #[hax_lib::opaque]
-    pub fn vqtbl1q_u8(_t: uint8x16_t, _idx: uint8x16_t) -> uint8x16_t {
-        unimplemented!()
+    pub fn vqtbl1q_u8(t: uint8x16_t, idx: uint8x16_t) -> uint8x16_t {
+        let t_lanes: [u8; 16] = t.to_vec().try_into().unwrap();
+        let idx_lanes: [u8; 16] = idx.to_vec().try_into().unwrap();
+        let result: [u8; 16] = core::array::from_fn(|i| {
+            let index = idx_lanes[i];
+            if index < 16 {
+                t_lanes[index as usize]
+            } else {
+                0
+            }
+        });
+        BitVec::from_slice(&result, 8)
     }
 }
 
@@ -993,10 +1129,15 @@ pub mod sha3 {
     use super::*;
     use super::logical::{veorq_u64, vbicq_u64};
 
-    /// Rotate and XOR.
+    /// Rotate and XOR: a XOR (b rotated left by 1)
     #[hax_lib::opaque]
-    pub fn vrax1q_u64(_a: uint64x2_t, _b: uint64x2_t) -> uint64x2_t {
-        unimplemented!()
+    pub fn vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+        let a_lanes: [u64; 2] = a.to_vec().try_into().unwrap();
+        let b_lanes: [u64; 2] = b.to_vec().try_into().unwrap();
+        let result: [u64; 2] = core::array::from_fn(|i| {
+            a_lanes[i] ^ b_lanes[i].rotate_left(1)
+        });
+        BitVec::from_slice(&result, 64)
     }
 
     /// Three-way XOR.
@@ -1007,10 +1148,15 @@ pub mod sha3 {
         veorq_u64(ab, c)
     }
 
-    /// XOR and rotate.
+    /// XOR and rotate: (a XOR b) rotated right by IMM6
     #[hax_lib::opaque]
-    pub fn vxarq_u64<const LEFT: i32, const RIGHT: i32>(_a: uint64x2_t, _b: uint64x2_t) -> uint64x2_t {
-        unimplemented!()
+    pub fn vxarq_u64<const IMM6: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+        let a_lanes: [u64; 2] = a.to_vec().try_into().unwrap();
+        let b_lanes: [u64; 2] = b.to_vec().try_into().unwrap();
+        let result: [u64; 2] = core::array::from_fn(|i| {
+            (a_lanes[i] ^ b_lanes[i]).rotate_right(IMM6 as u32)
+        });
+        BitVec::from_slice(&result, 64)
     }
 
     /// Bit clear and XOR.
@@ -1021,10 +1167,17 @@ pub mod sha3 {
         veorq_u64(a, b_and_not_c)
     }
 
-    /// Polynomial multiply long.
+    /// Polynomial multiply long (carryless multiplication).
     #[hax_lib::opaque]
-    pub fn vmull_p64(_a: poly64_t, _b: poly64_t) -> poly128_t {
-        unimplemented!()
+    pub fn vmull_p64(a: poly64_t, b: poly64_t) -> poly128_t {
+        // Polynomial multiplication (carryless)
+        let mut result: u128 = 0;
+        for i in 0..64 {
+            if (b >> i) & 1 == 1 {
+                result ^= (a as u128) << i;
+            }
+        }
+        result
     }
 }
 
@@ -1654,6 +1807,490 @@ mod tests {
             let result = vbcaxq_u64(a, b, c);
             // vbcaxq_u64 is a XOR (b AND NOT c), test against manual computation
             let expected = veorq_u64(a, vbicq_u64(b, c));
+            assert_eq!(result, expected);
+        }
+    }
+
+    // ========================================================================
+    // Arithmetic intrinsics tests
+    // ========================================================================
+
+    #[test]
+    fn test_vaddq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vaddq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vaddq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vaddq_u32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vaddq_u32(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vaddq_u32(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vsubq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vsubq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vsubq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmulq_n_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: i16 = rand::random();
+            let result = vmulq_n_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmulq_n_s16(a.into(), b).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmulq_n_u16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: u16 = rand::random();
+            let result = vmulq_n_u16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmulq_n_u16(a.into(), b).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmulq_n_u32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: u32 = rand::random();
+            let result = vmulq_n_u32(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmulq_n_u32(a.into(), b).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmulq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vmulq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmulq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vqdmulhq_n_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: i16 = rand::random();
+            let result = vqdmulhq_n_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vqdmulhq_n_s16(a.into(), b).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vqdmulhq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vqdmulhq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vqdmulhq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vqdmulhq_n_s32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: i32 = rand::random();
+            let result = vqdmulhq_n_s32(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vqdmulhq_n_s32(a.into(), b).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmull_s16() {
+        for _ in 0..N {
+            let a: BitVec<64> = BitVec::rand();
+            let b: BitVec<64> = BitVec::rand();
+            let result = vmull_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmull_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmull_high_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vmull_high_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmull_high_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmlal_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<64> = BitVec::rand();
+            let c: BitVec<64> = BitVec::rand();
+            let result = vmlal_s16(a, b, c);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmlal_s16(a.into(), b.into(), c.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vmlal_high_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let c: BitVec<128> = BitVec::rand();
+            let result = vmlal_high_s16(a, b, c);
+            let expected: BitVec<128> = unsafe {
+                upstream::vmlal_high_s16(a.into(), b.into(), c.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vaddv_u16() {
+        for _ in 0..N {
+            let a: BitVec<64> = BitVec::rand();
+            let result = vaddv_u16(a);
+            let expected: u16 = unsafe {
+                upstream::vaddv_u16(a.into())
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vaddvq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result = vaddvq_s16(a);
+            let expected: i16 = unsafe {
+                upstream::vaddvq_s16(a.into())
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vaddvq_u16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result = vaddvq_u16(a);
+            let expected: u16 = unsafe {
+                upstream::vaddvq_u16(a.into())
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    // ========================================================================
+    // Shift intrinsics tests
+    // ========================================================================
+
+    #[test]
+    fn test_vshrq_n_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            // Test a few shift values (must be in range 1..=16)
+            let result1 = vshrq_n_s16::<1>(a);
+            let expected1: BitVec<128> = unsafe { upstream::vshrq_n_s16::<1>(a.into()).into() };
+            assert_eq!(result1, expected1);
+
+            let result8 = vshrq_n_s16::<8>(a);
+            let expected8: BitVec<128> = unsafe { upstream::vshrq_n_s16::<8>(a.into()).into() };
+            assert_eq!(result8, expected8);
+
+            let result15 = vshrq_n_s16::<15>(a);
+            let expected15: BitVec<128> = unsafe { upstream::vshrq_n_s16::<15>(a.into()).into() };
+            assert_eq!(result15, expected15);
+        }
+    }
+
+    #[test]
+    fn test_vshrq_n_u16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result1 = vshrq_n_u16::<1>(a);
+            let expected1: BitVec<128> = unsafe { upstream::vshrq_n_u16::<1>(a.into()).into() };
+            assert_eq!(result1, expected1);
+
+            let result8 = vshrq_n_u16::<8>(a);
+            let expected8: BitVec<128> = unsafe { upstream::vshrq_n_u16::<8>(a.into()).into() };
+            assert_eq!(result8, expected8);
+        }
+    }
+
+    #[test]
+    fn test_vshrq_n_u32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result1 = vshrq_n_u32::<1>(a);
+            let expected1: BitVec<128> = unsafe { upstream::vshrq_n_u32::<1>(a.into()).into() };
+            assert_eq!(result1, expected1);
+
+            let result16 = vshrq_n_u32::<16>(a);
+            let expected16: BitVec<128> = unsafe { upstream::vshrq_n_u32::<16>(a.into()).into() };
+            assert_eq!(result16, expected16);
+        }
+    }
+
+    #[test]
+    fn test_vshrq_n_u64() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result1 = vshrq_n_u64::<1>(a);
+            let expected1: BitVec<128> = unsafe { upstream::vshrq_n_u64::<1>(a.into()).into() };
+            assert_eq!(result1, expected1);
+
+            let result32 = vshrq_n_u64::<32>(a);
+            let expected32: BitVec<128> = unsafe { upstream::vshrq_n_u64::<32>(a.into()).into() };
+            assert_eq!(result32, expected32);
+        }
+    }
+
+    #[test]
+    fn test_vshlq_n_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result0 = vshlq_n_s16::<0>(a);
+            let expected0: BitVec<128> = unsafe { upstream::vshlq_n_s16::<0>(a.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result8 = vshlq_n_s16::<8>(a);
+            let expected8: BitVec<128> = unsafe { upstream::vshlq_n_s16::<8>(a.into()).into() };
+            assert_eq!(result8, expected8);
+        }
+    }
+
+    #[test]
+    fn test_vshlq_n_u32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result0 = vshlq_n_u32::<0>(a);
+            let expected0: BitVec<128> = unsafe { upstream::vshlq_n_u32::<0>(a.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result16 = vshlq_n_u32::<16>(a);
+            let expected16: BitVec<128> = unsafe { upstream::vshlq_n_u32::<16>(a.into()).into() };
+            assert_eq!(result16, expected16);
+        }
+    }
+
+    #[test]
+    fn test_vshlq_n_u64() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let result0 = vshlq_n_u64::<0>(a);
+            let expected0: BitVec<128> = unsafe { upstream::vshlq_n_u64::<0>(a.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result32 = vshlq_n_u64::<32>(a);
+            let expected32: BitVec<128> = unsafe { upstream::vshlq_n_u64::<32>(a.into()).into() };
+            assert_eq!(result32, expected32);
+        }
+    }
+
+    #[test]
+    fn test_vshlq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vshlq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vshlq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vshlq_u16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vshlq_u16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vshlq_u16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vsliq_n_s32() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result0 = vsliq_n_s32::<0>(a, b);
+            let expected0: BitVec<128> = unsafe { upstream::vsliq_n_s32::<0>(a.into(), b.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result16 = vsliq_n_s32::<16>(a, b);
+            let expected16: BitVec<128> = unsafe { upstream::vsliq_n_s32::<16>(a.into(), b.into()).into() };
+            assert_eq!(result16, expected16);
+        }
+    }
+
+    #[test]
+    fn test_vsliq_n_s64() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result0 = vsliq_n_s64::<0>(a, b);
+            let expected0: BitVec<128> = unsafe { upstream::vsliq_n_s64::<0>(a.into(), b.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result32 = vsliq_n_s64::<32>(a, b);
+            let expected32: BitVec<128> = unsafe { upstream::vsliq_n_s64::<32>(a.into(), b.into()).into() };
+            assert_eq!(result32, expected32);
+        }
+    }
+
+    // ========================================================================
+    // Comparison intrinsics tests
+    // ========================================================================
+
+    #[test]
+    fn test_vcgeq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vcgeq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vcgeq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vcleq_s16() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vcleq_s16(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vcleq_s16(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    // ========================================================================
+    // Table lookup intrinsics tests
+    // ========================================================================
+
+    #[test]
+    fn test_vqtbl1q_u8() {
+        for _ in 0..N {
+            let t: BitVec<128> = BitVec::rand();
+            let idx: BitVec<128> = BitVec::rand();
+            let result = vqtbl1q_u8(t, idx);
+            let expected: BitVec<128> = unsafe {
+                upstream::vqtbl1q_u8(t.into(), idx.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    // ========================================================================
+    // SHA3 / Crypto intrinsics tests (continued)
+    // ========================================================================
+
+    #[test]
+    fn test_vrax1q_u64() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            let result = vrax1q_u64(a, b);
+            let expected: BitVec<128> = unsafe {
+                upstream::vrax1q_u64(a.into(), b.into()).into()
+            };
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn test_vxarq_u64() {
+        for _ in 0..N {
+            let a: BitVec<128> = BitVec::rand();
+            let b: BitVec<128> = BitVec::rand();
+            // Test a few rotation values
+            let result0 = vxarq_u64::<0>(a, b);
+            let expected0: BitVec<128> = unsafe { upstream::vxarq_u64::<0>(a.into(), b.into()).into() };
+            assert_eq!(result0, expected0);
+
+            let result32 = vxarq_u64::<32>(a, b);
+            let expected32: BitVec<128> = unsafe { upstream::vxarq_u64::<32>(a.into(), b.into()).into() };
+            assert_eq!(result32, expected32);
+
+            let result63 = vxarq_u64::<63>(a, b);
+            let expected63: BitVec<128> = unsafe { upstream::vxarq_u64::<63>(a.into(), b.into()).into() };
+            assert_eq!(result63, expected63);
+        }
+    }
+
+    #[test]
+    fn test_vmull_p64() {
+        for _ in 0..N {
+            let a: u64 = rand::random();
+            let b: u64 = rand::random();
+            let result = vmull_p64(a, b);
+            let expected: u128 = unsafe {
+                upstream::vmull_p64(a, b)
+            };
             assert_eq!(result, expected);
         }
     }
