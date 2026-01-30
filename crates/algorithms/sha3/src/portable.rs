@@ -66,6 +66,9 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         "
         )]
         impl Sealed for super::Shake256Xof {}
+
+        impl Sealed for super::CShake128It {}
+        impl Sealed for super::CShake256It {}
     }
     use super::*;
 
@@ -125,22 +128,30 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
     }
 
-    impl CShake128It {
+    impl Xof<168> for CShake128It {
         /// CShake128 new state
-        pub fn new() -> Self {
+        fn new() -> Self {
             Self {
                 state: KeccakXofState::<1, 168, u64>::new(),
             }
         }
 
         /// CShake128 absorb
-        pub fn absorb(&mut self, input: &[u8]) {
+        fn absorb(&mut self, input: &[u8]) {
             self.state.absorb(&[input]);
         }
 
         /// CShake128 absorb final
-        pub fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+        // fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+        //     self.state.absorb_final::<0x4u8>(&[input]);
+        //     self.state.squeeze(out);
+        // }
+
+        fn absorb_final(&mut self, input: &[u8]) {
             self.state.absorb_final::<0x4u8>(&[input]);
+        }
+
+        fn squeeze(&mut self, out: &mut [u8]) {
             self.state.squeeze(out);
         }
     }
@@ -170,22 +181,30 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
     }
 
-    impl CShake256It {
+    impl Xof<136> for CShake256It {
         /// CShake256 new state
-        pub fn new() -> Self {
+        fn new() -> Self {
             Self {
                 state: KeccakXofState::<1, 136, u64>::new(),
             }
         }
 
         /// CShake256 absorb
-        pub fn absorb(&mut self, input: &[u8]) {
+        fn absorb(&mut self, input: &[u8]) {
             self.state.absorb(&[input]);
         }
 
-        /// CShake256 absorb final
-        pub fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+        // /// CShake256 absorb final
+        // pub fn absorb_finalize(&mut self, input: &[u8], out: &mut [u8]) {
+        //     self.state.absorb_final::<0x4u8>(&[input]);
+        //     self.state.squeeze(out);
+        // }
+
+        fn absorb_final(&mut self, input: &[u8]) {
             self.state.absorb_final::<0x4u8>(&[input]);
+        }
+
+        fn squeeze(&mut self, out: &mut [u8]) {
             self.state.squeeze(out);
         }
     }
