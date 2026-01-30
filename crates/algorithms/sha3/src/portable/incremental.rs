@@ -1,7 +1,5 @@
 use generic_keccak::xof::KeccakXofState;
 mod private {
-    use crate::portable::incremental::cshake::{CShake128, CShake256};
-
     pub trait Sealed {}
 
     #[hax_lib::fstar::replace(
@@ -19,13 +17,25 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
     )]
     impl Sealed for super::Shake256Xof {}
 
-    impl Sealed for CShake128 {}
-    impl Sealed for CShake256 {}
+    //     #[hax_lib::fstar::replace(
+    //         "
+    // [@@ FStar.Tactics.Typeclasses.tcinstance]
+    // let impl_1__from__private: t_Sealed t_CShake128 = { __marker_trait_t_Sealed = () }
+    //         "
+    //     )]
+    impl Sealed for super::CShake128 {}
+    //     #[hax_lib::fstar::replace(
+    //         "
+    // [@@ FStar.Tactics.Typeclasses.tcinstance]
+    // let impl_1__from__private: t_Sealed t_CShake256 = { __marker_trait_t_Sealed = () }
+    //         "
+    //     )]
+    impl Sealed for super::CShake256 {}
 }
 use super::*;
 
 mod cshake;
-pub use cshake::{left_encode, left_encode_byte, right_encode, CShake128, CShake256};
+pub use cshake::{left_encode, left_encode_byte, right_encode};
 
 /// SHAKE128 Xof state
 pub struct Shake128Xof {
@@ -39,22 +49,23 @@ pub struct Shake256Xof {
 
 #[hax_lib::attributes]
 /// A trait for portable, incremental CSHAKE implementations
+// XXX: The names here have the `_cshake` suffix to work around an F* extraction name clash bug.
 pub trait CShake<const RATE: usize>: private::Sealed {
     /// Create new absorb state
     #[requires(RATE == 136 || RATE == 168)]
-    fn new(name: &[u8], customization: &[u8]) -> Self;
+    fn new_cshake(name: &[u8], customization: &[u8]) -> Self;
 
     /// Absorb input
     #[requires(true)]
-    fn absorb(&mut self, input: &[u8]);
+    fn absorb_cshake(&mut self, input: &[u8]);
 
     #[requires(true)]
     /// Absorb final input (may be empty)
-    fn absorb_final(&mut self, input: &[u8]);
+    fn absorb_final_cshake(&mut self, input: &[u8]);
 
     /// Squeeze output bytes
     #[requires(true)]
-    fn squeeze(&mut self, out: &mut [u8]);
+    fn squeeze_cshake(&mut self, out: &mut [u8]);
 }
 
 /// An XOF
@@ -176,3 +187,67 @@ pub fn shake256_squeeze_first_block(s: &mut KeccakState, out: &mut [u8]) {
 pub fn shake256_squeeze_next_block(s: &mut KeccakState, out: &mut [u8]) {
     s.state.squeeze_next_block::<136>(out, 0);
 }
+
+#[hax_lib::attributes]
+impl<const RATE: usize> CShake<RATE> for CShakeIncremental<RATE>
+where
+    CShakeIncremental<RATE>: private::Sealed,
+{
+    #[requires(RATE == 136 || RATE == 168)]
+    fn new_cshake(name: &[u8], customization: &[u8]) -> Self {
+        let mut state = KeccakXofState::<1, RATE, u64>::new();
+
+        let zeros = [0u8; RATE];
+        let name_bits = name.len() << 3;
+        let customization_bits = customization.len() << 3;
+        let mut b = [0u8; 9];
+
+        // Left bytepad
+        state.absorb(&[&left_encode_byte(RATE as u8)]);
+        // Encode name string
+        let name_bits_encoding = left_encode(name_bits, &mut b);
+        let name_bits_encoding_len = name_bits_encoding.len();
+        state.absorb(&[name_bits_encoding]);
+        state.absorb(&[name]);
+
+        // Encode customization string
+        let customization_encoding = left_encode(customization_bits, &mut b);
+        let customization_encoding_len = customization_encoding.len();
+        state.absorb(&[customization_encoding]);
+        state.absorb(&[customization]);
+
+        // Pad zeros
+        let buffer_len = 2
+            + name.len()
+            + name_bits_encoding_len
+            + customization_encoding_len
+            + (customization.len() % RATE);
+        let n_zeros = (RATE - (buffer_len % RATE)) % RATE;
+        debug_assert!(n_zeros < RATE);
+        state.absorb(&[&zeros[..n_zeros]]);
+
+        Self { state }
+    }
+
+    fn absorb_cshake(&mut self, input: &[u8]) {
+        self.state.absorb(&[input]);
+    }
+
+    fn absorb_final_cshake(&mut self, input: &[u8]) {
+        self.state.absorb_final::<0x4u8>(&[input]);
+    }
+
+    fn squeeze_cshake(&mut self, out: &mut [u8]) {
+        self.state.squeeze(out);
+    }
+}
+
+/// A portable, incremental implementation of CSHAKE for a given absorption rate.
+pub struct CShakeIncremental<const RATE: usize> {
+    pub(crate) state: KeccakXofState<1, RATE, u64>,
+}
+
+/// A portable, incremental implementation of CSHAKE-128.
+pub type CShake128 = CShakeIncremental<168>;
+/// A portable, incremental implementation of CSHAKE-256.
+pub type CShake256 = CShakeIncremental<136>;
