@@ -48,7 +48,7 @@ jobs:
         run: ./hax.py extract
 
       - name: ↑ Upload F* extraction (standard)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: fstar-extractions-standard
           path: "**/proofs/fstar"
@@ -73,7 +73,7 @@ jobs:
         run: ./hax.py extract --portable
 
       - name: ↑ Upload F* extraction (portable)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: fstar-extractions-portable
           path: "**/proofs/fstar"
