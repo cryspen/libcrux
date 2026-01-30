@@ -395,3 +395,57 @@ pub fn _vcleq_s16(a: _int16x8_t, b: _int16x8_t) -> _uint16x8_t {
 pub fn _vaddvq_u16(a: _uint16x8_t) -> u16 {
     unimplemented!()
 }
+#[inline(always)]
+pub fn _vmull_p64(a: u64, b: u64) -> u128 {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _veorq_u8(a: _uint8x16_t, b: _uint8x16_t) -> _uint8x16_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _vaesmcq_u8(data: _uint8x16_t) -> _uint8x16_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _vaeseq_u8(data: _uint8x16_t, key: _uint8x16_t) -> _uint8x16_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _vdupq_n_u8(value: u8) -> _uint8x16_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _vdupq_laneq_u32<const N: i32>(a: _uint32x4_t) -> _uint32x4_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _veorq_u32(a: _uint32x4_t, b: _uint32x4_t) -> _uint32x4_t {
+    unimplemented!()
+}
+
+#[inline]
+pub fn _vextq_u32<const N: i32>(a: _uint32x4_t, b: _uint32x4_t) -> _uint32x4_t {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vld1q_u32(ptr: &[u32]) -> _uint32x4_t {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vreinterpretq_u32_u8(a: _uint8x16_t) -> _uint32x4_t {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn _vreinterpretq_u8_u32(a: _uint32x4_t) -> _uint8x16_t {
+    unimplemented!()
+}

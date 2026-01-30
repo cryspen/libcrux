@@ -24,9 +24,13 @@ rand = { version = "0.9", optional = true }
 [features]
 default = []
 rand = ["dep:rand"]
-simd128 = []
-simd256 = []
 std = []
+
+# Hardware features can be force enabled.
+# It is not recommended to use these. This crate performs CPU feature detection
+# and enables the features when they are available.
+simd128 = ["libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-intrinsics/simd256"]
 
 [[bench]]
 harness = false

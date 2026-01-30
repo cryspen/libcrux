@@ -4,7 +4,7 @@
 #![allow(unused_variables, non_camel_case_types, dead_code)]
 
 #[cfg(hax)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -16,7 +16,7 @@ let get_lane (v: bit_vec 256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
 pub struct Vec256(u8);
 
 #[cfg(hax)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -619,5 +619,72 @@ pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
 
 #[inline(always)]
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_clmulepi64_si128<const IMM8: i32>(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aesenc_si128(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aesenclast_si128(a: Vec128, b: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_aeskeygenassist_si128<const RCON: i32>(a: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_slli_si128<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_srli_si128<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_unpackhi_epi64(lhs: Vec128, rhs: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_unpacklo_epi64(lhs: Vec128, rhs: Vec128) -> Vec128 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm_xor_si128(lhs: Vec128, rhs: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_setzero_si128() -> Vec128 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm_shuffle_epi32<const CONTROL: i32>(vector: Vec128) -> Vec128 {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_storeu_si128_u8(output: &mut [u8], vector: Vec128) {
+    unimplemented!()
+}
+
+#[inline(always)]
+pub fn mm_loadu_si128_u128(input: &u128) -> Vec128 {
+    unimplemented!()
+}
+#[inline(always)]
+pub fn mm_storeu_si128_u128(output: &mut u128, vector: Vec128) {
     unimplemented!()
 }
