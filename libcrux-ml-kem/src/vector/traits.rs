@@ -635,7 +635,7 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Rejection sampling
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop().and(
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop() & (
             hax_lib::forall(|j: usize|
                 hax_lib::implies(j < result,
                     future(out)[j] >= 0 && future(out)[j] <= 3328))))]

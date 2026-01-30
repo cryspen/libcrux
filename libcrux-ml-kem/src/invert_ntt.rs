@@ -12,8 +12,8 @@ use crate::polynomial::spec;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires(spec::is_bounded_poly(4 * 3328, re).and(*zeta_i == 128))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)).and(*future(zeta_i) == 64))]
+#[hax_lib::requires(spec::is_bounded_poly(4 * 3328, re) & (*zeta_i == 128))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)) & (*future(zeta_i) == 64))]
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -23,7 +23,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init - v $round * 4"#).and(
+            (*zeta_i == _zeta_i_init - round * 4).to_prop() & (
                 hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
@@ -32,9 +32,9 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        hax_lib::fstar_prop_expr!(r#"True"#)
+                        true.to_prop()
                     }
-                }),
+                })
             )
         });
 
@@ -57,8 +57,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires(spec::is_bounded_poly(3328, re).and(*zeta_i == 64))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)).and(*future(zeta_i) == 32))]
+#[hax_lib::requires(spec::is_bounded_poly(3328, re) & (*zeta_i == 64))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)) & (*future(zeta_i) == 32))]
 pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -68,7 +68,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init - v $round * 2"#).and(
+            (*zeta_i == _zeta_i_init - round * 2).to_prop() & (
                 hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
@@ -77,9 +77,9 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        hax_lib::fstar_prop_expr!(r#"True"#)
+                        true.to_prop() 
                     }
-                }),
+                })
             )
         });
 
@@ -92,8 +92,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires(spec::is_bounded_poly(3328, re).and(*zeta_i == 32))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)).and(*future(zeta_i) == 16))]
+#[hax_lib::requires(spec::is_bounded_poly(3328, re) & (*zeta_i == 32))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)) & (*future(zeta_i) == 16))]
 pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -103,7 +103,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init - v $round"#).and(
+            (*zeta_i == _zeta_i_init - round).to_prop() & (
                 hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
@@ -112,9 +112,9 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        hax_lib::fstar_prop_expr!(r#"True"#)
+                        true.to_prop()
                     }
-                }),
+                })
             )
         });
 
@@ -126,8 +126,8 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(spec::is_bounded_vector(3328, &a).and(spec::is_bounded_vector(3328, &b).and(zeta_r >= -1664 && zeta_r <= 1664)))]
-#[hax_lib::ensures(|(r0, r1)| spec::is_bounded_vector(3328, &r0).and(spec::is_bounded_vector(3328, &r1)))]
+#[hax_lib::requires(spec::is_bounded_vector(3328, &a) & (spec::is_bounded_vector(3328, &b) & (zeta_r >= -1664 && zeta_r <= 1664)))]
+#[hax_lib::ensures(|(r0, r1)| spec::is_bounded_vector(3328, &r0) & (spec::is_bounded_vector(3328, &r1)))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
@@ -147,7 +147,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires(
-    spec::is_bounded_poly(3328, re).and(
+    spec::is_bounded_poly(3328, re) & (
         match layer {
             4 => *zeta_i == 16,
             5 => *zeta_i == 8,
@@ -156,7 +156,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
             _ => false,
         })
 )]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)).and(
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)) & (
         match layer {
             4 => *future(zeta_i) == 8,
             5 => *future(zeta_i) == 4,
@@ -177,7 +177,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 
     for round in 0..(128 >> layer) {
         hax_lib::loop_invariant!(|round: usize| {
-            hax_lib::fstar_prop_expr!(r#"v $zeta_i == v $_zeta_i_init - v $round"#).and(
+            (*zeta_i == _zeta_i_init - round).to_prop() & (
                 hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= (round * step * 2) / 16 {
@@ -186,9 +186,9 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        hax_lib::fstar_prop_expr!(r#"True"#)
+                        true.to_prop()
                     }
-                }),
+                })
             )
         });
 
@@ -208,7 +208,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        hax_lib::fstar_prop_expr!(r#"True"#)
+                        true.to_prop()
                     }
                 })
             });
@@ -226,7 +226,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires((K <= 4).to_prop().and(spec::is_bounded_poly(K * 3328, re)))]
+#[hax_lib::requires((K <= 4).to_prop() & (spec::is_bounded_poly(K * 3328, re)))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,

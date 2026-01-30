@@ -36,20 +36,6 @@ pub(crate) mod spec {
 
     use crate::vector::{Operations, PolynomialRingElement};
 
-    pub(crate) fn are_eq_vectors<Vector: Operations>(
-        vec1: &Vector,
-        vec2: &Vector,
-    ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"$vec1 == $vec2"#)
-    }
-
-    pub(crate) fn are_eq_polys<Vector: Operations>(
-        poly1: &PolynomialRingElement<Vector>,
-        poly2: &PolynomialRingElement<Vector>,
-    ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"$poly1 == $poly2"#)
-    }
-
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"Spec.Utils.is_i16b_array_opaque (v b) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
@@ -66,7 +52,7 @@ pub(crate) mod spec {
         )
     }
 
-    #[hax_lib::requires(is_bounded_vector(b1, vec).and(b1 <= b2))]
+    #[hax_lib::requires(is_bounded_vector(b1, vec) & (b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
         hax_lib::fstar!(
@@ -74,7 +60,7 @@ pub(crate) mod spec {
         );
     }
 
-    #[hax_lib::requires(is_bounded_poly(b1, p).and(b1 <= b2))]
+    #[hax_lib::requires(is_bounded_poly(b1, p) & (b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_poly(b2, p))]
     pub(crate) fn is_bounded_poly_higher<Vector: Operations>(
         p: &PolynomialRingElement<Vector>,
@@ -88,8 +74,8 @@ pub(crate) mod spec {
 }
 
 #[inline(always)]
-#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1).and(spec::is_bounded_vector(_b2, vec2).and(_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result).and(crate::vector::traits::spec::add_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
+#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1) & (spec::is_bounded_vector(_b2, vec2) & (_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result) & (crate::vector::traits::spec::add_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
 pub(crate) fn add_bounded<Vector: Operations>(
     vec1: Vector,
     _b1: usize,
@@ -103,8 +89,8 @@ pub(crate) fn add_bounded<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1).and(spec::is_bounded_vector(_b2, vec2).and(_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result).and(crate::vector::traits::spec::sub_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
+#[hax_lib::requires(spec::is_bounded_vector(_b1, &vec1) & (spec::is_bounded_vector(_b2, vec2) & (_b1 < 32768 && _b2 < 32768 && _b1 + _b2 < 32768)))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(_b1+_b2, &result) & (crate::vector::traits::spec::sub_post(&vec1.repr(), &vec2.repr(), &result.repr())))]
 pub(crate) fn sub_bounded<Vector: Operations>(
     vec1: Vector,
     _b1: usize,
@@ -119,7 +105,7 @@ pub(crate) fn sub_bounded<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 100 --split_queries always")]
-#[hax_lib::requires(spec::is_bounded_vector(_b, &vec).and(c > -32768 && _b.to_int() * c.abs().to_int() < 32768.to_int()))]
+#[hax_lib::requires(spec::is_bounded_vector(_b, &vec) & (c > -32768 && _b.to_int() * c.abs().to_int() < 32768.to_int()))]
 #[hax_lib::ensures(|result| spec::is_bounded_vector(_b*c.abs() as usize, &result))]
 pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
     vec: Vector,
@@ -237,7 +223,7 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 /// sum of their constituent coefficients.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
-#[hax_lib::requires((_bound <= 4* 3328).to_prop().and(spec::is_bounded_poly(_bound, &myself).and(spec::is_bounded_poly(3328, &rhs))))]
+#[hax_lib::requires((_bound <= 4* 3328).to_prop() & (spec::is_bounded_poly(_bound, &myself) & (spec::is_bounded_poly(3328, &rhs))))]
 #[hax_lib::ensures(|_| spec::is_bounded_poly(_bound+3328, &future(myself)))]
 fn add_to_ring_element<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
@@ -338,7 +324,7 @@ fn subtract_reduce<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::requires(spec::is_bounded_poly(3328, &myself).and(spec::is_bounded_poly(3328, &message)))]
+#[hax_lib::requires(spec::is_bounded_poly(3328, &myself) & (spec::is_bounded_poly(3328, &message)))]
 #[hax_lib::ensures(|output| spec::is_bounded_poly(3328, &output))]
 fn add_message_error_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
@@ -431,10 +417,10 @@ fn add_error_reduce<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::ensures(|result| spec::is_bounded_vector(3328, &result).and(
-                                hax_lib::fstar_prop_expr!(r#"(forall i. i < 16 ==> 
-                                       ((v (Seq.index (i0._super_6081346371236564305.f_repr ${result}) i) % 3329)==
-                                       (v (Seq.index (i0._super_6081346371236564305.f_repr ${vector}) i) * 1353 * 169) % 3329))"#)))]
+#[hax_lib::ensures(|result| spec::is_bounded_vector(3328, &result) & (
+                    hax_lib::forall(|i: usize| hax_lib::implies(i < 16,
+                            result.repr()[i] % 3329 ==
+                            (vector.repr()[i] * 1353 * 169) % 3329))))]
 fn to_standard_domain<T: Operations>(vector: T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
@@ -519,7 +505,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 // ))))]
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::requires(spec::is_bounded_poly(3328, &myself).and(spec::is_bounded_poly(3328, &rhs)))]
+#[hax_lib::requires(spec::is_bounded_poly(3328, &myself) & (spec::is_bounded_poly(3328, &rhs)))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
 fn ntt_multiply<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
@@ -593,7 +579,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
-    #[hax_lib::requires((_b <= 4* 3328).to_prop().and(spec::is_bounded_poly(_b, &self).and(spec::is_bounded_poly(3328, &rhs))))]
+    #[hax_lib::requires((_b <= 4* 3328).to_prop() & (spec::is_bounded_poly(_b, &self) & (spec::is_bounded_poly(3328, &rhs))))]
     #[hax_lib::ensures(|_| spec::is_bounded_poly(_b + 3328, &future(self)))]
     pub(crate) fn add_to_ring_element(&mut self, rhs: &Self, _b: usize) {
         add_to_ring_element::<Vector>(self, rhs, _b);
@@ -614,7 +600,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[requires(spec::is_bounded_poly(3328, &self).and(spec::is_bounded_poly(3328, &message)))]
+    #[requires(spec::is_bounded_poly(3328, &self) & (spec::is_bounded_poly(3328, &message)))]
     #[ensures(|output| spec::is_bounded_poly(3328, &output))]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, result: Self) -> Self {
         add_message_error_reduce(self, message, result)
@@ -635,7 +621,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    #[requires(spec::is_bounded_poly(3328, &self).and(spec::is_bounded_poly(3328, &rhs)))]
+    #[requires(spec::is_bounded_poly(3328, &self) & (spec::is_bounded_poly(3328, &rhs)))]
     #[ensures(|result| spec::is_bounded_poly(3328, &result))]
     pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
         ntt_multiply(self, rhs)

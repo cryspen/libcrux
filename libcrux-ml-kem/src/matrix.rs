@@ -113,10 +113,10 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 /// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires((K <= 4).to_prop().and(
-        spec::is_bounded_poly(4095, v).and(
+#[hax_lib::requires((K <= 4).to_prop() & (
+        spec::is_bounded_poly(4095, v) & (
             hax_lib::forall(|i:usize| hax_lib::implies(i < K,
-                spec::is_bounded_poly(3328, &secret_as_ntt[i]).and(
+                spec::is_bounded_poly(3328, &secret_as_ntt[i]) & (
                     spec::is_bounded_poly(3328, &u_as_ntt[i])
 ))))))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
@@ -145,11 +145,11 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires((K <= 4).to_prop().and(
-        spec::is_bounded_poly(3328, message).and(
-            spec::is_bounded_poly(3328, error_2).and(
+#[hax_lib::requires((K <= 4).to_prop() & (
+        spec::is_bounded_poly(3328, message) & (
+            spec::is_bounded_poly(3328, error_2) & (
                 hax_lib::forall(|i:usize| hax_lib::implies(i < K,
-                    spec::is_bounded_poly(3328, &t_as_ntt[i]).and(
+                    spec::is_bounded_poly(3328, &t_as_ntt[i]) & (
                         spec::is_bounded_poly(3328, &r_as_ntt[i])
 )))))))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &result))]
@@ -177,10 +177,10 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires((K <= 4).to_prop().and(
+#[hax_lib::requires((K <= 4).to_prop() & (
         hax_lib::forall(|i:usize| hax_lib::implies(i < K,
-            spec::is_bounded_poly(7, &error_1[i]).and(
-                spec::is_bounded_poly(3328, &r_as_ntt[i]).and(
+            spec::is_bounded_poly(7, &error_1[i]) & (
+                spec::is_bounded_poly(3328, &r_as_ntt[i]) & (
                     hax_lib::forall(|j:usize| hax_lib::implies(j < K,
                         spec::is_bounded_poly(3328, &a_as_ntt[i][j])))))))))]
 #[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
@@ -209,9 +209,9 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
         let _result = result;
 
         for j in 0..K {
-            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &result[i]).and(
+            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &result[i]) & (
                 hax_lib::forall(|k: usize| {
-                    hax_lib::implies(k < K && k != i, spec::are_eq_polys(&result[k], &_result[k]))
+                    hax_lib::implies(k < K && k != i, hax_lib::eq(&result[k], &_result[k]))
                 })
             ));
 
@@ -228,10 +228,10 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 #[inline(always)]
 #[allow(non_snake_case)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
-#[hax_lib::requires((K <= 4).to_prop().and(
+#[hax_lib::requires((K <= 4).to_prop() & (
         hax_lib::forall(|i:usize| hax_lib::implies(i < K,
-            spec::is_bounded_poly(3328, &error_as_ntt[i]).and(
-                spec::is_bounded_poly(3328, &s_as_ntt[i]).and(
+            spec::is_bounded_poly(3328, &error_as_ntt[i]) & (
+                spec::is_bounded_poly(3328, &s_as_ntt[i]) & (
                     hax_lib::forall(|j:usize| hax_lib::implies(j < K,
                         spec::is_bounded_poly(3328, &matrix_A[i][j])))))))))]
 #[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
@@ -252,7 +252,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
 
         for j in 0..K {
             hax_lib::loop_invariant!(
-                |j: usize| spec::is_bounded_poly(j * 3328, &t_as_ntt[i]).and(hax_lib::forall(
+                |j: usize| spec::is_bounded_poly(j * 3328, &t_as_ntt[i]) & (hax_lib::forall(
                     |k: usize| hax_lib::implies(k < i, spec::is_bounded_poly(3328, &t_as_ntt[k]))
                 ))
             );
