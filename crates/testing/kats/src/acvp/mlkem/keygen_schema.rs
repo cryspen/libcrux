@@ -1,6 +1,5 @@
-use serde::Deserialize;
-
 use super::super::schema_common::*;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
@@ -8,7 +7,10 @@ pub struct KeyGenPrompt {
     pub tcId: usize,
 
     #[serde(with = "hex::serde")]
-    pub seed: [u8; 32],
+    pub z: [u8; 32],
+
+    #[serde(with = "hex::serde")]
+    pub d: [u8; 32],
 }
 
 #[derive(Deserialize)]
@@ -26,10 +28,10 @@ pub struct KeyGenResult {
     pub tcId: usize,
 
     #[serde(with = "hex::serde")]
-    pub pk: Vec<u8>,
+    pub ek: Vec<u8>,
 
     #[serde(with = "hex::serde")]
-    pub sk: Vec<u8>,
+    pub dk: Vec<u8>,
 }
 
 pub type ResultKeyGenTestGroup = TestGroupResults<KeyGenResult>;

@@ -1,8 +1,8 @@
-use super::common::*;
+use super::super::schema_common::*;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigVerPromptTestGroup {
     pub tgId: usize,
     pub testType: String,
@@ -15,7 +15,7 @@ pub struct SigVerPromptTestGroup {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigVerTest {
     pub tcId: usize,
     #[serde(default, with = "hex::serde")]
@@ -33,7 +33,7 @@ pub struct SigVerTest {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigVerResult {
     pub tcId: usize,
     pub testPassed: bool,

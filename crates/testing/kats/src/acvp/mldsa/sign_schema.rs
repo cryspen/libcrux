@@ -1,11 +1,11 @@
-use super::common::*;
+use super::super::schema_common::*;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct Randomness(#[serde(with = "hex::serde")] pub [u8; 32]);
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigGenPromptTestGroup {
     pub tgId: usize,
     pub testType: String,
@@ -18,7 +18,7 @@ pub struct SigGenPromptTestGroup {
     pub tests: Vec<SigGenTest>,
 }
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigGenTest {
     pub tcId: usize,
     #[serde(with = "hex::serde")]
@@ -36,7 +36,7 @@ pub struct SigGenTest {
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case, dead_code)]
+#[allow(non_snake_case)]
 pub struct SigGenResult {
     pub tcId: usize,
     #[serde(with = "hex::serde")]
