@@ -209,11 +209,10 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
         let _result = result;
 
         for j in 0..K {
-            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &result[i]) & (
-                hax_lib::forall(|k: usize| {
+            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &result[i])
+                & (hax_lib::forall(|k: usize| {
                     hax_lib::implies(k < K && k != i, hax_lib::eq(&result[k], &_result[k]))
-                })
-            ));
+                })));
 
             let product = a_as_ntt[i][j].ntt_multiply(&r_as_ntt[j]);
             result[i].add_to_ring_element(&product, j * 3328);
@@ -251,11 +250,11 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
         t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
 
         for j in 0..K {
-            hax_lib::loop_invariant!(
-                |j: usize| spec::is_bounded_poly(j * 3328, &t_as_ntt[i]) & (hax_lib::forall(
-                    |k: usize| hax_lib::implies(k < i, spec::is_bounded_poly(3328, &t_as_ntt[k]))
-                ))
-            );
+            hax_lib::loop_invariant!(|j: usize| spec::is_bounded_poly(j * 3328, &t_as_ntt[i])
+                & (hax_lib::forall(|k: usize| hax_lib::implies(
+                    k < i,
+                    spec::is_bounded_poly(3328, &t_as_ntt[k])
+                ))));
 
             let product = matrix_A[i][j].ntt_multiply(&s_as_ntt[j]);
             t_as_ntt[i].add_to_ring_element(&product, j * 3328);

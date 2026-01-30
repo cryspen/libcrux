@@ -23,8 +23,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            (*zeta_i == _zeta_i_init - round * 4).to_prop() & (
-                hax_lib::forall(|i: usize| {
+            (*zeta_i == _zeta_i_init - round * 4).to_prop()
+                & (hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
                             spec::is_bounded_vector(4 * 3328, &re.coefficients[i])
@@ -34,8 +34,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                     } else {
                         true.to_prop()
                     }
-                })
-            )
+                }))
         });
 
         *zeta_i -= 1;
@@ -68,8 +67,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            (*zeta_i == _zeta_i_init - round * 2).to_prop() & (
-                hax_lib::forall(|i: usize| {
+            (*zeta_i == _zeta_i_init - round * 2).to_prop()
+                & (hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
@@ -77,10 +76,9 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
                             spec::is_bounded_vector(3328, &re.coefficients[i])
                         }
                     } else {
-                        true.to_prop() 
+                        true.to_prop()
                     }
-                })
-            )
+                }))
         });
 
         *zeta_i -= 1;
@@ -103,8 +101,8 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
-            (*zeta_i == _zeta_i_init - round).to_prop() & (
-                hax_lib::forall(|i: usize| {
+            (*zeta_i == _zeta_i_init - round).to_prop()
+                & (hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= round {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
@@ -114,8 +112,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
                     } else {
                         true.to_prop()
                     }
-                })
-            )
+                }))
         });
 
         *zeta_i -= 1;
@@ -177,8 +174,8 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 
     for round in 0..(128 >> layer) {
         hax_lib::loop_invariant!(|round: usize| {
-            (*zeta_i == _zeta_i_init - round).to_prop() & (
-                hax_lib::forall(|i: usize| {
+            (*zeta_i == _zeta_i_init - round).to_prop()
+                & (hax_lib::forall(|i: usize| {
                     if i < 16 {
                         if i >= (round * step * 2) / 16 {
                             spec::is_bounded_vector(3328, &re.coefficients[i])
@@ -188,8 +185,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
                     } else {
                         true.to_prop()
                     }
-                })
-            )
+                }))
         });
 
         *zeta_i -= 1;
