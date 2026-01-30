@@ -11,7 +11,7 @@ pub fn compute_kmac<'a, const RATE: usize, CShakeState: CShake<RATE>>(
     data: &[u8],
     customization: &[u8],
 ) -> &'a [u8] {
-    let mut state = CShakeState::new(KMAC_LABEL, customization);
+    let mut state = CShakeState::new_cshake(KMAC_LABEL, customization);
 
     let zeros = [0u8; RATE];
     // let customization_bits = customization_length << 3;
@@ -21,25 +21,25 @@ pub fn compute_kmac<'a, const RATE: usize, CShakeState: CShake<RATE>>(
 
     // Compute new_X
     // Left bytepad
-    state.absorb(&left_encode_byte(RATE as u8));
+    state.absorb_cshake(&left_encode_byte(RATE as u8));
 
     // encode_string K
     let key_enc = left_encode(key_bits, &mut b);
-    state.absorb(key_enc);
-    state.absorb(key);
+    state.absorb_cshake(key_enc);
+    state.absorb_cshake(key);
 
     // Pad zeros
     let buffer_len = 2 + key_enc.len() + (key_length % RATE);
     let n_zeros = (RATE - (buffer_len % RATE)) % RATE;
     debug_assert!(n_zeros < RATE);
-    state.absorb(&zeros[..n_zeros]);
+    state.absorb_cshake(&zeros[..n_zeros]);
 
     // Append data
-    state.absorb(data);
+    state.absorb_cshake(data);
 
     // Right encode output length
-    state.absorb_final(right_encode(tag_bits, &mut b));
-    state.squeeze(tag);
+    state.absorb_final_cshake(right_encode(tag_bits, &mut b));
+    state.squeeze_cshake(tag);
 
     tag
 }
