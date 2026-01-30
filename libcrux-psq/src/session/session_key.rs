@@ -1,7 +1,10 @@
 //! # Session Keys
 use tls_codec::{SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-use crate::{aead::AEADKey, handshake::transcript::Transcript};
+use crate::{
+    aead::{AEADKeyNonce, AeadType},
+    handshake::transcript::Transcript,
+};
 
 use super::SessionError as Error;
 
@@ -18,14 +21,14 @@ pub struct SessionKey {
     /// The session key identifier
     pub(crate) identifier: [u8; SESSION_ID_LENGTH],
     /// The actual key
-    pub(crate) key: AEADKey,
+    pub(crate) key: AEADKeyNonce,
 }
 
 const SESSION_KEY_INFO: &[u8] = b"session key id";
 const SESSION_KEY_SALT: &[u8] = b"session key salt";
 
 // id_skCS = KDF(skCS, "shared key id")
-fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
+fn session_key_id(key: &AEADKeyNonce) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     let mut session_id = [0u8; SESSION_ID_LENGTH];
 
     libcrux_hkdf::sha2_256::hkdf(
@@ -39,8 +42,12 @@ fn session_key_id(key: &AEADKey) -> Result<[u8; SESSION_ID_LENGTH], Error> {
     Ok(session_id)
 }
 
-// skCS = KDF(K2, "session secret" | tx2)
-pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<SessionKey, Error> {
+// K_S = KDF(K2, "session secret" | tx2)
+pub(super) fn derive_session_key(
+    k2: AEADKeyNonce,
+    tx2: &Transcript,
+    aead_type: AeadType,
+) -> Result<SessionKey, Error> {
     #[derive(TlsSerializeBytes, TlsSize)]
     struct SessionKeyInfo<'a> {
         domain_separator: &'static [u8],
@@ -48,13 +55,45 @@ pub(super) fn derive_session_key(k2: AEADKey, tx2: Transcript) -> Result<Session
     }
 
     const SESSION_KEY_LABEL: &[u8] = b"session key";
-    let key = AEADKey::new(
+    let key = AEADKeyNonce::new(
         &k2,
         &SessionKeyInfo {
             domain_separator: SESSION_KEY_LABEL,
-            tx2: &tx2,
+            tx2,
         },
+        aead_type,
     )?;
     let identifier = session_key_id(&key)?;
     Ok(SessionKey { key, identifier })
+}
+
+// K_import = KDF(K_S | psk, "secret import")
+pub(super) fn derive_import_key(
+    k2: AEADKeyNonce,
+    psk: &[u8],
+    aead_type: AeadType,
+) -> Result<AEADKeyNonce, Error> {
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct SessionImportInfo {
+        domain_separator: &'static [u8],
+    }
+
+    #[derive(TlsSerializeBytes, TlsSize)]
+    struct SessionImportIkm<'a> {
+        old_session_key: &'a AEADKeyNonce,
+        psk: &'a [u8],
+    }
+
+    const SESSION_IMPORT_LABEL: &[u8] = b"secret import";
+    AEADKeyNonce::new(
+        &SessionImportIkm {
+            old_session_key: &k2,
+            psk,
+        },
+        &SessionImportInfo {
+            domain_separator: SESSION_IMPORT_LABEL,
+        },
+        aead_type,
+    )
+    .map_err(|_| Error::Import)
 }

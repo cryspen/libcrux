@@ -1,15 +1,22 @@
-use tls_codec::{Serialize, SerializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
+use rand::CryptoRng;
+use tls_codec::{
+    Serialize, SerializeBytes, TlsDeserialize, TlsSerialize, TlsSerializeBytes, TlsSize,
+};
 
 pub const TX0_DOMAIN_SEP: u8 = 0;
 pub const TX1_DOMAIN_SEP: u8 = 1;
 pub const TX2_DOMAIN_SEP: u8 = 2;
 
 use super::dhkem::DHPublicKey;
-use crate::handshake::{ciphersuite::types::PQEncapsulationKey, HandshakeError as Error};
+use crate::handshake::{
+    ciphersuite::{initiator::Auth, types::PQEncapsulationKey},
+    types::{Authenticator, Signature},
+    AuthMessage, HandshakeError as Error,
+};
 use libcrux_sha2::{Digest, SHA256_LENGTH};
 
 /// The initial transcript hash.
-#[derive(Debug, Default, Clone, Copy, TlsSerializeBytes, TlsSize)]
+#[derive(Debug, Default, Clone, Copy, TlsSerializeBytes, TlsSerialize, TlsDeserialize, TlsSize)]
 pub struct Transcript([u8; SHA256_LENGTH]);
 
 impl Transcript {
@@ -17,15 +24,14 @@ impl Transcript {
         Self::add_hash::<TX0_DOMAIN_SEP>(None, initial_input)
     }
 
-    fn add_hash<const DOMAIN_SEPARATOR: u8>(
+    pub(crate) fn add_hash<const DOMAIN_SEPARATOR: u8>(
         old_transcript: Option<&Transcript>,
         input: impl Serialize,
     ) -> Result<Transcript, Error> {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
         hasher.update(
-            old_transcript
-                .tls_serialize()
+            <Option<&Transcript> as SerializeBytes>::tls_serialize(&old_transcript)
                 .map_err(Error::Serialize)?
                 .as_slice(),
         );
@@ -69,27 +75,68 @@ pub(crate) fn tx0(
 }
 
 // tx1 = hash(1 | tx0 | g^c | [pkS] | [encap(pkS, SS)])
+// or
+// tx1 = hash(1 | tx0 | vk | [pkS] | [encap(pkS, SS)])
 pub(crate) fn tx1(
     tx0: &Transcript,
-    initiator_longterm_pk: &DHPublicKey,
+    initiator_authenticator: &Authenticator,
     responder_pq_pk: Option<PQEncapsulationKey>,
     pq_encaps: &[u8],
 ) -> Result<Transcript, Error> {
     #[derive(TlsSerialize, TlsSize)]
-    struct Transcript1Inputs<'a> {
-        initiator_longterm_pk: &'a DHPublicKey,
+    struct Transcript1InputsDh<'a> {
+        initiator_authenticator: &'a Authenticator,
         responder_pq_pk: Option<PQEncapsulationKey<'a>>,
         pq_encaps: &'a [u8],
     }
 
     Transcript::add_hash::<TX1_DOMAIN_SEP>(
         Some(tx0),
-        Transcript1Inputs {
-            initiator_longterm_pk,
+        Transcript1InputsDh {
+            initiator_authenticator,
             pq_encaps,
             responder_pq_pk,
         },
     )
+}
+
+pub(crate) fn sign_tx1<'a>(
+    tx0: &Transcript,
+    authenticator: Auth<'a>,
+    responder_pq_pk: Option<PQEncapsulationKey>,
+    pq_encaps: &[u8],
+    rng: &mut impl CryptoRng,
+) -> Result<(Option<Signature>, Transcript), Error> {
+    let tx1 = tx1(
+        tx0,
+        &Authenticator::from(authenticator),
+        responder_pq_pk,
+        pq_encaps,
+    )?;
+
+    match authenticator {
+        Auth::DH(_) => Ok((None, tx1)),
+        Auth::Sig(sig_key_pair) => Ok((Some(sig_key_pair.sign(rng, &tx1)?), tx1)),
+    }
+}
+
+pub(crate) fn verify_tx1(
+    tx0: &Transcript,
+    initiator_authenticator: &AuthMessage,
+    responder_pq_pk: Option<PQEncapsulationKey>,
+    pq_encaps: &[u8],
+) -> Result<(Authenticator, Transcript), Error> {
+    let authenticator = Authenticator::from(initiator_authenticator);
+    let tx1 = tx1(tx0, &authenticator, responder_pq_pk, pq_encaps)?;
+    match initiator_authenticator {
+        AuthMessage::Dh(_dhpublic_key) => Ok((authenticator, tx1)),
+        AuthMessage::Sig { vk, signature } => {
+            // verify signature
+            vk.verify(&tx1, signature)?;
+
+            Ok((authenticator, tx1))
+        }
+    }
 }
 
 // Registration Mode: tx2 = hash(2 | tx1 | g^y)

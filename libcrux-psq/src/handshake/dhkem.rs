@@ -6,13 +6,14 @@ use libcrux_ecdh::{secret_to_public, Algorithm};
 use rand::CryptoRng;
 use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSerializeBytes, TlsSize};
 
-use crate::handshake::HandshakeError as Error;
+use crate::handshake::{
+    types::{Authenticator, ProvideAuthenticator},
+    HandshakeError as Error,
+};
 
 #[derive(TlsSerializeBytes, TlsSize)]
 /// A wrapper around a KEM shared secret.
-///
-/// We don't directly expose this.
-pub(crate) struct DHSharedSecret(Vec<u8>);
+pub struct DHSharedSecret(Vec<u8>);
 
 impl AsRef<[u8]> for DHSharedSecret {
     fn as_ref(&self) -> &[u8] {
@@ -26,6 +27,7 @@ impl AsRef<[u8]> for DHSharedSecret {
     Hash,
     PartialEq,
     Clone,
+    Copy,
     TlsDeserializeBytes,
     TlsSerializeBytes,
     TlsSize,
@@ -33,11 +35,24 @@ impl AsRef<[u8]> for DHSharedSecret {
     TlsDeserialize,
 )]
 /// A wrapper around a KEM public key.
-pub struct DHPublicKey(Vec<u8>);
+pub struct DHPublicKey([u8; 32]);
+
+impl ProvideAuthenticator for DHPublicKey {
+    fn authenticator(&self) -> super::types::Authenticator {
+        Authenticator::Dh(self.clone())
+    }
+}
 
 impl AsRef<[u8]> for DHPublicKey {
     fn as_ref(&self) -> &[u8] {
         self.0.as_slice()
+    }
+}
+
+/// Import a Diffie-Hellman public key from raw bytes.
+impl DHPublicKey {
+    pub fn from_bytes(value: &[u8; 32]) -> Self {
+        Self(*value)
     }
 }
 
@@ -73,8 +88,26 @@ impl DHPrivateKey {
     pub fn to_public(&self) -> DHPublicKey {
         DHPublicKey(
             secret_to_public(libcrux_ecdh::Algorithm::X25519, &self.0)
+                .expect("secret key is honestly generated X25519 key")
+                .try_into()
                 .expect("secret key is honestly generated X25519 key"),
         )
+    }
+
+    /// Import a Diffie-Hellman private key from raw bytes.
+    pub fn from_bytes(value: &[u8; 32]) -> Result<Self, Error> {
+        // Test whether the key is already clamped to make sure it can't be misused.
+        if !libcrux_ecdh::validate_scalar(libcrux_ecdh::Algorithm::X25519, value).is_ok() {
+            Err(Error::InvalidDHSecret)
+        } else {
+            Ok(Self(Vec::from(value)))
+        }
+    }
+
+    /// Perform a Diffie-Hellman exchange between `self` and `remote_public_key`
+    /// to produce a `DHSharedSecret`
+    pub fn diffie_hellman(&self, remote_public_key: &DHPublicKey) -> Result<DHSharedSecret, Error> {
+        DHSharedSecret::derive(self, remote_public_key)
     }
 }
 
@@ -86,11 +119,33 @@ pub struct DHKeyPair {
     pub pk: DHPublicKey,
 }
 
+impl ProvideAuthenticator for DHKeyPair {
+    fn authenticator(&self) -> super::types::Authenticator {
+        self.pk.authenticator()
+    }
+}
+
 impl DHKeyPair {
-    /// Generate a fresh Diffie-Hellman key pair
+    /// Generate a fresh Diffie-Hellman key pair.
     pub fn new(rng: &mut impl CryptoRng) -> Self {
         let sk = DHPrivateKey::new(rng);
         let pk = sk.to_public();
         Self { sk, pk }
+    }
+
+    /// Provide reference to the Diffie-Hellman private key.
+    pub fn sk(&self) -> &DHPrivateKey {
+        &self.sk
+    }
+}
+
+impl From<DHPrivateKey> for DHKeyPair {
+    /// Derive a Diffie-Hellman public key from a private key
+    /// and build a wrapper around both.
+    fn from(sk: DHPrivateKey) -> Self {
+        Self {
+            pk: sk.to_public(),
+            sk,
+        }
     }
 }

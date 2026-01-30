@@ -50,4 +50,4 @@ jobs:
             cd libcrux-ml-kem/extracts/cpp_header_only/generated
             cmake -B build -G"Ninja Multi-Config"
             cmake --build build
-            ./build/Debug/ml_kem_test
+            ./build/Debug/ml_kem_test768

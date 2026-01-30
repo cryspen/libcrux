@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-kem"
-version = "0.0.4"
+version = "0.0.6"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -23,11 +23,11 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 rand = { version = "0.9", optional = true, default-features = false }
-libcrux-platform = { version = "0.0.2", path = "../crates/sys/platform" }
-libcrux-sha3 = { version = "0.0.4", path = "../crates/algorithms/sha3" }
-libcrux-intrinsics = { version = "0.0.4", path = "../crates/utils/intrinsics" }
-libcrux-secrets = { version = "0.0.4", path = "../crates/utils/secrets" }
-libcrux-traits = { version = "0.0.4", path = "../traits" }
+libcrux-platform = { version = "0.0.3", path = "../crates/sys/platform" }
+libcrux-sha3.workspace = true
+libcrux-intrinsics.workspace = true
+libcrux-secrets.workspace = true
+libcrux-traits.workspace = true
 hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [
     "derive",
@@ -81,7 +81,7 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.8"
-libcrux-traits = { version = "0.0.4", path = "../traits", features = [
+libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ]}
 libcrux-kats = { path = "../crates/testing/kats", features = [
@@ -105,7 +105,7 @@ name = "keygen"
 required-features = ["mlkem768"]
 
 [package.metadata."docs.rs"]
-features = ["kyber", "pqcp"]
+features = ["kyber", "pqcp", "codec"]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
 [lints.rust]

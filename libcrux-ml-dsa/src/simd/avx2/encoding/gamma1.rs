@@ -5,14 +5,14 @@ use libcrux_intrinsics::avx2::*;
 open Spec.Intrinsics
 let lemma_mm256_add_epi64_lemma_weaker lhs rhs (i: u64 {v i < 256})
   : Lemma
-    (requires forall i. Core_models.Abstractions.Bit.Bit_Zero? lhs.(i) \/ Core_models.Abstractions.Bit.Bit_Zero? rhs.(i))
-    (ensures (Core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
-           /\ (Core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
+    (requires forall i. Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(i) \/ Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(i))
+    (ensures (Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
+           /\ (Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
     [SMTPat (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i)]
     = Spec.Intrinsics.mm256_add_epi64_lemma lhs rhs i
 "#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 18 ==> simd_unit_shifted.(i) == Core_models.Abstractions.Bit.Bit_Zero"#))]
+#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 18 ==> simd_unit_shifted.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
 forall (i: nat {i < 8}) (j: nat {j < 18}).
   let offset = if i >= 4 then 56 else 0 in
@@ -80,7 +80,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 20 ==> ${simd_unit_shifted}.(i) == Core_models.Abstractions.Bit.Bit_Zero"#))]
+#[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 20 ==> ${simd_unit_shifted}.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
 forall (i: nat {i < 8}) (j: nat {j < 20}).
        ${result}.(mk_int ((if i >= 4 then 48 else 0) + i * 20 + j))
@@ -202,7 +202,7 @@ let deserialize_unsigned_post
        u8_to_bv serialized.[ mk_usize (i / 8) ] (mk_int (i % 8)) ==
        result.(mk_int ((i / bytes) * 32 + i % bytes))) /\
     (forall (i: nat{i < 256}).
-       i % 32 >= bytes ==> Core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
+       i % 32 >= bytes ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
 "#
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]

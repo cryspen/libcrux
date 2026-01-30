@@ -14,10 +14,12 @@ use tls_codec::{
 use transport::Transport;
 
 use crate::{
-    aead::{AEADError, AEADKey},
+    aead::{AEADError, AEADKeyNonce, AeadType},
     handshake::{
         ciphersuite::types::PQEncapsulationKey, dhkem::DHPublicKey, transcript::Transcript,
+        types::Authenticator,
     },
+    session::session_key::derive_import_key,
 };
 
 /// Session related errors
@@ -41,6 +43,8 @@ pub enum SessionError {
     IdentifierMismatch,
     /// The given payload exceeds the available output buffer
     OutputBufferShort,
+    /// An error arising during the import of an external secret
+    Import,
 }
 
 impl From<AEADError> for SessionError {
@@ -95,27 +99,29 @@ pub struct Session {
     pub(crate) session_key: SessionKey,
     /// Binds this `Session` to the long-term public key material of both
     /// parties that was used during the handshake
-    pub(crate) pk_binder: [u8; PK_BINDER_LEN],
+    pub(crate) pk_binder: Option<[u8; PK_BINDER_LEN]>,
     /// An increasing counter of derived secure channels
     pub(crate) channel_counter: u64,
+    pub(crate) aead_type: AeadType,
+    pub(crate) transcript: Transcript,
 }
 
 // pkBinder = KDF(skCS, g^c | g^s | [pkS])
 fn derive_pk_binder(
     key: &SessionKey,
-    initiator_ecdh_pk: &DHPublicKey,
+    initiator_authenticator: &Authenticator,
     responder_ecdh_pk: &DHPublicKey,
-    responder_pq_pk: Option<PQEncapsulationKey>,
+    responder_pq_pk: &Option<PQEncapsulationKey>,
 ) -> Result<[u8; PK_BINDER_LEN], SessionError> {
     #[derive(TlsSerialize, TlsSize)]
     struct PkBinderInfo<'a> {
-        initiator_ecdh_pk: &'a DHPublicKey,
+        initiator_authenticator: &'a Authenticator,
         responder_ecdh_pk: &'a DHPublicKey,
-        responder_pq_pk: Option<PQEncapsulationKey<'a>>,
+        responder_pq_pk: &'a Option<PQEncapsulationKey<'a>>,
     }
 
     let info = PkBinderInfo {
-        initiator_ecdh_pk,
+        initiator_authenticator,
         responder_ecdh_pk,
         responder_pq_pk,
     };
@@ -136,27 +142,42 @@ fn derive_pk_binder(
     Ok(binder)
 }
 
+/// Wraps public key material that is bound to a session.
+pub struct SessionBinding<'a> {
+    /// The initiator's authenticator value, i.e. a long-term DH public value or signature verification key.
+    pub initiator_authenticator: &'a Authenticator,
+    /// The responder's long term DH public value.
+    pub responder_ecdh_pk: &'a DHPublicKey,
+    /// The responder's long term PQ-KEM public key (if any).
+    pub responder_pq_pk: Option<PQEncapsulationKey<'a>>,
+}
+
 impl Session {
     /// Create a new `Session`.
     ///
-    /// This will derive the long-term session key, and compute a binder tying
+    /// This will derive the long-term session key, and optionally compute a binder tying
     /// the session key to any long-term public key material that was used during the
     /// handshake.
-    pub(crate) fn new(
+    pub(crate) fn new<'a>(
         tx2: Transcript,
-        k2: AEADKey,
-        initiator_ecdh_pk: &DHPublicKey,
-        responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<PQEncapsulationKey>,
+        k2: AEADKeyNonce,
+        session_binding: Option<SessionBinding<'a>>,
         is_initiator: bool,
+        aead_type: AeadType,
     ) -> Result<Self, SessionError> {
-        let session_key = derive_session_key(k2, tx2)?;
-        let pk_binder = derive_pk_binder(
-            &session_key,
-            initiator_ecdh_pk,
-            responder_ecdh_pk,
-            responder_pq_pk,
-        )?;
+        let session_key = derive_session_key(k2, &tx2, aead_type)?;
+
+        let pk_binder = session_binding
+            .map(|session_binding| {
+                derive_pk_binder(
+                    &session_key,
+                    session_binding.initiator_authenticator,
+                    session_binding.responder_ecdh_pk,
+                    &session_binding.responder_pq_pk,
+                )
+            })
+            .transpose()?;
+
         Ok(Self {
             principal: if is_initiator {
                 SessionPrincipal::Initiator
@@ -166,46 +187,244 @@ impl Session {
             session_key,
             pk_binder,
             channel_counter: 0,
+            aead_type,
+            transcript: tx2,
         })
+    }
+
+    /// Import a secret, replacing the main session secret
+    ///
+    /// A secret `psk` that is at least 32 bytes long can be imported
+    /// into the session, replacing the original main session secret
+    /// `K_S` with a fresh secret derived from the `psk` and `K_S`.
+    /// If a public key binding is provided it must be the same as for
+    /// the original session, but the new session will derive a fresh
+    /// session ID and update the running transcript `tx` for future
+    /// imports.
+    ///
+    /// In detail:
+    /// ```text
+    /// K_import = KDF(K_S || psk, "secret import")
+    /// tx' = Hash(tx || session_ID)
+    ///
+    /// // From here: treat K_import as though it was the outcome of a handshake
+    /// K_S' = KDF(K_import, "session secret" | tx')
+    /// session_ID' = KDF(K_S', "shared key id")
+    /// ```
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// // Initiator and responder finish the handshake resulting in
+    /// // `initiator_session` and `responder_session` both bound to public
+    /// // keys in `session_binding`.
+    ///
+    /// // WARN: In real usage, `psk` should be at least 32 bytes of high
+    /// // entropy randomness.
+    /// let psk = [0xab; 32];
+    ///
+    /// // Re-key the initiator session, providing the old session
+    /// // binding. This sustains the binding to these public keys.
+    /// // `session_binding`, if provided must match the binding of the
+    /// // original session.
+    /// let initiator_session = initiator_session.import(psk.as_slice(), session_binding).unwrap();
+    ///
+    /// // Re-key the responder session, providing the old session
+    /// // binding. This sustains the binding to these public keys.
+    /// // `session_binding`, if provided must match the binding of the
+    /// // original session.
+    /// let responder_session = initiator_session.import(psk.as_slice(), session_binding).unwrap();
+    ///
+    /// // [.. If `psk` was the same on both sides, you can now derive
+    /// // transport channels from the re-keyed session as before ..]
+    ///
+    /// // WARN: In real usage, `another_psk` should be at least 32 bytes of high
+    /// // entropy randomness.
+    /// let another_psk = [0xcd; 32];
+    ///
+    /// // Re-key the initiator session, stripping the binding to the original
+    /// // handshake public keys. Once the binding has been stripped it cannot
+    /// // be re-established without performing a fresh handshake. Exercise
+    /// // with caution to avoid session misbinding attacks.
+    /// let unbound_initiator_session = initiator_session.import(another_psk.as_slice(), None).unwrap();
+    ///
+    /// // Re-key the responder session, stripping the binding to the original
+    /// // handshake public keys. Once the binding has been stripped it cannot
+    /// // be re-established without performing a fresh handshake. Exercise
+    /// // with caution to avoid session misbinding attacks.
+    /// let unbound_responder_session = responder_session.import(another_psk.as_slice(), None).unwrap();
+    ///
+    /// // [.. If `psk` was the same on both sides, you can now derive
+    /// // transport channels from the re-keyed session as before ..]
+    /// ```
+    pub fn import<'a>(
+        self,
+        psk: &[u8],
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
+    ) -> Result<Self, SessionError> {
+        // We require that the psk is at least 32 bytes long.
+        if psk.len() < 32 {
+            return Err(SessionError::Import);
+        }
+
+        let session_binding = session_binding.into();
+
+        match (self.pk_binder, &session_binding) {
+            // No binder was present, no new binder was provided.
+            (None, None) => (),
+            // No binder was present, but a new binder was provided => We disallow re-binding a session after the binding has been lost.
+            (None, Some(_)) => return Err(SessionError::Import),
+            // Some binder was present and no other binder was provided => This removes the binding from the session for good
+            (Some(_), None) => (),
+            // Some binder was present and a binder was provided for
+            // validation => The new session will be bound to the same
+            // keys as the original, if the binder is valid
+            (
+                Some(pk_binder),
+                Some(SessionBinding {
+                    initiator_authenticator,
+                    responder_ecdh_pk,
+                    responder_pq_pk,
+                }),
+            ) => {
+                if derive_pk_binder(
+                    &self.session_key,
+                    initiator_authenticator,
+                    responder_ecdh_pk,
+                    responder_pq_pk,
+                )? != pk_binder
+                {
+                    return Err(SessionError::Import);
+                }
+            }
+        };
+
+        let transcript =
+            Transcript::add_hash::<3>(Some(&self.transcript), self.session_key.identifier)
+                .map_err(|_| SessionError::Import)?;
+
+        let import_key = derive_import_key(self.session_key.key, psk, self.aead_type)?;
+
+        Self::new(
+            transcript,
+            import_key,
+            session_binding,
+            matches!(self.principal, SessionPrincipal::Initiator),
+            self.aead_type,
+        )
     }
 
     /// Serializes the session state for storage.
     ///
-    /// WARN: `tls_serialize` should not be called directly, since it does
-    /// not consume `Session`. This opens the possibility for nonce
-    /// re-use by deserializing a stale `Session` since the original
-    /// could be used after serialization.
-    pub fn serialize(self, out: &mut [u8]) -> Result<usize, SessionError> {
-        self.tls_serialize(&mut &mut out[..])
-            .map_err(SessionError::Serialize)
+    /// We require the caller to input the public keys (if any) that
+    /// were used to create the session, in order to enforce they have
+    /// access to all keys necessary to deserialize the session later
+    /// on.
+    ///
+    /// WARN: `tls_serialize`
+    /// should not be called directly, since it does not consume
+    /// `Session`. This opens the possibility for nonce re-use by
+    /// deserializing a stale `Session` since the original could be
+    /// used after serialization.
+    pub fn serialize<'a>(
+        self,
+        out: &mut [u8],
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
+    ) -> Result<usize, SessionError> {
+        let session_binding = session_binding.into();
+        match (self.pk_binder, session_binding) {
+            (None, None) => self
+                .tls_serialize(&mut &mut out[..])
+                .map_err(SessionError::Serialize),
+            (None, Some(_)) | (Some(_), None) => Err(SessionError::Storage),
+            (
+                Some(pk_binder),
+                Some(SessionBinding {
+                    initiator_authenticator,
+                    responder_ecdh_pk,
+                    responder_pq_pk,
+                }),
+            ) => {
+                if derive_pk_binder(
+                    &self.session_key,
+                    initiator_authenticator,
+                    responder_ecdh_pk,
+                    &responder_pq_pk,
+                )? != pk_binder
+                {
+                    Err(SessionError::Storage)
+                } else {
+                    self.tls_serialize(&mut &mut out[..])
+                        .map_err(SessionError::Serialize)
+                }
+            }
+        }
+    }
+
+    /// Export a secret derived from the main session key.
+    ///
+    /// Derives a secret `K` from the main session key as
+    /// `K = KDF(K_session, context || "PSQ secret export")`.
+    pub fn export_secret(&self, context: &[u8], out: &mut [u8]) -> Result<(), SessionError> {
+        use tls_codec::TlsSerializeBytes;
+        const PSQ_EXPORT_CONTEXT: &[u8; 17] = b"PSQ secret export";
+        #[derive(TlsSerializeBytes, TlsSize)]
+        struct ExportInfo<'a> {
+            context: &'a [u8],
+            separator: [u8; 17],
+        }
+
+        libcrux_hkdf::sha2_256::hkdf(
+            out,
+            b"",
+            self.session_key.key.as_ref(),
+            &ExportInfo {
+                context,
+                separator: *PSQ_EXPORT_CONTEXT,
+            }
+            .tls_serialize()
+            .map_err(SessionError::Serialize)?,
+        )
+        .map_err(|_| SessionError::CryptoError)
     }
 
     /// Deserialize a session state.
     ///
-    /// The public key inputs must be the same as those used originally to derive the
-    /// stored session and are used to validate the public key binding of the
-    /// session key.
+    /// If the session was bound to a set of public keys, those same public keys must be provided to validate the binding on deserialization.
     // XXX: Use `tls_codec::conditional_deserializable` to implement
     // the validation.
-    pub fn deserialize(
+    pub fn deserialize<'a>(
         bytes: &[u8],
-        initiator_ecdh_pk: &DHPublicKey,
-        responder_ecdh_pk: &DHPublicKey,
-        responder_pq_pk: Option<PQEncapsulationKey>,
+        session_binding: impl Into<Option<SessionBinding<'a>>>,
     ) -> Result<Self, SessionError> {
+        let session_binding = session_binding.into();
         let session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;
 
-        if derive_pk_binder(
-            &session.session_key,
-            initiator_ecdh_pk,
-            responder_ecdh_pk,
-            responder_pq_pk,
-        )? == session.pk_binder
-        {
-            Ok(session)
-        } else {
-            Err(SessionError::Storage)
+        match (session.pk_binder, session_binding) {
+            // No binder was expected and none was provided.
+            (None, None) => Ok(session),
+            // No binder was expected, but a binder was provided =>
+            // Error to signal that this session is not bound to the
+            // provided binder.
+            (None, Some(_)) => Err(SessionError::Storage),
+            // Some binder was expected but none was provided.
+            (Some(_), None) => Err(SessionError::Storage),
+            // Some binder was expected and a binder was provided =>
+            // Deserialization is valid, if binder is valid.
+            (Some(pk_binder), Some(provided_binding)) => {
+                if derive_pk_binder(
+                    &session.session_key,
+                    provided_binding.initiator_authenticator,
+                    provided_binding.responder_ecdh_pk,
+                    &provided_binding.responder_pq_pk,
+                )? == pk_binder
+                {
+                    Ok(session)
+                } else {
+                    Err(SessionError::Storage)
+                }
+            }
         }
     }
 

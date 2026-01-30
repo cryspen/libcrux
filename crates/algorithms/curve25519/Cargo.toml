@@ -1,7 +1,7 @@
 [package]
 name = "libcrux-curve25519"
 description = "Formally verified curve25519 ECDH library"
-version = "0.0.4"
+version = "0.0.5"
 readme = "Readme.md"
 
 authors.workspace = true
@@ -13,8 +13,8 @@ repository.workspace = true
 [dependencies]
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits = { version = "=0.0.4", path = "../../../traits" }
-libcrux-secrets = { version = "=0.0.4", path = "../../utils/secrets" }
+libcrux-traits.workspace = true
+libcrux-secrets.workspace = true
 
 [features]
 # Checking secret independence
@@ -24,6 +24,6 @@ check-secret-independence = [
 ]
 
 [dev-dependencies]
-libcrux-traits = { version = "0.0.4", path = "../../../traits", features = [
+libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ] }

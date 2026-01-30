@@ -1,7 +1,7 @@
 module Spec.Utils
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open FStar.Mul
-open Core
+open Core_models
 
 let pow2_more_values (x:nat) =
   assert_norm(pow2( 0 ) == 1 );
@@ -308,7 +308,7 @@ let v_XOF v_LEN input = admit()
 
 let update_at_range_lemma #n
   (s: t_Slice 't)
-  (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
+  (i: Core_models.Ops.Range.t_Range (int_t n) {(Core_models.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
   (x: t_Slice 't)
   = let s' = Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x in
     let len = v i.f_start in

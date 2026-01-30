@@ -77,9 +77,30 @@ jobs:
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
         run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
 
+  build-no_std:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: crates/sys/platform
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Add no_std target
+        run: rustup target add thumbv6m-none-eabi
+        
+      - name: Update dependencies
+        run: cargo update
+
+      - name: 🔨 Build
+        run: |
+          rustc --print=cfg
+          cargo check --lib --verbose --target thumbv6m-none-eabi
+          
   platform-build-test-status:
     if: ${{ always() }}
-    needs: [platform]
+    needs: [platform, build-no_std]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

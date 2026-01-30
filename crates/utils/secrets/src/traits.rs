@@ -59,6 +59,7 @@ where
     fn wrapping_add<T: Into<Self>>(self, rhs: T) -> Self;
     fn wrapping_sub<T: Into<Self>>(self, rhs: T) -> Self;
     fn wrapping_mul<T: Into<Self>>(self, rhs: T) -> Self;
+    fn wrapping_neg(self) -> Self;
     fn rotate_left(self, rhs: u32) -> Self;
     fn rotate_right(self, rhs: u32) -> Self;
 }

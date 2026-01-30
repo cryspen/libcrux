@@ -2,43 +2,68 @@ use libcrux_kem::{MlKem768PrivateKey, MlKem768PublicKey};
 
 #[cfg(feature = "classic-mceliece")]
 use crate::classic_mceliece::{PublicKey, SecretKey};
-use crate::handshake::{
-    ciphersuite::{
-        traits::CiphersuiteBase,
-        types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
-        CiphersuiteName,
+use crate::{
+    aead::AeadType,
+    handshake::{
+        ciphersuite::{
+            traits::CiphersuiteBase,
+            types::{PQCiphertext, PQEncapsulationKey, PQSharedSecret},
+            CiphersuiteName,
+        },
+        dhkem::DHKeyPair,
+        HandshakeError,
     },
-    dhkem::{DHKeyPair, DHPrivateKey, DHPublicKey},
-    HandshakeError,
 };
 
-pub struct ResponderX25519ChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
+pub(crate) enum PqKemKeyPair<'a> {
+    None,
+    MlKem(&'a MlKem768PrivateKey, &'a MlKem768PublicKey),
+    #[cfg(feature = "classic-mceliece")]
+    Cmc(&'a SecretKey, &'a PublicKey),
+    #[cfg(not(feature = "classic-mceliece"))]
+    #[allow(unused)]
+    Cmc(
+        core::marker::PhantomData<&'a [u8]>,
+        core::marker::PhantomData<&'a [u8]>,
+    ),
 }
-pub struct ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
-    pub longterm_pq_encapsulation_key: &'a MlKem768PublicKey,
-    pub longterm_pq_decapsulation_key: &'a MlKem768PrivateKey,
+
+impl<'a> PqKemKeyPair<'a> {
+    pub(crate) fn encapsulation_key(&self) -> Option<PQEncapsulationKey<'a>> {
+        match self {
+            PqKemKeyPair::None => None,
+            PqKemKeyPair::MlKem(_, ml_kem_public_key) => {
+                Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
+            }
+            #[cfg(feature = "classic-mceliece")]
+            PqKemKeyPair::Cmc(_, public_key) => Some(PQEncapsulationKey::CMC(public_key)),
+            #[cfg(not(feature = "classic-mceliece"))]
+            PqKemKeyPair::Cmc(_, _) => {
+                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
+                unreachable!("unsupported ciphersuite")
+            }
+        }
+    }
+}
+
+impl<'a> From<(&'a MlKem768PrivateKey, &'a MlKem768PublicKey)> for PqKemKeyPair<'a> {
+    fn from(value: (&'a MlKem768PrivateKey, &'a MlKem768PublicKey)) -> Self {
+        PqKemKeyPair::MlKem(value.0, value.1)
+    }
 }
 
 #[cfg(feature = "classic-mceliece")]
-pub struct ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a> {
-    pub longterm_ecdh_keys: &'a DHKeyPair,
-    pub longterm_pq_encapsulation_key: &'a PublicKey,
-    pub longterm_pq_decapsulation_key: &'a SecretKey,
+impl<'a> From<(&'a SecretKey, &'a PublicKey)> for PqKemKeyPair<'a> {
+    fn from(value: (&'a SecretKey, &'a PublicKey)) -> Self {
+        PqKemKeyPair::Cmc(value.0, value.1)
+    }
 }
 
-#[allow(non_camel_case_types)]
-/// The ciphersuites available to a PSQ responder.
-pub enum ResponderCiphersuite<'a> {
-    X25519NoneChaCha20Poly1305HkdfSha256(ResponderX25519ChaCha20Poly1305HkdfSha256<'a>),
-    X25519MlKem768ChaCha20Poly1305HkdfSha256(ResponderX25519MlKem768ChaCha20Poly1305HkdfSha256<'a>),
-    #[cfg(feature = "classic-mceliece")]
-    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-        ResponderX25519ClassicMcElieceChaCha20Poly1305HkdfSha256<'a>,
-    ),
-    #[cfg(not(feature = "classic-mceliece"))]
-    X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(std::marker::PhantomData<&'a [u8]>),
+pub struct ResponderCiphersuite<'a> {
+    pub(crate) name: CiphersuiteName,
+    pub(crate) kex: &'a DHKeyPair,
+    pub(crate) pq: PqKemKeyPair<'a>,
+    pub(crate) aead_type: AeadType,
 }
 
 impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
@@ -47,106 +72,30 @@ impl<'a> CiphersuiteBase for ResponderCiphersuite<'a> {
     type SharedSecret = PQSharedSecret;
 
     fn name(&self) -> CiphersuiteName {
-        match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_MLKEM768_CHACHA20POLY1305_HKDFSHA256
-            }
-            #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_CLASSICMCELIECE_CHACHA20POLY1305_HKDFSHA256
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
-                CiphersuiteName::X25519_NONE_CHACHA20POLY1305_HKDFSHA256
-            }
-        }
-    }
-
-    fn own_ecdh_decapsulation_key(&self) -> &DHPrivateKey {
-        match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .sk
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(suite) => {
-                &suite.longterm_ecdh_keys.sk
-            }
-        }
-    }
-    fn own_ecdh_encapsulation_key(&self) -> &DHPublicKey {
-        match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_mlkem768_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_mlkem768_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_classic_mc_eliece_chacha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-            #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
-                // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
-                unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(
-                responder_x25519_cha_cha_poly_hkdf_sha256,
-            ) => {
-                &responder_x25519_cha_cha_poly_hkdf_sha256
-                    .longterm_ecdh_keys
-                    .pk
-            }
-        }
+        self.name
     }
 }
+
 impl<'a> ResponderCiphersuite<'a> {
+    pub(crate) fn aead_type(&self) -> AeadType {
+        self.aead_type
+    }
+
     pub(crate) fn own_pq_encapsulation_key(
         &self,
     ) -> Option<<Self as CiphersuiteBase>::EncapsulationKeyRef> {
-        match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
-            ) => Some(PQEncapsulationKey::MlKem(
-                responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
-            )),
+        match self.pq {
+            PqKemKeyPair::None => None,
+            PqKemKeyPair::MlKem(_, ml_kem_public_key) => {
+                Some(PQEncapsulationKey::MlKem(ml_kem_public_key))
+            }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_cmc_cha_cha_poly_hkdf_sha256,
-            ) => Some(PQEncapsulationKey::CMC(
-                responder_x25519_cmc_cha_cha_poly_hkdf_sha256.longterm_pq_encapsulation_key,
-            )),
+            PqKemKeyPair::Cmc(_, public_key) => Some(PQEncapsulationKey::CMC(public_key)),
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+            PqKemKeyPair::Cmc(_, _) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
             }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => None,
         }
     }
 
@@ -154,47 +103,34 @@ impl<'a> ResponderCiphersuite<'a> {
         &self,
         ciphertext: &<Self as CiphersuiteBase>::Ciphertext,
     ) -> Result<<Self as CiphersuiteBase>::SharedSecret, HandshakeError> {
-        match self {
-            ResponderCiphersuite::X25519MlKem768ChaCha20Poly1305HkdfSha256(
-                responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256,
-            ) => {
+        match self.pq {
+            PqKemKeyPair::None => Err(HandshakeError::UnsupportedCiphersuite),
+            PqKemKeyPair::MlKem(ml_kem_private_key, _) => {
                 let PQCiphertext::MlKem(inner_ctxt) = ciphertext else {
                     return Err(HandshakeError::CryptoError);
                 };
-                let shared_secret = libcrux_ml_kem::mlkem768::decapsulate(
-                    responder_x25519_ml_kem768_cha_cha_poly_hkdf_sha256
-                        .longterm_pq_decapsulation_key,
-                    inner_ctxt,
-                );
+                let shared_secret =
+                    libcrux_ml_kem::mlkem768::decapsulate(ml_kem_private_key, inner_ctxt);
 
                 Ok(PQSharedSecret::MlKem(shared_secret))
             }
             #[cfg(feature = "classic-mceliece")]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(
-                responder_x25519_cmc_cha_cha_poly_hkdf_sha256,
-            ) => {
+            PqKemKeyPair::Cmc(secret_key, _) => {
                 use crate::classic_mceliece::ClassicMcEliece;
                 use libcrux_traits::kem::KEM;
 
                 let PQCiphertext::CMC(inner_ctxt) = ciphertext else {
                     return Err(HandshakeError::CryptoError);
                 };
-                let shared_secret = <ClassicMcEliece as KEM>::decapsulate(
-                    &responder_x25519_cmc_cha_cha_poly_hkdf_sha256
-                        .longterm_pq_decapsulation_key
-                        .0,
-                    inner_ctxt,
-                )
-                .map_err(|_| HandshakeError::CryptoError)?;
+                let shared_secret =
+                    <ClassicMcEliece as KEM>::decapsulate(&secret_key.0, inner_ctxt)
+                        .map_err(|_| HandshakeError::CryptoError)?;
                 Ok(PQSharedSecret::CMC(shared_secret))
             }
             #[cfg(not(feature = "classic-mceliece"))]
-            ResponderCiphersuite::X25519ClassicMcElieceChaCha20Poly1305HkdfSha256(_) => {
+            PqKemKeyPair::Cmc(_, _) => {
                 // We can never reach this because the ciphersuite can only be constructed with the feature turned on.
                 unreachable!("unsupported ciphersuite")
-            }
-            ResponderCiphersuite::X25519NoneChaCha20Poly1305HkdfSha256(_) => {
-                Err(HandshakeError::UnsupportedCiphersuite)
             }
         }
     }

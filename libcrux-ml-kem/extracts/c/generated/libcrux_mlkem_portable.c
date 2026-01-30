@@ -7,8 +7,8 @@
  * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
  * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
  * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
- * F*: unset
- * Libcrux: aef4b0d98bf3abe09b6ac696f60342e2979bb35e
+ * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
+ * Libcrux: 8da0286d845669ce55a7f5aa405ba3ecbf4c11c7
  */
 
 #include "internal/libcrux_mlkem_portable.h"
@@ -149,11 +149,11 @@ libcrux_ml_kem_vector_portable_vector_type_from_bytes(
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
     elements.data[i0] =
-        libcrux_secrets_int_as_i16_59(
-            Eurydice_slice_index_shared(array, (size_t)2U * i0, uint8_t))
-            << 8U |
         libcrux_secrets_int_as_i16_59(Eurydice_slice_index_shared(
-            array, (size_t)2U * i0 + (size_t)1U, uint8_t));
+            array, (size_t)2U * i0 + (size_t)1U, uint8_t))
+            << 8U |
+        libcrux_secrets_int_as_i16_59(
+            Eurydice_slice_index_shared(array, (size_t)2U * i0, uint8_t));
   }
   return elements;
 }
@@ -173,9 +173,9 @@ KRML_MUSTINLINE void libcrux_ml_kem_vector_portable_vector_type_to_bytes(
   for (size_t i = (size_t)0U;
        i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++) {
     size_t i0 = i;
-    Eurydice_slice_index_mut(bytes, (size_t)2U * i0, uint8_t) =
-        libcrux_secrets_int_as_u8_f5(x.data[i0] >> 8U);
     Eurydice_slice_index_mut(bytes, (size_t)2U * i0 + (size_t)1U, uint8_t) =
+        libcrux_secrets_int_as_u8_f5(x.data[i0] >> 8U);
+    Eurydice_slice_index_mut(bytes, (size_t)2U * i0, uint8_t) =
         libcrux_secrets_int_as_u8_f5(x.data[i0]);
   }
 }

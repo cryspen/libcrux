@@ -4,6 +4,10 @@ This crate provides an API for performing elliptic curve
 Diffie-Hellman. Currently supported curves are Curve 25519 and NIST
 curve P256.
 
+## `no_std` support
+
+This crate supports `no_std` targets (using `--no-default-features`), but requires the presence of a global allocator.
+
 ## Verification
 ![verified-hacl]
 

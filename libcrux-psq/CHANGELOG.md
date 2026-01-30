@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- [#1301](https://github.com/cryspen/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
+- [#1307](https://github.com/cryspen/libcrux/pull/1307): Expose additional functionalities on the DHKEM (https://github.com/jstuczyn)
+- [#1298](https://github.com/cryspen/libcrux/pull/1298): Propagate import/export functions from CMC crate (https://github.com/georgio)
+
+## [0.0.6] (2026-01-22)
+
+- [#1294](https://github.com/cryspen/libcrux/pull/1294): Allow import of X25519 private and public keys (https://github.com/georgio)
+- [#1278](https://github.com/cryspen/libcrux/pull/1278): Allow import of secrets into sessions. (Breaking, since session binding to principal public keys is now optional.)
+- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependencies `libcrux-sha3`, `libcrux-ml-kem`, `libcrux-ml-dsa`
+- [#1248](https://github.com/cryspen/libcrux/pull/1248):
+    - Add signature-based authentication (breaking because ciphersuite IDs have changed)
+    - Add AES-GCM 128 ciphersuite support
+    - Add secret export API to `Session`
+    - Add support for retrieving initiator authenticator mid-handshake from Responder
+    - Update `Session` deserialization API to accept initiator authenticator instead of initiator DH public key only (breaking)
+    - Update `Session` serialization API to require initiator authenticator and responder public keys as inputs to enforce serializer has access to all information needed to deserialize
+
 ## [0.0.5] (2025-11-05)
 
 - [#1108](https://github.com/cryspen/libcrux/pull/1108): Allow using Classic McEliece for PQ KEM

@@ -1,6 +1,6 @@
 module BitVecEq
 
-open Core
+open Core_models
 open FStar.Mul
 open FStar.FunctionalExtensionality
 
