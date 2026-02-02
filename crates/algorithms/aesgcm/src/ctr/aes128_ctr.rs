@@ -57,11 +57,11 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
 
     macro_rules! expansion_step128 {
         ($i:expr,$rcon:expr) => {
-            // For hax we could clone here instead.
-            // let prev = keyex[$i - 1].clone();
-            let (prev, current) = keyex.split_at_mut($i);
-            current[0].aes_keygen_assist0::<$rcon>(&prev[$i - 1]);
-            current[0].key_expansion_step(&prev[$i - 1]);
+            // For hax need to clone here.
+            let prev = keyex[$i - 1].clone();
+            // let (prev, current) = keyex.split_at_mut($i);
+            keyex[$i].aes_keygen_assist0::<$rcon>(&prev);
+            keyex[$i].key_expansion_step(&prev);
         };
     }
 

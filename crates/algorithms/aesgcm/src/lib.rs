@@ -428,7 +428,7 @@ pub(crate) mod x64 {
 
                     // due to use of `target_feature`, unsafe is needed here
                     #[inline]
-                    #[target_feature(enable = "avx2", enable = "aes")]
+                    #[cfg_attr(not(hax), target_feature(enable = "avx2", enable = "aes"))]
                     #[allow(unsafe_code)]
                     unsafe fn inner(
                         key: &[u8],
@@ -461,7 +461,7 @@ pub(crate) mod x64 {
 
                     // due to use of `target_feature`, unsafe is needed here
                     #[inline]
-                    #[target_feature(enable = "avx2", enable = "aes")]
+                    #[cfg_attr(not(hax), target_feature(enable = "avx2", enable = "aes"))]
                     #[allow(unsafe_code)]
                     unsafe fn inner(
                         key: &[u8],

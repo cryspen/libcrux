@@ -59,6 +59,14 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
 
 #[hax_lib::opaque]
 #[inline(always)]
+pub fn mm_storeu_si128_u128(output: &mut u128, vector: Vec128) {
+    unsafe {
+        _mm_storeu_si128(output as *mut u128 as *mut __m128i, vector);
+    }
+}
+
+#[hax_lib::opaque]
+#[inline(always)]
 pub fn mm_storeu_si128_u8(output: &mut [u8], vector: Vec128) {
     #[cfg(not(hax))]
     debug_assert!(output.len() >= 8);
@@ -94,6 +102,12 @@ pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     #[cfg(not(hax))]
     debug_assert_eq!(input.len(), 16);
     unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
+}
+
+#[hax_lib::opaque]
+#[inline(always)]
+pub fn mm_loadu_si128_u128(input: &u128) -> Vec128 {
+    unsafe { _mm_loadu_si128(input as *const u128 as *const __m128i) }
 }
 
 #[hax_lib::opaque]

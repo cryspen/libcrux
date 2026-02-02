@@ -55,32 +55,32 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
 
     macro_rules! expansion_step256 {
         ($i:expr,$rcon:expr) => {
-            // Split at $i to get the one we currently look at and the previous
-            // blocks.
-            let (prev, current) = keyex.split_at_mut($i);
+            // // Split at $i to get the one we currently look at and the previous
+            // // blocks.
+            // let (prev, current) = keyex.split_at_mut($i);
 
-            // Split again to get the $i and $i + 1 states to operate on.
-            let (c0, c1) = current.split_at_mut(1);
-            let key_i = &mut c0[0];
-            let key_i_plus_1 = &mut c1[0];
+            // // Split again to get the $i and $i + 1 states to operate on.
+            // let (c0, c1) = current.split_at_mut(1);
+            // let key_i = &mut c0[0];
+            // let key_i_plus_1 = &mut c1[0];
 
-            key_i.aes_keygen_assist0::<$rcon>(&prev[$i - 1]);
-            key_i.key_expansion_step(&prev[$i - 2]);
+            // key_i.aes_keygen_assist0::<$rcon>(&prev[$i - 1]);
+            // key_i.key_expansion_step(&prev[$i - 2]);
 
-            key_i_plus_1.aes_keygen_assist1(&key_i);
-            key_i_plus_1.key_expansion_step(&prev[$i - 1]);
+            // key_i_plus_1.aes_keygen_assist1(&key_i);
+            // key_i_plus_1.key_expansion_step(&prev[$i - 1]);
 
-            // The following is what will go through hax right now. But it
+            // The following is what goes through hax right now. But it
             // requires copies that are really not necessary.
-            // let prev0 = keyex[$i - 2].clone();
-            // let prev1 = keyex[$i - 1].clone();
+            let prev0 = keyex[$i - 2].clone();
+            let prev1 = keyex[$i - 1].clone();
 
-            // keyex[$i].aes_keygen_assist0::<$rcon>(&prev1);
-            // keyex[$i].key_expansion_step(&prev0);
+            keyex[$i].aes_keygen_assist0::<$rcon>(&prev1);
+            keyex[$i].key_expansion_step(&prev0);
 
-            // let next0 = keyex[$i].clone();
-            // keyex[$i + 1].aes_keygen_assist1(&next0);
-            // keyex[$i + 1].key_expansion_step(&prev1);
+            let next0 = keyex[$i].clone();
+            keyex[$i + 1].aes_keygen_assist1(&next0);
+            keyex[$i + 1].key_expansion_step(&prev1);
         };
     }
 
@@ -91,17 +91,17 @@ fn key_expansion<T: AESState>(key: &[u8]) -> ExtendedKey<T, NUM_KEYS> {
     expansion_step256!(10, 0x10);
     expansion_step256!(12, 0x20);
 
-    let (prev0, tmp) = keyex.split_at_mut(13);
-    let (prev1, last) = tmp.split_at_mut(1);
+    // let (prev0, tmp) = keyex.split_at_mut(13);
+    // let (prev1, last) = tmp.split_at_mut(1);
     // let prev0 = &mut prev0[12];
     // let prev1 = &mut prev1[0];
     // let last = &mut last[0];
-    // To get through hax right now we'd have to clone instead.
-    // let prev0 = keyex[12].clone();
-    // let prev1 = keyex[13].clone();
+    // To get through hax right now have to clone instead.
+    let prev0 = keyex[12].clone();
+    let prev1 = keyex[13].clone();
     // let last = &mut keyex[NUM_KEYS - 1];
-    last[0].aes_keygen_assist0::<0x40>(&prev1[0]);
-    last[0].key_expansion_step(&prev0[12]);
+    keyex[NUM_KEYS - 1].aes_keygen_assist0::<0x40>(&prev1);
+    keyex[NUM_KEYS - 1].key_expansion_step(&prev0);
 
     keyex
 }
