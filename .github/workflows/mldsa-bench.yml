@@ -6,6 +6,15 @@ on:
   # run on PR but skip
   pull_request:
     branches: ["main", "dev"]
+    paths:
+      - 'crates/utils/intrinsics/**'
+      - 'crates/testing/kats/**'
+      - 'crates/utils/macros/**'
+      - 'libcrux-ml-dsa/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:
