@@ -4,6 +4,16 @@ on:
   merge_group:
   pull_request:
     branches: ["main", "dev", "*"]
+    paths:
+      - 'crates/algorithms/curve25519/**'
+      - 'libcrux-ecdh/**'
+      - 'crates/utils/hacl-rs/**'
+      - 'crates/utils/macros/**'
+      - 'crates/algorithms/p256/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha2/**'
+      - 'traits/**'
+
   workflow_dispatch:
 
 env:
