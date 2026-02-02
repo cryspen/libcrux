@@ -5,7 +5,12 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
     paths:
-      - "crates/algorithms/aesgcm/**"
+      - 'cavp/**'
+      - 'crates/algorithms/aesgcm/**'
+      - 'crates/utils/intrinsics/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:
