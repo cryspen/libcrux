@@ -4,7 +4,15 @@ on:
   merge_group:
   pull_request:
     branches: ["dev", "main"]
-
+    paths:
+      - 'crates/utils/intrinsics/**'
+      - 'crates/testing/kats/**'
+      - 'libcrux-ml-kem/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
+      
   schedule:
     - cron: "0 0 * * *"
 
