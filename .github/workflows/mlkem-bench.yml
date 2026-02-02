@@ -7,9 +7,7 @@ on:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
-  # run benchmarks once merged and push data
-  push:
-    branches: ["main"]
+
 env:
   CARGO_TERM_COLOR: always
 
