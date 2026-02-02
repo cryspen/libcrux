@@ -84,6 +84,7 @@ jobs:
         run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
   build-no_std:
+    if: ${{ github.event_name != 'merge_group' }}  
     runs-on: ubuntu-latest
     defaults:
       run:
