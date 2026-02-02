@@ -4,7 +4,17 @@ on:
   merge_group:
   pull_request:
     branches: ["main", "dev", "*"]
-    paths: ['crates/primitives/aead', 'chacha20poly1305', 'traits/src/aead']
+    paths:
+        - 'crates/primitives/aead/**'
+        - 'crates/algorithms/aesgcm/**'
+        - 'crates/algorithms/chacha20poly1305/**'
+        - 'crates/algorithms/poly1305/**'
+        - 'crates/utils/hacl-rs/**'
+        - 'crates/utils/intrinsics/**'
+        - 'crates/utils/macros/**'
+        - 'crates/utils/secrets/**'
+        - 'crates/sys/platform/**'
+        - 'traits/**'
   workflow_dispatch:
 
 env:
@@ -128,6 +138,7 @@ jobs:
         run: |
           cargo clean
           LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
+          
   aead-build-test-status:
     if: ${{ always() }}
     needs: [build]
