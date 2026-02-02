@@ -4,6 +4,9 @@ on:
   merge_group:
   pull_request:
     branches: ["main", "dev", "*"]
+    paths:
+      - 'crates/utils/secrets/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:
