@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-02-02
+
 - [#114](https://github.com/cryspen/libcrux/pull/114): Update dependencies `libcrux-ecdh`, `libcrux-aead`, `libcrux-sha3`, `libcrux-kem`, `libcrux-hkdf`, `libcrux-traits`
 
 ## [0.5.0] - 2025-12-16
