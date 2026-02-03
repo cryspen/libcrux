@@ -104,7 +104,7 @@ class extractAction(argparse.Action):
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../fstar-helpers/core-models",
+            cwd="../../utils/core-models",
             env=hax_env,
         )
 
