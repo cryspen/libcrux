@@ -121,7 +121,7 @@ jobs:
           path: .
 
       - name: 🏃 Full type check SHA3 crate (portable)
-        working-directory: libcrux-sha3
+        working-directory: crates/algorithms/sha3
         run: ./hax.py prove
 
   sha3-extract-hax-status:
