@@ -39,6 +39,28 @@ pub(crate) struct KeccakXofState<
     sponge: bool,
 }
 
+/// Note: This function exists to work around a hax bug where `core::array::from_fn`
+/// is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
+/// instead of using the typeclass-based implicit parameter `#v_F` from
+/// `Core_models.Array.from_fn`.
+/// See: https://github.com/cryspen/hax/issues/1920
+#[inline(always)]
+#[hax_lib::fstar::replace(
+    "let buf_to_slices
+      (v_PARALLEL_LANES v_RATE: usize)
+      (buf: t_Array (t_Array u8 v_RATE) v_PARALLEL_LANES)
+    : t_Array (t_Slice u8) v_PARALLEL_LANES =
+  Core_models.Array.from_fn #(t_Slice u8)
+    v_PARALLEL_LANES
+    (fun i -> Core_models.Array.impl_23__as_slice #u8 v_RATE (buf.[ i ]))
+"
+)]
+fn buf_to_slices<const PARALLEL_LANES: usize, const RATE: usize>(
+    buf: &[[u8; RATE]; PARALLEL_LANES],
+) -> [&[u8]; PARALLEL_LANES] {
+    core::array::from_fn(|i| buf[i].as_slice())
+}
+
 #[cfg(hax)]
 pub(crate) fn keccak_xof_state_inv<
     const PARALLEL_LANES: usize,
@@ -114,7 +136,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
 
-        // Check if we have enough data when combining the internal buffer and the input.
+        // Check if we have enough data when combining the internal buffer an.
         // If the internal buffer is empty and we have enough to absorb do not use.
         if self.buf_len != 0 && input_len >= RATE - self.buf_len {
             let consumed = RATE - self.buf_len;
@@ -164,8 +186,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         if self.buf_len == RATE {
             // We have a full block in the local buffer now.
             // Convert self.buf to the right type for load_block
-            let borrowed: [&[u8]; PARALLEL_LANES] =
-                core::array::from_fn(|i| self.buf[i].as_slice());
+            let borrowed = buf_to_slices(&self.buf);
 
             self.inner.load_block::<RATE>(&borrowed, 0);
             self.inner.keccakf1600();
@@ -268,7 +289,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     {
         self.absorb(inputs);
 
-        let borrowed: [&[u8]; PARALLEL_LANES] = core::array::from_fn(|i| &self.buf[i][..]);
+        let borrowed = buf_to_slices(&self.buf);
 
         self.inner
             .load_last::<RATE, DELIMITER>(&borrowed, 0, self.buf_len);
