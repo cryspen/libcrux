@@ -15,7 +15,7 @@ function extract_all() {
         into -i "-core_models::**" \
         fstar --z3rlimit 80
     
-    extract libcrux-ml-dsa \
+    extract crates/algorithms/ml-dsa \
         -C --features simd128,simd256 ";" \
         into -i "+**" \
              -i "-libcrux_ml_dsa::hash_functions::portable::*" \
@@ -33,7 +33,7 @@ function prove() {
             export OTHERFLAGS="--admit_smt_queries true";;
         *);;
     esac
-    go_to "libcrux-ml-dsa"
+    go_to "crates/algorithms/ml-dsa"
     JOBS="${JOBS:-$(nproc --all)}"
     JOBS="${JOBS:-4}"
     make -C proofs/fstar/extraction -j $JOBS "$@"

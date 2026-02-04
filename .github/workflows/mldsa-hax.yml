@@ -44,7 +44,7 @@ jobs:
           hax_reference: ${{ github.event.inputs.hax_ref || needs.get-hax-ref.outputs.hax_ref }}
 
       - name: 🏃 Extract ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh extract
 
       - name: ↑ Upload F* extraction
@@ -74,7 +74,7 @@ jobs:
           path: .
 
       - name: 🏃 Lax ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh prove --admit
   
   prove:
@@ -102,7 +102,7 @@ jobs:
           path: .
 
       - name: 🏃 Prove ML-DSA crate
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         run: ./hax.sh prove
         
   mldsa-extract-hax-status:

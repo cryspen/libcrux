@@ -60,7 +60,7 @@ jobs:
       image: ${{ needs.setup.outputs.image }}
     defaults:
       run:
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
         shell: bash
     steps:
       - uses: actions/checkout@v6
@@ -74,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: header-only-c-extraction-ml-dsa
-          path: libcrux-ml-dsa/cg/
+          path: crates/algorithms/ml-dsa/cg/
           include-hidden-files: true
           if-no-files-found: error
 
@@ -94,9 +94,9 @@ jobs:
 
       - name: Diff Extraction
         run: |
-          libcrux-ml-kem/extracts/common/headers_kill_revs.sh libcrux-ml-dsa/cg
-          libcrux-ml-kem/extracts/common/headers_kill_revs.sh ~/mldsa-c-extraction
-          diff -r libcrux-ml-dsa/cg ~/mldsa-c-extraction
+          crates/algorithms/ml-kem/extracts/common/headers_kill_revs.sh libcrux-ml-dsa/cg
+          crates/algorithms/ml-kem/extracts/common/headers_kill_revs.sh ~/mldsa-c-extraction
+          diff -r crates/algorithms/ml-dsa/cg ~/mldsa-c-extraction
 
   build-header-only:
     needs: [extract-header-only]
