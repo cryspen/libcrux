@@ -16,9 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits.workspace = true
-libcrux-kem = { workspace = true, features = [
-    "codec",
-] }
+libcrux-kem = { workspace = true, features = ["codec"] }
 libcrux-chacha20poly1305 = { version = "0.0.5", path = "../crates/algorithms/chacha20poly1305" }
 libcrux-hkdf = { version = "=0.0.5", path = "../crates/algorithms/hkdf" }
 libcrux-hmac.workspace = true
@@ -30,17 +28,16 @@ classic-mceliece-rust = { version = "3.1.0", features = [
 rand = { version = "0.9" }
 rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { version = "0.0.5", path = "../libcrux-ecdh" }
-libcrux-ml-kem = { workspace = true, features = [
-    "codec",
-    "rand",
-] }
+libcrux-ml-kem = { workspace = true, features = ["codec", "rand"] }
 libcrux-ed25519 = { version = "0.0.5", path = "../crates/algorithms/ed25519", features = [
     "rand",
     "codec",
 ] }
 tls_codec = { version = "0.4.2", features = ["derive"] }
-libcrux-ml-dsa = { version = "0.0.6", path = "../libcrux-ml-dsa", features = ["codec"] }
-libcrux-aesgcm = { version = "0.0.6", path = "../crates/algorithms/aesgcm"}
+libcrux-ml-dsa = { version = "0.0.6", path = "../crates/algorithms/ml-dsa", features = [
+    "codec",
+] }
+libcrux-aesgcm = { version = "0.0.6", path = "../crates/algorithms/aesgcm" }
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }
