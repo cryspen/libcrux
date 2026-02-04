@@ -136,7 +136,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     pub(crate) fn fill_buffer(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize {
         let input_len = inputs[0].len();
 
-        // Check if we have enough data when combining the internal buffer an.
+        // Check if we have enough data when combining the internal buffer and the input.
         // If the internal buffer is empty and we have enough to absorb do not use.
         if self.buf_len != 0 && input_len >= RATE - self.buf_len {
             let consumed = RATE - self.buf_len;
