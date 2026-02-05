@@ -10,6 +10,66 @@ use crate::DigestAlgorithm;
 
 use super::Error;
 
+/// P-256 curve order n in big-endian bytes.
+/// n = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+const P256_ORDER: [u8; 32] = [
+    0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xBC, 0xE6, 0xFA, 0xAD, 0xA7, 0x17, 0x9E, 0x84, 0xF3, 0xB9, 0xCA, 0xC2, 0xFC, 0x63, 0x25, 0x51,
+];
+
+/// Half of P-256 curve order (n-1)/2 in big-endian bytes.
+/// Used for low-S normalization to prevent signature malleability.
+const P256_HALF_ORDER: [u8; 32] = [
+    0x7F, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xDE, 0x73, 0x7D, 0x56, 0xD3, 0x8B, 0xCF, 0x42, 0x79, 0xDC, 0xE5, 0x61, 0x7E, 0x31, 0x92, 0xA8,
+];
+
+/// Compare two 32-byte big-endian integers.
+/// Returns true if a > b.
+fn bytes_gt(a: &[u8; 32], b: &[u8; 32]) -> bool {
+    for i in 0..32 {
+        if a[i] > b[i] {
+            return true;
+        }
+        if a[i] < b[i] {
+            return false;
+        }
+    }
+    false
+}
+
+/// Check if s is in the high half (s > n/2).
+/// Returns true if s needs normalization.
+fn is_high_s(s: &[u8; 32]) -> bool {
+    bytes_gt(s, &P256_HALF_ORDER)
+}
+
+/// Compute n - s (negate s in the curve order field).
+/// Assumes 0 < s < n.
+fn negate_s(s: &[u8; 32]) -> [u8; 32] {
+    let mut result = [0u8; 32];
+    let mut borrow: u16 = 0;
+
+    for i in (0..32).rev() {
+        let diff = (P256_ORDER[i] as u16)
+            .wrapping_sub(s[i] as u16)
+            .wrapping_sub(borrow);
+        result[i] = diff as u8;
+        borrow = if diff > 0xFF { 1 } else { 0 };
+    }
+
+    result
+}
+
+/// Normalize s to the lower half of the curve order (low-S normalization).
+/// If s > n/2, replace s with n - s.
+/// This prevents ECDSA signature malleability.
+fn normalize_s(s: &mut [u8; 32]) {
+    if is_high_s(s) {
+        *s = negate_s(s);
+    }
+}
+
 /// A P-256 Signature
 #[derive(Clone, Default)]
 pub struct Signature {
@@ -286,14 +346,18 @@ fn _sign(
         return Err(Error::SigningError);
     }
 
-    Ok(Signature {
-        r: signature[..32]
-            .try_into()
-            .map_err(|_| Error::SigningError)?,
-        s: signature[32..]
-            .try_into()
-            .map_err(|_| Error::SigningError)?,
-    })
+    let r: [u8; 32] = signature[..32]
+        .try_into()
+        .map_err(|_| Error::SigningError)?;
+    let mut s: [u8; 32] = signature[32..]
+        .try_into()
+        .map_err(|_| Error::SigningError)?;
+
+    // Normalize s to low-S to prevent signature malleability.
+    // If s > n/2, replace s with n - s.
+    normalize_s(&mut s);
+
+    Ok(Signature { r, s })
 }
 
 fn u32_len(bytes: &[u8]) -> Result<u32, Error> {
@@ -329,6 +393,10 @@ fn validate_pk(public_key: &[u8]) -> Result<PublicKey, Error> {
 
 /// Verify the `payload` and `signature` with the `public_key`.
 ///
+/// This function accepts any valid ECDSA signature, including signatures
+/// with high-S values. For applications that require signature uniqueness
+/// (e.g., cryptocurrency), use [`verify_strict`] instead.
+///
 /// Return `()` or [`Error::InvalidSignature`].
 pub fn verify(
     hash: DigestAlgorithm,
@@ -356,4 +424,30 @@ pub fn verify(
     } else {
         Err(Error::InvalidSignature)
     }
+}
+
+/// Verify the `payload` and `signature` with the `public_key`, enforcing
+/// low-S normalization.
+///
+/// This function rejects signatures where s > n/2 (high-S signatures) to
+/// prevent signature malleability. This ensures only one of the two possible
+/// (r, s) / (r, n-s) pairs is considered valid.
+///
+/// Use this function for applications that require signature uniqueness,
+/// such as cryptocurrency/blockchain systems (BIP 62/146), or systems that
+/// use signatures as unique identifiers.
+///
+/// Return `()` or [`Error::InvalidSignature`].
+pub fn verify_strict(
+    hash: DigestAlgorithm,
+    payload: &[u8],
+    signature: &Signature,
+    public_key: &PublicKey,
+) -> Result<(), Error> {
+    // Reject high-S signatures to enforce low-S normalization.
+    if is_high_s(&signature.s) {
+        return Err(Error::InvalidSignature);
+    }
+
+    verify(hash, payload, signature, public_key)
 }
