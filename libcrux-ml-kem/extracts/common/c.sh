@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
         --config) config="$2"; shift ;;
         --out) out="$2"; shift ;;
         --glue) glue="$2"; shift ;;
-        --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+        --mlkem768) features="${features} --no-default-features --features=mlkem768" ;;
         --mlkem768-1024) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768 --cargo-arg=--features=mlkem1024" ;;
         --kyber768) features="${features} --cargo-arg=--features=kyber" ;;
         --no-glue) eurydice_glue=0 ;;
@@ -75,14 +75,13 @@ if [[ "$no_charon" = 0 ]]; then
     cargo clean -p libcrux-sha3
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
 
-    flags=
+    flags="-- $features"
     if [[ $(uname -m) == "arm64" ]]; then
-        flags+="-- --target=x86_64-apple-darwin"
+        flags+=" --target=x86_64-apple-darwin"
     fi
 
     echo "Running charon (all) ..."
     RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-       $features \
       --preset eurydice \
       --include 'libcrux_sha3' \
       --include 'libcrux_secrets' \
