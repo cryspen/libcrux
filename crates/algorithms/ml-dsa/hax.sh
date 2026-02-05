@@ -43,6 +43,7 @@ function init_vars() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
     SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_NAME}"
+    REPO_ROOT="$(realpath "$SCRIPT_DIR/../../..")"
 
     if [ -t 1 ]; then
         BLUE='\033[34m'
@@ -58,8 +59,7 @@ function init_vars() {
 }
 
 function go_to() {
-    ROOT="$SCRIPT_DIR/.."
-    cd "$ROOT"
+    cd "$REPO_ROOT"
     cd "$1"
 }
 
