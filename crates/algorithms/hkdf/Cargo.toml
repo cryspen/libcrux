@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-hkdf"
-version = "0.0.4"
+version = "0.0.5"
 description = "Libcrux HKDF implementation"
 readme = "Readme.md"
 
@@ -17,8 +17,8 @@ path = "src/hkdf.rs"
 check-secret-independence = ["libcrux-secrets/check-secret-independence"]
 
 [dependencies]
-libcrux-hmac = { version = "=0.0.4", path = "../hmac", features = [
+libcrux-hmac = { workspace = true, features = [
     "expose-hacl",
 ] }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
-libcrux-secrets = { version = "0.0.4", path = "../../utils/secrets" }
+libcrux-secrets.workspace = true

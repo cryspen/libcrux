@@ -2,7 +2,7 @@
 name = "libcrux-ecdsa"
 description = "Formally verified ECDSA signature library"
 readme = "Readme.md"
-version = "0.0.4"
+version = "0.0.5"
 
 authors.workspace = true
 license.workspace = true
@@ -11,10 +11,10 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-p256 = { version = "=0.0.4", path = "../p256", features = [
+libcrux-p256 = { workspace = true, features = [
     "expose-hacl",
 ] }
-libcrux-sha2 = { version = "=0.0.4", path = "../sha2" }
+libcrux-sha2.workspace = true
 rand = { version = "0.9", optional = true, default-features = false }
 
 [features]

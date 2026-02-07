@@ -419,8 +419,8 @@ fn add_error_reduce<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::ensures(|result| spec::is_bounded_vector(3328, &result) & (
                     hax_lib::forall(|i: usize| hax_lib::implies(i < 16,
-                            result.repr()[i] % 3329 ==
-                            (vector.repr()[i] * 1353 * 169) % 3329))))]
+                            result.repr()[i].to_int() % 3329.to_int() ==
+                            (vector.repr()[i].to_int() * 1353.to_int() * 169.to_int()) % 3329.to_int()))))]
 fn to_standard_domain<T: Operations>(vector: T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }

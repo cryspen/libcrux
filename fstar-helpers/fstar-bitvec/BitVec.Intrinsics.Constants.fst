@@ -1,6 +1,6 @@
 module BitVec.Intrinsics.Constants
 
-open Core
+open Core_models
 open Rust_primitives
 open FStar.Mul
 open FStar.FunctionalExtensionality

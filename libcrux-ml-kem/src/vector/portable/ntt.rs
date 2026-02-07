@@ -410,7 +410,7 @@ pub(crate) fn ntt_multiply_binomials(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 1000 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $zeta0 /\
         Spec.Utils.is_i16b 1664 $zeta1 /\
         Spec.Utils.is_i16b 1664 $zeta2 /\
@@ -419,10 +419,10 @@ pub(crate) fn ntt_multiply_binomials(
         Spec.Utils.is_i16b_array 3328 ${rhs}.f_elements "#))]
 #[hax_lib::ensures(|result| fstar!(r#"
         Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
-        (let nzeta0:i16 = Core.Ops.Arith.f_neg zeta0 in
-         let nzeta1:i16 = Core.Ops.Arith.f_neg zeta1 in
-         let nzeta2:i16 = Core.Ops.Arith.f_neg zeta2 in
-         let nzeta3:i16 = Core.Ops.Arith.f_neg zeta3 in
+        (let nzeta0:i16 = Core_models.Ops.Arith.f_neg zeta0 in
+         let nzeta1:i16 = Core_models.Ops.Arith.f_neg zeta1 in
+         let nzeta2:i16 = Core_models.Ops.Arith.f_neg zeta2 in
+         let nzeta3:i16 = Core_models.Ops.Arith.f_neg zeta3 in
          let zetas =
             Seq.seq_of_list [
                 zeta0;

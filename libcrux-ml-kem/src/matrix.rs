@@ -226,7 +226,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
 /// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+#[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning")]
 #[hax_lib::requires((K <= 4).to_prop() & (
         hax_lib::forall(|i:usize| hax_lib::implies(i < K,
             spec::is_bounded_poly(3328, &error_as_ntt[i]) & (

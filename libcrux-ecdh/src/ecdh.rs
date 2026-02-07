@@ -125,7 +125,12 @@ pub fn secret_to_public(alg: Algorithm, scalar: impl AsRef<[u8]>) -> Result<Vec<
 pub fn validate_scalar(alg: Algorithm, s: impl AsRef<[u8]>) -> Result<(), Error> {
     match alg {
         Algorithm::X25519 => {
-            if s.as_ref().iter().all(|&b| b == 0) {
+            if s.as_ref().iter().all(|&b| b == 0)
+                || libcrux_curve25519::is_clamped(
+                    s.as_ref().try_into().map_err(|_| Error::InvalidScalar)?,
+                )
+                .is_err()
+            {
                 Err(Error::InvalidScalar)
             } else {
                 Ok(())

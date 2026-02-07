@@ -29,6 +29,7 @@ pub enum HandshakeError {
     OtherError,
     IdentifierMismatch,
     InvalidMessage,
+    InvalidDHSecret,
 }
 
 impl From<libcrux_ed25519::Error> for HandshakeError {

@@ -291,7 +291,7 @@ impl Session {
                     &self.session_key,
                     initiator_authenticator,
                     responder_ecdh_pk,
-                    &responder_pq_pk,
+                    responder_pq_pk,
                 )? != pk_binder
                 {
                     return Err(SessionError::Import);

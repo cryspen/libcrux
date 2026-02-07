@@ -597,7 +597,7 @@ impl Operations for SIMD256Vector {
     #[requires(bytes.len() == 10)]
     #[inline(always)]
     fn deserialize_5(bytes: &[u8]) -> Self {
-        hax_lib::fstar!(r#"assert (v (Core.Slice.impl__len $bytes) == Seq.length $bytes)"#);
+        hax_lib::fstar!(r#"assert (v (Core_models.Slice.impl__len $bytes) == Seq.length $bytes)"#);
         Self {
             elements: serialize::deserialize_5(bytes),
         }

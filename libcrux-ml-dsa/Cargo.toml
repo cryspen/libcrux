@@ -1,7 +1,7 @@
 [package]
 name = "libcrux-ml-dsa"
 description = "Libcrux ML-DSA implementation"
-version = "0.0.5"
+version = "0.0.6"
 readme = "README.md"
 
 authors.workspace = true
@@ -18,8 +18,8 @@ bench = false # so libtest doesn't eat the arguments to criterion
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libcrux-sha3 = { version = "0.0.5", path = "../crates/algorithms/sha3" }
-libcrux-intrinsics = { version = "0.0.4", path = "../crates/utils/intrinsics" }
+libcrux-sha3.workspace = true
+libcrux-intrinsics.workspace = true
 libcrux-platform = { version = "0.0.3", path = "../crates/sys/platform" }
 libcrux-macros = { version = "=0.0.3",  path = "../crates/utils/macros" }
 hax-lib.workspace = true
@@ -43,7 +43,7 @@ libcrux-kats = { path = "../crates/testing/kats", features = [
 pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
 [target.'cfg(hax)'.dependencies]
-core-models = { path = "../crates/utils/core-models", version = "0.0.4" }
+core-models = { path = "../crates/utils/core-models", version = "0.0.5" }
 
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]

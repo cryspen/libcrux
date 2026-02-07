@@ -1,7 +1,7 @@
 module Spec.Utils
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open FStar.Mul
-open Core
+open Core_models
 
 val pow2_more_values (x:nat): Lemma (
   let result = pow2 x in
@@ -377,7 +377,7 @@ val v_XOF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_L
 
 val update_at_range_lemma #n
   (s: t_Slice 't)
-  (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
+  (i: Core_models.Ops.Range.t_Range (int_t n) {(Core_models.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
   (x: t_Slice 't)
   : Lemma
     (requires (Seq.length x == v i.f_end - v i.f_start))

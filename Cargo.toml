@@ -53,22 +53,27 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { git = "https://github.com/cryspen/hax", branch="annotation-language" }
-libcrux-intrinsics = { version = "=0.0.4", path = "crates/utils/intrinsics" }
-libcrux-aesgcm = { version = "=0.0.5", path = "crates/algorithms/aesgcm" }
-libcrux-chacha20poly1305 = { version = "=0.0.4", path = "crates/algorithms/chacha20poly1305" }
-libcrux-traits = { version = "=0.0.4", path = "traits" }
+hax-lib = { path = "../hax/hax-lib" }
+libcrux-intrinsics = { version = "=0.0.5", path = "crates/utils/intrinsics" }
+libcrux-aesgcm = { version = "=0.0.6", path = "crates/algorithms/aesgcm" }
+libcrux-chacha20poly1305 = { version = "=0.0.5", path = "crates/algorithms/chacha20poly1305" }
+libcrux-traits = { version = "=0.0.5", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
+libcrux-macros  = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
-libcrux-hkdf = { version = "=0.0.4", path = "crates/algorithms/hkdf" }
-libcrux-hmac = { version = "=0.0.4", path = "crates/algorithms/hmac" }
-libcrux-sha2 = { version = "=0.0.4", path = "crates/algorithms/sha2" }
-libcrux-ed25519 = { version = "=0.0.4", path = "crates/algorithms/ed25519" }
-libcrux-ecdh = { version = "=0.0.4", path = "libcrux-ecdh" }
-libcrux-ml-kem = { version = "=0.0.5", path = "libcrux-ml-kem" }
-libcrux-kem = { version = "=0.0.4", path = "libcrux-kem" }
-libcrux-secrets = { version = "=0.0.4", path = "crates/utils/secrets" }
+libcrux-hkdf = { version = "=0.0.5", path = "crates/algorithms/hkdf" }
+libcrux-hmac = { version = "=0.0.5", path = "crates/algorithms/hmac" }
+libcrux-sha2 = { version = "=0.0.5", path = "crates/algorithms/sha2" }
+libcrux-ed25519 = { version = "=0.0.5", path = "crates/algorithms/ed25519" }
+libcrux-ecdh = { version = "=0.0.5", path = "libcrux-ecdh" }
+libcrux-ml-kem = { version = "=0.0.6", path = "libcrux-ml-kem" }
+libcrux-sha3 = { version = "=0.0.6", path = "crates/algorithms/sha3" }
+libcrux-kem = { version = "=0.0.5", path = "libcrux-kem" }
+libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
+libcrux-aead = { version = "=0.0.5", path = "crates/primitives/aead" }
+libcrux-blake2 = { version = "=0.0.5", path = "crates/algorithms/blake2" }
+libcrux-p256 = { version = "=0.0.5", path = "crates/algorithms/p256" }
 
 [package]
 name = "libcrux"

@@ -9,7 +9,7 @@ use crate::{
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
         (forall i. forall j. Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
+            (i0._super_i2.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
@@ -25,8 +25,8 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
         (forall i. forall j.
-            v (Seq.index (i0._super_4731626403787200903.f_repr (Seq.index re.f_simd_units i)) j) >= 0 /\
-            v (Seq.index (i0._super_4731626403787200903.f_repr (Seq.index re.f_simd_units i)) j) <= 261631)"#))]
+            v (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) j) >= 0 /\
+            v (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) j) <= 261631)"#))]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
@@ -49,7 +49,7 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     (forall i. forall j. 
         Spec.Utils.is_i32b_array_opaque 
         (v ${crate::simd::traits::specs::FIELD_MAX}) 
-        (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
+        (i0._super_i2.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t: &mut [PolynomialRingElement<SIMDUnit>],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
@@ -57,32 +57,35 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     #[cfg(hax)]
     let (old_t, old_t1) = { (t.to_vec(), t1.to_vec()) };
 
+    #[cfg(hax)]
+    use hax_lib::prop::*;
+
     for i in 0..t.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"
-            ${t.len()} == ${old_t.len()} /\
-            ${t1.len()} == ${old_t1.len()} /\
-            (forall j. j >= v i ==> 
-                (Seq.index t j == Seq.index old_t j /\
-                 Seq.index t1 j == Seq.index old_t1 j))
-            "#
-        ));
+        hax_lib::loop_invariant!(|i: usize| Prop::from(
+            t.len() == old_t.len() && t1.len() == old_t1.len()
+        )
+        .and(forall(|j: usize| implies(
+            j >= i && j < old_t.len(),
+            fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+        ))));
 
         for j in 0..t[i].simd_units.len() {
-            hax_lib::loop_invariant!(|j: usize| fstar!(
-                r#"
-                ${t.len()} == ${old_t.len()} /\
-                ${t1.len()} == ${old_t1.len()} /\
-                (forall j. j > v i ==> 
-                    (Seq.index t j == Seq.index old_t j /\
-                     Seq.index t1 j == Seq.index old_t1 j)) /\
-                (forall k. k >= v j ==> 
-                    (Seq.index (Seq.index t (v i)).f_simd_units k ==
-                     Seq.index (Seq.index old_t (v i)).f_simd_units k /\
-                     Seq.index (Seq.index t1 (v i)).f_simd_units k ==
-                     Seq.index (Seq.index old_t1 (v i)).f_simd_units k))
-                "#
-            ));
+            hax_lib::loop_invariant!(|j: usize| Prop::from(
+                t.len() == old_t.len() && t1.len() == old_t1.len()
+            )
+            .and(forall(|j: usize| implies(
+                j > i && j < old_t.len(),
+                fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+            )))
+            .and(forall(|k: usize| implies(
+                k >= j && k < crate::simd::traits::SIMD_UNITS_IN_RING_ELEMENT,
+                fstar!(
+                    r#"
+                        ${t[i].simd_units[k]} == ${old_t[i].simd_units[k]} /\
+                        ${t1[i].simd_units[k]} == ${old_t1[i].simd_units[k]}
+                    "#
+                )
+            ))));
 
             SIMDUnit::power2round(&mut t[i].simd_units[j], &mut t1[i].simd_units[j]);
         }
@@ -100,7 +103,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
          (forall i. forall j. 
             Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
+            (i0._super_i2.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     dimension: usize,
     gamma2: Gamma2,
@@ -176,7 +179,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
          (forall i. forall j. 
             Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
-            (i0._super_4731626403787200903.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
+            (i0._super_i2.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
     hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],

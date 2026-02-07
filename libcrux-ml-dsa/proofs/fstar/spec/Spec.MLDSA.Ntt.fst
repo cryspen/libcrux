@@ -1,5 +1,5 @@
  module Spec.MLDSA.Ntt
- open Core
+ open Core_models
  open FStar.Mul
  open Spec.Intrinsics
  open Spec.MLDSA.Math
