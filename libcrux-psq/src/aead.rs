@@ -207,8 +207,7 @@ impl AEADKeyNonce {
                     ciphertext,
                     tag,
                 )
-                .unwrap();
-                // .map_err(|_| AEADError::CryptoError)?;
+                .map_err(|_| AEADError::CryptoError)?;
             }
         }
 
