@@ -143,7 +143,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                     &state.k0,
                     pq_shared_secret,
                     &tx1,
-                    signature.as_ref().unwrap(),
+                    signature.as_ref().expect("signature based initiator authentication produces a signature, or propagates the signing error before"),
                     self.ciphersuite.aead_type(),
                 )?;
 
@@ -154,7 +154,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for RegistrationInitiator<'a, Rng> {
                 let outer_payload = InitiatorOuterPayloadOut::Registration(InnerMessageOut {
                     auth: AuthMessageOut::Sig {
                         vk: &sig_auth.into(),
-                        signature: signature.as_ref().unwrap(),
+                        signature: signature.as_ref().expect("signature based initiator authentication produces a signature, or propagates the signing error before"),
                     },
                     ciphertext: VLByteSlice(&inner_ciphertext),
                     tag: inner_tag,
