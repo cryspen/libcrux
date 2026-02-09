@@ -38,7 +38,10 @@ rustcrypto = ["dep:hpke-rs-rust-crypto"]
 libcrux = ["dep:hpke-rs-libcrux"]
 
 hpke-test = ["std"]
-hpke-test-prng = [] # ⚠️ Enable testing PRNG - DO NOT USE
+hpke-test-prng = [
+    "hpke-rs-rust-crypto?/deterministic-prng",
+    "hpke-rs-libcrux?/deterministic-prng",
+] # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
 hpke-rs-crypto = { version = "0.4.0", path = "./traits", features = ["std"] }
@@ -47,13 +50,9 @@ serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.4.0", path = "./rust_crypto_provider", features = [
-    "deterministic-prng",
-] }
-hpke-rs-libcrux = { version = "0.5.1", path = "./libcrux_provider", features = [
-    "deterministic-prng",
-] }
-rand = { version = "0.9" }
+hpke-rs-rust-crypto = { version = "0.4.0", path = "./rust_crypto_provider" }
+hpke-rs-libcrux = { version = "0.5.1", path = "./libcrux_provider" }
+rand = { version = "0.10" }
 pretty_env_logger = "0.5"
 criterion = { version = "0.8", features = ["html_reports"] }
 

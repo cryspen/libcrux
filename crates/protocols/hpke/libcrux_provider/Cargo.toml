@@ -17,9 +17,9 @@ libcrux-kem = { version = "0.0.5", default-features = false }
 libcrux-aead = { version = "0.0.5" }
 libcrux-traits = { version = "0.0.5", default-features = false }
 # Randomness
-rand = { version = "0.9", default-features = false }
-rand_core = { version = "0.9", features = ["os_rng"] }
-rand_chacha = { version = "0.9", default-features = false }
+rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
+rand_core = { version = "0.10" }
+rand_chacha = { version = "0.10", default-features = false }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
