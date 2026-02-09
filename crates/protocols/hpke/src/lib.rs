@@ -339,8 +339,8 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     /// the ciphertext or an error.
     ///
     /// The context can be re-used up to the AEAD's message limit. However, we
-    /// use only a 64 byte counter, which technically limits the the context
-    /// re-use.
+    /// use only a 64 bit counter, which technically limits context
+    /// re-use to 0xffffffffffffffff (2^64 - 1) uses.
     ///
     /// ```text
     /// def Context.Seal(aad, pt):
@@ -366,8 +366,8 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     /// the plain text or an error.
     ///
     /// The context can be re-used up to the AEAD's message limit. However, we
-    /// use only a 64 byte counter, which technically limits the the context
-    /// re-use.
+    /// use only a 64 bit counter, which technically limits context
+    /// re-use to 0xffffffffffffffff (2^64 - 1) uses.
     ///
     /// ```text
     /// def Context.Open(aad, ct):
@@ -428,7 +428,7 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
         if u128::from(self.sequence_number)
             >= ((1u128 << (8 * Crypto::aead_nonce_length(self.hpke.aead_id))) - 1)
         {
-            // This limit 0xffffffffffffffffffffffff for all currently implemented
+            // The limit is 0xffffffffffffffffffffffff for all currently implemented
             // ciphersuites.
             return Err(HpkeError::MessageLimitReached);
         }
