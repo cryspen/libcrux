@@ -80,10 +80,28 @@ impl HpkeCrypto for HpkeRustCrypto {
                 let sk_array: [u8; 32] = sk.try_into().map_err(|_| Error::KemInvalidSecretKey)?;
                 let pk_array: [u8; 32] = pk.try_into().map_err(|_| Error::KemInvalidPublicKey)?;
                 let sk = X25519StaticSecret::from(sk_array);
-                Ok(sk
+                let shared_secret = sk
                     .diffie_hellman(&X25519PublicKey::from(pk_array))
                     .as_bytes()
-                    .to_vec())
+                    .to_vec();
+
+                // Trying to tell the compiler not to short circuit.
+                // This may or may not work.
+                #[inline(never)]
+                fn all_zero(bytes: &[u8]) -> bool {
+                    core::hint::black_box({
+                        let mut acc = 0;
+                        for b in bytes.iter() {
+                            acc |= b;
+                        }
+                        acc == 0
+                    })
+                }
+
+                if all_zero(&shared_secret) {
+                    return Err(Error::KemInvalidSecretKey);
+                }
+                Ok(shared_secret)
             }
             KemAlgorithm::DhKemP256 => {
                 let sk = p256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
