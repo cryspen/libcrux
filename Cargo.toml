@@ -14,6 +14,7 @@ members = [
     "crates/utils/intrinsics",
     "libcrux-kem",
     "crates/algorithms/hmac",
+    "crates/algorithms/kmac",
     "libcrux-ecdh",
     "libcrux-psq",
     "crates/utils/macros",
@@ -64,6 +65,7 @@ libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 libcrux-hkdf = { version = "=0.0.5", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.5", path = "crates/algorithms/hmac" }
+libcrux-kmac = { version = "=0.0.1", path = "crates/algorithms/kmac" }
 libcrux-sha2 = { version = "=0.0.5", path = "crates/algorithms/sha2" }
 libcrux-ed25519 = { version = "=0.0.5", path = "crates/algorithms/ed25519" }
 libcrux-ecdh = { version = "=0.0.5", path = "libcrux-ecdh" }
@@ -114,6 +116,7 @@ libcrux-hacl.workspace = true
 libcrux-platform.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-hmac.workspace = true
+libcrux-kmac.workspace = true
 libcrux-sha2.workspace = true
 libcrux-ed25519.workspace = true
 libcrux-ecdh.workspace = true

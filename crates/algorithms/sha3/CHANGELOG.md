@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- [#1292](https://github.com/cryspen/libcrux/pull/1292): Add portable implementations of CSHAKE-128 and CSHAKE-256 (https://github.com/kraemv)
+
 ## [0.0.6] (2026-01-22)
 
 - [#1285](https://github.com/cryspen/libcrux/pull/1285): Update `hax-lib` dependency
