@@ -11,7 +11,8 @@ use hpke_rs_crypto::{
     CryptoRng, HpkeCrypto, HpkeTestRng,
 };
 
-use rand_core::SeedableRng;
+use rand::{rngs::SysRng, Rng, SeedableRng};
+use rand_core::UnwrapErr;
 
 /// The Libcrux HPKE Provider
 #[derive(Debug)]
@@ -221,19 +222,17 @@ impl HpkeCrypto for HpkeLibcrux {
     fn prng() -> Self::HpkePrng {
         #[cfg(feature = "deterministic-prng")]
         {
-            use rand::TryRngCore;
             let mut fake_rng = alloc::vec![0u8; 256];
-            rand_chacha::ChaCha20Rng::from_os_rng()
-                .try_fill_bytes(&mut fake_rng)
-                .unwrap();
+            rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)).fill_bytes(&mut fake_rng);
             HpkeLibcruxPrng {
                 fake_rng,
-                rng: rand_chacha::ChaCha20Rng::from_os_rng(),
+                rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)),
             }
         }
+
         #[cfg(not(feature = "deterministic-prng"))]
         HpkeLibcruxPrng {
-            rng: rand_chacha::ChaCha20Rng::from_os_rng(),
+            rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)),
         }
     }
 
@@ -335,6 +334,7 @@ impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
         self.rng.fill_bytes(dest)
     }
 }
+
 impl CryptoRng for HpkeLibcruxPrng {}
 
 impl HpkeTestRng for HpkeLibcruxPrng {
@@ -349,11 +349,13 @@ impl HpkeTestRng for HpkeLibcruxPrng {
         dest.clone_from_slice(&self.fake_rng.split_off(self.fake_rng.len() - dest.len()));
         Ok(())
     }
+
     #[cfg(not(feature = "deterministic-prng"))]
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        use rand_core::TryRngCore;
-        self.try_fill_bytes(dest)
-            .map_err(|_| Error::InsufficientRandomness)
+        use hpke_rs_crypto::RngCore;
+
+        self.fill_bytes(dest);
+        Ok(())
     }
 
     #[cfg(feature = "deterministic-prng")]

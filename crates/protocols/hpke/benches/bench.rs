@@ -2,10 +2,11 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use hpke_rs::{prelude::*, test_util::hex_to_bytes};
 use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    HpkeCrypto, RngCore,
+    HpkeCrypto,
 };
 use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::*;
+use rand::Rng;
 
 const MODES: [Mode; 4] = [
     HpkeMode::Base,

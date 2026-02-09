@@ -3,10 +3,11 @@ use std::time::{Duration, Instant};
 use hpke_rs::{prelude::*, test_util::hex_to_bytes};
 use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    HpkeCrypto, RngCore,
+    HpkeCrypto,
 };
 use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::*;
+use rand::Rng;
 
 fn duration(d: Duration) -> f64 {
     ((d.as_secs() as f64) + (d.subsec_nanos() as f64 * 1e-9)) * 1000000f64
