@@ -99,7 +99,7 @@ impl HpkeCrypto for HpkeRustCrypto {
                 }
 
                 if all_zero(&shared_secret) {
-                    return Err(Error::KemInvalidSecretKey);
+                    return Err(Error::KemInvalidPublicKey);
                 }
                 Ok(shared_secret)
             }
