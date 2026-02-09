@@ -306,7 +306,7 @@ pub struct Context<Crypto: 'static + HpkeCrypto> {
     key: Vec<u8>,
     nonce: Vec<u8>,
     exporter_secret: Vec<u8>,
-    sequence_number: u32,
+    sequence_number: u64,
     hpke: Hpke<Crypto>,
 }
 
@@ -338,6 +338,10 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     /// Takes the associated data and the plain text as byte slices and returns
     /// the ciphertext or an error.
     ///
+    /// The context can be re-used up to the AEAD's message limit. However, we
+    /// use only a 64 bit counter, which technically limits context
+    /// re-use to 0xffffffffffffffff (2^64 - 1) uses.
+    ///
     /// ```text
     /// def Context.Seal(aad, pt):
     ///   ct = Seal(self.key, self.ComputeNonce(self.seq), aad, pt)
@@ -360,6 +364,10 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     ///
     /// Takes the associated data and the ciphertext as byte slices and returns
     /// the plain text or an error.
+    ///
+    /// The context can be re-used up to the AEAD's message limit. However, we
+    /// use only a 64 bit counter, which technically limits context
+    /// re-use to 0xffffffffffffffff (2^64 - 1) uses.
     ///
     /// ```text
     /// def Context.Open(aad, ct):
@@ -420,9 +428,15 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
         if u128::from(self.sequence_number)
             >= ((1u128 << (8 * Crypto::aead_nonce_length(self.hpke.aead_id))) - 1)
         {
+            // The limit is 0xffffffffffffffffffffffff for all currently implemented
+            // ciphersuites.
             return Err(HpkeError::MessageLimitReached);
         }
-        self.sequence_number += 1;
+        self.sequence_number = self
+            .sequence_number
+            // We use a u64, which is lower than the AEAD limit
+            .checked_add(1)
+            .ok_or(HpkeError::MessageLimitReached)?;
         Ok(())
     }
 }
@@ -1047,7 +1061,7 @@ pub mod test_util {
         }
         /// Get a reference to the sequence number in the context.
         #[doc(hidden)]
-        pub fn sequence_number(&self) -> u32 {
+        pub fn sequence_number(&self) -> u64 {
             self.sequence_number
         }
     }

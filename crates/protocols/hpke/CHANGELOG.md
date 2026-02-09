@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- [#123](https://github.com/cryspen/hpke-rs/pull/123): Fix potential overflow in context counter and switch to use u64.
+
 ## [0.5.1] - 2026-02-02
 
 - [#114](https://github.com/cryspen/libcrux/pull/114): Update dependency `libcrux-sha3`
