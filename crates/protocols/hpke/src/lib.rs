@@ -916,19 +916,11 @@ impl From<&[u8]> for HpkePrivateKey {
     }
 }
 
-/// Hopefully constant time comparison of the two values as long as they have the
-/// same length.
+/// Constant-time comparison of private key values.
 impl PartialEq for HpkePrivateKey {
     fn eq(&self, other: &Self) -> bool {
-        if self.value.len() != other.value.len() {
-            return false;
-        }
-
-        let mut different_bits = 0u8;
-        for (&byte_a, &byte_b) in self.value.iter().zip(other.value.iter()) {
-            different_bits |= byte_a ^ byte_b;
-        }
-        (1u8 & ((different_bits.wrapping_sub(1)).wrapping_shr(8)).wrapping_sub(1)) == 0
+        use subtle::ConstantTimeEq;
+        self.value.ct_eq(&other.value).into()
     }
 }
 
