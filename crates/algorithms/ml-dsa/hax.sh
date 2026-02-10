@@ -15,7 +15,7 @@ function extract_all() {
         into -i "-core_models::**" \
         fstar --z3rlimit 80
     
-    extract libcrux-ml-dsa \
+    extract crates/algorithms/ml-dsa \
         -C --features simd128,simd256 ";" \
         into -i "+**" \
              -i "-libcrux_ml_dsa::hash_functions::portable::*" \
@@ -33,7 +33,7 @@ function prove() {
             export OTHERFLAGS="--admit_smt_queries true";;
         *);;
     esac
-    go_to "libcrux-ml-dsa"
+    go_to "crates/algorithms/ml-dsa"
     JOBS="${JOBS:-$(nproc --all)}"
     JOBS="${JOBS:-4}"
     make -C proofs/fstar/extraction -j $JOBS "$@"
@@ -43,6 +43,7 @@ function init_vars() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
     SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_NAME}"
+    REPO_ROOT="$(realpath "$SCRIPT_DIR/../../..")"
 
     if [ -t 1 ]; then
         BLUE='\033[34m'
@@ -58,8 +59,7 @@ function init_vars() {
 }
 
 function go_to() {
-    ROOT="$SCRIPT_DIR/.."
-    cd "$ROOT"
+    cd "$REPO_ROOT"
     cd "$1"
 }
 

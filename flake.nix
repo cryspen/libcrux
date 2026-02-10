@@ -196,7 +196,7 @@
                 hax
               ];
               buildPhase = ''
-                cd libcrux-ml-dsa
+                cd crates/algorithms/ml-dsa
                 patchShebangs ./.
                 ${lib.optionalString checkHax ''
                   ./hax.sh extract

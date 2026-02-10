@@ -38,7 +38,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-dsa
+        working-directory: crates/algorithms/ml-dsa
 
     steps:
       - uses: actions/checkout@v6

@@ -10,7 +10,15 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 
-exclude = [ "boring.sh", "/cg", "*.sh", "*.yaml", "/proofs", "tests/nistkats.rs", "tests/kats"]
+exclude = [
+    "boring.sh",
+    "/cg",
+    "*.sh",
+    "*.yaml",
+    "/proofs",
+    "tests/nistkats.rs",
+    "tests/kats",
+]
 
 [lib]
 bench = false # so libtest doesn't eat the arguments to criterion
@@ -20,8 +28,8 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-sha3.workspace = true
 libcrux-intrinsics.workspace = true
-libcrux-platform = { version = "0.0.3", path = "../crates/sys/platform" }
-libcrux-macros = { version = "=0.0.3",  path = "../crates/utils/macros" }
+libcrux-platform = { version = "0.0.3", path = "../../sys/platform" }
+libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [
     "derive",
@@ -33,9 +41,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.8"
-libcrux-kats = { path = "../crates/testing/kats", features = [
-    "mldsa"
-] }
+libcrux-kats = { path = "../../testing/kats", features = ["mldsa"] }
 
 
 # This doesn't build on intel macos.
@@ -43,7 +49,7 @@ libcrux-kats = { path = "../crates/testing/kats", features = [
 pqcrypto-mldsa = { version = "0.1.0" } #, default-features = false
 
 [target.'cfg(hax)'.dependencies]
-core-models = { path = "../crates/utils/core-models", version = "0.0.5" }
+core-models = { path = "../../utils/core-models", version = "0.0.5" }
 
 [features]
 default = ["std", "mldsa44", "mldsa65", "mldsa87"]

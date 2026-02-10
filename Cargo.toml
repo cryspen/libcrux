@@ -10,7 +10,6 @@ members = [
     "libcrux-ml-kem",
     "libcrux-ml-kem/fuzz",
     "crates/algorithms/sha3",
-    "libcrux-ml-dsa",
     "crates/utils/intrinsics",
     "libcrux-kem",
     "crates/algorithms/hmac",
@@ -28,6 +27,7 @@ members = [
     "crates/algorithms/ecdsa",
     "crates/algorithms/p256",
     "crates/algorithms/blake2",
+    "crates/algorithms/ml-dsa",
     "crates/utils/secrets",
     "crates/utils/core-models",
     "crates/utils/test-utils",
@@ -59,7 +59,7 @@ libcrux-aesgcm = { version = "=0.0.6", path = "crates/algorithms/aesgcm" }
 libcrux-chacha20poly1305 = { version = "=0.0.5", path = "crates/algorithms/chacha20poly1305" }
 libcrux-traits = { version = "=0.0.5", path = "traits" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
-libcrux-macros  = { version = "=0.0.3", path = "crates/utils/macros" }
+libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 libcrux-hkdf = { version = "=0.0.5", path = "crates/algorithms/hkdf" }
