@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- [#1320](https://github.com/cryspen/libcrux/pull/1320): Remove duplicated clamping step during key generation
+
 ## [0.0.5] (2026-01-22)
 
 - [#1297](https://github.com/cryspen/libcrux/pull/1297): Update dependencies
