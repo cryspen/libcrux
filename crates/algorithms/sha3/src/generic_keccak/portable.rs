@@ -1,11 +1,7 @@
 use super::*;
 
 #[cfg(hax)]
-use crate::proof_utils::valid_rate;
-
-#[cfg(hax)]
-#[hax_lib::fstar::replace("open Libcrux_sha3.Proof_utils.Lemmas")]
-const _: () = ();
+use crate::proof_utils::{lemma_mul_succ_le, valid_rate};
 
 #[hax_lib::attributes]
 impl KeccakState<1, u64> {
@@ -82,7 +78,8 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: 
     let input_blocks = input_len / RATE;
     let input_rem = input_len % RATE;
     for i in 0..input_blocks {
-        hax_lib::fstar!("mul_succ_le (v i) (v input_blocks) (v v_RATE)");
+        #[cfg(hax)]
+        lemma_mul_succ_le(i, input_blocks, RATE);
 
         s.absorb_block::<RATE>(&[input], i * RATE);
     }
@@ -98,7 +95,8 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: 
         s.squeeze::<RATE>(output, 0, RATE);
         for i in 1..output_blocks {
             hax_lib::loop_invariant!(|_: usize| output.len() == output_len);
-            hax_lib::fstar!("mul_succ_le (v i) (v output_blocks) (v v_RATE)");
+            #[cfg(hax)]
+            lemma_mul_succ_le(i, output_blocks, RATE);
 
             s.keccakf1600();
             s.squeeze::<RATE>(output, i * RATE, RATE);

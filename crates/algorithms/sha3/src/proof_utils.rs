@@ -12,6 +12,13 @@ pub(crate) fn valid_rate(rate: usize) -> bool {
     rate != 0 && rate <= 200 && rate % 8 == 0 && (rate % 32 == 8 || rate % 32 == 16)
 }
 
+/// XOF state invariant: validates that buffer length and rate are valid.
+pub(crate) fn keccak_xof_state_inv(rate: usize, buf_len: usize) -> bool {
+    valid_rate(rate) && buf_len <= rate
+}
+
+pub(crate) use lemmas::{lemma_div_mul_mod, lemma_mul_succ_le};
+
 mod lemmas {
     //! F* verification lemmas for SHA3/Keccak implementation.
     //!
@@ -35,7 +42,7 @@ let lemma_div_mul_mod (a b: usize)
     = ()
 "#
     )]
-    const _LEMMA_DIV_MUL_MOD: () = ();
+    pub(crate) fn lemma_div_mul_mod(_a: usize, _b: usize) {}
 
     /// Lemma proving multiplication bounds for successive elements.
     ///
@@ -46,15 +53,15 @@ let lemma_div_mul_mod (a b: usize)
     /// stay within bounds.
     #[hax_lib::fstar::replace(
         r#"
-let rec mul_succ_le (k n d: nat)
+let rec lemma_mul_succ_le (k n d: usize)
   : Lemma
-    (requires k < n)
-    (ensures k * d + d <= n * d)
-    (decreases n) =
-  if n = 0 then ()
-  else if k = n - 1 then ()
-  else mul_succ_le k (n - 1) d
+    (requires (v k) < (v n))
+    (ensures (v k) * (v d) + (v d) <= (v n) * (v d))
+    (decreases (v n)) =
+  if v n = 0 then ()
+  else if v k = v n - 1 then ()
+  else lemma_mul_succ_le k (n -! mk_usize 1) d
 "#
     )]
-    const _LEMMA_MUL_SUCC_LE: () = ();
+    pub(crate) fn lemma_mul_succ_le(_k: usize, _n: usize, _d: usize) {}
 }

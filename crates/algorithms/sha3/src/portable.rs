@@ -53,7 +53,7 @@ pub mod incremental {
     use generic_keccak::xof::KeccakXofState;
 
     #[cfg(hax)]
-    use generic_keccak::xof::keccak_xof_state_inv;
+    use crate::proof_utils::keccak_xof_state_inv;
 
     mod private {
         pub trait Sealed {}
@@ -102,29 +102,29 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
 
     #[hax_lib::attributes]
     impl Xof<168> for Shake128Xof {
-        #[hax_lib::ensures(|result|keccak_xof_state_inv(&result.state))]
+        #[hax_lib::ensures(|result|keccak_xof_state_inv(168, result.state.buf_len))]
         fn new() -> Self {
             Self {
                 state: KeccakXofState::<1, 168, u64>::new(),
             }
         }
 
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
-        #[hax_lib::ensures(|_| keccak_xof_state_inv(&future(self).state))]
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(168, future(self).state.buf_len))]
         fn absorb(&mut self, input: &[u8]) {
             self.state.absorb(&[input]);
         }
 
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
-        #[hax_lib::ensures(|_| keccak_xof_state_inv(&future(self).state))]
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(168, future(self).state.buf_len))]
         fn absorb_final(&mut self, input: &[u8]) {
             self.state.absorb_final::<0x1fu8>(&[input]);
         }
 
         /// Shake128 squeeze
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
         #[hax_lib::ensures(|_|
-            keccak_xof_state_inv(&self.state) &&
+            keccak_xof_state_inv(168, self.state.buf_len) &&
             future(out).len() == out.len()
         )]
         fn squeeze(&mut self, out: &mut [u8]) {
@@ -136,7 +136,7 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
     #[hax_lib::attributes]
     impl Xof<136> for Shake256Xof {
         /// Shake256 new state
-        #[hax_lib::ensures(|result| keccak_xof_state_inv(&result.state))]
+        #[hax_lib::ensures(|result| keccak_xof_state_inv(136, result.state.buf_len))]
         fn new() -> Self {
             Self {
                 state: KeccakXofState::<1, 136, u64>::new(),
@@ -144,23 +144,23 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
 
         /// Shake256 absorb
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
-        #[hax_lib::ensures(|_| keccak_xof_state_inv(&future(self).state))]
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(136, future(self).state.buf_len))]
         fn absorb(&mut self, input: &[u8]) {
             self.state.absorb(&[input]);
         }
 
         /// Shake256 absorb final
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
-        #[hax_lib::ensures(|_| keccak_xof_state_inv(&future(self).state))]
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(136, future(self).state.buf_len))]
         fn absorb_final(&mut self, input: &[u8]) {
             self.state.absorb_final::<0x1fu8>(&[input]);
         }
 
         /// Shake256 squeeze
-        #[hax_lib::requires(keccak_xof_state_inv(&self.state))]
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
         #[hax_lib::ensures(|_|
-            keccak_xof_state_inv(&self.state) &&
+            keccak_xof_state_inv(136, self.state.buf_len) &&
             future(out).len() == out.len()
         )]
         fn squeeze(&mut self, out: &mut [u8]) {

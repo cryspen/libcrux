@@ -1,3 +1,4 @@
+#[cfg(hax)]
 use hax_lib::int::*;
 
 use crate::{
@@ -6,11 +7,7 @@ use crate::{
 };
 
 #[cfg(hax)]
-use crate::proof_utils::valid_rate;
-
-#[cfg(hax)]
-#[hax_lib::fstar::replace("open Libcrux_sha3.Proof_utils.Lemmas")]
-const _: () = ();
+use crate::proof_utils::{keccak_xof_state_inv, valid_rate};
 
 // TODO: Should not be needed. Use hax_lib::fstar::options("") below.
 // Known bug: https://github.com/cryspen/hax/issues/1698
@@ -33,7 +30,8 @@ pub(crate) struct KeccakXofState<
     buf: [[u8; RATE]; PARALLEL_LANES],
 
     // Buffered length.
-    buf_len: usize,
+    // Note: pub(crate) so that portable.rs can access it for verification invariants
+    pub(crate) buf_len: usize,
 
     // Needs sponge.
     sponge: bool,
@@ -61,17 +59,6 @@ fn buf_to_slices<const PARALLEL_LANES: usize, const RATE: usize>(
     core::array::from_fn(|i| buf[i].as_slice())
 }
 
-#[cfg(hax)]
-pub(crate) fn keccak_xof_state_inv<
-    const PARALLEL_LANES: usize,
-    const RATE: usize,
-    STATE: KeccakItem<PARALLEL_LANES>,
->(
-    xof: &KeccakXofState<PARALLEL_LANES, RATE, STATE>,
-) -> bool {
-    valid_rate(RATE) && xof.buf_len <= RATE
-}
-
 #[hax_lib::attributes]
 #[hax_lib::fstar::options("--split_queries always --z3rlimit 300")] // TODO: Has no effect. See above.
 impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_LANES>>
@@ -87,7 +74,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         PARALLEL_LANES == 1 &&
         valid_rate(RATE)
     )]
-    #[hax_lib::ensures(|result| keccak_xof_state_inv(&result))]
+    #[hax_lib::ensures(|result| keccak_xof_state_inv(RATE, result.buf_len))]
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
@@ -118,10 +105,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     // Note: consciously not inlining this function to avoid using too much stack
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(self)
+        keccak_xof_state_inv(RATE, self.buf_len)
     )]
     #[hax_lib::ensures(|consumed|
-        keccak_xof_state_inv(future(self)) &&
+        keccak_xof_state_inv(RATE, future(self).buf_len) &&
         if consumed == 0 {
             future(self).buf_len == self.buf_len && (
                 self.buf_len == 0 ||
@@ -161,10 +148,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     // Note: consciously not inlining this function to avoid using too much stack
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(self)
+        keccak_xof_state_inv(RATE, self.buf_len)
     )]
     #[hax_lib::ensures(|remainder|
-        keccak_xof_state_inv(future(self)) &&
+        keccak_xof_state_inv(RATE, future(self).buf_len) &&
         future(self).buf_len.to_int() + remainder.to_int() <= RATE.to_int()
     )]
     pub(crate) fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize
@@ -205,13 +192,15 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         #[cfg(hax)]
         let (self_buf_len, end) = {
             let end = consumed + num_blocks * RATE;
+            #[cfg(hax)]
             hax_lib::assert!(end <= inputs[0].len());
             (self.buf_len, end)
         };
 
         for i in 0..num_blocks {
             hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
-            hax_lib::fstar!("mul_succ_le (v i) (v num_blocks) (v v_RATE)");
+            #[cfg(hax)]
+            crate::proof_utils::lemma_mul_succ_le(i, num_blocks, RATE);
 
             let start = i * RATE + consumed;
 
@@ -237,9 +226,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     #[inline(always)]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(self)
+        keccak_xof_state_inv(RATE, self.buf_len)
     )]
-    #[hax_lib::ensures(|_| keccak_xof_state_inv(future(self)))]
+    #[hax_lib::ensures(|_| keccak_xof_state_inv(RATE, future(self).buf_len))]
     pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
@@ -254,6 +243,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
                 self.buf_len + remainder <= RATE
             );
 
+            #[cfg(hax)]
             hax_lib::assert!(remainder.to_int() + self.buf_len.to_int() <= RATE.to_int());
 
             let input_len = inputs[0].len();
@@ -280,9 +270,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     #[inline(always)]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(self)
+        keccak_xof_state_inv(RATE, self.buf_len)
     )]
-    #[hax_lib::ensures(|_| keccak_xof_state_inv(future(self)))]
+    #[hax_lib::ensures(|_| keccak_xof_state_inv(RATE, future(self).buf_len))]
     pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
@@ -304,9 +294,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
     #[inline(always)]
-    #[hax_lib::requires(keccak_xof_state_inv(self))]
+    #[hax_lib::requires(keccak_xof_state_inv(RATE, self.buf_len))]
     #[hax_lib::ensures(|_|
-        keccak_xof_state_inv(future(self)) &&
+        keccak_xof_state_inv(RATE, future(self).buf_len) &&
         future(out).len() == out.len()
     )]
     pub(crate) fn squeeze(&mut self, out: &mut [u8])
@@ -340,6 +330,7 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 hax_lib::loop_invariant!(
                     |_: usize| out.len() == out_len && self_buf_len == self.buf_len
                 );
+                #[cfg(hax)]
                 hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
 
                 // Here we know that we always have full blocks to write out.
@@ -353,7 +344,9 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
 
                 // For a and b with b < a
                 // (a / b) * b + a % b = a
-                hax_lib::fstar!("lemma_div_mul_mod out_len v_RATE");
+                #[cfg(hax)]
+                crate::proof_utils::lemma_div_mul_mod(out_len, RATE);
+                #[cfg(hax)]
                 hax_lib::assert!(
                     blocks.to_int() * RATE.to_int() + remaining.to_int() == out.len().to_int()
                 );
