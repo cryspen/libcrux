@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#1322](https://github.com/cryspen/libcrux/pull/1322): Update dependencies: `libcrux-traits`, `libcrux-sha2`
+- [#1324](https://github.com/cryspen/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-sha2`
 
 
 ## [0.0.5] (2026-01-22)
