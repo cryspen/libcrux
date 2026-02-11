@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-sha3`, `libcrux-traits`
+- [#1322](https://github.com/cryspen/libcrux/pull/1322): Update dependencies: `libcrux-sha3`, `libcrux-traits`
 - [#1242](https://github.com/cryspen/libcrux/pull/1242): In tests, use the latest versions of ACVP KATs exported by `libcrux-kats`.
 
 ## [0.0.6] (2026-01-22)

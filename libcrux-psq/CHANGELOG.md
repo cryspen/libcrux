@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-traits`, `libcrux-ecdh`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-kem`, `libcrux-chacha20poly1305`, `libcrux-aesgcm`, `libcrux-sha2`, `libcrux-hmac` `libcrux-ml-dsa`, `libcrux-hkdf`
+- [#1322](https://github.com/cryspen/libcrux/pull/1322): Update dependencies: `libcrux-traits`, `libcrux-ecdh`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-kem`, `libcrux-chacha20poly1305`, `libcrux-aesgcm`, `libcrux-sha2`, `libcrux-hmac` `libcrux-ml-dsa`, `libcrux-hkdf`
 
 ## [0.0.6] (2026-01-22)
 
