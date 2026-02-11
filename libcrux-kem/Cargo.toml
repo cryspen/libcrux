@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-kem"
-version = "0.0.6-pre.2"
+version = "0.0.6"
 description = "Libcrux KEM implementation"
 readme = "README.md"
 
