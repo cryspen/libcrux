@@ -5,6 +5,9 @@ use crate::vector::traits::{
 };
 use libcrux_secrets::*;
 
+#[cfg(hax)]
+use crate::vector::traits::spec;
+
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
 /// We use 'mfe' as a shorthand for this type
@@ -51,11 +54,8 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: U32) -> U32 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fstar!(r#"forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-    (v (Seq.index ${result}.f_elements i) == 
-     v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
+#[hax_lib::requires(fstar!(r#"${spec::add_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
+#[hax_lib::ensures(|result| fstar!(r#"${spec::add_post} ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
 pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     #[cfg(hax)]
     let _lhs0 = lhs;
@@ -77,16 +77,16 @@ pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
         "assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
     			          v (Seq.index ${_lhs0}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"
     );
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+    );
 
     lhs
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-    (v (Seq.index ${result}.f_elements i) == 
-     v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
+#[hax_lib::requires(fstar!(r#"${spec::sub_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
+#[hax_lib::ensures(|result| fstar!(r#"${spec::sub_post} ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
 pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     #[cfg(hax)]
     let _lhs0 = lhs;
@@ -107,6 +107,9 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     hax_lib::fstar!(
         "assert (forall i. v (Seq.index ${lhs}.f_elements i) ==
     			          v (Seq.index ${_lhs0}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"
+    );
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
     );
 
     lhs

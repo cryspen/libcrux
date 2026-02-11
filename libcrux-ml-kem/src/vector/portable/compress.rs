@@ -182,7 +182,7 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 600")]
 #[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/

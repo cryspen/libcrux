@@ -280,7 +280,7 @@ macro_rules! instantiate {
 
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
-                    Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
+                    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index 
                         ${public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn serialized_public_key(
                     public_key: &MlKem1024PublicKeyUnpacked,
@@ -303,7 +303,7 @@ macro_rules! instantiate {
 
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
-                    Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
+                    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index 
                         ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key_mut(key_pair: &MlKem1024KeyPairUnpacked, serialized: &mut MlKem1024PublicKey) {
                     key_pair.serialized_public_key_mut::<CPA_PKE_PUBLIC_KEY_SIZE>(serialized);
@@ -311,7 +311,7 @@ macro_rules! instantiate {
 
                 /// Get the serialized public key.
                 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 4 ==>
-                    Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index 
+                    Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index 
                         ${key_pair.public_key.ind_cpa_public_key.t_as_ntt} i)"#))]
                 pub fn key_pair_serialized_public_key(key_pair: &MlKem1024KeyPairUnpacked) ->MlKem1024PublicKey {
                     key_pair.serialized_public_key::<CPA_PKE_PUBLIC_KEY_SIZE>()

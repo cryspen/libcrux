@@ -105,7 +105,7 @@ class extractAction(argparse.Action):
             "+:libcrux_ml_kem::hash_functions::*::*",
         ]
         include_str = " ".join(includes)
-        interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants"
+        interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants -libcrux_ml_kem::traits::spec -libcrux_ml_kem::polynomial::spec"
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -137,7 +137,7 @@ class proveAction(argparse.Action):
         admit_env = {}
         if args.admit:
             admit_env = {"OTHERFLAGS": "--admit_smt_queries true"}
-        shell(["make", "-j4", "-C", "proofs/fstar/extraction/"], env=admit_env)
+        shell(["make", "-k", "-j4", "-C", "proofs/fstar/extraction/"], env=admit_env)
         return None
 
 
