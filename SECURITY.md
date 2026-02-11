@@ -1,5 +1,7 @@
 # Security Policy
 
+Starting February 2026 we will issue advisories for any new release of a crate that includes a "Fixed" section in the changelog, in particular fixed any bugs.
+
 ## Supported Versions
 
 libcrux is still pre-release and does not support any specific versions yet.
