@@ -43,6 +43,16 @@ pub enum KemAlgorithm {
     ///
     /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-xwing-kem-06>
     XWingDraft06 = 0x647a,
+
+    /// ML-KEM-768
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-hpke-mlkem>
+    MlKem768 = 0x0041,
+
+    /// ML-KEM-1024
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-hpke-mlkem>
+    MlKem1024 = 0x0042,
 }
 
 impl core::fmt::Display for KemAlgorithm {
@@ -61,7 +71,11 @@ impl core::convert::TryFrom<u16> for KemAlgorithm {
             0x0016 => Ok(KemAlgorithm::DhKemK256),
             0x0020 => Ok(KemAlgorithm::DhKem25519),
             0x0021 => Ok(KemAlgorithm::DhKem448),
-            0x004D => Ok(KemAlgorithm::XWingDraft06),
+            #[allow(deprecated)]
+            0x004D => Ok(KemAlgorithm::XWingDraft06Obsolete),
+            0x647a => Ok(KemAlgorithm::XWingDraft06),
+            0x0041 => Ok(KemAlgorithm::MlKem768),
+            0x0042 => Ok(KemAlgorithm::MlKem1024),
             _ => Err(Self::Error::UnknownKemAlgorithm),
         }
     }
@@ -79,6 +93,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKem448 => 56,
             #[allow(deprecated)]
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => 32,
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 64,
         }
     }
 
@@ -93,6 +108,7 @@ impl KemAlgorithm {
             KemAlgorithm::DhKem448 => 64,
             #[allow(deprecated)]
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => 32,
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 32,
         }
     }
 }
@@ -226,6 +242,9 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             #[allow(deprecated)]
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
                 KdfAlgorithm::HkdfSha512
+            }
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+                KdfAlgorithm::HkdfSha256
             }
         }
     }

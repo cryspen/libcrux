@@ -526,6 +526,84 @@ generate_test_case!(
     HpkeLibcrux
 );
 
+// X-Wing RustCrypto tests
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_chacha20poly1305_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_Aes128Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_xwingdraft06_hkdfsha256_Aes256Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::XWingDraft06,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+
+// ML-KEM-768 RustCrypto tests
+generate_test_case!(
+    base_mlkem768_hkdfsha256_chacha20poly1305_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem768,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_mlkem768_hkdfsha256_Aes128Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem768,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_mlkem768_hkdfsha256_Aes256Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem768,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+
+// ML-KEM-1024 RustCrypto tests
+generate_test_case!(
+    base_mlkem1024_hkdfsha256_chacha20poly1305_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem1024,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::ChaCha20Poly1305,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_mlkem1024_hkdfsha256_Aes128Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem1024,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes128Gcm,
+    HpkeRustCrypto
+);
+generate_test_case!(
+    base_mlkem1024_hkdfsha256_Aes256Gcm_rustcrypto,
+    HpkeMode::Base,
+    KemAlgorithm::MlKem1024,
+    KdfAlgorithm::HkdfSha256,
+    AeadAlgorithm::Aes256Gcm,
+    HpkeRustCrypto
+);
+
 generate_test_case!(
     base_dhkemp256_hkdfsha384_chacha20poly1305,
     HpkeMode::Base,

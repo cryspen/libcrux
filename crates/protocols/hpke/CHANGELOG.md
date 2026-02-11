@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- [#127](https://github.com/cryspen/hpke-rs/pull/127): Add support for ML-KEM-768 (`KemAlgorithm::MlKem768 = 0x0041`) and ML-KEM-1024 (`KemAlgorithm::MlKem1024 = 0x0042`) to the RustCrypto provider, and add X-Wing support to the RustCrypto provider using the `x-wing` and `ml-kem` crates.
+
 ### Fixed
+
+- [#127](https://github.com/cryspen/hpke-rs/pull/127): Fix `KemAlgorithm::TryFrom<u16>` mapping where `0x004D` incorrectly resolved to `XWingDraft06` instead of `XWingDraft06Obsolete`.
 - [#123](https://github.com/cryspen/hpke-rs/pull/123): Fix potential overflow in context counter and switch to use u64.
 
 ## [0.5.1] - 2026-02-02
