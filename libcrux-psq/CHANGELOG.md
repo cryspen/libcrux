@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.7-pre.1] (2026-02-11)
 
-- [#1301](https://github.com/cryspen/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
+### Added
+
 - [#1307](https://github.com/cryspen/libcrux/pull/1307): Expose additional functionalities on the DHKEM (https://github.com/jstuczyn)
 - [#1298](https://github.com/cryspen/libcrux/pull/1298): Propagate import/export functions from CMC crate (https://github.com/georgio)
+
+### Fixed
+
+- [#1309](https://github.com/cryspen/libcrux/pull/1309): Propagate AEADError instead of panicking
+- [#1301](https://github.com/cryspen/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
+
+### Changed
+
+- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-traits`, `libcrux-ecdh`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-kem`, `libcrux-chacha20poly1305`, `libcrux-aesgcm`, `libcrux-sha2`, `libcrux-hmac` `libcrux-ml-dsa`, `libcrux-hkdf`
 
 ## [0.0.6] (2026-01-22)
 
