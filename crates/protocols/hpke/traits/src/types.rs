@@ -4,6 +4,7 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use zeroize::Zeroize;
 
 use crate::error;
 
@@ -53,6 +54,12 @@ pub enum KemAlgorithm {
     ///
     /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-hpke-mlkem>
     MlKem1024 = 0x0042,
+}
+
+impl Zeroize for KemAlgorithm {
+    fn zeroize(&mut self) {
+        // Nothing to do here.
+    }
 }
 
 impl core::fmt::Display for KemAlgorithm {
@@ -129,6 +136,12 @@ pub enum AeadAlgorithm {
 
     /// HPKE Export-only
     HpkeExport = 0xFFFF,
+}
+
+impl Zeroize for AeadAlgorithm {
+    fn zeroize(&mut self) {
+        // Nothing to do here.
+    }
 }
 
 impl core::fmt::Display for AeadAlgorithm {
@@ -210,6 +223,12 @@ pub enum KdfAlgorithm {
 
     /// HKDF SHA 512
     HkdfSha512 = 0x0003,
+}
+
+impl Zeroize for KdfAlgorithm {
+    fn zeroize(&mut self) {
+        // Nothing to do here.
+    }
 }
 
 impl core::fmt::Display for KdfAlgorithm {

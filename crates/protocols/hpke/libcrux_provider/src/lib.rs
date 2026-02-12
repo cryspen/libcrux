@@ -4,6 +4,7 @@ extern crate alloc;
 
 use alloc::{format, string::String, vec::Vec};
 use core::fmt::Display;
+use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
     error::Error,
@@ -23,6 +24,12 @@ pub struct HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
     rng: rand_chacha::ChaCha20Rng,
+}
+
+impl Zeroize for HpkeLibcruxPrng {
+    fn zeroize(&mut self) {
+        // ChaCha20Rng doesn't implement zeroize and fake_rng is just for testing.
+    }
 }
 
 impl HpkeCrypto for HpkeLibcrux {
