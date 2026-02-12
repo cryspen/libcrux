@@ -153,8 +153,19 @@ fn m4_export_only_context_export_works() {
 // happens silently.  The fix is a hard check (not debug_assert).
 // ---------------------------------------------------------------
 #[test]
+#[cfg(debug_assertions)]
 #[should_panic(expected = "len < 256")]
 fn l1_export_large_length_hits_debug_assert() {
+    export_large_length_hits_debug_assert();
+}
+
+#[test]
+#[cfg(not(debug_assertions))]
+fn l1_export_large_length_hits_debug_assert() {
+    export_large_length_hits_debug_assert();
+}
+
+fn export_large_length_hits_debug_assert() {
     // In debug builds this panics at the debug_assert in kdf.rs.
     // In release builds this would silently truncate `len as u16`.
     let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
@@ -180,8 +191,19 @@ fn l1_export_large_length_hits_debug_assert() {
 // RFC uses a u16 length field, so values 256..=65535 should be
 // valid, but debug_assert!(len < 256) rejects them.
 #[test]
+#[cfg(debug_assertions)]
 #[should_panic(expected = "len < 256")]
 fn l1_export_256_rejected_by_overly_strict_debug_assert() {
+    export_256_rejected_by_overly_strict_debug_assert();
+}
+
+#[test]
+#[cfg(not(debug_assertions))]
+fn l1_export_256_rejected_by_overly_strict_debug_assert() {
+    export_256_rejected_by_overly_strict_debug_assert();
+}
+
+fn export_256_rejected_by_overly_strict_debug_assert() {
     let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
         Mode::Base,
         KemAlgorithm::DhKem25519,
