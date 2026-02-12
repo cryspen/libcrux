@@ -12,7 +12,7 @@ libcrux is still pre-release and does not support any specific versions yet.
 Use the private [Github vulnerability reporting](https://github.com/cryspen/libcrux/security)
 or send an email to [security-reports@cryspen.com](mailto:security-reports@cryspen.com)
 
-PRs or Issues that irresponsibly disclose security vulnerabilities will be closed.
+PRs or issues that do not follow the security policy will be closed.
 
 ## Security Advisories
 
