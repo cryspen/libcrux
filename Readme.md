@@ -1,6 +1,13 @@
-# libcrux - the formally verified crypto library
+# libcrux - a high-assurance cryptographic library in Rust
 
-libcrux is a formally verified cryptographic library in Rust.
+libcrux is a cryptographic library in pure Rust. It uses formally verified
+code generated from the [HACL* project](https://github.com/hacl-star/hacl-star) and includes Rust code that is
+directly verified for runtime safety and functional correctness using the
+[hax toolchain](https://github.com/cryspen/hax). For more details, see below.
+
+libcrux is in pre-release (all of its crates are versioned < `0.1`). If you wish to use any of these crates
+in production, get in touch with the [maintainers](mailto:info@cryspen.com) and we can advise you on whether
+libcrux is a good fit for your use-case.
 
 ## Minimum Supported Rust Version (MSRV)
 
@@ -34,7 +41,7 @@ In every case, please refer to the more detailed notes on verification in each s
 
 ## Publications
 
-Libcrux was introduced in this article at RWC 2023. The verification methodology used to build libcrux is described in [this paper] https://eprint.iacr.org/2025/142).
+Libcrux was introduced in this article at RWC 2023. The verification methodology used to build libcrux is described in [this paper](https://eprint.iacr.org/2025/142).
 
 [architecture]: ./Architecture.md
 [hacspec]: https://hacspec.org
