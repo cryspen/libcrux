@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
 - [#122](https://github.com/cryspen/hpke-rs/pull/122): Update rand dependencies
 
 ## [0.5.1] - 2026-02-02
