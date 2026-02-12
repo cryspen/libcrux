@@ -26,6 +26,10 @@ pub(crate) fn labeled_expand<Crypto: HpkeCrypto>(
     len: usize,
 ) -> Result<Vec<u8>, Error> {
     debug_assert!(len < 256);
+    if len > u16::MAX.into() {
+        return Err(Error::HpkeInvalidOutputLength);
+    }
+
     let len_bytes = (len as u16).to_be_bytes();
     let labeled_info = concat(&[&len_bytes, HPKE_VERSION, suite_id, label.as_bytes(), info]);
     Crypto::kdf_expand(alg, prk, &labeled_info, len)

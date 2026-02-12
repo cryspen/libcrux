@@ -1,10 +1,13 @@
 use alloc::{vec, vec::Vec};
 
 use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto, RngCore};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{dh_kem, util, Hpke};
 
-pub(crate) type PrivateKey = Vec<u8>;
+/// A KEM private key wrapper.
+#[derive(Zeroize, ZeroizeOnDrop)]
+pub struct PrivateKey(pub(crate) Vec<u8>);
 pub(crate) type PublicKey = Vec<u8>;
 
 #[inline(always)]
@@ -33,9 +36,7 @@ pub(crate) fn encaps<Crypto: HpkeCrypto>(
         KemAlgorithm::XWingDraft06
         | KemAlgorithm::XWingDraft06Obsolete
         | KemAlgorithm::MlKem768
-        | KemAlgorithm::MlKem1024 => {
-            Crypto::kem_encaps(alg, pk_r, hpke.rng())
-        }
+        | KemAlgorithm::MlKem1024 => Crypto::kem_encaps(alg, pk_r, hpke.rng()),
     }
 }
 
@@ -55,9 +56,7 @@ pub(crate) fn decaps<Crypto: HpkeCrypto>(
         KemAlgorithm::XWingDraft06
         | KemAlgorithm::XWingDraft06Obsolete
         | KemAlgorithm::MlKem768
-        | KemAlgorithm::MlKem1024 => {
-            Crypto::kem_decaps(alg, enc, sk_r)
-        }
+        | KemAlgorithm::MlKem1024 => Crypto::kem_decaps(alg, enc, sk_r),
     }
 }
 
@@ -83,9 +82,7 @@ pub(crate) fn auth_encaps<Crypto: HpkeCrypto>(
         KemAlgorithm::XWingDraft06
         | KemAlgorithm::XWingDraft06Obsolete
         | KemAlgorithm::MlKem768
-        | KemAlgorithm::MlKem1024 => {
-            Err(Error::UnsupportedKemOperation)
-        }
+        | KemAlgorithm::MlKem1024 => Err(Error::UnsupportedKemOperation),
     }
 }
 
@@ -108,9 +105,7 @@ pub(crate) fn auth_decaps<Crypto: HpkeCrypto>(
         KemAlgorithm::XWingDraft06
         | KemAlgorithm::XWingDraft06Obsolete
         | KemAlgorithm::MlKem768
-        | KemAlgorithm::MlKem1024 => {
-            Err(Error::UnsupportedKemOperation)
-        }
+        | KemAlgorithm::MlKem1024 => Err(Error::UnsupportedKemOperation),
     }
 }
 
@@ -118,7 +113,7 @@ pub(crate) fn auth_decaps<Crypto: HpkeCrypto>(
 pub(crate) fn key_gen<Crypto: HpkeCrypto>(
     alg: KemAlgorithm,
     prng: &mut Crypto::HpkePrng,
-) -> Result<(Vec<u8>, Vec<u8>), Error> {
+) -> Result<(PrivateKey, Vec<u8>), Error> {
     match alg {
         // For ECDH based keys, we generate a completely fresh key.
         KemAlgorithm::DhKemP256
@@ -155,15 +150,13 @@ pub(crate) fn derive_key_pair<Crypto: HpkeCrypto>(
         | KemAlgorithm::DhKem25519
         | KemAlgorithm::DhKem448 => dh_kem::derive_key_pair::<Crypto>(alg, &ciphersuite(alg), ikm),
         #[allow(deprecated)]
-        KemAlgorithm::XWingDraft06
-        | KemAlgorithm::XWingDraft06Obsolete => {
+        KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
             let seed = libcrux_sha3::shake256::<32>(ikm);
-            Crypto::kem_key_gen_derand(alg, &seed)
+            Crypto::kem_key_gen_derand(alg, &seed).map(|(ek, dk)| (ek, PrivateKey(dk)))
         }
-        KemAlgorithm::MlKem768
-        | KemAlgorithm::MlKem1024 => {
+        KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
             let seed = libcrux_sha3::shake256::<64>(ikm);
-            Crypto::kem_key_gen_derand(alg, &seed)
+            Crypto::kem_key_gen_derand(alg, &seed).map(|(ek, dk)| (ek, PrivateKey(dk)))
         }
     }
 }

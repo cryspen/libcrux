@@ -5,6 +5,7 @@ extern crate alloc;
 
 use alloc::{string::String, vec::Vec};
 use core::fmt::Display;
+use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
     error::Error,
@@ -41,6 +42,12 @@ pub struct HpkeRustCryptoPrng {
     fake_rng: Vec<u8>,
 }
 
+impl Zeroize for HpkeRustCryptoPrng {
+    fn zeroize(&mut self) {
+        // ChaCha20Rng doesn't implement zeroize and fake_rng is just for testing.
+    }
+}
+
 impl HpkeCrypto for HpkeRustCrypto {
     fn name() -> String {
         "RustCrypto".into()
@@ -68,6 +75,7 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
+        use subtle::ConstantTimeEq;
         match alg {
             KemAlgorithm::DhKem25519 => {
                 if sk.len() != 32 {
@@ -86,20 +94,7 @@ impl HpkeCrypto for HpkeRustCrypto {
                     .as_bytes()
                     .to_vec();
 
-                // Trying to tell the compiler not to short circuit.
-                // This may or may not work.
-                #[inline(never)]
-                fn all_zero(bytes: &[u8]) -> bool {
-                    core::hint::black_box({
-                        let mut acc = 0;
-                        for b in bytes.iter() {
-                            acc |= b;
-                        }
-                        acc == 0
-                    })
-                }
-
-                if all_zero(&shared_secret) {
+                if shared_secret.ct_eq(&[0u8; 32]).into() {
                     return Err(Error::KemInvalidPublicKey);
                 }
                 Ok(shared_secret)

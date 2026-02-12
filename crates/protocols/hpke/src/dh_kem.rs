@@ -45,9 +45,9 @@ pub(super) fn deserialize(enc: &[u8]) -> Vec<u8> {
 pub(super) fn key_gen<Crypto: HpkeCrypto>(
     alg: KemAlgorithm,
     prng: &mut Crypto::HpkePrng,
-) -> Result<(Vec<u8>, Vec<u8>), Error> {
+) -> Result<(PrivateKey, Vec<u8>), Error> {
     let (pk, sk) = Crypto::kem_key_gen(alg, prng)?;
-    Ok((sk, pk))
+    Ok((PrivateKey(sk), pk))
 }
 
 pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
@@ -58,14 +58,14 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
     let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm)?;
 
     let sk = match alg {
-        KemAlgorithm::DhKem25519 => labeled_expand::<Crypto>(
+        KemAlgorithm::DhKem25519 => PrivateKey(labeled_expand::<Crypto>(
             alg.into(),
             &dkp_prk,
             suite_id,
             "sk",
             &[],
             alg.private_key_len(),
-        )?,
+        )?),
         KemAlgorithm::DhKemP256 | KemAlgorithm::DhKemK256 => {
             let mut ctr = 0u8;
             // Do rejection sampling trying to find a valid key.
@@ -82,7 +82,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
                 );
                 if let Ok(sk) = &candidate {
                     if let Ok(sk) = Crypto::dh_validate_sk(alg, sk) {
-                        break sk;
+                        break PrivateKey(sk);
                     }
                 }
                 if ctr == u8::MAX {
@@ -98,7 +98,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
             panic!("This should be unreachable. Only x25519, P256, and K256 KEMs are implemented")
         }
     };
-    Ok((Crypto::secret_to_public(alg, &sk)?, sk))
+    Ok((Crypto::secret_to_public(alg, &sk.0)?, sk))
 }
 
 pub(super) fn encaps<Crypto: HpkeCrypto>(
@@ -109,7 +109,7 @@ pub(super) fn encaps<Crypto: HpkeCrypto>(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     debug_assert_eq!(randomness.len(), alg.private_key_len());
     let (pk_e, sk_e) = derive_key_pair::<Crypto>(alg, suite_id, randomness)?;
-    let dh_pk = Crypto::dh(alg, pk_r, &sk_e)?;
+    let dh_pk = Crypto::dh(alg, pk_r, &sk_e.0)?;
     let enc = serialize(&pk_e);
 
     let pk_rm = serialize(pk_r);
@@ -144,7 +144,7 @@ pub(super) fn auth_encaps<Crypto: HpkeCrypto>(
     debug_assert_eq!(randomness.len(), alg.private_key_len());
     let (pk_e, sk_e) = derive_key_pair::<Crypto>(alg, suite_id, randomness)?;
     let dh_pk = concat(&[
-        &Crypto::dh(alg, pk_r, &sk_e)?,
+        &Crypto::dh(alg, pk_r, &sk_e.0)?,
         &Crypto::dh(alg, pk_r, sk_s)?,
     ]);
 

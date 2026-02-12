@@ -133,7 +133,7 @@ use rand_core::TryRngCore;
 
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod dh_kem;
 pub(crate) mod kdf;
@@ -251,7 +251,7 @@ pub struct HpkeKeyPair {
 }
 
 /// HPKE supports four modes.
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug, Zeroize)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum Mode {
@@ -302,6 +302,7 @@ type Plaintext = Vec<u8>;
 /// The HPKE context.
 /// Note that the RFC currently doesn't define this.
 /// Also see <https://github.com/cfrg/draft-irtf-cfrg-hpke/issues/161>.
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct Context<Crypto: 'static + HpkeCrypto> {
     key: Vec<u8>,
     nonce: Vec<u8>,
@@ -349,6 +350,10 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     ///   return ct
     /// ```
     pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Result<Ciphertext, HpkeError> {
+        if self.hpke.aead_id == AeadAlgorithm::HpkeExport {
+            return Err(HpkeError::InvalidConfig);
+        }
+
         let ctxt = Crypto::aead_seal(
             self.hpke.aead_id,
             &self.key,
@@ -378,6 +383,10 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     ///   return pt
     /// ```
     pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Result<Plaintext, HpkeError> {
+        if self.hpke.aead_id == AeadAlgorithm::HpkeExport {
+            return Err(HpkeError::InvalidConfig);
+        }
+
         let ptxt = Crypto::aead_open(
             self.hpke.aead_id,
             &self.key,
@@ -448,7 +457,7 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
 /// Now one can use the `hpke` configuration.
 ///
 /// Note that cloning does NOT clone the PRNG state.
-#[derive(Debug)]
+#[derive(Debug, Zeroize)]
 pub struct Hpke<Crypto: 'static + HpkeCrypto> {
     mode: Mode,
     kem_id: KemAlgorithm,
@@ -811,7 +820,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Returns an `HpkeKeyPair`.
     pub fn generate_key_pair(&mut self) -> Result<HpkeKeyPair, HpkeError> {
         let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut self.prng)?;
-        Ok(HpkeKeyPair::new(sk, pk))
+        Ok(HpkeKeyPair::new(sk.0.clone(), pk))
     }
 
     /// 7.1.2. DeriveKeyPair
@@ -820,7 +829,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Returns an `HpkeKeyPair` result or an `HpkeError` if key derivation fails.
     pub fn derive_key_pair(&self, ikm: &[u8]) -> Result<HpkeKeyPair, HpkeError> {
         let (pk, sk) = kem::derive_key_pair::<Crypto>(self.kem_id, ikm)?;
-        Ok(HpkeKeyPair::new(sk, pk))
+        Ok(HpkeKeyPair::new(sk.0.clone(), pk))
     }
 
     #[inline]
