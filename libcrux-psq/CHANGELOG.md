@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1309](https://github.com/cryspen/libcrux/pull/1309): Propagate AEADError instead of panicking
+- [#1319](https://github.com/cryspen/libcrux/pull/1319): Propagate AEADError instead of panicking
 - [#1301](https://github.com/cryspen/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
 
 ### Changed
