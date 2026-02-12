@@ -37,7 +37,7 @@ rand_core_new = { version = "0.10", package = "rand_core", default-features = fa
 rand_old = { version = "0.8", package = "rand", default-features = false }
 rand_chacha = { version = "0.3", default-features = false }
 zeroize = "1.8.2"
-subtle = "2.6.1"
+subtle = { version = "2.6.1", default-features = false }
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
