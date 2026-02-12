@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#127](https://github.com/cryspen/hpke-rs/pull/127): Fix `KemAlgorithm::TryFrom<u16>` mapping where `0x004D` incorrectly resolved to `XWingDraft06` instead of `XWingDraft06Obsolete`.
 - [#123](https://github.com/cryspen/hpke-rs/pull/123): Fix potential overflow in context counter and switch to use u64.
+- [#128](https://github.com/cryspen/hpke-rs/pull/128): Return errors when trying to use open/seal with export only ciphersuite and when using kdf export with an output that's too long (instead of truncating it)
+
+### Changed
+- [#128](https://github.com/cryspen/hpke-rs/pull/128): Added zeroize for Context and ephemeral private kem keys
 
 ## [0.5.1] - 2026-02-02
 
