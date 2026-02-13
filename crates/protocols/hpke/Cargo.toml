@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.5.1"
+version = "0.6.0-rc.1"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -19,11 +19,11 @@ serde = { version = "1.0", features = ["derive"], optional = true }
 tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
-hpke-rs-crypto = { version = "0.4.0", path = "./traits", default-features = false }
+hpke-rs-crypto = { version = "0.6.0-rc.1", path = "./traits", default-features = false }
 rand_core = { version = "0.9", default-features = false }
 libcrux-sha3 = { version = "0.0.6" }
-hpke-rs-rust-crypto = { version = "0.4.0", path = "./rust_crypto_provider", default-features = false, optional = true }
-hpke-rs-libcrux = { version = "0.5.1", path = "./libcrux_provider", default-features = false, optional = true }
+hpke-rs-rust-crypto = { version = "0.6.0-rc.1", path = "./rust_crypto_provider", default-features = false, optional = true }
+hpke-rs-libcrux = { version = "0.6.0-rc.1", path = "./libcrux_provider", default-features = false, optional = true }
 
 [features]
 default = []
@@ -45,14 +45,14 @@ hpke-test-prng = [
 ] # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
-hpke-rs-crypto = { version = "0.4.0", path = "./traits", features = ["std"] }
+hpke-rs-crypto = { version = "0.6.0-rc.1", path = "./traits", features = ["std"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.4.0", path = "./rust_crypto_provider" }
-hpke-rs-libcrux = { version = "0.5.1", path = "./libcrux_provider" }
+hpke-rs-rust-crypto = { version = "0.6.0-rc.1", path = "./rust_crypto_provider" }
+hpke-rs-libcrux = { version = "0.6.0-rc.1", path = "./libcrux_provider" }
 rand = { version = "0.10" }
 pretty_env_logger = "0.5"
 criterion = { version = "0.8", features = ["html_reports"] }
