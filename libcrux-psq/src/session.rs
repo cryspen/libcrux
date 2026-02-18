@@ -3,7 +3,7 @@
 //! This module implements long-term sessions derived from PSQ handshakes.
 
 mod session_key;
-mod transport;
+pub mod transport;
 
 use std::io::Cursor;
 

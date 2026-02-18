@@ -164,6 +164,8 @@ mod traits;
 #[doc(inline)]
 pub use traits::{Channel, IntoSession};
 
+pub use session::transport::Transport;
+
 #[cfg(feature = "v1")]
 pub mod v1;
 
