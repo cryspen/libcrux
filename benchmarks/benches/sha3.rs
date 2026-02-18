@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 
-use libcrux::digest::{self, *};
+use libcrux::primitives::digest::{self, *};
 
 use benchmarks::util::*;
 
