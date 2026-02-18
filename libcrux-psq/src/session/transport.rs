@@ -40,6 +40,11 @@ struct TransportMessage {
 ///
 /// Receiving a `TransportMessage` without matching channel identifier
 /// results in an error.
+///
+/// To prevent de-syncing of states between sender and receiver a
+/// failed decryption (e.g. due to transmission errors) will leave the
+/// receiver nonce unchanged, meaning the decrypting party can ask for
+/// retransmission of the faulty ciphertext and re-attempt decryption.
 pub struct Transport {
     /// Key used for AEAD-encrypting messages to be sent
     send_key: AEADKeyNonce,

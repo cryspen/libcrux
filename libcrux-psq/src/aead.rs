@@ -53,6 +53,14 @@ pub(crate) enum AEADError {
 }
 
 impl AEADKeyNonce {
+    pub(crate) fn set_nonce(&mut self, nonce: &[u8; NONCE_LEN]) {
+        self.nonce = *nonce;
+    }
+
+    pub(crate) fn get_nonce(&self) -> [u8; NONCE_LEN] {
+        self.nonce
+    }
+
     pub(crate) fn new(
         ikm: &impl SerializeBytes,
         info: &impl SerializeBytes,
@@ -159,24 +167,34 @@ impl AEADKeyNonce {
         tag: &[u8; 16],
         aad: &[u8],
     ) -> Result<Vec<u8>, AEADError> {
+        // This is to reset the nonce, in case of a decryption
+        // error. Crucially, we assume that a decrytion error does not
+        // reveal anything about the tag or the failed decryption.
+        let old_nonce = self.get_nonce();
         self.increment_nonce()?;
         let mut plaintext = vec![0u8; ciphertext.len()];
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce)
-                    .map_err(|_| AEADError::CryptoError)?;
+                if let Err(_) =
+                    decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce)
+                {
+                    self.set_nonce(&old_nonce);
+                    return Err(AEADError::CryptoError);
+                }
             }
             AEADKey::AesGcm128(key) => {
-                libcrux_aesgcm::AesGcm128::decrypt(
+                if let Err(_) = libcrux_aesgcm::AesGcm128::decrypt(
                     &mut plaintext,
                     key,
                     &self.nonce,
                     aad,
                     ciphertext,
                     tag,
-                )
-                .map_err(|_| AEADError::CryptoError)?;
+                ) {
+                    self.set_nonce(&old_nonce);
+                    return Err(AEADError::CryptoError);
+                }
             }
         }
 
