@@ -1,6 +1,5 @@
 //! # Cryptographic Primitives
 
-
 #[cfg(feature = "aead")]
 pub mod aead;
 
