@@ -102,7 +102,7 @@ name = "ed25519"
 
 [[bench]]
 harness = false
-name = "kyber768"
+name = "mlkem768"
 
 [[bench]]
 harness = false
