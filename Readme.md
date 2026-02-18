@@ -14,11 +14,6 @@ libcrux is a good fit for your use-case.
 The default feature set has a MSRV of `1.78.0`. `no_std` environments
 are supported starting from Rust version `1.81.0`.
 
-## Randomness
-
-libcrux provides a DRBG implementation that can be used standalone (`drbg::Drbg`)
-or through the `Rng` traits.
-
 ## `no_std` support
 `libcrux` and the individual primitive crates it depends on support
 `no_std` environments given a global allocator for the target
