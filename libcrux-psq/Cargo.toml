@@ -52,6 +52,11 @@ pretty_env_logger = "0.5.0"
 [features]
 v1 = []
 classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]
+
+# Allows external control over the AEAD nonces of transport channels.
+# CAUTION! Enabling this makes it the responsibility of the application to avoid nonce re-use.
+nonce-control = []
+
 # DO NOT USE: This feature enables implementations backed
 # by non-post-quantum KEMs and should only be used for
 # testing purposes and benchmark baselines.

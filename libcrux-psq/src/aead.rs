@@ -8,7 +8,10 @@ use tls_codec::{
 
 use libcrux_aesgcm::AESGCM128_KEY_LEN as KEY_LEN_AES;
 
-const NONCE_LEN: usize = 12;
+/// Length of an AEAD nonce in bytes.
+pub const NONCE_LEN: usize = 12;
+
+#[cfg(not(feature = "nonce-control"))]
 const NONCE_MAX: [u8; NONCE_LEN] = [0xff; NONCE_LEN];
 const TAG_LEN: usize = 16;
 
@@ -98,19 +101,32 @@ impl AEADKeyNonce {
         }
     }
 
+    // Increment the nonce, treating it as a 12 byte big-endian
+    // integer. This will generate an AEADError, if the nonce is
+    // already at its maximum value.
+    //
+    // If feature `nonce-control` is enabled, the nonce will not be
+    // incremented.
     fn increment_nonce(&mut self) -> Result<(), AEADError> {
-        if self.nonce == NONCE_MAX {
-            return Err(AEADError::CryptoError);
+        #[cfg(feature = "nonce-control")]
+        {
+            return Ok(());
         }
+        #[cfg(not(feature = "nonce-control"))]
+        {
+            if self.nonce == NONCE_MAX {
+                return Err(AEADError::CryptoError);
+            }
 
-        let mut buf = [0u8; 16];
-        buf[16 - NONCE_LEN..].copy_from_slice(self.nonce.as_slice());
-        let mut nonce = u128::from_be_bytes(buf);
-        nonce += 1;
-        let buf = nonce.to_be_bytes();
+            let mut buf = [0u8; 16];
+            buf[16 - NONCE_LEN..].copy_from_slice(self.nonce.as_slice());
+            let mut nonce = u128::from_be_bytes(buf);
+            nonce += 1;
+            let buf = nonce.to_be_bytes();
 
-        self.nonce.copy_from_slice(&buf[16 - NONCE_LEN..]);
-        Ok(())
+            self.nonce.copy_from_slice(&buf[16 - NONCE_LEN..]);
+            Ok(())
+        }
     }
 
     pub(crate) fn encrypt(
@@ -122,6 +138,7 @@ impl AEADKeyNonce {
         // AES-GCM 128 and ChaCha20Poly1305 agree on tag length
         let mut tag = [0u8; TAG_LEN];
 
+        // If feature `nonce-control` is enabled, this is a no-op.
         self.increment_nonce()?;
 
         match &self.key {
@@ -171,7 +188,9 @@ impl AEADKeyNonce {
         // error. Crucially, we assume that a decrytion error does not
         // reveal anything about the tag or the failed decryption.
         let old_nonce = self.get_nonce();
+        // If feature `nonce-control` is enabled, this is a no-op.
         self.increment_nonce()?;
+
         let mut plaintext = vec![0u8; ciphertext.len()];
 
         match &self.key {

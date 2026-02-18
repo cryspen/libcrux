@@ -11,7 +11,7 @@ use session_key::{derive_session_key, SessionKey, SESSION_ID_LENGTH};
 use tls_codec::{
     Deserialize, Serialize, SerializeBytes, Size, TlsDeserialize, TlsSerialize, TlsSize,
 };
-use transport::Transport;
+pub use transport::Transport;
 
 use crate::{
     aead::{AEADError, AEADKeyNonce, AeadType},
