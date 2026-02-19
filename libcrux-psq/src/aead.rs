@@ -60,8 +60,8 @@ impl AEADKeyNonce {
         self.nonce = *nonce;
     }
 
-    pub(crate) fn get_nonce(&self) -> [u8; NONCE_LEN] {
-        self.nonce
+    pub(crate) fn nonce(&self) -> &[u8; NONCE_LEN] {
+        &self.nonce
     }
 
     pub(crate) fn new(
@@ -187,7 +187,7 @@ impl AEADKeyNonce {
         // This is to reset the nonce, in case of a decryption
         // error. Crucially, we assume that a decryption error does not
         // reveal anything about the tag or the failed decryption.
-        let old_nonce = self.get_nonce();
+        let old_nonce = *self.nonce();
         // If feature `nonce-control` is enabled, this is a no-op.
         self.increment_nonce()?;
 
@@ -229,9 +229,9 @@ impl AEADKeyNonce {
         plaintext: &mut [u8],
     ) -> Result<(), AEADError> {
         // This is to reset the nonce, in case of a decryption
-        // error. Crucially, we assume that a decrytion error does not
+        // error. Crucially, we assume that a decryption error does not
         // reveal anything about the tag or the failed decryption.
-        let old_nonce = self.get_nonce();
+        let old_nonce = *self.nonce();
         // If feature `nonce-control` is enabled, this is a no-op.
         self.increment_nonce()?;
         debug_assert!(ciphertext.len() <= plaintext.len());

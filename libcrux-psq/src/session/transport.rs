@@ -97,14 +97,14 @@ impl Transport {
 
     /// Get the current nonce used for encrypting outgoing messages.
     #[cfg(feature = "nonce-control")]
-    pub fn get_sender_nonce(&self) -> [u8; NONCE_LEN] {
-        self.send_key.get_nonce()
+    pub fn sender_nonce(&self) -> &[u8; NONCE_LEN] {
+        self.send_key.nonce()
     }
 
     /// Get the current nonce used for decrypting incoming messages.
     #[cfg(feature = "nonce-control")]
-    pub fn get_receiver_nonce(&self) -> [u8; NONCE_LEN] {
-        self.send_key.get_nonce()
+    pub fn receiver_nonce(&self) -> &[u8; NONCE_LEN] {
+        self.send_key.nonce()
     }
 }
 
