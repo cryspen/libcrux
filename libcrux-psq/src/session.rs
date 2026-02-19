@@ -50,7 +50,7 @@ pub enum SessionError {
 impl From<AEADError> for SessionError {
     fn from(value: AEADError) -> Self {
         match value {
-            AEADError::CryptoError => SessionError::CryptoError,
+            AEADError::CryptoError | AEADError::KeyExpired => SessionError::CryptoError,
             AEADError::Serialize(error) => SessionError::Serialize(error),
             AEADError::Deserialize(error) => SessionError::Deserialize(error),
         }
@@ -398,8 +398,12 @@ impl Session {
         session_binding: impl Into<Option<SessionBinding<'a>>>,
     ) -> Result<Self, SessionError> {
         let session_binding = session_binding.into();
-        let session =
+        let mut session =
             Session::tls_deserialize(&mut Cursor::new(bytes)).map_err(SessionError::Deserialize)?;
+        // The main session key is immediately expired since it
+        // should not be used for transport encryption directly.
+        session.session_key.key.expire();
+        let session = session;
 
         match (session.pk_binder, session_binding) {
             // No binder was expected and none was provided.

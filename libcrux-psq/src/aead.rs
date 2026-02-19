@@ -29,6 +29,13 @@ pub(crate) struct AEADKeyNonce {
     key: AEADKey,
     #[tls_codec(skip)]
     nonce: [u8; NONCE_LEN],
+    // We use this to enforce guarantees on using the key for
+    // transport encryption. In particular, keys generated as part of
+    // the handshake can only be used once, and the derived main
+    // session key can never be used for transport encryption
+    // directly.
+    #[tls_codec(skip)]
+    expired: bool,
 }
 
 impl std::fmt::Debug for AEADKeyNonce {
@@ -47,6 +54,10 @@ pub(crate) enum AeadType {
 /// Errors arising in the creation or use of AEAD keys
 #[derive(Debug)]
 pub(crate) enum AEADError {
+    /// The key should not (anymore) be used for transport encryption,
+    /// because it has reached its usage limit or because the nonce is
+    /// maxed out.
+    KeyExpired,
     /// An error occurred in the underlying AEAD implementation.
     CryptoError,
     /// An error during serialization.
@@ -62,6 +73,25 @@ impl AEADKeyNonce {
 
     pub(crate) fn nonce(&self) -> &[u8; NONCE_LEN] {
         &self.nonce
+    }
+
+    /// Set the expired flag on the key, indicating that it should not
+    /// be used to encrypt any (more) transport messages.
+    pub(crate) fn expire(&mut self) {
+        self.expired = true;
+    }
+
+    /// Create a new key, immediately expiring it.
+    ///
+    /// Use this for main session keys.
+    pub(crate) fn new_expired(
+        ikm: &impl SerializeBytes,
+        info: &impl SerializeBytes,
+        aead_type: AeadType,
+    ) -> Result<AEADKeyNonce, AEADError> {
+        let mut new_key = Self::new(ikm, info, aead_type)?;
+        new_key.expire();
+        Ok(new_key)
     }
 
     pub(crate) fn new(
@@ -82,6 +112,7 @@ impl AEADKeyNonce {
                 Ok(AEADKeyNonce {
                     key: AEADKey::ChaChaPoly1305(key),
                     nonce: [0u8; NONCE_LEN],
+                    expired: false,
                 })
             }
             AeadType::AesGcm128 => {
@@ -96,6 +127,7 @@ impl AEADKeyNonce {
                 Ok(AEADKeyNonce {
                     key: AEADKey::AesGcm128(key),
                     nonce: [0u8; NONCE_LEN],
+                    expired: false,
                 })
             }
         }
@@ -107,6 +139,7 @@ impl AEADKeyNonce {
     //
     // If feature `nonce-control` is enabled, the nonce will not be
     // incremented.
+    //
     fn increment_nonce(&mut self) -> Result<(), AEADError> {
         #[cfg(feature = "nonce-control")]
         {
@@ -115,7 +148,8 @@ impl AEADKeyNonce {
         #[cfg(not(feature = "nonce-control"))]
         {
             if self.nonce == NONCE_MAX {
-                return Err(AEADError::CryptoError);
+                self.expired = true;
+                return Err(AEADError::KeyExpired);
             }
 
             let mut buf = [0u8; 16];
@@ -135,6 +169,9 @@ impl AEADKeyNonce {
         aad: &[u8],
         ciphertext: &mut [u8],
     ) -> Result<[u8; 16], AEADError> {
+        if self.expired {
+            return Err(AEADError::KeyExpired);
+        }
         // AES-GCM 128 and ChaCha20Poly1305 agree on tag length
         let mut tag = [0u8; TAG_LEN];
 
@@ -163,7 +200,7 @@ impl AEADKeyNonce {
         Ok(tag)
     }
 
-    pub(crate) fn serialize_encrypt<T: Serialize>(
+    fn serialize_encrypt<T: Serialize>(
         &mut self,
         payload: &T,
         aad: &[u8],
@@ -178,12 +215,26 @@ impl AEADKeyNonce {
         Ok((ciphertext, tag))
     }
 
+    pub(crate) fn handshake_encrypt<T: Serialize>(
+        &mut self,
+        payload: &T,
+        aad: &[u8],
+    ) -> Result<(Vec<u8>, [u8; 16]), AEADError> {
+        let result = self.serialize_encrypt(payload, aad)?;
+        self.expire();
+        Ok(result)
+    }
+
     pub(crate) fn decrypt(
         &mut self,
         ciphertext: &[u8],
         tag: &[u8; 16],
         aad: &[u8],
     ) -> Result<Vec<u8>, AEADError> {
+        if self.expired {
+            return Err(AEADError::KeyExpired);
+        }
+
         // This is to reset the nonce, in case of a decryption
         // error. Crucially, we assume that a decryption error does not
         // reveal anything about the tag or the failed decryption.
@@ -228,6 +279,10 @@ impl AEADKeyNonce {
         aad: &[u8],
         plaintext: &mut [u8],
     ) -> Result<(), AEADError> {
+        if self.expired {
+            return Err(AEADError::KeyExpired);
+        }
+
         // This is to reset the nonce, in case of a decryption
         // error. Crucially, we assume that a decryption error does not
         // reveal anything about the tag or the failed decryption.
@@ -263,7 +318,7 @@ impl AEADKeyNonce {
         Ok(())
     }
 
-    pub(crate) fn decrypt_deserialize<T: Deserialize>(
+    fn decrypt_deserialize<T: Deserialize>(
         &mut self,
         ciphertext: &[u8],
         tag: &[u8; 16],
@@ -272,6 +327,17 @@ impl AEADKeyNonce {
         let payload_serialized_buf = self.decrypt(ciphertext, tag, aad)?;
 
         T::tls_deserialize_exact(&payload_serialized_buf).map_err(AEADError::Deserialize)
+    }
+
+    pub(crate) fn handshake_decrypt<T: Deserialize>(
+        &mut self,
+        ciphertext: &[u8],
+        tag: &[u8; 16],
+        aad: &[u8],
+    ) -> Result<T, AEADError> {
+        let result = self.decrypt_deserialize(ciphertext, tag, aad)?;
+        self.expire();
+        Ok(result)
     }
 }
 

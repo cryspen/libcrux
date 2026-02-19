@@ -178,7 +178,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             self.ciphersuite.aead_type(),
         )?;
 
-        let initiator_payload: InitiatorOuterPayload = k0.decrypt_deserialize(
+        let initiator_payload: InitiatorOuterPayload = k0.handshake_decrypt(
             initiator_outer_message.ciphertext.as_slice(),
             &initiator_outer_message.tag,
             initiator_outer_message.aad.as_slice(),
@@ -244,7 +244,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             ),
         }?;
 
-        let inner_payload: InitiatorInnerPayload = k1.decrypt_deserialize(
+        let inner_payload: InitiatorInnerPayload = k1.handshake_decrypt(
             initiator_inner_message.ciphertext.as_slice(),
             &initiator_inner_message.tag,
             initiator_inner_message.aad.as_slice(),
@@ -291,7 +291,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         //         )?;
 
         //         let inner_payload: InitiatorInnerPayload =
-        //             k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
+        //             k1.handshake_decrypt(ciphertext.as_slice(), tag, aad.as_slice())?;
 
         //         Ok((
         //             inner_payload,
@@ -341,7 +341,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         //         )?;
 
         //         let inner_payload: InitiatorInnerPayload =
-        //             k1.decrypt_deserialize(ciphertext.as_slice(), tag, aad.as_slice())?;
+        //             k1.handshake_decrypt(ciphertext.as_slice(), tag, aad.as_slice())?;
 
         //         Ok((
         //             inner_payload,
@@ -382,7 +382,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         };
 
         let outer_payload = ResponderRegistrationPayloadOut(VLByteSlice(payload));
-        let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
+        let (ciphertext, tag) = k2.handshake_encrypt(&outer_payload, self.aad)?;
 
         let Some(working_ciphersuite) = self.working_ciphersuite else {
             return Err(Error::ResponderState);
@@ -430,7 +430,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         )?;
 
         let outer_payload = ResponderQueryPayloadOut(VLByteSlice(payload));
-        let (ciphertext, tag) = k2.serialize_encrypt(&outer_payload, self.aad)?;
+        let (ciphertext, tag) = k2.handshake_encrypt(&outer_payload, self.aad)?;
 
         let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
