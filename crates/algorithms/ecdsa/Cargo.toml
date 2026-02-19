@@ -15,7 +15,7 @@ libcrux-p256 = { workspace = true, default-features = true, features = [
     "expose-hacl",
 ] }
 libcrux-sha2.workspace = true
-rand = { version = "0.9", optional = true, default-features = false }
+rand = { version = "0.10", optional = true, default-features = false }
 
 [features]
 default = ["rand", "std"]

@@ -13,7 +13,7 @@ publish = false
 bench = false # so libtest doesn't eat the arguments for criterion
 
 [dependencies]
-rand = { version = "0.9" }
+rand = { version = "0.10" }
 
 [dev-dependencies]
 libcrux = { path = "../", features = ["rand", "tests"] }
