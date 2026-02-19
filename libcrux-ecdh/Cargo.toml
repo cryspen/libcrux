@@ -29,7 +29,7 @@ std = ["rand/std"]
 codec = ["dep:tls_codec"]
 
 [dev-dependencies]
-rand_core = { version = "0.9", features = ["os_rng"] }
+rand_core = { version = "0.10", features = ["os_rng"] }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
