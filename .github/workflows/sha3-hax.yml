@@ -2,13 +2,15 @@ name: SHA3 - hax
 
 on:
   merge_group:
-    paths:
-      - "crates/algorithms/sha3/**"
   pull_request:
     branches: ["dev", "main"]
     paths:
-      - "crates/algorithms/sha3/**"
-
+      - 'cavp/**'
+      - 'crates/utils/intrinsics/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
   schedule:
     - cron: "0 0 * * *"
 

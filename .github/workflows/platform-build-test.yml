@@ -2,10 +2,10 @@ name: Platform - Build & Test
 
 on:
   merge_group:
-  push:
-    branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev", "*"]
+    paths:
+      - 'crates/sys/platform/**'
   workflow_dispatch:
 
 env:

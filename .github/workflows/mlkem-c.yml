@@ -4,6 +4,14 @@ on:
   merge_group:
   pull_request:
     branches: ["main", "dev"]
+    paths:
+      - 'crates/utils/intrinsics/**'
+      - 'crates/testing/kats/**'
+      - 'libcrux-ml-kem/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:
