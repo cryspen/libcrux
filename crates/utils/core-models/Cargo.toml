@@ -11,7 +11,7 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-rand = "0.9"
+rand = "0.10"
 hax-lib.workspace = true
 pastey = "0.2.0"
 

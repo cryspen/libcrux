@@ -23,7 +23,7 @@ libcrux-ecdh.workspace = true
 libcrux-curve25519.workspace = true
 libcrux-p256.workspace = true
 libcrux-traits.workspace = true
-rand = { version = "0.9", default-features = false }
+rand = { version = "0.10", default-features = false }
 tls_codec = { version = "0.4.2", features = [
     "derive",
 ],  optional = true }
@@ -38,7 +38,7 @@ codec = ["dep:tls_codec","libcrux-ml-kem/codec", "libcrux-ecdh/codec"]
 
 [dev-dependencies]
 libcrux-kem = { path = "./", features = ["tests"] }
-rand = { version = "0.9", features = ["os_rng"] }
+rand = { version = "0.10", features = ["os_rng"] }
 hex = { version = "0.4.3", features = ["serde"] }
 libcrux-traits = { workspace = true, features = [
     "generic-tests",
