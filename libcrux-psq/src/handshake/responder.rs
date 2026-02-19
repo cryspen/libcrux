@@ -517,8 +517,7 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
             if self.recent_keys.len() == self.recent_keys_upper_bound {
                 self.recent_keys.pop_back();
             }
-            self.recent_keys
-                .push_front(initiator_outer_message.pk.clone());
+            self.recent_keys.push_front(initiator_outer_message.pk);
         }
 
         // Decrypt the outer message payload.

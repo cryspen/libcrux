@@ -195,22 +195,23 @@ impl AEADKeyNonce {
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                if let Err(_) =
-                    decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce)
+                if decrypt_detached(key, &mut plaintext, ciphertext, tag, aad, &self.nonce).is_err()
                 {
                     self.set_nonce(&old_nonce);
                     return Err(AEADError::CryptoError);
                 }
             }
             AEADKey::AesGcm128(key) => {
-                if let Err(_) = libcrux_aesgcm::AesGcm128::decrypt(
+                if libcrux_aesgcm::AesGcm128::decrypt(
                     &mut plaintext,
                     key,
                     &self.nonce,
                     aad,
                     ciphertext,
                     tag,
-                ) {
+                )
+                .is_err()
+                {
                     self.set_nonce(&old_nonce);
                     return Err(AEADError::CryptoError);
                 }
@@ -237,21 +238,22 @@ impl AEADKeyNonce {
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                if let Err(_) = decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce)
-                {
+                if decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce).is_err() {
                     self.set_nonce(&old_nonce);
                     return Err(AEADError::CryptoError);
                 }
             }
             AEADKey::AesGcm128(key) => {
-                if let Err(_) = libcrux_aesgcm::AesGcm128::decrypt(
+                if libcrux_aesgcm::AesGcm128::decrypt(
                     plaintext,
                     key,
                     &self.nonce,
                     aad,
                     ciphertext,
                     tag,
-                ) {
+                )
+                .is_err()
+                {
                     self.set_nonce(&old_nonce);
                     return Err(AEADError::CryptoError);
                 }
