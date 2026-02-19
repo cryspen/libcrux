@@ -208,24 +208,34 @@ impl AEADKeyNonce {
         aad: &[u8],
         plaintext: &mut [u8],
     ) -> Result<(), AEADError> {
+        // This is to reset the nonce, in case of a decryption
+        // error. Crucially, we assume that a decrytion error does not
+        // reveal anything about the tag or the failed decryption.
+        let old_nonce = self.get_nonce();
+        // If feature `nonce-control` is enabled, this is a no-op.
         self.increment_nonce()?;
         debug_assert!(ciphertext.len() <= plaintext.len());
 
         match &self.key {
             AEADKey::ChaChaPoly1305(key) => {
-                decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce)
-                    .map_err(|_| AEADError::CryptoError)?;
+                if let Err(_) = decrypt_detached(key, plaintext, ciphertext, tag, aad, &self.nonce)
+                {
+                    self.set_nonce(&old_nonce);
+                    return Err(AEADError::CryptoError);
+                }
             }
             AEADKey::AesGcm128(key) => {
-                libcrux_aesgcm::AesGcm128::decrypt(
+                if let Err(_) = libcrux_aesgcm::AesGcm128::decrypt(
                     plaintext,
                     key,
                     &self.nonce,
                     aad,
                     ciphertext,
                     tag,
-                )
-                .map_err(|_| AEADError::CryptoError)?;
+                ) {
+                    self.set_nonce(&old_nonce);
+                    return Err(AEADError::CryptoError);
+                }
             }
         }
 
