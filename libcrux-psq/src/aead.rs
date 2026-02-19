@@ -185,7 +185,7 @@ impl AEADKeyNonce {
         aad: &[u8],
     ) -> Result<Vec<u8>, AEADError> {
         // This is to reset the nonce, in case of a decryption
-        // error. Crucially, we assume that a decrytion error does not
+        // error. Crucially, we assume that a decryption error does not
         // reveal anything about the tag or the failed decryption.
         let old_nonce = self.get_nonce();
         // If feature `nonce-control` is enabled, this is a no-op.
