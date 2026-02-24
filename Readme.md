@@ -1,6 +1,6 @@
 # libcrux - a high-assurance cryptographic library in Rust
 
-libcrux is a cryptographic library in pure Rust. It uses formally verified
+libcrux is a cryptographic library written in Rust. It uses formally verified
 code generated from the [HACL* project](https://github.com/hacl-star/hacl-star) and includes Rust code that is
 directly verified for runtime safety and functional correctness using the
 [hax toolchain](https://github.com/cryspen/hax). For more details, see below.

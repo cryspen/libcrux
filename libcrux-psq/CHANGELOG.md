@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added 
+
+- [#1339](https://github.com/cryspen/libcrux/pull/1339): Expose `Transport` struct and add external nonce-control feature
+
+### Changed
+
+- [#1339](https://github.com/cryspen/libcrux/pull/1339): Leave receiver nonce unchanged on decryption failure
+
 ## [0.0.7] (2026-02-12)
 
 ### Added
