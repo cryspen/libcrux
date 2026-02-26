@@ -5,6 +5,14 @@ use tls_codec::{
     Deserialize, Serialize, Size, TlsDeserialize, TlsSerialize, TlsSize, VLByteSlice, VLBytes,
 };
 
+use super::{
+    derive_k0, derive_k1_dh,
+    dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
+    initiator::InitiatorInnerPayload,
+    transcript::{tx2, Transcript},
+    write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut, K2IkmQuery,
+    K2IkmRegistrationDh, ToTransportState,
+};
 use crate::{
     aead::{AEADKeyNonce, AeadType},
     handshake::{
@@ -16,15 +24,6 @@ use crate::{
     },
     session::{Session, SessionBinding, SessionError},
     traits::{Channel, IntoSession},
-};
-
-use super::{
-    derive_k0, derive_k1_dh,
-    dhkem::{DHPrivateKey, DHPublicKey, DHSharedSecret},
-    initiator::InitiatorInnerPayload,
-    transcript::{tx2, Transcript},
-    write_output, HandshakeError as Error, HandshakeMessage, HandshakeMessageOut, K2IkmQuery,
-    K2IkmRegistrationDh, ToTransportState,
 };
 
 #[derive(TlsDeserialize, TlsSize)]
@@ -84,7 +83,8 @@ pub struct ResponderRegistrationPayload(pub VLBytes);
 pub struct ResponderRegistrationPayloadOut<'a>(VLByteSlice<'a>);
 
 impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
-    /// Returns the most recent initiator authenticator for out-of-band verification, if any.
+    /// Returns the most recent initiator authenticator for out-of-band
+    /// verification, if any.
     ///
     /// A responder in it's initial state or a responder that has processed an
     /// initiator query message returns `None`, as it does not have an
@@ -95,13 +95,14 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     /// the initiator:
     ///
     /// - For DH-based authentication, this will be the long-term ECDH public
-    ///   key `pk_I` provided by the initiator. If the authenticator continues the
-    ///   handshake, `pk_I` will be part of the session key derivation.
-    /// - For signature-based authentication, this will be the signature verification
-    ///   key `vk_I` provided by the initiator. At this point of the handshake the
-    ///   initiator has provided a valid signature of the running handshake
-    ///   transcript (`tx1`) under `vk_I`. If the authenticator continues the
-    ///   handshake, `vk_I` will be part of the session key derivation.
+    ///   key `pk_I` provided by the initiator. If the authenticator continues
+    ///   the handshake, `pk_I` will be part of the session key derivation.
+    /// - For signature-based authentication, this will be the signature
+    ///   verification key `vk_I` provided by the initiator. At this point of
+    ///   the handshake the initiator has provided a valid signature of the
+    ///   running handshake transcript (`tx1`) under `vk_I`. If the
+    ///   authenticator continues the handshake, `vk_I` will be part of the
+    ///   session key derivation.
     pub fn initiator_authenticator(&self) -> Option<Authenticator> {
         match &self.state {
             ResponderState::InProgress
@@ -364,7 +365,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
     }
 }
 
-impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
+impl<'a, Rng: CryptoRng> Channel<Error, HandshakeMessage> for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let mut out_bytes_written = 0;
         let responder_ephemeral_ecdh_sk = DHPrivateKey::new(&mut self.rng);
@@ -470,6 +471,20 @@ impl<'a, Rng: CryptoRng> Channel<Error> for Responder<'a, Rng> {
                 }
             }
         }
+    }
+
+    fn write_message_external_encoding(
+        &mut self,
+        payload: &[u8],
+    ) -> Result<HandshakeMessage, Error> {
+        todo!()
+    }
+
+    fn read_message_external_encoding(
+        &mut self,
+        message: &HandshakeMessage,
+    ) -> Result<Vec<u8>, Error> {
+        todo!()
     }
 }
 

@@ -3,6 +3,7 @@ use std::io::Cursor;
 use rand::CryptoRng;
 use tls_codec::{Deserialize, Serialize, Size, VLByteSlice};
 
+use super::InitiatorOuterPayloadOut;
 use crate::{
     aead::{AEADKeyNonce, AeadType},
     handshake::{
@@ -15,8 +16,6 @@ use crate::{
     },
     traits::Channel,
 };
-
-use super::InitiatorOuterPayloadOut;
 
 pub struct QueryInitiator<'a> {
     responder_longterm_ecdh_pk: &'a DHPublicKey,
@@ -94,7 +93,7 @@ impl<'a> QueryInitiator<'a> {
     }
 }
 
-impl<'a> Channel<Error> for QueryInitiator<'a> {
+impl<'a> Channel<Error, HandshakeMessage> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
         let (ciphertext, tag) = self.k0.handshake_encrypt(&outer_payload, self.outer_aad)?;
@@ -123,5 +122,19 @@ impl<'a> Channel<Error> for QueryInitiator<'a> {
         let out_bytes_written = write_output(result.0.as_slice(), out)?;
 
         Ok((msg.tls_serialized_len(), out_bytes_written))
+    }
+
+    fn write_message_external_encoding(
+        &mut self,
+        payload: &[u8],
+    ) -> Result<HandshakeMessage, Error> {
+        todo!()
+    }
+
+    fn read_message_external_encoding(
+        &mut self,
+        message: &HandshakeMessage,
+    ) -> Result<Vec<u8>, Error> {
+        todo!()
     }
 }

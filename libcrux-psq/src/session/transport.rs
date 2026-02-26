@@ -6,11 +6,10 @@ use tls_codec::{
     TlsSize, VLByteSlice, VLBytes,
 };
 
+use super::{Session, SessionError as Error};
 #[cfg(feature = "nonce-control")]
 use crate::aead::NONCE_LEN;
 use crate::{aead::AEADKeyNonce, traits::Channel};
-
-use super::{Session, SessionError as Error};
 
 #[derive(TlsSerialize, TlsSize)]
 /// A message to be sent on the transport channel. (Serialization helper)
@@ -25,7 +24,7 @@ struct TransportMessageOut<'a> {
 
 #[derive(TlsDeserialize, TlsSize)]
 /// A message to be sent on the transport channel.
-struct TransportMessage {
+pub struct TransportMessage {
     /// The channel identifier
     channel_identifier: u64,
     /// AEAD ciphertext containing the message payload
@@ -108,7 +107,7 @@ impl Transport {
     }
 }
 
-impl Channel<Error> for Transport {
+impl Channel<Error, TransportMessage> for Transport {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
         // We match the maximum payload length of Noise.
         if payload.len() > 65535 {
@@ -151,6 +150,20 @@ impl Channel<Error> for Transport {
         let out_bytes_written = message.ciphertext.as_slice().len();
 
         Ok((bytes_deserialized, out_bytes_written))
+    }
+
+    fn write_message_external_encoding(
+        &mut self,
+        payload: &[u8],
+    ) -> Result<TransportMessage, Error> {
+        todo!()
+    }
+
+    fn read_message_external_encoding(
+        &mut self,
+        message: &TransportMessage,
+    ) -> Result<Vec<u8>, Error> {
+        todo!()
     }
 }
 
