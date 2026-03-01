@@ -4,7 +4,7 @@ use crate::{
     ntt::{ntt_inverse, vector_inverse_ntt, vector_ntt},
     parameters::{*, hash_functions::*},
     sampling::{sample_ntt, sample_poly_cbd, BadRejectionSamplingRandomnessError},
-    serialize::{byte_decode, byte_encode, byte_encode_dyn, byte_decode_dyn, vector_encode_12, vector_decode_12},
+    serialize::{byte_decode, byte_encode, byte_encode_into, byte_decode_dyn, vector_encode_12, vector_decode_12},
 };
 
 /// Helper to sample a polynomial from CBD with dynamic eta.
@@ -53,10 +53,18 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
 /// dkₚₖₑ ← ByteEncode₁₂(ŝ)
 /// ```
 #[allow(non_snake_case)]
-pub(crate) fn generate_keypair<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+)]
+pub(crate) fn generate_keypair<
+    const RANK: usize,
+    const EK_SIZE: usize,
+    const DK_PKE_SIZE: usize,
+>(
     params: &MlKemParams,
     key_generation_seed: &[u8; 32],
-) -> Result<(Vec<u8>, Vec<u8>), BadRejectionSamplingRandomnessError> {
+) -> Result<([u8; EK_SIZE], [u8; DK_PKE_SIZE]), BadRejectionSamplingRandomnessError> {
     // (ρ,σ) ← G(d ‖ k)
     let mut g_input = [0u8; 33];
     g_input[..32].copy_from_slice(key_generation_seed);
@@ -113,11 +121,13 @@ pub(crate) fn generate_keypair<const RANK: usize>(
     );
 
     // ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
-    let mut ek = vector_encode_12::<RANK>(&t_as_ntt);
-    ek.extend_from_slice(seed_for_A);
+    let t_encoded: [u8; DK_PKE_SIZE] = vector_encode_12::<RANK, DK_PKE_SIZE>(&t_as_ntt);
+    let mut ek = [0u8; EK_SIZE];
+    ek[..DK_PKE_SIZE].copy_from_slice(&t_encoded);
+    ek[DK_PKE_SIZE..].copy_from_slice(seed_for_A);
 
     // dkₚₖₑ ← ByteEncode₁₂(ŝ)
-    let dk = vector_encode_12::<RANK>(&secret_as_ntt);
+    let dk: [u8; DK_PKE_SIZE] = vector_encode_12::<RANK, DK_PKE_SIZE>(&secret_as_ntt);
 
     Ok((ek, dk))
 }
@@ -158,12 +168,13 @@ pub(crate) fn generate_keypair<const RANK: usize>(
 /// return c ← (c₁ ‖ c₂)
 /// ```
 #[allow(non_snake_case)]
-pub(crate) fn encrypt<const RANK: usize>(
+#[hax_lib::requires(CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8)]
+pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     params: &MlKemParams,
     ek: &[u8],
     message: &[u8; 32],
     randomness: &[u8; 32],
-) -> Result<Vec<u8>, BadRejectionSamplingRandomnessError> {
+) -> Result<[u8; CT_SIZE], BadRejectionSamplingRandomnessError> {
     let mut domain_separator: u8 = 0;
 
     let t_encoded_size = params.t_as_ntt_encoded_size();
@@ -234,13 +245,15 @@ pub(crate) fn encrypt<const RANK: usize>(
     );
 
     // c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
-    let mut c = Vec::new();
+    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8;
+    let mut c = [0u8; CT_SIZE];
     for i in 0..RANK {
-        c.extend_from_slice(&byte_encode_dyn(compress(u[i], params.du), params.du));
+        byte_encode_into(compress(u[i], params.du), params.du, &mut c[i * du_poly_size..(i + 1) * du_poly_size]);
     }
 
     // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
-    c.extend_from_slice(&byte_encode_dyn(compress(v, params.dv), params.dv));
+    let u_encoded_size = RANK * du_poly_size;
+    byte_encode_into(compress(v, params.dv), params.dv, &mut c[u_encoded_size..]);
 
     Ok(c)
 }
@@ -308,11 +321,11 @@ mod tests {
     #[test]
     fn encrypt_decrypt_roundtrip() {
         let seed = [42u8; 32];
-        let (ek, dk) = generate_keypair::<3>(&ML_KEM_768, &seed).unwrap();
+        let (ek, dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed).unwrap();
 
         let message = [0xABu8; 32];
         let randomness = [0xCDu8; 32];
-        let ciphertext = encrypt::<3>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk, &ciphertext);
 
         assert_eq!(decrypted, message);
@@ -321,12 +334,12 @@ mod tests {
     #[test]
     fn encrypt_deterministic() {
         let seed = [1u8; 32];
-        let (ek, _dk) = generate_keypair::<3>(&ML_KEM_768, &seed).unwrap();
+        let (ek, _dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed).unwrap();
 
         let message = [0x55u8; 32];
         let randomness = [0x77u8; 32];
-        let c1 = encrypt::<3>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
-        let c2 = encrypt::<3>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let c1 = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let c2 = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
 
         assert_eq!(c1, c2);
     }
@@ -335,12 +348,12 @@ mod tests {
     fn decrypt_with_wrong_key() {
         let seed1 = [1u8; 32];
         let seed2 = [2u8; 32];
-        let (ek, _dk1) = generate_keypair::<3>(&ML_KEM_768, &seed1).unwrap();
-        let (_ek2, dk2) = generate_keypair::<3>(&ML_KEM_768, &seed2).unwrap();
+        let (ek, _dk1) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed1).unwrap();
+        let (_ek2, dk2) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed2).unwrap();
 
         let message = [0xAAu8; 32];
         let randomness = [0xBBu8; 32];
-        let ciphertext = encrypt::<3>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk2, &ciphertext);
 
         assert_ne!(decrypted, message);

@@ -18,7 +18,12 @@ mod sampling;
 mod serialize;
 
 pub use sampling::BadRejectionSamplingRandomnessError;
-pub use parameters::{MlKemParams, ML_KEM_512, ML_KEM_768, ML_KEM_1024};
+pub use parameters::{
+    MlKemParams, ML_KEM_512, ML_KEM_768, ML_KEM_1024,
+    ML_KEM_512_EK_SIZE, ML_KEM_512_DK_PKE_SIZE, ML_KEM_512_DK_SIZE, ML_KEM_512_CT_SIZE, ML_KEM_512_J_INPUT_SIZE,
+    ML_KEM_768_EK_SIZE, ML_KEM_768_DK_PKE_SIZE, ML_KEM_768_DK_SIZE, ML_KEM_768_CT_SIZE, ML_KEM_768_J_INPUT_SIZE,
+    ML_KEM_1024_EK_SIZE, ML_KEM_1024_DK_PKE_SIZE, ML_KEM_1024_DK_SIZE, ML_KEM_1024_CT_SIZE, ML_KEM_1024_J_INPUT_SIZE,
+};
 
 /// Algorithm 16: ML-KEM.KeyGen_internal
 ///
@@ -32,18 +37,29 @@ pub use parameters::{MlKemParams, ML_KEM_512, ML_KEM_768, ML_KEM_1024};
 /// dk ← (dkₚₖₑ ‖ ek ‖ H(ek) ‖ z)
 /// return (ek, dk)
 /// ```
-fn keygen_internal<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    && DK_SIZE == DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE + 32
+)]
+fn keygen_internal<
+    const RANK: usize,
+    const EK_SIZE: usize,
+    const DK_PKE_SIZE: usize,
+    const DK_SIZE: usize,
+>(
     params: &MlKemParams,
     d: &[u8; 32],
     z: &[u8; 32],
-) -> Result<(Vec<u8>, Vec<u8>), BadRejectionSamplingRandomnessError> {
-    let (ek, dk_pke) = ind_cpa::generate_keypair::<RANK>(params, d)?;
+) -> Result<([u8; EK_SIZE], [u8; DK_SIZE]), BadRejectionSamplingRandomnessError> {
+    let (ek, dk_pke) = ind_cpa::generate_keypair::<RANK, EK_SIZE, DK_PKE_SIZE>(params, d)?;
 
     // dk ← (dkₚₖₑ ‖ ek ‖ H(ek) ‖ z)
-    let mut dk = dk_pke;
-    dk.extend_from_slice(&ek);
-    dk.extend_from_slice(&H(&ek));
-    dk.extend_from_slice(z);
+    let mut dk = [0u8; DK_SIZE];
+    dk[..DK_PKE_SIZE].copy_from_slice(&dk_pke);
+    dk[DK_PKE_SIZE..DK_PKE_SIZE + EK_SIZE].copy_from_slice(&ek);
+    dk[DK_PKE_SIZE + EK_SIZE..DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE].copy_from_slice(&H(&ek));
+    dk[DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE..].copy_from_slice(z);
 
     Ok((ek, dk))
 }
@@ -60,22 +76,23 @@ fn keygen_internal<const RANK: usize>(
 /// c ← K-PKE.Encrypt(ek, m, r)
 /// return (K, c)
 /// ```
-fn encaps_internal<const RANK: usize>(
+#[hax_lib::requires(CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8)]
+fn encaps_internal<const RANK: usize, const CT_SIZE: usize>(
     params: &MlKemParams,
     ek: &[u8],
     m: &[u8; 32],
-) -> Result<([u8; 32], Vec<u8>), BadRejectionSamplingRandomnessError> {
+) -> Result<([u8; 32], [u8; CT_SIZE]), BadRejectionSamplingRandomnessError> {
     // (K, r) ← G(m ‖ H(ek))
-    let mut to_hash = Vec::new();
-    to_hash.extend_from_slice(m);
-    to_hash.extend_from_slice(&H(ek));
+    let mut to_hash = [0u8; 64];
+    to_hash[..32].copy_from_slice(m);
+    to_hash[32..].copy_from_slice(&H(ek));
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(32);
 
     let r: [u8; 32] = pseudorandomness[..32].try_into().unwrap();
 
     // c ← K-PKE.Encrypt(ek, m, r)
-    let c = ind_cpa::encrypt::<RANK>(params, ek, m, &r)?;
+    let c = ind_cpa::encrypt::<RANK, CT_SIZE>(params, ek, m, &r)?;
 
     let mut k = [0u8; 32];
     k.copy_from_slice(shared_secret);
@@ -102,49 +119,60 @@ fn encaps_internal<const RANK: usize>(
 /// end if
 /// return K′
 /// ```
-fn decaps_internal<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    && DK_SIZE == DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE + 32
+    && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+    && J_INPUT_SIZE == 32 + CT_SIZE
+)]
+fn decaps_internal<
+    const RANK: usize,
+    const EK_SIZE: usize,
+    const DK_SIZE: usize,
+    const DK_PKE_SIZE: usize,
+    const CT_SIZE: usize,
+    const J_INPUT_SIZE: usize,
+>(
     params: &MlKemParams,
-    dk: &[u8],
-    c: &[u8],
+    dk: &[u8; DK_SIZE],
+    c: &[u8; CT_SIZE],
 ) -> Result<[u8; 32], BadRejectionSamplingRandomnessError> {
-    let dk_pke_size = params.dk_pke_size();
-    let ek_size = params.ek_size();
-
     // dkₚₖₑ ← dk[0 : 384k]
-    let dk_pke = &dk[..dk_pke_size];
+    let dk_pke = &dk[..DK_PKE_SIZE];
 
     // ekₚₖₑ ← dk[384k : 768k + 32]
-    let ek = &dk[dk_pke_size..dk_pke_size + ek_size];
+    let ek = &dk[DK_PKE_SIZE..DK_PKE_SIZE + EK_SIZE];
 
     // h ← dk[768k + 32 : 768k + 64]
-    let h = &dk[dk_pke_size + ek_size..dk_pke_size + ek_size + H_DIGEST_SIZE];
+    let h = &dk[DK_PKE_SIZE + EK_SIZE..DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE];
 
     // z ← dk[768k + 64 : 768k + 96]
-    let z = &dk[dk_pke_size + ek_size + H_DIGEST_SIZE..];
+    let z = &dk[DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE..];
 
     // m′ ← K-PKE.Decrypt(dkₚₖₑ, c)
     let m_prime = ind_cpa::decrypt::<RANK>(params, dk_pke, c);
 
     // (K′, r′) ← G(m′ ‖ h)
-    let mut to_hash = Vec::new();
-    to_hash.extend_from_slice(&m_prime);
-    to_hash.extend_from_slice(h);
+    let mut to_hash = [0u8; 64];
+    to_hash[..32].copy_from_slice(&m_prime);
+    to_hash[32..].copy_from_slice(h);
     let hashed = G(&to_hash);
     let (success_shared_secret, pseudorandomness) = hashed.split_at(32);
 
     let r_prime: [u8; 32] = pseudorandomness[..32].try_into().unwrap();
 
     // K̃ ← J(z ‖ c)
-    let mut j_input = Vec::new();
-    j_input.extend_from_slice(z);
-    j_input.extend_from_slice(c);
+    let mut j_input = [0u8; J_INPUT_SIZE];
+    j_input[..32].copy_from_slice(z);
+    j_input[32..].copy_from_slice(c);
     let rejection_shared_secret: [u8; 32] = J(&j_input);
 
     // c′ ← K-PKE.Encrypt(ekₚₖₑ, m′, r′)
-    let c_prime = ind_cpa::encrypt::<RANK>(params, ek, &m_prime, &r_prime)?;
+    let c_prime = ind_cpa::encrypt::<RANK, CT_SIZE>(params, ek, &m_prime, &r_prime)?;
 
     // if c ≠ c′ then K′ ← K̃
-    if c == c_prime.as_slice() {
+    if c[..] == c_prime[..] {
         let mut k = [0u8; 32];
         k.copy_from_slice(success_shared_secret);
         Ok(k)
@@ -156,19 +184,24 @@ fn decaps_internal<const RANK: usize>(
 /// Algorithm 19: ML-KEM.KeyGen
 ///
 /// Generates an encapsulation key and a corresponding decapsulation key.
-pub fn generate_keypair<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    && DK_SIZE == DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE + 32
+)]
+pub fn generate_keypair<const RANK: usize, const EK_SIZE: usize, const DK_SIZE: usize, const DK_PKE_SIZE: usize>(
     params: &MlKemParams,
     randomness: &[u8; 64],
-) -> Result<(Vec<u8>, Vec<u8>), BadRejectionSamplingRandomnessError> {
+) -> Result<([u8; EK_SIZE], [u8; DK_SIZE]), BadRejectionSamplingRandomnessError> {
     let d: &[u8; 32] = randomness[..32].try_into().unwrap();
     let z: &[u8; 32] = randomness[32..].try_into().unwrap();
-    keygen_internal::<RANK>(params, d, z)
+    keygen_internal::<RANK, EK_SIZE, DK_PKE_SIZE, DK_SIZE>(params, d, z)
 }
 
 /// Modulus check for encapsulation key validation (FIPS 203 Section 7.2).
 ///
 /// Verifies that ByteEncode₁₂(ByteDecode₁₂(ek[..384k])) == ek[..384k].
-fn public_key_modulus_check(params: &MlKemParams, ek: &[u8]) -> bool {
+fn public_key_modulus_check<const EK_SIZE: usize>(params: &MlKemParams, ek: &[u8; EK_SIZE]) -> bool {
     let t_size = params.t_as_ntt_encoded_size();
     let encoded_ring_elements = &ek[..t_size];
 
@@ -189,28 +222,37 @@ fn public_key_modulus_check(params: &MlKemParams, ek: &[u8]) -> bool {
 ///
 /// Uses the encapsulation key to generate a shared key and ciphertext.
 /// Includes modulus check on ek per FIPS 203 Section 7.2.
-pub fn encapsulate<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+)]
+pub fn encapsulate<const RANK: usize, const EK_SIZE: usize, const CT_SIZE: usize>(
     params: &MlKemParams,
-    ek: &[u8],
+    ek: &[u8; EK_SIZE],
     m: &[u8; 32],
-) -> Result<([u8; 32], Vec<u8>), BadRejectionSamplingRandomnessError> {
-    // Type check
-    assert_eq!(ek.len(), params.ek_size(), "invalid encapsulation key length");
+) -> Result<([u8; 32], [u8; CT_SIZE]), BadRejectionSamplingRandomnessError> {
     // Modulus check
     assert!(public_key_modulus_check(params, ek), "encapsulation key modulus check failed");
 
-    encaps_internal::<RANK>(params, ek, m)
+    encaps_internal::<RANK, CT_SIZE>(params, ek, m)
 }
 
 /// Algorithm 21: ML-KEM.Decaps
 ///
 /// Uses the decapsulation key to produce a shared key from a ciphertext.
-pub fn decapsulate<const RANK: usize>(
+#[hax_lib::requires(
+    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    && DK_SIZE == DK_PKE_SIZE + EK_SIZE + H_DIGEST_SIZE + 32
+    && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+    && J_INPUT_SIZE == 32 + CT_SIZE
+)]
+pub fn decapsulate<const RANK: usize, const EK_SIZE: usize, const DK_SIZE: usize, const DK_PKE_SIZE: usize, const CT_SIZE: usize, const J_INPUT_SIZE: usize>(
     params: &MlKemParams,
-    dk: &[u8],
-    c: &[u8],
+    dk: &[u8; DK_SIZE],
+    c: &[u8; CT_SIZE],
 ) -> Result<[u8; 32], BadRejectionSamplingRandomnessError> {
-    decaps_internal::<RANK>(params, dk, c)
+    decaps_internal::<RANK, EK_SIZE, DK_SIZE, DK_PKE_SIZE, CT_SIZE, J_INPUT_SIZE>(params, dk, c)
 }
 
 #[cfg(test)]
@@ -220,12 +262,12 @@ mod tests {
     #[test]
     fn keygen_encaps_decaps_consistency() {
         let randomness = [42u8; 64];
-        let (ek, dk) = generate_keypair::<3>(&ML_KEM_768, &randomness).unwrap();
+        let (ek, dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &randomness).unwrap();
 
         let m = [0xABu8; 32];
-        let (shared_secret, ciphertext) = encapsulate::<3>(&ML_KEM_768, &ek, &m).unwrap();
+        let (shared_secret, ciphertext) = encapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &m).unwrap();
 
-        let shared_secret_decapsulated = decapsulate::<3>(&ML_KEM_768, &dk, &ciphertext).unwrap();
+        let shared_secret_decapsulated = decapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}, {ML_KEM_768_CT_SIZE}, {ML_KEM_768_J_INPUT_SIZE}>(&ML_KEM_768, &dk, &ciphertext).unwrap();
 
         assert_eq!(shared_secret, shared_secret_decapsulated);
     }
@@ -233,25 +275,23 @@ mod tests {
     #[test]
     fn modified_ciphertext_implicit_rejection() {
         let randomness = [1u8; 64];
-        let (ek, dk) = generate_keypair::<3>(&ML_KEM_768, &randomness).unwrap();
+        let (ek, dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &randomness).unwrap();
 
         let m = [0x55u8; 32];
-        let (shared_secret, mut ciphertext) = encapsulate::<3>(&ML_KEM_768, &ek, &m).unwrap();
+        let (shared_secret, mut ciphertext) = encapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &m).unwrap();
 
         // Tamper with ciphertext
         ciphertext[0] ^= 0xFF;
 
-        let shared_secret_decapsulated = decapsulate::<3>(&ML_KEM_768, &dk, &ciphertext).unwrap();
+        let shared_secret_decapsulated = decapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}, {ML_KEM_768_CT_SIZE}, {ML_KEM_768_J_INPUT_SIZE}>(&ML_KEM_768, &dk, &ciphertext).unwrap();
 
         assert_ne!(shared_secret, shared_secret_decapsulated);
 
         // Verify implicit rejection: K̃ = J(z ‖ c)
-        let dk_pke_size = ML_KEM_768.dk_pke_size();
-        let ek_size = ML_KEM_768.ek_size();
-        let z = &dk[dk_pke_size + ek_size + H_DIGEST_SIZE..];
-        let mut j_input = Vec::new();
-        j_input.extend_from_slice(z);
-        j_input.extend_from_slice(&ciphertext);
+        let z = &dk[ML_KEM_768_DK_PKE_SIZE + ML_KEM_768_EK_SIZE + H_DIGEST_SIZE..];
+        let mut j_input = [0u8; ML_KEM_768_J_INPUT_SIZE];
+        j_input[..32].copy_from_slice(z);
+        j_input[32..].copy_from_slice(&ciphertext);
         let expected_rejection: [u8; 32] = J(&j_input);
         assert_eq!(shared_secret_decapsulated, expected_rejection);
     }
@@ -259,15 +299,15 @@ mod tests {
     #[test]
     fn modified_secret_key() {
         let randomness = [3u8; 64];
-        let (ek, mut dk) = generate_keypair::<3>(&ML_KEM_768, &randomness).unwrap();
+        let (ek, mut dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &randomness).unwrap();
 
         let m = [0x77u8; 32];
-        let (shared_secret, ciphertext) = encapsulate::<3>(&ML_KEM_768, &ek, &m).unwrap();
+        let (shared_secret, ciphertext) = encapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &m).unwrap();
 
         // Tamper with the secret key (not the z portion)
         dk[0] ^= 0xFF;
 
-        let shared_secret_decapsulated = decapsulate::<3>(&ML_KEM_768, &dk, &ciphertext).unwrap();
+        let shared_secret_decapsulated = decapsulate::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}, {ML_KEM_768_CT_SIZE}, {ML_KEM_768_J_INPUT_SIZE}>(&ML_KEM_768, &dk, &ciphertext).unwrap();
         assert_ne!(shared_secret, shared_secret_decapsulated);
     }
 }

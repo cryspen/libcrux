@@ -60,6 +60,27 @@ pub const ML_KEM_512: MlKemParams = MlKemParams { rank: 2, eta1: 3, eta2: 2, du:
 pub const ML_KEM_768: MlKemParams = MlKemParams { rank: 3, eta1: 2, eta2: 2, du: 10, dv: 4 };
 pub const ML_KEM_1024: MlKemParams = MlKemParams { rank: 4, eta1: 2, eta2: 2, du: 11, dv: 5 };
 
+// Derived sizes for ML-KEM-512 (k=2, du=10, dv=4)
+pub const ML_KEM_512_EK_SIZE: usize = 800;       // 2*384 + 32
+pub const ML_KEM_512_DK_PKE_SIZE: usize = 768;   // 2*384
+pub const ML_KEM_512_DK_SIZE: usize = 1632;      // 768 + 800 + 32 + 32
+pub const ML_KEM_512_CT_SIZE: usize = 768;        // 2*320 + 128
+pub const ML_KEM_512_J_INPUT_SIZE: usize = 800;   // 32 + 768
+
+// Derived sizes for ML-KEM-768 (k=3, du=10, dv=4)
+pub const ML_KEM_768_EK_SIZE: usize = 1184;      // 3*384 + 32
+pub const ML_KEM_768_DK_PKE_SIZE: usize = 1152;  // 3*384
+pub const ML_KEM_768_DK_SIZE: usize = 2400;      // 1152 + 1184 + 32 + 32
+pub const ML_KEM_768_CT_SIZE: usize = 1088;       // 3*320 + 128
+pub const ML_KEM_768_J_INPUT_SIZE: usize = 1120;  // 32 + 1088
+
+// Derived sizes for ML-KEM-1024 (k=4, du=11, dv=5)
+pub const ML_KEM_1024_EK_SIZE: usize = 1568;     // 4*384 + 32
+pub const ML_KEM_1024_DK_PKE_SIZE: usize = 1536; // 4*384
+pub const ML_KEM_1024_DK_SIZE: usize = 3168;     // 1536 + 1568 + 32 + 32
+pub const ML_KEM_1024_CT_SIZE: usize = 1568;      // 4*352 + 160
+pub const ML_KEM_1024_J_INPUT_SIZE: usize = 1600; // 32 + 1568
+
 #[allow(non_snake_case)]
 pub(crate) mod hash_functions {
     use libcrux::digest::{self, digest_size, Algorithm};

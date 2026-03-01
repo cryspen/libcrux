@@ -169,10 +169,14 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
     createi(|i| decoded[i] % FIELD_MODULUS as i16)
 }
 
-pub(crate) fn vector_encode_12<const RANK: usize>(vector: &Vector<RANK>) -> Vec<u8> {
-    let mut out = Vec::new();
+#[hax_lib::requires(T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
+pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
+    vector: &Vector<RANK>,
+) -> [u8; T_SIZE] {
+    let mut out = [0u8; T_SIZE];
     for i in 0..RANK {
-        out.extend_from_slice(&byte_encode::<{32*12}, {256*12}>(vector[i], 12));
+        let encoded = byte_encode::<{32*12}, {256*12}>(vector[i], 12);
+        out[i * 384..(i + 1) * 384].copy_from_slice(&encoded);
     }
     out
 }
@@ -185,14 +189,14 @@ pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK
     })
 }
 
-pub(crate) fn byte_encode_dyn(p: Polynomial, d: usize) -> Vec<u8> {
+pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
     match d {
-        1  => byte_encode::<32, 256>(p, 1).to_vec(),
-        4  => byte_encode::<128, 1024>(p, 4).to_vec(),
-        5  => byte_encode::<160, 1280>(p, 5).to_vec(),
-        10 => byte_encode::<320, 2560>(p, 10).to_vec(),
-        11 => byte_encode::<352, 2816>(p, 11).to_vec(),
-        12 => byte_encode::<384, 3072>(p, 12).to_vec(),
+        1  => out.copy_from_slice(&byte_encode::<32, 256>(p, 1)),
+        4  => out.copy_from_slice(&byte_encode::<128, 1024>(p, 4)),
+        5  => out.copy_from_slice(&byte_encode::<160, 1280>(p, 5)),
+        10 => out.copy_from_slice(&byte_encode::<320, 2560>(p, 10)),
+        11 => out.copy_from_slice(&byte_encode::<352, 2816>(p, 11)),
+        12 => out.copy_from_slice(&byte_encode::<384, 3072>(p, 12)),
         _  => panic!("unsupported d={}", d),
     }
 }
