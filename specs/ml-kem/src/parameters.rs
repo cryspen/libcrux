@@ -21,37 +21,44 @@ pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 /// this choice.
 pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 
-/// Rank
-pub(crate) const RANK: usize = 3;
+pub(crate) use hash_functions::H_DIGEST_SIZE;
 
-// /// `T` NTT encoding size in bytes
-// pub(crate) const T_AS_NTT_ENCODED_SIZE: usize =
-//     (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
+/// ML-KEM parameter set
+pub struct MlKemParams {
+    pub rank: usize,
+    pub eta1: usize,
+    pub eta2: usize,
+    pub du: usize,
+    pub dv: usize,
+}
 
-// /// Compression factor for `U`
-// pub(crate) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
+impl MlKemParams {
+    pub const fn t_as_ntt_encoded_size(&self) -> usize {
+        self.rank * BYTES_PER_RING_ELEMENT
+    }
+    pub const fn ek_size(&self) -> usize {
+        self.t_as_ntt_encoded_size() + 32
+    }
+    pub const fn dk_pke_size(&self) -> usize {
+        self.rank * BYTES_PER_RING_ELEMENT
+    }
+    pub const fn dk_size(&self) -> usize {
+        self.dk_pke_size() + self.ek_size() + H_DIGEST_SIZE + 32
+    }
+    pub const fn u_encoded_size(&self) -> usize {
+        (self.rank * COEFFICIENTS_IN_RING_ELEMENT * self.du) / 8
+    }
+    pub const fn v_encoded_size(&self) -> usize {
+        (COEFFICIENTS_IN_RING_ELEMENT * self.dv) / 8
+    }
+    pub const fn ciphertext_size(&self) -> usize {
+        self.u_encoded_size() + self.v_encoded_size()
+    }
+}
 
-// /// Compression factor for `V`
-// pub(crate) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
-
-// /// `U` encoding size in bytes
-// pub(crate) const VECTOR_U_ENCODED_SIZE: usize =
-//     (RANK * COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
-
-// /// `V` encoding size in bytes
-// pub(crate) const VECTOR_V_ENCODED_SIZE: usize =
-//     (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR) / 8;
-
-// pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
-// pub(crate) const CPA_PKE_SECRET_KEY_SIZE: usize =
-//     (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-// pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
-// pub(crate) const CPA_PKE_CIPHERTEXT_SIZE: usize = VECTOR_U_ENCODED_SIZE + VECTOR_V_ENCODED_SIZE;
-// pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
-// pub(crate) const CPA_SERIALIZED_KEY_LEN: usize = CPA_PKE_SECRET_KEY_SIZE
-//     + CPA_PKE_PUBLIC_KEY_SIZE
-//     + hash_functions::H_DIGEST_SIZE
-//     + CPA_PKE_MESSAGE_SIZE;
+pub const ML_KEM_512: MlKemParams = MlKemParams { rank: 2, eta1: 3, eta2: 2, du: 10, dv: 4 };
+pub const ML_KEM_768: MlKemParams = MlKemParams { rank: 3, eta1: 2, eta2: 2, du: 10, dv: 4 };
+pub const ML_KEM_1024: MlKemParams = MlKemParams { rank: 4, eta1: 2, eta2: 2, du: 11, dv: 5 };
 
 #[allow(non_snake_case)]
 pub(crate) mod hash_functions {

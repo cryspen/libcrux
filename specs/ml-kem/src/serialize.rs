@@ -169,26 +169,45 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
     createi(|i| decoded[i] % FIELD_MODULUS as i16)
 }
 
-// pub(crate) fn vector_encode_12(vector: KyberVector) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
-//     let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
+pub(crate) fn vector_encode_12<const RANK: usize>(vector: &Vector<RANK>) -> Vec<u8> {
+    let mut out = Vec::new();
+    for i in 0..RANK {
+        out.extend_from_slice(&byte_encode::<{32*12}, {256*12}>(vector[i], 12));
+    }
+    out
+}
 
-//     for (i, re) in vector.into_iter().enumerate() {
-//         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-//             .copy_from_slice(&byte_encode(12, re));
-//     }
+pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
+    createi(|i| {
+        let start = i * BYTES_PER_RING_ELEMENT;
+        let chunk: &[u8; 384] = encoded[start..start + 384].try_into().unwrap();
+        byte_decode::<{32*12}, {256*12}>(chunk, 12)
+    })
+}
 
-//     out
-// }
+pub(crate) fn byte_encode_dyn(p: Polynomial, d: usize) -> Vec<u8> {
+    match d {
+        1  => byte_encode::<32, 256>(p, 1).to_vec(),
+        4  => byte_encode::<128, 1024>(p, 4).to_vec(),
+        5  => byte_encode::<160, 1280>(p, 5).to_vec(),
+        10 => byte_encode::<320, 2560>(p, 10).to_vec(),
+        11 => byte_encode::<352, 2816>(p, 11).to_vec(),
+        12 => byte_encode::<384, 3072>(p, 12).to_vec(),
+        _  => panic!("unsupported d={}", d),
+    }
+}
 
-// pub(crate) fn vector_decode_12(encoded: &[u8; RANK * BYTES_PER_RING_ELEMENT]) -> KyberVector {
-//     let mut out = KyberVector::ZERO;
-
-//     for (i, bytes) in encoded.chunks(BYTES_PER_RING_ELEMENT).enumerate() {
-//         out[i] = byte_decode(12, bytes);
-//     }
-
-//     out
-// }
+pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
+    match d {
+        1  => byte_decode::<32, 256>(b.try_into().unwrap(), 1),
+        4  => byte_decode::<128, 1024>(b.try_into().unwrap(), 4),
+        5  => byte_decode::<160, 1280>(b.try_into().unwrap(), 5),
+        10 => byte_decode::<320, 2560>(b.try_into().unwrap(), 10),
+        11 => byte_decode::<352, 2816>(b.try_into().unwrap(), 11),
+        12 => byte_decode::<384, 3072>(b.try_into().unwrap(), 12),
+        _  => panic!("unsupported d={}", d),
+    }
+}
 
 #[cfg(test)]
 mod tests {

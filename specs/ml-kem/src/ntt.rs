@@ -225,23 +225,13 @@ pub(crate) fn multiply_ntts(
 } 
 
 
-// pub(crate) fn vector_ntt(vector: KyberVector) -> KyberVector {
-//     let mut vector_as_ntt = KyberVector::ZERO;
-//     for (i, re) in vector.into_iter().enumerate() {
-//         vector_as_ntt[i] = ntt(re)
-//     }
+pub(crate) fn vector_ntt<const RANK:usize>(vector: Vector<RANK>) -> Vector<RANK> {
+    createi(|i| ntt(vector[i]))
+}
 
-//     vector_as_ntt
-// }
-
-// pub(crate) fn vector_inverse_ntt(vector_as_ntt: KyberVector) -> KyberVector {
-//     let mut vector = KyberVector::ZERO;
-//     for (i, re_ntt) in vector_as_ntt.into_iter().enumerate() {
-//         vector[i] = ntt_inverse(re_ntt)
-//     }
-
-//     vector
-// }
+pub(crate) fn vector_inverse_ntt<const RANK:usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
+    createi(|i| ntt_inverse(vector_as_ntt[i]))
+}
 
 #[cfg(test)]
 mod tests {
