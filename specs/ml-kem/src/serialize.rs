@@ -1,5 +1,6 @@
 use crate::parameters::*;
 
+pub(crate) const MAX_BYTES: usize = 16384;
 
 /// Converts a set of bytes in `bytes` into a set of bits.
 ///
@@ -20,10 +21,11 @@ use crate::parameters::*;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::requires(N8 == N * 8)]
-pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(
-    bytes: &[u8; N]) -> BitVector<N8> {
-    createi(|i| (bytes[i/8] >> (i%8)) & 1 == 1)
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(N < 16384 && N8 == N * 8)]
+pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) -> BitVector<N8> {
+    hax_lib::debug_assert!(N8 == N * 8);
+    createi(|i| (bytes[i / 8] >> (i % 8)) & 1 == 1)
 }
 
 /// Converts a bit string `bits` into an array of bytes. This function asserts
@@ -45,20 +47,24 @@ pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::requires(N8 == N * 8)]
-#[hax_lib::ensures(bv == bytes_to_bits(result))]
-pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(
-    bv: &BitVector<N8>) -> [u8; N] {
-    createi(|i| {
-            bv[8*i] as u8
-         | ((bv[8*i + 1] as u8) << 1)
-         | ((bv[8*i + 2] as u8) << 2)
-         | ((bv[8*i + 3] as u8) << 3)
-         | ((bv[8*i + 4] as u8) << 4)
-         | ((bv[8*i + 5] as u8) << 5)
-         | ((bv[8*i + 6] as u8) << 6)
-         | ((bv[8*i + 7] as u8) << 7)
-    }   )
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(N < 16384 && N8 == N * 8)]
+#[hax_lib::ensures(|result| *bv == bytes_to_bits::<N,N8>(&result))]
+pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
+    hax_lib::debug_assert!(N8 == N * 8);
+    let result = createi(|i| {
+        bv[8 * i] as u8
+            | ((bv[8 * i + 1] as u8) << 1)
+            | ((bv[8 * i + 2] as u8) << 2)
+            | ((bv[8 * i + 3] as u8) << 3)
+            | ((bv[8 * i + 4] as u8) << 4)
+            | ((bv[8 * i + 5] as u8) << 5)
+            | ((bv[8 * i + 6] as u8) << 6)
+            | ((bv[8 * i + 7] as u8) << 7)
+    });
+    hax_lib::fstar!("admit()");
+    hax_lib::debug_assert!(*bv == bytes_to_bits::<N, N8>(&result));
+    result
 }
 
 /// Convert the associated ring element into a vector of
@@ -99,19 +105,23 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-#[hax_lib::requires(Nd == N * d)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
 pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
     input: &[i16; N],
-    d:usize) -> BitVector<Nd> {
-    createi(|i| (input[i/d] >> (i%d)) & 1 == 1)
+    d: usize,
+) -> BitVector<Nd> {
+    hax_lib::debug_assert!(Nd == N * d);
+    createi(|i| (input[i / d] >> (i % d)) & 1 == 1)
 }
 
+#[hax_lib::fstar::options("--z3rlimit 1500")]
 #[hax_lib::requires(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d)]
 pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize) -> [u8; D32] {
+    hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d);
     let bv = bitvector_from_bounded_ints::<256, D256>(&p, d);
     bits_to_bytes(&bv)
 }
-
 
 /// Given a series of bytes representing a ring element in `re_bytes`,
 /// first convert them into a vector of bits in little-endian order; i.e.
@@ -141,75 +151,103 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::requires(Nd == N * d)]
-#[hax_lib::ensures(input == bitvector_from_bounded_ints(result, d))]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
+#[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
-    d:usize) -> [i16; N] {
-    createi(|i| {
+    d: usize,
+) -> [i16; N] {
+    hax_lib::debug_assert!(Nd == N * d);
+    let result = createi(|i| {
         let mut coefficient = 0;
         for j in 0..d {
-            if input[i*d + j] {
+            if input[i * d + j] {
                 coefficient |= 1 << j;
             }
         }
         coefficient
-    })
+    });
+    hax_lib::fstar!("admit()");
+    hax_lib::debug_assert!(*input == bitvector_from_bounded_ints(&result, d));
+    result
 }
 
-#[hax_lib::requires(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
-pub fn byte_decode_generic<const N:usize, const N8: usize, const Nd: usize, const Nd8: usize>(b: &[u8; Nd], d: usize) -> [i16; N8] {
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N * d < 16384 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
+pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, const Nd8: usize>(
+    b: &[u8; Nd],
+    d: usize,
+) -> [i16; N8] {
+    hax_lib::debug_assert!(
+        d <= BITS_PER_COEFFICIENT && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8
+    );
     let bv: [bool; Nd8] = bytes_to_bits(&b);
     bitvector_to_bounded_ints(&bv, d)
 }
 
+#[hax_lib::fstar::options("--z3rlimit 1500")]
 #[hax_lib::requires(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
+    hax_lib::debug_assert!(
+        d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d
+    );
     let decoded = byte_decode_generic::<32, 256, D32, D256>(b, d);
     createi(|i| decoded[i] % FIELD_MODULUS as i16)
 }
 
-#[hax_lib::requires(T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
 pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
     vector: &Vector<RANK>,
 ) -> [u8; T_SIZE] {
+    hax_lib::debug_assert!(T_SIZE == RANK * BYTES_PER_RING_ELEMENT);
     let mut out = [0u8; T_SIZE];
     for i in 0..RANK {
-        let encoded = byte_encode::<{32*12}, {256*12}>(vector[i], 12);
+        let encoded = byte_encode::<{ 32 * 12 }, { 256 * 12 }>(vector[i], 12);
         out[i * 384..(i + 1) * 384].copy_from_slice(&encoded);
     }
     out
 }
 
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(RANK <= 4 && encoded.len() == RANK * BYTES_PER_RING_ELEMENT)]
 pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
+    hax_lib::debug_assert!(encoded.len() == RANK * BYTES_PER_RING_ELEMENT);
     createi(|i| {
         let start = i * BYTES_PER_RING_ELEMENT;
         let chunk: &[u8; 384] = encoded[start..start + 384].try_into().unwrap();
-        byte_decode::<{32*12}, {256*12}>(chunk, 12)
+        byte_decode::<{ 32 * 12 }, { 256 * 12 }>(chunk, 12)
     })
 }
 
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && out.len() == 32 * d)]
 pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
+    hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && out.len() == 32 * d);
     match d {
-        1  => out.copy_from_slice(&byte_encode::<32, 256>(p, 1)),
-        4  => out.copy_from_slice(&byte_encode::<128, 1024>(p, 4)),
-        5  => out.copy_from_slice(&byte_encode::<160, 1280>(p, 5)),
+        1 => out.copy_from_slice(&byte_encode::<32, 256>(p, 1)),
+        4 => out.copy_from_slice(&byte_encode::<128, 1024>(p, 4)),
+        5 => out.copy_from_slice(&byte_encode::<160, 1280>(p, 5)),
         10 => out.copy_from_slice(&byte_encode::<320, 2560>(p, 10)),
         11 => out.copy_from_slice(&byte_encode::<352, 2816>(p, 11)),
         12 => out.copy_from_slice(&byte_encode::<384, 3072>(p, 12)),
-        _  => panic!("unsupported d={}", d),
+        _ => panic!("unsupported d={}", d),
     }
 }
 
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && b.len() == 32 * d)]
 pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
+    hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d);
     match d {
-        1  => byte_decode::<32, 256>(b.try_into().unwrap(), 1),
-        4  => byte_decode::<128, 1024>(b.try_into().unwrap(), 4),
-        5  => byte_decode::<160, 1280>(b.try_into().unwrap(), 5),
+        1 => byte_decode::<32, 256>(b.try_into().unwrap(), 1),
+        4 => byte_decode::<128, 1024>(b.try_into().unwrap(), 4),
+        5 => byte_decode::<160, 1280>(b.try_into().unwrap(), 5),
         10 => byte_decode::<320, 2560>(b.try_into().unwrap(), 10),
         11 => byte_decode::<352, 2816>(b.try_into().unwrap(), 11),
         12 => byte_decode::<384, 3072>(b.try_into().unwrap(), 12),
-        _  => panic!("unsupported d={}", d),
+        _ => panic!("unsupported d={}", d),
     }
 }
 
@@ -227,8 +265,14 @@ mod tests {
         // 0x3C = 00111100 -> bits in LE: [0,0,1,1,1,1,0,0]
         let bytes = [0xA5u8, 0x3C];
         let bits: [bool; 16] = bytes_to_bits(&bytes);
-        assert_eq!(bits[0..8], [true, false, true, false, false, true, false, true]);
-        assert_eq!(bits[8..16], [false, false, true, true, true, true, false, false]);
+        assert_eq!(
+            bits[0..8],
+            [true, false, true, false, false, true, false, true]
+        );
+        assert_eq!(
+            bits[8..16],
+            [false, false, true, true, true, true, false, false]
+        );
     }
 
     #[test]
@@ -329,7 +373,9 @@ mod tests {
         for (i, &coeff) in decoded.iter().enumerate() {
             assert!(
                 coeff >= 0 && coeff < FIELD_MODULUS,
-                "decoded[{}] = {} not in [0, q)", i, coeff
+                "decoded[{}] = {} not in [0, q)",
+                i,
+                coeff
             );
         }
         assert_eq!(decoded, poly);

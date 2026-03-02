@@ -6,15 +6,14 @@ use crate::parameters::*;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub fn compress(
-    re: Polynomial,
-    bits_per_compressed_coefficient: usize,
-) -> Polynomial {
-    createi(|i| {
-        compress_d(re[i], bits_per_compressed_coefficient)
-    })
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < 256,
+            re[i] >= 0)).and(bits_per_compressed_coefficient < 12))]
+pub fn compress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Polynomial {
+    createi(|i| compress_d(re[i], bits_per_compressed_coefficient))
 }
-
 
 /// According to the NIST FIPS 203 standard (Page 10, Lines 536 - 539),
 /// compressing a polynomial ring element is accomplished by `decompress()`ing
@@ -22,13 +21,14 @@ pub fn compress(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub fn decompress(
-    re: Polynomial,
-    bits_per_compressed_coefficient: usize,
-) -> Polynomial {
-    createi(|i| {
-        decompress_d(re[i], bits_per_compressed_coefficient)
-    })
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < 256,
+            re[i] >= 0)).and(
+    bits_per_compressed_coefficient < 12))]
+pub fn decompress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Polynomial {
+    createi(|i| decompress_d(re[i], bits_per_compressed_coefficient))
 }
 
 /// This function implements the `Compress` function specified in the NIST FIPS
@@ -51,14 +51,14 @@ pub fn decompress(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::requires(fe.to_int() >= 0 && to_bit_size < 12)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(fe >= 0 && to_bit_size < 12)]
 fn compress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
+    hax_lib::debug_assert!(fe >= 0 && to_bit_size < 12);
     let two_pow_bit_size = 2u32.pow(to_bit_size as u32);
 
-    let compressed = 
-        (fe as u32 * 2 * two_pow_bit_size 
-        + FIELD_MODULUS as u32)
-        / (2 * FIELD_MODULUS as u32);
+    let compressed =
+        (fe as u32 * 2 * two_pow_bit_size + FIELD_MODULUS as u32) / (2 * FIELD_MODULUS as u32);
 
     (compressed % two_pow_bit_size) as i16
 }
@@ -83,14 +83,14 @@ fn compress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::requires(fe.to_int() >= 0 && to_bit_size < 12)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(fe >= 0 && to_bit_size < 12)]
 fn decompress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
+    hax_lib::debug_assert!(fe >= 0 && to_bit_size < 12);
     let two_pow_bit_size = 2u32.pow(to_bit_size as u32);
 
-    let decompressed = 
-    (2 * fe as u32 * FIELD_MODULUS as u32
-        + two_pow_bit_size)
-        / (two_pow_bit_size * 2);
+    let decompressed =
+        (2 * fe as u32 * FIELD_MODULUS as u32 + two_pow_bit_size) / (two_pow_bit_size * 2);
 
     decompressed as i16
 }
@@ -140,7 +140,7 @@ pub(crate) mod tests {
         // Midpoint of [0, q-1] is ~1664, so values near q/2 map to 1
         assert_eq!(compress_d(0, 1), 0);
         assert_eq!(compress_d(1664, 1), 1);
-        assert_eq!(compress_d(3328, 1), 0);  // near q ≈ 0
+        assert_eq!(compress_d(3328, 1), 0); // near q ≈ 0
 
         // d=4: compress_4(208) should be 1
         // decompress_4(1) = round(q/16) = round(208.06) = 208
@@ -170,7 +170,10 @@ pub(crate) mod tests {
                 assert!(
                     c >= 0 && c < upper,
                     "compress_d({}, {}) = {} not in [0, {})",
-                    x, d, c, upper
+                    x,
+                    d,
+                    c,
+                    upper
                 );
             }
         }
@@ -185,7 +188,9 @@ pub(crate) mod tests {
                 assert!(
                     dec >= 0 && dec < FIELD_MODULUS,
                     "decompress_d({}, {}) = {} not in [0, q)",
-                    y, d, dec
+                    y,
+                    d,
+                    dec
                 );
             }
         }
@@ -225,7 +230,11 @@ pub(crate) mod tests {
                 assert!(
                     error <= b_q,
                     "d={}: |decompress(compress({})) - {}| = {} > B_q = {}",
-                    d, x, x, error, b_q
+                    d,
+                    x,
+                    x,
+                    error,
+                    b_q
                 );
             }
         }

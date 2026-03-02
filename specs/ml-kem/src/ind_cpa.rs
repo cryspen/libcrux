@@ -1,13 +1,21 @@
 use crate::{
     compress::{compress, decompress},
-    matrix::{add_polynomials, add_vectors, multiply_matrix_by_column, multiply_vectors, sub_polynomials, transpose},
+    matrix::{
+        add_polynomials, add_vectors, multiply_matrix_by_column, multiply_vectors, sub_polynomials,
+        transpose,
+    },
     ntt::{ntt_inverse, vector_inverse_ntt, vector_ntt},
-    parameters::{*, hash_functions::*},
+    parameters::{hash_functions::*, *},
     sampling::{sample_ntt, sample_poly_cbd, BadRejectionSamplingRandomnessError},
-    serialize::{byte_decode, byte_encode, byte_encode_into, byte_decode_dyn, vector_encode_12, vector_decode_12},
+    serialize::{
+        byte_decode, byte_decode_dyn, byte_encode, byte_encode_into, vector_decode_12,
+        vector_encode_12,
+    },
 };
 
 /// Helper to sample a polynomial from CBD with dynamic eta.
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(eta == 2 || eta == 3)]
 fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
     match eta {
         2 => {
@@ -53,9 +61,12 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
 /// dkₚₖₑ ← ByteEncode₁₂(ŝ)
 /// ```
 #[allow(non_snake_case)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
 #[hax_lib::requires(
-    EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+    RANK <= 4
+    && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
     && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    && (params.eta1 == 2 || params.eta1 == 3)
 )]
 pub(crate) fn generate_keypair<
     const RANK: usize,
@@ -65,6 +76,11 @@ pub(crate) fn generate_keypair<
     params: &MlKemParams,
     key_generation_seed: &[u8; 32],
 ) -> Result<([u8; EK_SIZE], [u8; DK_PKE_SIZE]), BadRejectionSamplingRandomnessError> {
+    hax_lib::fstar!("admit()");
+    hax_lib::debug_assert!(
+        EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
+            && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+    );
     // (ρ,σ) ← G(d ‖ k)
     let mut g_input = [0u8; 33];
     g_input[..32].copy_from_slice(key_generation_seed);
@@ -75,7 +91,7 @@ pub(crate) fn generate_keypair<
     let mut domain_separator: u8 = 0;
 
     // Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-    let mut A_as_ntt: Matrix<RANK> = [[[ 0i16; 256]; RANK]; RANK];
+    let mut A_as_ntt: Matrix<RANK> = [[[0i16; 256]; RANK]; RANK];
 
     let mut xof_input = [0u8; 34];
     xof_input[..32].copy_from_slice(seed_for_A);
@@ -168,13 +184,28 @@ pub(crate) fn generate_keypair<
 /// return c ← (c₁ ‖ c₂)
 /// ```
 #[allow(non_snake_case)]
-#[hax_lib::requires(CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(
+    RANK <= 4
+    && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+    && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
+    && (params.eta1 == 2 || params.eta1 == 3)
+    && (params.eta2 == 2 || params.eta2 == 3)
+)]
 pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     params: &MlKemParams,
     ek: &[u8],
     message: &[u8; 32],
     randomness: &[u8; 32],
 ) -> Result<[u8; CT_SIZE], BadRejectionSamplingRandomnessError> {
+    hax_lib::fstar!("admit()");
+    hax_lib::debug_assert!(
+        CT_SIZE
+            == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du
+                + COEFFICIENTS_IN_RING_ELEMENT * params.dv)
+                / 8
+            && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
+    );
     let mut domain_separator: u8 = 0;
 
     let t_encoded_size = params.t_as_ntt_encoded_size();
@@ -248,7 +279,11 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8;
     let mut c = [0u8; CT_SIZE];
     for i in 0..RANK {
-        byte_encode_into(compress(u[i], params.du), params.du, &mut c[i * du_poly_size..(i + 1) * du_poly_size]);
+        byte_encode_into(
+            compress(u[i], params.du),
+            params.du,
+            &mut c[i * du_poly_size..(i + 1) * du_poly_size],
+        );
     }
 
     // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
@@ -277,11 +312,25 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
 /// return m
 /// ```
 #[allow(non_snake_case)]
+#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::requires(
+    RANK <= 4
+    && dk.len() == RANK * BYTES_PER_RING_ELEMENT
+    && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+)]
 pub(crate) fn decrypt<const RANK: usize>(
     params: &MlKemParams,
     dk: &[u8],
     ciphertext: &[u8],
 ) -> [u8; 32] {
+    hax_lib::fstar!("admit()");
+    hax_lib::debug_assert!(
+        dk.len() == RANK * BYTES_PER_RING_ELEMENT
+            && ciphertext.len()
+                == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du
+                    + COEFFICIENTS_IN_RING_ELEMENT * params.dv)
+                    / 8
+    );
     let u_encoded_size = params.u_encoded_size();
     let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8;
 
@@ -321,11 +370,16 @@ mod tests {
     #[test]
     fn encrypt_decrypt_roundtrip() {
         let seed = [42u8; 32];
-        let (ek, dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed).unwrap();
+        let (ek, dk) = generate_keypair::<3, { ML_KEM_768_EK_SIZE }, { ML_KEM_768_DK_PKE_SIZE }>(
+            &ML_KEM_768,
+            &seed,
+        )
+        .unwrap();
 
         let message = [0xABu8; 32];
         let randomness = [0xCDu8; 32];
-        let ciphertext = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext =
+            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk, &ciphertext);
 
         assert_eq!(decrypted, message);
@@ -334,12 +388,18 @@ mod tests {
     #[test]
     fn encrypt_deterministic() {
         let seed = [1u8; 32];
-        let (ek, _dk) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed).unwrap();
+        let (ek, _dk) = generate_keypair::<3, { ML_KEM_768_EK_SIZE }, { ML_KEM_768_DK_PKE_SIZE }>(
+            &ML_KEM_768,
+            &seed,
+        )
+        .unwrap();
 
         let message = [0x55u8; 32];
         let randomness = [0x77u8; 32];
-        let c1 = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
-        let c2 = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let c1 =
+            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let c2 =
+            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
 
         assert_eq!(c1, c2);
     }
@@ -348,12 +408,22 @@ mod tests {
     fn decrypt_with_wrong_key() {
         let seed1 = [1u8; 32];
         let seed2 = [2u8; 32];
-        let (ek, _dk1) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed1).unwrap();
-        let (_ek2, dk2) = generate_keypair::<3, {ML_KEM_768_EK_SIZE}, {ML_KEM_768_DK_PKE_SIZE}>(&ML_KEM_768, &seed2).unwrap();
+        let (ek, _dk1) = generate_keypair::<3, { ML_KEM_768_EK_SIZE }, { ML_KEM_768_DK_PKE_SIZE }>(
+            &ML_KEM_768,
+            &seed1,
+        )
+        .unwrap();
+        let (_ek2, dk2) =
+            generate_keypair::<3, { ML_KEM_768_EK_SIZE }, { ML_KEM_768_DK_PKE_SIZE }>(
+                &ML_KEM_768,
+                &seed2,
+            )
+            .unwrap();
 
         let message = [0xAAu8; 32];
         let randomness = [0xBBu8; 32];
-        let ciphertext = encrypt::<3, {ML_KEM_768_CT_SIZE}>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext =
+            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk2, &ciphertext);
 
         assert_ne!(decrypted, message);

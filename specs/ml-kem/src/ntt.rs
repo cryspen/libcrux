@@ -14,7 +14,7 @@ fn bit_rev_7(x: usize) -> usize {
         }
     }
     result
-}   
+}
 
 /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
 /// of a `Polynomial`.
@@ -51,31 +51,48 @@ fn bit_rev_7(x: usize) -> usize {
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-const ZETAS : [i16; 128]= [1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746, 296, 2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821, 289, 331, 3253, 1756, 1197, 2304, 2277, 2055, 650, 1977, 2513, 632, 2865, 33, 1320, 1915, 2319, 1435, 807, 452, 1438, 2868, 1534, 2402, 2647, 2617, 1481, 648, 2474, 3110, 1227, 910, 17, 2761, 583, 2649, 1637, 723, 2288, 1100, 1409, 2662, 3281, 233, 756, 2156, 3015, 3050, 1703, 1651, 2789, 1789, 1847, 952, 1461, 2687, 939, 2308, 2437, 2388, 733, 2337, 268, 641, 1584, 2298, 2037, 3220, 375, 2549, 2090, 1645, 1063, 319, 2773, 757, 2099, 561, 2466, 2594, 2804, 1092, 403, 1026, 1143, 2150, 2775, 886, 1722, 1212, 1874, 1029, 2110, 2935, 885, 2154];
+const ZETAS: [i16; 128] = [
+    1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746, 296,
+    2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821, 289, 331,
+    3253, 1756, 1197, 2304, 2277, 2055, 650, 1977, 2513, 632, 2865, 33, 1320, 1915, 2319, 1435,
+    807, 452, 1438, 2868, 1534, 2402, 2647, 2617, 1481, 648, 2474, 3110, 1227, 910, 17, 2761, 583,
+    2649, 1637, 723, 2288, 1100, 1409, 2662, 3281, 233, 756, 2156, 3015, 3050, 1703, 1651, 2789,
+    1789, 1847, 952, 1461, 2687, 939, 2308, 2437, 2388, 733, 2337, 268, 641, 1584, 2298, 2037,
+    3220, 375, 2549, 2090, 1645, 1063, 319, 2773, 757, 2099, 561, 2466, 2594, 2804, 1092, 403,
+    1026, 1143, 2150, 2775, 886, 1722, 1212, 1874, 1029, 2110, 2935, 885, 2154,
+];
 
-#[hax_lib::requires(layer <= 7)]
-fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial{
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(layer >= 1 && layer <= 7)]
+fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial {
+    hax_lib::debug_assert!(layer <= 7);
     let len = 1 << layer;
+    hax_lib::fstar!("assert (v len == pow2 (v layer))");
     let k = 128 / len;
+    hax_lib::fstar!("assert (v k == 128 / (v len))");
     createi(|i| {
         let round = i / (2 * len);
+        hax_lib::fstar!("assert (v round < 128 / (v len))");
+        hax_lib::fstar!("assert (v round + v k < 256 / (v len))");
+        hax_lib::fstar!("assert (v len >= 2)");
         let idx = i % (2 * len);
+        hax_lib::fstar!("assert(v (cast (v_ZETAS.[ round +! k <: usize ] <: i16) <: i32) == v (v_ZETAS.[ round +! k <: usize ] <: i16))");
         if idx < len {
-            ((p[i] as i32 + ZETAS[round + k] as i32 * p[i + len] as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
+            ((p[i] as i32 + ZETAS[round + k] as i32 * p[i + len] as i32)
+                .rem_euclid(FIELD_MODULUS as i32)) as i16
         } else {
-            ((p[i - len] as i32 - ZETAS[round + k] as i32 * p[i] as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
+            ((p[i - len] as i32 - ZETAS[round + k] as i32 * p[i] as i32)
+                .rem_euclid(FIELD_MODULUS as i32)) as i16
         }
     })
 }
-
-
 
 fn ntt(p: Polynomial) -> Polynomial {
     let p = ntt_layer(p, 7);
     let p = ntt_layer(p, 6);
     let p = ntt_layer(p, 5);
     let p = ntt_layer(p, 4);
-    let p = ntt_layer(p, 3);     
+    let p = ntt_layer(p, 3);
     let p = ntt_layer(p, 2);
     let p = ntt_layer(p, 1);
     p
@@ -111,18 +128,25 @@ fn ntt(p: Polynomial) -> Polynomial {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-/// 
-#[hax_lib::requires(layer <= 7)]
-fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial{
+///
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(layer >= 1 && layer <= 7)]
+fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
+    hax_lib::debug_assert!(layer <= 7);
     let len = 1 << layer;
+    hax_lib::fstar!("assert (v len == pow2 (v layer))");
     let k = (256 / len) - 1;
+    hax_lib::fstar!("assert (v k == 256 / (v len) - 1)");
     createi(|i| {
         let round = i / (2 * len);
+        hax_lib::fstar!("assert (v round < 128 / (v len))");
+        hax_lib::fstar!("assert (v len >= 2)");
         let idx = i % (2 * len);
         if idx < len {
             ((p[i] as i32 + p[i + len] as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
         } else {
-            (ZETAS[k - round] as i32 * (p[i] as i32 - p[i - len] as i32)).rem_euclid(FIELD_MODULUS as i32) as i16
+            (ZETAS[k - round] as i32 * (p[i] as i32 - p[i - len] as i32))
+                .rem_euclid(FIELD_MODULUS as i32) as i16
         }
     })
 }
@@ -156,22 +180,12 @@ pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-fn base_case_multiply_even(
-    a0: i16,
-    a1: i16,
-    b0: i16,
-    b1: i16,
-    zeta: FieldElement,
-) -> i16 {
-    (a0 as i64 * b0 as i64 + a1 as i64 * b1 as i64 * zeta as i64).rem_euclid(FIELD_MODULUS as i64) as i16
+fn base_case_multiply_even(a0: i16, a1: i16, b0: i16, b1: i16, zeta: FieldElement) -> i16 {
+    (a0 as i64 * b0 as i64 + a1 as i64 * b1 as i64 * zeta as i64).rem_euclid(FIELD_MODULUS as i64)
+        as i16
 }
 
-fn base_case_multiply_odd(
-    a0: i16,
-    a1: i16,
-    b0: i16,
-    b1: i16
-) -> i16 {
+fn base_case_multiply_odd(a0: i16, a1: i16, b0: i16, b1: i16) -> i16 {
     (a0 as i64 * b1 as i64 + a1 as i64 * b0 as i64).rem_euclid(FIELD_MODULUS as i64) as i16
 }
 
@@ -198,38 +212,27 @@ fn base_case_multiply_odd(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub(crate) fn multiply_ntts(
-    p1: &Polynomial,
-    p2: &Polynomial,
-) -> Polynomial {
+pub(crate) fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
     createi(|i| {
-        let zeta_4 = ZETAS[64 + i/4];
-        let zeta = if i % 4 < 2 {zeta_4} else {(FIELD_MODULUS - zeta_4).rem_euclid(FIELD_MODULUS)};
-        if i % 2 == 0 {
-            base_case_multiply_even(
-                p1[i],
-                p1[i + 1],
-                p2[i],
-                p2[i + 1],
-                zeta,
-            )
+        let zeta_4 = ZETAS[64 + i / 4];
+        let zeta = if i % 4 < 2 {
+            zeta_4
         } else {
-            base_case_multiply_odd(
-                p1[i - 1],
-                p1[i],
-                p2[i - 1],
-                p2[i]
-            )
+            (FIELD_MODULUS - zeta_4).rem_euclid(FIELD_MODULUS)
+        };
+        if i % 2 == 0 {
+            base_case_multiply_even(p1[i], p1[i + 1], p2[i], p2[i + 1], zeta)
+        } else {
+            base_case_multiply_odd(p1[i - 1], p1[i], p2[i - 1], p2[i])
         }
     })
-} 
+}
 
-
-pub(crate) fn vector_ntt<const RANK:usize>(vector: Vector<RANK>) -> Vector<RANK> {
+pub(crate) fn vector_ntt<const RANK: usize>(vector: Vector<RANK>) -> Vector<RANK> {
     createi(|i| ntt(vector[i]))
 }
 
-pub(crate) fn vector_inverse_ntt<const RANK:usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
+pub(crate) fn vector_inverse_ntt<const RANK: usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
     createi(|i| ntt_inverse(vector_as_ntt[i]))
 }
 
@@ -357,7 +360,10 @@ mod tests {
         f[0] = 1;
         let ntt_result = ntt(f);
         let ref_result = ref_ntt(&f);
-        assert_eq!(ntt_result, ref_result, "NTT mismatch for constant polynomial 1");
+        assert_eq!(
+            ntt_result, ref_result,
+            "NTT mismatch for constant polynomial 1"
+        );
 
         // Test with f[1] = 1 (the polynomial X)
         let mut f = [0i16; 256];
@@ -370,7 +376,10 @@ mod tests {
         let f: Polynomial = createi(|i| (i as i16 * 7 + 3) % FIELD_MODULUS);
         let ntt_result = ntt(f);
         let ref_result = ref_ntt(&f);
-        assert_eq!(ntt_result, ref_result, "NTT mismatch for complex polynomial");
+        assert_eq!(
+            ntt_result, ref_result,
+            "NTT mismatch for complex polynomial"
+        );
     }
 
     #[test]
@@ -379,12 +388,18 @@ mod tests {
         fhat[0] = 1;
         let inv_result = ntt_inverse(fhat);
         let ref_result = ref_ntt_inverse(&fhat);
-        assert_eq!(inv_result, ref_result, "Inverse NTT mismatch for unit input");
+        assert_eq!(
+            inv_result, ref_result,
+            "Inverse NTT mismatch for unit input"
+        );
 
         let fhat: Polynomial = createi(|i| (i as i16 * 13 + 5) % FIELD_MODULUS);
         let inv_result = ntt_inverse(fhat);
         let ref_result = ref_ntt_inverse(&fhat);
-        assert_eq!(inv_result, ref_result, "Inverse NTT mismatch for complex input");
+        assert_eq!(
+            inv_result, ref_result,
+            "Inverse NTT mismatch for complex input"
+        );
     }
 
     #[test]
@@ -462,7 +477,10 @@ mod tests {
         let product_ntt = multiply_ntts(&f_ntt, &g_ntt);
         let product = ntt_inverse(product_ntt);
 
-        assert_eq!(product, expected, "NTT multiplication should correspond to polynomial multiplication");
+        assert_eq!(
+            product, expected,
+            "NTT multiplication should correspond to polynomial multiplication"
+        );
     }
 
     #[test]
