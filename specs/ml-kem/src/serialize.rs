@@ -48,6 +48,7 @@ pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) ->
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
 #[hax_lib::ensures(|result| *bv == bytes_to_bits::<N,N8>(&result))]
 pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
@@ -62,7 +63,6 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>)
             | ((bv[8 * i + 6] as u8) << 6)
             | ((bv[8 * i + 7] as u8) << 7)
     });
-    hax_lib::fstar!("admit()");
     hax_lib::debug_assert!(*bv == bytes_to_bits::<N, N8>(&result));
     result
 }
@@ -152,6 +152,7 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
 #[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
@@ -168,7 +169,6 @@ pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
         }
         coefficient
     });
-    hax_lib::fstar!("admit()");
     hax_lib::debug_assert!(*input == bitvector_from_bounded_ints(&result, d));
     result
 }

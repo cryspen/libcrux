@@ -76,7 +76,6 @@ pub(crate) fn generate_keypair<
     params: &MlKemParams,
     key_generation_seed: &[u8; 32],
 ) -> Result<([u8; EK_SIZE], [u8; DK_PKE_SIZE]), BadRejectionSamplingRandomnessError> {
-    hax_lib::fstar!("admit()");
     hax_lib::debug_assert!(
         EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
             && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
