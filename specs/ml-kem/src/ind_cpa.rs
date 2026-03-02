@@ -14,7 +14,7 @@ use crate::{
 };
 
 /// Helper to sample a polynomial from CBD with dynamic eta.
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(eta == 2 || eta == 3)]
 fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
     match eta {
@@ -61,7 +61,7 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
 /// dkₚₖₑ ← ByteEncode₁₂(ŝ)
 /// ```
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
     RANK <= 4
     && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
@@ -184,7 +184,7 @@ pub(crate) fn generate_keypair<
 /// return c ← (c₁ ‖ c₂)
 /// ```
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
     RANK <= 4
     && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
@@ -312,7 +312,7 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
 /// return m
 /// ```
 #[allow(non_snake_case)]
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
     RANK <= 4
     && dk.len() == RANK * BYTES_PER_RING_ELEMENT

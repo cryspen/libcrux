@@ -42,7 +42,7 @@ pub struct BadRejectionSamplingRandomnessError;
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::requires(
-    N <= MAX_BYTES / 12
+    N <= MAX_BYTES / 96
     && N8 == N * 8
     && N12 == N * 12
     && N96 == N12 * 8
@@ -126,7 +126,7 @@ fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(eta <= 4 && ETA64 == eta * 64 && ETA512 == eta * 512)]
 pub fn sample_poly_cbd<const ETA64: usize, const ETA512: usize>(
     eta: usize,

@@ -50,7 +50,6 @@ fn bit_rev_7(x: usize) -> usize {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-
 const ZETAS: [i16; 128] = [
     1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746, 296,
     2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821, 289, 331,
@@ -61,6 +60,13 @@ const ZETAS: [i16; 128] = [
     3220, 375, 2549, 2090, 1645, 1063, 319, 2773, 757, 2099, 561, 2466, 2594, 2804, 1092, 403,
     1026, 1143, 2150, 2775, 886, 1722, 1212, 1874, 1029, 2110, 2935, 885, 2154,
 ];
+
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(i < 128)]
+#[hax_lib::ensures(|result| result >= 0 && result < FIELD_MODULUS)]
+fn get_zeta(i: usize) -> FieldElement {
+    ZETAS[i]
+}
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(layer >= 1 && layer <= 7)]
@@ -76,12 +82,12 @@ fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial {
         hax_lib::fstar!("assert (v round + v k < 256 / (v len))");
         hax_lib::fstar!("assert (v len >= 2)");
         let idx = i % (2 * len);
-        hax_lib::fstar!("assert(v (cast (v_ZETAS.[ round +! k <: usize ] <: i16) <: i32) == v (v_ZETAS.[ round +! k <: usize ] <: i16))");
+        hax_lib::fstar!("assert(v (cast (get_zeta (round +! k <: usize) <: i16) <: i32) == v (get_zeta ( round +! k <: usize ) <: i16))");
         if idx < len {
-            ((p[i] as i32 + ZETAS[round + k] as i32 * p[i + len] as i32)
+            ((p[i] as i32 + get_zeta(round + k) as i32 * p[i + len] as i32)
                 .rem_euclid(FIELD_MODULUS as i32)) as i16
         } else {
-            ((p[i - len] as i32 - ZETAS[round + k] as i32 * p[i] as i32)
+            ((p[i - len] as i32 - get_zeta(round + k) as i32 * p[i] as i32)
                 .rem_euclid(FIELD_MODULUS as i32)) as i16
         }
     })
@@ -145,7 +151,7 @@ fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
         if idx < len {
             ((p[i] as i32 + p[i + len] as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
         } else {
-            (ZETAS[k - round] as i32 * (p[i] as i32 - p[i - len] as i32))
+            (get_zeta(k - round) as i32 * (p[i] as i32 - p[i - len] as i32))
                 .rem_euclid(FIELD_MODULUS as i32) as i16
         }
     })
@@ -214,7 +220,7 @@ fn base_case_multiply_odd(a0: i16, a1: i16, b0: i16, b1: i16) -> i16 {
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub(crate) fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
     createi(|i| {
-        let zeta_4 = ZETAS[64 + i / 4];
+        let zeta_4 = get_zeta(64 + i / 4);
         let zeta = if i % 4 < 2 {
             zeta_4
         } else {
@@ -272,7 +278,7 @@ mod tests {
         while len >= 2 {
             let mut start = 0;
             while start < 256 {
-                let zeta = ZETAS[k];
+                let zeta = get_zeta(k);
                 k += 1;
                 for j in start..(start + len) {
                     let t = (zeta as i32 * fhat[j + len] as i32).rem_euclid(Q);
@@ -294,7 +300,7 @@ mod tests {
         while len <= 128 {
             let mut start = 0;
             while start < 256 {
-                let zeta = ZETAS[k];
+                let zeta = get_zeta(k);
                 k -= 1;
                 for j in start..(start + len) {
                     let t = f[j];
@@ -340,9 +346,9 @@ mod tests {
         for i in 0..128 {
             let expected = mod_pow(ZETA as i32, bit_rev_7(i) as u32, Q);
             assert_eq!(
-                ZETAS[i] as i32, expected,
-                "ZETAS[{}] = {} but expected 17^BitRev7({}) = {}",
-                i, ZETAS[i], i, expected
+                get_zeta(i) as i32, expected,
+                "get_zeta({}] = {} but expected 17^BitRev7({}) = {}",
+                i, get_zeta(i), i, expected
             );
         }
     }

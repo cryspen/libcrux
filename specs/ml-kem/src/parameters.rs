@@ -1,5 +1,3 @@
-//use hacspec_lib::{field::PrimeFieldElement, ring::PolynomialRingElement, vector::Vector};
-
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: i16 = 3329;
 
@@ -24,11 +22,17 @@ pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 pub(crate) use hash_functions::H_DIGEST_SIZE;
 
 /// ML-KEM parameter set
+#[hax_lib::attributes]
 pub struct MlKemParams {
+    #[hax_lib::refine(rank <= 4)]
     pub rank: usize,
+    #[hax_lib::refine(eta1 <= 2 || eta1 == 3)]
     pub eta1: usize,
+    #[hax_lib::refine(eta2 == 2)]
     pub eta2: usize,
+    #[hax_lib::refine(du == 10 || du == 11)]
     pub du: usize,
+    #[hax_lib::refine(dv == 4 || dv == 5)]
     pub dv: usize,
 }
 
@@ -100,27 +104,32 @@ pub const ML_KEM_1024_CT_SIZE: usize = 1568; // 4*352 + 160
 pub const ML_KEM_1024_J_INPUT_SIZE: usize = 1600; // 32 + 1568
 
 #[allow(non_snake_case)]
-#[hax_lib::opaque]
 pub(crate) mod hash_functions {
     use libcrux::digest::{self, digest_size, Algorithm};
 
+    #[hax_lib::opaque]
     pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
         digest::sha3_512(input)
     }
 
     pub(crate) const H_DIGEST_SIZE: usize = 32;
+
+    #[hax_lib::opaque]
     pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         libcrux::digest::sha3_256(input)
     }
 
+    #[hax_lib::opaque]
     pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         digest::shake256::<LEN>(input)
     }
 
+    #[hax_lib::opaque]
     pub(crate) fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         digest::shake128::<LEN>(input)
     }
 
+    #[hax_lib::opaque]
     pub(crate) fn J<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         digest::shake256::<LEN>(input)
     }
@@ -144,9 +153,16 @@ pub(crate) type Vector<const RANK: usize> = [Polynomial; RANK];
 pub(crate) type Matrix<const RANK: usize> = [Vector<RANK>; RANK];
 
 /// Utility function to create an array of size `N` by applying a function `f` to each index.
-pub(crate) fn createi<const N: usize, T, F: Fn(usize) -> T>(f: F) -> [T; N] {
+#[hax_lib::fstar::replace(r#"
+    assume val createi
+      (#v_T: Type0)
+      (v_N: usize)
+      (#v_F: Type0)
+      (f: (x:usize{x <. v_N}) -> v_T)
+    : t_Array v_T v_N
+"#)]
+pub(crate) fn createi<T, const N: usize, F: Fn(usize) -> T>(f: F) -> [T; N] {
     core::array::from_fn(f)
 }
 
-#[hax_lib::opaque_type]
 pub(crate) type BitVector<const N: usize> = [bool; N];

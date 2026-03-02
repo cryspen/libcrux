@@ -21,7 +21,7 @@ pub(crate) const MAX_BYTES: usize = 16384;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
 pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) -> BitVector<N8> {
     hax_lib::debug_assert!(N8 == N * 8);
@@ -47,7 +47,7 @@ pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) ->
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
 #[hax_lib::ensures(|result| *bv == bytes_to_bits::<N,N8>(&result))]
 pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
@@ -105,7 +105,7 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>)
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
 pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
     input: &[i16; N],
@@ -115,7 +115,7 @@ pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
     createi(|i| (input[i / d] >> (i % d)) & 1 == 1)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d)]
 pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize) -> [u8; D32] {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d);
@@ -151,7 +151,7 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
 #[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
@@ -173,8 +173,8 @@ pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     result
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
-#[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N * d < 16384 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N < 16384 / d && N < 16384 / 8 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
 pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, const Nd8: usize>(
     b: &[u8; Nd],
     d: usize,
@@ -182,12 +182,12 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8
     );
-    let bv: [bool; Nd8] = bytes_to_bits(&b);
+    let bv: [bool; Nd8] = bytes_to_bits::<Nd, Nd8>(&b);
     bitvector_to_bounded_ints(&bv, d)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
-#[hax_lib::requires(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d
@@ -196,7 +196,7 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
     createi(|i| decoded[i] % FIELD_MODULUS as i16)
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
 pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
     vector: &Vector<RANK>,
@@ -210,7 +210,7 @@ pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && encoded.len() == RANK * BYTES_PER_RING_ELEMENT)]
 pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
     hax_lib::debug_assert!(encoded.len() == RANK * BYTES_PER_RING_ELEMENT);
@@ -221,7 +221,7 @@ pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK
     })
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && out.len() == 32 * d)]
 pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && out.len() == 32 * d);
@@ -236,7 +236,7 @@ pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
     }
 }
 
-#[hax_lib::fstar::options("--z3rlimit 1500")]
+#[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && b.len() == 32 * d)]
 pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d);
