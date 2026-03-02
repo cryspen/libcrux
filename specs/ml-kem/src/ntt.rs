@@ -157,6 +157,11 @@ fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
     })
 }
 
+pub(crate) fn reduce_polynomial(p: Polynomial) -> Polynomial {
+    createi(|i| (p[i] as i32 * INVERSE_OF_128 as i32).rem_euclid(FIELD_MODULUS as i32) as i16)
+}
+
+#[hax_lib::fstar::options("--z3rlimit 150")]
 pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
     let p = ntt_inverse_layer(p, 1);
     let p = ntt_inverse_layer(p, 2);
@@ -165,7 +170,7 @@ pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
     let p = ntt_inverse_layer(p, 5);
     let p = ntt_inverse_layer(p, 6);
     let p = ntt_inverse_layer(p, 7);
-    createi(|i| (p[i] as i32 * INVERSE_OF_128 as i32).rem_euclid(FIELD_MODULUS as i32) as i16)
+    reduce_polynomial(p)
 }
 
 /// Compute the product of two `KyberBinomial`s with respect to the
@@ -186,6 +191,7 @@ pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[hax_lib::fstar::options("--z3rlimit 150")]
 fn base_case_multiply_even(a0: i16, a1: i16, b0: i16, b1: i16, zeta: FieldElement) -> i16 {
     (a0 as i64 * b0 as i64 + a1 as i64 * b1 as i64 * zeta as i64).rem_euclid(FIELD_MODULUS as i64)
         as i16

@@ -154,7 +154,8 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
-#[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
+#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < N, result[i] >= 0)).and(
+                                *input == bitvector_from_bounded_ints(&result, d)))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
     d: usize,
@@ -175,6 +176,7 @@ pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N < 16384 / d && N < 16384 / 8 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < N, result[i] >= 0)))]
 pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, const Nd8: usize>(
     b: &[u8; Nd],
     d: usize,
@@ -188,6 +190,7 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < 256, result[i] >= 0)))]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d

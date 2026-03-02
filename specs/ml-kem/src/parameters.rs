@@ -140,9 +140,6 @@ pub(crate) mod hash_functions {
 /// - it is represented as an i16, and may not yet be reduced modulo FIELD_MODULUS
 pub(crate) type FieldElement = i16;
 
-/// A collection of 16 ML-KEM field elements.
-pub(crate) type FieldElementVector = [FieldElement; 16];
-
 /// An ML-KEM polynomial ring element
 pub(crate) type Polynomial = [FieldElement; 256];
 
@@ -154,12 +151,21 @@ pub(crate) type Matrix<const RANK: usize> = [Vector<RANK>; RANK];
 
 /// Utility function to create an array of size `N` by applying a function `f` to each index.
 #[hax_lib::fstar::replace(r#"
-    assume val createi
+assume val createi
       (#v_T: Type0)
       (v_N: usize)
       (#v_F: Type0)
       (f: (x:usize{x <. v_N}) -> v_T)
     : t_Array v_T v_N
+
+assume val createi_lemma 
+      (#v_T: Type0)
+      (v_N: usize)
+      (#v_F: Type0)
+      (f: (x:usize{x <. v_N}) -> v_T)
+      (i: usize{i <. v_N})
+     : Lemma (Seq.index (createi #v_T v_N #v_F f) (v i) == f i)
+       [SMTPat (Seq.index (createi #v_T v_N #v_F f) (v i))]
 "#)]
 pub(crate) fn createi<T, const N: usize, F: Fn(usize) -> T>(f: F) -> [T; N] {
     core::array::from_fn(f)

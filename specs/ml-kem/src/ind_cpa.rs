@@ -30,6 +30,14 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
     }
 }
 
+#[hax_lib::requires(N1 > 0 && N == N1 - 1)]
+fn concat_byte<const N: usize, const N1:usize>(a: &[u8; N], b: u8) -> [u8; N1] {
+    let mut result = [0u8; N1];
+    result[..N].copy_from_slice(a);
+    result[N] = b;
+    result
+}
+
 /// Algorithm 13: K-PKE.KeyGen
 ///
 /// Generates an encryption key and a corresponding decryption key.
@@ -63,7 +71,7 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
 #[allow(non_snake_case)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
-    RANK <= 4
+    RANK <= 4 && params.rank == RANK
     && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
     && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
     && (params.eta1 == 2 || params.eta1 == 3)
@@ -87,8 +95,6 @@ pub(crate) fn generate_keypair<
     let hashed = G(&g_input);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let mut domain_separator: u8 = 0;
-
     // Â[i,j] ← SampleNTT(XOF(ρ, i, j))
     let mut A_as_ntt: Matrix<RANK> = [[[0i16; 256]; RANK]; RANK];
 
@@ -106,22 +112,18 @@ pub(crate) fn generate_keypair<
 
     // s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
     let mut secret: Vector<RANK> = [[0i16; 256]; RANK];
-    let mut prf_input = [0u8; 33];
-    prf_input[..32].copy_from_slice(seed_for_secret_and_error);
 
-    for i in 0..RANK {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-        secret[i] = sample_secret(params.eta1, &prf_input);
-    }
+    let secret = createi(|i| {
+        let prf_input= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(), i as u8);
+        sample_secret(params.eta1, &prf_input)
+    });
 
     // e[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
-    let mut error: Vector<RANK> = [[0i16; 256]; RANK];
-    for i in 0..RANK {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-        error[i] = sample_secret(params.eta1, &prf_input);
-    }
+    let error = createi(|i| {
+        let prf_input : [u8; 33]= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(), 
+                                              (RANK + i) as u8);
+        sample_secret(params.eta1, &prf_input)
+    });
 
     // ŝ ← NTT(s)
     let secret_as_ntt = vector_ntt(secret);
@@ -185,7 +187,7 @@ pub(crate) fn generate_keypair<
 #[allow(non_snake_case)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
-    RANK <= 4
+    RANK <= 4 && params.rank == RANK
     && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
     && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
     && (params.eta1 == 2 || params.eta1 == 3)
@@ -197,7 +199,6 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     message: &[u8; 32],
     randomness: &[u8; 32],
 ) -> Result<[u8; CT_SIZE], BadRejectionSamplingRandomnessError> {
-    hax_lib::fstar!("admit()");
     hax_lib::debug_assert!(
         CT_SIZE
             == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du
@@ -205,7 +206,6 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
                 / 8
             && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
     );
-    let mut domain_separator: u8 = 0;
 
     let t_encoded_size = params.t_as_ntt_encoded_size();
 
@@ -216,40 +216,42 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     let seed_for_A = &ek[t_encoded_size..];
 
     // Â[i,j] ← SampleNTT(XOF(ρ, j, i))
-    let mut A_as_ntt: Matrix<RANK> = [[[0i16; 256]; RANK]; RANK];
+    let mut A_as_ntt = [[[0; 256]; RANK]; RANK];
     let mut xof_input = [0u8; 34];
     xof_input[..32].copy_from_slice(seed_for_A);
 
     for i in 0..RANK {
         for j in 0..RANK {
-            xof_input[32] = i as u8;
-            xof_input[33] = j as u8;
+            xof_input[32] = j as u8;
+            xof_input[33] = i as u8;
             let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
-            A_as_ntt[i][j] = sample_ntt::<70, 560, 840, 6720>(xof_bytes)?;
+            A_as_ntt[j][i] = sample_ntt::<70, 560, 840, 6720>(xof_bytes)?;
         }
     }
+    // let A_as_ntt = createi(|i:usize| createi (|j:usize| {
+    //      xof_input[32] = i as u8;
+    //      xof_input[33] = j as u8;
+    //      let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
+    //      sample_ntt::<70, 560, 840, 6720>(xof_bytes)?
+    // }));
+    
 
     // r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
-    let mut r: Vector<RANK> = [[0i16; 256]; RANK];
-    let mut prf_input = [0u8; 33];
-    prf_input[..32].copy_from_slice(randomness);
-
-    for i in 0..RANK {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-        r[i] = sample_secret(params.eta1, &prf_input);
-    }
+    let r = createi(|i| {
+        let prf_input : [u8; 33]= concat_byte(randomness.try_into().unwrap(), i as u8);
+        sample_secret(params.eta1, &prf_input)
+    });
 
     // e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-    let mut error_1: Vector<RANK> = [[0i16; 256]; RANK];
-    for i in 0..RANK {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-        error_1[i] = sample_secret(params.eta2, &prf_input);
-    }
+    let error_1 = createi(|i| {
+        let prf_input : [u8; 33]= concat_byte(randomness.try_into().unwrap(), (RANK + i) as u8);
+        sample_secret(params.eta2, &prf_input)
+    });
 
     // e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
-    prf_input[32] = domain_separator;
+    let mut prf_input = [0u8; 33];
+    prf_input[..32].copy_from_slice(randomness);
+    prf_input[32] = (RANK * 2) as u8;
     let error_2 = sample_secret(params.eta2, &prf_input);
 
     // r̂ ← NTT(r)
@@ -313,7 +315,7 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
 #[allow(non_snake_case)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
-    RANK <= 4
+    RANK <= 4 && params.rank == RANK
     && dk.len() == RANK * BYTES_PER_RING_ELEMENT
     && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
 )]
