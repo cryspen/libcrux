@@ -1,7 +1,6 @@
 name: Traits - Build
 
 on:
-  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
@@ -17,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +95,7 @@ jobs:
 
       - name: Add no_std target
         run: rustup target add thumbv6m-none-eabi
-        
+
       - name: Update dependencies
         run: cargo update
 
@@ -105,15 +103,3 @@ jobs:
         run: |
           rustc --print=cfg
           cargo check --lib --verbose --target thumbv6m-none-eabi
-
-  traits-build-status:
-    if: ${{ always() }}
-    needs: [build, build-no_std]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 

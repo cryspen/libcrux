@@ -1,7 +1,6 @@
 name: ML-KEM - Build & Test
 
 on:
-  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
@@ -17,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -164,8 +162,6 @@ jobs:
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   build-intel-macos:
-    if: ${{ github.event_name != 'merge_group' }}
-
     runs-on: macos-15-intel
     defaults:
       run:
@@ -182,18 +178,6 @@ jobs:
         run: |
           rustc --print=cfg
           cargo build --verbose
-
-  mlkem-build-test-status:
-    if: ${{ always() }}
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1
 
   fuzz:
     if: ${{ github.event_name != 'pull_request' }}
@@ -229,14 +213,3 @@ jobs:
 
       - name: 🏃🏻‍♀️ KeyGen
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run keygen -- -runs=1000000
-  mlkem-fuzz-status:
-    if: ${{ always() }}
-    needs: [fuzz]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1

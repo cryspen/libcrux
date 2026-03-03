@@ -1,7 +1,10 @@
 name: ML-KEM - Build & Test C
 
 on:
-  merge_group:
+  schedule:
+    - cron: "0 1 * * *"
+  push:
+    branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
@@ -17,7 +20,7 @@ concurrency:
 
 jobs:
   setup:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.body, '[c-extraction]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -33,26 +36,6 @@ jobs:
       # only run if files in `.docker/c/` unchanged
       should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
       image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
-
-  mlkem-c-tests-status:
-    if: ${{ always() }}
-    needs:
-      - setup
-      - extract-c
-      - extract-c-header-only
-      - extract-cpp-header-only
-      - diff
-      - build-c
-      - build-c-header-only
-      - build-cpp-header-only
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1
 
   extract-c:
     needs: [setup]
@@ -131,7 +114,6 @@ jobs:
           path: libcrux-ml-kem/extracts/cpp_header_only/generated
           include-hidden-files: true
           if-no-files-found: error
-
 
   diff:
     needs: [extract-c-header-only, extract-cpp-header-only]

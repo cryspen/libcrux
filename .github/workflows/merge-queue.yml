@@ -1,0 +1,51 @@
+name: Merge Queue
+
+# This is the single workflow that gates the merge queue.
+# It runs fast checks only. All other CI runs on PRs and post-merge push.
+#
+# IMPORTANT: Configure branch protection to require only `merge-queue-status`
+# from this workflow for the merge queue.
+
+on:
+  merge_group:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check compilation
+        run: cargo check --workspace
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Clippy
+        run: cargo clippy --workspace
+
+  merge-queue-status:
+    if: ${{ always() }}
+    needs: [fmt, check, clippy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1

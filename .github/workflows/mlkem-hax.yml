@@ -1,7 +1,6 @@
 name: ML-KEM - hax
 
 on:
-  merge_group:
   push:
     branches: ["dev", "main"]
 
@@ -56,7 +55,6 @@ jobs:
 
   lax:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'merge_group' }}
     needs:
       - get-hax-ref
       - extract
@@ -103,27 +101,3 @@ jobs:
       - name: 🏃 Prove ML-KEM crate
         working-directory: libcrux-ml-kem
         run: FSTAR_HOME=~/.nix-profile ./hax.py prove
-  
-  mlkem-extract-hax-status:
-    if: ${{ always() }}
-    needs: [get-hax-ref, extract]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
-  
-  mlkem-lax-hax-status:
-    if: ${{ always() }}
-    needs: [get-hax-ref, lax]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 

@@ -1,7 +1,6 @@
 name: Platform - Build & Test
 
 on:
-  merge_group:
   push:
     branches: ["main", "dev"]
   pull_request:
@@ -17,7 +16,6 @@ concurrency:
 
 jobs:
   platform:
-    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -89,7 +87,7 @@ jobs:
 
       - name: Add no_std target
         run: rustup target add thumbv6m-none-eabi
-        
+
       - name: Update dependencies
         run: cargo update
 
@@ -97,15 +95,3 @@ jobs:
         run: |
           rustc --print=cfg
           cargo check --lib --verbose --target thumbv6m-none-eabi
-          
-  platform-build-test-status:
-    if: ${{ always() }}
-    needs: [platform, build-no_std]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 

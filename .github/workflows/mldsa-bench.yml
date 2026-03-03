@@ -1,9 +1,10 @@
 name: ML-DSA - Benchmark
 
 on:
-  # run benchmarks and fail on regression
-  merge_group:
-  # run on PR but skip
+  # run benchmarks nightly
+  schedule:
+    - cron: "0 0 * * *"
+  # run on PR only when [benchmarks] is in the PR description
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
@@ -20,7 +21,7 @@ concurrency:
 
 jobs:
   benchmark:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.body, '[benchmarks]') }}
     strategy:
       fail-fast: true
       matrix:
@@ -98,15 +99,3 @@ jobs:
           auto-push: true
           fail-on-alert: true
           alert-threshold: 200%
-
-  mldsa-bench-status:
-    if: ${{ always() }}
-    needs: [benchmark]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1

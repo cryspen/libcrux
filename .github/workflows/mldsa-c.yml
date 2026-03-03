@@ -1,7 +1,8 @@
 name: ML-DSA - Build & Test C
 
 on:
-  merge_group:
+  schedule:
+    - cron: "0 1 * * *"
   push:
     branches: ["main", "dev"]
   pull_request:
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   setup:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.body, '[c-extraction]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -35,22 +36,6 @@ jobs:
       # only run if files in `.docker/c/` unchanged
       should-run: ${{ steps.changes.outputs.docker-c == 'false' }}
       image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
-
-  mldsa-c-tests-status:
-    if: ${{ always() }}
-    needs:
-      - setup
-      - extract-header-only
-      - diff-header-only
-      - build-header-only
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }} 
-        run: exit 0 
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }} 
-        run: exit 1 
 
   extract-header-only:
     needs: [setup]
