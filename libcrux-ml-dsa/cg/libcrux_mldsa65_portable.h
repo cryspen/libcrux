@@ -7251,7 +7251,7 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_5a(
   if (uu____1.tag == Ok) {
     if (libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
             Eurydice_array_to_slice_shared_71(&deserialized_signer_response),
-            ((int32_t)2 << (uint32_t)
+            ((int32_t)1 << (uint32_t)
                  LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
                 LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
       uu____2 = (Result_41{
