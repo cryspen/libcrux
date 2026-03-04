@@ -7014,7 +7014,7 @@ libcrux_ml_dsa_encoding_signature_deserialize_37(
         hint_serialized, max_ones_in_hint + i1, uint8_t);
     if (current_true_hints_seen < previous_true_hints_seen) {
       malformed_hint = true;
-    } else if (previous_true_hints_seen > max_ones_in_hint) {
+    } else if (current_true_hints_seen > max_ones_in_hint) {
       malformed_hint = true;
     } else {
       for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
