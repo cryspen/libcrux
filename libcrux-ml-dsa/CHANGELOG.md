@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Fix incorrect norm check of signer response during verification
+- [#1347](https://github.com/cryspen/libcrux/pull/1347): Fix incorrect norm check of signer response during verification
 
 ## [0.0.7] (2026-02-12)
 
