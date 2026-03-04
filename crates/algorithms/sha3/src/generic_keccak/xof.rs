@@ -194,23 +194,25 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
         let out_len = out.len();
 
         if out_len > 0 {
-            if out_len <= RATE {
+            let blocks = out_len / RATE;
+            let last = out_len - (out_len % RATE);
+
+            if blocks == 0 {
                 self.inner.squeeze::<RATE>(out, 0, out_len);
             } else {
-                // How many blocks do we need to squeeze out?
-                let blocks = out_len / RATE;
+                // Extract the first block from the current state (no permutation).
+                self.inner.squeeze::<RATE>(out, 0, RATE);
 
-                for i in 0..blocks {
-                    // Here we know that we always have full blocks to write out.
+                // For each subsequent full block, apply f then extract.
+                for i in 1..blocks {
                     self.inner.keccakf1600();
                     self.inner.squeeze::<RATE>(out, i * RATE, RATE);
                 }
 
-                let remaining = out_len % RATE;
-                if remaining > 0 {
-                    // Squeeze out the last partial block
+                // Squeeze out any remaining partial block.
+                if last < out_len {
                     self.inner.keccakf1600();
-                    self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
+                    self.inner.squeeze::<RATE>(out, last, out_len - last);
                 }
             }
             self.sponge = true;
