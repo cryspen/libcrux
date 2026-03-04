@@ -2,9 +2,50 @@ use crate::parameters::*;
 
 const ZETA: FieldElement = 17;
 
-const INVERSE_OF_128: FieldElement = 3303;
+/// Montgomery constant R = 2^16 mod q.
+/// In the implementation, coefficients are stored in Montgomery form (a * R mod q).
+/// In the spec, we use plain modular arithmetic, so R is conceptually 1.
+/// This constant documents the correspondence.
+#[allow(dead_code)]
+pub(crate) const MONTGOMERY_R: i32 = 1; // Identity in the spec
 
-const NTT_LAYERS: [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
+/// In the implementation, zetas are pre-multiplied by Montgomery R.
+/// In the spec, ZETAS are plain values, so ZETAS_TIMES_MONTGOMERY_R == ZETAS.
+/// This alias documents the correspondence with the implementation's `ZETAS_TIMES_MONTGOMERY_R`.
+#[allow(dead_code)]
+pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = ZETAS;
+
+/// Montgomery domain conversion: identity in the spec.
+///
+/// In the implementation, `to_standard_domain(a)` converts from Montgomery form
+/// by computing `a * MONTGOMERY_R_INV mod q`. Since the spec uses plain arithmetic
+/// (effectively MONTGOMERY_R = 1), this is an identity operation.
+///
+/// Documenting this correspondence enables function-by-function verification by
+/// showing that the implementation's Montgomery conversions compose to identity.
+#[allow(dead_code)]
+pub(crate) fn to_standard_domain(a: FieldElement) -> FieldElement {
+    a
+}
+
+/// Montgomery multiplication: identity wrapper in the spec.
+///
+/// In the implementation, `montgomery_multiply_by_constant(a, c)` computes
+/// `a * c * R^{-1} mod q`. In the spec, this simplifies to `a * c mod q` since R = 1.
+#[allow(dead_code)]
+pub(crate) fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) -> FieldElement {
+    ((a as i32 * c as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
+}
+
+/// Convert a field element to its unsigned representative in [0, q).
+/// Corresponds to `to_unsigned_field_modulus` / `Vector::to_unsigned_representative`
+/// in the implementation.
+///
+/// In the spec, field elements are already non-negative after reduction, so this
+/// is a plain modular reduction.
+pub(crate) fn to_unsigned_field_modulus(a: FieldElement) -> FieldElement {
+    (a as i32).rem_euclid(FIELD_MODULUS as i32) as i16
+}
 
 fn bit_rev_7(x: usize) -> usize {
     let mut result = 0;
@@ -64,7 +105,7 @@ const ZETAS: [i16; 128] = [
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
 #[hax_lib::ensures(|result| result >= 0 && result < FIELD_MODULUS)]
-fn get_zeta(i: usize) -> FieldElement {
+pub(crate) fn get_zeta(i: usize) -> FieldElement {
     ZETAS[i]
 }
 
@@ -104,74 +145,6 @@ fn ntt(p: Polynomial) -> Polynomial {
     p
 }
 
-/// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
-/// of a `Polynomial`.
-///
-/// This function implements <strong>Algorithm 9</strong> of the NIST FIPS 203 standard, which
-/// is reproduced below:
-///
-/// ```plaintext
-/// Input: array fˆ ∈ ℤ₂₅₆.
-/// Output: array f ∈ ℤ₂₅₆.
-///
-/// f ← fˆ
-/// k ← 127
-/// for (len ← 2; len ≤ 128; len ← 2·len)
-///     for (start ← 0; start < 256; start ← start + 2·len)
-///         zeta ← ζ^(BitRev₇(k)) mod q
-///         k ← k − 1
-///         for (j ← start; j < start + len; j++)
-///             t ← f[j]
-///             f[j] ← t + f[j + len]
-///             f[j + len] ← zeta·(f[j+len] − t)
-///         end for
-///     end for
-/// end for
-///
-/// f ← f·3303 mod q
-/// return f
-/// ```
-///
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-///
-#[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(layer >= 1 && layer <= 7)]
-fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
-    hax_lib::debug_assert!(layer <= 7);
-    let len = 1 << layer;
-    hax_lib::fstar!("assert (v len == pow2 (v layer))");
-    let k = (256 / len) - 1;
-    hax_lib::fstar!("assert (v k == 256 / (v len) - 1)");
-    createi(|i| {
-        let round = i / (2 * len);
-        hax_lib::fstar!("assert (v round < 128 / (v len))");
-        hax_lib::fstar!("assert (v len >= 2)");
-        let idx = i % (2 * len);
-        if idx < len {
-            ((p[i] as i32 + p[i + len] as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
-        } else {
-            (get_zeta(k - round) as i32 * (p[i] as i32 - p[i - len] as i32))
-                .rem_euclid(FIELD_MODULUS as i32) as i16
-        }
-    })
-}
-
-pub(crate) fn reduce_polynomial(p: Polynomial) -> Polynomial {
-    createi(|i| (p[i] as i32 * INVERSE_OF_128 as i32).rem_euclid(FIELD_MODULUS as i32) as i16)
-}
-
-#[hax_lib::fstar::options("--z3rlimit 150")]
-pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
-    let p = ntt_inverse_layer(p, 1);
-    let p = ntt_inverse_layer(p, 2);
-    let p = ntt_inverse_layer(p, 3);
-    let p = ntt_inverse_layer(p, 4);
-    let p = ntt_inverse_layer(p, 5);
-    let p = ntt_inverse_layer(p, 6);
-    let p = ntt_inverse_layer(p, 7);
-    reduce_polynomial(p)
-}
 
 /// Compute the product of two `KyberBinomial`s with respect to the
 /// modulus `X² - zeta`.
@@ -244,17 +217,17 @@ pub(crate) fn vector_ntt<const RANK: usize>(vector: Vector<RANK>) -> Vector<RANK
     createi(|i| ntt(vector[i]))
 }
 
-pub(crate) fn vector_inverse_ntt<const RANK: usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
-    createi(|i| ntt_inverse(vector_as_ntt[i]))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     use proptest::prelude::*;
 
-    use crate::{compress::tests::arb_ring_element, parameters::FIELD_MODULUS};
+    use crate::{
+        compress::tests::arb_ring_element,
+        invert_ntt::ntt_inverse,
+        parameters::FIELD_MODULUS,
+    };
 
     const Q: i32 = FIELD_MODULUS as i32;
 
@@ -297,6 +270,8 @@ mod tests {
         }
         fhat
     }
+
+    const INVERSE_OF_128: FieldElement = 3303;
 
     /// Reference inverse NTT implementing FIPS 203 Algorithm 9 directly with loops.
     fn ref_ntt_inverse(fhat: &Polynomial) -> Polynomial {

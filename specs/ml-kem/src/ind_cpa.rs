@@ -1,15 +1,15 @@
 use crate::{
-    compress::{compress, decompress},
     matrix::{
-        add_polynomials, add_vectors, multiply_matrix_by_column, multiply_vectors, sub_polynomials,
-        transpose,
+        compute_As_plus_e, compute_message, compute_ring_element_v, compute_vector_u,
+        sample_matrix_A,
     },
-    ntt::{ntt_inverse, vector_inverse_ntt, vector_ntt},
+    ntt::vector_ntt,
     parameters::{hash_functions::*, *},
-    sampling::{sample_ntt, sample_poly_cbd, BadRejectionSamplingRandomnessError},
+    sampling::{sample_poly_cbd, BadRejectionSamplingRandomnessError},
     serialize::{
-        byte_decode, byte_decode_dyn, byte_encode, byte_encode_into, vector_decode_12,
-        vector_encode_12,
+        compress_then_serialize_message, compress_then_serialize_u, compress_then_serialize_v,
+        deserialize_ring_elements_reduced, deserialize_then_decompress_message,
+        deserialize_then_decompress_u, deserialize_then_decompress_v, serialize_secret_key,
     },
 };
 
@@ -96,23 +96,9 @@ pub(crate) fn generate_keypair<
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     // Â[i,j] ← SampleNTT(XOF(ρ, i, j))
-    let mut A_as_ntt: Matrix<RANK> = [[[0i16; 256]; RANK]; RANK];
-
-    let mut xof_input = [0u8; 34];
-    xof_input[..32].copy_from_slice(seed_for_A);
-
-    for i in 0..RANK {
-        for j in 0..RANK {
-            xof_input[32] = i as u8;
-            xof_input[33] = j as u8;
-            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
-            A_as_ntt[i][j] = sample_ntt::<70, 560, 840, 6720>(xof_bytes)?;
-        }
-    }
+    let A_as_ntt: Matrix<RANK> = sample_matrix_A(seed_for_A, false)?;
 
     // s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
-    let mut secret: Vector<RANK> = [[0i16; 256]; RANK];
-
     let secret = createi(|i| {
         let prf_input= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(), i as u8);
         sample_secret(params.eta1, &prf_input)
@@ -120,7 +106,7 @@ pub(crate) fn generate_keypair<
 
     // e[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
     let error = createi(|i| {
-        let prf_input : [u8; 33]= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(), 
+        let prf_input : [u8; 33]= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(),
                                               (RANK + i) as u8);
         sample_secret(params.eta1, &prf_input)
     });
@@ -131,20 +117,17 @@ pub(crate) fn generate_keypair<
     // ê ← NTT(e)
     let error_as_ntt = vector_ntt(error);
 
-    // t̂ ← Â◦ŝ + ê
-    let t_as_ntt = add_vectors(
-        &multiply_matrix_by_column(&A_as_ntt, &secret_as_ntt),
-        &error_as_ntt,
-    );
+    // t̂ ← Â◦ŝ + ê  (uses compute_As_plus_e matching the implementation)
+    let t_as_ntt = compute_As_plus_e(&A_as_ntt, &secret_as_ntt, &error_as_ntt);
 
     // ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
-    let t_encoded: [u8; DK_PKE_SIZE] = vector_encode_12::<RANK, DK_PKE_SIZE>(&t_as_ntt);
+    let t_encoded: [u8; DK_PKE_SIZE] = serialize_secret_key::<RANK, DK_PKE_SIZE>(&t_as_ntt);
     let mut ek = [0u8; EK_SIZE];
     ek[..DK_PKE_SIZE].copy_from_slice(&t_encoded);
     ek[DK_PKE_SIZE..].copy_from_slice(seed_for_A);
 
     // dkₚₖₑ ← ByteEncode₁₂(ŝ)
-    let dk: [u8; DK_PKE_SIZE] = vector_encode_12::<RANK, DK_PKE_SIZE>(&secret_as_ntt);
+    let dk: [u8; DK_PKE_SIZE] = serialize_secret_key::<RANK, DK_PKE_SIZE>(&secret_as_ntt);
 
     Ok((ek, dk))
 }
@@ -210,31 +193,15 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     let t_encoded_size = params.t_as_ntt_encoded_size();
 
     // t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
-    let t_as_ntt: Vector<RANK> = vector_decode_12::<RANK>(&ek[..t_encoded_size]);
+    let t_as_ntt: Vector<RANK> = deserialize_ring_elements_reduced::<RANK>(&ek[..t_encoded_size]);
 
     // ρ ← ekₚₖₑ[384k: 384k + 32]
     let seed_for_A = &ek[t_encoded_size..];
 
     // Â[i,j] ← SampleNTT(XOF(ρ, j, i))
-    let mut A_as_ntt = [[[0; 256]; RANK]; RANK];
-    let mut xof_input = [0u8; 34];
-    xof_input[..32].copy_from_slice(seed_for_A);
-
-    for i in 0..RANK {
-        for j in 0..RANK {
-            xof_input[32] = j as u8;
-            xof_input[33] = i as u8;
-            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
-            A_as_ntt[j][i] = sample_ntt::<70, 560, 840, 6720>(xof_bytes)?;
-        }
-    }
-    // let A_as_ntt = createi(|i:usize| createi (|j:usize| {
-    //      xof_input[32] = i as u8;
-    //      xof_input[33] = j as u8;
-    //      let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
-    //      sample_ntt::<70, 560, 840, 6720>(xof_bytes)?
-    // }));
-    
+    // Note: We sample with transpose=true so A_as_ntt already represents Âᵀ
+    // when accessed as A_as_ntt[i][j].
+    let A_as_ntt: Matrix<RANK> = sample_matrix_A(seed_for_A, false)?;
 
     // r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
     let r = createi(|i| {
@@ -257,39 +224,25 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     // r̂ ← NTT(r)
     let r_as_ntt = vector_ntt(r);
 
-    // u ← NTT⁻¹(Âᵀ ◦ r̂) + e₁
-    let A_transpose = transpose(&A_as_ntt);
-    let u = add_vectors(
-        &vector_inverse_ntt(multiply_matrix_by_column(&A_transpose, &r_as_ntt)),
-        &error_1,
-    );
+    // u ← NTT⁻¹(Âᵀ ◦ r̂) + e₁  (uses compute_vector_u matching the implementation)
+    let u = compute_vector_u(&A_as_ntt, &r_as_ntt, &error_1);
 
     // μ ← Decompress₁(ByteDecode₁(m))
-    let message_as_ring_element = decompress(byte_decode::<32, 256>(message, 1), 1);
+    let message_as_ring_element = deserialize_then_decompress_message(message);
 
-    // v ← NTT⁻¹(t̂ᵀ ◦ r̂) + e₂ + μ
-    let v = add_polynomials(
-        &add_polynomials(
-            &ntt_inverse(multiply_vectors(&t_as_ntt, &r_as_ntt)),
-            &error_2,
-        ),
-        &message_as_ring_element,
-    );
+    // v ← NTT⁻¹(t̂ᵀ ◦ r̂) + e₂ + μ  (uses compute_ring_element_v matching the implementation)
+    let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     // c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
-    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8;
-    let mut c = [0u8; CT_SIZE];
-    for i in 0..RANK {
-        byte_encode_into(
-            compress(u[i], params.du),
-            params.du,
-            &mut c[i * du_poly_size..(i + 1) * du_poly_size],
-        );
-    }
+    let c1 = compress_then_serialize_u::<RANK>(&u, params.du);
 
     // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
-    let u_encoded_size = RANK * du_poly_size;
-    byte_encode_into(compress(v, params.dv), params.dv, &mut c[u_encoded_size..]);
+    let c2 = compress_then_serialize_v(&v, params.dv);
+
+    // c ← (c₁ ‖ c₂)
+    let mut c = [0u8; CT_SIZE];
+    c[..c1.len()].copy_from_slice(&c1);
+    c[c1.len()..].copy_from_slice(&c2);
 
     Ok(c)
 }
@@ -333,35 +286,22 @@ pub(crate) fn decrypt<const RANK: usize>(
                     / 8
     );
     let u_encoded_size = params.u_encoded_size();
-    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8;
 
     // u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-    let u: Vector<RANK> = createi(|i| {
-        let start = i * du_poly_size;
-        decompress(
-            byte_decode_dyn(&ciphertext[start..start + du_poly_size], params.du),
-            params.du,
-        )
-    });
+    let u: Vector<RANK> = deserialize_then_decompress_u::<RANK>(ciphertext, params.du);
 
     // v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
-    let v = decompress(
-        byte_decode_dyn(&ciphertext[u_encoded_size..], params.dv),
-        params.dv,
-    );
+    let v = deserialize_then_decompress_v(&ciphertext[u_encoded_size..], params.dv);
 
     // ŝ ← ByteDecode₁₂(dkₚₖₑ)
-    let secret_as_ntt: Vector<RANK> = vector_decode_12::<RANK>(dk);
+    let secret_as_ntt: Vector<RANK> = deserialize_ring_elements_reduced::<RANK>(dk);
 
-    // w ← v - NTT⁻¹(ŝᵀ ◦ NTT(u))
+    // w ← v - NTT⁻¹(ŝᵀ ◦ NTT(u))  (uses compute_message matching the implementation)
     let u_as_ntt = vector_ntt(u);
-    let w = sub_polynomials(
-        &v,
-        &ntt_inverse(multiply_vectors(&secret_as_ntt, &u_as_ntt)),
-    );
+    let w = compute_message(&v, &secret_as_ntt, &u_as_ntt);
 
     // m ← ByteEncode₁(Compress₁(w))
-    byte_encode::<32, 256>(compress(w, 1), 1)
+    compress_then_serialize_message(w)
 }
 
 #[cfg(test)]

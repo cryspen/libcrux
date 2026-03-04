@@ -1,3 +1,4 @@
+use crate::compress::{compress, decompress};
 use crate::parameters::*;
 
 pub(crate) const MAX_BYTES: usize = 16384;
@@ -252,6 +253,133 @@ pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
         12 => byte_decode::<384, 3072>(b.try_into().unwrap(), 12),
         _ => panic!("unsupported d={}", d),
     }
+}
+
+// ── Fused compress+serialize / deserialize+decompress functions ──
+// These match the implementation's decomposition in serialize.rs,
+// composing existing spec operations.
+
+/// Compress a polynomial to 1 bit per coefficient, then serialize to bytes.
+/// Corresponds to `compress_then_serialize_message` in the implementation.
+///
+/// Used for encoding/decoding the message in K-PKE.
+pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
+    byte_encode::<32, 256>(compress(re, 1), 1)
+}
+
+/// Deserialize bytes to a polynomial, then decompress from 1 bit per coefficient.
+/// Corresponds to `deserialize_then_decompress_message` in the implementation.
+pub(crate) fn deserialize_then_decompress_message(serialized: &[u8; 32]) -> Polynomial {
+    decompress(byte_decode::<32, 256>(serialized, 1), 1)
+}
+
+/// Serialize a polynomial with 12-bit coefficients (no compression).
+/// Corresponds to `serialize_uncompressed_ring_element` in the implementation.
+pub(crate) fn serialize_uncompressed_ring_element(re: &Polynomial) -> [u8; BYTES_PER_RING_ELEMENT] {
+    byte_encode::<{ 32 * 12 }, { 256 * 12 }>(*re, 12)
+}
+
+/// Deserialize bytes to a polynomial with 12-bit coefficients (no decompression).
+/// Corresponds to `deserialize_to_uncompressed_ring_element` in the implementation.
+pub(crate) fn deserialize_to_uncompressed_ring_element(
+    serialized: &[u8; BYTES_PER_RING_ELEMENT],
+) -> Polynomial {
+    byte_decode::<{ 32 * 12 }, { 256 * 12 }>(serialized, 12)
+}
+
+/// Compress each polynomial in u to du bits, then serialize.
+/// Corresponds to `compress_then_serialize_ring_element_u` in the implementation.
+///
+/// Note: The implementation dispatches on the compression factor (10 or 11).
+/// In the spec we use the generic compress + byte_encode path.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11))]
+pub(crate) fn compress_then_serialize_u<const RANK: usize>(
+    u: &Vector<RANK>,
+    du: usize,
+) -> Vec<u8> {
+    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
+    let mut out = vec![0u8; RANK * du_poly_size];
+    for i in 0..RANK {
+        byte_encode_into(compress(u[i], du), du, &mut out[i * du_poly_size..(i + 1) * du_poly_size]);
+    }
+    out
+}
+
+/// Compress v to dv bits, then serialize.
+/// Corresponds to `compress_then_serialize_ring_element_v` in the implementation.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(dv == 4 || dv == 5)]
+pub(crate) fn compress_then_serialize_v(v: &Polynomial, dv: usize) -> Vec<u8> {
+    let dv_size = (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8;
+    let mut out = vec![0u8; dv_size];
+    byte_encode_into(compress(*v, dv), dv, &mut out);
+    out
+}
+
+/// Deserialize and decompress u from ciphertext bytes.
+/// Corresponds to `deserialize_then_decompress_ring_element_u` in the implementation.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11))]
+pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
+    ciphertext: &[u8],
+    du: usize,
+) -> Vector<RANK> {
+    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
+    createi(|i| {
+        let start = i * du_poly_size;
+        decompress(
+            byte_decode_dyn(&ciphertext[start..start + du_poly_size], du),
+            du,
+        )
+    })
+}
+
+/// Deserialize and decompress v from ciphertext bytes.
+/// Corresponds to `deserialize_then_decompress_ring_element_v` in the implementation.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(dv == 4 || dv == 5)]
+pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
+    decompress(byte_decode_dyn(serialized, dv), dv)
+}
+
+/// Deserialize ring elements from a byte slice, reducing mod q.
+/// Corresponds to `deserialize_ring_elements_reduced` in the implementation.
+///
+/// This is equivalent to `vector_decode_12` but named to match the implementation.
+pub(crate) fn deserialize_ring_elements_reduced<const RANK: usize>(
+    encoded: &[u8],
+) -> Vector<RANK> {
+    vector_decode_12::<RANK>(encoded)
+}
+
+/// Serialize a vector of polynomials with 12-bit coefficients.
+/// Corresponds to `serialize_secret_key` / `serialize_vector` in the implementation.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
+pub(crate) fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
+    vector: &Vector<RANK>,
+) -> [u8; T_SIZE] {
+    vector_encode_12::<RANK, T_SIZE>(vector)
+}
+
+/// Serialize a public key: encode the NTT vector t̂ concatenated with the seed ρ.
+/// Corresponds to `serialize_public_key` in the implementation's `ind_cpa.rs`.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(RANK <= 4 && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
+pub(crate) fn serialize_public_key<
+    const RANK: usize,
+    const EK_SIZE: usize,
+    const T_SIZE: usize,
+>(
+    t_as_ntt: &Vector<RANK>,
+    seed_for_A: &[u8],
+) -> [u8; EK_SIZE] {
+    let t_encoded: [u8; T_SIZE] = vector_encode_12::<RANK, T_SIZE>(t_as_ntt);
+    let mut ek = [0u8; EK_SIZE];
+    ek[..T_SIZE].copy_from_slice(&t_encoded);
+    ek[T_SIZE..].copy_from_slice(&seed_for_A[..32]);
+    ek
 }
 
 #[cfg(test)]
