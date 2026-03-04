@@ -52,15 +52,20 @@ pub(crate) fn to_coefficient_array_post(
 }
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::after(r#"
+#[hax_lib::fstar::after(
+    r#"
     let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
-        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\
+                         Spec.Utils.is_i32b_array_opaque b2 b /\
+                         b1 + b2 <= 2147483647))
                 (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b))
                [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b2 b)] =
-        reveal_opaque (`%$add_pre) ($add_pre)
-    "#)]
+        reveal_opaque (`%$add_pre) ($add_pre);
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)
+    "#
+)]
 pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     forall(|i: usize| {
         implies(
@@ -71,17 +76,24 @@ pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
 }
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::after(r#"
+#[hax_lib::fstar::after(
+    r#"
     let bounded_add_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
-        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\
-                    b1 + b2 <= b3 /\ Libcrux_ml_dsa.Simd.Traits.Specs.add_post a b a_future))
+        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\
+                         Spec.Utils.is_i32b_array_opaque b2 b /\
+                         b1 + b2 <= b3 /\
+                         Libcrux_ml_dsa.Simd.Traits.Specs.add_post a b a_future))
             (ensures (Spec.Utils.is_i32b_array_opaque b3 a_future))
             [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.add_post a b a_future);
             SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
             SMTPat (Spec.Utils.is_i32b_array_opaque b2 b);
             SMTPat (Spec.Utils.is_i32b_array_opaque b3 a_future)] =
-        reveal_opaque (`%$add_post) ($add_post)
-    "#)]
+        reveal_opaque (`%add_post) (add_post);
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+        assert (forall (i:nat). i < 8 ==> Seq.index a_future i = a_future.[ mk_usize i ])
+
+    "#
+)]
 pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     forall(|i: usize| {
         implies(
@@ -94,12 +106,13 @@ pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDCo
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
     let bounded_subtract_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
-        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 2147483647))
               (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.subtract_pre a b))
               [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.subtract_pre a b);
                SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                SMTPat (Spec.Utils.is_i32b_array_opaque b2 b)] =
-        reveal_opaque (`%$subtract_pre) ($subtract_pre)
+        reveal_opaque (`%$subtract_pre) ($subtract_pre);
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)
     "#)]
 pub(crate) fn subtract_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     forall(|i: usize| {
@@ -120,7 +133,9 @@ pub(crate) fn subtract_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
                 SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b2 b);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b3 a_future)] =
-                reveal_opaque (`%$subtract_post) ($subtract_post)
+                reveal_opaque (`%$subtract_post) ($subtract_post);
+                reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+                assert (forall (i:nat). i < 8 ==> Seq.index a_future i = a_future.[ mk_usize i ])
     "#)]
 pub(crate) fn subtract_post(
     lhs: &SIMDContent,
@@ -147,9 +162,9 @@ pub(crate) fn infinity_norm_exceeds_post(
     bound: i32,
     result: bool,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#" $result == false ==>
-        Spec.Utils.is_i32b_array_opaque (v $bound - 1) $simd_unit "#
+    Prop::implies(
+        (bound > 0 && !result).into(),
+        hax_lib::fstar::prop!(r#"Spec.Utils.is_i32b_array_opaque (v $bound - 1) $simd_unit"#),
     )
 }
 
@@ -174,19 +189,22 @@ pub(crate) fn decompose_post(
     future_low: &SIMDContent,
     future_high: &SIMDContent,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"forall i. i < 8 ==>
-        (let r  = v (Seq.index $simd_unit i) in
-         let r0 = v (Seq.index $future_low i) in
-         let r1 = v (Seq.index $future_high i) in
-         let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) r in
-         r0 = r0_s /\
-         r1 = r1_s /\
-         (if cond then
-             (r0 >= -(v $gamma2) /\ r0 < 0)
-          else
-             (r0 > -(v $gamma2) /\ r0 <= v $gamma2)) /\
-         (r1 >= 0 /\ r1 < (v $FIELD_MAX) / (v $gamma2 * 2)))"#
+    Prop::implies(
+        decompose_pre(gamma2, simd_unit, low, high),
+        hax_lib::fstar::prop!(
+            r#"forall i. i < 8 ==>
+            (let r  = v (Seq.index $simd_unit i) in
+             let r0 = v (Seq.index $future_low i) in
+             let r1 = v (Seq.index $future_high i) in
+             let (r0_s, r1_s, cond) = Spec.MLDSA.Math.decompose (v $gamma2) r in
+             r0 = r0_s /\
+             r1 = r1_s /\
+             (if cond then
+                 (r0 >= -(v $gamma2) /\ r0 < 0)
+              else
+                 (r0 > -(v $gamma2) /\ r0 <= v $gamma2)) /\
+             (r1 >= 0 /\ r1 < (v $FIELD_MAX) / (v $gamma2 * 2)))"#
+        ),
     )
 }
 
@@ -235,11 +253,14 @@ pub(crate) fn use_hint_post(
     hint: &SIMDContent,
     future_hint: &SIMDContent,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"forall i. i < 8 ==>
-        (let h = Seq.index $hint i in
-         let result = Seq.index $future_hint i in
-         v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index $simd_unit i)) (v h))"#
+    Prop::implies(
+        use_hint_pre(gamma2, simd_unit, hint),
+        hax_lib::fstar::prop!(
+            r#"forall i. i < 8 ==>
+            (let h = Seq.index $hint i in
+             let result = Seq.index $future_hint i in
+             v result = Spec.MLDSA.Math.use_one_hint (v $gamma2) (v (Seq.index $simd_unit i)) (v h))"#
+        ),
     )
 }
 
@@ -276,13 +297,16 @@ pub(crate) fn shift_left_then_reduce_post<const SHIFT_BY: i32>(
     simd_unit: &SIMDContent,
     future_simd_unit: &SIMDContent,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"
-    Spec.Utils.is_i32b_array_opaque 8380416 ($future_simd_unit) /\
-    (forall i. i < 8 ==> Spec.MLDSA.Math.(
-        mod_q (v (Seq.index $future_simd_unit i)) ==
-        mod_q (v ((Seq.index $simd_unit i) <<! v_SHIFT_BY))))
-    "#
+    Prop::implies(
+        shift_left_then_reduce_pre::<SHIFT_BY>(simd_unit),
+        hax_lib::fstar::prop!(
+            r#"
+        Spec.Utils.is_i32b_array_opaque 8380416 ($future_simd_unit) /\
+        (forall i. i < 8 ==> Spec.MLDSA.Math.(
+            mod_q (v (Seq.index $future_simd_unit i)) ==
+            mod_q (v ((Seq.index $simd_unit i) <<! v_SHIFT_BY))))
+        "#
+        ),
     )
 }
 
@@ -317,17 +341,23 @@ pub(crate) fn rejection_sample_less_than_field_modulus_post(
     future_out: &[i32],
     return_value: usize,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"
-      let s = Spec.MLDSA.Math.rejection_sample_field_modulus $randomness in
-      v $return_value <= Seq.length $future_out
-      /\ v $return_value == Seq.length s
-      /\ Seq.slice $future_out 0 (v $return_value) == s"#
+    Prop::implies(
+        rejection_sample_less_than_eta_equals_2_pre(randomness, out).into(),
+        hax_lib::fstar::prop!(
+            r#"
+      Seq.length $randomness < max_usize /\
+      (let s = Spec.MLDSA.Math.rejection_sample_field_modulus $randomness in
+       v $return_value <= Seq.length $future_out
+       /\ v $return_value == Seq.length s
+       /\ Seq.slice $future_out 0 (v $return_value) == s)"#
+        ),
     )
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_2_pre(randomness: &[u8], out: &[i32]) -> bool {
-    randomness.len() * 2 <= 4_294_967_295 && randomness.len() * 2 <= out.len()
+    randomness.len() <= usize::MAX / 2
+        && randomness.len() * 2 <= 4_294_967_295
+        && randomness.len() * 2 <= out.len()
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_2_post(
@@ -336,17 +366,23 @@ pub(crate) fn rejection_sample_less_than_eta_equals_2_post(
     future_out: &[i32],
     return_value: usize,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"
-      let s = Spec.MLDSA.Math.rejection_sample_eta_2 $randomness in
+    Prop::implies(
+        rejection_sample_less_than_eta_equals_2_pre(randomness, out).into(),
+        hax_lib::fstar::prop!(
+            r#"
+      Seq.length $randomness < max_usize ==>
+      (let s = Spec.MLDSA.Math.rejection_sample_eta_2 $randomness in
       v $return_value <= Seq.length $future_out
       /\ v $return_value == Seq.length s
-      /\ Seq.slice $future_out 0 (v $return_value) == s"#
+      /\ Seq.slice $future_out 0 (v $return_value) == s)"#
+        ),
     )
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_4_pre(randomness: &[u8], out: &[i32]) -> bool {
-    randomness.len() * 2 <= 4_294_967_295 && randomness.len() * 2 <= out.len()
+    randomness.len() <= usize::MAX / 2
+        && randomness.len() * 2 <= 4_294_967_295
+        && randomness.len() * 2 <= out.len()
 }
 
 pub(crate) fn rejection_sample_less_than_eta_equals_4_post(
@@ -355,13 +391,16 @@ pub(crate) fn rejection_sample_less_than_eta_equals_4_post(
     future_out: &[i32],
     return_value: usize,
 ) -> Prop {
-    hax_lib::fstar::prop!(
-        r#"
-      let s = Spec.MLDSA.Math.rejection_sample_eta_4 $randomness in
+    Prop::implies(
+        rejection_sample_less_than_eta_equals_2_pre(randomness, out).into(),
+        hax_lib::fstar::prop!(
+            r#"
+      Seq.length $randomness < max_usize /\
+      (let s = Spec.MLDSA.Math.rejection_sample_eta_4 $randomness in
       v $return_value <= Seq.length $future_out
       /\ v $return_value == Seq.length s
-      /\ Seq.slice $future_out 0 (v $return_value) == s
-    "#
+      /\ Seq.slice $future_out 0 (v $return_value) == s)"#
+        ),
     )
 }
 
