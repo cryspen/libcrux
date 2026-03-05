@@ -97,11 +97,11 @@ pub struct HandshakeMessage {
     /// A Diffie-Hellman KEM public key
     pk: DHPublicKey,
     /// The AEAD-encrypted message payload
-    ciphertext: VLBytes,
+    ciphertext: Vec<u8>,
     /// AEAD tag authenticating the ciphertext and any AAD
     tag: [u8; 16],
     /// Associated data, covered by the AEAD message authentication tag
-    aad: VLBytes,
+    aad: Vec<u8>,
     /// The handshake ciphersuite for this message
     ciphersuite: CiphersuiteName,
 }

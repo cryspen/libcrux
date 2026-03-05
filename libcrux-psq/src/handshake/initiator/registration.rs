@@ -149,7 +149,7 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
             Ok(state)
         } else {
             Err(Error::InitiatorState)
-        };
+        }
     }
 }
 

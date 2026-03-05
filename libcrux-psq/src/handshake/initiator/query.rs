@@ -91,12 +91,28 @@ impl<'a> QueryInitiator<'a> {
         )
         .map_err(|e| e.into())
     }
+
+    fn prepare_message_contents(&mut self, payload: &[u8]) -> Result<(Vec<u8>, [u8; 16]), Error> {
+        let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
+        let (ciphertext, tag) = self.k0.handshake_encrypt(&outer_payload, self.outer_aad)?;
+
+        Ok((ciphertext, tag))
+    }
+
+    fn process_message(
+        &mut self,
+        message: &HandshakeMessage,
+        out: &mut [u8],
+    ) -> Result<usize, Error> {
+        let result = self.read_response(&message)?;
+        let out_bytes_written = write_output(result.0.as_slice(), out)?;
+        Ok(out_bytes_written)
+    }
 }
 
 impl<'a> Channel<Error, HandshakeMessage> for QueryInitiator<'a> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let outer_payload = InitiatorOuterPayloadOut::Query(VLByteSlice(payload));
-        let (ciphertext, tag) = self.k0.handshake_encrypt(&outer_payload, self.outer_aad)?;
+        let (ciphertext, tag) = self.prepare_message_contents(payload)?;
 
         let msg = HandshakeMessageOut {
             pk: &self.initiator_ephemeral_keys.pk,
@@ -118,9 +134,7 @@ impl<'a> Channel<Error, HandshakeMessage> for QueryInitiator<'a> {
         let msg = HandshakeMessage::tls_deserialize(&mut Cursor::new(message_bytes))
             .map_err(Error::Deserialize)?;
 
-        let result = self.read_response(&msg)?;
-        let out_bytes_written = write_output(result.0.as_slice(), out)?;
-
+        let out_bytes_written = self.process_message(&msg, out)?;
         Ok((msg.tls_serialized_len(), out_bytes_written))
     }
 
@@ -128,13 +142,24 @@ impl<'a> Channel<Error, HandshakeMessage> for QueryInitiator<'a> {
         &mut self,
         payload: &[u8],
     ) -> Result<HandshakeMessage, Error> {
-        todo!()
+        let (ciphertext, tag) = self.prepare_message_contents(payload)?;
+        Ok(HandshakeMessage {
+            pk: self.initiator_ephemeral_keys.pk.clone(),
+            ciphertext,
+            tag,
+            aad: self.outer_aad.to_vec(),
+            ciphersuite: CiphersuiteName::query_ciphersuite(),
+        })
     }
 
     fn read_message_external_encoding(
         &mut self,
         message: &HandshakeMessage,
     ) -> Result<Vec<u8>, Error> {
-        todo!()
+        // XXX: This is allocating more than we need.
+        let mut out = vec![0u8; message.ciphertext.len()];
+        let out_bytes_written = self.process_message(&message, &mut out)?;
+        out.truncate(out_bytes_written);
+        Ok(out)
     }
 }
