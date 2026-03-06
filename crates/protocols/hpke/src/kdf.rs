@@ -25,7 +25,6 @@ pub(crate) fn labeled_expand<Crypto: HpkeCrypto>(
     info: &[u8],
     len: usize,
 ) -> Result<Vec<u8>, Error> {
-    debug_assert!(len < 256);
     if len > u16::MAX.into() {
         return Err(Error::HpkeInvalidOutputLength);
     }

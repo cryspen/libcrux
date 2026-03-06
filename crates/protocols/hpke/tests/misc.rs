@@ -144,30 +144,15 @@ fn m4_export_only_context_export_works() {
 // ---------------------------------------------------------------
 // L-1  labeled_expand silently truncates len from usize to u16
 //
-// In debug builds, debug_assert!(len < 256) fires as a panic.
-// In release builds, the assert is stripped and the `len as u16`
-// cast silently truncates, causing a wrong HKDF label encoding.
+// Previously, debug_assert!(len < 256) fired in debug builds and
+// release builds had no check at all (u16 truncation was silent).
 //
-// This test demonstrates the debug_assert panic.  The real bug
-// is that release builds have NO check at all — the truncation
-// happens silently.  The fix is a hard check (not debug_assert).
+// FIXED: the debug_assert was removed and the u16::MAX check now
+// properly rejects values > 65535 in all builds. Values in
+// 256..=65535 are correctly accepted (within HKDF limits).
 // ---------------------------------------------------------------
 #[test]
-#[cfg(debug_assertions)]
-#[should_panic(expected = "len < 256")]
-fn l1_export_large_length_hits_debug_assert() {
-    export_large_length_hits_debug_assert();
-}
-
-#[test]
-#[cfg(not(debug_assertions))]
-fn l1_export_large_length_hits_debug_assert() {
-    export_large_length_hits_debug_assert();
-}
-
-fn export_large_length_hits_debug_assert() {
-    // In debug builds this panics at the debug_assert in kdf.rs.
-    // In release builds this would silently truncate `len as u16`.
+fn l1_export_large_length_returns_error() {
     let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
         Mode::Base,
         KemAlgorithm::DhKem25519,
@@ -179,31 +164,14 @@ fn export_large_length_hits_debug_assert() {
         .setup_sender(&pk_r, b"info", None, None, None)
         .unwrap();
 
-    // 65536 overflows u16 to 0.
-    // Debug: panics at debug_assert!(len < 256).
-    // Release: silently encodes length=0 in the HKDF label.
+    // 65536 overflows u16: properly returns error in all builds.
     let _ = context
         .export(b"exporter", 65536)
-        .expect_err("export only ciphersuite with seal");
-}
-
-// Demonstrate the debug_assert threshold is also wrong: the
-// RFC uses a u16 length field, so values 256..=65535 should be
-// valid, but debug_assert!(len < 256) rejects them.
-#[test]
-#[cfg(debug_assertions)]
-#[should_panic(expected = "len < 256")]
-fn l1_export_256_rejected_by_overly_strict_debug_assert() {
-    export_256_rejected_by_overly_strict_debug_assert();
+        .expect_err("export(65536) should fail (exceeds u16::MAX)");
 }
 
 #[test]
-#[cfg(not(debug_assertions))]
-fn l1_export_256_rejected_by_overly_strict_debug_assert() {
-    export_256_rejected_by_overly_strict_debug_assert();
-}
-
-fn export_256_rejected_by_overly_strict_debug_assert() {
+fn l1_export_256_now_accepted() {
     let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
         Mode::Base,
         KemAlgorithm::DhKem25519,
@@ -215,10 +183,11 @@ fn export_256_rejected_by_overly_strict_debug_assert() {
         .setup_sender(&pk_r, b"info", None, None, None)
         .unwrap();
 
-    // 256 fits in u16 and is valid per the RFC, but
-    // debug_assert!(len < 256) rejects it in debug builds.
-    // HKDF-SHA256 max is 8160, so 256 is within HKDF limits too.
-    let _ = context.export(b"exporter", 256);
+    // 256 fits in u16 and is valid per the RFC (HKDF-SHA256 max = 8160).
+    // Previously panicked in debug builds; now correctly accepted.
+    let result = context.export(b"exporter", 256);
+    assert!(result.is_ok(), "export(256) should succeed after fix");
+    assert_eq!(result.unwrap().len(), 256);
 }
 
 // A value within the current (overly strict) limit works.
@@ -237,4 +206,250 @@ fn l1_export_within_limits_works() {
 
     let result = context.export(b"exporter", 64);
     assert!(result.is_ok(), "export(64) should succeed");
+}
+
+// ---------------------------------------------------------------
+// BUG 1  RustCrypto AEAD open rejects empty-plaintext ciphertexts
+//
+// The AEAD open function checked msg.len() <= tag_length instead
+// of msg.len() < tag_length. When encrypting empty plaintext, the
+// ciphertext is exactly tag_length bytes, so the <= check
+// erroneously rejects it as AeadInvalidCiphertext.
+//
+// With the bug: seal(aad, b"") succeeds producing 16 bytes, but
+// open(aad, &ctxt) fails with AeadInvalidCiphertext because
+// 16 <= 16 is true.
+//
+// With the fix: open(aad, &ctxt) succeeds because 16 < 16 is false.
+// ---------------------------------------------------------------
+#[test]
+fn bug1_aead_open_empty_plaintext_rustcrypto() {
+    for aead in &[
+        AeadAlgorithm::Aes128Gcm,
+        AeadAlgorithm::Aes256Gcm,
+        AeadAlgorithm::ChaCha20Poly1305,
+    ] {
+        let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
+            Mode::Base,
+            KemAlgorithm::DhKem25519,
+            KdfAlgorithm::HkdfSha256,
+            *aead,
+        );
+        let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+
+        // Encrypt empty plaintext via single-shot API.
+        let (enc, ctxt) = hpke_cfg
+            .seal(&pk_r, b"info", b"aad", b"", None, None, None)
+            .expect("seal of empty plaintext should succeed");
+
+        // The ciphertext should be exactly the tag (16 bytes).
+        assert_eq!(
+            ctxt.len(),
+            16,
+            "ciphertext of empty plaintext should be tag-only ({:?})",
+            aead
+        );
+
+        // Decrypt: this failed before the fix with AeadInvalidCiphertext.
+        let ptxt = hpke_cfg
+            .open(&enc, &sk_r, b"info", b"aad", &ctxt, None, None, None)
+            .expect("open of empty plaintext ciphertext should succeed");
+
+        assert_eq!(ptxt, b"", "decrypted empty plaintext should be empty");
+
+        // Also test via context API.
+        let (enc, mut sender_ctx) = hpke_cfg
+            .setup_sender(&pk_r, b"info", None, None, None)
+            .unwrap();
+        let mut receiver_ctx = hpke_cfg
+            .setup_receiver(&enc, &sk_r, b"info", None, None, None)
+            .unwrap();
+        let ct = sender_ctx.seal(b"aad", b"").unwrap();
+        let pt = receiver_ctx
+            .open(b"aad", &ct)
+            .expect("context open of empty plaintext should succeed");
+        assert_eq!(pt, b"");
+    }
+}
+
+// ---------------------------------------------------------------
+// BUG 1 (Libcrux variant) — same empty-plaintext round-trip test
+// ---------------------------------------------------------------
+#[test]
+fn bug1_aead_open_empty_plaintext_libcrux() {
+    use hpke_rs_libcrux::HpkeLibcrux;
+    for aead in &[
+        AeadAlgorithm::Aes128Gcm,
+        AeadAlgorithm::Aes256Gcm,
+        AeadAlgorithm::ChaCha20Poly1305,
+    ] {
+        let mut hpke_cfg = Hpke::<HpkeLibcrux>::new(
+            Mode::Base,
+            KemAlgorithm::DhKem25519,
+            KdfAlgorithm::HkdfSha256,
+            *aead,
+        );
+        let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+        let (enc, ctxt) = hpke_cfg
+            .seal(&pk_r, b"info", b"aad", b"", None, None, None)
+            .expect("seal of empty plaintext should succeed");
+        assert_eq!(ctxt.len(), 16);
+        let ptxt = hpke_cfg
+            .open(&enc, &sk_r, b"info", b"aad", &ctxt, None, None, None)
+            .expect("open of empty plaintext ciphertext should succeed");
+        assert_eq!(ptxt, b"");
+    }
+}
+
+// ---------------------------------------------------------------
+// BUG 2  Libcrux AEAD open returned wrong error type
+//
+// When decryption fails due to authentication tag mismatch, the
+// Libcrux provider returned CryptoLibraryError (mapping to
+// HpkeError::CryptoError) instead of AeadOpenError (mapping to
+// HpkeError::OpenError).
+//
+// With the bug: tampered ciphertext → HpkeError::CryptoError
+// With the fix: tampered ciphertext → HpkeError::OpenError
+// ---------------------------------------------------------------
+#[test]
+fn bug2_libcrux_aead_open_error_type() {
+    use hpke_rs_libcrux::HpkeLibcrux;
+    let mut hpke_cfg = Hpke::<HpkeLibcrux>::new(
+        Mode::Base,
+        KemAlgorithm::DhKem25519,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+    );
+    let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+    let (enc, mut ctxt) = hpke_cfg
+        .seal(&pk_r, b"info", b"aad", b"plaintext", None, None, None)
+        .unwrap();
+
+    // Tamper with the ciphertext to cause an authentication failure.
+    ctxt[0] ^= 0xff;
+
+    let err = hpke_cfg
+        .open(&enc, &sk_r, b"info", b"aad", &ctxt, None, None, None)
+        .expect_err("tampered ciphertext must fail");
+
+    // Must be OpenError, not CryptoError.
+    assert_eq!(
+        err,
+        hpke::HpkeError::OpenError,
+        "Libcrux AEAD authentication failure must return OpenError, got {:?}",
+        err
+    );
+}
+
+// Verify RustCrypto also returns OpenError for comparison.
+#[test]
+fn bug2_rustcrypto_aead_open_error_type() {
+    let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
+        Mode::Base,
+        KemAlgorithm::DhKem25519,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+    );
+    let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+    let (enc, mut ctxt) = hpke_cfg
+        .seal(&pk_r, b"info", b"aad", b"plaintext", None, None, None)
+        .unwrap();
+
+    ctxt[0] ^= 0xff;
+
+    let err = hpke_cfg
+        .open(&enc, &sk_r, b"info", b"aad", &ctxt, None, None, None)
+        .expect_err("tampered ciphertext must fail");
+
+    assert_eq!(
+        err,
+        hpke::HpkeError::OpenError,
+        "RustCrypto AEAD authentication failure must return OpenError, got {:?}",
+        err
+    );
+}
+
+// ---------------------------------------------------------------
+// BUG 3  labeled_expand debug_assert was too strict
+//
+// The debug_assert!(len < 256) rejected valid export lengths
+// >= 256 in debug builds. The RFC allows up to 255*Nh bytes.
+// After the fix, the debug_assert is removed and the proper
+// u16 overflow check handles the limit.
+// ---------------------------------------------------------------
+#[test]
+fn bug3_export_length_256_works() {
+    let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
+        Mode::Base,
+        KemAlgorithm::DhKem25519,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+    );
+    let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+    let (enc, sender_ctx) = hpke_cfg
+        .setup_sender(&pk_r, b"info", None, None, None)
+        .unwrap();
+    let receiver_ctx = hpke_cfg
+        .setup_receiver(&enc, &sk_r, b"info", None, None, None)
+        .unwrap();
+
+    // 256 bytes: valid per RFC (max for HKDF-SHA256 is 255*32 = 8160).
+    // This panicked in debug builds before the fix.
+    let s = sender_ctx
+        .export(b"ctx", 256)
+        .expect("export(256) should succeed");
+    let r = receiver_ctx
+        .export(b"ctx", 256)
+        .expect("export(256) should succeed");
+    assert_eq!(s, r);
+    assert_eq!(s.len(), 256);
+}
+
+#[test]
+fn bug3_export_length_8160_works() {
+    // Max for HKDF-SHA256: 255 * 32 = 8160
+    let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
+        Mode::Base,
+        KemAlgorithm::DhKem25519,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+    );
+    let (sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+    let (enc, sender_ctx) = hpke_cfg
+        .setup_sender(&pk_r, b"info", None, None, None)
+        .unwrap();
+    let receiver_ctx = hpke_cfg
+        .setup_receiver(&enc, &sk_r, b"info", None, None, None)
+        .unwrap();
+
+    let s = sender_ctx
+        .export(b"ctx", 8160)
+        .expect("export(8160) should succeed (255*Nh for SHA-256)");
+    let r = receiver_ctx
+        .export(b"ctx", 8160)
+        .expect("export(8160) should succeed");
+    assert_eq!(s, r);
+    assert_eq!(s.len(), 8160);
+}
+
+#[test]
+fn bug3_export_length_exceeding_hkdf_limit_fails() {
+    // 8161 exceeds 255*32 = 8160, so HKDF-SHA256 should reject it.
+    let mut hpke_cfg = Hpke::<HpkeRustCrypto>::new(
+        Mode::Base,
+        KemAlgorithm::DhKem25519,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+    );
+    let (_sk_r, pk_r) = hpke_cfg.generate_key_pair().unwrap().into_keys();
+    let (_enc, ctx) = hpke_cfg
+        .setup_sender(&pk_r, b"info", None, None, None)
+        .unwrap();
+
+    let result = ctx.export(b"ctx", 8161);
+    assert!(
+        result.is_err(),
+        "export(8161) should fail (exceeds HKDF-SHA256 limit)"
+    );
 }

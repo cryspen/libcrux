@@ -215,9 +215,7 @@ impl HpkeCrypto for HpkeLibcrux {
 
         key.decrypt(&mut ptext, nonce, aad, ctext, tag)
             .map_err(|e| match e {
-                DecryptError::InvalidTag => {
-                    Error::CryptoLibraryError(format!("AEAD decryption error: {:?}", e))
-                }
+                DecryptError::InvalidTag => Error::AeadOpenError,
                 _ => Error::CryptoLibraryError("Invalid configuration".into()),
             })?;
 

@@ -39,7 +39,7 @@ macro_rules! implement_aead {
                 return Err(Error::AeadInvalidNonce);
             }
             let tag_length = HpkeRustCrypto::aead_tag_length(alg);
-            if msg.len() <= tag_length {
+            if msg.len() < tag_length {
                 return Err(Error::AeadInvalidCiphertext);
             }
 

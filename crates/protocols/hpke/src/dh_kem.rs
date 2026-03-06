@@ -95,7 +95,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
             }
         }
         _ => {
-            panic!("This should be unreachable. Only x25519, P256, and K256 KEMs are implemented")
+            return Err(Error::UnknownKemAlgorithm);
         }
     };
     Ok((Crypto::secret_to_public(alg, &sk.0)?, sk))
