@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1349](https://github.com/cryspen/libcrux/pull/1349): fix(ed25519): return error when key generation loop exhausts retries
+- [#1349](https://github.com/cryspen/libcrux/pull/1349): Fix Ed25519 error when key generation loop exhausts retries
 
 ## [0.0.6] (2026-02-12)
 
