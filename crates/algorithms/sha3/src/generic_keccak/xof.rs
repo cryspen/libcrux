@@ -326,16 +326,16 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 // Extract the first block from the current state (no permutation).
                 self.inner.squeeze::<RATE>(out, 0, RATE);
 
-            	#[cfg(hax)]
-            	let self_buf_len = self.buf_len;
+                #[cfg(hax)]
+                let self_buf_len = self.buf_len;
 
                 // For each subsequent full block, apply f then extract.
                 for i in 1..blocks {
-	            hax_lib::loop_invariant!(
-        	            |_: usize| out.len() == out_len && self_buf_len == self.buf_len
+                    hax_lib::loop_invariant!(
+                        |_: usize| out.len() == out_len && self_buf_len == self.buf_len
                     );
                     #[cfg(hax)]
-	            hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
+                    hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
 
                     self.inner.keccakf1600();
                     self.inner.squeeze::<RATE>(out, i * RATE, RATE);
