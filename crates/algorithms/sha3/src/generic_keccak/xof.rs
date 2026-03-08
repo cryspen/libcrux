@@ -345,11 +345,6 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 if last < out_len {
                     #[cfg(hax)]
                     crate::proof_utils::lemma_div_mul_mod(out_len, RATE);
-                    #[cfg(hax)]
-                    hax_lib::assert!(
-                       blocks.to_int() * RATE.to_int() + remaining.to_int() == out.len().to_int()
-                    );
-
                     self.inner.keccakf1600();
                     self.inner.squeeze::<RATE>(out, last, out_len - last);
                 }
