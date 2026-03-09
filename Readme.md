@@ -9,15 +9,18 @@ libcrux is in pre-release (all of its crates are versioned < `0.1`). If you wish
 in production, get in touch with the [maintainers](mailto:info@cryspen.com) and we can advise you on whether
 libcrux is a good fit for your use-case.
 
+## Which crate to use?
+
+Libcrux is organized in different sub-crates which implement cryptographic algorithms, primitives and protocols.
+
+TODO: Add guide on which crate implements what.
+
+This repository also contains an unpublished `libcrux` crate, which is a simple re-exporter of the functionality offered by the individual sub-crates and is useful for us to ensure sub-crate versions remain compatible with each other. We recommend you use the individual sub-crates that provide the functionality you need instead of the main `libcrux` crate.
+
 ## Minimum Supported Rust Version (MSRV)
 
 The default feature set has a MSRV of `1.78.0`. `no_std` environments
 are supported starting from Rust version `1.81.0`.
-
-## Randomness
-
-libcrux provides a DRBG implementation that can be used standalone (`drbg::Drbg`)
-or through the `Rng` traits.
 
 ## `no_std` support
 `libcrux` and the individual primitive crates it depends on support
