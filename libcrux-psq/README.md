@@ -10,6 +10,9 @@ to potentially incorporate post-quantum key encapsultion (PQ-KEMs).
 The following protocol description makes use of several cryptographic
 primitives and notations which are [explained in detail below](#cryptographic-building-blocks-&-notation).
 
+This code is not verified and it makes no formal security claims. 
+If you want to understand if it is a good fit for your use-case, contact the [maintainers.](info@cryspen.com)
+
 ## Handshake
 The PSQ handshake exists in two modes, [*query mode*](#query-mode) and [*registration
 mode*](#registration-mode). In both, initiator and responder are assumed to share knowledge
