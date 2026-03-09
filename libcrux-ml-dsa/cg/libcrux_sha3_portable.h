@@ -2583,22 +2583,26 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_c7(
     if (self->sponge) {
       libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
     }
-    if (out_len <= (size_t)136U) {
-      libcrux_sha3_simd_portable_squeeze_9b_5b(&self->inner, out, (size_t)0U,
-                                               out_len);
-    } else {
+    if (out_len > (size_t)0U) {
       size_t blocks = out_len / (size_t)136U;
-      size_t remaining = out_len % (size_t)136U;
-      for (size_t i = (size_t)0U; i < blocks; i++) {
-        size_t i0 = i;
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_9b_5b(
-            &self->inner, out, i0 * (size_t)136U, (size_t)136U);
-      }
-      if (remaining > (size_t)0U) {
-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
-        libcrux_sha3_simd_portable_squeeze_9b_5b(
-            &self->inner, out, blocks * (size_t)136U, remaining);
+      size_t last = out_len - out_len % (size_t)136U;
+      if (blocks == (size_t)0U) {
+        libcrux_sha3_simd_portable_squeeze_9b_5b(&self->inner, out, (size_t)0U,
+                                                 out_len);
+      } else {
+        libcrux_sha3_simd_portable_squeeze_9b_5b(&self->inner, out, (size_t)0U,
+                                                 (size_t)136U);
+        for (size_t i = (size_t)1U; i < blocks; i++) {
+          size_t i0 = i;
+          libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
+          libcrux_sha3_simd_portable_squeeze_9b_5b(
+              &self->inner, out, i0 * (size_t)136U, (size_t)136U);
+        }
+        if (last < out_len) {
+          libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
+          libcrux_sha3_simd_portable_squeeze_9b_5b(&self->inner, out, last,
+                                                   out_len - last);
+        }
       }
     }
     self->sponge = true;
