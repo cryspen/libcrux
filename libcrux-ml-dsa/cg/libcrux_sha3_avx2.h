@@ -2471,32 +2471,33 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_5b(
           Eurydice_array_to_slice_mut_6e(&u8s);
       libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
           uu____1, libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(
-                              out0, (core_ops_range_Range_08{
-                                        start0 + len - rem8, start0 + len})),
-                          Eurydice_array_to_subslice_shared_36(
-                              &u8s, (core_ops_range_Range_08{(size_t)0U, rem})),
-                          uint8_t);
+      Eurydice_slice_copy(
+          Eurydice_slice_subslice_mut_7e(
+              out0,
+              (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
+          Eurydice_array_to_subslice_shared_36(
+              &u8s, (core_ops_range_Range_08{(size_t)0U, rem8})),
+          uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out1,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)8U, (size_t)8U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)8U, (size_t)8U + rem8})),
           uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out2,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)16U, (size_t)16U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)16U, (size_t)16U + rem8})),
           uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out3,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)24U, (size_t)24U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)24U, (size_t)24U + rem8})),
           uint8_t);
     }
   }
@@ -2734,32 +2735,33 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_3a(
           Eurydice_array_to_slice_mut_6e(&u8s);
       libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
           uu____1, libcrux_sha3_traits_get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(
-                              out0, (core_ops_range_Range_08{
-                                        start0 + len - rem8, start0 + len})),
-                          Eurydice_array_to_subslice_shared_36(
-                              &u8s, (core_ops_range_Range_08{(size_t)0U, rem})),
-                          uint8_t);
+      Eurydice_slice_copy(
+          Eurydice_slice_subslice_mut_7e(
+              out0,
+              (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
+          Eurydice_array_to_subslice_shared_36(
+              &u8s, (core_ops_range_Range_08{(size_t)0U, rem8})),
+          uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out1,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)8U, (size_t)8U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)8U, (size_t)8U + rem8})),
           uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out2,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)16U, (size_t)16U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)16U, (size_t)16U + rem8})),
           uint8_t);
       Eurydice_slice_copy(
           Eurydice_slice_subslice_mut_7e(
               out3,
               (core_ops_range_Range_08{start0 + len - rem8, start0 + len})),
           Eurydice_array_to_subslice_shared_36(
-              &u8s, (core_ops_range_Range_08{(size_t)24U, (size_t)24U + rem})),
+              &u8s, (core_ops_range_Range_08{(size_t)24U, (size_t)24U + rem8})),
           uint8_t);
     }
   }

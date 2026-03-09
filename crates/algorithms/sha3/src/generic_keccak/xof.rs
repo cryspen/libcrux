@@ -290,6 +290,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 /// Squeeze we only implement for N = 1 right now.
 /// This is because it's not needed for N > 1 right now, but also because hax
 /// can't handle the required mutability for it.
+///
+/// Note that calling `squeeze` multiple times will only give correct
+/// output if all sqeezed chunks, except possibly the last one, are
+/// `RATE` bytes long. See
+/// https://github.com/cryspen/libcrux/issues/1362 for an issue
+/// tracking full support of streaming squeeze.
 #[hax_lib::attributes]
 impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
@@ -316,42 +322,38 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             self.inner.keccakf1600();
         }
 
-        if out_len <= RATE {
-            self.inner.squeeze::<RATE>(out, 0, out_len);
-        } else {
-            // How many blocks do we need to squeeze out?
+        if out_len > 0 {
             let blocks = out_len / RATE;
-            let remaining = out_len % RATE;
+            let last = out_len - (out_len % RATE);
 
-            #[cfg(hax)]
-            let self_buf_len = self.buf_len;
+            if blocks == 0 {
+                self.inner.squeeze::<RATE>(out, 0, out_len);
+            } else {
+                // Extract the first block from the current state (no permutation).
+                self.inner.squeeze::<RATE>(out, 0, RATE);
 
-            for i in 0..blocks {
-                hax_lib::loop_invariant!(
-                    |_: usize| out.len() == out_len && self_buf_len == self.buf_len
-                );
                 #[cfg(hax)]
-                hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
+                let self_buf_len = self.buf_len;
 
-                // Here we know that we always have full blocks to write out.
-                self.inner.keccakf1600();
-                self.inner.squeeze::<RATE>(out, i * RATE, RATE);
-            }
+                // For each subsequent full block, apply f then extract.
+                for i in 1..blocks {
+                    hax_lib::loop_invariant!(
+                        |_: usize| out.len() == out_len && self_buf_len == self.buf_len
+                    );
+                    #[cfg(hax)]
+                    hax_lib::assert!(i.to_int() * RATE.to_int() <= out.len().to_int());
 
-            if remaining > 0 {
-                // Squeeze out the last partial block
-                self.inner.keccakf1600();
+                    self.inner.keccakf1600();
+                    self.inner.squeeze::<RATE>(out, i * RATE, RATE);
+                }
 
-                // For a and b with b < a
-                // (a / b) * b + a % b = a
-                #[cfg(hax)]
-                crate::proof_utils::lemma_div_mul_mod(out_len, RATE);
-                #[cfg(hax)]
-                hax_lib::assert!(
-                    blocks.to_int() * RATE.to_int() + remaining.to_int() == out.len().to_int()
-                );
-
-                self.inner.squeeze::<RATE>(out, blocks * RATE, remaining);
+                // Squeeze out any remaining partial block.
+                if last < out_len {
+                    #[cfg(hax)]
+                    crate::proof_utils::lemma_div_mul_mod(out_len, RATE);
+                    self.inner.keccakf1600();
+                    self.inner.squeeze::<RATE>(out, last, out_len - last);
+                }
             }
         }
 
