@@ -290,6 +290,12 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 /// Squeeze we only implement for N = 1 right now.
 /// This is because it's not needed for N > 1 right now, but also because hax
 /// can't handle the required mutability for it.
+///
+/// Note that calling `squeeze` multiple times will only give correct
+/// output if all sqeezed chunks, except possibly the last one, are
+/// `RATE` bytes long. See
+/// https://github.com/cryspen/libcrux/issues/1362 for an issue
+/// tracking full support of streaming squeeze.
 #[hax_lib::attributes]
 impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
