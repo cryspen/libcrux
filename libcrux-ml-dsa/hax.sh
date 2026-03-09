@@ -79,14 +79,14 @@ function rename_core_models_files() {
         new_filename="Libcrux_core_models${filename#Core_models}"
         mv "$file" "$dir_path/$new_filename"
     done
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec gsed -i'' \
         -e 's/module Core_models/module Libcrux_core_models/g' \
         {} +
 }
 
 function rename_core_models_uses() {
     local target_dir="proofs/fstar/extraction"
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec gsed -i'' \
         -e 's/Core_models\.Abstractions/Libcrux_core_models.Abstractions/g' \
         -e 's/Core_models\.Core_arch/Libcrux_core_models.Core_arch/g' \
         {} +
@@ -112,7 +112,7 @@ function help() {
     echo ""
     echo "Comands:"
     echo ""
-    grep '[#]>' "$SCRIPT_PATH" | sed 's/[)] #[>]/\t/g'
+    grep '[#]>' "$SCRIPT_PATH" | gsed 's/[)] #[>]/\t/g'
     echo ""
 }
 
