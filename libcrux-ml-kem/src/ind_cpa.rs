@@ -73,7 +73,6 @@ use unpacked::*;
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))
                         $seed_for_a)"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_public_key<
     const K: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -104,7 +103,6 @@ pub(crate) fn serialize_public_key<
                             (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $t_as_ntt))
                         $seed_for_a)"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_public_key_mut<
     const K: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -258,7 +256,6 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
                Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $error_1 ==
                Spec.MLKEM.sample_vector_cbd2 #$K (Seq.slice $prf_input 0 32) (sz (v $domain_separator))"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 fn sample_ring_element_cbd<
     const K: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
@@ -374,7 +371,6 @@ fn sample_ring_element_cbd<
             (forall (i: nat). i < v $K ==>
               Libcrux_ml_kem.Polynomial.is_bounded_poly #$:Vector 3328 (Seq.index ${re_as_ntt}_future i))"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 fn sample_vector_cbd_then_ntt<
     const K: usize,
     const ETA: usize,
@@ -474,7 +470,6 @@ fn sample_vector_cbd_then_ntt<
         Libcrux_ml_kem.Polynomial.is_bounded_poly 3328 (Seq.index ${public_key_future.t_as_ntt} i))
 "#)}})]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn generate_keypair_unpacked<
     const K: usize,
     const ETA1: usize,
@@ -557,7 +552,6 @@ pub(crate) fn generate_keypair_unpacked<
 #[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cpa_generate_keypair $K $key_generation_seed in 
                                     valid ==> $result == expected"#))]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -586,7 +580,6 @@ pub(crate) fn generate_keypair<
 }
 
 /// Serialize the secret key from the unpacked key pair generation.
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_unpacked_secret_key<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -623,7 +616,6 @@ pub(crate) fn serialize_unpacked_secret_key<
                (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $input)"#)
 )]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 fn compress_then_serialize_u<
     const K: usize,
     const OUT_LEN: usize,
@@ -734,7 +726,6 @@ fn compress_then_serialize_u<
         (Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${public_key.A})"#)
 )]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -782,7 +773,6 @@ pub(crate) fn encrypt_unpacked<
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn encrypt_c1<
     const K: usize,
     const C1_LEN: usize,
@@ -851,7 +841,6 @@ pub(crate) fn encrypt_c1<
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn encrypt_c2<
     const K: usize,
     const V_COMPRESSION_FACTOR: usize,
@@ -896,7 +885,6 @@ pub(crate) fn encrypt_c2<
             valid ==> $result == expected"#)
 )]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -950,7 +938,6 @@ pub(crate) fn encrypt<
     let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${result.t_as_ntt} == t_as_ntt /\
      valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${result.A} == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"#))]
-#[hax_lib::fstar::verification_status(lax)]
 fn build_unpacked_public_key<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -979,7 +966,6 @@ fn build_unpacked_public_key<
     let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
     (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${unpacked_public_key_future.t_as_ntt} == t_as_ntt /\
     valid ==> Libcrux_ml_kem.Polynomial.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.A} == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"#)}})]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn build_unpacked_public_key_mut<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -1024,7 +1010,6 @@ pub(crate) fn build_unpacked_public_key_mut<
     fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $res ==
         Spec.MLKEM.(vector_ntt (decode_then_decompress_u #$K (Seq.slice $ciphertext 0 (v (Spec.MLKEM.v_C1_SIZE $K)))))"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 fn deserialize_then_decompress_u<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -1072,7 +1057,6 @@ fn deserialize_then_decompress_u<
     fstar!(r#"Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector $secret_as_ntt ==
          Spec.MLKEM.vector_decode_12 #$K $secret_key"#)
 )]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
     secret_key: &[u8],
     secret_as_ntt: &mut [PolynomialRingElement<Vector>; K],
@@ -1135,7 +1119,6 @@ pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
         (Libcrux_ml_kem.Polynomial.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt)"#)
 )]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
@@ -1173,7 +1156,6 @@ pub(crate) fn decrypt_unpacked<
     fstar!(r#"$result == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext"#)
 )]
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
