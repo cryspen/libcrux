@@ -136,8 +136,8 @@ impl Operations for Coefficients {
         encoding::gamma1::deserialize(serialized, out, gamma1_exponent)
     }
 
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::commitment_serialize_pre(&simd_unit.repr(), serialized))]
+    #[hax_lib::ensures(|_| specs::commitment_serialize_post(&simd_unit.repr(), serialized, future(serialized)))]
     fn commitment_serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
         hax_lib::assume!(false);
         encoding::commitment::serialize(simd_unit, serialized)
