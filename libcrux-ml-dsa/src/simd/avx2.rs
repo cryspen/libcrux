@@ -175,8 +175,8 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::commitment_serialize_pre(&simd_unit.repr(), serialized))]
+    #[hax_lib::ensures(|_| specs::commitment_serialize_post(&simd_unit.repr(), serialized, future(serialized)))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]) {
         hax_lib::assume!(false);
         encoding::commitment::serialize(&simd_unit.value, serialized)
