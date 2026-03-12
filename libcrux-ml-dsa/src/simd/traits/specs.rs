@@ -452,8 +452,17 @@ pub(crate) fn commitment_serialize_post(
     simd_unit: &SIMDContent,
     serialized: &[u8],
     future_serialized: &[u8],
-) -> bool {
-    future_serialized.len() == serialized.len()
+) -> Prop {
+    Prop::implies(
+        commitment_serialize_pre(simd_unit, serialized).into(),
+        hax_lib::fstar::prop!(
+            r#"let d = Seq.length $serialized in
+               Seq.length $future_serialized == d /\
+               (let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) $simd_unit d in
+                let out = bit_vec_of_int_t_array #U8 #(mk_usize d) $future_serialized 8 in
+                forall (i: nat {i < 8 * d}). inp i == out i)"#
+        ),
+    )
 }
 
 pub(crate) fn error_serialize_pre(eta: Eta, simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
