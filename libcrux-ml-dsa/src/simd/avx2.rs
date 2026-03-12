@@ -178,6 +178,8 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::commitment_serialize_pre(&simd_unit.repr(), serialized))]
     #[hax_lib::ensures(|_| specs::commitment_serialize_post(&simd_unit.repr(), serialized, future(serialized)))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]) {
+        // TODO: bridge between trait-level bit_vec_of_int_t_array post and
+        // AVX2 module-level Spec.Intrinsics bitvec post
         hax_lib::assume!(false);
         encoding::commitment::serialize(&simd_unit.value, serialized)
     }
