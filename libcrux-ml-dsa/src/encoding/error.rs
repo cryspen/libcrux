@@ -6,6 +6,7 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == chunk_size(eta) * 32)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     eta: Eta,
     re: &PolynomialRingElement<SIMDUnit>,
@@ -13,8 +14,12 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 ) {
     let output_bytes_per_simd_unit = chunk_size(eta);
 
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
+
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
             SIMDUnit::error_serialize(eta,
                     simd_unit,
                     &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
@@ -32,6 +37,7 @@ fn chunk_size(eta: Eta) -> usize {
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == chunk_size(eta) * 32)]
 fn deserialize<SIMDUnit: Operations>(
     eta: Eta,
     serialized: &[u8],
