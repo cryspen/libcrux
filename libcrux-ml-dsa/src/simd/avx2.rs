@@ -185,72 +185,75 @@ impl Operations for AVX2SIMDUnit {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::error_serialize_pre(eta, &simd_unit.repr(), serialized))]
+    #[hax_lib::ensures(|_| specs::error_serialize_post(eta, &simd_unit.repr(), serialized, future(serialized)))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]) {
         hax_lib::assume!(false);
         encoding::error::serialize(eta, &simd_unit.value, serialized)
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::error_deserialize_pre(eta, serialized, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::error_deserialize_post(eta, serialized, &out.repr(), &future(out).repr()))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self) {
-        hax_lib::assume!(false);
         encoding::error::deserialize(eta, serialized, &mut out.value);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::t0_serialize_pre(&simd_unit.repr(), out))]
+    #[hax_lib::ensures(|_| specs::t0_serialize_post(&simd_unit.repr(), out, future(out)))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
         hax_lib::assume!(false);
         // out len 13
         encoding::t0::serialize(&simd_unit.value, out);
     }
+
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::t0_deserialize_pre(serialized, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::t0_deserialize_post(serialized, &out.repr(), &future(out).repr()))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self) {
-        hax_lib::assume!(false);
         encoding::t0::deserialize(serialized, &mut out.value);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::t1_serialize_pre(&simd_unit.repr(), out))]
+    #[hax_lib::ensures(|_| specs::t1_serialize_post(&simd_unit.repr(), out, future(out)))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
-        hax_lib::assume!(false);
         encoding::t1::serialize(&simd_unit.value, out);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::t1_deserialize_pre(serialized, &out.repr()))]
+    #[hax_lib::ensures(|_| specs::t1_deserialize_post(serialized, &out.repr(), &future(out).repr()))]
     fn t1_deserialize(serialized: &[u8], out: &mut Self) {
-        hax_lib::assume!(false);
         encoding::t1::deserialize(serialized, &mut out.value);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::ntt_pre(&simd_units.map(|unit| Repr::repr(&unit))))]
+    #[hax_lib::ensures(|_| specs::ntt_post(
+        &simd_units.map(|unit| Repr::repr(&unit)),
+        &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn ntt(simd_units: &mut AVX2RingElement) {
         hax_lib::assume!(false);
         ntt::ntt(simd_units);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::invert_ntt_montgomery_pre(&simd_units.map(|unit| Repr::repr(&unit))))]
+    #[hax_lib::ensures(|_| specs::invert_ntt_montgomery_post(
+        &simd_units.map(|unit| Repr::repr(&unit)),
+        &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn invert_ntt_montgomery(simd_units: &mut AVX2RingElement) {
         hax_lib::assume!(false);
         invntt::invert_ntt_montgomery(simd_units);
     }
 
     #[inline(always)]
-    #[hax_lib::requires(true)]
-    #[hax_lib::ensures(|result| false)]
+    #[hax_lib::requires(specs::reduce_pre(&simd_units.map(|unit| Repr::repr(&unit))))]
+    #[hax_lib::ensures(|_| specs::reduce_post(
+        &simd_units.map(|unit| Repr::repr(&unit)),
+        &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]) {
         hax_lib::assume!(false);
         shift_left_then_reduce::<0>(&mut simd_units[0].value);
