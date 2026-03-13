@@ -3,19 +3,25 @@ use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Oper
 // Each coefficient takes up 10 bits.
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 10 * 32)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // len RING_ELEMENT_OF_T1S_SIZE
 ) {
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
 
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
+
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
             SIMDUnit::t1_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
 }
 
+#[hax_lib::requires(serialized.len() == 10 * 32)]
 pub(crate) fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,

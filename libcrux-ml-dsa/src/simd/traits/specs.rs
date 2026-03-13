@@ -466,7 +466,11 @@ pub(crate) fn commitment_serialize_post(
 }
 
 pub(crate) fn error_serialize_pre(eta: Eta, simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
-    true
+    serialized.len()
+        == match eta {
+            Eta::Two => 3,
+            Eta::Four => 4,
+        }
 }
 
 pub(crate) fn error_serialize_post(
@@ -479,7 +483,11 @@ pub(crate) fn error_serialize_post(
 }
 
 pub(crate) fn error_deserialize_pre(eta: Eta, serialized: &[u8], out: &SIMDContent) -> bool {
-    true
+    serialized.len()
+        == match eta {
+            Eta::Two => 3,
+            Eta::Four => 4,
+        }
 }
 
 pub(crate) fn error_deserialize_post(
@@ -492,7 +500,7 @@ pub(crate) fn error_deserialize_post(
 }
 
 pub(crate) fn t0_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> bool {
-    true
+    out.len() == 13
 }
 
 pub(crate) fn t0_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out: &[u8]) -> bool {
@@ -500,7 +508,7 @@ pub(crate) fn t0_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out:
 }
 
 pub(crate) fn t0_deserialize_pre(serialized: &[u8], out: &SIMDContent) -> bool {
-    true
+    serialized.len() == 13
 }
 
 pub(crate) fn t0_deserialize_post(
@@ -512,7 +520,7 @@ pub(crate) fn t0_deserialize_post(
 }
 
 pub(crate) fn t1_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> bool {
-    true
+    out.len() == 10
 }
 
 pub(crate) fn t1_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out: &[u8]) -> bool {
@@ -520,7 +528,7 @@ pub(crate) fn t1_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out:
 }
 
 pub(crate) fn t1_deserialize_pre(serialized: &[u8], out: &SIMDContent) -> bool {
-    true
+    serialized.len() == 10
 }
 
 pub(crate) fn t1_deserialize_post(
