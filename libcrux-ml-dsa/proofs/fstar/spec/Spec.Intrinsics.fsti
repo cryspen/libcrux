@@ -595,6 +595,18 @@ val mm256_xor_si256_lemma (a b: bv256) (i:u64{v i < 8}):
          ((to_i32x8 a i) ^. (to_i32x8 b i)))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i)]
 
+/// Description: Compute the absolute value of packed signed 32-bit integers in
+/// [a], and store the unsigned results in [dst].
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	dst[i+31:i] := ABS(a[i+31:i])
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
 val mm256_abs_epi32_lemma (a: bv256) (i:u64{v i < 8}):
   Lemma (requires (v (to_i32x8 a i) > minint i32_inttype))
         (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i ==
@@ -605,6 +617,97 @@ val mm256_cmpgt_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i ==
          (if (to_i32x8 a i >. to_i32x8 b i) then ones else zero))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i)]
+
+/// Description: Compare packed 32-bit integers in [a] and [b] for equality, and
+/// store the results in dst.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	dst[i+31:i] := ( a[i+31:i] == b[i+31:i] ) ? 0xFFFFFFFF : 0
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
+val mm256_cmpeq_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpeq_epi32 a b) i ==
+         (if (to_i32x8 a i =. to_i32x8 b i) then ones else zero))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpeq_epi32 a b) i)]
+
+/// Description: Negate packed signed 32-bit integers in [a] when the
+/// corresponding signed 32-bit integer in [b] is negative, and store the
+/// results in dst. Element in dst are zeroed out when the corresponding element
+/// in b is zero.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	IF b[i+31:i] < 0
+/// 		dst[i+31:i] := -(a[i+31:i])
+/// 	ELSE IF b[i+31:i] == 0
+/// 		dst[i+31:i] := 0
+/// 	ELSE
+/// 		dst[i+31:i] := a[i+31:i]
+/// 	FI
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
+val mm256_sign_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sign_epi32 a b) i ==
+         (let ai = to_i32x8 a i in
+          let bi = to_i32x8 b i in
+          if bi <. mk_i32 0 then mk_i32 0 -. ai
+          else if bi >. mk_i32 0 then ai
+          else mk_i32 0))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sign_epi32 a b) i)]
+
+/// Description: Compute the bitwise OR of 256 bits (representing integer data)
+/// in a and b, and store the result in dst.
+///
+/// Operation:
+///
+/// ```
+/// dst[255:0] := (a[255:0] OR b[255:0])
+/// dst[MAX:256] := 0
+/// ```
+val mm256_or_si256_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_or_si256 a b) i ==
+         ((to_i32x8 a i) |. (to_i32x8 b i)))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_or_si256 a b) i)]
+
+/// Description: Cast vector of type __m256i to type __m256. This intrinsic is
+/// only used for compilation and does not generate any instructions, thus it
+/// has zero latency.
+val mm256_castsi256_ps_lemma (a: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_castsi256_ps a) i == to_i32x8 a i)
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_castsi256_ps a) i)]
+
+/// Description: Set each bit of mask dst based on the most significant bit of
+/// the corresponding packed single-precision (32-bit) floating-point element in
+/// a.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	IF a[i+31]
+/// 		dst[j] := 1
+/// 	ELSE
+/// 		dst[j] := 0
+/// 	FI
+/// ENDFOR
+/// dst[MAX:8] := 0
+/// ```
+val mm256_movemask_ps_lemma (a: bv256):
+  Lemma (let result = Libcrux_intrinsics.Avx2.mm256_movemask_ps a in
+         v result >= 0 /\ v result < 256 /\
+         (forall (i:nat{i < 8}).
+           (v result / pow2 i) % 2 == (if v (to_i32x8 a (mk_u64 i)) < 0 then 1 else 0)))
+  [SMTPat (Libcrux_intrinsics.Avx2.mm256_movemask_ps a)]
 
 val mm256_testz_si256_lemma (a b: bv256):
   Lemma (let result = Libcrux_intrinsics.Avx2.mm256_testz_si256 a b in
