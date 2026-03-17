@@ -16,6 +16,7 @@ members = [
     "crates/algorithms/hmac",
     "libcrux-ecdh",
     "libcrux-psq",
+    "libcrux-psq/fuzz",
     "crates/utils/macros",
     "cavp",
     "traits",
