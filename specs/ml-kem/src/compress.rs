@@ -7,10 +7,7 @@ use crate::parameters::*;
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < 256,
-            re[i] >= 0)).and(bits_per_compressed_coefficient < 12))]
+#[hax_lib::requires(bits_per_compressed_coefficient < 12)]
 pub fn compress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Polynomial {
     createi(|i| compress_d(re[i], bits_per_compressed_coefficient))
 }
@@ -22,11 +19,7 @@ pub fn compress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Polyn
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < 256,
-            re[i] >= 0)).and(
-    bits_per_compressed_coefficient < 12))]
+#[hax_lib::requires(bits_per_compressed_coefficient < 12)]
 pub fn decompress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Polynomial {
     createi(|i| decompress_d(re[i], bits_per_compressed_coefficient))
 }
@@ -52,15 +45,15 @@ pub fn decompress(re: Polynomial, bits_per_compressed_coefficient: usize) -> Pol
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 1500")]
-#[hax_lib::requires(fe >= 0 && to_bit_size < 12)]
+#[hax_lib::requires(to_bit_size < 12)]
 fn compress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
-    hax_lib::debug_assert!(fe >= 0 && to_bit_size < 12);
+    hax_lib::debug_assert!(to_bit_size < 12);
     let two_pow_bit_size = 2u32.pow(to_bit_size as u32);
 
     let compressed =
         (fe as u32 * 2 * two_pow_bit_size + FIELD_MODULUS as u32) / (2 * FIELD_MODULUS as u32);
 
-    (compressed % two_pow_bit_size) as i16
+    (compressed % two_pow_bit_size) as u16
 }
 
 /// This function implements the `Decompress` function specified in the NIST FIPS
@@ -84,15 +77,15 @@ fn compress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(fe >= 0 && to_bit_size < 12)]
+#[hax_lib::requires(to_bit_size < 12)]
 fn decompress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
-    hax_lib::debug_assert!(fe >= 0 && to_bit_size < 12);
+    hax_lib::debug_assert!(to_bit_size < 12);
     let two_pow_bit_size = 2u32.pow(to_bit_size as u32);
 
     let decompressed =
         (2 * fe as u32 * FIELD_MODULUS as u32 + two_pow_bit_size) / (two_pow_bit_size * 2);
 
-    decompressed as i16
+    decompressed as u16
 }
 
 #[cfg(test)]
@@ -108,7 +101,7 @@ pub(crate) mod tests {
     prop_compose! {
         fn arb_field_element(bit_size : usize) (
             representative in 0..FIELD_MODULUS) -> FieldElement {
-                (representative & ((1 << bit_size) - 1)) as i16
+                representative & ((1 << bit_size) - 1)
         }
     }
 
@@ -164,11 +157,11 @@ pub(crate) mod tests {
     #[test]
     fn compress_d_output_in_range() {
         for d in 1..12 {
-            let upper = 1i16 << d;
+            let upper = 1u16 << d;
             for x in (0..FIELD_MODULUS).step_by(17) {
                 let c = compress_d(x, d);
                 assert!(
-                    c >= 0 && c < upper,
+                    c < upper,
                     "compress_d({}, {}) = {} not in [0, {})",
                     x,
                     d,
@@ -182,11 +175,11 @@ pub(crate) mod tests {
     #[test]
     fn decompress_d_output_in_range() {
         for d in 1..12 {
-            let upper = 1i16 << d;
+            let upper = 1u16 << d;
             for y in 0..upper {
                 let dec = decompress_d(y, d);
                 assert!(
-                    dec >= 0 && dec < FIELD_MODULUS,
+                    dec < FIELD_MODULUS,
                     "decompress_d({}, {}) = {} not in [0, q)",
                     y,
                     d,
@@ -200,7 +193,7 @@ pub(crate) mod tests {
     fn compress_decompress_roundtrip_is_identity_on_decompressed() {
         // compress(decompress(y, d), d) should equal y for all y in [0, 2^d)
         for d in 1..12 {
-            let upper = 1i16 << d;
+            let upper = 1u16 << d;
             for y in 0..upper {
                 let recovered = compress_d(decompress_d(y, d), d);
                 assert_eq!(

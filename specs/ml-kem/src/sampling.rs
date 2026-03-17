@@ -67,13 +67,13 @@ pub fn sample_ntt<const N: usize, const N8: usize, const N12: usize, const N96: 
 }
 
 #[hax_lib::requires(eta <= 4 && coins.len() == eta)]
-#[hax_lib::ensures(|r| r >= 0i16 && r <= eta as i16)]
+#[hax_lib::ensures(|r| r <= eta as u16)]
 fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
     hax_lib::debug_assert!(eta <= 4 && coins.len() == eta);
-    let mut sum: i16 = 0;
+    let mut sum: u16 = 0;
     for i in 0..eta {
-        hax_lib::loop_invariant!(|i: usize| sum >= 0i16 && sum <= (i as i16));
-        sum += coins[i] as i16;
+        hax_lib::loop_invariant!(|i: usize| sum <= (i as u16));
+        sum += coins[i] as u16;
     }
     sum
 }
@@ -136,7 +136,7 @@ pub fn sample_poly_cbd<const ETA64: usize, const ETA512: usize>(
     createi(|i| {
         let x: FieldElement = sum_coins(eta, &bits[(2 * i * eta)..(2 * i * eta + eta)]);
         let y: FieldElement = sum_coins(eta, &bits[(2 * i * eta + eta)..(2 * i * eta + 2 * eta)]);
-        (x - y + FIELD_MODULUS) % FIELD_MODULUS
+        (x + FIELD_MODULUS - y) % FIELD_MODULUS
     })
 }
 

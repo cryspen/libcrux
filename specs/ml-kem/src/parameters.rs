@@ -1,5 +1,5 @@
 /// Field modulus: 3329
-pub(crate) const FIELD_MODULUS: i16 = 3329;
+pub(crate) const FIELD_MODULUS: u16 = 3329;
 
 /// Each field element needs floor(log_2(FIELD_MODULUS)) + 1 = 12 bits to represent
 pub(crate) const BITS_PER_COEFFICIENT: usize = 12;
@@ -137,8 +137,8 @@ pub(crate) mod hash_functions {
 
 /// An ML-KEM field element:
 /// - after reduction modulo FIELD_MODULUS, it is an integer in the range [0, FIELD_MODULUS - 1]
-/// - it is represented as an i16, and may not yet be reduced modulo FIELD_MODULUS
-pub(crate) type FieldElement = i16;
+/// - it is represented as a u16
+pub(crate) type FieldElement = u16;
 
 /// An ML-KEM polynomial ring element
 pub(crate) type Polynomial = [FieldElement; 256];

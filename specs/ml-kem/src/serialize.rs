@@ -109,11 +109,11 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>)
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
 pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
-    input: &[i16; N],
+    input: &[u16; N],
     d: usize,
 ) -> BitVector<Nd> {
     hax_lib::debug_assert!(Nd == N * d);
-    createi(|i| (input[i / d] >> (i % d)) & 1 == 1)
+    createi(|i| (input[i / d] >> (i % d)) & 1u16 == 1)
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
@@ -155,18 +155,17 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
-#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < N, result[i] >= 0)).and(
-                                *input == bitvector_from_bounded_ints(&result, d)))]
+#[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
     d: usize,
-) -> [i16; N] {
+) -> [u16; N] {
     hax_lib::debug_assert!(Nd == N * d);
-    let result = createi(|i| {
-        let mut coefficient = 0;
+    let result: [u16; N] = createi(|i| {
+        let mut coefficient: u16 = 0;
         for j in 0..d {
             if input[i * d + j] {
-                coefficient |= 1 << j;
+                coefficient |= 1u16 << j;
             }
         }
         coefficient
@@ -177,11 +176,10 @@ pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N < 16384 / d && N < 16384 / 8 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
-#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < N, result[i] >= 0)))]
 pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, const Nd8: usize>(
     b: &[u8; Nd],
     d: usize,
-) -> [i16; N8] {
+) -> [u16; N8] {
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8
     );
@@ -191,13 +189,12 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
-#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < 256, result[i] >= 0)))]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d
     );
     let decoded = byte_decode_generic::<32, 256, D32, D256>(b, d);
-    createi(|i| decoded[i] % FIELD_MODULUS as i16)
+    createi(|i| decoded[i] % FIELD_MODULUS)
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
@@ -263,8 +260,6 @@ pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
 /// Corresponds to `compress_then_serialize_message` in the implementation.
 ///
 /// Used for encoding/decoding the message in K-PKE.
-#[hax_lib::requires(
-    hax_lib::forall(|i:usize| hax_lib::implies(i < 256, re[i] >= 0)))]
 pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
     byte_encode::<32, 256>(compress(re, 1), 1)
 }
@@ -443,7 +438,7 @@ mod tests {
     #[test]
     fn bitvector_from_bounded_ints_known_vector() {
         // d=4, integers [5, 11] -> bits for 5=0101 and 11=1011
-        let ints: [i16; 2] = [5, 11];
+        let ints: [u16; 2] = [5, 11];
         let bits: [bool; 8] = bitvector_from_bounded_ints(&ints, 4);
         // 5 in LE bits: [1,0,1,0]
         assert_eq!(bits[0..4], [true, false, true, false]);
@@ -455,25 +450,25 @@ mod tests {
     fn bitvector_to_bounded_ints_known_vector() {
         // Reverse of above: bits for 5 and 11 with d=4
         let bits = [true, false, true, false, true, true, false, true];
-        let ints: [i16; 2] = bitvector_to_bounded_ints(&bits, 4);
+        let ints: [u16; 2] = bitvector_to_bounded_ints(&bits, 4);
         assert_eq!(ints, [5, 11]);
     }
 
     #[test]
     fn bitvector_roundtrip() {
         // from_bounded -> to_bounded should recover original values
-        let ints: [i16; 4] = [0, 7, 15, 3];
+        let ints: [u16; 4] = [0, 7, 15, 3];
         let bits: [bool; 16] = bitvector_from_bounded_ints(&ints, 4);
-        let recovered: [i16; 4] = bitvector_to_bounded_ints(&bits, 4);
+        let recovered: [u16; 4] = bitvector_to_bounded_ints(&bits, 4);
         assert_eq!(recovered, ints);
     }
 
     #[test]
     fn byte_encode_decode_roundtrip_d1() {
         // d=1: coefficients are 0 or 1
-        let mut poly = [0i16; 256];
+        let mut poly = [0u16; 256];
         for i in 0..256 {
-            poly[i] = (i % 2) as i16;
+            poly[i] = (i % 2) as u16;
         }
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         let decoded: Polynomial = byte_decode::<32, 256>(&encoded, 1);
@@ -482,7 +477,7 @@ mod tests {
 
     #[test]
     fn byte_encode_decode_roundtrip_d4() {
-        let poly: Polynomial = createi(|i| (i % 16) as i16);
+        let poly: Polynomial = createi(|i| (i % 16) as u16);
         let encoded: [u8; 128] = byte_encode::<128, 1024>(poly, 4);
         let decoded: Polynomial = byte_decode::<128, 1024>(&encoded, 4);
         assert_eq!(decoded, poly);
@@ -490,7 +485,7 @@ mod tests {
 
     #[test]
     fn byte_encode_decode_roundtrip_d10() {
-        let poly: Polynomial = createi(|i| (i % 1024) as i16);
+        let poly: Polynomial = createi(|i| (i % 1024) as u16);
         let encoded: [u8; 320] = byte_encode::<320, 2560>(poly, 10);
         let decoded: Polynomial = byte_decode::<320, 2560>(&encoded, 10);
         assert_eq!(decoded, poly);
@@ -499,13 +494,13 @@ mod tests {
     #[test]
     fn byte_decode_d12_reduces_mod_q() {
         // Encode a polynomial with values in [0, q-1], decode it, verify reduction
-        let poly: Polynomial = createi(|i| (i as i16 * 13) % FIELD_MODULUS);
+        let poly: Polynomial = createi(|i| (i as u16 * 13) % FIELD_MODULUS);
         let encoded: [u8; 384] = byte_encode::<384, 3072>(poly, 12);
         let decoded: Polynomial = byte_decode::<384, 3072>(&encoded, 12);
         // All decoded values should be in [0, q-1]
         for (i, &coeff) in decoded.iter().enumerate() {
             assert!(
-                coeff >= 0 && coeff < FIELD_MODULUS,
+                coeff < FIELD_MODULUS,
                 "decoded[{}] = {} not in [0, q)",
                 i,
                 coeff
@@ -517,12 +512,12 @@ mod tests {
     #[test]
     fn byte_encode_known_vector_d1() {
         // All zeros
-        let poly = [0i16; 256];
+        let poly = [0u16; 256];
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         assert_eq!(encoded, [0u8; 32]);
 
         // All ones
-        let poly = [1i16; 256];
+        let poly = [1u16; 256];
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         assert_eq!(encoded, [0xFFu8; 32]);
     }

@@ -13,7 +13,7 @@ pub(crate) const MONTGOMERY_R: i32 = 1; // Identity in the spec
 /// In the spec, ZETAS are plain values, so ZETAS_TIMES_MONTGOMERY_R == ZETAS.
 /// This alias documents the correspondence with the implementation's `ZETAS_TIMES_MONTGOMERY_R`.
 #[allow(dead_code)]
-pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = ZETAS;
+pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [u16; 128] = ZETAS;
 
 /// Montgomery domain conversion: identity in the spec.
 ///
@@ -34,7 +34,7 @@ pub(crate) fn to_standard_domain(a: FieldElement) -> FieldElement {
 /// `a * c * R^{-1} mod q`. In the spec, this simplifies to `a * c mod q` since R = 1.
 #[allow(dead_code)]
 pub(crate) fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) -> FieldElement {
-    ((a as i32 * c as i32).rem_euclid(FIELD_MODULUS as i32)) as i16
+    ((a as u32 * c as u32) % FIELD_MODULUS as u32) as u16
 }
 
 /// Convert a field element to its unsigned representative in [0, q).
@@ -44,7 +44,7 @@ pub(crate) fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) 
 /// In the spec, field elements are already non-negative after reduction, so this
 /// is a plain modular reduction.
 pub(crate) fn to_unsigned_field_modulus(a: FieldElement) -> FieldElement {
-    (a as i32).rem_euclid(FIELD_MODULUS as i32) as i16
+    a % FIELD_MODULUS // already unsigned, just reduce
 }
 
 fn bit_rev_7(x: usize) -> usize {
@@ -91,7 +91,7 @@ fn bit_rev_7(x: usize) -> usize {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-const ZETAS: [i16; 128] = [
+const ZETAS: [u16; 128] = [
     1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746, 296,
     2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821, 289, 331,
     3253, 1756, 1197, 2304, 2277, 2055, 650, 1977, 2513, 632, 2865, 33, 1320, 1915, 2319, 1435,
@@ -123,13 +123,15 @@ fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial {
         hax_lib::fstar!("assert (v round + v k < 256 / (v len))");
         hax_lib::fstar!("assert (v len >= 2)");
         let idx = i % (2 * len);
-        hax_lib::fstar!("assert(v (cast (get_zeta (round +! k <: usize) <: i16) <: i32) == v (get_zeta ( round +! k <: usize ) <: i16))");
+        hax_lib::fstar!("assert(v (cast (get_zeta (round +! k <: usize) <: u16) <: i32) == v (get_zeta ( round +! k <: usize ) <: u16))");
+        let q = FIELD_MODULUS as u32;
         if idx < len {
-            ((p[i] as i32 + get_zeta(round + k) as i32 * p[i + len] as i32)
-                .rem_euclid(FIELD_MODULUS as i32)) as i16
+            ((p[i] as u32 + get_zeta(round + k) as u32 * p[i + len] as u32)
+                % q) as u16
         } else {
-            ((p[i - len] as i32 - get_zeta(round + k) as i32 * p[i] as i32)
-                .rem_euclid(FIELD_MODULUS as i32)) as i16
+            // Add q² to prevent underflow: q² > (q-1)² >= zeta * p[i]
+            ((p[i - len] as u32 + q * q - get_zeta(round + k) as u32 * p[i] as u32)
+                % q) as u16
         }
     })
 }
@@ -165,13 +167,12 @@ fn ntt(p: Polynomial) -> Polynomial {
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-fn base_case_multiply_even(a0: i16, a1: i16, b0: i16, b1: i16, zeta: FieldElement) -> i16 {
-    (a0 as i64 * b0 as i64 + a1 as i64 * b1 as i64 * zeta as i64).rem_euclid(FIELD_MODULUS as i64)
-        as i16
+fn base_case_multiply_even(a0: u16, a1: u16, b0: u16, b1: u16, zeta: FieldElement) -> u16 {
+    ((a0 as u64 * b0 as u64 + a1 as u64 * b1 as u64 * zeta as u64) % FIELD_MODULUS as u64) as u16
 }
 
-fn base_case_multiply_odd(a0: i16, a1: i16, b0: i16, b1: i16) -> i16 {
-    (a0 as i64 * b1 as i64 + a1 as i64 * b0 as i64).rem_euclid(FIELD_MODULUS as i64) as i16
+fn base_case_multiply_odd(a0: u16, a1: u16, b0: u16, b1: u16) -> u16 {
+    ((a0 as u64 * b1 as u64 + a1 as u64 * b0 as u64) % FIELD_MODULUS as u64) as u16
 }
 
 /// Given two `Polynomial`s in their NTT representations,
@@ -203,7 +204,7 @@ pub(crate) fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
         let zeta = if i % 4 < 2 {
             zeta_4
         } else {
-            (FIELD_MODULUS - zeta_4).rem_euclid(FIELD_MODULUS)
+            FIELD_MODULUS - zeta_4
         };
         if i % 2 == 0 {
             base_case_multiply_even(p1[i], p1[i + 1], p2[i], p2[i + 1], zeta)
@@ -231,8 +232,8 @@ mod tests {
 
     const Q: i32 = FIELD_MODULUS as i32;
 
-    fn mod_q(x: i32) -> i16 {
-        x.rem_euclid(Q) as i16
+    fn mod_q(x: i32) -> u16 {
+        x.rem_euclid(Q) as u16
     }
 
     fn mod_pow(base: i32, exp: u32, modulus: i32) -> i32 {
@@ -312,7 +313,7 @@ mod tests {
                 }
             }
         }
-        createi(|i| (result[i].rem_euclid(Q as i64)) as i16)
+        createi(|i| (result[i].rem_euclid(Q as i64)) as u16)
     }
 
     #[test]
@@ -336,14 +337,14 @@ mod tests {
 
     #[test]
     fn ntt_of_zero_is_zero() {
-        let zero = [0i16; 256];
+        let zero = [0u16; 256];
         assert_eq!(ntt(zero), zero);
     }
 
     #[test]
     fn ntt_matches_reference() {
         // Test with a simple input: f[0] = 1, rest zero (the constant polynomial 1)
-        let mut f = [0i16; 256];
+        let mut f = [0u16; 256];
         f[0] = 1;
         let ntt_result = ntt(f);
         let ref_result = ref_ntt(&f);
@@ -353,14 +354,14 @@ mod tests {
         );
 
         // Test with f[1] = 1 (the polynomial X)
-        let mut f = [0i16; 256];
+        let mut f = [0u16; 256];
         f[1] = 1;
         let ntt_result = ntt(f);
         let ref_result = ref_ntt(&f);
         assert_eq!(ntt_result, ref_result, "NTT mismatch for polynomial X");
 
         // Test with a more complex polynomial
-        let f: Polynomial = createi(|i| (i as i16 * 7 + 3) % FIELD_MODULUS);
+        let f: Polynomial = createi(|i| (i as u16 * 7 + 3) % FIELD_MODULUS);
         let ntt_result = ntt(f);
         let ref_result = ref_ntt(&f);
         assert_eq!(
@@ -371,7 +372,7 @@ mod tests {
 
     #[test]
     fn ntt_inverse_matches_reference() {
-        let mut fhat = [0i16; 256];
+        let mut fhat = [0u16; 256];
         fhat[0] = 1;
         let inv_result = ntt_inverse(fhat);
         let ref_result = ref_ntt_inverse(&fhat);
@@ -380,7 +381,7 @@ mod tests {
             "Inverse NTT mismatch for unit input"
         );
 
-        let fhat: Polynomial = createi(|i| (i as i16 * 13 + 5) % FIELD_MODULUS);
+        let fhat: Polynomial = createi(|i| (i as u16 * 13 + 5) % FIELD_MODULUS);
         let inv_result = ntt_inverse(fhat);
         let ref_result = ref_ntt_inverse(&fhat);
         assert_eq!(
@@ -394,11 +395,11 @@ mod tests {
         // (a0 + a1*X) * (b0 + b1*X) mod (X^2 - zeta) = c0 + c1*X
         // c0 = a0*b0 + a1*b1*zeta
         // c1 = a0*b1 + a1*b0
-        let a0: i16 = 5;
-        let a1: i16 = 3;
-        let b0: i16 = 7;
-        let b1: i16 = 2;
-        let zeta: i16 = 17;
+        let a0: u16 = 5;
+        let a1: u16 = 3;
+        let b0: u16 = 7;
+        let b1: u16 = 2;
+        let zeta: u16 = 17;
 
         // c0 = 5*7 + 3*2*17 = 35 + 102 = 137
         let c0 = base_case_multiply_even(a0, a1, b0, b1, zeta);
@@ -411,11 +412,11 @@ mod tests {
 
     #[test]
     fn base_case_multiply_reduces_mod_q() {
-        let a0: i16 = 3000;
-        let a1: i16 = 3000;
-        let b0: i16 = 3000;
-        let b1: i16 = 3000;
-        let zeta: i16 = 1729;
+        let a0: u16 = 3000;
+        let a1: u16 = 3000;
+        let b0: u16 = 3000;
+        let b1: u16 = 3000;
+        let zeta: u16 = 1729;
 
         let c0 = base_case_multiply_even(a0, a1, b0, b1, zeta);
         assert!(c0 >= 0 && c0 < FIELD_MODULUS, "c0 = {} not in [0, q)", c0);
@@ -427,9 +428,9 @@ mod tests {
     #[test]
     fn multiply_ntts_known_vector() {
         // Multiply NTT(1) * NTT(X) and verify result
-        let mut f = [0i16; 256];
+        let mut f = [0u16; 256];
         f[0] = 1;
-        let mut g = [0i16; 256];
+        let mut g = [0u16; 256];
         g[1] = 1;
 
         let f_ntt = ntt(f);
@@ -438,7 +439,7 @@ mod tests {
         let product = ntt_inverse(product_ntt);
 
         // f*g = 1*X = X, so product should be [0, 1, 0, 0, ...]
-        let mut expected = [0i16; 256];
+        let mut expected = [0u16; 256];
         expected[1] = 1;
         assert_eq!(product, expected, "1 * X should equal X");
     }
@@ -446,13 +447,13 @@ mod tests {
     #[test]
     fn ntt_multiply_corresponds_to_polynomial_multiply() {
         // f = 1 + 2X + 3X^2
-        let mut f = [0i16; 256];
+        let mut f = [0u16; 256];
         f[0] = 1;
         f[1] = 2;
         f[2] = 3;
 
         // g = 4 + 5X
-        let mut g = [0i16; 256];
+        let mut g = [0u16; 256];
         g[0] = 4;
         g[1] = 5;
 
@@ -475,9 +476,9 @@ mod tests {
         // Test multiplication where X^256 + 1 reduction matters
         // f = X^200, g = X^100
         // f*g = X^300 = X^300 mod (X^256+1) = -X^44
-        let mut f = [0i16; 256];
+        let mut f = [0u16; 256];
         f[200] = 1;
-        let mut g = [0i16; 256];
+        let mut g = [0u16; 256];
         g[100] = 1;
 
         let expected = poly_mul_schoolbook(&f, &g);
