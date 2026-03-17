@@ -25,6 +25,7 @@ pub enum HandshakeError {
     PayloadTooLong,
     ChannelError,
     UnsupportedCiphersuite,
+    RateLimit,
     Storage,
     OtherError,
     IdentifierMismatch,
