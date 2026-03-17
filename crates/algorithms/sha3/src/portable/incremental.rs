@@ -5,7 +5,7 @@ use generic_keccak::xof::KeccakXofState;
 use crate::proof_utils::keccak_xof_state_inv;
 
 mod cshake;
-pub use cshake::{left_encode, left_encode_byte, right_encode, CShake128, CShake256};
+pub use cshake::{left_encode, left_encode_byte, right_encode};
 
 mod private {
     pub trait Sealed {}
@@ -43,11 +43,6 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
 
 /// SHAKE128 Xof state
 pub struct Shake128Xof {
-    state: KeccakXofState<1, 168, u64>,
-}
-
-/// CSHAKE128 Iterative state
-pub struct CShake128It {
     state: KeccakXofState<1, 168, u64>,
 }
 
@@ -124,7 +119,7 @@ impl Xof<168> for Shake128Xof {
     }
 }
 
-impl Xof<168> for CShake128It {
+impl Xof<168> for CShake128 {
     /// CShake128 new state
     fn new() -> Self {
         Self {
@@ -188,7 +183,7 @@ impl Xof<136> for Shake256Xof {
     }
 }
 
-impl Xof<136> for CShake256It {
+impl Xof<136> for CShake256 {
     /// CShake256 new state
     fn new() -> Self {
         Self {

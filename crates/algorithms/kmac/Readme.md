@@ -1,5 +1,7 @@
 # KMAC
 
+![pre-verification](../../../.assets/pre_verification-orange.svg)
+
 This crate implements a keyed MAC (KMAC) with SHA-3. It provides KMAC_128 and KMAC_256.
 
 ## Verification
