@@ -217,7 +217,8 @@ pub(crate) fn compute_hint_pre(
     hax_lib::fstar::prop!(
         r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        (forall i. i < 8 ==> v (Seq.index $low i) > v ${i32::MIN})"#
     )
 }
 
