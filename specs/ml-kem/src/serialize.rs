@@ -263,6 +263,8 @@ pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
 /// Corresponds to `compress_then_serialize_message` in the implementation.
 ///
 /// Used for encoding/decoding the message in K-PKE.
+#[hax_lib::requires(
+    hax_lib::forall(|i:usize| hax_lib::implies(i < 256, re[i] >= 0)))]
 pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
     byte_encode::<32, 256>(compress(re, 1), 1)
 }
