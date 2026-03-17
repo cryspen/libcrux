@@ -2,10 +2,22 @@ name: KEM - Build & Test
 
 on:
   merge_group:
-  push:
-    branches: ["main", "dev"]
   pull_request:
     branches: ["main", "dev", "*"]
+    paths:
+      - 'crates/algorithms/curve25519/**'
+      - 'libcrux-ecdh/**'
+      - 'crates/utils/hacl-rs/**'
+      - 'crates/utils/intrinsics/**'
+      - 'libcrux-kem/**'
+      - 'crates/utils/macros/**'
+      - 'libcrux-ml-kem/**'
+      - 'crates/algorithms/p256/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha2/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:

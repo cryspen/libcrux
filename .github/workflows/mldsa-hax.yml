@@ -2,12 +2,18 @@ name: ML-DSA - hax
 
 on:
   merge_group:
-  push:
-    branches: ["dev", "main"]
-
   pull_request:
     branches: ["dev", "main"]
-
+    paths:
+      - 'crates/utils/intrinsics/**'
+      - 'crates/testing/kats/**'
+      - 'crates/utils/macros/**'
+      - 'libcrux-ml-dsa/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'crates/algorithms/sha3/**'
+      - 'traits/**'
+      
   schedule:
     - cron: "0 0 * * *"
 

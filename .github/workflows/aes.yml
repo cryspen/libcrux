@@ -5,7 +5,12 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
     paths:
-      - "crates/algorithms/aesgcm/**"
+      - 'cavp/**'
+      - 'crates/algorithms/aesgcm/**'
+      - 'crates/utils/intrinsics/**'
+      - 'crates/sys/platform/**'
+      - 'crates/utils/secrets/**'
+      - 'traits/**'
   workflow_dispatch:
 
 env:
@@ -17,6 +22,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -120,6 +126,7 @@ jobs:
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   build-intel-macos:
+    if: ${{ github.event_name != 'merge_group' }}
     runs-on: macos-15-intel
     defaults:
       run:
@@ -138,6 +145,7 @@ jobs:
           cargo build --lib --examples --benches --verbose
 
   fuzz:
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
@@ -167,3 +175,15 @@ jobs:
 
       - name: 🏃🏻‍♀️ Encrypt256
         run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run encrypt256 -- -runs=100000
+        
+  aes-build-test-status:
+    if: ${{ always() }}
+    needs: [build, build-intel-macos, fuzz]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
