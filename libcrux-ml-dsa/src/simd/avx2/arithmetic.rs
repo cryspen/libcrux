@@ -269,8 +269,25 @@ pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Ve
 
 // Not using inline always here regresses performance significantly.
 #[inline(always)]
+#[hax_lib::fstar::before(
+    r#"
+assume val count_ones_bound_lemma (x: i32):
+  Lemma (requires v x >= 0)
+        (ensures forall (a: nat). v x < pow2 a ==>
+          v (cast (Core_models.Num.impl_i32__count_ones x <: u32) <: usize) <= a)
+  [SMTPat (Core_models.Num.impl_i32__count_ones x)]
+"#
+)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"
+    (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
+     v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+    (forall (i:u64{v i < 8}). v (to_i32x8 $low i) > v ${i32::MIN})"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    (forall i.
+      v (to_i32x8 ${hint}_future i) ==
+      Spec.MLDSA.Math.compute_one_hint (v (to_i32x8 $low i)) (v (to_i32x8 $high i)) (v $gamma2)) /\
+    v $result <= 8"#))]
 pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
     let minus_gamma2 = mm256_set1_epi32(-gamma2);
     let gamma2 = mm256_set1_epi32(gamma2);
@@ -288,8 +305,17 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
         low_equals_minus_gamma2_and_high_is_nonzero,
     );
 
+    // Proof hints: bitwise lemmas + movemask bounds + pow2 normalization
+    hax_lib::fstar!(r#"let _:unit = logand_lemma_forall #i32_inttype in
+    let _:unit = FStar.Classical.forall_intro (fun a -> logor_lemma #i32_inttype a a) in ()"#);
+
     let hints_mask = mm256_movemask_ps(mm256_castsi256_ps(*hint));
     *hint = mm256_and_si256(*hint, mm256_set1_epi32(0x1));
+
+    hax_lib::fstar!(r#"mm256_movemask_ps_lemma (Libcrux_intrinsics.Avx2.mm256_castsi256_ps
+      (Libcrux_intrinsics.Avx2.mm256_or_si256 low_within_bound
+        low_equals_minus_gamma2_and_high_is_nonzero));
+    assert_norm (pow2 8 = 256)"#);
 
     hints_mask.count_ones() as usize
 }
