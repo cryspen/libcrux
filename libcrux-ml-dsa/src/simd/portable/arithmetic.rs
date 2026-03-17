@@ -337,7 +337,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque (v $FIELD_MAX) ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     forall i. i < 8 ==>
         (let t0_v = v (Seq.index ${t0}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) in
@@ -360,7 +360,7 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
                     t0_v == t0_s /\ v (Seq.index ${t1}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == t1_s /\
                     Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) t0_v)) /\
                 (forall j. j >= v i ==> (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j /\
-                    Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)))"#
+                    Spec.Utils.is_i32b (v $FIELD_MAX) (Seq.index ${t0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)))"#
             )
         });
 
