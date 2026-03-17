@@ -33,18 +33,30 @@ const RAND_KEYGEN_LEN: usize = 32;
 
 impl ECDSAKeyPair {
     pub fn generate(rng: &mut impl CryptoRng) -> Result<Self, Error> {
-        let mut bytes = [0u8; RAND_KEYGEN_LEN];
-        rng.fill_bytes(&mut bytes);
+        let mut verification_key = [0u8; 64];
 
-        Self::generate_derand(bytes.classify())
+        let signing_key = SigningKey::random(rng)?;
+        // create verification key
+        libcrux_p256::P256::secret_to_public(&mut verification_key, signing_key.as_ref())
+            .map_err(|_| Error::SecretToPublicError)?;
+
+        Ok(ECDSAKeyPair {
+            signing_key,
+            verification_key: VerificationKey::try_from(&verification_key)?,
+        })
     }
 
     /// Generate an ECDSA-P256 key pair (derand)
     pub fn generate_derand(randomness: [U8; RAND_KEYGEN_LEN]) -> Result<ECDSAKeyPair, Error> {
-        let mut signing_key = [0u8; 32];
+        let signing_key = randomness;
         let mut verification_key = [0u8; 64];
 
-        libcrux_p256::P256::generate_pair(&mut verification_key, &mut signing_key, &randomness);
+        // validate the signing key
+        crate::p256::validate_scalar_(&signing_key)?;
+
+        // create verification key
+        libcrux_p256::P256::secret_to_public(&mut verification_key, &signing_key)
+            .map_err(|_| Error::SecretToPublicError)?;
 
         Ok(ECDSAKeyPair {
             signing_key: SigningKey::try_from(&signing_key)?,

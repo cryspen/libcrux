@@ -17,6 +17,7 @@ pub enum Error {
     NoCompressedPoint,
     NoUnCompressedPoint,
     SigningError,
+    SecretToPublicError,
     InvalidSignature,
     RandError,
     UnsupportedHash,
