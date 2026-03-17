@@ -31,7 +31,7 @@ fn sample_secret(eta: usize, prf_input: &[u8; 33]) -> Polynomial {
 }
 
 #[hax_lib::requires(N1 > 0 && N == N1 - 1)]
-fn concat_byte<const N: usize, const N1:usize>(a: &[u8; N], b: u8) -> [u8; N1] {
+fn concat_byte<const N: usize, const N1: usize>(a: &[u8; N], b: u8) -> [u8; N1] {
     let mut result = [0u8; N1];
     result[..N].copy_from_slice(a);
     result[N] = b;
@@ -100,14 +100,17 @@ pub(crate) fn generate_keypair<
 
     // s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
     let secret = createi(|i| {
-        let prf_input= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(), i as u8);
+        let prf_input =
+            concat_byte::<32, 33>(seed_for_secret_and_error.try_into().unwrap(), i as u8);
         sample_secret(params.eta1, &prf_input)
     });
 
     // e[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
     let error = createi(|i| {
-        let prf_input : [u8; 33]= concat_byte::<32,33>(seed_for_secret_and_error.try_into().unwrap(),
-                                              (RANK + i) as u8);
+        let prf_input: [u8; 33] = concat_byte::<32, 33>(
+            seed_for_secret_and_error.try_into().unwrap(),
+            (RANK + i) as u8,
+        );
         sample_secret(params.eta1, &prf_input)
     });
 
@@ -171,22 +174,28 @@ pub(crate) fn generate_keypair<
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
     RANK <= 4 && params.rank == RANK
-    && CT_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+    && U_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8
+    && V_SIZE == (COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+    && CT_SIZE == U_SIZE + V_SIZE
     && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
     && (params.eta1 == 2 || params.eta1 == 3)
     && (params.eta2 == 2 || params.eta2 == 3)
 )]
-pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
+pub(crate) fn encrypt<
+    const RANK: usize,
+    const U_SIZE: usize,
+    const V_SIZE: usize,
+    const CT_SIZE: usize,
+>(
     params: &MlKemParams,
     ek: &[u8],
     message: &[u8; 32],
     randomness: &[u8; 32],
 ) -> Result<[u8; CT_SIZE], BadRejectionSamplingRandomnessError> {
     hax_lib::debug_assert!(
-        CT_SIZE
-            == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du
-                + COEFFICIENTS_IN_RING_ELEMENT * params.dv)
-                / 8
+        U_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du) / 8
+            && V_SIZE == (COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
+            && CT_SIZE == U_SIZE + V_SIZE
             && ek.len() == RANK * BYTES_PER_RING_ELEMENT + 32
     );
 
@@ -205,13 +214,13 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
 
     // r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
     let r = createi(|i| {
-        let prf_input : [u8; 33]= concat_byte(randomness.try_into().unwrap(), i as u8);
+        let prf_input: [u8; 33] = concat_byte(randomness.try_into().unwrap(), i as u8);
         sample_secret(params.eta1, &prf_input)
     });
 
     // e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
     let error_1 = createi(|i| {
-        let prf_input : [u8; 33]= concat_byte(randomness.try_into().unwrap(), (RANK + i) as u8);
+        let prf_input: [u8; 33] = concat_byte(randomness.try_into().unwrap(), (RANK + i) as u8);
         sample_secret(params.eta2, &prf_input)
     });
 
@@ -234,15 +243,15 @@ pub(crate) fn encrypt<const RANK: usize, const CT_SIZE: usize>(
     let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     // c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
-    let c1 = compress_then_serialize_u::<RANK>(&u, params.du);
+    let c1: [u8; U_SIZE] = compress_then_serialize_u::<RANK, U_SIZE>(&u, params.du);
 
     // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
-    let c2 = compress_then_serialize_v(&v, params.dv);
+    let c2: [u8; V_SIZE] = compress_then_serialize_v::<V_SIZE>(&v, params.dv);
 
     // c ← (c₁ ‖ c₂)
     let mut c = [0u8; CT_SIZE];
-    c[..c1.len()].copy_from_slice(&c1);
-    c[c1.len()..].copy_from_slice(&c2);
+    c[..U_SIZE].copy_from_slice(&c1);
+    c[U_SIZE..].copy_from_slice(&c2);
 
     Ok(c)
 }
@@ -319,8 +328,13 @@ mod tests {
 
         let message = [0xABu8; 32];
         let randomness = [0xCDu8; 32];
-        let ciphertext =
-            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext = encrypt::<
+            3,
+            { ML_KEM_768_U_SIZE },
+            { ML_KEM_768_V_SIZE },
+            { ML_KEM_768_CT_SIZE },
+        >(&ML_KEM_768, &ek, &message, &randomness)
+        .unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk, &ciphertext);
 
         assert_eq!(decrypted, message);
@@ -338,9 +352,21 @@ mod tests {
         let message = [0x55u8; 32];
         let randomness = [0x77u8; 32];
         let c1 =
-            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+            encrypt::<3, { ML_KEM_768_U_SIZE }, { ML_KEM_768_V_SIZE }, { ML_KEM_768_CT_SIZE }>(
+                &ML_KEM_768,
+                &ek,
+                &message,
+                &randomness,
+            )
+            .unwrap();
         let c2 =
-            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+            encrypt::<3, { ML_KEM_768_U_SIZE }, { ML_KEM_768_V_SIZE }, { ML_KEM_768_CT_SIZE }>(
+                &ML_KEM_768,
+                &ek,
+                &message,
+                &randomness,
+            )
+            .unwrap();
 
         assert_eq!(c1, c2);
     }
@@ -363,8 +389,13 @@ mod tests {
 
         let message = [0xAAu8; 32];
         let randomness = [0xBBu8; 32];
-        let ciphertext =
-            encrypt::<3, { ML_KEM_768_CT_SIZE }>(&ML_KEM_768, &ek, &message, &randomness).unwrap();
+        let ciphertext = encrypt::<
+            3,
+            { ML_KEM_768_U_SIZE },
+            { ML_KEM_768_V_SIZE },
+            { ML_KEM_768_CT_SIZE },
+        >(&ML_KEM_768, &ek, &message, &randomness)
+        .unwrap();
         let decrypted = decrypt::<3>(&ML_KEM_768, &dk2, &ciphertext);
 
         assert_ne!(decrypted, message);

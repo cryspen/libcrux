@@ -290,15 +290,19 @@ pub(crate) fn deserialize_to_uncompressed_ring_element(
 /// Note: The implementation dispatches on the compression factor (10 or 11).
 /// In the spec we use the generic compress + byte_encode path.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11))]
-pub(crate) fn compress_then_serialize_u<const RANK: usize>(
+#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && U_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
+pub(crate) fn compress_then_serialize_u<const RANK: usize, const U_SIZE: usize>(
     u: &Vector<RANK>,
     du: usize,
-) -> Vec<u8> {
+) -> [u8; U_SIZE] {
     let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
-    let mut out = vec![0u8; RANK * du_poly_size];
+    let mut out = [0u8; U_SIZE];
     for i in 0..RANK {
-        byte_encode_into(compress(u[i], du), du, &mut out[i * du_poly_size..(i + 1) * du_poly_size]);
+        byte_encode_into(
+            compress(u[i], du),
+            du,
+            &mut out[i * du_poly_size..(i + 1) * du_poly_size],
+        );
     }
     out
 }
@@ -306,10 +310,12 @@ pub(crate) fn compress_then_serialize_u<const RANK: usize>(
 /// Compress v to dv bits, then serialize.
 /// Corresponds to `compress_then_serialize_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(dv == 4 || dv == 5)]
-pub(crate) fn compress_then_serialize_v(v: &Polynomial, dv: usize) -> Vec<u8> {
-    let dv_size = (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8;
-    let mut out = vec![0u8; dv_size];
+#[hax_lib::requires((dv == 4 || dv == 5) && V_SIZE == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
+pub(crate) fn compress_then_serialize_v<const V_SIZE: usize>(
+    v: &Polynomial,
+    dv: usize,
+) -> [u8; V_SIZE] {
+    let mut out = [0u8; V_SIZE];
     byte_encode_into(compress(*v, dv), dv, &mut out);
     out
 }
@@ -317,7 +323,7 @@ pub(crate) fn compress_then_serialize_v(v: &Polynomial, dv: usize) -> Vec<u8> {
 /// Deserialize and decompress u from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_u` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11))]
+#[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
 pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
     ciphertext: &[u8],
     du: usize,
@@ -335,7 +341,7 @@ pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
 /// Deserialize and decompress v from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(dv == 4 || dv == 5)]
+#[hax_lib::requires((dv == 4 || dv == 5) && serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
 pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
     decompress(byte_decode_dyn(serialized, dv), dv)
 }
@@ -344,9 +350,8 @@ pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Pol
 /// Corresponds to `deserialize_ring_elements_reduced` in the implementation.
 ///
 /// This is equivalent to `vector_decode_12` but named to match the implementation.
-pub(crate) fn deserialize_ring_elements_reduced<const RANK: usize>(
-    encoded: &[u8],
-) -> Vector<RANK> {
+#[hax_lib::requires(RANK <= 4 && encoded.len() == RANK * BYTES_PER_RING_ELEMENT)]
+pub(crate) fn deserialize_ring_elements_reduced<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
     vector_decode_12::<RANK>(encoded)
 }
 
@@ -363,12 +368,8 @@ pub(crate) fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
 /// Serialize a public key: encode the NTT vector t̂ concatenated with the seed ρ.
 /// Corresponds to `serialize_public_key` in the implementation's `ind_cpa.rs`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(RANK <= 4 && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
-pub(crate) fn serialize_public_key<
-    const RANK: usize,
-    const EK_SIZE: usize,
-    const T_SIZE: usize,
->(
+#[hax_lib::requires(RANK <= 4 && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT && seed_for_A.len() >= 32)]
+pub(crate) fn serialize_public_key<const RANK: usize, const EK_SIZE: usize, const T_SIZE: usize>(
     t_as_ntt: &Vector<RANK>,
     seed_for_A: &[u8],
 ) -> [u8; EK_SIZE] {

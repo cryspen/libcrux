@@ -16,7 +16,9 @@ pub(crate) fn add_polynomials(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
 }
 
 pub(crate) fn sub_polynomials(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
-    createi(|j| ((p1[j] as u32 + FIELD_MODULUS as u32 - p2[j] as u32) % FIELD_MODULUS as u32) as u16)
+    createi(|j| {
+        ((p1[j] as u32 + FIELD_MODULUS as u32 - p2[j] as u32) % FIELD_MODULUS as u32) as u16
+    })
 }
 
 pub(crate) fn add_vectors<const RANK: usize>(v1: &Vector<RANK>, v2: &Vector<RANK>) -> Vector<RANK> {

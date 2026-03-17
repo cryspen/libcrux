@@ -126,12 +126,10 @@ fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial {
         hax_lib::fstar!("assert(v (cast (get_zeta (round +! k <: usize) <: u16) <: i32) == v (get_zeta ( round +! k <: usize ) <: u16))");
         let q = FIELD_MODULUS as u32;
         if idx < len {
-            ((p[i] as u32 + get_zeta(round + k) as u32 * p[i + len] as u32)
-                % q) as u16
+            ((p[i] as u32 + get_zeta(round + k) as u32 * p[i + len] as u32) % q) as u16
         } else {
             // Add q² to prevent underflow: q² > (q-1)² >= zeta * p[i]
-            ((p[i - len] as u32 + q * q - get_zeta(round + k) as u32 * p[i] as u32)
-                % q) as u16
+            ((p[i - len] as u32 + q * q - get_zeta(round + k) as u32 * p[i] as u32) % q) as u16
         }
     })
 }
@@ -146,7 +144,6 @@ fn ntt(p: Polynomial) -> Polynomial {
     let p = ntt_layer(p, 1);
     p
 }
-
 
 /// Compute the product of two `KyberBinomial`s with respect to the
 /// modulus `X² - zeta`.
@@ -225,9 +222,7 @@ mod tests {
     use proptest::prelude::*;
 
     use crate::{
-        compress::tests::arb_ring_element,
-        invert_ntt::ntt_inverse,
-        parameters::FIELD_MODULUS,
+        compress::tests::arb_ring_element, invert_ntt::ntt_inverse, parameters::FIELD_MODULUS,
     };
 
     const Q: i32 = FIELD_MODULUS as i32;
@@ -328,9 +323,13 @@ mod tests {
         for i in 0..128 {
             let expected = mod_pow(ZETA as i32, bit_rev_7(i) as u32, Q);
             assert_eq!(
-                get_zeta(i) as i32, expected,
+                get_zeta(i) as i32,
+                expected,
                 "get_zeta({}] = {} but expected 17^BitRev7({}) = {}",
-                i, get_zeta(i), i, expected
+                i,
+                get_zeta(i),
+                i,
+                expected
             );
         }
     }
