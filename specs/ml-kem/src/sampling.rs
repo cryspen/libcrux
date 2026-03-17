@@ -51,11 +51,11 @@ pub fn sample_ntt<const N: usize, const N8: usize, const N12: usize, const N96: 
     bytes: [u8; N12],
 ) -> Result<Polynomial, BadRejectionSamplingRandomnessError> {
     let decoded = byte_decode_generic::<N, N8, N12, N96>(&bytes, 12);
-    let mut result = [0; 256];
+    let mut result = [FieldElement::new(0); 256];
     let mut sampled_coefficients: usize = 0;
     for i in 0..N8 {
         if decoded[i] < FIELD_MODULUS && sampled_coefficients < 256 {
-            result[sampled_coefficients] = decoded[i];
+            result[sampled_coefficients] = FieldElement::new(decoded[i]);
             sampled_coefficients += 1
         }
     }
@@ -67,7 +67,7 @@ pub fn sample_ntt<const N: usize, const N8: usize, const N12: usize, const N96: 
 }
 
 #[hax_lib::requires(eta <= 4 && coins.len() == eta)]
-#[hax_lib::ensures(|r| r <= eta as u16)]
+#[hax_lib::ensures(|r| r.val <= eta as u16)]
 fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
     hax_lib::debug_assert!(eta <= 4 && coins.len() == eta);
     let mut sum: u16 = 0;
@@ -75,7 +75,7 @@ fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
         hax_lib::loop_invariant!(|i: usize| sum <= (i as u16));
         sum += coins[i] as u16;
     }
-    sum
+    FieldElement::new(sum)
 }
 
 /// Given a series of uniformly random bytes in `randomness`, sample
@@ -136,7 +136,7 @@ pub fn sample_poly_cbd<const ETA64: usize, const ETA512: usize>(
     createi(|i| {
         let x: FieldElement = sum_coins(eta, &bits[(2 * i * eta)..(2 * i * eta + eta)]);
         let y: FieldElement = sum_coins(eta, &bits[(2 * i * eta + eta)..(2 * i * eta + 2 * eta)]);
-        (x + FIELD_MODULUS - y) % FIELD_MODULUS
+        FieldElement::new((x.val + FIELD_MODULUS - y.val) % FIELD_MODULUS)
     })
 }
 
@@ -189,7 +189,7 @@ mod tests {
     fn uniform_sample_from_all_zeros() {
         let r = sample_ntt::<105, 840, 1260, 10080>([0; 1260]).unwrap();
         for coefficient in r.into_iter() {
-            assert_eq!(coefficient, 0);
+            assert_eq!(coefficient, FieldElement::new(0));
         }
     }
 
@@ -203,7 +203,7 @@ mod tests {
         #[test]
         #[ignore = "see https://github.com/cryspen/libcrux/issues/112"]
         fn uniform_sampler_mean_and_variance(randomness in vec(any::<u8>(), 3 * 1260)) {
-            let mut sampled_ring_element = [0; 256];
+            let mut sampled_ring_element = [FieldElement::new(0); 256];
 
             let mut sampling_attempts = (0..REJECTION_SAMPLING_ATTEMPTS).peekable();
             while let Some(attempt) = sampling_attempts.next() {
@@ -228,12 +228,12 @@ mod tests {
             let mut variance : f64 = 0.0;
 
             for coefficient in sampled_ring_element.iter() {
-                mean += f64::from(*coefficient);
+                mean += f64::from(coefficient.val);
             }
             mean /= sampled_ring_element.len() as f64;
 
             for coefficient in sampled_ring_element.iter() {
-                let coefficient_value : f64 = f64::from(*coefficient);
+                let coefficient_value : f64 = f64::from(coefficient.val);
                 variance += (coefficient_value - mean) * (coefficient_value - mean);
             }
             variance /= (sampled_ring_element.len() - 1) as f64;
@@ -268,12 +268,12 @@ mod tests {
                                    .collect::<Vec<FieldElement>>();
 
             for coefficient in &all_coefficients {
-                mean += field_coefficient_to_binomial_sample(sampling_coins, *coefficient as u16);
+                mean += field_coefficient_to_binomial_sample(sampling_coins, coefficient.val);
             }
             mean /= all_coefficients.len() as f64;
 
             for coefficient in &all_coefficients {
-                let binomial_sample = field_coefficient_to_binomial_sample(sampling_coins, *coefficient as u16);
+                let binomial_sample = field_coefficient_to_binomial_sample(sampling_coins, coefficient.val);
                 variance += (binomial_sample - mean) * (binomial_sample - mean);
             }
             variance /= (all_coefficients.len() - 1) as f64;

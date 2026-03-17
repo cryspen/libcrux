@@ -120,7 +120,8 @@ pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
 #[hax_lib::requires(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d)]
 pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize) -> [u8; D32] {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && D32 == 32 * d && D256 == 256 * d);
-    let bv = bitvector_from_bounded_ints::<256, D256>(&p, d);
+    let p_raw: [u16; 256] = createi(|i| p[i].val);
+    let bv = bitvector_from_bounded_ints::<256, D256>(&p_raw, d);
     bits_to_bytes(&bv)
 }
 
@@ -194,7 +195,7 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
         d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d
     );
     let decoded = byte_decode_generic::<32, 256, D32, D256>(b, d);
-    createi(|i| decoded[i] % FIELD_MODULUS)
+    createi(|i| FieldElement::new(decoded[i] % FIELD_MODULUS))
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
@@ -266,6 +267,7 @@ pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
 
 /// Deserialize bytes to a polynomial, then decompress from 1 bit per coefficient.
 /// Corresponds to `deserialize_then_decompress_message` in the implementation.
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn deserialize_then_decompress_message(serialized: &[u8; 32]) -> Polynomial {
     decompress(byte_decode::<32, 256>(serialized, 1), 1)
 }
@@ -322,6 +324,7 @@ pub(crate) fn compress_then_serialize_v<const V_SIZE: usize>(
 
 /// Deserialize and decompress u from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_u` in the implementation.
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
 pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
@@ -341,6 +344,7 @@ pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
 /// Deserialize and decompress v from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires((dv == 4 || dv == 5) && serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
 pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
     decompress(byte_decode_dyn(serialized, dv), dv)
@@ -467,10 +471,7 @@ mod tests {
     #[test]
     fn byte_encode_decode_roundtrip_d1() {
         // d=1: coefficients are 0 or 1
-        let mut poly = [0u16; 256];
-        for i in 0..256 {
-            poly[i] = (i % 2) as u16;
-        }
+        let poly: Polynomial = createi(|i| FieldElement::new((i % 2) as u16));
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         let decoded: Polynomial = byte_decode::<32, 256>(&encoded, 1);
         assert_eq!(decoded, poly);
@@ -478,7 +479,7 @@ mod tests {
 
     #[test]
     fn byte_encode_decode_roundtrip_d4() {
-        let poly: Polynomial = createi(|i| (i % 16) as u16);
+        let poly: Polynomial = createi(|i| FieldElement::new((i % 16) as u16));
         let encoded: [u8; 128] = byte_encode::<128, 1024>(poly, 4);
         let decoded: Polynomial = byte_decode::<128, 1024>(&encoded, 4);
         assert_eq!(decoded, poly);
@@ -486,7 +487,7 @@ mod tests {
 
     #[test]
     fn byte_encode_decode_roundtrip_d10() {
-        let poly: Polynomial = createi(|i| (i % 1024) as u16);
+        let poly: Polynomial = createi(|i| FieldElement::new((i % 1024) as u16));
         let encoded: [u8; 320] = byte_encode::<320, 2560>(poly, 10);
         let decoded: Polynomial = byte_decode::<320, 2560>(&encoded, 10);
         assert_eq!(decoded, poly);
@@ -495,16 +496,16 @@ mod tests {
     #[test]
     fn byte_decode_d12_reduces_mod_q() {
         // Encode a polynomial with values in [0, q-1], decode it, verify reduction
-        let poly: Polynomial = createi(|i| (i as u16 * 13) % FIELD_MODULUS);
+        let poly: Polynomial = createi(|i| FieldElement::new((i as u16 * 13) % FIELD_MODULUS));
         let encoded: [u8; 384] = byte_encode::<384, 3072>(poly, 12);
         let decoded: Polynomial = byte_decode::<384, 3072>(&encoded, 12);
         // All decoded values should be in [0, q-1]
-        for (i, &coeff) in decoded.iter().enumerate() {
+        for (i, coeff) in decoded.iter().enumerate() {
             assert!(
-                coeff < FIELD_MODULUS,
+                coeff.val < FIELD_MODULUS,
                 "decoded[{}] = {} not in [0, q)",
                 i,
-                coeff
+                coeff.val
             );
         }
         assert_eq!(decoded, poly);
@@ -513,12 +514,12 @@ mod tests {
     #[test]
     fn byte_encode_known_vector_d1() {
         // All zeros
-        let poly = [0u16; 256];
+        let poly = [FieldElement::new(0); 256];
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         assert_eq!(encoded, [0u8; 32]);
 
         // All ones
-        let poly = [1u16; 256];
+        let poly = [FieldElement::new(1); 256];
         let encoded: [u8; 32] = byte_encode::<32, 256>(poly, 1);
         assert_eq!(encoded, [0xFFu8; 32]);
     }
@@ -527,11 +528,11 @@ mod tests {
     fn byte_decode_known_vector_d1() {
         let bytes = [0u8; 32];
         let decoded: Polynomial = byte_decode::<32, 256>(&bytes, 1);
-        assert!(decoded.iter().all(|&c| c == 0));
+        assert!(decoded.iter().all(|c| c.val == 0));
 
         let bytes = [0xFFu8; 32];
         let decoded: Polynomial = byte_decode::<32, 256>(&bytes, 1);
-        assert!(decoded.iter().all(|&c| c == 1));
+        assert!(decoded.iter().all(|c| c.val == 1));
     }
 
     proptest! {

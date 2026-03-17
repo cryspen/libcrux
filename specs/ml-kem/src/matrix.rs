@@ -12,12 +12,17 @@ use crate::{
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 ///
 pub(crate) fn add_polynomials(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
-    createi(|j| ((p1[j] as u32 + p2[j] as u32) % FIELD_MODULUS as u32) as u16)
+    createi(|j| {
+        FieldElement::new(((p1[j].val as u32 + p2[j].val as u32) % FIELD_MODULUS as u32) as u16)
+    })
 }
 
 pub(crate) fn sub_polynomials(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
     createi(|j| {
-        ((p1[j] as u32 + FIELD_MODULUS as u32 - p2[j] as u32) % FIELD_MODULUS as u32) as u16
+        FieldElement::new(
+            ((p1[j].val as u32 + FIELD_MODULUS as u32 - p2[j].val as u32) % FIELD_MODULUS as u32)
+                as u16,
+        )
     })
 }
 
@@ -30,7 +35,7 @@ pub(crate) fn multiply_matrix_by_column<const RANK: usize>(
     vector: &Vector<RANK>,
 ) -> Vector<RANK> {
     createi(|i| {
-        let mut result = [0; 256];
+        let mut result = [FieldElement::new(0); 256];
         for j in 0..RANK {
             let product = multiply_ntts(&matrix[j][i], &vector[j]);
             result = add_polynomials(&result, &product);
@@ -43,7 +48,7 @@ pub(crate) fn multiply_vectors<const RANK: usize>(
     v1: &Vector<RANK>,
     v2: &Vector<RANK>,
 ) -> Polynomial {
-    let mut result = [0; 256];
+    let mut result = [FieldElement::new(0); 256];
     for j in 0..RANK {
         let product = multiply_ntts(&v1[j], &v2[j]);
         result = add_polynomials(&result, &product);
@@ -62,14 +67,14 @@ pub(crate) fn transpose<const RANK: usize>(matrix: &Matrix<RANK>) -> Matrix<RANK
 /// When `transpose` is true, A_transpose[j][i] = sampled(i, j).
 /// When `transpose` is false, A_transpose[i][j] = sampled(i, j).
 #[allow(non_snake_case)]
+#[hax_lib::requires(seed_for_A.len() == 32  && RANK <= 4)]
 pub(crate) fn sample_matrix_A<const RANK: usize>(
     seed_for_A: &[u8],
     transpose: bool,
 ) -> Result<Matrix<RANK>, BadRejectionSamplingRandomnessError> {
-    let mut A_as_ntt: Matrix<RANK> = [[[0u16; 256]; RANK]; RANK];
+    let mut A_as_ntt: Matrix<RANK> = [[[FieldElement::new(0); 256]; RANK]; RANK];
     let mut xof_input = [0u8; 34];
     xof_input[..32].copy_from_slice(seed_for_A);
-
     for i in 0..RANK {
         for j in 0..RANK {
             xof_input[32] = i as u8;

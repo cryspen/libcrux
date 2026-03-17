@@ -144,7 +144,20 @@ pub(crate) mod hash_functions {
 /// An ML-KEM field element:
 /// - after reduction modulo FIELD_MODULUS, it is an integer in the range [0, FIELD_MODULUS - 1]
 /// - it is represented as a u16
-pub(crate) type FieldElement = u16;
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[hax_lib::attributes]
+pub(crate) struct FieldElement {
+    #[refine(val < FIELD_MODULUS)]
+    pub(crate) val: u16,
+}
+
+#[hax_lib::attributes]
+impl FieldElement {
+    #[hax_lib::requires(val < FIELD_MODULUS)]
+    pub(crate) const fn new(val: u16) -> Self {
+        Self { val }
+    }
+}
 
 /// An ML-KEM polynomial ring element
 pub(crate) type Polynomial = [FieldElement; 256];
