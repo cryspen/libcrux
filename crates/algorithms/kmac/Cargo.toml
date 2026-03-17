@@ -1,18 +1,21 @@
 [package]
-name = "libcrux-kmac"
-version = "0.0.1"
 description = "Libcrux KMAC implementation"
+name = "libcrux-kmac"
 readme = "Readme.md"
+version = "0.0.1"
 
 authors.workspace = true
-license.workspace = true
-homepage.workspace = true
 edition.workspace = true
+homepage.workspace = true
+license.workspace = true
 repository.workspace = true
 
 [lib]
 path = "src/kmac.rs"
 
 [dependencies]
-libcrux-sha3.workspace = true
 hax-lib.workspace = true
+libcrux-sha3.workspace = true
+
+[dev-dependencies]
+libcrux-kats = { path = "../../testing/kats", features = ["kmac"] }
