@@ -495,7 +495,8 @@ fn compute_one_hint(low: i32, high: i32, gamma2: i32) -> i32 {
     (forall i. i < 8 ==> (v (Seq.index ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) =
         Spec.MLDSA.Math.compute_one_hint (v (Seq.index ${low}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i))
             (v (Seq.index ${high}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) (v $gamma2))) /\
-    v $result == Spec.MLDSA.Math.compute_hint ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#
+    v $result == Spec.MLDSA.Math.compute_hint ${hint}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values /\
+    v $result <= 8"#
 ))]
 pub(super) fn compute_hint(
     low: &Coefficients,

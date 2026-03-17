@@ -909,3 +909,10 @@ val lemma_from_i32x8_def_pt (f: (i:u64{v i < 8}) -> i32): Lemma (forall i. to_i3
 let mk_i32x8 (f: (i:u64{v i < 8}) -> i32): r: bv256 {forall i. to_i32x8 r i == f i}
  = lemma_from_i32x8_def_pt f;
    from_i32x8 (FStar.FunctionalExtensionality.on (n:u64{v n < 8}) f)
+
+/// Upper bound on counting ones in a positive signed 32bit integer.
+val count_ones_bound_lemma (x: i32):
+  Lemma (requires v x >= 0)
+        (ensures forall (a: nat). v x < pow2 a ==>
+          v (cast (Core_models.Num.impl_i32__count_ones x <: u32) <: usize) <= a)
+  [SMTPat (Core_models.Num.impl_i32__count_ones x)]

@@ -130,9 +130,9 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-         ${low.len()} == ${high.len()} /\ 
+         ${low.len()} == ${high.len()} /\
          ${low.len()} == ${hint.len()} /\
          v (${low.len()}) <= 8"#))]
 pub(crate) fn make_hint<SIMDUnit: Operations>(
