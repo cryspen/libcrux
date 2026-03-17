@@ -131,7 +131,9 @@ impl Operations for AVX2SIMDUnit {
     #[hax_lib::requires(specs::power2round_pre(&t0.repr(), &t1.repr()))]
     #[hax_lib::ensures(|_| specs::power2round_post(&t0.repr(), &t1.repr(), &future(t0).repr(), &future(t1).repr()))]
     fn power2round(t0: &mut Self, t1: &mut Self) {
-        hax_lib::assume!(false);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"#
+        );
         arithmetic::power2round(&mut t0.value, &mut t1.value);
     }
 
