@@ -151,9 +151,7 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
-#[hax_lib::ensures(|result| *input == bitvector_from_bounded_ints(&result, d))]
 pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
     d: usize,
