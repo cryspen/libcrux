@@ -29,8 +29,10 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = [
 ] }
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Post-quantum KEMs
-x-wing = { version = "0.1.0-rc.0", default-features = false }
-ml-kem = { version = "0.3.0-rc.0", default-features = false }
+# XXX: These are broken and pre-releases. Dropping them until they are stable
+#      and someone actually wants to maintain them.
+x-wing = { version = "0.1.0-rc.0", default-features = false, optional = true }
+ml-kem = { version = "0.3.0-rc.0", default-features = false, optional = true }
 # Randomness
 rand_core = { version = "0.6", features = ["getrandom"] }
 rand_core_new = { version = "0.10", package = "rand_core", default-features = false }
@@ -49,6 +51,10 @@ deterministic-prng = [
     "hpke-rs-crypto/std",
     "rand_core/std",
 ] # ⚠️ FOR TESTING ONLY.
+experimental = [
+    "dep:x-wing",
+    "dep:ml-kem"
+]
 
 [[bench]]
 name = "bench_hkdf"

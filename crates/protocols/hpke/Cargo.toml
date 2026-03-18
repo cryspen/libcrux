@@ -37,6 +37,7 @@ serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 rustcrypto = ["dep:hpke-rs-rust-crypto"]
 libcrux = ["dep:hpke-rs-libcrux"]
+experimental = ["hpke-rs-rust-crypto?/experimental"]
 
 hpke-test = ["std"]
 hpke-test-prng = [

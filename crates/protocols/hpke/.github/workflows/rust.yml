@@ -31,21 +31,21 @@ jobs:
       with:
         persist-credentials: false
     - name: Run tests all features
-      run: cargo test --verbose --no-default-features --all-features
+      run: cargo test --verbose --no-default-features -F "std,serialization,hazmat,rustcrypto,libcrux"
       # Release
     - name: Build Release
       run: cargo build --release --verbose
     - name: Run tests all features
-      run: cargo test --release --verbose --all-features
+      run: cargo test --release --verbose -F "std,serialization,hazmat,rustcrypto,libcrux"
       # Debug
     - name: Build Debug
       run: cargo build --verbose
     - name: Run tests all features
-      run: cargo test --verbose --all-features
+      run: cargo test --verbose -F "std,serialization,hazmat,rustcrypto,libcrux"
       # RC Provider
     - name: Build Debug RC provider all features
       working-directory: rust_crypto_provider
-      run: cargo build --verbose --all-features
+      run: cargo build --verbose -F "std"
     # Apple Silicon
     - if: matrix.os == 'macos-15-intel'
       run: |

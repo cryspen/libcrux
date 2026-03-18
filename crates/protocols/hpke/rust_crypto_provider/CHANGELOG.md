@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-03-18
+
+### Changed
+
+- [#137](https://github.com/cryspen/hpke-rs/pull/137): Move unstable X-Wing and ML-KEM ciphersuites behind the `experimental` feature.
+
 ## [0.6.0] - 2026-02-13
 
 ### Fixed

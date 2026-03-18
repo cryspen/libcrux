@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@master
       - name: Build docs
         run: |
-          cargo doc --all-features --no-deps
+          cargo doc -F "std,serialization,hazmat,rustcrypto,libcrux" --no-deps
           touch target/doc/.nojekyll
           cat > target/doc/index.html <<EOF
           <!doctype html>

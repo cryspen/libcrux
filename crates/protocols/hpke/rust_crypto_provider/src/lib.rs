@@ -27,6 +27,8 @@ use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSec
 
 mod aead;
 mod hkdf;
+// XXX: These are broken and pre-releases. Disabling them until they are stable.
+#[cfg(feature = "experimental")]
 mod pq_kem;
 use crate::aead::*;
 use crate::hkdf::*;
@@ -121,27 +123,32 @@ impl HpkeCrypto for HpkeRustCrypto {
         }
     }
 
-    fn kem_key_gen_derand(
-        alg: KemAlgorithm,
-        seed: &[u8],
-    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        pq_kem::kem_key_gen_derand(alg, seed)
+    fn kem_key_gen_derand(_alg: KemAlgorithm, _seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        // XXX: These are broken and pre-releases. Disabling them until they are stable.
+        #[cfg(feature = "experimental")]
+        return pq_kem::kem_key_gen_derand(_alg, _seed);
+
+        Err(Error::UnsupportedKemOperation)
     }
 
     fn kem_encaps(
-        alg: KemAlgorithm,
-        pk_r: &[u8],
-        prng: &mut Self::HpkePrng,
+        _alg: KemAlgorithm,
+        _pk_r: &[u8],
+        _prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        pq_kem::kem_encaps(alg, pk_r, prng)
+        // XXX: These are broken and pre-releases. Disabling them until they are stable.
+        #[cfg(feature = "experimental")]
+        return pq_kem::kem_encaps(_alg, _pk_r, _prng);
+
+        Err(Error::UnsupportedKemOperation)
     }
 
-    fn kem_decaps(
-        alg: KemAlgorithm,
-        ct: &[u8],
-        sk_r: &[u8],
-    ) -> Result<Vec<u8>, Error> {
-        pq_kem::kem_decaps(alg, ct, sk_r)
+    fn kem_decaps(_alg: KemAlgorithm, _ct: &[u8], _sk_r: &[u8]) -> Result<Vec<u8>, Error> {
+        // XXX: These are broken and pre-releases. Disabling them until they are stable.
+        #[cfg(feature = "experimental")]
+        return pq_kem::kem_decaps(_alg, _ct, _sk_r);
+
+        Err(Error::UnsupportedKemOperation)
     }
 
     fn secret_to_public(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
@@ -193,13 +200,14 @@ impl HpkeCrypto for HpkeRustCrypto {
                 let sk = sk.to_bytes().as_slice().into();
                 Ok((pk, sk))
             }
+            // XXX: These are broken and pre-releases. Disabling them until they
+            //      are stable.
             #[allow(deprecated)]
+            #[cfg(feature = "experimental")]
             KemAlgorithm::XWingDraft06
             | KemAlgorithm::XWingDraft06Obsolete
             | KemAlgorithm::MlKem768
-            | KemAlgorithm::MlKem1024 => {
-                pq_kem::kem_key_gen(alg, prng)
-            }
+            | KemAlgorithm::MlKem1024 => pq_kem::kem_key_gen(alg, prng),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -272,12 +280,10 @@ impl HpkeCrypto for HpkeRustCrypto {
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
         match alg {
-            KemAlgorithm::DhKem25519
-            | KemAlgorithm::DhKemP256
-            | KemAlgorithm::DhKemK256
-            | KemAlgorithm::XWingDraft06
-            | KemAlgorithm::MlKem768
-            | KemAlgorithm::MlKem1024 => Ok(()),
+            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::DhKemK256 => Ok(()),
+            // XXX: These are broken and pre-releases. Disabling them until they are stable.
+            #[cfg(feature = "experimental")]
+            KemAlgorithm::XWingDraft06 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -349,10 +355,7 @@ impl rand_core_new::TryRng for HpkeRustCryptoPrng {
         Ok(self.rng.next_u64())
     }
 
-    fn try_fill_bytes(
-        &mut self,
-        dst: &mut [u8],
-    ) -> Result<(), Self::Error> {
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
         self.rng.fill_bytes(dst);
         Ok(())
     }
