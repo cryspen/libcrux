@@ -138,20 +138,12 @@ impl Operations for Coefficients {
     #[hax_lib::requires(specs::commitment_serialize_pre(&simd_unit.repr(), serialized))]
     #[hax_lib::ensures(|_| specs::commitment_serialize_post(&simd_unit.repr(), serialized, future(serialized)))]
     fn commitment_serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
-        // TODO: portable Encoding.Commitment.serialize requires `bounded` on coefficients,
-        // which is not part of the trait-level pre (AVX2 doesn't need it).
-        // To remove this assume, either:
-        //   (a) weaken the portable serialize precondition to match AVX2, or
-        //   (b) add `bounded` to the trait pre and propagate through callers
-        //       (decompose_vector/uuse_hint currently have post=True)
-        hax_lib::assume!(false);
         encoding::commitment::serialize(simd_unit, serialized)
     }
 
     #[hax_lib::requires(specs::error_serialize_pre(eta, &simd_unit.repr(), serialized))]
     #[hax_lib::ensures(|_| specs::error_serialize_post(eta, &simd_unit.repr(), serialized, future(serialized)))]
     fn error_serialize(eta: Eta, simd_unit: &Coefficients, serialized: &mut [u8]) {
-        hax_lib::assume!(false);
         encoding::error::serialize(eta, simd_unit, serialized)
     }
 
@@ -164,7 +156,6 @@ impl Operations for Coefficients {
     #[hax_lib::requires(specs::t0_serialize_pre(&simd_unit.repr(), out))]
     #[hax_lib::ensures(|_| specs::t0_serialize_post(&simd_unit.repr(), out, future(out)))]
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
-        hax_lib::assume!(false);
         encoding::t0::serialize(simd_unit, out)
     }
 
@@ -191,7 +182,6 @@ impl Operations for Coefficients {
         &simd_units.map(|unit| Repr::repr(&unit)),
         &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn ntt(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
-        hax_lib::assume!(false);
         ntt::ntt(simd_units)
     }
 
@@ -200,7 +190,6 @@ impl Operations for Coefficients {
         &simd_units.map(|unit| Repr::repr(&unit)),
         &future(simd_units).map(|unit| Repr::repr(&unit))))]
     fn invert_ntt_montgomery(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
-        hax_lib::assume!(false);
         invntt::invert_ntt_montgomery(simd_units)
     }
 

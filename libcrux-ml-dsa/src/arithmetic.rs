@@ -4,11 +4,17 @@ use crate::{
     simd::traits::Operations,
 };
 
+#[cfg(hax)]
+use crate::{
+    constants::{GAMMA2_V261_888, GAMMA2_V95_232},
+    simd::traits::specs::FIELD_MAX,
+};
+
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
-        (forall i. forall j. Spec.Utils.is_i32b_array_opaque 
-            (v ${crate::simd::traits::specs::FIELD_MAX}) 
+#[hax_lib::requires(fstar!(r#"v $bound > 0 /\
+        (forall i. forall j. Spec.Utils.is_i32b_array_opaque
+            (v ${crate::simd::traits::specs::FIELD_MAX})
             (i0._super_i2.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     vector: &[PolynomialRingElement<SIMDUnit>],
@@ -95,14 +101,14 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-         ${t.len()} == dimension /\ 
+        (v $gamma2 == v $GAMMA2_V261_888 \/
+         v $gamma2 == v $GAMMA2_V95_232) /\
+         ${t.len()} == dimension /\
          ${low.len()} == dimension /\
          ${high.len()} == dimension /\
-         (forall i. forall j. 
-            Spec.Utils.is_i32b_array_opaque 
-            (v ${crate::simd::traits::specs::FIELD_MAX}) 
+         (forall i. forall j.
+            Spec.Utils.is_i32b_array_opaque
+            (v $FIELD_MAX)
             (i0._super_i2.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     dimension: usize,
@@ -130,11 +136,15 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        (v $gamma2 == v $GAMMA2_V261_888 \/
+         v $gamma2 == v $GAMMA2_V95_232) /\
          ${low.len()} == ${high.len()} /\
          ${low.len()} == ${hint.len()} /\
-         v (${low.len()}) <= 8"#))]
+         v (${low.len()}) <= 8 /\
+         (forall (i: nat) (j: nat). i < Seq.length $low /\ j < 32 ==>
+           (let low_repr = Libcrux_ml_dsa.Simd.Traits.f_repr #v_SIMDUnit #FStar.Tactics.Typeclasses.solve
+             (Seq.index (Seq.index $low i).Libcrux_ml_dsa.Polynomial.f_simd_units j) in
+            forall (k: nat). k < 8 ==> v (Seq.index low_repr k) > v Core_models.Num.impl_i32__MIN))"#))]
 pub(crate) fn make_hint<SIMDUnit: Operations>(
     low: &[PolynomialRingElement<SIMDUnit>],
     high: &[PolynomialRingElement<SIMDUnit>],
@@ -169,16 +179,16 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-         ${hint.len()} == ${re_vector.len()} /\ 
+        (v $gamma2 == v $GAMMA2_V261_888 \/
+         v $gamma2 == v $GAMMA2_V95_232) /\
+         ${hint.len()} == ${re_vector.len()} /\
          v (${hint.len()}) <= 8 /\
          (forall i. forall j.
-            (v (Seq.index (Seq.index ${hint} i) j) == 0 \/ 
+            (v (Seq.index (Seq.index ${hint} i) j) == 0 \/
              v (Seq.index (Seq.index ${hint} i) j) == 1)) /\
-         (forall i. forall j. 
-            Spec.Utils.is_i32b_array_opaque 
-            (v ${crate::simd::traits::specs::FIELD_MAX}) 
+         (forall i. forall j.
+            Spec.Utils.is_i32b_array_opaque
+            (v $FIELD_MAX)
             (i0._super_i2.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
@@ -192,7 +202,7 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
             ${re_vector.len()} == ${hint.len()} /\
-            (forall j. j >= v i ==> 
+            (forall j. j >= v i ==>
                 (Seq.index re_vector j == Seq.index old_re_vector j))
             "#
         ));
@@ -204,9 +214,9 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
             hax_lib::loop_invariant!(|j: usize| fstar!(
                 r#"
                 ${re_vector.len()} == ${hint.len()} /\
-                (forall j. j > v i ==> 
+                (forall j. j > v i ==>
                     (Seq.index re_vector j == Seq.index old_re_vector j)) /\
-                (forall k. k >= v j ==> 
+                (forall k. k >= v j ==>
                     (Seq.index (Seq.index re_vector (v i)).f_simd_units k ==
                      Seq.index (Seq.index old_re_vector (v i)).f_simd_units k))
                 "#
