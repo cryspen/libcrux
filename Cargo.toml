@@ -82,13 +82,6 @@ libcrux-aesgcm = { version = "=0.0.7", path = "crates/algorithms/aesgcm" }
 libcrux-blake2 = { version = "=0.0.6", path = "crates/algorithms/blake2" }
 libcrux-chacha20poly1305 = { version = "=0.0.6", path = "crates/algorithms/chacha20poly1305" }
 libcrux-poly1305 = { version = "=0.0.4", path = "crates/algorithms/poly1305" }
-libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
-libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
-libcrux-rsa = { version = "=0.0.6", path = "crates/algorithms/rsa" }
-
-# For the crates below it is necessary to set `default-features = true`
-# in workspace crates that depend on the default feature set.
-libcrux-ecdh = { version = "=0.0.6", path = "libcrux-ecdh", default-features = false }
 libcrux-ecdsa = { version = "=0.0.6", path = "crates/algorithms/ecdsa" }
 libcrux-ed25519 = { version = "=0.0.6", path = "crates/algorithms/ed25519" }
 libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
@@ -96,14 +89,22 @@ libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.6", path = "crates/algorithms/hmac" }
 libcrux-intrinsics = { version = "=0.0.6", path = "crates/utils/intrinsics" }
+libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
+libcrux-rsa = { version = "=0.0.6", path = "crates/algorithms/rsa" }
+
+# For the crates below it is necessary to set `default-features = true`
+# in workspace crates that depend on the default feature set.
+libcrux-ecdh = { version = "=0.0.6", path = "libcrux-ecdh", default-features = false }
+libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
+libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features = false }
+libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
+
 
 # Test utilities
 libcrux-kats = { version = "=0.0.3", path = "crates/testing/kats" }
 libcrux-kem = { version = "=0.0.6", path = "libcrux-kem" }
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-ml-dsa = { version = "=0.0.7", path = "libcrux-ml-dsa" }
-libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features = false }
-libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 libcrux-psq = { version = "=0.0.7", path = "libcrux-psq" }
 
