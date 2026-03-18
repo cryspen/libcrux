@@ -286,7 +286,6 @@ pub(crate) fn decrypt<const RANK: usize>(
     dk: &[u8],
     ciphertext: &[u8],
 ) -> [u8; 32] {
-    hax_lib::fstar!("admit()");
     hax_lib::debug_assert!(
         dk.len() == RANK * BYTES_PER_RING_ELEMENT
             && ciphertext.len()
@@ -297,7 +296,7 @@ pub(crate) fn decrypt<const RANK: usize>(
     let u_encoded_size = params.u_encoded_size();
 
     // u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-    let u: Vector<RANK> = deserialize_then_decompress_u::<RANK>(ciphertext, params.du);
+    let u: Vector<RANK> = deserialize_then_decompress_u::<RANK>(&ciphertext[0..u_encoded_size], params.du);
 
     // v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
     let v = deserialize_then_decompress_v(&ciphertext[u_encoded_size..], params.dv);
