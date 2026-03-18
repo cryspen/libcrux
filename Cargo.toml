@@ -84,6 +84,7 @@ libcrux-chacha20poly1305 = { version = "=0.0.6", path = "crates/algorithms/chach
 libcrux-poly1305 = { version = "=0.0.4", path = "crates/algorithms/poly1305" }
 libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
 libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
+libcrux-rsa = { version = "=0.0.6", path = "crates/algorithms/rsa" }
 
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
@@ -140,6 +141,7 @@ all_algorithms = [
     "hmac",
     "mlkem",
     "mldsa",
+    "rsapss",
     "poly1305"
 ]
 aes_gcm = []
@@ -155,6 +157,7 @@ hkdf = []
 hmac = []
 mlkem = []
 mldsa = []
+rsapss = []
 poly1305 = []
 
 # Primitives
@@ -196,6 +199,7 @@ libcrux-kem.workspace = true
 libcrux-ml-kem.workspace = true
 libcrux-ml-dsa.workspace = true
 libcrux-p256.workspace = true
+libcrux-rsa.workspace = true
 
 # Protocols
 libcrux-psq.workspace = true
