@@ -1,6 +1,7 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use hpke_rs_crypto::{types::*, HpkeCrypto, RngCore};
+use hpke_rs_crypto::{types::*, HpkeCrypto};
 use hpke_rs_libcrux::*;
+use rand::TryRng;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function(&format!("HKDF SHA256 Extract"), |b| {
@@ -8,8 +9,8 @@ fn criterion_benchmark(c: &mut Criterion) {
             || {
                 let mut salt = vec![0u8; 77];
                 let mut ikm = vec![0u8; 32];
-                rand::rng().fill_bytes(&mut salt);
-                rand::rng().fill_bytes(&mut ikm);
+                rand::rngs::SysRng.try_fill_bytes(&mut salt).unwrap();
+                rand::rngs::SysRng.try_fill_bytes(&mut ikm).unwrap();
                 (salt.clone(), ikm.clone())
             },
             |(salt, ikm)| {
@@ -23,8 +24,8 @@ fn criterion_benchmark(c: &mut Criterion) {
             || {
                 let mut info = vec![0u8; 77];
                 let mut prk = vec![0u8; 32];
-                rand::rng().fill_bytes(&mut info);
-                rand::rng().fill_bytes(&mut prk);
+                rand::rngs::SysRng.try_fill_bytes(&mut info).unwrap();
+                rand::rngs::SysRng.try_fill_bytes(&mut prk).unwrap();
                 (prk.clone(), info.clone())
             },
             |(prk, info)| {
