@@ -97,7 +97,7 @@ libcrux-traits = { version = "=0.0.6", path = "traits" }
 libcrux-kem = { version = "=0.0.7-rc.1", path = "libcrux-kem" }
 libcrux-ml-dsa = { version = "=0.0.8-rc.1", path = "libcrux-ml-dsa" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
-libcrux-psq = { version = "=0.0.7", path = "libcrux-psq" }
+libcrux-psq = { version = "=0.0.8-rc.1", path = "libcrux-psq" }
 
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
