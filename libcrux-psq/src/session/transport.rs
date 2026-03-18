@@ -103,7 +103,7 @@ impl Transport {
     /// Get the current nonce used for decrypting incoming messages.
     #[cfg(feature = "nonce-control")]
     pub fn receiver_nonce(&self) -> &[u8; NONCE_LEN] {
-        self.send_key.nonce()
+        self.recv_key.nonce()
     }
 
     fn prepare_message_contents(&mut self, payload: &[u8]) -> Result<(Vec<u8>, [u8; 16]), Error> {
