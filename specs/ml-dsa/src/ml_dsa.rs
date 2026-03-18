@@ -265,14 +265,7 @@ pub fn verify_internal<
                 c_tilde_prime.copy_from_slice(&c_tilde_prime_full[..C_TILDE_LEN]);
 
                 // 13. Check hint count ≤ ω and c̃ = c̃'
-                let mut hint_count = 0usize;
-                for i in 0..K {
-                    hax_lib::loop_invariant!(|i: usize| hint_count <= i * 256);
-                    for j in 0..256 {
-                        hax_lib::loop_invariant!(|j: usize| hint_count <= i * 256 + j);
-                        if h_arr[i][j] { hint_count += 1; }
-                    }
-                }
+                let hint_count = count_hints(&h_arr);
                 if hint_count > params.omega {
                     false
                 } else {

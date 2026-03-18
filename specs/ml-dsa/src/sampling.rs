@@ -3,6 +3,7 @@
 use crate::parameters::{Polynomial, ZERO_POLY, Q};
 use crate::encoding::{coeff_from_three_bytes, coeff_from_half_byte};
 use crate::hash_functions::h;
+use crate::createi;
 
 /// Concatenate a 32-byte seed with two single bytes → [u8; 34].
 fn concat_2bytes(a: &[u8; 32], b: u8, c: u8) -> [u8; 34] {
@@ -115,14 +116,10 @@ pub(crate) fn rej_bounded_poly(seed: &[u8], eta: usize) -> Polynomial {
 pub(crate) fn expand_a<const K: usize, const L: usize>(
     rho: &[u8; 32],
 ) -> [[Polynomial; L]; K] {
-    let mut a_hat = [[ZERO_POLY; L]; K];
-    for r in 0..K {
-        for s in 0..L {
-            let seed = concat_2bytes(rho, s as u8, r as u8);
-            a_hat[r][s] = rej_ntt_poly(&seed);
-        }
-    }
-    a_hat
+    createi(|r| createi(|s| {
+        let seed = concat_2bytes(rho, s as u8, r as u8);
+        rej_ntt_poly(&seed)
+    }))
 }
 
 /// ExpandS(ρ') — FIPS 204, Algorithm 33.
@@ -134,17 +131,15 @@ pub(crate) fn expand_s<const K: usize, const L: usize>(
     rho_prime: &[u8; 64],
     eta: usize,
 ) -> ([Polynomial; L], [Polynomial; K]) {
-    let mut s1 = [ZERO_POLY; L];
-    for r in 0..L {
+    let s1: [Polynomial; L] = createi(|r| {
         let seed = concat_u16_le(rho_prime, r as u16);
-        s1[r] = rej_bounded_poly(&seed, eta);
-    }
-    let mut s2 = [ZERO_POLY; K];
-    for r in 0..K {
+        rej_bounded_poly(&seed, eta)
+    });
+    let s2: [Polynomial; K] = createi(|r| {
         let idx = (r + L) as u16;
         let seed = concat_u16_le(rho_prime, idx);
-        s2[r] = rej_bounded_poly(&seed, eta);
-    }
+        rej_bounded_poly(&seed, eta)
+    });
     (s1, s2)
 }
 
@@ -159,17 +154,15 @@ pub(crate) fn expand_mask<const L: usize>(
 ) -> [Polynomial; L] {
     let c = 1 + crate::parameters::bitlen(gamma1 as usize - 1);
     let out_bytes = 32 * c;
-    let mut y = [ZERO_POLY; L];
-    for r in 0..L {
+    createi(|r| {
         let idx = (kappa + r) as u16;
         let seed = concat_u16_le(rho_pp, idx);
         if gamma1 == (1 << 17) {
             let buf: [u8; 576] = h(&seed);
-            y[r] = crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize);
+            crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize)
         } else {
             let buf: [u8; 640] = h(&seed);
-            y[r] = crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize);
-        };
-    }
-    y
+            crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize)
+        }
+    })
 }

@@ -2,6 +2,7 @@
 /// FIPS 204, Sections 7.1–7.2 (Algorithms 9–28).
 
 use crate::parameters::{Polynomial, MlDsaParams, Q, D, ZERO_POLY, bitlen};
+use crate::createi;
 use hax_lib::int::ToInt;
 
 // ========================================================================
@@ -196,11 +197,10 @@ pub(crate) fn pk_encode<const K: usize, const PK_SIZE: usize>(
 pub(crate) fn pk_decode<const K: usize>(pk: &[u8]) -> ([u8; 32], [Polynomial; K]) {
     let mut rho = [0u8; 32];
     rho.copy_from_slice(&pk[..32]);
-    let mut t1 = [ZERO_POLY; K];
-    for i in 0..K {
+    let t1: [Polynomial; K] = createi(|i| {
         let start = 32 + i * 320;
-        t1[i] = simple_bit_unpack(&pk[start..start + 320], 1023);
-    }
+        simple_bit_unpack(&pk[start..start + 320], 1023)
+    });
     (rho, t1)
 }
 
@@ -275,29 +275,22 @@ pub(crate) fn sk_decode<const K: usize, const L: usize>(
     let mut tr = [0u8; 64];
     tr.copy_from_slice(&sk[64..128]);
 
-    let mut offset = 128;
-    let mut s1 = [ZERO_POLY; L];
-    for i in 0..L {
-        hax_lib::loop_invariant!(|i: usize| offset == 128 + i * eta_bytes);
-        s1[i] = bit_unpack(&sk[offset..offset + eta_bytes], eta, eta);
-        offset += eta_bytes;
-    }
-    let mut s2 = [ZERO_POLY; K];
-    for i in 0..K {
-        hax_lib::loop_invariant!(|i: usize| offset == 128 + L * eta_bytes + i * eta_bytes);
-        s2[i] = bit_unpack(&sk[offset..offset + eta_bytes], eta, eta);
-        offset += eta_bytes;
-    }
+    let s1: [Polynomial; L] = createi(|i| {
+        let offset = 128 + i * eta_bytes;
+        bit_unpack(&sk[offset..offset + eta_bytes], eta, eta)
+    });
+    let s2: [Polynomial; K] = createi(|i| {
+        let offset = 128 + L * eta_bytes + i * eta_bytes;
+        bit_unpack(&sk[offset..offset + eta_bytes], eta, eta)
+    });
 
     let d_minus_1 = D - 1;
     hax_lib::fstar!("assert_norm(${bitlen} (sz (pow2 12 - 1 + pow2 12)) == sz 13)");
     let t0_bytes = 32 * bitlen((1 << d_minus_1) - 1 + (1 << d_minus_1));
-    let mut t0 = [ZERO_POLY; K];
-    for i in 0..K {
-        hax_lib::loop_invariant!(|i: usize| offset == 128 + (L + K) * eta_bytes + i * t0_bytes);
-        t0[i] = bit_unpack(&sk[offset..offset + t0_bytes], (1 << d_minus_1) - 1, 1 << d_minus_1);
-        offset += t0_bytes;
-    }
+    let t0: [Polynomial; K] = createi(|i| {
+        let offset = 128 + (L + K) * eta_bytes + i * t0_bytes;
+        bit_unpack(&sk[offset..offset + t0_bytes], (1 << d_minus_1) - 1, 1 << d_minus_1)
+    });
     (rho, key, tr, s1, s2, t0)
 }
 
@@ -372,14 +365,12 @@ pub(crate) fn sig_decode<const K: usize, const L: usize, const C_TILDE_LEN: usiz
 
     let mut c_tilde = [0u8; C_TILDE_LEN];
     c_tilde.copy_from_slice(&sigma[..C_TILDE_LEN]);
-    let mut offset = C_TILDE_LEN;
-    let mut z = [ZERO_POLY; L];
-    for i in 0..L {
-        hax_lib::loop_invariant!(|i: usize| offset == C_TILDE_LEN + i * z_bytes);
-        z[i] = bit_unpack(&sigma[offset..offset + z_bytes], gamma1 - 1, gamma1);
-        offset += z_bytes;
-    }
-    let h = hint_bit_unpack::<K>(&sigma[offset..], params.omega)?;
+    let z: [Polynomial; L] = createi(|i| {
+        let offset = C_TILDE_LEN + i * z_bytes;
+        bit_unpack(&sigma[offset..offset + z_bytes], gamma1 - 1, gamma1)
+    });
+    let hint_offset = C_TILDE_LEN + L * z_bytes;
+    let h = hint_bit_unpack::<K>(&sigma[hint_offset..], params.omega)?;
     Some((c_tilde, z, h))
 }
 

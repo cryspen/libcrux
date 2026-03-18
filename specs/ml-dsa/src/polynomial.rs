@@ -111,24 +111,32 @@ pub(crate) fn vector_low_bits<const N: usize>(
     createi(|i| createi(|j| crate::arithmetic::low_bits(v[i][j], gamma2)))
 }
 
-/// Apply MakeHint componentwise to two vectors, returning hint vector and count of ones.
+/// Count the number of `true` entries in a hint vector.
 #[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(fstar!(r#"Rust_primitives.Integers.v v_N <= 8"#))]
+pub(crate) fn count_hints<const N: usize>(h: &[[bool; 256]; N]) -> usize {
+    let mut total = 0usize;
+    for i in 0usize..N {
+        hax_lib::loop_invariant!(|i: usize| total <= i * 256);
+        for j in 0usize..256usize {
+            hax_lib::loop_invariant!(|j: usize| total <= i * 256 + j);
+            if h[i][j] { total += 1; }
+        }
+    }
+    total
+}
+
+/// Apply MakeHint componentwise to two vectors, returning hint vector and count of ones.
 #[hax_lib::requires(fstar!(r#"Rust_primitives.Integers.v v_N <= 8 /\ ${gamma2} >. mk_i32 0 /\ ${gamma2} <. (${Q} /! mk_i32 2) /\ (forall i. i < Seq.length ${r} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) < Rust_primitives.Integers.v ${Q}))"#))]
 pub(crate) fn vector_make_hint<const N: usize>(
     z: &[Polynomial; N],
     r: &[Polynomial; N],
     gamma2: i32,
 ) -> ([[bool; 256]; N], usize) {
-    let mut h = [[false; 256]; N];
-    let mut count = 0usize;
-    for i in 0usize..N {
-        hax_lib::loop_invariant!(|i: usize| count <= i * 256);
-        for j in 0usize..256usize {
-            hax_lib::loop_invariant!(|j: usize| count <= i * 256 + j);
-            h[i][j] = crate::arithmetic::make_hint(z[i][j], r[i][j], gamma2);
-            if h[i][j] { count += 1; }
-        }
-    }
+    let h: [[bool; 256]; N] = createi(|i| {
+        createi(|j| crate::arithmetic::make_hint(z[i][j], r[i][j], gamma2))
+    });
+    let count = count_hints(&h);
     (h, count)
 }
 
