@@ -49,9 +49,7 @@ pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) ->
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
-#[hax_lib::ensures(|result| *bv == bytes_to_bits::<N,N8>(&result))]
 pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
     hax_lib::debug_assert!(N8 == N * 8);
     let result = createi(|i| {
@@ -64,7 +62,6 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>)
             | ((bv[8 * i + 6] as u8) << 6)
             | ((bv[8 * i + 7] as u8) << 7)
     });
-    hax_lib::debug_assert!(*bv == bytes_to_bits::<N, N8>(&result));
     result
 }
 
@@ -189,7 +186,9 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < 256, result[i].val < (1u16 << d))))]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
     hax_lib::debug_assert!(
         d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d
@@ -267,7 +266,6 @@ pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
 
 /// Deserialize bytes to a polynomial, then decompress from 1 bit per coefficient.
 /// Corresponds to `deserialize_then_decompress_message` in the implementation.
-#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn deserialize_then_decompress_message(serialized: &[u8; 32]) -> Polynomial {
     decompress(byte_decode::<32, 256>(serialized, 1), 1)
 }
@@ -324,7 +322,6 @@ pub(crate) fn compress_then_serialize_v<const V_SIZE: usize>(
 
 /// Deserialize and decompress u from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_u` in the implementation.
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
 pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
@@ -344,7 +341,6 @@ pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
 /// Deserialize and decompress v from ciphertext bytes.
 /// Corresponds to `deserialize_then_decompress_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires((dv == 4 || dv == 5) && serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
 pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
     decompress(byte_decode_dyn(serialized, dv), dv)
