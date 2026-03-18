@@ -64,7 +64,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.0.2"
+version = "0.0.3-rc.1"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -84,7 +84,6 @@ libcrux-chacha20poly1305 = { version = "=0.0.7-rc.1", path = "crates/algorithms/
 libcrux-poly1305 = { version = "=0.0.5-rc.1", path = "crates/algorithms/poly1305" }
 libcrux-ecdsa = { version = "=0.0.6", path = "crates/algorithms/ecdsa" }
 libcrux-ed25519 = { version = "=0.0.7-rc.1", path = "crates/algorithms/ed25519" }
-libcrux-hacl = { version = "=0.0.2", path = "crates/sys/hacl" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.6", path = "crates/algorithms/hmac" }
