@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-sha3`, `libcrux-ed25519`, `libcrux-ml-dsa`, `libcrux-poly1305`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-digest`, `libcrux-chacha20poly1305`
+- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-sha3`, `libcrux-ed25519`, `libcrux-ml-dsa`, `libcrux-poly1305`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-digest`, `libcrux-chacha20poly1305`, `libcrux-aead`
 - [#1259](https://github.com/cryspen/libcrux/pull/1259): Make this crate a pure Rust re-exporter of the `libcrux` sub-crates
 
 ## [0.0.2-alpha.3] (2024-07-23)
