@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-sha3`
 - [#1364](https://github.com/cryspen/libcrux/pull/1364): 
     - Return `RateLimit` error in handshake responder on receiving a recently seen initiator key
     - Always error on ciphersuite mismatch in handshake responder

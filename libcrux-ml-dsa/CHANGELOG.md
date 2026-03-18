@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#1348](https://github.com/cryspen/libcrux/pull/1348): Fix incorrect hint decoding
 - [#1347](https://github.com/cryspen/libcrux/pull/1347): Fix incorrect norm check of signer response during verification
 
+### Changed
+
+- [#XXX](https://github.com/cryspen/libcrux/pull/XXX): Update dependencies: `libcrux-sha3`
+
 ## [0.0.7] (2026-02-12)
 
 ### Changed
