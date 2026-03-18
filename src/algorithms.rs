@@ -32,3 +32,9 @@ pub mod hkdf;
 
 #[cfg(feature = "hmac")]
 pub mod hmac;
+
+#[cfg(feature = "mlkem")]
+pub mod mlkem;
+
+#[cfg(feature = "mldsa")]
+pub mod mldsa;
