@@ -81,6 +81,7 @@ libcrux-aead = { version = "=0.0.6", path = "crates/primitives/aead" }
 libcrux-aesgcm = { version = "=0.0.7", path = "crates/algorithms/aesgcm" }
 libcrux-blake2 = { version = "=0.0.6", path = "crates/algorithms/blake2" }
 libcrux-chacha20poly1305 = { version = "=0.0.6", path = "crates/algorithms/chacha20poly1305" }
+libcrux-poly1305 = { version = "=0.0.4", path = "crates/algorithms/poly1305" }
 libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
 libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
 
@@ -138,7 +139,8 @@ all_algorithms = [
     "hkdf",
     "hmac",
     "mlkem",
-    "mldsa"
+    "mldsa",
+    "poly1305"
 ]
 aes_gcm = []
 blake2 = []
@@ -153,6 +155,7 @@ hkdf = []
 hmac = []
 mlkem = []
 mldsa = []
+poly1305 = []
 
 # Primitives
 all_primitives = ["aead", "digest", "kem"]
@@ -181,6 +184,7 @@ libcrux-blake2.workspace = true
 
 # Algorithms
 libcrux-chacha20poly1305.workspace = true
+libcrux-poly1305.workspace = true
 libcrux-curve25519.workspace = true
 libcrux-digest.workspace = true
 libcrux-ecdh.workspace = true

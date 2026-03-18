@@ -38,3 +38,6 @@ pub mod mlkem;
 
 #[cfg(feature = "mldsa")]
 pub mod mldsa;
+
+#[cfg(feature = "poly1305")]
+pub mod poly1305;
