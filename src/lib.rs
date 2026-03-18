@@ -1,6 +1,6 @@
 //! # libcrux
 //!
-//! The unified, formally verified, cryptography library.
+//! A high-assurance cryptography library.
 
 #![no_std]
 
