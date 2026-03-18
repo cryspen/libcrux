@@ -29,8 +29,7 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = [
 ] }
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Post-quantum KEMs
-# XXX: These are broken and pre-releases. Dropping them until they are stable
-#      and someone actually wants to maintain them.
+# XXX: These are broken and pre-releases. Dropping them until they are stable.
 x-wing = { version = "0.1.0-rc.0", default-features = false, optional = true }
 ml-kem = { version = "0.3.0-rc.0", default-features = false, optional = true }
 # Randomness
