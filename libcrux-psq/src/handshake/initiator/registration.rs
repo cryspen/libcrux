@@ -133,7 +133,7 @@ impl<'a, Rng: CryptoRng> RegistrationInitiator<'a, Rng> {
             .into(),
         );
 
-        Ok(registration_response.0.as_ref().to_vec())
+        Ok(registration_response.0.into())
     }
 
     fn read_state(&mut self) -> Result<Box<WaitingState>, Error> {

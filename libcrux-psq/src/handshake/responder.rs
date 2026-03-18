@@ -410,7 +410,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                     }
                     .into(),
                 );
-                Ok(initiator_query_payload.as_slice().to_vec())
+                Ok(initiator_query_payload.into())
             }
 
             InitiatorOuterPayload::Registration(initiator_inner_message) => {
@@ -428,7 +428,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
                             }
                             .into(),
                         );
-                        Ok(initiator_inner_payload.0.as_slice().to_vec())
+                        Ok(initiator_inner_payload.0.into())
                     }
                     Err(e) => Err(e),
                 }
