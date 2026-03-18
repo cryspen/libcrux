@@ -13,7 +13,7 @@ pub mod chacha20poly1305;
 pub mod curve25519;
 
 #[cfg(feature = "p256_ecdh")]
-pub mod ecdh;
+pub mod p256;
 
 #[cfg(feature = "p256_ecdsa")]
 pub mod ecdsa;
