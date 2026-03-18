@@ -11,7 +11,7 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-libcrux-poly1305 = { version = "=0.0.4", path = "../poly1305/", features = [
+libcrux-poly1305 = { version = "=0.0.5-rc.1", path = "../poly1305/", features = [
     "expose-hacl",
 ] }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
