@@ -9,11 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added 
 
+- [#1364](https://github.com/cryspen/libcrux/pull/1364): Add functions for external message encoding to `Channel` trait
 - [#1339](https://github.com/cryspen/libcrux/pull/1339): Expose `Transport` struct and add external nonce-control feature
 
 ### Changed
 
+- [#1364](https://github.com/cryspen/libcrux/pull/1364): 
+    - Return `RateLimit` error in handshake responder on receiving a recently seen initiator key
+    - Always error on ciphersuite mismatch in handshake responder
+    - Remove `tls_codec` types from `HandshakeMessage` and `TransportMessage` types
 - [#1339](https://github.com/cryspen/libcrux/pull/1339): Leave receiver nonce unchanged on decryption failure
+
+### Fixed
+
+- [#1364](https://github.com/cryspen/libcrux/pull/1364): Make `Transport::receiver_nonce` return the receiver nonce instead of the sender nonce
 
 ## [0.0.7] (2026-02-12)
 
