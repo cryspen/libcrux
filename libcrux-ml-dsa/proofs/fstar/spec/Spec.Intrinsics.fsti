@@ -916,3 +916,8 @@ val count_ones_bound_lemma (x: i32):
         (ensures forall (a: nat). v x < pow2 a ==>
           v (cast (Core_models.Num.impl_i32__count_ones x <: u32) <: usize) <= a)
   [SMTPat (Core_models.Num.impl_i32__count_ones x)]
+
+/// Generic map_array indexing lemma. Missing from Rust_primitives.Arrays.fsti.
+val map_array_index_lemma (#a #b: Type) (#n: usize) (arr: t_Array a n) (f: a -> b)
+  : Lemma (forall (i:nat). i < v n ==> Seq.index (Rust_primitives.Arrays.map_array arr f) i == f (Seq.index arr i))
+    [SMTPat (Rust_primitives.Arrays.map_array #a #b #n arr f)]

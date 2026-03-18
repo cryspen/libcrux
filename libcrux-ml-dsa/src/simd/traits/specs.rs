@@ -445,8 +445,12 @@ pub(crate) fn gamma1_deserialize_post(
     true
 }
 
-pub(crate) fn commitment_serialize_pre(simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
-    serialized.len() == 4 || serialized.len() == 6
+pub(crate) fn commitment_serialize_pre(simd_unit: &SIMDContent, serialized: &[u8]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"let d = Seq.length $serialized in
+           (d == 4 \/ d == 6) /\
+           (forall i. bounded (Seq.index $simd_unit i) d)"#
+    )
 }
 
 pub(crate) fn commitment_serialize_post(
@@ -454,24 +458,26 @@ pub(crate) fn commitment_serialize_post(
     serialized: &[u8],
     future_serialized: &[u8],
 ) -> Prop {
-    Prop::implies(
-        commitment_serialize_pre(simd_unit, serialized).into(),
-        hax_lib::fstar::prop!(
-            r#"let d = Seq.length $serialized in
-               Seq.length $future_serialized == d /\
-               (let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) $simd_unit d in
-                let out = bit_vec_of_int_t_array #U8 #(mk_usize d) $future_serialized 8 in
-                forall (i: nat {i < 8 * d}). inp i == out i)"#
-        ),
+    hax_lib::fstar::prop!(
+        r#"let d = Seq.length $serialized in
+           (d == 4 \/ d == 6) ==>
+           (Seq.length $future_serialized == d /\
+            (let inp = bit_vec_of_int_t_array #I32 #(mk_usize 8) $simd_unit d in
+             let out = bit_vec_of_int_t_array #U8 #(mk_usize d) $future_serialized 8 in
+             forall (i: nat {i < 8 * d}). inp i == out i))"#
     )
 }
 
-pub(crate) fn error_serialize_pre(eta: Eta, simd_unit: &SIMDContent, serialized: &[u8]) -> bool {
-    serialized.len()
-        == match eta {
-            Eta::Two => 3,
-            Eta::Four => 4,
-        }
+pub(crate) fn error_serialize_pre(eta: Eta, simd_unit: &SIMDContent, serialized: &[u8]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"let expected_len, bound =
+             match $eta with
+             | Libcrux_ml_dsa.Constants.Eta_Two  -> 3, 2
+             | Libcrux_ml_dsa.Constants.Eta_Four  -> 4, 4
+           in
+           Seq.length $serialized == expected_len /\
+           (forall i. bounded (Seq.index $simd_unit i) bound)"#
+    )
 }
 
 pub(crate) fn error_serialize_post(
@@ -500,8 +506,11 @@ pub(crate) fn error_deserialize_post(
     true
 }
 
-pub(crate) fn t0_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> bool {
-    out.len() == 13
+pub(crate) fn t0_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"Seq.length $out == 13 /\
+           (forall i. bounded (Seq.index $simd_unit i) 13)"#
+    )
 }
 
 pub(crate) fn t0_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out: &[u8]) -> bool {
@@ -557,7 +566,7 @@ pub(crate) fn ntt_post(
 ) -> Prop {
     hax_lib::fstar::prop!(
         r#"
-        (forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
+        (forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v ${NTT_BASE_BOUND} + 8 * v ${FIELD_MAX})
             (Seq.index ${future_simd_units} i))
     "#
     )

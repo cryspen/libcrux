@@ -108,7 +108,7 @@ pub fn simd_unit_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) {
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"
     let is_i32b_polynomial (b:nat) (re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32)) =
-        Spec.Utils.forall32 (fun x -> Spec.Utils.is_i32b_array_opaque b (Seq.index re x).f_values)
+        forall (i: nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque b (Seq.index re i).f_values
 "#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
