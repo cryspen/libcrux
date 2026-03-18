@@ -27,6 +27,12 @@ use crate::{
     traits::{Channel, IntoSession},
 };
 
+struct MessageCiphertext {
+    ciphertext: Vec<u8>,
+    tag: [u8; 16],
+    ciphersuite: CiphersuiteName,
+}
+
 #[derive(TlsDeserialize, TlsSize)]
 #[repr(u8)]
 pub(crate) enum InitiatorOuterPayload {
@@ -264,7 +270,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         payload: &[u8],
         responder_ephemeral_ecdh_keys: &DHKeyPair,
         state: RespondRegistrationState,
-    ) -> Result<(Vec<u8>, [u8; 16], CiphersuiteName), Error> {
+    ) -> Result<MessageCiphertext, Error> {
         let tx2 = tx2(&state.tx1, &responder_ephemeral_ecdh_keys.pk)?;
         let mut k2 = match &state.initiator_authenticator {
             Authenticator::Dh(dhpublic_key) => derive_k2_registration_responder_dh(
@@ -301,7 +307,11 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             .into(),
         );
 
-        Ok((ciphertext, tag, working_ciphersuite))
+        Ok(MessageCiphertext {
+            ciphertext,
+            tag,
+            ciphersuite: working_ciphersuite,
+        })
     }
 
     /// Compute query response and reset state to `Initial`.
@@ -310,7 +320,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
         payload: &[u8],
         responder_ephemeral_ecdh_keys: &DHKeyPair,
         state: RespondQueryState,
-    ) -> Result<(Vec<u8>, [u8; 16], CiphersuiteName), Error> {
+    ) -> Result<MessageCiphertext, Error> {
         let (_tx2, mut k2) = self.derive_query_key(
             &state.tx0,
             &state.k0,
@@ -324,18 +334,22 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
         self.state = ResponderState::Initial;
 
-        Ok((ciphertext, tag, CiphersuiteName::query_ciphersuite()))
+        Ok(MessageCiphertext {
+            ciphertext,
+            tag,
+            ciphersuite: CiphersuiteName::query_ciphersuite(),
+        })
     }
 
     /// Compute response message elements and update responder state.
     fn prepare_message_contents(
         &mut self,
         payload: &[u8],
-    ) -> Result<(DHPublicKey, Vec<u8>, [u8; 16], CiphersuiteName), Error> {
+    ) -> Result<(DHPublicKey, MessageCiphertext), Error> {
         let state = take(&mut self.state);
         let responder_ephemeral_ecdh_keys = DHKeyPair::new(&mut self.rng);
 
-        let (ciphertext, tag, ciphersuite) = match state {
+        let message_contents = match state {
             ResponderState::RespondQuery(respond_query_state) => self.query(
                 payload,
                 &responder_ephemeral_ecdh_keys,
@@ -349,12 +363,7 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
             _ => return Err(Error::ResponderState),
         };
 
-        Ok((
-            responder_ephemeral_ecdh_keys.pk,
-            ciphertext,
-            tag,
-            ciphersuite,
-        ))
+        Ok((responder_ephemeral_ecdh_keys.pk, message_contents))
     }
 
     /// Check whether `pk` is contained in the set of most recently
@@ -430,15 +439,15 @@ impl<'a, Rng: CryptoRng> Responder<'a, Rng> {
 
 impl<'a, Rng: CryptoRng> Channel<Error, HandshakeMessage> for Responder<'a, Rng> {
     fn write_message(&mut self, payload: &[u8], out: &mut [u8]) -> Result<usize, Error> {
-        let (responder_ephemeral_ecdh_pk, ciphertext, tag, ciphersuite_name) =
+        let (responder_ephemeral_ecdh_pk, message_contents) =
             self.prepare_message_contents(payload)?;
 
         let out_msg = HandshakeMessageOut {
             pk: &responder_ephemeral_ecdh_pk,
-            ciphertext: VLByteSlice(&ciphertext),
-            tag,
+            ciphertext: VLByteSlice(&message_contents.ciphertext),
+            tag: message_contents.tag,
             aad: VLByteSlice(self.aad),
-            ciphersuite: ciphersuite_name,
+            ciphersuite: message_contents.ciphersuite,
         };
 
         let bytes_serialized = out_msg
@@ -472,15 +481,15 @@ impl<'a, Rng: CryptoRng> Channel<Error, HandshakeMessage> for Responder<'a, Rng>
         &mut self,
         payload: &[u8],
     ) -> Result<HandshakeMessage, Error> {
-        let (responder_ephemeral_ecdh_pk, ciphertext, tag, ciphersuite_name) =
+        let (responder_ephemeral_ecdh_pk, message_contents) =
             self.prepare_message_contents(payload)?;
 
         Ok(HandshakeMessage {
             pk: responder_ephemeral_ecdh_pk,
-            ciphertext,
-            tag,
+            ciphertext: message_contents.ciphertext,
+            tag: message_contents.tag,
             aad: self.aad.to_vec(),
-            ciphersuite: ciphersuite_name,
+            ciphersuite: message_contents.ciphersuite,
         })
     }
 
