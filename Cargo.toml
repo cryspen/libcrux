@@ -103,7 +103,7 @@ libcrux-psq = { version = "=0.0.7", path = "libcrux-psq" }
 # in workspace crates that depend on the default feature set.
 libcrux-ecdh = { version = "=0.0.6", path = "libcrux-ecdh", default-features = false }
 libcrux-curve25519 = { version = "=0.0.6", path = "crates/algorithms/curve25519", default-features = false }
-libcrux-ml-kem = { version = "=0.0.7", path = "libcrux-ml-kem", default-features = false }
+libcrux-ml-kem = { version = "=0.0.8-rc.1", path = "libcrux-ml-kem", default-features = false }
 libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
 
 # Test utilities
