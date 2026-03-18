@@ -12,6 +12,8 @@ use hacspec_ml_dsa::{
     ML_DSA_44, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE,
     ML_DSA_65, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE,
     ML_DSA_87, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE,
+    ML_DSA_44_W1_SIZE, ML_DSA_65_W1_SIZE, ML_DSA_87_W1_SIZE,
+    ML_DSA_44_C_TILDE_LEN, ML_DSA_65_C_TILDE_LEN, ML_DSA_87_C_TILDE_LEN,
 };
 
 #[derive(Debug, Deserialize)]
@@ -80,6 +82,7 @@ fn run_keygen_kats<
 fn run_sign_verify_kats<
     const K: usize, const L: usize,
     const PK_SIZE: usize, const SK_SIZE: usize, const SIG_SIZE: usize,
+    const W1_BYTES: usize, const C_TILDE_LEN: usize,
 >(
     params: &MlDsaParams,
     parameter_set: usize,
@@ -90,7 +93,9 @@ fn run_sign_verify_kats<
         let message = hex::decode(&kat.message).expect("Hex-decoding message failed");
         let m_prime = format_m_prime(&message);
 
-        let sigma = sign_internal::<K, L, SIG_SIZE>(&sk, &m_prime, &kat.signing_randomness, params)
+        let sigma = sign_internal::<K, L, SIG_SIZE, W1_BYTES, C_TILDE_LEN>(
+            &sk, &m_prime, &kat.signing_randomness, params,
+        )
             .expect("KAT {i}: signing failed");
 
         let sig_hash: [u8; 32] = hacspec_sha3::sha3_256(&sigma);
@@ -99,7 +104,7 @@ fn run_sign_verify_kats<
             "KAT {i}: signature hash mismatch"
         );
 
-        let valid = verify_internal::<K, L>(&pk, &m_prime, &sigma, params);
+        let valid = verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(&pk, &m_prime, &sigma, params);
         assert!(valid, "KAT {i}: verification failed");
     }
 }
@@ -121,15 +126,18 @@ fn keygen_87() {
 
 #[test]
 fn sign_verify_44() {
-    run_sign_verify_kats::<4, 4, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE>(&ML_DSA_44, 44);
+    run_sign_verify_kats::<4, 4, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE,
+        ML_DSA_44_W1_SIZE, ML_DSA_44_C_TILDE_LEN>(&ML_DSA_44, 44);
 }
 
 #[test]
 fn sign_verify_65() {
-    run_sign_verify_kats::<6, 5, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE>(&ML_DSA_65, 65);
+    run_sign_verify_kats::<6, 5, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE,
+        ML_DSA_65_W1_SIZE, ML_DSA_65_C_TILDE_LEN>(&ML_DSA_65, 65);
 }
 
 #[test]
 fn sign_verify_87() {
-    run_sign_verify_kats::<8, 7, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE>(&ML_DSA_87, 87);
+    run_sign_verify_kats::<8, 7, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE,
+        ML_DSA_87_W1_SIZE, ML_DSA_87_C_TILDE_LEN>(&ML_DSA_87, 87);
 }

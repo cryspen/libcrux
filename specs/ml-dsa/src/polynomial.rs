@@ -78,7 +78,7 @@ pub(crate) fn vector_infinity_norm<const N: usize>(v: &[Polynomial; N]) -> i32 {
 }
 
 /// Apply Power2Round componentwise to a vector, returning (v1, v0).
-#[hax_lib::opaque]
+#[hax_lib::requires(fstar!(r#"forall i. i < Seq.length ${v} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) < Rust_primitives.Integers.v ${Q})"#))]
 pub(crate) fn vector_power2round<const N: usize>(
     v: &[Polynomial; N],
 ) -> ([Polynomial; N], [Polynomial; N]) {
@@ -94,7 +94,7 @@ pub(crate) fn vector_power2round<const N: usize>(
 }
 
 /// Apply HighBits componentwise to a vector.
-#[hax_lib::opaque]
+#[hax_lib::requires(fstar!(r#"${gamma2} >. mk_i32 0 /\ ${gamma2} <. (${Q} /! mk_i32 2) /\ (forall i. i < Seq.length ${v} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) < Rust_primitives.Integers.v ${Q}))"#))]
 pub(crate) fn vector_high_bits<const N: usize>(
     v: &[Polynomial; N],
     gamma2: i32,
@@ -103,7 +103,7 @@ pub(crate) fn vector_high_bits<const N: usize>(
 }
 
 /// Apply LowBits componentwise to a vector.
-#[hax_lib::opaque]
+#[hax_lib::requires(fstar!(r#"${gamma2} >. mk_i32 0 /\ ${gamma2} <. (${Q} /! mk_i32 2) /\ (forall i. i < Seq.length ${v} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${v} i) j) < Rust_primitives.Integers.v ${Q}))"#))]
 pub(crate) fn vector_low_bits<const N: usize>(
     v: &[Polynomial; N],
     gamma2: i32,
@@ -112,7 +112,8 @@ pub(crate) fn vector_low_bits<const N: usize>(
 }
 
 /// Apply MakeHint componentwise to two vectors, returning hint vector and count of ones.
-#[hax_lib::opaque]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(fstar!(r#"Rust_primitives.Integers.v v_N <= 8 /\ ${gamma2} >. mk_i32 0 /\ ${gamma2} <. (${Q} /! mk_i32 2) /\ (forall i. i < Seq.length ${r} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) < Rust_primitives.Integers.v ${Q}))"#))]
 pub(crate) fn vector_make_hint<const N: usize>(
     z: &[Polynomial; N],
     r: &[Polynomial; N],
@@ -120,8 +121,10 @@ pub(crate) fn vector_make_hint<const N: usize>(
 ) -> ([[bool; 256]; N], usize) {
     let mut h = [[false; 256]; N];
     let mut count = 0usize;
-    for i in 0..N {
-        for j in 0..256 {
+    for i in 0usize..N {
+        hax_lib::loop_invariant!(|i: usize| count <= i * 256);
+        for j in 0usize..256usize {
+            hax_lib::loop_invariant!(|j: usize| count <= i * 256 + j);
             h[i][j] = crate::arithmetic::make_hint(z[i][j], r[i][j], gamma2);
             if h[i][j] { count += 1; }
         }
@@ -130,7 +133,7 @@ pub(crate) fn vector_make_hint<const N: usize>(
 }
 
 /// Apply UseHint componentwise to a hint vector and a polynomial vector.
-#[hax_lib::opaque]
+#[hax_lib::requires(fstar!(r#"${gamma2} >. mk_i32 0 /\ ${gamma2} <. (${Q} /! mk_i32 2) /\ (forall i. i < Seq.length ${r} ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index ${r} i) j) < Rust_primitives.Integers.v ${Q}))"#))]
 pub(crate) fn vector_use_hint<const N: usize>(
     h: &[[bool; 256]; N],
     r: &[Polynomial; N],

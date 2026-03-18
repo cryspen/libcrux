@@ -41,24 +41,24 @@ pub struct MlDsaParams {
     pub beta: i32,
 }
 
-impl MlDsaParams {
-    /// Public key size in bytes: 32 + 32·k·(bitlen(q-1) - d).
-    #[hax_lib::opaque]
-    pub const fn pk_size(&self) -> usize {
-        32 + 32 * self.k * 10 // bitlen(q-1) - d = 23 - 13 = 10
-    }
-    /// Private key size in bytes.
-    #[hax_lib::opaque]
-    pub const fn sk_size(&self) -> usize {
-        let eta_bits = if self.eta == 2 { 3 } else { 4 };
-        32 + 32 + 64 + 32 * (self.l + self.k) * eta_bits + 32 * self.k * D
-    }
-    /// Signature size in bytes.
-    #[hax_lib::opaque]
-    pub const fn sig_size(&self) -> usize {
-        let gamma1_bits = if self.gamma1 == (1 << 17) { 18 } else { 20 };
-        self.lambda / 4 + 32 * self.l * gamma1_bits + self.omega + self.k
-    }
+/// Public key size in bytes: 32 + 32·k·(bitlen(q-1) - d).
+#[hax_lib::requires(params.k <= 16)]
+pub fn pk_size(params: &MlDsaParams) -> usize {
+    32 + 32 * params.k * 10 // bitlen(q-1) - d = 23 - 13 = 10
+}
+
+/// Private key size in bytes.
+#[hax_lib::requires(params.k <= 16 && params.l <= 16 && params.eta <= 8)]
+pub fn sk_size(params: &MlDsaParams) -> usize {
+    let eta_bits = if params.eta == 2 { 3 } else { 4 };
+    32 + 32 + 64 + 32 * (params.l + params.k) * eta_bits + 32 * params.k * D
+}
+
+/// Signature size in bytes.
+#[hax_lib::requires(params.k <= 16 && params.l <= 16 && params.lambda <= 1024 && params.omega <= 256)]
+pub fn sig_size(params: &MlDsaParams) -> usize {
+    let gamma1_bits = if params.gamma1 == (1 << 17) { 18 } else { 20 };
+    params.lambda / 4 + 32 * params.l * gamma1_bits + params.omega + params.k
 }
 
 /// ML-DSA-44 — FIPS 204, Table 1.
@@ -93,14 +93,31 @@ pub const ML_DSA_87_PK_SIZE: usize = 2592;
 pub const ML_DSA_87_SK_SIZE: usize = 4896;
 pub const ML_DSA_87_SIG_SIZE: usize = 4627;
 
+// w1 encoded sizes: K * bytes_per_poly.
+// ML-DSA-44: gamma2=(Q-1)/88, w1_max=43, 6 bits, 192 bytes/poly, K=4 → 768
+pub const ML_DSA_44_W1_SIZE: usize = 768;
+// ML-DSA-65: gamma2=(Q-1)/32, w1_max=15, 4 bits, 128 bytes/poly, K=6 → 768
+pub const ML_DSA_65_W1_SIZE: usize = 768;
+// ML-DSA-87: gamma2=(Q-1)/32, w1_max=15, 4 bits, 128 bytes/poly, K=8 → 1024
+pub const ML_DSA_87_W1_SIZE: usize = 1024;
+
+// c_tilde lengths: lambda / 4.
+pub const ML_DSA_44_C_TILDE_LEN: usize = 32;
+pub const ML_DSA_65_C_TILDE_LEN: usize = 48;
+pub const ML_DSA_87_C_TILDE_LEN: usize = 64;
+
 /// bitlen(n): number of bits needed to represent n.
-#[hax_lib::opaque]
-pub(crate) const fn bitlen(n: usize) -> usize {
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::ensures(|result| result <= 64usize)]
+pub(crate) fn bitlen(n: usize) -> usize {
     let mut bits = 0usize;
     let mut v = n;
-    while v > 0 {
-        bits += 1;
-        v >>= 1;
+    for _i in 0usize..64usize {
+        hax_lib::loop_invariant!(|_i: usize| bits <= _i);
+        if v > 0 {
+            bits += 1;
+            v >>= 1;
+        }
     }
     bits
 }
@@ -112,15 +129,15 @@ mod tests {
     #[test]
     fn parameter_sizes() {
         // Table 2: Sizes (in bytes) of keys and signatures
-        assert_eq!(ML_DSA_44.pk_size(), 1312);
-        assert_eq!(ML_DSA_65.pk_size(), 1952);
-        assert_eq!(ML_DSA_87.pk_size(), 2592);
-        assert_eq!(ML_DSA_44.sk_size(), 2560);
-        assert_eq!(ML_DSA_65.sk_size(), 4032);
-        assert_eq!(ML_DSA_87.sk_size(), 4896);
-        assert_eq!(ML_DSA_44.sig_size(), 2420);
-        assert_eq!(ML_DSA_65.sig_size(), 3309);
-        assert_eq!(ML_DSA_87.sig_size(), 4627);
+        assert_eq!(pk_size(&ML_DSA_44), 1312);
+        assert_eq!(pk_size(&ML_DSA_65), 1952);
+        assert_eq!(pk_size(&ML_DSA_87), 2592);
+        assert_eq!(sk_size(&ML_DSA_44), 2560);
+        assert_eq!(sk_size(&ML_DSA_65), 4032);
+        assert_eq!(sk_size(&ML_DSA_87), 4896);
+        assert_eq!(sig_size(&ML_DSA_44), 2420);
+        assert_eq!(sig_size(&ML_DSA_65), 3309);
+        assert_eq!(sig_size(&ML_DSA_87), 4627);
     }
 
     #[test]

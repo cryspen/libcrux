@@ -18,6 +18,9 @@ pub use parameters::{
     ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE,
     ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE,
     ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE,
+    ML_DSA_44_W1_SIZE, ML_DSA_65_W1_SIZE, ML_DSA_87_W1_SIZE,
+    ML_DSA_44_C_TILDE_LEN, ML_DSA_65_C_TILDE_LEN, ML_DSA_87_C_TILDE_LEN,
+    pk_size, sig_size,
 };
 pub use ml_dsa::{keygen_internal, sign_internal, verify_internal};
 

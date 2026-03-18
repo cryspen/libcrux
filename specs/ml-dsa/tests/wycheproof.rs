@@ -5,10 +5,12 @@ use std::{fs::File, io::BufReader, path::Path};
 
 use hacspec_ml_dsa::{
     keygen_internal, sign_internal, verify_internal,
-    MlDsaParams,
+    MlDsaParams, pk_size, sig_size,
     ML_DSA_44, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE,
     ML_DSA_65, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE,
     ML_DSA_87, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE,
+    ML_DSA_44_W1_SIZE, ML_DSA_65_W1_SIZE, ML_DSA_87_W1_SIZE,
+    ML_DSA_44_C_TILDE_LEN, ML_DSA_65_C_TILDE_LEN, ML_DSA_87_C_TILDE_LEN,
 };
 
 // ======================================================================
@@ -105,6 +107,7 @@ fn wycheproof_path(filename: &str) -> std::path::PathBuf {
 fn run_sign_seed_tests<
     const K: usize, const L: usize,
     const PK_SIZE: usize, const SK_SIZE: usize, const SIG_SIZE: usize,
+    const W1_BYTES: usize, const C_TILDE_LEN: usize,
 >(
     params: &MlDsaParams,
     filename: &str,
@@ -126,7 +129,9 @@ fn run_sign_seed_tests<
             }
 
             let m_prime = format_m_prime(&test.msg, &test.ctx);
-            let sigma = sign_internal::<K, L, SIG_SIZE>(&sk, &m_prime, &signing_randomness, params);
+            let sigma = sign_internal::<K, L, SIG_SIZE, W1_BYTES, C_TILDE_LEN>(
+                &sk, &m_prime, &signing_randomness, params,
+            );
 
             if test.result == "valid" {
                 let sigma = sigma.expect("signing should succeed for valid test");
@@ -134,7 +139,9 @@ fn run_sign_seed_tests<
                     sigma.as_slice(), test.sig.as_slice(),
                     "tc_id={}: signature mismatch ({})", test.tc_id, test.comment
                 );
-                let valid = verify_internal::<K, L>(&pk, &m_prime, &sigma, params);
+                let valid = verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(
+                    &pk, &m_prime, &sigma, params,
+                );
                 assert!(valid, "tc_id={}: verify failed for valid signature", test.tc_id);
             }
         }
@@ -143,19 +150,22 @@ fn run_sign_seed_tests<
 
 #[test]
 fn wycheproof_sign_seed_44() {
-    run_sign_seed_tests::<4, 4, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE>(
+    run_sign_seed_tests::<4, 4, ML_DSA_44_PK_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_SIG_SIZE,
+        ML_DSA_44_W1_SIZE, ML_DSA_44_C_TILDE_LEN>(
         &ML_DSA_44, "mldsa_44_sign_seed_test.json");
 }
 
 #[test]
 fn wycheproof_sign_seed_65() {
-    run_sign_seed_tests::<6, 5, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE>(
+    run_sign_seed_tests::<6, 5, ML_DSA_65_PK_SIZE, ML_DSA_65_SK_SIZE, ML_DSA_65_SIG_SIZE,
+        ML_DSA_65_W1_SIZE, ML_DSA_65_C_TILDE_LEN>(
         &ML_DSA_65, "mldsa_65_sign_seed_test.json");
 }
 
 #[test]
 fn wycheproof_sign_seed_87() {
-    run_sign_seed_tests::<8, 7, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE>(
+    run_sign_seed_tests::<8, 7, ML_DSA_87_PK_SIZE, ML_DSA_87_SK_SIZE, ML_DSA_87_SIG_SIZE,
+        ML_DSA_87_W1_SIZE, ML_DSA_87_C_TILDE_LEN>(
         &ML_DSA_87, "mldsa_87_sign_seed_test.json");
 }
 
@@ -163,7 +173,10 @@ fn wycheproof_sign_seed_87() {
 // Verify tests
 // ======================================================================
 
-fn run_verify_tests<const K: usize, const L: usize>(
+fn run_verify_tests<
+    const K: usize, const L: usize,
+    const C_TILDE_LEN: usize, const W1_BYTES: usize,
+>(
     params: &MlDsaParams,
     filename: &str,
 ) {
@@ -175,7 +188,7 @@ fn run_verify_tests<const K: usize, const L: usize>(
     for group in &data.test_groups {
         let pk = &group.public_key;
 
-        if pk.len() != params.pk_size() {
+        if pk.len() != pk_size(params) {
             for test in &group.tests {
                 assert_eq!(test.result, "invalid",
                     "tc_id={}: wrong pk size should be invalid", test.tc_id);
@@ -184,7 +197,7 @@ fn run_verify_tests<const K: usize, const L: usize>(
         }
 
         for test in &group.tests {
-            if test.sig.len() != params.sig_size() {
+            if test.sig.len() != sig_size(params) {
                 assert_eq!(test.result, "invalid",
                     "tc_id={}: wrong sig size should be invalid", test.tc_id);
                 continue;
@@ -197,7 +210,9 @@ fn run_verify_tests<const K: usize, const L: usize>(
             }
 
             let m_prime = format_m_prime(&test.msg, &test.ctx);
-            let valid = verify_internal::<K, L>(pk, &m_prime, &test.sig, params);
+            let valid = verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(
+                pk, &m_prime, &test.sig, params,
+            );
 
             if test.result == "valid" {
                 assert!(valid,
@@ -212,15 +227,18 @@ fn run_verify_tests<const K: usize, const L: usize>(
 
 #[test]
 fn wycheproof_verify_44() {
-    run_verify_tests::<4, 4>(&ML_DSA_44, "mldsa_44_verify_test.json");
+    run_verify_tests::<4, 4, ML_DSA_44_C_TILDE_LEN, ML_DSA_44_W1_SIZE>(
+        &ML_DSA_44, "mldsa_44_verify_test.json");
 }
 
 #[test]
 fn wycheproof_verify_65() {
-    run_verify_tests::<6, 5>(&ML_DSA_65, "mldsa_65_verify_test.json");
+    run_verify_tests::<6, 5, ML_DSA_65_C_TILDE_LEN, ML_DSA_65_W1_SIZE>(
+        &ML_DSA_65, "mldsa_65_verify_test.json");
 }
 
 #[test]
 fn wycheproof_verify_87() {
-    run_verify_tests::<8, 7>(&ML_DSA_87, "mldsa_87_verify_test.json");
+    run_verify_tests::<8, 7, ML_DSA_87_C_TILDE_LEN, ML_DSA_87_W1_SIZE>(
+        &ML_DSA_87, "mldsa_87_verify_test.json");
 }
