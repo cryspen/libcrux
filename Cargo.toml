@@ -89,7 +89,7 @@ libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.6", path = "crates/algorithms/hmac" }
 libcrux-intrinsics = { version = "=0.0.6", path = "crates/utils/intrinsics" }
-libcrux-digest = { version = "=0.0.6", path = "crates/primitives/digest" }
+libcrux-digest = { version = "=0.0.7-rc.1", path = "crates/primitives/digest" }
 libcrux-rsa = { version = "=0.0.6", path = "crates/algorithms/rsa" }
 libcrux-sha2 = { version = "=0.0.6", path = "crates/algorithms/sha2" }
 libcrux-sha3 = { version = "=0.0.8-rc.1", path = "crates/algorithms/sha3" }
