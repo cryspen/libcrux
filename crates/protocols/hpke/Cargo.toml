@@ -21,7 +21,7 @@ subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
 hpke-rs-crypto = { version = "0.6.0", path = "./traits", default-features = false }
 rand_core = { version = "0.9", default-features = false }
-libcrux-sha3 = { version = "0.0.7" }
+libcrux-sha3 = { version = "0.0.8" }
 hpke-rs-rust-crypto = { version = "0.6.0", path = "./rust_crypto_provider", default-features = false, optional = true }
 hpke-rs-libcrux = { version = "0.6.0", path = "./libcrux_provider", default-features = false, optional = true }
 
