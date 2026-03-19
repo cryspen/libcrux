@@ -10,6 +10,16 @@ readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
 exclude = [
+    "c.sh",
+    "/.devcontainer",
+    "/.docker",
+    "flake.lock",
+    "flake.nix",
+    "formal_verification",
+    "fstar-helpers",
+    "/.github",
+    ".gitignore",
+    "no-std-build.sh",
     "/tests",
     "/specs",
     "/proofs",
