@@ -6,12 +6,13 @@
 use crate::createi;
 
 /// Keccak-f[1600] state: 5×5 lanes of 64-bit words.
-pub(crate) type State = [u64; 25];
+/// Keccak state type, exposed for cross-crate verification.
+pub type State = [u64; 25];
 
 /// Read lane `A[x, y]`.
 #[inline]
 #[hax_lib::requires(x < 5 && y < 5)]
-fn get(state: &State, x: usize, y: usize) -> u64 {
+pub fn get(state: &State, x: usize, y: usize) -> u64 {
     state[5 * x + y]
 }
 
@@ -68,7 +69,7 @@ const RHO_OFFSETS: [u32; 25] = [
 ///   C[x]    = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]
 ///   D[x]    = C[x−1 mod 5] ⊕ rot(C[x+1 mod 5], 1)
 ///   A′[x,y] = A[x,y] ⊕ D[x]
-fn theta(state: State) -> State {
+pub fn theta(state: State) -> State {
     let c: [u64; 5] = createi(|x| {
         get(&state, x, 0) ^ get(&state, x, 1) ^ get(&state, x, 2)
             ^ get(&state, x, 3) ^ get(&state, x, 4)
@@ -82,7 +83,7 @@ fn theta(state: State) -> State {
 /// ρ step — FIPS 202, Algorithm 2.
 ///
 ///   A′[x,y] = rot(A[x,y], offset(x,y))
-fn rho(state: State) -> State {
+pub fn rho(state: State) -> State {
     createi(|idx| {
         state[idx].rotate_left(RHO_OFFSETS[idx])
     })
@@ -91,7 +92,7 @@ fn rho(state: State) -> State {
 /// π step — FIPS 202, Algorithm 3.
 ///
 ///   A′[x,y] = A[(x + 3y) mod 5, x]
-fn pi(state: State) -> State {
+pub fn pi(state: State) -> State {
     createi(|idx| {
         let x = idx / 5;
         let y = idx % 5;
@@ -102,7 +103,7 @@ fn pi(state: State) -> State {
 /// χ step — FIPS 202, Algorithm 4.
 ///
 ///   A′[x,y] = A[x,y] ⊕ (¬A[(x+1) mod 5, y] ∧ A[(x+2) mod 5, y])
-fn chi(state: State) -> State {
+pub fn chi(state: State) -> State {
     createi(|idx| {
         let x = idx / 5;
         let y = idx % 5;
@@ -115,7 +116,7 @@ fn chi(state: State) -> State {
 ///
 ///   A′[0,0] = A[0,0] ⊕ RC[ir]
 #[hax_lib::requires(round < 24)]
-fn iota(mut state: State, round: usize) -> State {
+pub fn iota(mut state: State, round: usize) -> State {
     state[0] ^= ROUND_CONSTANTS[round];
     state
 }
@@ -127,7 +128,7 @@ fn iota(mut state: State, round: usize) -> State {
 /// Keccak-f[1600] permutation — FIPS 202, Algorithm 7.
 ///
 ///   Rnd(A, ir) = ι(χ(π(ρ(θ(A)))), ir)
-pub(crate) fn keccak_f(mut state: State) -> State {
+pub fn keccak_f(mut state: State) -> State {
     for round in 0..24 {
         state = iota(chi(pi(rho(theta(state)))), round);
     }

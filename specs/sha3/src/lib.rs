@@ -1,6 +1,8 @@
-mod keccak_f;
+/// Keccak-f[1600] permutation — exposed for cross-crate verification.
+pub mod keccak_f;
 mod sha3;
-mod sponge;
+/// Sponge construction — exposed for cross-crate verification.
+pub mod sponge;
 
 /// Utility function to create an array of size `N` by applying a function `f` to each index.
 #[hax_lib::fstar::replace(

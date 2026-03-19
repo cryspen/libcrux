@@ -10,7 +10,7 @@ use crate::keccak_f::{keccak_f, State};
 /// byte-lane `l` maps to `A[l % 5, l / 5]` = `state[5*(l%5) + l/5]`.
 #[inline]
 #[hax_lib::requires(l < 25)]
-fn lane_index(l: usize) -> usize {
+pub fn lane_index(l: usize) -> usize {
     5 * (l % 5) + l / 5
 }
 
@@ -18,7 +18,7 @@ fn lane_index(l: usize) -> usize {
 ///
 /// Corresponds to the `S ⊕ (Pi || 0^c)` step of Algorithm 8.
 #[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() >= rate)]
-fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> State {
+pub fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> State {
     for i in 0..(rate / 8) {
         let offset = 8 * i;
         let lane_val = u64::from_le_bytes([
@@ -43,7 +43,7 @@ fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> State {
 #[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(len <= 200 && output.len() >= len && out_offset <= output.len() - len)]
 #[hax_lib::ensures(|_| future(output).len() == output.len())]
-fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize) {
+pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize) {
     let _orig_len = output.len();
     let full_lanes = len / 8;
     for i in 0..full_lanes {
@@ -79,7 +79,7 @@ fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize
 /// on the output length.
 #[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
-pub(crate) fn keccak<const OUTPUT_LEN: usize>(
+pub fn keccak<const OUTPUT_LEN: usize>(
     rate: usize,
     delim: u8,
     message: &[u8],
