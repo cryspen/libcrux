@@ -10,18 +10,24 @@ use crate::{
 const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 13 * 32)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // RING_ELEMENT_OF_T0S_SIZE
 ) {
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
+
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
             SIMDUnit::t0_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
         }
     }
 }
 
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 13 * 32)]
 fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
