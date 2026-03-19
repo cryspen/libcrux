@@ -106,7 +106,7 @@ libcrux-ml-kem = { version = "=0.0.8-rc.1", path = "libcrux-ml-kem", default-fea
 libcrux-p256 = { version = "=0.0.6", path = "crates/algorithms/p256", default-features = false }
 
 # Test utilities
-libcrux-kats = { version = "=0.0.3", path = "crates/testing/kats" }
+libcrux-kats = { path = "crates/testing/kats" }
 
 # Utilities
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
