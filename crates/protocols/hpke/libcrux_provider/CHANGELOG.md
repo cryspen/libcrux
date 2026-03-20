@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.0] - 2026-02-13
+## [0.6.1] - 2026-02-20
 
 ### Changed
 - [#129](https://github.com/cryspen/hpke-rs/pull/129): Update libcrux dependencies
