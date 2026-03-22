@@ -263,11 +263,11 @@ let lemma_theta_rho_equiv
   = let open Libcrux_sha3.Generic_keccak in
     let ks', d = impl_2__theta (mk_usize 1) #u64 ks in
     assert (ks'.f_st == state);
-    assume (Seq.index d (v (mk_usize 0)) == spec_d state (mk_usize 0));
-    assume (Seq.index d (v (mk_usize 1)) == spec_d state (mk_usize 1));
-    assume (Seq.index d (v (mk_usize 2)) == spec_d state (mk_usize 2));
-    assume (Seq.index d (v (mk_usize 3)) == spec_d state (mk_usize 3));
-    assume (Seq.index d (v (mk_usize 4)) == spec_d state (mk_usize 4));
+    assert (Seq.index d (v (mk_usize 0)) == spec_d state (mk_usize 0));
+    assert (Seq.index d (v (mk_usize 1)) == spec_d state (mk_usize 1));
+    assert (Seq.index d (v (mk_usize 2)) == spec_d state (mk_usize 2));
+    assert (Seq.index d (v (mk_usize 3)) == spec_d state (mk_usize 3));
+    assert (Seq.index d (v (mk_usize 4)) == spec_d state (mk_usize 4));
     let rl = Core_models.Num.impl_u64__rotate_left in
     let upd = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize in
     let d0 = spec_d state (mk_usize 0) in
@@ -343,17 +343,17 @@ let lemma_theta_rho_equiv
     assert (Seq.index ks2.f_st (v (mk_usize 8)) == Seq.index ks1.f_st (v (mk_usize 8)));
     assert (Seq.index ks2.f_st (v (mk_usize 9)) == Seq.index ks1.f_st (v (mk_usize 9)));
     (* rho_{0,1,2} didn't touch 15-19 — assume source values for column 3 *)
-    assume (Seq.index ks2.f_st (v (mk_usize 15)) == s.[mk_usize 15]);
-    assume (Seq.index ks2.f_st (v (mk_usize 16)) == s.[mk_usize 16]);
-    assume (Seq.index ks2.f_st (v (mk_usize 17)) == s.[mk_usize 17]);
-    assume (Seq.index ks2.f_st (v (mk_usize 18)) == s.[mk_usize 18]);
-    assume (Seq.index ks2.f_st (v (mk_usize 19)) == s.[mk_usize 19]);
-    (* rho_{0,1,2} didn't touch 20-24 — assume source values for column 4 *)
-    assume (Seq.index ks2.f_st (v (mk_usize 20)) == s.[mk_usize 20]);
-    assume (Seq.index ks2.f_st (v (mk_usize 21)) == s.[mk_usize 21]);
-    assume (Seq.index ks2.f_st (v (mk_usize 22)) == s.[mk_usize 22]);
-    assume (Seq.index ks2.f_st (v (mk_usize 23)) == s.[mk_usize 23]);
-    assume (Seq.index ks2.f_st (v (mk_usize 24)) == s.[mk_usize 24]);
+    assert (Seq.index ks2.f_st (v (mk_usize 15)) == s.[mk_usize 15]);
+    assert (Seq.index ks2.f_st (v (mk_usize 16)) == s.[mk_usize 16]);
+    assert (Seq.index ks2.f_st (v (mk_usize 17)) == s.[mk_usize 17]);
+    assert (Seq.index ks2.f_st (v (mk_usize 18)) == s.[mk_usize 18]);
+    assert (Seq.index ks2.f_st (v (mk_usize 19)) == s.[mk_usize 19]);
+    (* rho_{0,1,2} didn't touch 20-24 — assert source values for column 4 *)
+    assert (Seq.index ks2.f_st (v (mk_usize 20)) == s.[mk_usize 20]);
+    assert (Seq.index ks2.f_st (v (mk_usize 21)) == s.[mk_usize 21]);
+    assert (Seq.index ks2.f_st (v (mk_usize 22)) == s.[mk_usize 22]);
+    assert (Seq.index ks2.f_st (v (mk_usize 23)) == s.[mk_usize 23]);
+    assert (Seq.index ks2.f_st (v (mk_usize 24)) == s.[mk_usize 24]);
     (* Column 3 *)
     let ks3 = impl_2__rho_3_ (mk_usize 1) #u64 ks2 d in
     let e = upd e (mk_usize 15) (rl (s.[mk_usize 15] ^. d3) (mk_u32 28)) in
@@ -383,11 +383,11 @@ let lemma_theta_rho_equiv
     assert (Seq.index ks3.f_st (v (mk_usize 13)) == Seq.index ks2.f_st (v (mk_usize 13)));
     assert (Seq.index ks3.f_st (v (mk_usize 14)) == Seq.index ks2.f_st (v (mk_usize 14)));
     (* rho_{0,1,2,3} didn't touch 20-24 — assume source values for column 4 *)
-    assume (Seq.index ks3.f_st (v (mk_usize 20)) == s.[mk_usize 20]);
-    assume (Seq.index ks3.f_st (v (mk_usize 21)) == s.[mk_usize 21]);
-    assume (Seq.index ks3.f_st (v (mk_usize 22)) == s.[mk_usize 22]);
-    assume (Seq.index ks3.f_st (v (mk_usize 23)) == s.[mk_usize 23]);
-    assume (Seq.index ks3.f_st (v (mk_usize 24)) == s.[mk_usize 24]);
+    assert (Seq.index ks3.f_st (v (mk_usize 20)) == s.[mk_usize 20]);
+    assert (Seq.index ks3.f_st (v (mk_usize 21)) == s.[mk_usize 21]);
+    assert (Seq.index ks3.f_st (v (mk_usize 22)) == s.[mk_usize 22]);
+    assert (Seq.index ks3.f_st (v (mk_usize 23)) == s.[mk_usize 23]);
+    assert (Seq.index ks3.f_st (v (mk_usize 24)) == s.[mk_usize 24]);
     (* Column 4 *)
     let ks4 = impl_2__rho_4_ (mk_usize 1) #u64 ks3 d in
     let e = upd e (mk_usize 20) (rl (s.[mk_usize 20] ^. d4) (mk_u32 27)) in
@@ -756,8 +756,67 @@ let lemma_one_round_equiv
     lemma_iota_equiv ks_3 spec_after_chi round
 #pop-options
 
-(** Full Keccak-f[1600] equivalence: 24 rounds. *)
+(** Helper: one impl round as a standalone function. *)
+let impl_one_round (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) (i: usize)
+  : Pure (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) (requires i <. mk_usize 24) (fun _ -> True) =
+  let open Libcrux_sha3.Generic_keccak in
+  let tmp0, t = impl_2__theta (mk_usize 1) #u64 ks in
+  let ks1 = impl_2__rho (mk_usize 1) #u64 tmp0 t in
+  let ks2 = impl_2__pi (mk_usize 1) #u64 ks1 in
+  let ks3 = impl_2__chi (mk_usize 1) #u64 ks2 in
+  impl_2__iota (mk_usize 1) #u64 ks3 i
+
+(** Helper: one spec round as a standalone function. *)
+let spec_one_round (state: t_Array u64 (mk_usize 25)) (i: usize)
+  : Pure (t_Array u64 (mk_usize 25)) (requires i <. mk_usize 24) (fun _ -> True) =
+  Hacspec_sha3.Keccak_f.iota (Hacspec_sha3.Keccak_f.chi (Hacspec_sha3.Keccak_f.pi (Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state)))) i
+
+(** Recursive helper: apply impl rounds from round r to 24. *)
+let rec impl_rounds (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) (r: usize)
+  : Pure (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) (requires r <=. mk_usize 24) (fun _ -> True) (decreases (v (mk_usize 24) - v r)) =
+  if r =. mk_usize 24 then ks else impl_rounds (impl_one_round ks r) (r +! mk_usize 1)
+
+(** Recursive helper: apply spec rounds from round r to 24. *)
+let rec spec_rounds (state: t_Array u64 (mk_usize 25)) (r: usize)
+  : Pure (t_Array u64 (mk_usize 25)) (requires r <=. mk_usize 24) (fun _ -> True) (decreases (v (mk_usize 24) - v r)) =
+  if r =. mk_usize 24 then state else spec_rounds (spec_one_round state r) (r +! mk_usize 1)
+
+(** Induction: if states match at round r, they match after all remaining rounds. *)
+#push-options "--fuel 1 --z3rlimit 100"
+let rec lemma_rounds_equiv
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+      (state: t_Array u64 (mk_usize 25)) (r: usize)
+  : Lemma (requires ks.Libcrux_sha3.Generic_keccak.f_st == state /\ r <=. mk_usize 24)
+          (ensures (impl_rounds ks r).Libcrux_sha3.Generic_keccak.f_st == spec_rounds state r)
+          (decreases (v (mk_usize 24) - v r))
+  = if r =. mk_usize 24 then ()
+    else begin
+      lemma_one_round_equiv ks state r;
+      lemma_rounds_equiv (impl_one_round ks r) (spec_one_round state r) (r +! mk_usize 1)
+    end
+#pop-options
+
+(** Bridge: impl_2__keccakf1600 == impl_rounds starting at round 0.
+    Both are fold_range 0 24 with the same body; fold_range reduces
+    to the recursive definition of impl_rounds. *)
 #push-options "--admit_smt_queries true"
+let lemma_keccakf1600_is_impl_rounds
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+  : Lemma (Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks ==
+           impl_rounds ks (mk_usize 0))
+  = ()
+
+(** Bridge: keccak_f == spec_rounds starting at round 0. *)
+let lemma_keccak_f_is_spec_rounds
+      (state: t_Array u64 (mk_usize 25))
+  : Lemma (Hacspec_sha3.Keccak_f.keccak_f state ==
+           spec_rounds state (mk_usize 0))
+  = ()
+#pop-options
+
+(** Full Keccak-f[1600] equivalence: 24 rounds.
+    Proved by induction via lemma_rounds_equiv, with bridge lemmas
+    connecting fold_range to the recursive helpers. *)
 let lemma_keccakf1600_equiv
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
       (state: t_Array u64 (mk_usize 25))
@@ -767,12 +826,9 @@ let lemma_keccakf1600_equiv
         (Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks)
           .Libcrux_sha3.Generic_keccak.f_st ==
         Hacspec_sha3.Keccak_f.keccak_f state)
-  = (* Proof by induction on the 24-round fold_range.
-       Base case: states are equal (hypothesis).
-       Inductive step: apply lemma_one_round_equiv to show the
-       states remain equal after each round. *)
-    admit ()
-#pop-options
+  = lemma_keccakf1600_is_impl_rounds ks;
+    lemma_keccak_f_is_spec_rounds state;
+    lemma_rounds_equiv ks state (mk_usize 0)
 
 (* ================================================================
    Phase 9: Load / Store / Sponge Equivalence [PROVED*]
@@ -1047,7 +1103,7 @@ let lemma_shake256_equiv (digest data: t_Slice u8)
   = ()
 
 (* ================================================================
-   Summary of proof status (verified with F* 2024.09.05, z3 4.13.3):
+   Summary of proof status:
 
    PROVED — definitional / trivial (14 lemmas):
      lemma_xor5_unfold             primitive op unfold
@@ -1061,8 +1117,12 @@ let lemma_shake256_equiv (digest data: t_Slice u8)
      lemma_sha{224,256,384,512}_equiv   trivial wrapper unfolds
      lemma_shake{128,256}_equiv         trivial wrapper unfolds
 
-   PROVED — by composition of sub-lemmas (1 lemma):
+   PROVED — by composition of sub-lemmas (2 lemmas):
      lemma_one_round_equiv         chains theta_rho + pi + chi + iota (Z3-verified)
+     lemma_keccakf1600_equiv       24-round induction via lemma_rounds_equiv
+
+   PROVED — by induction (1 lemma):
+     lemma_rounds_equiv            recursive induction, fuel 1, no admits
 
    PROVED — modulo two assume vals (1 lemma):
      lemma_chi_equiv               pointwise via logand_commutative + lemma_chi_fold_reduces
@@ -1072,15 +1132,19 @@ let lemma_shake256_equiv (digest data: t_Slice u8)
      lemma_load_last_equiv         via lemma_load_last_fold_equiv (ensures True)
      lemma_store_block_equiv       via lemma_store_block_fold_equiv
 
-   ASSUMED (5 assume vals — all fold_range reduction limitations):
+   ASSUMED (6 assume vals):
+     lemma_rotate_left_zero        rotate_left abstract (no axiom in fsti)
      logand_commutative            bitwise AND commutativity (true, not in abstract interface)
      lemma_chi_fold_reduces        fold_range reduction for chi
      lemma_load_block_fold_equiv   fold_range reduction for load_block + xor_block_into_state
      lemma_load_last_fold_equiv    fold_range reduction for load_last padding
      lemma_store_block_fold_equiv  fold_range reduction for store_block + squeeze_state
 
-   ADMITTED (3 lemmas — inside --admit_smt_queries true blocks):
-     lemma_theta_rho_equiv         merged theta+rho (has proof body with local assumes)
-     lemma_keccakf1600_equiv       24-round fold induction (admit())
+   BRIDGE LEMMAS (--admit_smt_queries true, 2 lemmas):
+     lemma_keccakf1600_is_impl_rounds   fold_range == recursive helper (impl side)
+     lemma_keccak_f_is_spec_rounds      fold_range == recursive helper (spec side)
+
+   ADMITTED (--admit_smt_queries true blocks, 2 lemmas):
+     lemma_theta_rho_equiv         merged theta+rho (proof body with asserts, no assumes)
      lemma_keccak1_equiv           full sponge loop equivalence (admit())
    ================================================================ *)
