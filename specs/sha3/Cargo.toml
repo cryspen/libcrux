@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hax-lib = { version = "=0.3.6" }
+hax-lib = { git = "https://github.com/cryspen/hax", branch = "normalizable-primitives" }
 
 [dev-dependencies]
 hex = "0.4.3"

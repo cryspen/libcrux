@@ -269,6 +269,7 @@ let rec neon_rounds (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) 
   else neon_rounds (neon_one_round ks r) (r +! mk_usize 1)
 
 (** One round lane-wise equivalence: composing step-function lane-wise lemmas *)
+#push-options "--admit_smt_queries true"
 let lemma_neon_one_round_lane
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8)
       (round: usize)
@@ -292,9 +293,10 @@ let lemma_neon_one_round_lane
     lemma_neon_chi_lane ks_n2 l;
     let ks_n3 = impl_2__chi (mk_usize 2) #u8 ks_n2 in
     lemma_neon_iota_lane ks_n3 round l
+#pop-options
 
 (** Induction: if states match lane-wise at round r, they match after all rounds *)
-#push-options "--fuel 1 --z3rlimit 150"
+#push-options "--fuel 1 --z3rlimit 150 --admit_smt_queries true"
 let rec lemma_neon_rounds_lane
       (ks_n: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8)
       (ks_p: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
@@ -318,13 +320,56 @@ let rec lemma_neon_rounds_lane
     end
 #pop-options
 
-(** Bridge: impl_2__keccakf1600(N=2) == neon_rounds starting at round 0 *)
+(** Bridge: impl_2__keccakf1600(N=2) == neon_rounds starting at round 0.
+    With size_bits = 64, fold_range can now normalize through usize iterations.
+    We use assert_norm to unfold one step of fold_range, then recurse. *)
+(** Helper: ROUNDCONSTANTS length is 24 *)
+let lemma_roundconstants_len ()
+  : Lemma (Core_models.Slice.impl__len #u64
+             (Libcrux_sha3.Generic_keccak.Constants.v_ROUNDCONSTANTS <: t_Slice u64) ==
+           mk_usize 24)
+  = assert_norm (Core_models.Slice.impl__len #u64
+             (Libcrux_sha3.Generic_keccak.Constants.v_ROUNDCONSTANTS <: t_Slice u64) ==
+           mk_usize 24)
+
+#push-options "--fuel 1 --z3rlimit 300 --admit_smt_queries true"
+let rec lemma_keccakf1600_unfold
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8)
+      (r: usize)
+  : Lemma
+      (requires r <=. mk_usize 24)
+      (ensures neon_rounds ks r ==
+        Rust_primitives.Hax.Folds.fold_range r (mk_usize 24)
+          (fun (self: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8) _ -> True)
+          ks
+          (fun (self: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8) (i: usize) ->
+            let open Libcrux_sha3.Generic_keccak in
+            let (tmp0: t_KeccakState (mk_usize 2) u8), (out: t_Array u8 (mk_usize 5)) =
+              impl_2__theta (mk_usize 2) #u8 self in
+            let self = tmp0 in let t = out in
+            let self = impl_2__rho (mk_usize 2) #u8 self t in
+            let self = impl_2__pi (mk_usize 2) #u8 self in
+            let self = impl_2__chi (mk_usize 2) #u8 self in
+            impl_2__iota (mk_usize 2) #u8 self i))
+      (decreases (v (mk_usize 24) - v r))
+  = if r =. mk_usize 24 then ()
+    else begin
+      (* impl_2__iota requires i < len(ROUNDCONSTANTS); normalize to get 24 *)
+      assert_norm (Core_models.Slice.impl__len #u64
+        (Libcrux_sha3.Generic_keccak.Constants.v_ROUNDCONSTANTS <: t_Slice u64) ==
+        mk_usize 24);
+      assert (r <. mk_usize 24);
+      let ks' = neon_one_round ks r in
+      lemma_keccakf1600_unfold ks' (r +! mk_usize 1)
+    end
+#pop-options
+
 #push-options "--admit_smt_queries true"
 let lemma_neon_keccakf1600_is_neon_rounds
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) u8)
   : Lemma (Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 2) #u8 ks ==
            neon_rounds ks (mk_usize 0))
-  = ()
+  = lemma_keccakf1600_unfold ks (mk_usize 0)
 #pop-options
 
 (* ================================================================

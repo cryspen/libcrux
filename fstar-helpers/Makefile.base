@@ -31,6 +31,7 @@ HAX_PROOF_LIBS := $(shell cargo metadata --format-version 1 2>/dev/null | jq -r 
 ifneq ($(HAX_PROOF_LIBS),)
 FSTAR_INCLUDE_DIRS_EXTRA += \
 	      $(HAX_PROOF_LIBS)/proof-libs/fstar/core \
+	      $(HAX_PROOF_LIBS)/proof-libs/fstar/rust_primitives/64bit \
 	      $(HAX_PROOF_LIBS)/proofs/fstar/extraction
 endif
 
