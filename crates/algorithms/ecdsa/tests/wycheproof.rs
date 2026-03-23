@@ -51,7 +51,10 @@ fn decode_signature(sig: &[u8]) -> Option<Signature> {
     }
     let s = &rest[2..2 + s_len];
 
-    Some(Signature::from_raw(make_fixed_length(r), make_fixed_length(s)))
+    Some(Signature::from_raw(
+        make_fixed_length(r),
+        make_fixed_length(s),
+    ))
 }
 
 fn test_ecdsa(test_name: ecdsa::TestName, hash: DigestAlgorithm) {
@@ -78,10 +81,7 @@ fn test_ecdsa(test_name: ecdsa::TestName, hash: DigestAlgorithm) {
                 None => {
                     // Malformed signature encoding — should be invalid
                     if valid {
-                        panic!(
-                            "tc_id {}: valid test has unparseable signature",
-                            test.tc_id,
-                        );
+                        panic!("tc_id {}: valid test has unparseable signature", test.tc_id,);
                     }
                     tests_run += 1;
                     continue;

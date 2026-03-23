@@ -24,14 +24,15 @@ fn wycheproof() {
             let key = <&[u8; 32]>::try_from(test.key.as_ref()).unwrap();
 
             let mut ctxt = test.pt.to_vec();
-            let tag = match libcrux_chacha20poly1305::encrypt(key, &test.pt, &mut ctxt, &test.aad, nonce)
-            {
-                Ok((_v, t)) => t,
-                Err(_) => {
-                    tests_run += 1;
-                    continue;
-                }
-            };
+            let tag =
+                match libcrux_chacha20poly1305::encrypt(key, &test.pt, &mut ctxt, &test.aad, nonce)
+                {
+                    Ok((_v, t)) => t,
+                    Err(_) => {
+                        tests_run += 1;
+                        continue;
+                    }
+                };
 
             if valid {
                 assert_eq!(tag, test.tag.as_ref(), "tc_id {}: tag mismatch", test.tc_id);
