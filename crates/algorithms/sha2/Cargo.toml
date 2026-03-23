@@ -21,3 +21,4 @@ libcrux-traits.workspace = true
 [dev-dependencies]
 hex = { version = "0.4.3" }
 libcrux-traits = { workspace = true, features = ["generic-tests"] }
+cavp = { path = "../../../cavp" }
