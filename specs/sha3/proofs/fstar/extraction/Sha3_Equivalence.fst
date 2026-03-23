@@ -445,7 +445,7 @@ let lemma_theta_rho_equiv
    source old[(i_src, j_src)] satisfies the transposed pi formula.
    ================================================================ *)
 
-#push-options "--z3rlimit 300 --admit_smt_queries true"
+#push-options "--admit_smt_queries true"
 let lemma_pi_equiv
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
       (state: t_Array u64 (mk_usize 25))
