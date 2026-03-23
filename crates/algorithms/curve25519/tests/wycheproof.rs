@@ -52,5 +52,8 @@ fn x25519() {
     }
 
     assert!(tests_run > 0, "No tests were run");
-    println!("Ran {tests_run} X25519 tests ({} total)", test_set.number_of_tests);
+    println!(
+        "Ran {tests_run} X25519 tests ({} total)",
+        test_set.number_of_tests
+    );
 }

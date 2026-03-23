@@ -2,8 +2,7 @@ use wycheproof::{ecdh, TestResult};
 
 #[test]
 fn ecdh_secp256r1() {
-    let test_set =
-        ecdh::TestSet::load(ecdh::TestName::EcdhSecp256r1Ecpoint).unwrap();
+    let test_set = ecdh::TestSet::load(ecdh::TestName::EcdhSecp256r1Ecpoint).unwrap();
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
@@ -59,8 +58,7 @@ fn ecdh_secp256r1() {
 
             let mut shared = [0u8; 64];
 
-            let success =
-                libcrux_p256::dh_responder(&mut shared, raw_pk, &sk_bytes);
+            let success = libcrux_p256::dh_responder(&mut shared, raw_pk, &sk_bytes);
 
             match test.result {
                 TestResult::Valid | TestResult::Acceptable => {

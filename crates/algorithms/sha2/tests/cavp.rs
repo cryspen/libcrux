@@ -13,11 +13,7 @@ macro_rules! sha2_test {
             for test in &tv.tests {
                 c += 1;
                 let digest = $hash_fn(&test.msg[0..test.msg_length / 8]);
-                assert_eq!(
-                    &digest[..],
-                    &test.digest[..],
-                    "test {c}: digest mismatch"
-                );
+                assert_eq!(&digest[..], &test.digest[..], "test {c}: digest mismatch");
             }
             assert!(c > 0, "No tests were run");
             eprintln!("Ran {c} tests for {}", stringify!($file));
