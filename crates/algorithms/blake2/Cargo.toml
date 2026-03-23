@@ -21,6 +21,7 @@ libcrux-traits.workspace = true
 
 [dev-dependencies]
 criterion = "0.8"
+hex = "0.4.3"
 rand = "0.9"
 libcrux-traits = { workspace = true, features = ["generic-tests"] }
 

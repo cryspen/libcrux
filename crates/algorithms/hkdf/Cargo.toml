@@ -22,3 +22,6 @@ libcrux-hmac = { workspace = true, features = [
 ] }
 libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-secrets.workspace = true
+
+[dev-dependencies]
+wycheproof = "0.6.0"
