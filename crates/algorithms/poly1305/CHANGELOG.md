@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1351](https://github.com/cryspen/libcrux/pull/1351): Fix a big in Poly1305 wrapper code
+- [#1351](https://github.com/cryspen/libcrux/pull/1351): Fix a bug in Poly1305 wrapper code
 
 ## [0.0.4] (2025-11-05)
 
