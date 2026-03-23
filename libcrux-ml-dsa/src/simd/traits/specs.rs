@@ -288,9 +288,9 @@ pub(crate) fn montgomery_multiply_post(
 
 pub(crate) fn shift_left_then_reduce_pre<const SHIFT_BY: i32>(simd_unit: &SIMDContent) -> Prop {
     hax_lib::fstar::prop!(
-        r#"v $SHIFT_BY == 13 /\
+        r#"(v $SHIFT_BY == 0 \/ v $SHIFT_BY == 13) /\
         (forall i. i < 8 ==> v (Seq.index $simd_unit i) >= 0 /\
-            v (Seq.index $simd_unit i) <= 261631)"#
+            v (Seq.index $simd_unit i) * pow2 (v $SHIFT_BY) <= 2143289343)"#
     )
 }
 
@@ -529,8 +529,11 @@ pub(crate) fn t0_deserialize_post(
     true
 }
 
-pub(crate) fn t1_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> bool {
-    out.len() == 10
+pub(crate) fn t1_serialize_pre(simd_unit: &SIMDContent, out: &[u8]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"Seq.length $out == 10 /\
+           (forall i. bounded (Seq.index $simd_unit i) 10)"#
+    )
 }
 
 pub(crate) fn t1_serialize_post(simd_unit: &SIMDContent, out: &[u8], future_out: &[u8]) -> bool {
@@ -595,13 +598,19 @@ pub(crate) fn invert_ntt_montgomery_post(
     )
 }
 
-pub(crate) fn reduce_pre(simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT]) -> bool {
-    true
+pub(crate) fn reduce_pre(simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT]) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"(forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque 2143289343 (Seq.index ${simd_units} i))"#
+    )
 }
 
 pub(crate) fn reduce_post(
     simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
     future_simd_units: &[SIMDContent; SIMD_UNITS_IN_RING_ELEMENT],
-) -> bool {
-    true
+) -> Prop {
+    hax_lib::fstar::prop!(
+        r#"(forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX}) (Seq.index ${future_simd_units} i))"#
+    )
 }

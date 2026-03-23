@@ -448,9 +448,9 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\
+#[hax_lib::requires(fstar!(r#"(v $SHIFT_BY == 0 \/ v $SHIFT_BY == 13) /\
     (forall i. i < 8 ==> v (Seq.index (${simd_unit}.f_values) i) >= 0 /\
-        v (Seq.index (${simd_unit}.f_values) i) <= 261631)"#))]
+        v (Seq.index (${simd_unit}.f_values) i) * pow2 (v $SHIFT_BY) <= 2143289343)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
     (forall i. i < 8 ==> Spec.MLDSA.Math.(
