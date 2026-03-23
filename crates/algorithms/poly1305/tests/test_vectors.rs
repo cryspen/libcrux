@@ -26,7 +26,11 @@ fn parse_test_vectors(data: &str) -> Vec<TestVector> {
             key = Some(bytes.try_into().expect("key must be 32 bytes"));
         } else if let Some(rest) = line.strip_prefix("Input =") {
             let rest = rest.trim();
-            input = Some(if rest.is_empty() { vec![] } else { hex_to_bytes(rest) });
+            input = Some(if rest.is_empty() {
+                vec![]
+            } else {
+                hex_to_bytes(rest)
+            });
         } else if let Some(rest) = line.strip_prefix("MAC =") {
             let mac_bytes = hex_to_bytes(rest.trim());
             vectors.push(TestVector {
