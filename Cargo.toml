@@ -69,6 +69,7 @@ members = [
     "libcrux-ml-kem",
     "libcrux-ml-kem/fuzz",
     "libcrux-psq",
+    "libcrux-psq/fuzz",
     "traits",
 ]
 resolver = "2"
