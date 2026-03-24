@@ -27,8 +27,8 @@ static SETUP: LazyLock<Setup> = LazyLock::new(|| Setup {
 fuzz_target!(|data: &[u8]| {
     let setup = &*SETUP;
 
-    let Ok(mut initiator) = PrincipalBuilder::new(rand::rng())
-        .build_query_initiator(&setup.responder_x25519_keys.pk)
+    let Ok(mut initiator) =
+        PrincipalBuilder::new(rand::rng()).build_query_initiator(&setup.responder_x25519_keys.pk)
     else {
         return;
     };

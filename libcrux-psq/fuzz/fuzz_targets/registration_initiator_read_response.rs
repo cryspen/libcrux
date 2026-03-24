@@ -46,8 +46,8 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
 
-    let Ok(mut initiator) = PrincipalBuilder::new(rand::rng())
-        .build_registration_initiator(initiator_ciphersuite)
+    let Ok(mut initiator) =
+        PrincipalBuilder::new(rand::rng()).build_registration_initiator(initiator_ciphersuite)
     else {
         return;
     };

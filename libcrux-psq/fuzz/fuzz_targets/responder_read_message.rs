@@ -48,8 +48,8 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
 
-    let Ok(mut responder) = PrincipalBuilder::new(rand::rng())
-        .build_responder(responder_ciphersuite)
+    let Ok(mut responder) =
+        PrincipalBuilder::new(rand::rng()).build_responder(responder_ciphersuite)
     else {
         return;
     };
