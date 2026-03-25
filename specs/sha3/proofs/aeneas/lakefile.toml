@@ -1,0 +1,10 @@
+name = "HacspecSha3"
+version = "0.1.0"
+defaultTargets = ["HacspecSha3"]
+
+[[require]]
+name = "aeneas"
+path = "/home/alex/Projects/aeneas/backends/lean"
+
+[[lean_lib]]
+name = "HacspecSha3"
