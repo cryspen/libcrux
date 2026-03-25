@@ -1,6 +1,5 @@
 /// Sponge construction — FIPS 202, Algorithm 8 (KECCAK[c])
 /// with pad10*1 padding — FIPS 202, Algorithm 9.
-
 use crate::keccak_f::{keccak_f, State};
 
 /// Map byte-lane index `l` to the flat state array index.
@@ -79,11 +78,7 @@ pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: u
 /// on the output length.
 #[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
-pub fn keccak<const OUTPUT_LEN: usize>(
-    rate: usize,
-    delim: u8,
-    message: &[u8],
-) -> [u8; OUTPUT_LEN] {
+pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -> [u8; OUTPUT_LEN] {
     let mut state: State = [0u64; 25];
 
     // --- Absorb full blocks (Algorithm 8, step 6) ---
@@ -100,8 +95,8 @@ pub fn keccak<const OUTPUT_LEN: usize>(
     for i in 0..remaining {
         last_block[i] = message[num_full_blocks * rate + i];
     }
-    last_block[remaining] = delim;       // domain separation + first bit of pad
-    last_block[rate - 1] |= 0x80;        // last bit of pad10*1
+    last_block[remaining] = delim; // domain separation + first bit of pad
+    last_block[rate - 1] |= 0x80; // last bit of pad10*1
 
     state = xor_block_into_state(state, &last_block, rate);
     state = keccak_f(state);
@@ -117,7 +112,7 @@ pub fn keccak<const OUTPUT_LEN: usize>(
         } else {
             rate
         };
-        squeeze_state(&state, &mut output, offset, to_copy);
+        squeeze_state(&state, &mut output[..], offset, to_copy);
         offset += to_copy;
         if offset < OUTPUT_LEN {
             state = keccak_f(state);
@@ -134,9 +129,9 @@ mod tests {
     #[test]
     fn lane_index_mapping() {
         // Byte-lane l maps to A[l%5, l/5] = state[5*(l%5) + l/5]
-        assert_eq!(lane_index(0), 0);  // A[0,0] → 0
-        assert_eq!(lane_index(1), 5);  // A[1,0] → 5
-        assert_eq!(lane_index(5), 1);  // A[0,1] → 1
-        assert_eq!(lane_index(6), 6);  // A[1,1] → 6
+        assert_eq!(lane_index(0), 0); // A[0,0] → 0
+        assert_eq!(lane_index(1), 5); // A[1,0] → 5
+        assert_eq!(lane_index(5), 1); // A[0,1] → 1
+        assert_eq!(lane_index(6), 6); // A[1,1] → 6
     }
 }
