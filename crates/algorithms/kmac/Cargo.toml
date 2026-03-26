@@ -1,0 +1,19 @@
+[package]
+name = "libcrux-kmac"
+version = "0.0.6-pre.1"
+description = "Libcrux KMAC implementation"
+readme = "Readme.md"
+
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[lib]
+path = "src/kmac.rs"
+
+[features]
+
+[dependencies]
+libcrux-sha3 = { workspace = true}

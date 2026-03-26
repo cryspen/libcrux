@@ -44,6 +44,7 @@ members = [
     "crates/algorithms/ed25519",
     "crates/algorithms/hkdf",
     "crates/algorithms/hmac",
+    "crates/algorithms/kmac",
     "crates/algorithms/p256",
     "crates/algorithms/poly1305",
     "crates/algorithms/rsa",
@@ -182,6 +183,28 @@ hpke = []
 psq = []
 
 [dependencies]
+<<<<<<< HEAD
+=======
+libcrux-hacl-rs.workspace = true
+libcrux-chacha20poly1305.workspace = true
+libcrux-ml-kem.workspace = true
+libcrux-traits.workspace = true
+libcrux-hacl.workspace = true
+libcrux-platform.workspace = true
+libcrux-hkdf.workspace = true
+libcrux-hmac.workspace = true
+libcrux-kmac.workspace = true
+libcrux-sha2.workspace = true
+libcrux-ed25519.workspace = true
+libcrux-ecdh.workspace = true
+libcrux-kem.workspace = true
+
+rand = { version = "0.9" }
+log = { version = "0.4", optional = true }
+
+# WASM API
+wasm-bindgen = { version = "0.2.87", optional = true }
+>>>>>>> 084a87013 (Added: KMAC)
 getrandom = { version = "0.3", optional = true }
 
 # Proofs
