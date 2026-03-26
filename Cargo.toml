@@ -151,6 +151,7 @@ all_algorithms = [
     "sha3",
     "hkdf",
     "hmac",
+    "kmac",
     "mlkem",
     "mldsa",
     "rsapss",
@@ -167,6 +168,7 @@ sha2 = []
 sha3 = []
 hkdf = []
 hmac = []
+kmac = []
 mlkem = []
 mldsa = []
 rsapss = []
@@ -208,6 +210,7 @@ libcrux-ecdsa.workspace = true
 libcrux-ed25519.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-hmac.workspace = true
+libcrux-kmac.workspace = true
 libcrux-ml-kem.workspace = true
 libcrux-ml-dsa.workspace = true
 libcrux-p256.workspace = true
