@@ -38,8 +38,10 @@ members = [
     "crates/algorithms/aesgcm",
     "crates/algorithms/blake2",
     "crates/algorithms/aesgcm/fuzz",
+    "crates/algorithms/drbg/fuzz",
     "crates/algorithms/chacha20poly1305",
     "crates/algorithms/curve25519",
+    "crates/algorithms/drbg",
     "crates/algorithms/ecdsa",
     "crates/algorithms/ed25519",
     "crates/algorithms/hkdf",
@@ -96,6 +98,7 @@ libcrux-poly1305 = { version = "=0.0.5", path = "crates/algorithms/poly1305" }
 libcrux-ecdsa = { version = "=0.0.6", path = "crates/algorithms/ecdsa" }
 libcrux-ed25519 = { version = "=0.0.7", path = "crates/algorithms/ed25519" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
+libcrux-drbg = { version = "=0.0.3", path = "crates/algorithms/drbg" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.6", path = "crates/algorithms/hmac" }
 libcrux-intrinsics = { version = "=0.0.6", path = "crates/utils/intrinsics" }
@@ -122,6 +125,9 @@ libcrux-kats = { path = "crates/testing/kats" }
 # Utilities
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
+
+# 3rd Party
+rand = { version = "0.9", default-features = false }
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
@@ -152,7 +158,8 @@ all_algorithms = [
     "mlkem",
     "mldsa",
     "rsapss",
-    "poly1305"
+    "poly1305",
+    "drbg"
 ]
 aes_gcm = []
 blake2 = []
@@ -169,6 +176,7 @@ mlkem = []
 mldsa = []
 rsapss = []
 poly1305 = []
+drbg = []
 
 # Primitives
 all_primitives = ["aead", "digest", "kem"]
@@ -227,7 +235,7 @@ clap = { version = "4.5", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"
-rand = { version = "0.9" }
+rand.workspace = true
 rand_chacha = { version = "0.9.0", features = ["os_rng"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]

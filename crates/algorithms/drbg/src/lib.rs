@@ -1,0 +1,473 @@
+//! NIST SP 800-90A Rev 1 §10.1.2 HMAC_DRBG
+//!
+//! Supports HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512.
+//!
+//! # Example
+//! ```
+//! use libcrux_drbg::HmacDrbgSha256;
+//!
+//! // In production obtain entropy from the OS (e.g. `new_from_sys_rng`).
+//! let entropy = {
+//!     let mut e = [0u8; 32];
+//!     for (i, b) in e.iter_mut().enumerate() { *b = if i % 2 == 0 { 0x55 } else { 0xaa }; }
+//!     e
+//! };
+//! let nonce = [0u8; 16];
+//! let mut drbg = HmacDrbgSha256::new(&entropy, &nonce, &[]).unwrap();
+//! let mut output = [0u8; 32];
+//! drbg.generate(&mut output, None).unwrap();
+//! ```
+#![no_std]
+#![deny(unsafe_code)]
+#![deny(
+    missing_docs,
+    rustdoc::broken_intra_doc_links,
+    rustdoc::invalid_html_tags,
+    rustdoc::private_doc_tests
+)]
+
+use core::{fmt, marker::PhantomData, sync::atomic};
+
+use libcrux_hmac::{hmac_sha2_256_slices, hmac_sha2_384_slices, hmac_sha2_512_slices, HmacState};
+
+#[cfg(test)]
+mod tests;
+
+/// Health tests.
+/// Enabled with the `health-tests` feature.
+#[cfg(feature = "health-tests")]
+mod health_tests;
+#[cfg(feature = "health-tests")]
+use health_tests::*;
+
+/// rand::TryCryptoRng / SeedableRng integration (feature = "rand")
+#[cfg(feature = "rand")]
+mod rng_trait;
+#[cfg(feature = "rand")]
+pub use rng_trait::HmacDrbgSeed;
+
+mod utils;
+
+/// Maximum number of generate calls before a reseed is required (§10.1 Table 2).
+pub const RESEED_INTERVAL: u64 = 10_000;
+
+/// Maximum number of bytes that can be requested in a single generate call (§10.1 Table 2).
+pub const MAX_GENERATE_BYTES: usize = 65_536;
+
+// ---------------------------------------------------------------------------
+// Algorithm trait
+// ---------------------------------------------------------------------------
+
+/// Trait implemented by the three marker types below.
+/// Associates a const `OUTLEN` with the HMAC computation for that hash.
+trait HmacAlgorithm<const OUTLEN: usize>: utils::private::Sealed {
+    type State: HmacState<OUTLEN>;
+
+    /// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
+    ///
+    /// For all supported variants this is 32 bytes (256 bits), regardless of `OUTLEN`.
+    const SECURITY_STRENGTH: usize;
+
+    /// Single shot HMAC.
+    ///
+    /// Returns an [`Error`] when the input is too long.
+    fn hmac(dst: &mut [u8; OUTLEN], key: &[u8], data: &[u8]) -> Result<(), Error>;
+
+    /// New HMAC streaming state.
+    ///
+    /// Returns the [`Self::State`] or an [`Error`] if the `key` is too long.
+    fn new_hmac(key: &[u8]) -> Result<Self::State, Error>;
+}
+
+/// Marker type selecting HMAC-SHA-256.
+#[derive(Debug)]
+pub struct HmacSha256;
+
+/// Marker type selecting HMAC-SHA-384.
+#[derive(Debug)]
+pub struct HmacSha384;
+
+/// Marker type selecting HMAC-SHA-512.
+#[derive(Debug)]
+pub struct HmacSha512;
+
+impl HmacAlgorithm<32> for HmacSha256 {
+    const SECURITY_STRENGTH: usize = 32;
+    type State = libcrux_hmac::HmacSha256;
+
+    #[inline]
+    fn hmac(dst: &mut [u8; 32], key: &[u8], data: &[u8]) -> Result<(), Error> {
+        hmac_sha2_256_slices(dst, key, &[data]).map_err(|_| Error::InputTooLarge)
+    }
+
+    #[inline]
+    fn new_hmac(key: &[u8]) -> Result<Self::State, Error> {
+        libcrux_hmac::HmacSha256::new(key).map_err(|_| Error::InputTooLarge)
+    }
+}
+
+impl HmacAlgorithm<48> for HmacSha384 {
+    const SECURITY_STRENGTH: usize = 32;
+    type State = libcrux_hmac::HmacSha384;
+
+    #[inline]
+    fn hmac(dst: &mut [u8; 48], key: &[u8], data: &[u8]) -> Result<(), Error> {
+        hmac_sha2_384_slices(dst, key, &[data]).map_err(|_| Error::InputTooLarge)
+    }
+
+    #[inline]
+    fn new_hmac(key: &[u8]) -> Result<Self::State, Error> {
+        libcrux_hmac::HmacSha384::new(key).map_err(|_| Error::InputTooLarge)
+    }
+}
+
+impl HmacAlgorithm<64> for HmacSha512 {
+    const SECURITY_STRENGTH: usize = 32;
+    type State = libcrux_hmac::HmacSha512;
+
+    #[inline]
+    fn hmac(dst: &mut [u8; 64], key: &[u8], data: &[u8]) -> Result<(), Error> {
+        hmac_sha2_512_slices(dst, key, &[data]).map_err(|_| Error::InputTooLarge)
+    }
+    #[inline]
+    fn new_hmac(key: &[u8]) -> Result<Self::State, Error> {
+        libcrux_hmac::HmacSha512::new(key).map_err(|_| Error::InputTooLarge)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+/// Errors returned by HMAC-DRBG operations.
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    /// The reseed counter has exceeded [`RESEED_INTERVAL`]; call `reseed` before generating.
+    ReseedRequired,
+
+    /// The requested output length is zero or exceeds [`MAX_GENERATE_BYTES`].
+    RequestTooLarge,
+
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
+    /// The Rng used for seeding failed.
+    ///
+    /// Note that this error can only occur when `feature = "rand"` is enabled.
+    RngError,
+
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    HealthCheckFailed,
+}
+
+// ---------------------------------------------------------------------------
+// HMAC_DRBG state
+// ---------------------------------------------------------------------------
+
+/// HMAC_DRBG instantiation (SP 800-90A Rev 1 §10.1.2).
+///
+/// `OUTLEN` is the HMAC output length in bytes (32, 48, or 64).
+/// Use the type aliases [`HmacDrbgSha256`], [`HmacDrbgSha384`], [`HmacDrbgSha512`].
+#[allow(private_bounds)]
+pub struct HmacDrbg<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> {
+    _alg: PhantomData<Alg>,
+    key: [u8; OUTLEN],
+    v: [u8; OUTLEN],
+    reseed_counter: u64,
+
+    /// All continuous health-test state, present only with feature `health-tests`.
+    #[cfg(feature = "health-tests")]
+    health: HealthState<OUTLEN>,
+}
+
+/// HMAC-DRBG instantiated with HMAC-SHA-256.
+pub type HmacDrbgSha256 = HmacDrbg<32, HmacSha256>;
+
+/// HMAC-DRBG instantiated with HMAC-SHA-384.
+pub type HmacDrbgSha384 = HmacDrbg<48, HmacSha384>;
+
+/// HMAC-DRBG instantiated with HMAC-SHA-512.
+pub type HmacDrbgSha512 = HmacDrbg<64, HmacSha512>;
+
+#[allow(private_bounds)]
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
+    // -----------------------------------------------------------------------
+    // §10.1.2.2  HMAC_DRBG_Update
+    // -----------------------------------------------------------------------
+
+    /// HMAC_DRBG_Update (§10.1.2.2).
+    ///
+    /// `provided_parts` is a slice of data fragments that are logically
+    /// concatenated to form the provided_data argument.  Pass `&[]` when
+    /// there is no additional data (equivalent to `provided_data = Null`
+    /// in the spec).
+    fn update(&mut self, provided_parts: &[&[u8]]) -> Result<(), Error> {
+        let has_data = provided_parts.iter().any(|s| !s.is_empty());
+        let mut new_key = [0u8; OUTLEN];
+        let mut new_v = [0u8; OUTLEN];
+
+        // K = HMAC(K, V || 0x00 [|| provided_data])
+        {
+            let mut h = Alg::new_hmac(&self.key)?;
+            h.update(&self.v)?;
+            h.update(&[0x00u8])?;
+            if has_data {
+                for &part in provided_parts {
+                    h.update(part)?;
+                }
+            }
+            h.finalize(&mut new_key);
+        }
+        self.key = new_key;
+
+        // V = HMAC(K, V)
+        Alg::hmac(&mut new_v, &self.key, &self.v)?;
+        self.v = new_v;
+
+        if has_data {
+            // K = HMAC(K, V || 0x01 || provided_data)
+            let mut h = Alg::new_hmac(&self.key)?;
+            h.update(&self.v)?;
+            h.update(&[0x01u8])?;
+            for &part in provided_parts {
+                h.update(part)?;
+            }
+            h.finalize(&mut new_key);
+            self.key = new_key;
+
+            // V = HMAC(K, V)
+            Alg::hmac(&mut new_v, &self.key, &self.v)?;
+            self.v = new_v;
+        }
+
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // §10.1.2.3  Instantiate
+    // -----------------------------------------------------------------------
+
+    /// Instantiate an HMAC_DRBG from explicit entropy material (§10.1.2.3).
+    ///
+    /// `entropy_input`, `nonce`, and `personalization_string` are concatenated
+    /// to form the seed material. Their combined length must not exceed
+    /// `MAX_SEED_BYTES` (384 bytes). Overflow is ignored.
+    //
+    // #hax: requires true
+    // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
+    pub fn new(
+        entropy_input: &[u8],
+        nonce: &[u8],
+        personalization_string: &[u8],
+    ) -> Result<Self, Error> {
+        // AIS 31 startup test: validate entropy source before using it.
+        #[cfg(feature = "health-tests")]
+        if startup_test(entropy_input, Alg::SECURITY_STRENGTH) {
+            return Err(Error::HealthCheckFailed);
+        }
+
+        let mut drbg = Self {
+            _alg: PhantomData,
+            key: [0x00u8; OUTLEN],
+            v: [0x01u8; OUTLEN],
+            reseed_counter: 1,
+            #[cfg(feature = "health-tests")]
+            health: HealthState::new(),
+        };
+        // seed_material = entropy_input || nonce || personalization_string
+        drbg.update(&[entropy_input, nonce, personalization_string])?;
+        Ok(drbg)
+    }
+
+    // -----------------------------------------------------------------------
+    // §10.1.2.4  Reseed
+    // -----------------------------------------------------------------------
+
+    /// Reseed the DRBG with fresh entropy (§10.1.2.4).
+    //
+    // #hax: requires true
+    // #hax: ensures result.is_ok() ==> self.reseed_counter == 1
+    pub fn reseed(&mut self, entropy_input: &[u8], additional_input: &[u8]) -> Result<(), Error> {
+        #[cfg(feature = "health-tests")]
+        if self.health.poisoned() {
+            return Err(Error::HealthCheckFailed);
+        }
+
+        // AIS 31 startup test: validate entropy source before reseeding.
+        #[cfg(feature = "health-tests")]
+        if startup_test(entropy_input, Alg::SECURITY_STRENGTH) {
+            return Err(Error::HealthCheckFailed);
+        }
+
+        // seed_material = entropy_input || additional_input
+        self.update(&[entropy_input, additional_input])?;
+        self.reseed_counter = 1;
+
+        // V has been refreshed; reset the health-test stream state.
+        #[cfg(feature = "health-tests")]
+        self.health.reset();
+
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // §10.1.2.5  Generate
+    // -----------------------------------------------------------------------
+
+    /// Generate pseudorandom bytes into `output` (§10.1.2.5).
+    ///
+    /// `additional_input` is optional; pass `None` or `Some(&[])` for none.
+    /// Returns `Err(ReseedRequired)` if the reseed counter has been exhausted.
+    ///
+    /// With feature `health-tests`, four continuous tests run on every call:
+    /// - **Intra-call** (NIST 800-90C §9.3.3): `V = HMAC(K, V_old)` must satisfy
+    ///   `V ≠ V_old`; equality signals a catastrophic HMAC fixed-point.
+    /// - **Inter-call / T4** (AIS 20/31): each new block must differ from the last
+    ///   block of the previous `generate` call.
+    /// - **RCT** (SP 800-90B §4.4.1): no run of ≥ [`RCT_C`] identical bytes.
+    /// - **APT** (SP 800-90B §4.4.2): proportion of any byte value within a
+    ///   [`APT_W`]-byte window must not exceed [`APT_C`].
+    ///
+    /// On any failure the instance is poisoned and `Error::HealthCheckFailed` is
+    /// returned.
+    //
+    // #hax: requires output.len() > 0
+    // #hax: requires output.len() <= MAX_GENERATE_BYTES
+    // #hax: requires true   // additional_input has no length constraint
+    // #hax: requires self.reseed_counter <= RESEED_INTERVAL
+    // #hax: ensures result.is_ok() ==> self.reseed_counter == old(self.reseed_counter) + 1
+    pub fn generate(
+        &mut self,
+        output: &mut [u8],
+        additional_input: Option<&[u8]>,
+    ) -> Result<(), Error> {
+        #[cfg(feature = "health-tests")]
+        if self.health.poisoned() {
+            return Err(Error::HealthCheckFailed);
+        }
+
+        if self.reseed_counter > RESEED_INTERVAL {
+            return Err(Error::ReseedRequired);
+        }
+        if output.is_empty() {
+            return Err(Error::RequestTooLarge);
+        }
+        if output.len() > MAX_GENERATE_BYTES {
+            return Err(Error::RequestTooLarge);
+        }
+
+        let ai = additional_input.filter(|d| !d.is_empty());
+
+        // If additional_input is provided, update state with it first.
+        if let Some(d) = ai {
+            self.update(&[d])?;
+        }
+
+        // Generate output: repeatedly compute V = HMAC(K, V) and copy into output.
+        let mut written = 0;
+        while written < output.len() {
+            let mut tmp = [0u8; OUTLEN];
+            #[cfg(feature = "health-tests")]
+            let v_before = self.v;
+
+            Alg::hmac(&mut tmp, &self.key, &self.v)?;
+
+            #[cfg(feature = "health-tests")]
+            {
+                if self.health.check_block(&tmp, &v_before) || self.health.run_byte_checks(&tmp) {
+                    self.zeroize_and_poison();
+                    return Err(Error::HealthCheckFailed);
+                }
+            }
+
+            self.v = tmp;
+
+            let remaining = output.len() - written;
+            let chunk = remaining.min(OUTLEN);
+            output[written..written + chunk].copy_from_slice(&self.v[..chunk]);
+            written += chunk;
+        }
+
+        // Final update (with or without additional_input).
+        if let Some(d) = ai {
+            self.update(&[d])?;
+        } else {
+            self.update(&[])?;
+        }
+        self.reseed_counter += 1;
+        Ok(())
+    }
+
+    /// Returns `true` if `generate` would immediately return `Err(ReseedRequired)`.
+    ///
+    /// Callers can use this to proactively schedule a reseed before the counter
+    /// is exhausted rather than discovering it on the next `generate` call.
+    //
+    // #hax: ensures result == (self.reseed_counter > RESEED_INTERVAL)
+    pub fn needs_reseed(&self) -> bool {
+        self.reseed_counter > RESEED_INTERVAL
+    }
+
+    /// Expose the reseed counter (useful for testing).
+    //
+    // #hax: ensures result == self.reseed_counter
+    pub fn reseed_counter(&self) -> u64 {
+        self.reseed_counter
+    }
+
+    /// Force-set the reseed counter (for testing error paths).
+    #[cfg(any(test, feature = "testing"))]
+    pub fn set_reseed_counter(&mut self, v: u64) {
+        self.reseed_counter = v;
+    }
+}
+
+#[cfg(feature = "rand")]
+#[allow(private_bounds)]
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
+    /// Instantiate from a [`rand::TryCryptoRng`] (generates entropy and nonce internally).
+    ///
+    /// Uses `OUTLEN` bytes of entropy and `OUTLEN` bytes of nonce (conservative;
+    /// the spec minimum for the nonce is `OUTLEN / 2`).
+    //
+    // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
+    // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
+    pub fn new_from_rng<R: rand::TryCryptoRng>(
+        rng: &mut R,
+        personalization_string: &[u8],
+    ) -> Result<Self, Error> {
+        let mut entropy = [0u8; OUTLEN];
+        let mut nonce = [0u8; OUTLEN];
+        rng.try_fill_bytes(&mut entropy)
+            .map_err(|_| Error::RngError)?;
+        rng.try_fill_bytes(&mut nonce)
+            .map_err(|_| Error::RngError)?;
+        Self::new(&entropy, &nonce, personalization_string)
+    }
+
+    /// Instantiate from the system RNG ([`rand::rngs::OsRng`]).
+    //
+    // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
+    // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
+    pub fn new_from_sys_rng(personalization_string: &[u8]) -> Result<Self, Error> {
+        Self::new_from_rng(&mut rand::rngs::OsRng, personalization_string)
+    }
+
+    /// Reseed from a [`rand::CryptoRng`] (generates entropy internally).
+    //
+    // #hax: requires additional_input.len() <= MAX_SEED_BYTES - OUTLEN
+    // #hax: ensures result.is_ok() ==> self.reseed_counter == 1
+    pub fn reseed_from_rng<R: rand::CryptoRng>(
+        &mut self,
+        rng: &mut R,
+        additional_input: &[u8],
+    ) -> Result<(), Error> {
+        let mut entropy = [0u8; OUTLEN];
+        rng.fill_bytes(&mut entropy);
+        self.reseed(&entropy, additional_input)
+    }
+}

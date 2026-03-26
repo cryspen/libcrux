@@ -1,0 +1,31 @@
+[package]
+name = "libcrux-drbg"
+
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[features]
+default = []
+rand = ["dep:rand"]
+testing = []
+# Enables continuous health tests per NIST SP 800-90C §9.3.3 and AIS 20/31 T4:
+#   - Intra-call: each V = HMAC(K,V_old) must satisfy V ≠ V_old.
+#   - Inter-call: first generated block must differ from last block of the
+#     previous generate call.
+# On failure the DRBG is poisoned and all subsequent operations return
+# Error::HealthCheckFailed.
+health-tests = []
+
+[dependencies]
+libcrux-hmac.workspace = true
+rand = { workspace = true, optional = true, default-features = false, features = [
+    "os_rng",
+] }
+
+[dev-dependencies]
+cavp = { path = "../../../cavp" }
