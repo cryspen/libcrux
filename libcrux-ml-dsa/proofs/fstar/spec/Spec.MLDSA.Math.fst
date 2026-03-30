@@ -5,7 +5,7 @@ open Core_models
 
 include Spec.Utils
 open Spec.Intrinsics
-  
+
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
 [@@ "opaque_to_smt"]
@@ -21,7 +21,7 @@ let mont_mul (x:i32) (y:i32) : i32 =
   let low : i32 = cast_mod_opaque product in
   let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
   let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
-  sub_mod_opaque hi c  
+  sub_mod_opaque hi c
 
 [@@ "opaque_to_smt"]
 let barrett_red (x:i32) : i32 =
@@ -40,7 +40,7 @@ let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888
       let mask = shift_right_opaque mask (mk_i32 31) in
       let not_result = result ^. mask in
       result &. not_result
-    else 
+    else
       let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 1025) in
       let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 21 <: i32) in
       let result = shift_right_opaque result (mk_i32 22) in
@@ -53,8 +53,8 @@ let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888
   let field_modulus_and_mask = mask &. v_FIELD_MODULUS in
   let r0 = sub_mod_opaque r0_tmp field_modulus_and_mask in
   (r0, r1)
-     
-    
+
+
 
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
@@ -78,6 +78,102 @@ let decompose (g:gamma2) (r:range_t I32) : (range_t I32 & range_t I32 & bool) =
     (r_g - 1, 0, true)
   else
     (r_g, (r_q - r_g) / (g * 2), false)
+
+(* Bitwise SMTPat lemmas: Z3 auto-triggers these on &., ^., lognot *)
+#push-options "--z3rlimit 200"
+let logand_signed_mask (mask a: i32) :
+  Lemma (requires v mask == 0 \/ v mask == -1)
+        (ensures (v mask == 0 ==> v (mask &. a) == 0) /\
+                 (v mask == -1 ==> v (mask &. a) == v a))
+        [SMTPat (mask &. a)] =
+  mk_int_v_lemma #I32 mask;
+  assert_norm (mk_i32 (-1) == ones #I32);
+  assert_norm (mk_i32 0 == zero #I32);
+  logand_lemma_forall #I32
+#pop-options
+
+let logand_lemma_smtpat (a b: i32) :
+  Lemma (logand a (zero #I32) == zero #I32 /\
+         logand (zero #I32) a == zero #I32 /\
+         logand a (ones #I32) == a /\
+         logand (ones #I32) a == a /\
+         (a == b ==> logand a b == a) /\
+         (b == lognot a ==> logand a b == zero #I32) /\
+         (v a >= 0 ==> v (logand a b) >= 0 /\ v (logand a b) <= v a) /\
+         (v b >= 0 ==> v (logand a b) >= 0 /\ v (logand a b) <= v b))
+        [SMTPat (a &. b)] =
+  logand_lemma a b
+
+let logxor_lemma_smtpat (a b: i32) :
+  Lemma (logxor a a == zero #I32 /\
+         logxor (zero #I32) a == a /\ logxor a (zero #I32) == a /\
+         logxor (ones #I32) a == lognot a /\ logxor a (ones #I32) == lognot a)
+        [SMTPat (a ^. b)] =
+  logxor_lemma a b
+
+let lognot_lemma_smtpat (a: i32) :
+  Lemma (lognot (zero #I32) == ones #I32 /\ lognot (ones #I32) == zero #I32 /\
+         lognot (lognot a) == a /\ v (lognot a) == -1 - v a)
+        [SMTPat (lognot a)] =
+  lognot_lemma a
+
+let logand_mask_lemma_smtpat (a: i32) (m: nat{m < 32}) :
+  Lemma (v (a &. mk_i32 (pow2 m - 1)) == v a % pow2 m)
+        [SMTPat (a &. mk_i32 (pow2 m - 1))] =
+  logand_mask_lemma a m
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+let decompose_spec_equiv_95232
+      (r: i32{Spec.Utils.is_i32b (v v_FIELD_MODULUS - 1) r})
+    : Lemma (let (r0_s, r1_s) = decompose_spec (mk_i32 95232) r in
+             let (r0_m, r1_m, cond) = decompose 95232 (v r) in
+             v r0_s = r0_m /\ v r1_s = r1_m)
+  =
+  reveal_opaque_arithmetic_ops #i32_inttype;
+  (* Mirror decompose_spec r1 computation; SMTPats handle bitwise reasoning *)
+  let r' = if r <. mk_i32 0 then add_mod r v_FIELD_MODULUS else r in
+  let ceil_of_r_by_128 = shift_right_opaque (add_mod_opaque r' (mk_i32 127)) (mk_i32 7) in
+  let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 11275) in
+  let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 23 <: i32) in
+  let result = shift_right_opaque result (mk_i32 24) in
+  let mask = sub_mod_opaque (mk_i32 43) result in
+  let mask = shift_right_opaque mask (mk_i32 31) in
+  let _not_result = result ^. mask in
+  ()
+
+let decompose_spec_equiv_261888
+      (r: i32{Spec.Utils.is_i32b (v v_FIELD_MODULUS - 1) r})
+    : Lemma (let (r0_s, r1_s) = decompose_spec (mk_i32 261888) r in
+             let (r0_m, r1_m, cond) = decompose 261888 (v r) in
+             v r0_s = r0_m /\ v r1_s = r1_m)
+  =
+  reveal_opaque_arithmetic_ops #i32_inttype;
+  (* Mirror decompose_spec r1 computation; logand_mask_lemma needed for & 15 clamping *)
+  let r' = if r <. mk_i32 0 then add_mod r v_FIELD_MODULUS else r in
+  let ceil_of_r_by_128 = shift_right_opaque (add_mod_opaque r' (mk_i32 127)) (mk_i32 7) in
+  let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 1025) in
+  let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 21 <: i32) in
+  let result = shift_right_opaque result (mk_i32 22) in
+  logand_mask_lemma result 4;
+  ()
+
+let decompose_spec_equiv
+      (gamma2: i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888})
+      (r: i32{Spec.Utils.is_i32b (v v_FIELD_MODULUS - 1) r})
+    : Lemma (let (r0_s, r1_s) = decompose_spec gamma2 r in
+             let (r0_m, r1_m, cond) = decompose (v gamma2) (v r) in
+             v r0_s = r0_m /\ v r1_s = r1_m /\
+             (if cond then (v r0_s >= -(v gamma2) /\ v r0_s < 0)
+              else (v r0_s > -(v gamma2) /\ v r0_s <= v gamma2)) /\
+             (v r1_s >= 0 /\ v r1_s < (v v_FIELD_MODULUS - 1) / (v gamma2 * 2)))
+        [SMTPat (decompose_spec gamma2 r)] =
+  if v gamma2 = 95232 then
+    decompose_spec_equiv_95232 r
+  else
+    decompose_spec_equiv_261888 r
+
+#pop-options
 
 let compute_one_hint (low high gamma2:range_t I32) : (range_t I32) =
   if low > gamma2 || low < -(gamma2) || (low = -(gamma2) && high <> 0)
@@ -133,7 +229,7 @@ let rejection_sample_field_modulus_inner
   (i:usize{v i < (Seq.length randomness) / 3})
   s : (Seq.seq i32) =
   let coefficient = rejection_sample_coefficient randomness i in
-  if coefficient <. mk_i32 8380417 then 
+  if coefficient <. mk_i32 8380417 then
     Seq.append s (Seq.create 1 coefficient) else s
 
 let rejection_sample_field_modulus (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
@@ -147,9 +243,9 @@ let rejection_sample_eta_2_inner
   let byte = Seq.index randomness (v i) in
   let try_0 = byte &. mk_u8 15 in
   let try_1 = byte >>! mk_u8 4 in
-  let s = if try_0 <. mk_u8 15 then 
+  let s = if try_0 <. mk_u8 15 then
     Seq.append s (Seq.create 1 (mk_i32 2 -. ((cast try_0 <: i32) %! mk_i32 5))) else s in
-  if try_1 <. mk_u8 15 then 
+  if try_1 <. mk_u8 15 then
     Seq.append s (Seq.create 1 (mk_i32 2 -. ((cast try_1 <: i32) %! mk_i32 5))) else s
 
 let rejection_sample_eta_2 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
@@ -163,9 +259,9 @@ let rejection_sample_eta_4_inner
   let byte = Seq.index randomness (v i) in
   let try_0 = byte &. mk_u8 15 in
   let try_1 = byte >>! mk_u8 4 in
-  let s = if try_0 <. mk_u8 9 then 
+  let s = if try_0 <. mk_u8 9 then
     Seq.append s (Seq.create 1 (mk_i32 4 -. (cast try_0 <: i32))) else s in
-  if try_1 <. mk_u8 9 then 
+  if try_1 <. mk_u8 9 then
     Seq.append s (Seq.create 1 (mk_i32 4 -. (cast try_1 <: i32))) else s
 
 let rejection_sample_eta_4 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
@@ -204,4 +300,3 @@ let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:usize{v i < (S
     (((mk_i32 (pow2 16) *. b2') +. (mk_i32 (pow2 8) *. b1)) +. b0))
 
 #pop-options
-
