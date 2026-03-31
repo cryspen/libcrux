@@ -76,11 +76,7 @@ fn concat_byte<const N: usize, const N1: usize>(a: &[u8; N], b: u8) -> [u8; N1] 
     && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
     && (params.eta1 == 2 || params.eta1 == 3)
 )]
-pub(crate) fn generate_keypair<
-    const RANK: usize,
-    const EK_SIZE: usize,
-    const DK_PKE_SIZE: usize,
->(
+pub fn generate_keypair<const RANK: usize, const EK_SIZE: usize, const DK_PKE_SIZE: usize>(
     params: &MlKemParams,
     key_generation_seed: &[u8; 32],
 ) -> Result<([u8; EK_SIZE], [u8; DK_PKE_SIZE]), BadRejectionSamplingRandomnessError> {
@@ -181,7 +177,7 @@ pub(crate) fn generate_keypair<
     && (params.eta1 == 2 || params.eta1 == 3)
     && (params.eta2 == 2 || params.eta2 == 3)
 )]
-pub(crate) fn encrypt<
+pub fn encrypt<
     const RANK: usize,
     const U_SIZE: usize,
     const V_SIZE: usize,
@@ -281,11 +277,7 @@ pub(crate) fn encrypt<
     && dk.len() == RANK * BYTES_PER_RING_ELEMENT
     && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * params.du + COEFFICIENTS_IN_RING_ELEMENT * params.dv) / 8
 )]
-pub(crate) fn decrypt<const RANK: usize>(
-    params: &MlKemParams,
-    dk: &[u8],
-    ciphertext: &[u8],
-) -> [u8; 32] {
+pub fn decrypt<const RANK: usize>(params: &MlKemParams, dk: &[u8], ciphertext: &[u8]) -> [u8; 32] {
     hax_lib::debug_assert!(
         dk.len() == RANK * BYTES_PER_RING_ELEMENT
             && ciphertext.len()

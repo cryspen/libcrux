@@ -78,6 +78,8 @@ pqcp = []
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
+hacspec_ml_kem = { path = "../specs/ml-kem" }
+hacspec_sha3 = { path = "../specs/sha3" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.8"

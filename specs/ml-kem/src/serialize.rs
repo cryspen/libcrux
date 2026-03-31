@@ -1,7 +1,7 @@
 use crate::compress::{compress, decompress};
 use crate::parameters::*;
 
-pub(crate) const MAX_BYTES: usize = 16384;
+pub const MAX_BYTES: usize = 16384;
 
 /// Converts a set of bytes in `bytes` into a set of bits.
 ///
@@ -24,7 +24,7 @@ pub(crate) const MAX_BYTES: usize = 16384;
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
-pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) -> BitVector<N8> {
+pub fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) -> BitVector<N8> {
     hax_lib::debug_assert!(N8 == N * 8);
     createi(|i| (bytes[i / 8] >> (i % 8)) & 1 == 1)
 }
@@ -50,7 +50,7 @@ pub(crate) fn bytes_to_bits<const N: usize, const N8: usize>(bytes: &[u8; N]) ->
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && N8 == N * 8)]
-pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
+pub fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>) -> [u8; N] {
     hax_lib::debug_assert!(N8 == N * 8);
     let result = createi(|i| {
         bv[8 * i] as u8
@@ -105,7 +105,7 @@ pub(crate) fn bits_to_bytes<const N: usize, const N8: usize>(bv: &BitVector<N8>)
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
-pub(crate) fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
+pub fn bitvector_from_bounded_ints<const N: usize, const Nd: usize>(
     input: &[u16; N],
     d: usize,
 ) -> BitVector<Nd> {
@@ -152,7 +152,7 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
-pub(crate) fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
+pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
     d: usize,
 ) -> [u16; N] {
@@ -197,7 +197,7 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
-pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
+pub fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
     vector: &Vector<RANK>,
 ) -> [u8; T_SIZE] {
     hax_lib::debug_assert!(T_SIZE == RANK * BYTES_PER_RING_ELEMENT);
@@ -211,7 +211,7 @@ pub(crate) fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && encoded.len() == RANK * BYTES_PER_RING_ELEMENT)]
-pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
+pub fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
     hax_lib::debug_assert!(encoded.len() == RANK * BYTES_PER_RING_ELEMENT);
     createi(|i| {
         let start = i * BYTES_PER_RING_ELEMENT;
@@ -222,7 +222,7 @@ pub(crate) fn vector_decode_12<const RANK: usize>(encoded: &[u8]) -> Vector<RANK
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && out.len() == 32 * d)]
-pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
+pub fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && out.len() == 32 * d);
     match d {
         1 => out.copy_from_slice(&byte_encode::<32, 256>(p, 1)),
@@ -237,7 +237,7 @@ pub(crate) fn byte_encode_into(p: Polynomial, d: usize, out: &mut [u8]) {
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((d == 1 || d == 4 || d == 5 || d == 10 || d == 11 || d == 12) && b.len() == 32 * d)]
-pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
+pub fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
     hax_lib::debug_assert!(d <= BITS_PER_COEFFICIENT && b.len() == 32 * d);
     match d {
         1 => byte_decode::<32, 256>(b.try_into().unwrap(), 1),
@@ -258,25 +258,25 @@ pub(crate) fn byte_decode_dyn(b: &[u8], d: usize) -> Polynomial {
 /// Corresponds to `compress_then_serialize_message` in the implementation.
 ///
 /// Used for encoding/decoding the message in K-PKE.
-pub(crate) fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
+pub fn compress_then_serialize_message(re: Polynomial) -> [u8; 32] {
     byte_encode::<32, 256>(compress(re, 1), 1)
 }
 
 /// Deserialize bytes to a polynomial, then decompress from 1 bit per coefficient.
 /// Corresponds to `deserialize_then_decompress_message` in the implementation.
-pub(crate) fn deserialize_then_decompress_message(serialized: &[u8; 32]) -> Polynomial {
+pub fn deserialize_then_decompress_message(serialized: &[u8; 32]) -> Polynomial {
     decompress(byte_decode::<32, 256>(serialized, 1), 1)
 }
 
 /// Serialize a polynomial with 12-bit coefficients (no compression).
 /// Corresponds to `serialize_uncompressed_ring_element` in the implementation.
-pub(crate) fn serialize_uncompressed_ring_element(re: &Polynomial) -> [u8; BYTES_PER_RING_ELEMENT] {
+pub fn serialize_uncompressed_ring_element(re: &Polynomial) -> [u8; BYTES_PER_RING_ELEMENT] {
     byte_encode::<{ 32 * 12 }, { 256 * 12 }>(*re, 12)
 }
 
 /// Deserialize bytes to a polynomial with 12-bit coefficients (no decompression).
 /// Corresponds to `deserialize_to_uncompressed_ring_element` in the implementation.
-pub(crate) fn deserialize_to_uncompressed_ring_element(
+pub fn deserialize_to_uncompressed_ring_element(
     serialized: &[u8; BYTES_PER_RING_ELEMENT],
 ) -> Polynomial {
     byte_decode::<{ 32 * 12 }, { 256 * 12 }>(serialized, 12)
@@ -289,7 +289,7 @@ pub(crate) fn deserialize_to_uncompressed_ring_element(
 /// In the spec we use the generic compress + byte_encode path.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && U_SIZE == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
-pub(crate) fn compress_then_serialize_u<const RANK: usize, const U_SIZE: usize>(
+pub fn compress_then_serialize_u<const RANK: usize, const U_SIZE: usize>(
     u: &Vector<RANK>,
     du: usize,
 ) -> [u8; U_SIZE] {
@@ -309,10 +309,7 @@ pub(crate) fn compress_then_serialize_u<const RANK: usize, const U_SIZE: usize>(
 /// Corresponds to `compress_then_serialize_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((dv == 4 || dv == 5) && V_SIZE == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
-pub(crate) fn compress_then_serialize_v<const V_SIZE: usize>(
-    v: &Polynomial,
-    dv: usize,
-) -> [u8; V_SIZE] {
+pub fn compress_then_serialize_v<const V_SIZE: usize>(v: &Polynomial, dv: usize) -> [u8; V_SIZE] {
     let mut out = [0u8; V_SIZE];
     byte_encode_into(compress(*v, dv), dv, &mut out);
     out
@@ -322,7 +319,7 @@ pub(crate) fn compress_then_serialize_v<const V_SIZE: usize>(
 /// Corresponds to `deserialize_then_decompress_ring_element_u` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && (du == 10 || du == 11) && ciphertext.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8)]
-pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
+pub fn deserialize_then_decompress_u<const RANK: usize>(
     ciphertext: &[u8],
     du: usize,
 ) -> Vector<RANK> {
@@ -340,7 +337,7 @@ pub(crate) fn deserialize_then_decompress_u<const RANK: usize>(
 /// Corresponds to `deserialize_then_decompress_ring_element_v` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires((dv == 4 || dv == 5) && serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * dv) / 8)]
-pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
+pub fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Polynomial {
     decompress(byte_decode_dyn(serialized, dv), dv)
 }
 
@@ -349,7 +346,7 @@ pub(crate) fn deserialize_then_decompress_v(serialized: &[u8], dv: usize) -> Pol
 ///
 /// This is equivalent to `vector_decode_12` but named to match the implementation.
 #[hax_lib::requires(RANK <= 4 && encoded.len() == RANK * BYTES_PER_RING_ELEMENT)]
-pub(crate) fn deserialize_ring_elements_reduced<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
+pub fn deserialize_ring_elements_reduced<const RANK: usize>(encoded: &[u8]) -> Vector<RANK> {
     vector_decode_12::<RANK>(encoded)
 }
 
@@ -357,7 +354,7 @@ pub(crate) fn deserialize_ring_elements_reduced<const RANK: usize>(encoded: &[u8
 /// Corresponds to `serialize_secret_key` / `serialize_vector` in the implementation.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
-pub(crate) fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
+pub fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
     vector: &Vector<RANK>,
 ) -> [u8; T_SIZE] {
     vector_encode_12::<RANK, T_SIZE>(vector)
@@ -367,7 +364,7 @@ pub(crate) fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
 /// Corresponds to `serialize_public_key` in the implementation's `ind_cpa.rs`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT && seed_for_A.len() >= 32)]
-pub(crate) fn serialize_public_key<const RANK: usize, const EK_SIZE: usize, const T_SIZE: usize>(
+pub fn serialize_public_key<const RANK: usize, const EK_SIZE: usize, const T_SIZE: usize>(
     t_as_ntt: &Vector<RANK>,
     seed_for_A: &[u8],
 ) -> [u8; EK_SIZE] {

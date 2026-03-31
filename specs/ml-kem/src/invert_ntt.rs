@@ -57,7 +57,7 @@ fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
     })
 }
 
-pub(crate) fn reduce_polynomial(p: Polynomial) -> Polynomial {
+pub fn reduce_polynomial(p: Polynomial) -> Polynomial {
     createi(|i| {
         FieldElement::new(
             ((p[i].val as u32 * INVERSE_OF_128.val as u32) % FIELD_MODULUS as u32) as u16,
@@ -66,7 +66,7 @@ pub(crate) fn reduce_polynomial(p: Polynomial) -> Polynomial {
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
-pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
+pub fn ntt_inverse(p: Polynomial) -> Polynomial {
     let p = ntt_inverse_layer(p, 1);
     let p = ntt_inverse_layer(p, 2);
     let p = ntt_inverse_layer(p, 3);
@@ -78,12 +78,12 @@ pub(crate) fn ntt_inverse(p: Polynomial) -> Polynomial {
 }
 
 /// Inverse NTT applied to each polynomial in a vector.
-pub(crate) fn vector_inverse_ntt<const RANK: usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
+pub fn vector_inverse_ntt<const RANK: usize>(vector_as_ntt: Vector<RANK>) -> Vector<RANK> {
     createi(|i| ntt_inverse(vector_as_ntt[i]))
 }
 
 /// Performs Barrett reduction on all coefficients of a polynomial.
 /// This is the spec equivalent of `poly_barrett_reduce` in the implementation.
-pub(crate) fn poly_barrett_reduce(p: Polynomial) -> Polynomial {
+pub fn poly_barrett_reduce(p: Polynomial) -> Polynomial {
     createi(|i| FieldElement::new(p[i].val % FIELD_MODULUS))
 }

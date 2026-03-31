@@ -8,7 +8,7 @@ use crate::ntt::multiply_ntts;
 use crate::parameters::*;
 
 /// The zero polynomial. Corresponds to `PolynomialRingElement::ZERO()` in the implementation.
-pub(crate) const fn poly_zero() -> Polynomial {
+pub const fn poly_zero() -> Polynomial {
     [FieldElement::new(0); 256]
 }
 
@@ -16,7 +16,7 @@ pub(crate) const fn poly_zero() -> Polynomial {
 ///
 /// Note: In the spec we return a new polynomial; in the implementation this is `&mut self`.
 /// The mathematical operation is identical.
-pub(crate) fn add_to_ring_element(lhs: &Polynomial, rhs: &Polynomial) -> Polynomial {
+pub fn add_to_ring_element(lhs: &Polynomial, rhs: &Polynomial) -> Polynomial {
     createi(|j| {
         FieldElement::new(((lhs[j].val as u32 + rhs[j].val as u32) % FIELD_MODULUS as u32) as u16)
     })
@@ -26,12 +26,12 @@ pub(crate) fn add_to_ring_element(lhs: &Polynomial, rhs: &Polynomial) -> Polynom
 ///
 /// In the spec, this is a no-op modular reduction since we always work with exact arithmetic.
 /// In the implementation, this is needed because intermediate values may exceed the field modulus.
-pub(crate) fn poly_barrett_reduce(p: &Polynomial) -> Polynomial {
+pub fn poly_barrett_reduce(p: &Polynomial) -> Polynomial {
     createi(|i| FieldElement::new(p[i].val % FIELD_MODULUS))
 }
 
 /// Subtract `b` from `a` and reduce. Corresponds to `PolynomialRingElement::subtract_reduce()`.
-pub(crate) fn subtract_reduce(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn subtract_reduce(a: &Polynomial, b: &Polynomial) -> Polynomial {
     createi(|j| {
         FieldElement::new(
             ((a[j].val as u32 + FIELD_MODULUS as u32 - b[j].val as u32) % FIELD_MODULUS as u32)
@@ -43,7 +43,7 @@ pub(crate) fn subtract_reduce(a: &Polynomial, b: &Polynomial) -> Polynomial {
 /// NTT-domain polynomial multiplication. Corresponds to `PolynomialRingElement::ntt_multiply()`.
 ///
 /// Given two polynomials in NTT form, returns their product in NTT form.
-pub(crate) fn ntt_multiply(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn ntt_multiply(a: &Polynomial, b: &Polynomial) -> Polynomial {
     multiply_ntts(a, b)
 }
 
@@ -55,7 +55,7 @@ pub(crate) fn ntt_multiply(a: &Polynomial, b: &Polynomial) -> Polynomial {
 /// - `result` is NTT⁻¹(tᵀ ◦ r̂)
 ///
 /// In the implementation, this fuses the addition to avoid extra temporaries.
-pub(crate) fn add_message_error_reduce(
+pub fn add_message_error_reduce(
     error_2: &Polynomial,
     message: &Polynomial,
     ntt_product: &Polynomial,
@@ -71,7 +71,7 @@ pub(crate) fn add_message_error_reduce(
 /// Fused add(self, error) with reduction. Corresponds to `PolynomialRingElement::add_error_reduce()`.
 ///
 /// Used to compute u = NTT⁻¹(Aᵀ ◦ r̂) + e₁
-pub(crate) fn add_error_reduce(ntt_product: &Polynomial, error: &Polynomial) -> Polynomial {
+pub fn add_error_reduce(ntt_product: &Polynomial, error: &Polynomial) -> Polynomial {
     createi(|j| {
         FieldElement::new(
             ((ntt_product[j].val as u32 + error[j].val as u32) % FIELD_MODULUS as u32) as u16,
@@ -82,10 +82,7 @@ pub(crate) fn add_error_reduce(ntt_product: &Polynomial, error: &Polynomial) -> 
 /// Fused add(self, error) for NTT-domain values. Corresponds to `PolynomialRingElement::add_standard_error_reduce()`.
 ///
 /// Used to compute t̂ = Â◦ŝ + ê (both operands are in NTT domain).
-pub(crate) fn add_standard_error_reduce(
-    ntt_product: &Polynomial,
-    error_ntt: &Polynomial,
-) -> Polynomial {
+pub fn add_standard_error_reduce(ntt_product: &Polynomial, error_ntt: &Polynomial) -> Polynomial {
     createi(|j| {
         FieldElement::new(
             ((ntt_product[j].val as u32 + error_ntt[j].val as u32) % FIELD_MODULUS as u32) as u16,

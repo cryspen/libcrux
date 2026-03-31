@@ -90,7 +90,7 @@ fn decompress_d(fe: FieldElement, to_bit_size: usize) -> FieldElement {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+pub mod tests {
     use proptest::collection::vec;
     use proptest::prelude::*;
 
@@ -107,7 +107,7 @@ pub(crate) mod tests {
     }
 
     prop_compose! {
-        pub(crate) fn arb_ring_element(bits_per_coefficient : usize) (arb_ring_coefficients in vec(arb_field_element(bits_per_coefficient), COEFFICIENTS_IN_RING_ELEMENT)) -> Polynomial {
+        pub fn arb_ring_element(bits_per_coefficient : usize) (arb_ring_coefficients in vec(arb_field_element(bits_per_coefficient), COEFFICIENTS_IN_RING_ELEMENT)) -> Polynomial {
                 createi(|i| arb_ring_coefficients[i])
         }
     }

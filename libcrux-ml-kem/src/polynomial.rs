@@ -803,3 +803,104 @@ mod tests {
         assert_eq!(i16s_re_avx2, i16s_re_avx2_decoded);
     }
 }
+
+/// Lifting functions and cross-spec tests for polynomial operations.
+#[cfg(test)]
+pub(crate) mod cross_spec_tests {
+    use super::*;
+    use crate::vector::portable::PortableVector;
+    use crate::vector::Operations;
+    use hacspec_ml_kem::parameters::{self as spec, FieldElement, Polynomial};
+
+    /// Lift an impl PolynomialRingElement to a spec Polynomial.
+    ///
+    /// Each i16 coefficient c is converted to FieldElement via c.rem_euclid(3329).
+    /// This mirrors the F* function `to_spec_poly_t` / `to_spec_fe`.
+    ///
+    /// Valid for time-domain polynomials or any polynomial whose coefficients
+    /// have been Barrett-reduced (i.e., are in [-3328, 3328]).
+    pub(crate) fn lift_poly<Vector: Operations>(p: &PolynomialRingElement<Vector>) -> Polynomial {
+        core::array::from_fn(|i| {
+            let coeffs = Vector::to_i16_array(p.coefficients[i / 16]);
+            let c = coeffs[i % 16] as i32;
+            FieldElement::new(c.rem_euclid(3329) as u16)
+        })
+    }
+
+    /// Lift an impl PolynomialRingElement from Montgomery domain to spec Polynomial.
+    ///
+    /// For NTT-domain polynomials stored as a*R mod q (where R = 2^16 mod q),
+    /// this divides by R to recover the plain value.
+    pub(crate) fn lift_poly_montgomery<Vector: Operations>(
+        p: &PolynomialRingElement<Vector>,
+    ) -> Polynomial {
+        const MONT_R_INV: u32 = 169; // 2^{-16} mod 3329
+        core::array::from_fn(|i| {
+            let coeffs = Vector::to_i16_array(p.coefficients[i / 16]);
+            let c = (coeffs[i % 16] as i32).rem_euclid(3329) as u32;
+            FieldElement::new((c * MONT_R_INV % 3329) as u16)
+        })
+    }
+
+    /// Create an impl PolynomialRingElement from a spec Polynomial.
+    pub(crate) fn unlift_poly(p: &Polynomial) -> PolynomialRingElement<PortableVector> {
+        let mut result = PolynomialRingElement::<PortableVector>::ZERO();
+        for i in 0..16 {
+            let mut coeffs = [0i16; 16];
+            for j in 0..16 {
+                coeffs[j] = p[i * 16 + j].val as i16;
+            }
+            result.coefficients[i] = PortableVector::from_i16_array(&coeffs);
+        }
+        result
+    }
+
+    #[test]
+    fn lift_unlift_roundtrip() {
+        let spec_poly: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 13 + 7) % spec::FIELD_MODULUS));
+        let impl_poly = unlift_poly(&spec_poly);
+        let recovered = lift_poly(&impl_poly);
+        assert_eq!(spec_poly, recovered);
+    }
+
+    #[test]
+    fn lift_zero_is_zero() {
+        let zero = PolynomialRingElement::<PortableVector>::ZERO();
+        let lifted = lift_poly(&zero);
+        for c in lifted.iter() {
+            assert_eq!(c.val, 0);
+        }
+    }
+
+    #[test]
+    fn add_to_ring_element_matches_spec() {
+        let spec_a: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 7) % spec::FIELD_MODULUS));
+        let spec_b: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 13 + 100) % spec::FIELD_MODULUS));
+
+        // Spec addition
+        let spec_sum = hacspec_ml_kem::polynomial::add_to_ring_element(&spec_a, &spec_b);
+
+        // Impl addition
+        let mut impl_a = unlift_poly(&spec_a);
+        let impl_b = unlift_poly(&spec_b);
+        impl_a.add_to_ring_element(&impl_b, 0);
+
+        assert_eq!(lift_poly(&impl_a), spec_sum);
+    }
+
+    #[test]
+    fn barrett_reduce_matches_spec() {
+        let spec_p: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 17 + 500) % spec::FIELD_MODULUS));
+
+        let spec_reduced = hacspec_ml_kem::polynomial::poly_barrett_reduce(&spec_p);
+
+        let mut impl_p = unlift_poly(&spec_p);
+        impl_p.poly_barrett_reduce();
+
+        assert_eq!(lift_poly(&impl_p), spec_reduced);
+    }
+}

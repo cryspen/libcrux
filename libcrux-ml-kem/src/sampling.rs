@@ -339,3 +339,58 @@ pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operat
         _ => unreachable!(),
     }
 }
+
+#[cfg(test)]
+mod cross_spec_tests {
+    use super::*;
+    use crate::polynomial::cross_spec_tests::lift_poly;
+    use crate::vector::portable::PortableVector;
+    use hacspec_ml_kem::parameters::FieldElement;
+
+    /// CBD eta=2: impl and spec produce identical polynomials from the same bytes.
+    #[test]
+    fn cbd_eta2_matches_spec() {
+        for pattern in [0x00u8, 0x55, 0xAA, 0xFF] {
+            let bytes = [pattern; 128];
+            let impl_poly = sample_from_binomial_distribution::<2, PortableVector>(&bytes);
+            let spec_poly = hacspec_ml_kem::sampling::sample_poly_cbd::<128, 1024>(2, &bytes);
+            assert_eq!(
+                lift_poly(&impl_poly),
+                spec_poly,
+                "CBD eta=2 mismatch for pattern 0x{pattern:02X}"
+            );
+        }
+    }
+
+    /// CBD eta=3: impl and spec produce identical polynomials from the same bytes.
+    #[test]
+    fn cbd_eta3_matches_spec() {
+        for pattern in [0x00u8, 0x55, 0xAA, 0xFF] {
+            let bytes = [pattern; 192];
+            let impl_poly = sample_from_binomial_distribution::<3, PortableVector>(&bytes);
+            let spec_poly = hacspec_ml_kem::sampling::sample_poly_cbd::<192, 1536>(3, &bytes);
+            assert_eq!(
+                lift_poly(&impl_poly),
+                spec_poly,
+                "CBD eta=3 mismatch for pattern 0x{pattern:02X}"
+            );
+        }
+    }
+
+    /// CBD with varying byte patterns to stress different bit combinations.
+    #[test]
+    fn cbd_eta2_sequential_bytes() {
+        let bytes: [u8; 128] = core::array::from_fn(|i| i as u8);
+        let impl_poly = sample_from_binomial_distribution::<2, PortableVector>(&bytes);
+        let spec_poly = hacspec_ml_kem::sampling::sample_poly_cbd::<128, 1024>(2, &bytes);
+        assert_eq!(lift_poly(&impl_poly), spec_poly);
+    }
+
+    #[test]
+    fn cbd_eta3_sequential_bytes() {
+        let bytes: [u8; 192] = core::array::from_fn(|i| i as u8);
+        let impl_poly = sample_from_binomial_distribution::<3, PortableVector>(&bytes);
+        let spec_poly = hacspec_ml_kem::sampling::sample_poly_cbd::<192, 1536>(3, &bytes);
+        assert_eq!(lift_poly(&impl_poly), spec_poly);
+    }
+}

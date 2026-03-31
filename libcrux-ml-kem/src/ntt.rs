@@ -323,3 +323,115 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Ope
 
     re.poly_barrett_reduce()
 }
+
+#[cfg(test)]
+mod cross_spec_tests {
+    use crate::polynomial::cross_spec_tests::{lift_poly, lift_poly_montgomery, unlift_poly};
+    use crate::vector::portable::PortableVector;
+    use hacspec_ml_kem::parameters::{self as spec, FieldElement, Polynomial};
+
+    /// Forward NTT: impl matches spec.
+    ///
+    /// Each NTT butterfly does montgomery_multiply(b, zeta*R) = b*zeta*R*R^{-1} = b*zeta,
+    /// so the Montgomery factors cancel and the output is in plain form.
+    #[test]
+    fn ntt_matches_spec() {
+        for seed in [0u16, 42, 255, 1000] {
+            let spec_poly: Polynomial = spec::createi(|i| {
+                FieldElement::new(
+                    ((i as u16).wrapping_mul(seed).wrapping_add(7)) % spec::FIELD_MODULUS,
+                )
+            });
+
+            let mut impl_poly = unlift_poly(&spec_poly);
+            super::ntt_vector_u::<10, PortableVector>(&mut impl_poly);
+
+            let spec_ntt = hacspec_ml_kem::ntt::vector_ntt([spec_poly])[0];
+
+            assert_eq!(
+                lift_poly(&impl_poly),
+                spec_ntt,
+                "NTT mismatch for seed={seed}"
+            );
+        }
+    }
+
+    /// NTT multiply: impl matches spec (accounting for Montgomery reduction).
+    ///
+    /// The impl's ntt_multiply does Montgomery multiplication internally,
+    /// so the result has an R^{-1} factor relative to the spec.
+    #[test]
+    fn ntt_multiply_matches_spec() {
+        let spec_a: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 7 + 3) % spec::FIELD_MODULUS));
+        let spec_b: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 13 + 100) % spec::FIELD_MODULUS));
+
+        let spec_a_ntt = hacspec_ml_kem::ntt::vector_ntt([spec_a])[0];
+        let spec_b_ntt = hacspec_ml_kem::ntt::vector_ntt([spec_b])[0];
+        let spec_product = hacspec_ml_kem::ntt::multiply_ntts(&spec_a_ntt, &spec_b_ntt);
+
+        let mut impl_a = unlift_poly(&spec_a);
+        let mut impl_b = unlift_poly(&spec_b);
+        super::ntt_vector_u::<10, PortableVector>(&mut impl_a);
+        super::ntt_vector_u::<10, PortableVector>(&mut impl_b);
+        let impl_product = impl_a.ntt_multiply(&impl_b);
+
+        // The impl ntt_multiply uses Montgomery reduction, so each pair
+        // of the base-case multiply has a factor of R^{-1} relative to spec.
+        // lift_poly_montgomery divides by R, so we need spec / R^2 for comparison.
+        // Alternatively, multiply impl result by R to get spec result.
+        const MONT_R: u32 = 2285; // 2^16 mod 3329
+        let lifted: Polynomial = spec::createi(|i| {
+            let c = lift_poly(&impl_product)[i];
+            FieldElement::new((c.val as u32 * MONT_R % 3329) as u16)
+        });
+
+        assert_eq!(lifted, spec_product, "NTT multiply mismatch");
+    }
+
+    /// Full chain: NTT -> multiply -> inverse NTT -> Montgomery conversion
+    /// should match spec's NTT -> multiply -> inverse NTT.
+    ///
+    /// Verifies all Montgomery factors cancel through the full pipeline.
+    #[test]
+    fn full_ntt_multiply_chain_matches_spec() {
+        let spec_a: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 7 + 3) % spec::FIELD_MODULUS));
+        let spec_b: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 13 + 100) % spec::FIELD_MODULUS));
+
+        // Spec chain: NTT -> multiply -> inverse NTT
+        let spec_a_ntt = hacspec_ml_kem::ntt::vector_ntt([spec_a])[0];
+        let spec_b_ntt = hacspec_ml_kem::ntt::vector_ntt([spec_b])[0];
+        let spec_product_ntt = hacspec_ml_kem::ntt::multiply_ntts(&spec_a_ntt, &spec_b_ntt);
+        let spec_product = hacspec_ml_kem::invert_ntt::ntt_inverse(spec_product_ntt);
+
+        // Impl chain: NTT -> multiply -> inverse NTT -> Montgomery-to-standard
+        let mut impl_a = unlift_poly(&spec_a);
+        let mut impl_b = unlift_poly(&spec_b);
+        super::ntt_vector_u::<10, PortableVector>(&mut impl_a);
+        super::ntt_vector_u::<10, PortableVector>(&mut impl_b);
+        let mut impl_product = impl_a.ntt_multiply(&impl_b);
+
+        crate::invert_ntt::invert_ntt_montgomery::<3, PortableVector>(&mut impl_product);
+
+        // Montgomery-to-standard: multiply by 1441 and Barrett reduce.
+        // 1441 combines R^{-1} and 128^{-1} (the missing inv-NTT scale factor).
+        for i in 0..16 {
+            impl_product.coefficients[i] =
+                crate::vector::Operations::montgomery_multiply_by_constant(
+                    impl_product.coefficients[i],
+                    1441,
+                );
+            impl_product.coefficients[i] =
+                crate::vector::Operations::barrett_reduce(impl_product.coefficients[i]);
+        }
+
+        assert_eq!(
+            lift_poly(&impl_product),
+            spec_product,
+            "Full NTT multiply chain: Montgomery factors did not cancel"
+        );
+    }
+}

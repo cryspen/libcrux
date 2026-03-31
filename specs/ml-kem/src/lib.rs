@@ -5,17 +5,17 @@
 // was stolen.
 //
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
-mod parameters;
+pub mod parameters;
 
-mod compress;
+pub mod compress;
 mod ind_cca;
-mod ind_cpa;
-mod invert_ntt;
-mod matrix;
-mod ntt;
-mod polynomial;
-mod sampling;
-mod serialize;
+pub mod ind_cpa;
+pub mod invert_ntt;
+pub mod matrix;
+pub mod ntt;
+pub mod polynomial;
+pub mod sampling;
+pub mod serialize;
 
 pub use parameters::{
     MlKemParams, ML_KEM_1024, ML_KEM_1024_CT_SIZE, ML_KEM_1024_DK_PKE_SIZE, ML_KEM_1024_DK_SIZE,

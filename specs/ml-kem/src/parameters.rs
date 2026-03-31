@@ -1,25 +1,25 @@
 /// Field modulus: 3329
-pub(crate) const FIELD_MODULUS: u16 = 3329;
+pub const FIELD_MODULUS: u16 = 3329;
 
 /// Each field element needs floor(log_2(FIELD_MODULUS)) + 1 = 12 bits to represent
-pub(crate) const BITS_PER_COEFFICIENT: usize = 12;
+pub const BITS_PER_COEFFICIENT: usize = 12;
 
 /// Coefficients per ring element
-pub(crate) const COEFFICIENTS_IN_RING_ELEMENT: usize = 256;
+pub const COEFFICIENTS_IN_RING_ELEMENT: usize = 256;
 
 /// Bits required per (uncompressed) ring element
-pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 12;
+pub const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 12;
 
 /// Bytes required per (uncompressed) ring element
-pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
+pub const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 
 /// Seed size for rejection sampling.
 ///
 /// See <https://eprint.iacr.org/2023/708> for some background regarding
 /// this choice.
-pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
+pub const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 
-pub(crate) use hash_functions::H_DIGEST_SIZE;
+pub use hash_functions::H_DIGEST_SIZE;
 
 /// ML-KEM parameter set
 #[hax_lib::attributes]
@@ -110,31 +110,31 @@ pub const ML_KEM_1024_CT_SIZE: usize = 1568; // U_SIZE + V_SIZE
 pub const ML_KEM_1024_J_INPUT_SIZE: usize = 1600; // 32 + 1568
 
 #[allow(non_snake_case)]
-pub(crate) mod hash_functions {
+pub mod hash_functions {
     #[hax_lib::opaque]
-    pub(crate) fn G(input: &[u8]) -> [u8; 64] {
+    pub fn G(input: &[u8]) -> [u8; 64] {
         hacspec_sha3::sha3_512(input)
     }
 
-    pub(crate) const H_DIGEST_SIZE: usize = 32;
+    pub const H_DIGEST_SIZE: usize = 32;
 
     #[hax_lib::opaque]
-    pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
+    pub fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
         hacspec_sha3::sha3_256(input)
     }
 
     #[hax_lib::opaque]
-    pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+    pub fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         hacspec_sha3::shake256::<LEN>(input)
     }
 
     #[hax_lib::opaque]
-    pub(crate) fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+    pub fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         hacspec_sha3::shake128::<LEN>(input)
     }
 
     #[hax_lib::opaque]
-    pub(crate) fn J<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+    pub fn J<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         hacspec_sha3::shake256::<LEN>(input)
     }
 }
@@ -144,27 +144,27 @@ pub(crate) mod hash_functions {
 /// - it is represented as a u16
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 #[hax_lib::attributes]
-pub(crate) struct FieldElement {
+pub struct FieldElement {
     #[refine(val < FIELD_MODULUS)]
-    pub(crate) val: u16,
+    pub val: u16,
 }
 
 #[hax_lib::attributes]
 impl FieldElement {
     #[hax_lib::requires(val < FIELD_MODULUS)]
-    pub(crate) const fn new(val: u16) -> Self {
+    pub const fn new(val: u16) -> Self {
         Self { val }
     }
 }
 
 /// An ML-KEM polynomial ring element
-pub(crate) type Polynomial = [FieldElement; 256];
+pub type Polynomial = [FieldElement; 256];
 
 /// An ML-KEM vector
-pub(crate) type Vector<const RANK: usize> = [Polynomial; RANK];
+pub type Vector<const RANK: usize> = [Polynomial; RANK];
 
 /// Am ML-KEM matrix
-pub(crate) type Matrix<const RANK: usize> = [Vector<RANK>; RANK];
+pub type Matrix<const RANK: usize> = [Vector<RANK>; RANK];
 
 /// Utility function to create an array of size `N` by applying a function `f` to each index.
 #[hax_lib::fstar::replace(
@@ -186,8 +186,8 @@ assume val createi_lemma
        [SMTPat (Seq.index (createi #v_T v_N #v_F f) (v i))]
 "#
 )]
-pub(crate) fn createi<T, const N: usize, F: Fn(usize) -> T>(f: F) -> [T; N] {
+pub fn createi<T, const N: usize, F: Fn(usize) -> T>(f: F) -> [T; N] {
     core::array::from_fn(f)
 }
 
-pub(crate) type BitVector<const N: usize> = [bool; N];
+pub type BitVector<const N: usize> = [bool; N];

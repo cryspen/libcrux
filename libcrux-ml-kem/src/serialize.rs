@@ -477,3 +477,92 @@ pub(super) fn deserialize_then_decompress_ring_element_v<
         _ => unreachable!(),
     }
 }
+
+#[cfg(test)]
+mod cross_spec_tests {
+    use super::*;
+    use crate::polynomial::cross_spec_tests::{lift_poly, unlift_poly};
+    use crate::vector::portable::PortableVector;
+    use hacspec_ml_kem::parameters::{self as spec, FieldElement, Polynomial};
+
+    /// compress_then_serialize_message: impl matches spec.
+    #[test]
+    fn compress_then_serialize_message_matches_spec() {
+        for pattern in [0x00u8, 0x55, 0xAA, 0xFF] {
+            // Create a polynomial with coefficients in [0, q)
+            let spec_poly: Polynomial = spec::createi(|i| {
+                FieldElement::new(
+                    ((i as u16).wrapping_mul(pattern as u16).wrapping_add(42))
+                        % spec::FIELD_MODULUS,
+                )
+            });
+            let impl_poly = unlift_poly(&spec_poly);
+
+            let impl_bytes = compress_then_serialize_message::<PortableVector>(impl_poly);
+            let spec_bytes = hacspec_ml_kem::serialize::compress_then_serialize_message(spec_poly);
+
+            assert_eq!(
+                impl_bytes, spec_bytes,
+                "compress_then_serialize_message mismatch for pattern=0x{pattern:02X}"
+            );
+        }
+    }
+
+    /// deserialize_then_decompress_message: impl matches spec.
+    #[test]
+    fn deserialize_then_decompress_message_matches_spec() {
+        for pattern in [0x00u8, 0x55, 0xAA, 0xFF] {
+            let bytes = [pattern; 32];
+
+            let impl_poly = deserialize_then_decompress_message::<PortableVector>(&bytes);
+            let spec_poly = hacspec_ml_kem::serialize::deserialize_then_decompress_message(&bytes);
+
+            assert_eq!(
+                lift_poly(&impl_poly),
+                spec_poly,
+                "deserialize_then_decompress_message mismatch for pattern=0x{pattern:02X}"
+            );
+        }
+    }
+
+    /// serialize_uncompressed_ring_element (12-bit encode): impl matches spec.
+    #[test]
+    fn serialize_uncompressed_matches_spec() {
+        let spec_poly: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 13 + 7) % spec::FIELD_MODULUS));
+        let impl_poly = unlift_poly(&spec_poly);
+
+        let impl_bytes = serialize_uncompressed_ring_element::<PortableVector>(&impl_poly);
+        let spec_bytes = hacspec_ml_kem::serialize::serialize_uncompressed_ring_element(&spec_poly);
+
+        assert_eq!(impl_bytes, spec_bytes);
+    }
+
+    /// deserialize_to_uncompressed_ring_element (12-bit decode): impl matches spec.
+    #[test]
+    fn deserialize_uncompressed_matches_spec() {
+        // Create valid 12-bit encoded bytes via spec
+        let spec_poly: Polynomial =
+            spec::createi(|i| FieldElement::new((i as u16 * 17 + 3) % spec::FIELD_MODULUS));
+        let bytes = hacspec_ml_kem::serialize::serialize_uncompressed_ring_element(&spec_poly);
+
+        let impl_poly = deserialize_to_uncompressed_ring_element::<PortableVector>(&bytes);
+        let spec_decoded =
+            hacspec_ml_kem::serialize::deserialize_to_uncompressed_ring_element(&bytes);
+
+        assert_eq!(
+            lift_poly(&impl_poly),
+            spec_decoded,
+            "deserialize_to_uncompressed mismatch"
+        );
+    }
+
+    /// Message roundtrip: serialize then deserialize recovers the message bytes.
+    #[test]
+    fn message_roundtrip() {
+        let msg = [0xABu8; 32];
+        let poly = deserialize_then_decompress_message::<PortableVector>(&msg);
+        let recovered = compress_then_serialize_message::<PortableVector>(poly);
+        assert_eq!(msg, recovered);
+    }
+}

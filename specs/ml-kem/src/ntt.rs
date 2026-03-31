@@ -7,13 +7,13 @@ const ZETA: FieldElement = FieldElement::new(17);
 /// In the spec, we use plain modular arithmetic, so R is conceptually 1.
 /// This constant documents the correspondence.
 #[allow(dead_code)]
-pub(crate) const MONTGOMERY_R: i32 = 1; // Identity in the spec
+pub const MONTGOMERY_R: i32 = 1; // Identity in the spec
 
 /// In the implementation, zetas are pre-multiplied by Montgomery R.
 /// In the spec, ZETAS are plain values, so ZETAS_TIMES_MONTGOMERY_R == ZETAS.
 /// This alias documents the correspondence with the implementation's `ZETAS_TIMES_MONTGOMERY_R`.
 #[allow(dead_code)]
-pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElement; 128] = ZETAS;
+pub const ZETAS_TIMES_MONTGOMERY_R: [FieldElement; 128] = ZETAS;
 
 /// Montgomery domain conversion: identity in the spec.
 ///
@@ -24,7 +24,7 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElement; 128] = ZETAS;
 /// Documenting this correspondence enables function-by-function verification by
 /// showing that the implementation's Montgomery conversions compose to identity.
 #[allow(dead_code)]
-pub(crate) fn to_standard_domain(a: FieldElement) -> FieldElement {
+pub fn to_standard_domain(a: FieldElement) -> FieldElement {
     a
 }
 
@@ -33,7 +33,7 @@ pub(crate) fn to_standard_domain(a: FieldElement) -> FieldElement {
 /// In the implementation, `montgomery_multiply_by_constant(a, c)` computes
 /// `a * c * R^{-1} mod q`. In the spec, this simplifies to `a * c mod q` since R = 1.
 #[allow(dead_code)]
-pub(crate) fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) -> FieldElement {
+pub fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) -> FieldElement {
     FieldElement::new(((a.val as u32 * c.val as u32) % FIELD_MODULUS as u32) as u16)
 }
 
@@ -43,7 +43,7 @@ pub(crate) fn montgomery_multiply_by_constant(a: FieldElement, c: FieldElement) 
 ///
 /// In the spec, field elements are already non-negative after reduction, so this
 /// is a plain modular reduction.
-pub(crate) fn to_unsigned_field_modulus(a: FieldElement) -> FieldElement {
+pub fn to_unsigned_field_modulus(a: FieldElement) -> FieldElement {
     FieldElement::new(a.val % FIELD_MODULUS) // already unsigned, just reduce
 }
 
@@ -225,7 +225,7 @@ const ZETAS: [FieldElement; 128] = [
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
 #[hax_lib::ensures(|r| r.val >= 1)]
-pub(crate) fn get_zeta(i: usize) -> FieldElement {
+pub fn get_zeta(i: usize) -> FieldElement {
     ZETAS[i]
 }
 
@@ -337,7 +337,7 @@ fn base_case_multiply_odd(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub(crate) fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
+pub fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
     createi(|i| {
         let zeta_4 = get_zeta(64 + i / 4);
         let zeta = if i % 4 < 2 {
@@ -353,7 +353,7 @@ pub(crate) fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
     })
 }
 
-pub(crate) fn vector_ntt<const RANK: usize>(vector: Vector<RANK>) -> Vector<RANK> {
+pub fn vector_ntt<const RANK: usize>(vector: Vector<RANK>) -> Vector<RANK> {
     createi(|i| ntt(vector[i]))
 }
 
