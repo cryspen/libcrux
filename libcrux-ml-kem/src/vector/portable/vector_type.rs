@@ -24,6 +24,10 @@ pub fn to_i16_array(x: PortableVector) -> [I16; 16] {
     x.elements
 }
 
+// NOTE: The extracted F* for this function needs patching after re-extraction.
+// hax extracts `array[0..16].try_into().unwrap()` which Z3 can't prove equals `array`
+// when len(array)==16 due to opaque Core_models indexing/conversion lemmas.
+// Apply: Libcrux_ml_kem.Vector.Portable.Vector_type.fst.patch
 #[inline(always)]
 #[hax_lib::requires(array.len() == 16)]
 #[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == $array"#))]

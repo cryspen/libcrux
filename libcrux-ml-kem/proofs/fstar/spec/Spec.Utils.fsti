@@ -377,7 +377,7 @@ val v_XOF (v_LEN: usize{v v_LEN < pow2 32}) (input: t_Slice u8) : t_Array u8 v_L
 
 val update_at_range_lemma #n
   (s: t_Slice 't)
-  (i: Core_models.Ops.Range.t_Range (int_t n) {(Core_models.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
+  (i: Core_models.Ops.Range.t_Range (int_t n) {v i.f_start >= 0 /\ v i.f_start <= Seq.length s /\ v i.f_end <= Seq.length s})
   (x: t_Slice 't)
   : Lemma
     (requires (Seq.length x == v i.f_end - v i.f_start))
@@ -387,6 +387,47 @@ val update_at_range_lemma #n
       forall (i: nat). i < len ==> Seq.index s i == Seq.index s' i
     ))
     [SMTPat (Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x)]
+
+/// TODO: This assumption should be moved to Rand_core.fsti in hax-lib,
+/// where f_fill_bytes_pre should be defined as True.
+val fill_bytes_pre_true
+      (#v_Self: Type0)
+      (#i0: Rand_core.t_RngCore v_Self)
+      (self: v_Self)
+      (bytes: t_Slice u8)
+    : Lemma (i0.f_fill_bytes_pre self bytes)
+      [SMTPat (i0.f_fill_bytes_pre self bytes)]
+
+/// TODO: This assumption should be moved to Rand_core.fsti in hax-lib,
+/// where f_fill_bytes_post should guarantee the output has the same length.
+val fill_bytes_post_true
+      (#v_Self: Type0)
+      (#i0: Rand_core.t_RngCore v_Self)
+      (self: v_Self)
+      (bytes: t_Slice u8)
+      (result: v_Self & t_Slice u8)
+    : Lemma (i0.f_fill_bytes_post self bytes result /\
+             Seq.length (snd result) == Seq.length bytes)
+      [SMTPat (i0.f_fill_bytes_post self bytes result)]
+
+/// TODO: This assumption should be moved to Core_models.Num in hax-lib.
+val impl_i16__abs_value (x: i16)
+    : Lemma (requires v x > -32768)
+            (ensures v (Core_models.Num.impl_i16__abs x) == Prims.abs (v x))
+      [SMTPat (Core_models.Num.impl_i16__abs x)]
+
+/// TODO: This assumption should be moved to Core_models proof-libs.
+/// The extracted `unwrap(try_into(array.[0..16]))` should reduce to `array`
+/// when `len array == 16`.
+val slice_to_array_id (array: t_Slice 'a)
+    : Lemma (requires Seq.length array == 16)
+            (ensures Core_models.Result.impl__unwrap
+              #(t_Array 'a (mk_usize 16))
+              #Core_models.Array.t_TryFromSliceError
+              (Core_models.Convert.f_try_into #(t_Slice 'a)
+                #(t_Array 'a (mk_usize 16))
+                #FStar.Tactics.Typeclasses.solve
+                array) == array)
 
 /// Bounded integers
 

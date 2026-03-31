@@ -308,7 +308,7 @@ let v_XOF v_LEN input = admit()
 
 let update_at_range_lemma #n
   (s: t_Slice 't)
-  (i: Core_models.Ops.Range.t_Range (int_t n) {(Core_models.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
+  (i: Core_models.Ops.Range.t_Range (int_t n) {v i.f_start >= 0 /\ v i.f_start <= Seq.length s /\ v i.f_end <= Seq.length s})
   (x: t_Slice 't)
   = let s' = Rust_primitives.Hax.Monomorphized_update_at.update_at_range s i x in
     let len = v i.f_start in
@@ -316,6 +316,23 @@ let update_at_range_lemma #n
     with (assert ( Seq.index (Seq.slice s  0 len) i == Seq.index s  i 
                  /\ Seq.index (Seq.slice s' 0 len) i == Seq.index s' i ))  
 
+
+let fill_bytes_pre_true #v_Self #i0 self bytes = assume (i0.f_fill_bytes_pre self bytes)
+
+let fill_bytes_post_true #v_Self #i0 self bytes result =
+  assume (i0.f_fill_bytes_post self bytes result /\
+          Seq.length (snd result) == Seq.length bytes)
+
+let impl_i16__abs_value (x: i16) = assume (v (Core_models.Num.impl_i16__abs x) == Prims.abs (v x))
+
+let slice_to_array_id (array: t_Slice 'a) =
+  assume (Core_models.Result.impl__unwrap
+    #(t_Array 'a (mk_usize 16))
+    #Core_models.Array.t_TryFromSliceError
+    (Core_models.Convert.f_try_into #(t_Slice 'a)
+      #(t_Array 'a (mk_usize 16))
+      #FStar.Tactics.Typeclasses.solve
+      array) == array)
 
 /// Bounded integers
 

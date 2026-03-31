@@ -17,6 +17,11 @@ use vector_type::*;
 pub(crate) use vector_type::PortableVector;
 
 #[cfg(hax)]
+use super::traits::spec;
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
+
+#[cfg(hax)]
 impl crate::vector::traits::Repr for PortableVector {
     fn repr(&self) -> [i16; 16] {
         to_i16_array(self.clone())
@@ -143,61 +148,78 @@ impl Operations for PortableVector {
         to_bytes(x, bytes);
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index ${result}.f_elements i) == 
-         v (Seq.index ${lhs}.f_elements i) + v (Seq.index ${rhs}.f_elements i))"#))]
+    #[requires(fstar!(r#"${spec::add_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
+    #[ensures(|result| fstar!(r#"${spec::add_post} ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }
 
-    #[requires(fstar!(r#"forall i. i < 16 ==> 
-        Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index ${result}.f_elements i) == 
-         v (Seq.index ${lhs}.f_elements i) - v (Seq.index ${rhs}.f_elements i))"#))]
+    #[requires(fstar!(r#"${spec::sub_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]
+    #[ensures(|result| fstar!(r#"${spec::sub_post} ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements"#))]
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 
     #[requires(fstar!(r#"forall i. i < 16 ==> 
         Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"#))]
-    #[ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-        (v (Seq.index ${result}.f_elements i) == 
-        v (Seq.index ${vec}.f_elements i) * v c)"#))]
+    #[ensures(|result| fstar!(r#"
+        (forall i. i < 16 ==> 
+            (v (Seq.index ${result}.f_elements i) == 
+            v (Seq.index ${vec}.f_elements i) * v c))"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         multiply_by_constant(vec, c)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $v)"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque (pow2 12 - 1) (impl.f_repr $v)"#))]
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
     fn cond_subtract_3329(v: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         cond_subtract_3329(v)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
                            (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     fn barrett_reduce(vector: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 28296)"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         barrett_reduce(vector)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
                                        (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         montgomery_multiply_by_constant(vector, constant.classify())
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                                 (let x = Seq.index (impl.f_repr ${a}) i in
                                  let y = Seq.index (impl.f_repr ${result}) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         to_unsigned_representative(a)
     }
 
@@ -242,53 +264,93 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (8*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (8*3328))"#
+        );
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+        );
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (5*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (5*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+        );
         ntt_layer_3_step(a, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (4*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_2_step(a, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_3_step(a, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,
@@ -297,6 +359,10 @@ impl Operations for PortableVector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -367,9 +433,10 @@ impl Operations for PortableVector {
     }
 
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result|
-        fstar!(r#"Seq.length $out_future == Seq.length $out /\ v $result <= 16"#)
-    )]
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
         rej_sample(a, out)
     }

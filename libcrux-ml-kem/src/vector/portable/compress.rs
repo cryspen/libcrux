@@ -223,6 +223,12 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
             r#"assert (v (${a}.f_elements.[ $i ] <: i16) >= 0 /\
             v (${a}.f_elements.[ $i ] <: i16) < pow2 (v $COEFFICIENT_BITS))"#
         );
+        // Frame: untouched elements still satisfy the original bound
+        hax_lib::fstar!(
+            r#"assert (forall (j: nat). (j > v $i /\ j < 16) ==>
+                v (cast (${a}.f_elements.[ sz j ]) <: u16) <
+                v (cast ($FIELD_MODULUS) <: u16))"#
+        );
     }
     hax_lib::fstar!(
         r#"assert (forall (i:nat). i < 16 ==> 

@@ -1,6 +1,6 @@
-SLOW_MODULES +=
+SLOW_MODULES += Libcrux_ml_kem.Vector.Rej_sample_table.fsti
 
-ADMIT_MODULES =  Libcrux_ml_kem.Sampling.fst \
+ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 	      Libcrux_ml_kem.Ind_cpa.fst \
               Libcrux_ml_kem.Vector.Neon.Arithmetic.fst \
               Libcrux_ml_kem.Vector.Neon.Compress.fst \

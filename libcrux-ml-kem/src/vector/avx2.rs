@@ -7,6 +7,9 @@ mod ntt;
 mod sampling;
 mod serialize;
 
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
+
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::before(interface, "noeq")]
 #[hax_lib::fstar::after(interface,"let repr (x:t_SIMD256Vector) : t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 x.f_elements")]
@@ -44,7 +47,7 @@ fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (repr $vector)"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque (pow2 12 - 1) (repr $vector)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (repr $vector)"#))]
 fn cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
     SIMD256Vector {
@@ -86,8 +89,8 @@ fn compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                    Spec.Utils.is_i16b_array (11207+5*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque (7*3328) (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (8*3328) (repr $out)"#))]
 fn ntt_layer_1_step(
     vector: SIMD256Vector,
     zeta0: i16,
@@ -103,8 +106,8 @@ fn ntt_layer_1_step(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                    Spec.Utils.is_i16b_array (11207+4*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque (6*3328) (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) (repr $out)"#))]
 fn ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
@@ -114,8 +117,8 @@ fn ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vec
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                    Spec.Utils.is_i16b_array (11207+3*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque (5*3328) (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) (repr $out)"#))]
 fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::ntt_layer_3_step(vector.elements, zeta),
@@ -126,8 +129,8 @@ fn ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                    Spec.Utils.is_i16b_array (4*3328) (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque (4*3328) (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (repr $out)"#))]
 fn inv_ntt_layer_1_step(
     vector: SIMD256Vector,
     zeta0: i16,
@@ -143,8 +146,8 @@ fn inv_ntt_layer_1_step(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                    Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque 3328 (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (repr $out)"#))]
 fn inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
@@ -154,8 +157,8 @@ fn inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD25
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                    Spec.Utils.is_i16b_array 3328 (repr ${vector})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque 3328 (repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (repr $out)"#))]
 fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
     SIMD256Vector {
         elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
@@ -166,9 +169,9 @@ fn inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                    Spec.Utils.is_i16b_array 3328 (repr ${lhs}) /\
-                    Spec.Utils.is_i16b_array 3328 (repr ${rhs})"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (repr $out)"#))]
+                    Spec.Utils.is_i16b_array_opaque 3328 (repr ${lhs}) /\
+                    Spec.Utils.is_i16b_array_opaque 3328 (repr ${rhs})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (repr $out)"#))]
 fn ntt_multiply(
     lhs: &SIMD256Vector,
     rhs: &SIMD256Vector,
@@ -350,19 +353,22 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) (impl.f_repr $vector)"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque (pow2 12 - 1) (impl.f_repr $vector)"#))]
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $vector)"#))]
     #[inline(always)]
     fn cond_subtract_3329(vector: Self) -> Self {
         cond_subtract_3329(vector)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 28296 (impl.f_repr ${vector})"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
                            (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     #[inline(always)]
     fn barrett_reduce(vector: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::barrett_reduce(vector.elements),
         }
@@ -370,21 +376,27 @@ impl Operations for SIMD256Vector {
 
     #[inline(always)]
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr ${result}) /\
+    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
                                        (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
         }
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $a)"#))]
+    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                                 (let x = Seq.index (impl.f_repr ${a}) i in
                                  let y = Seq.index (impl.f_repr ${result}) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        );
         Self {
             elements: arithmetic::to_unsigned_representative(a.elements),
         }
@@ -440,59 +452,99 @@ impl Operations for SIMD256Vector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+6*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (8*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (8*3328))"#
+        );
         ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+5*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+        );
         ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array (11207+3*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array (11207+4*3328) (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (5*3328) (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (5*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+        );
         ntt_layer_3_step(vector, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                       Spec.Utils.is_i16b_array (4*3328) (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque (4*3328) (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#
+        );
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_2_step(vector, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${vector})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${vector})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         inv_ntt_layer_3_step(vector, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array 3328 (impl.f_repr $out)"#))]
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
+                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
+    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     #[inline(always)]
     fn ntt_multiply(
         lhs: &Self,
@@ -502,6 +554,10 @@ impl Operations for SIMD256Vector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
+                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
@@ -588,12 +644,13 @@ impl Operations for SIMD256Vector {
         deserialize_12(bytes)
     }
 
-    #[requires(input.len() == 24 && output.len() == 16)]
-    #[ensures(|result|
-        fstar!(r#"Seq.length $output_future == Seq.length $output /\ v $result <= 16"#)
-    )]
     #[inline(always)]
-    fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {
-        sampling::rejection_sample(input, output)
+    #[requires(input.len() == 24 && out.len() == 16)]
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop() & (
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
+    fn rej_sample(input: &[u8], out: &mut [i16]) -> usize {
+        sampling::rejection_sample(input, out)
     }
 }

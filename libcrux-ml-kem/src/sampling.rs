@@ -3,6 +3,12 @@ use crate::{
     polynomial::PolynomialRingElement, vector::Operations,
 };
 
+#[cfg(hax)]
+use crate::polynomial::spec;
+
+#[cfg(hax)]
+use hax_lib::prop::ToProp;
+
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
 /// of the corresponding polynomial `a`.
@@ -42,6 +48,20 @@ use crate::{
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning")]
+#[hax_lib::requires(hax_lib::forall(
+    |i: usize| hax_lib::implies(i < K,
+        (sampled_coefficients[i] <= COEFFICIENTS_IN_RING_ELEMENT).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < sampled_coefficients[i],
+                    out[i][j] >= 0 && out[i][j] <= 3328))))))]
+#[hax_lib::ensures(|_| hax_lib::forall(
+    |i: usize| hax_lib::implies(i < K,
+        (future(sampled_coefficients)[i] <= COEFFICIENTS_IN_RING_ELEMENT).to_prop().and(
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < future(sampled_coefficients)[i],
+                    out[i][j] >= 0 && out[i][j] <= 3328))))))]
 fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
     randomness: &[[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
@@ -49,7 +69,35 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 ) -> bool {
     // Would be great to trigger auto-vectorization or at least loop unrolling here
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| hax_lib::implies(
+            j < K,
+            (if j < i {
+                sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT + 16
+            } else {
+                sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT
+            })
+            .to_prop()
+            .and(hax_lib::forall(|k: usize| hax_lib::implies(
+                k < sampled_coefficients[j],
+                out[j][k] >= 0 && out[j][k] <= 3328
+            )))
+        )));
+
         for r in 0..N / 24 {
+            hax_lib::loop_invariant!(|r: usize| hax_lib::forall(|j: usize| hax_lib::implies(
+                j < K,
+                (if j <= i {
+                    sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT + 16
+                } else {
+                    sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT
+                })
+                .to_prop()
+                .and(hax_lib::forall(|k: usize| hax_lib::implies(
+                    k < sampled_coefficients[j],
+                    out[j][k] >= 0 && out[j][k] <= 3328
+                )))
+            )));
+
             if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
                 let sampled = Vector::rej_sample(
                     &randomness[i][r * 24..(r * 24) + 24],
@@ -61,6 +109,20 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
     }
     let mut done = true;
     for i in 0..K {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| hax_lib::implies(
+            j < K,
+            (if j < i {
+                sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT
+            } else {
+                sampled_coefficients[j] <= COEFFICIENTS_IN_RING_ELEMENT + 16
+            })
+            .to_prop()
+            .and(hax_lib::forall(|k: usize| hax_lib::implies(
+                k < sampled_coefficients[j],
+                out[j][k] >= 0 && out[j][k] <= 3328
+            )))
+        )));
+
         if sampled_coefficients[i] >= COEFFICIENTS_IN_RING_ELEMENT {
             sampled_coefficients[i] = COEFFICIENTS_IN_RING_ELEMENT;
         } else {
@@ -72,6 +134,8 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
+                                spec::is_bounded_poly(3328, &result[i]))))]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seeds: &[[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
@@ -258,10 +322,8 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires((ETA == 2 || ETA == 3) && randomness.len() == ETA * 64)]
-#[hax_lib::ensures(|result| fstar!(r#"(forall (i:nat). i < 8 ==> Libcrux_ml_kem.Ntt.ntt_layer_7_pre
-    (${result}.f_coefficients.[ sz i ]) (${result}.f_coefficients.[ sz i +! sz 8 ])) /\
-    Libcrux_ml_kem.Polynomial.is_bounded_poly 7 ${result} /\
-    Libcrux_ml_kem.Polynomial.to_spec_poly_t #$:Vector $result ==
+#[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 7) ${result} /\
+    Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $result ==
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
