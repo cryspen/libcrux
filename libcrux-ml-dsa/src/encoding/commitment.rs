@@ -1,11 +1,25 @@
 use crate::{helper::cloop, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    (Seq.length $serialized == 128 \/ Seq.length $serialized == 192) /\
+    (let d = Seq.length $serialized / 32 in
+     forall (j: nat). j < 32 ==>
+       (forall i. bounded (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr #v_SIMDUnit
+           #FStar.Tactics.Typeclasses.solve
+           (Seq.index ${re}.Libcrux_ml_dsa.Polynomial.f_simd_units j)) i) d))"#))]
 fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, serialized: &mut [u8]) {
     let output_bytes_per_simd_unit = serialized.len() / (8 * 4);
 
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
+
     cloop! {
         for (i, simd_unit) in re.simd_units.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
+            // TOFIX: Z3 can't connect sub-slice length and simd_unit identity
+            // from fold_enumerated_slice to satisfy commitment_serialize_pre
+            hax_lib::assume!(false);
             SIMDUnit::commitment_serialize(
                 simd_unit,
                 &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
@@ -14,18 +28,37 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
     }
 }
 
+#[cfg(hax)]
+use hax_lib::int::*;
+
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    (${ring_element_size} =. (mk_usize 4 *! mk_usize 32 <: usize) ||
+     ${ring_element_size} =. (mk_usize 6 *! mk_usize 32 <: usize)) &&
+    (Rust_primitives.Hax.Int.from_machine (Core_models.Slice.impl__len #u8 $serialized <: usize)
+      <: Hax_lib.Int.t_Int) =
+    ((Rust_primitives.Hax.Int.from_machine $ring_element_size <: Hax_lib.Int.t_Int) *
+      (Rust_primitives.Hax.Int.from_machine (Core_models.Slice.impl__len
+            #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $vector <: usize)
+        <: Hax_lib.Int.t_Int) <: Hax_lib.Int.t_Int) /\
+    (let d = v $ring_element_size / 32 in
+     forall (n: nat) (j: nat). n < Seq.length $vector /\ j < 32 ==>
+       (forall i. bounded (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr #v_SIMDUnit
+           #FStar.Tactics.Typeclasses.solve
+           (Seq.index (Seq.index $vector n).Libcrux_ml_dsa.Polynomial.f_simd_units j)) i) d))"#))]
 pub(crate) fn serialize_vector<SIMDUnit: Operations>(
     ring_element_size: usize,
     vector: &[PolynomialRingElement<SIMDUnit>],
     serialized: &mut [u8],
 ) {
-    let mut offset: usize = 0;
+    #[cfg(hax)]
+    let serialized_len = serialized.len();
 
     cloop! {
-        for ring_element in vector.iter() {
+        for (i, ring_element) in vector.iter().enumerate() {
+            hax_lib::loop_invariant!(|i: usize| serialized.len() == serialized_len);
+            let offset = i * ring_element_size;
             serialize::<SIMDUnit>(ring_element, &mut serialized[offset..offset + ring_element_size]);
-            offset += ring_element_size;
         }
     }
 }

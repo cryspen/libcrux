@@ -2,11 +2,11 @@ module Spec.Intrinsics
 open FStar.Mul
 open Core_models
 open Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
- 
+
 let logand_lemma_forall #t:
-  Lemma (forall a. logand ones a == a /\ 
-              logand a ones == a /\ 
-              logand a zero == zero #t /\ 
+  Lemma (forall a. logand ones a == a /\
+              logand a ones == a /\
+              logand a zero == zero #t /\
               logand zero a == zero #t /\
               logand a a == a) =
   FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
@@ -20,7 +20,7 @@ let logand_mask_lemma_forall #t:
   admit()
 
 let logxor_lemma_forall #t:
-  Lemma (forall a. 
+  Lemma (forall a.
     a `logxor` a == zero /\
     zero #t `logxor` a == a /\
     a `logxor` zero #t == a /\
@@ -29,7 +29,7 @@ let logxor_lemma_forall #t:
   FStar.Classical.forall_intro (fun a -> logxor_lemma #t a a)
 
 let lognot_lemma_forall #t:
-  Lemma (forall a. 
+  Lemma (forall a.
    lognot #t zero == ones /\
    lognot #t ones == zero /\
    lognot (lognot a) == a /\
@@ -68,7 +68,7 @@ let reveal_opaque_arithmetic_ops #t:
   reveal_opaque (`%mul_mod_opaque) (mul_mod_opaque #t);
   reveal_opaque (`%shift_left_opaque) (shift_left_opaque #t);
   reveal_opaque (`%shift_right_opaque) (shift_right_opaque #t)
-  
+
 let reveal_opaque_cast_ops #t #t':
   Lemma (cast_mod_opaque #t #t' == cast_mod #t #t' /\
          cast_mod_opaque #t' #t == cast_mod #t' #t) =
@@ -163,6 +163,20 @@ val mm256_and_si256 lhs rhs i
             | _                -> Bit_Zero ))
             [SMTPat (I.mm256_and_si256 lhs rhs).(i)]
 
+val mm256_storeu_si256_i32_lemma out vec (i:nat {i < 8})
+  : Lemma (requires Seq.length out >= 8)
+          (ensures Seq.index (I.mm256_storeu_si256_i32 out vec) i == to_i32x8 vec (mk_int i))
+          [SMTPat (Seq.index (I.mm256_storeu_si256_i32 out vec) i)]
+
+val mm256_loadu_si256_i32_lemma vec (i:nat {i < 8})
+  : Lemma (requires Seq.length vec >= 8)
+          (ensures to_i32x8 (I.mm256_loadu_si256_i32 vec) (mk_int i) == Seq.index vec i)
+          [SMTPat (to_i32x8 (I.mm256_loadu_si256_i32 vec) (mk_int i))]
+
+val mm256_setzero_si256_lemma (i: u64 {v i < 8})
+  : Lemma (to_i32x8 (I.mm256_setzero_si256 ()) i == mk_int 0)
+          [SMTPat (to_i32x8 (I.mm256_setzero_si256 ()) i)]
+
 val mm_storeu_bytes_si128_lemma out vec (i:nat {i < 16})
   : Lemma (requires Seq.length out >= 16)
           (ensures Seq.index (I.mm_storeu_bytes_si128 out vec) i == to_u8x16 vec (mk_int i))
@@ -175,13 +189,13 @@ val update_at_range_bv_lemma
     vec i
   : Lemma (
       Seq.index (
-        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range
           bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
       ) i == (if i >= v f_start && i < v f_end
               then to_u8x16 vec (mk_int (i - v f_start))
               else Seq.index bytes i))
     [SMTPat (Seq.index (
-        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range
           bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
       ) i)]
 
@@ -388,7 +402,7 @@ val mm256_madd_epi16_lemma (a b: bv256) i
 // For example, a lemma that requires this `Bit_Zero? .. \/ Bit_Zero? ..` precondition, but for every index: such a precondition is stronger that needed but easier for the SMT.
 val mm256_add_epi64_lemma lhs rhs (i: u64 {v i < 256})
   : Lemma
-    (requires forall (j:nat{j < v i % 64}). Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j)) 
+    (requires forall (j:nat{j < v i % 64}). Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j))
                                    \/ Bit_Zero? rhs.(mk_int ((v i / 64) * 64 + j)))
     (ensures (Bit_Zero? lhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
            /\ (Bit_Zero? rhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
@@ -463,7 +477,7 @@ val mm_set_epi8_lemma
        )
   )
   [SMTPat (to_i8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i)]
-  
+
 
 val mm256_set_epi16_lemma
   (v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15: i16)
@@ -581,6 +595,18 @@ val mm256_xor_si256_lemma (a b: bv256) (i:u64{v i < 8}):
          ((to_i32x8 a i) ^. (to_i32x8 b i)))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_xor_si256 a b) i)]
 
+/// Description: Compute the absolute value of packed signed 32-bit integers in
+/// [a], and store the unsigned results in [dst].
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	dst[i+31:i] := ABS(a[i+31:i])
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
 val mm256_abs_epi32_lemma (a: bv256) (i:u64{v i < 8}):
   Lemma (requires (v (to_i32x8 a i) > minint i32_inttype))
         (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_abs_epi32 a) i ==
@@ -591,6 +617,97 @@ val mm256_cmpgt_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i ==
          (if (to_i32x8 a i >. to_i32x8 b i) then ones else zero))
   [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpgt_epi32 a b) i)]
+
+/// Description: Compare packed 32-bit integers in [a] and [b] for equality, and
+/// store the results in dst.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	dst[i+31:i] := ( a[i+31:i] == b[i+31:i] ) ? 0xFFFFFFFF : 0
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
+val mm256_cmpeq_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpeq_epi32 a b) i ==
+         (if (to_i32x8 a i =. to_i32x8 b i) then ones else zero))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_cmpeq_epi32 a b) i)]
+
+/// Description: Negate packed signed 32-bit integers in [a] when the
+/// corresponding signed 32-bit integer in [b] is negative, and store the
+/// results in dst. Element in dst are zeroed out when the corresponding element
+/// in b is zero.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	IF b[i+31:i] < 0
+/// 		dst[i+31:i] := -(a[i+31:i])
+/// 	ELSE IF b[i+31:i] == 0
+/// 		dst[i+31:i] := 0
+/// 	ELSE
+/// 		dst[i+31:i] := a[i+31:i]
+/// 	FI
+/// ENDFOR
+/// dst[MAX:256] := 0
+/// ```
+val mm256_sign_epi32_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sign_epi32 a b) i ==
+         (let ai = to_i32x8 a i in
+          let bi = to_i32x8 b i in
+          if bi <. mk_i32 0 then mk_i32 0 -. ai
+          else if bi >. mk_i32 0 then ai
+          else mk_i32 0))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_sign_epi32 a b) i)]
+
+/// Description: Compute the bitwise OR of 256 bits (representing integer data)
+/// in a and b, and store the result in dst.
+///
+/// Operation:
+///
+/// ```
+/// dst[255:0] := (a[255:0] OR b[255:0])
+/// dst[MAX:256] := 0
+/// ```
+val mm256_or_si256_lemma (a b: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_or_si256 a b) i ==
+         ((to_i32x8 a i) |. (to_i32x8 b i)))
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_or_si256 a b) i)]
+
+/// Description: Cast vector of type __m256i to type __m256. This intrinsic is
+/// only used for compilation and does not generate any instructions, thus it
+/// has zero latency.
+val mm256_castsi256_ps_lemma (a: bv256) (i:u64{v i < 8}):
+  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_castsi256_ps a) i == to_i32x8 a i)
+  [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_castsi256_ps a) i)]
+
+/// Description: Set each bit of mask dst based on the most significant bit of
+/// the corresponding packed single-precision (32-bit) floating-point element in
+/// a.
+///
+/// Operation:
+///
+/// ```
+/// FOR j := 0 to 7
+/// 	i := j*32
+/// 	IF a[i+31]
+/// 		dst[j] := 1
+/// 	ELSE
+/// 		dst[j] := 0
+/// 	FI
+/// ENDFOR
+/// dst[MAX:8] := 0
+/// ```
+val mm256_movemask_ps_lemma (a: bv256):
+  Lemma (let result = Libcrux_intrinsics.Avx2.mm256_movemask_ps a in
+         v result >= 0 /\ v result < 256 /\
+         (forall (i:nat{i < 8}).
+           (v result / pow2 i) % 2 == (if v (to_i32x8 a (mk_u64 i)) < 0 then 1 else 0)))
+  [SMTPat (Libcrux_intrinsics.Avx2.mm256_movemask_ps a)]
 
 val mm256_testz_si256_lemma (a b: bv256):
   Lemma (let result = Libcrux_intrinsics.Avx2.mm256_testz_si256 a b in
@@ -792,3 +909,15 @@ val lemma_from_i32x8_def_pt (f: (i:u64{v i < 8}) -> i32): Lemma (forall i. to_i3
 let mk_i32x8 (f: (i:u64{v i < 8}) -> i32): r: bv256 {forall i. to_i32x8 r i == f i}
  = lemma_from_i32x8_def_pt f;
    from_i32x8 (FStar.FunctionalExtensionality.on (n:u64{v n < 8}) f)
+
+/// Upper bound on counting ones in a positive signed 32bit integer.
+val count_ones_bound_lemma (x: i32):
+  Lemma (requires v x >= 0)
+        (ensures forall (a: nat). v x < pow2 a ==>
+          v (cast (Core_models.Num.impl_i32__count_ones x <: u32) <: usize) <= a)
+  [SMTPat (Core_models.Num.impl_i32__count_ones x)]
+
+/// Generic map_array indexing lemma. Missing from Rust_primitives.Arrays.fsti.
+val map_array_index_lemma (#a #b: Type) (#n: usize) (arr: t_Array a n) (f: a -> b)
+  : Lemma (forall (i:nat). i < v n ==> Seq.index (Rust_primitives.Arrays.map_array arr f) i == f (Seq.index arr i))
+    [SMTPat (Rust_primitives.Arrays.map_array #a #b #n arr f)]
