@@ -179,39 +179,15 @@ echo -n "Libcrux: " >> code_gen.txt
 echo "$LIBCRUX_REV" >> code_gen.txt
 
 # # Generate header
-# cat spdx-header.txt > header.txt
-# sed -e 's/^/ * /' code_gen.txt >> header.txt
-# echo " */" >> header.txt
-
-# # Run eurydice to extract the C code
-# echo "Running eurydice ..."
-# echo $EURYDICE_HOME/eurydice \
-#     --config "$config" -funroll-loops $unrolling \
-#     --header header.txt $cpp17 \
-#     "$repo_root/combined_extraction.llbc" --keep-going
+cat spdx-header.txt > header.txt
+sed -e 's/^/ * /' code_gen.txt >> header.txt
+echo " */" >> header.txt
 
 #  --log "*" --debug checker
 $EURYDICE_HOME/eurydice \
     --debug "-dast" \
     --config "$config" -funroll-loops 0 \
+    --header header.txt \
     $cpp17 \
     "$repo_root/libcrux_secrets.llbc" "$repo_root/libcrux_sha3.llbc" "$repo_root/libcrux_ml_kem.llbc" "$repo_root/libcrux_ml_dsa.llbc" --keep-going
 
-# if [[ "$eurydice_glue" = 1 ]]; then
-#     cp "$glue" .
-# fi
-
-# if [[ "$karamel_include" = 1 ]]; then
-#     echo "Copying karamel/include ..."
-#     mkdir -p karamel
-#     cp -R "$KRML_HOME/include" karamel/
-# fi
-
-# if [[ "$format" = 1 ]]; then
-#     find . -type f -name '*.c' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
-#     find . -type f -name '*.h' -and -not -path '*_deps*' -exec clang-format-18 --style=Google -i "{}" \;
-#     if [ -d "internal" ]; then
-#         clang-format-18 --style=Google -i internal/*.h
-#     fi
-#     clang-format-18 --style=Google -i intrinsics/*.h
-# fi
