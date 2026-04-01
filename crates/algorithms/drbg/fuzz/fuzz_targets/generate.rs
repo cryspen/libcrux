@@ -15,7 +15,9 @@
 //!   - On success the output buffer is fully written (no uninitialised bytes leak).
 #![no_main]
 
-use libcrux_drbg::{Error, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES};
+use libcrux_drbg::{
+    GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES,
+};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {
@@ -39,10 +41,10 @@ fuzz_target!(|data: &[u8]| {
                     // Success must only happen for valid lengths.
                     assert!(output_len > 0 && output_len <= MAX_GENERATE_BYTES);
                 }
-                Err(Error::RequestTooLarge) => {
+                Err(GenerateError::RequestTooLarge) => {
                     assert!(output_len == 0 || output_len > MAX_GENERATE_BYTES);
                 }
-                Err(Error::ReseedRequired) => {
+                Err(GenerateError::ReseedRequired) => {
                     // Cannot happen with a freshly instantiated DRBG (counter = 1).
                     panic!("ReseedRequired on fresh DRBG");
                 }

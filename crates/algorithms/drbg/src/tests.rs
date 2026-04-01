@@ -247,7 +247,7 @@ fn reseed_required_error() {
     drbg.set_reseed_counter(RESEED_INTERVAL + 1);
     let mut out = [0u8; 32];
     let err = drbg.generate(&mut out, None).unwrap_err();
-    assert_eq!(err, Error::ReseedRequired);
+    assert_eq!(err, GenerateError::ReseedRequired);
 }
 
 #[test]

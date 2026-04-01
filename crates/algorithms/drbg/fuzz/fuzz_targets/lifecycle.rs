@@ -30,7 +30,9 @@
 //!   - `reseed_counter()` is always in [1, RESEED_INTERVAL + 1].
 #![no_main]
 
-use libcrux_drbg::{Error, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, RESEED_INTERVAL};
+use libcrux_drbg::{
+    GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, RESEED_INTERVAL,
+};
 use libfuzzer_sys::fuzz_target;
 
 /// A minimal cursor over a byte slice.
@@ -97,7 +99,7 @@ macro_rules! run_lifecycle {
                             assert!(!drbg.needs_reseed());
                             assert_eq!(drbg.reseed_counter(), 1);
                         }
-                        Err(Error::InputTooLarge) => {} // expected for large inputs
+                        Err(GenerateError::InputTooLarge) => {} // expected for large inputs
                         Err(e) => panic!("unexpected reseed error: {e:?}"),
                     }
                 }
@@ -118,12 +120,12 @@ macro_rules! run_lifecycle {
                             assert!(!needs_reseed_before);
                             assert_eq!(drbg.reseed_counter(), counter_before + 1);
                         }
-                        Err(Error::ReseedRequired) => {
+                        Err(GenerateError::ReseedRequired) => {
                             assert!(needs_reseed_before);
                             // Counter must not have changed.
                             assert_eq!(drbg.reseed_counter(), counter_before);
                         }
-                        Err(Error::RequestTooLarge) => {
+                        Err(GenerateError::RequestTooLarge) => {
                             // output_len == 0 or > MAX_GENERATE_BYTES: counter unchanged.
                             assert_eq!(drbg.reseed_counter(), counter_before);
                         }

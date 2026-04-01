@@ -1,5 +1,7 @@
 use cavp::drbg::HmacDrbgTest;
-use libcrux_drbg::{Error, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES};
+use libcrux_drbg::{
+    GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES,
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -183,7 +185,7 @@ fn generate_different_seeds_sha256() {
 fn request_zero_bytes_rejected() {
     let mut drbg = make_sha256();
     let err = drbg.generate(&mut [], None).unwrap_err();
-    assert_eq!(err, Error::RequestTooLarge);
+    assert_eq!(err, GenerateError::RequestTooLarge);
 }
 
 #[test]
@@ -191,7 +193,7 @@ fn request_too_large() {
     let mut drbg = make_sha256();
     let mut big = vec![0u8; MAX_GENERATE_BYTES + 1];
     let err = drbg.generate(&mut big, None).unwrap_err();
-    assert_eq!(err, Error::RequestTooLarge);
+    assert_eq!(err, GenerateError::RequestTooLarge);
 }
 
 #[test]

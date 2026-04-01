@@ -14,7 +14,7 @@
 //!   - On success, `needs_reseed()` is false and `reseed_counter()` is 1.
 #![no_main]
 
-use libcrux_drbg::{Error, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512};
+use libcrux_drbg::{HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, InstantiateError};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {
@@ -48,14 +48,13 @@ fuzz_target!(|data: &[u8]| {
                     assert!(!drbg.needs_reseed());
                     assert_eq!(drbg.reseed_counter(), 1);
                 }
-                Err(Error::InputTooLarge) => {
+                Err(InstantiateError::InputTooLarge) => {
                     // Only acceptable when the seed exceeds the limit.
                     assert!(
                         total > MAX_SEED,
                         "InputTooLarge returned but total={total} <= {MAX_SEED}"
                     );
                 }
-                Err(e) => panic!("unexpected error: {e:?}"),
             }
         };
     }
