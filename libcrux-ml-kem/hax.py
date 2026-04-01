@@ -128,6 +128,14 @@ class extractAction(argparse.Action):
             cwd=".",
             env=hax_env,
         )
+
+        # Apply post-extraction patches
+        import glob
+        patches = sorted(glob.glob("proofs/fstar/extraction-patches/*.patch"))
+        for patch in patches:
+            print(f"\nApplying patch: {patch}")
+            shell(["git", "apply", patch], cwd=".")
+
         return None
 
 

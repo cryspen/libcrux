@@ -9,6 +9,9 @@ use hax_lib::prop::ToProp;
 #[cfg(hax)]
 use crate::polynomial::spec;
 
+// TODO: The F* proof of sample_matrix_A is flaky (Z3 uses ~393/400 rlimit).
+// The loop invariant for the inner j-loop should be simplified or the proof
+// restructured so it verifies reliably. Currently in SLOW_MODULES (admitted by default).
 #[inline(always)]
 #[allow(non_snake_case)]
 #[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always")]
