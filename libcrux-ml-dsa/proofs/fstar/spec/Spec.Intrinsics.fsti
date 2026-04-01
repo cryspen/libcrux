@@ -2,17 +2,17 @@ module Spec.Intrinsics
 open FStar.Mul
 open Core_models
 open Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
- 
+
 let logand_lemma_forall #t:
-  Lemma (forall a. logand ones a == a /\ 
-              logand a ones == a /\ 
-              logand a zero == zero #t /\ 
+  Lemma (forall a. logand ones a == a /\
+              logand a ones == a /\
+              logand a zero == zero #t /\
               logand zero a == zero #t /\
               logand a a == a) =
   FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
 
 let logand_mask_lemma_forall #t:
-  Lemma (forall a m. 
+  Lemma (forall a m.
               m < bits t ==>
               (pow2 m < maxint t /\
                logand a (sub #t (mk_int #t (pow2 m)) (mk_int #t 1)) ==
@@ -20,7 +20,7 @@ let logand_mask_lemma_forall #t:
 
 
 let logxor_lemma_forall #t:
-  Lemma (forall a. 
+  Lemma (forall a.
     a `logxor` a == zero /\
     zero #t `logxor` a == a /\
     a `logxor` zero #t == a /\
@@ -29,7 +29,7 @@ let logxor_lemma_forall #t:
   FStar.Classical.forall_intro (fun a -> logxor_lemma #t a a)
 
 let lognot_lemma_forall #t:
-  Lemma (forall a. 
+  Lemma (forall a.
    lognot #t zero == ones /\
    lognot #t ones == zero /\
    lognot (lognot a) == a /\
@@ -68,7 +68,7 @@ let reveal_opaque_arithmetic_ops #t:
   reveal_opaque (`%mul_mod_opaque) (mul_mod_opaque #t);
   reveal_opaque (`%shift_left_opaque) (shift_left_opaque #t);
   reveal_opaque (`%shift_right_opaque) (shift_right_opaque #t)
-  
+
 let reveal_opaque_cast_ops #t #t':
   Lemma (cast_mod_opaque #t #t' == cast_mod #t #t' /\
          cast_mod_opaque #t' #t == cast_mod #t' #t) =
@@ -175,13 +175,13 @@ val update_at_range_bv_lemma
     vec i
   : Lemma (
       Seq.index (
-        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range
           bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
       ) i == (if i >= v f_start && i < v f_end
               then to_u8x16 vec (mk_int (i - v f_start))
               else Seq.index bytes i))
     [SMTPat (Seq.index (
-        Rust_primitives.Hax.Monomorphized_update_at.update_at_range 
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_range
           bytes { f_start; f_end } (I.mm_storeu_bytes_si128 dummy_out vec)
       ) i)]
 
@@ -388,7 +388,7 @@ val mm256_madd_epi16_lemma (a b: bv256) i
 // For example, a lemma that requires this `Bit_Zero? .. \/ Bit_Zero? ..` precondition, but for every index: such a precondition is stronger that needed but easier for the SMT.
 val mm256_add_epi64_lemma lhs rhs (i: u64 {v i < 256})
   : Lemma
-    (requires forall (j:nat{j < v i % 64}). Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j)) 
+    (requires forall (j:nat{j < v i % 64}). Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j))
                                    \/ Bit_Zero? rhs.(mk_int ((v i / 64) * 64 + j)))
     (ensures (Bit_Zero? lhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
            /\ (Bit_Zero? rhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
@@ -463,7 +463,7 @@ val mm_set_epi8_lemma
        )
   )
   [SMTPat (to_i8x16 (I.mm_set_epi8 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15) i)]
-  
+
 
 val mm256_set_epi16_lemma
   (v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15: i16)

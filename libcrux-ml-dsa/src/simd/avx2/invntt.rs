@@ -234,7 +234,7 @@ unsafe fn invert_ntt_at_layer_0(re: &mut AVX2RingElement) {
     #[hax_lib::ensures(|result| fstar!(r#"
       let r = ${re}_future in
          modifies2_32 $re r $index ($index +! mk_int 1)
-      /\ ( let (a, b) = simd_unit_invert_ntt_at_layer_0_ (Seq.index re (v $index)).f_value (Seq.index re (v $index + 1)).f_value 
+      /\ ( let (a, b) = simd_unit_invert_ntt_at_layer_0_ (Seq.index re (v $index)).f_value (Seq.index re (v $index + 1)).f_value
                             $zeta00 $zeta01 $zeta02 $zeta03 $zeta10 $zeta11 $zeta12 $zeta13 in
            Seq.index r (v $index) == a /\ Seq.index r (v $index + 1) == b)
     "#))]
@@ -455,7 +455,7 @@ unfold let outer_3_plus_inv_pointwise  (offset: nat) (step_by: nat {offset + ste
     (re nre: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32)) (j: nat{j < 32})
 = let interval1 = (offset, current_j) in
   let interval2 = (offset + step_by, current_j + step_by) in
-  if j ∈ interval1 then 
+  if j ∈ interval1 then
     let  re_j = (Seq.index  re j).f_value in
     let nre_j = (Seq.index nre j).f_value in
     let  re_j'= (Seq.index  re (j + step_by)).f_value in

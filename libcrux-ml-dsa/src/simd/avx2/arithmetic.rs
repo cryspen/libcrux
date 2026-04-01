@@ -10,7 +10,7 @@ use libcrux_intrinsics::avx2::*;
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(true)]
 #[hax_lib::ensures(|result| fstar!(r#"
-    forall i. if v (to_i32x8 $t i) < 0 
+    forall i. if v (to_i32x8 $t i) < 0
               then to_i32x8 $result i = to_i32x8 $t i +! $FIELD_MODULUS
               else to_i32x8 $result i = to_i32x8 $t i)) =
 "#))]
@@ -29,7 +29,7 @@ fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(true)]
 #[hax_lib::ensures(|_| fstar!(r#"
-    forall i. if v (to_i32x8 $t i) < 0 
+    forall i. if v (to_i32x8 $t i) < 0
               then to_i32x8 tt_future i = to_i32x8 $t i +! $FIELD_MODULUS
               else to_i32x8 tt_future i = to_i32x8 $t i)) =
 "#))]
@@ -51,7 +51,7 @@ pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::ensures(|result| fstar!(r#"
-    forall i. to_i32x8 ${result} i == 
+    forall i. to_i32x8 ${result} i ==
               Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) $constant
 "#))]
 pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec256 {
@@ -90,7 +90,7 @@ pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec
     ))
 )]
 #[hax_lib::ensures(|_| fstar!(r#"
-    forall i. to_i32x8 ${lhs}_future i == 
+    forall i. to_i32x8 ${lhs}_future i ==
               Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i)
 "#))]
 pub(super) fn montgomery_multiply_aux(
@@ -122,7 +122,7 @@ pub(super) fn montgomery_multiply_aux(
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::ensures(|_| fstar!(r#"
-    forall i. to_i32x8 ${lhs}_future i == 
+    forall i. to_i32x8 ${lhs}_future i ==
               Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i)
 "#))]
 pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
@@ -156,10 +156,10 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256
 #[inline]
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 300")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
+#[hax_lib::requires(fstar!(r#"v $bound > 0 /\
     (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 ${simd_unit} i))"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    $result == false <==> 
+    $result == false <==>
         (forall i. Spec.Utils.is_i32b (v $bound - 1) (to_i32x8 ${simd_unit} i))"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     let absolute_values = mm256_abs_epi32(*simd_unit);
@@ -183,7 +183,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
 #[hax_lib::requires(fstar!(r#"
     forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 $r0 i)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    forall i. 
+    forall i.
         let (t0, t1) = Spec.MLDSA.Math.power2round (v (to_i32x8 $r0 i)) in
         (to_i32x8 ${r0}_future i == mk_i32 t0 /\
          to_i32x8 ${r1}_future i == mk_i32 t1 /\
@@ -211,7 +211,7 @@ pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
 #[hax_lib::ensures(|(r0,r1)| fstar!(r#"
     forall i.
     let (r0_s, r1_s) = Spec.MLDSA.Math.decompose_spec $gamma2 (to_i32x8 $r i) in
-    to_i32x8 ${r0}_future i = r0_s /\ 
+    to_i32x8 ${r0}_future i = r0_s /\
     to_i32x8 ${r1}_future i = r1_s"#))]
 pub(super) fn decompose(gamma2: Gamma2, r: &Vec256, r0: &mut Vec256, r1: &mut Vec256) {
     let r = to_unsigned_representatives_ret(r);

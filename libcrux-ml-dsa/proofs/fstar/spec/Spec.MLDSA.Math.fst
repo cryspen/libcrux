@@ -5,7 +5,7 @@ open Core_models
 
 include Spec.Utils
 open Spec.Intrinsics
-  
+
 let v_FIELD_MODULUS: i32 = mk_i32 8380417
 
 [@@ "opaque_to_smt"]
@@ -21,7 +21,7 @@ let mont_mul (x:i32) (y:i32) : i32 =
   let low : i32 = cast_mod_opaque product in
   let k : i32 = cast_mod_opaque (i32_mul low (mk_i32 58728449)) in
   let c : i32 = cast_mod_opaque (shift_right_opaque (i32_mul k (mk_i32 8380417)) (mk_i32 32)) in
-  sub_mod_opaque hi c  
+  sub_mod_opaque hi c
 
 [@@ "opaque_to_smt"]
 let barrett_red (x:i32) : i32 =
@@ -40,7 +40,7 @@ let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888
       let mask = shift_right_opaque mask (mk_i32 31) in
       let not_result = result ^. mask in
       result &. not_result
-    else 
+    else
       let result = mul_mod_opaque ceil_of_r_by_128 (mk_i32 1025) in
       let result = add_mod_opaque result (mk_i32 1 <<! mk_i32 21 <: i32) in
       let result = shift_right_opaque result (mk_i32 22) in
@@ -53,8 +53,8 @@ let decompose_spec (gamma2:i32{gamma2 == mk_i32 95232 \/ gamma2 == mk_i32 261888
   let field_modulus_and_mask = mask &. v_FIELD_MODULUS in
   let r0 = sub_mod_opaque r0_tmp field_modulus_and_mask in
   (r0, r1)
-     
-    
+
+
 
 
 let v_BITS_IN_LOWER_PART_OF_T: usize = mk_usize 13
@@ -133,7 +133,7 @@ let rejection_sample_field_modulus_inner
   (i:usize{v i < (Seq.length randomness) / 3})
   s : (Seq.seq i32) =
   let coefficient = rejection_sample_coefficient randomness i in
-  if coefficient <. mk_i32 8380417 then 
+  if coefficient <. mk_i32 8380417 then
     Seq.append s (Seq.create 1 coefficient) else s
 
 let rejection_sample_field_modulus (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
@@ -147,9 +147,9 @@ let rejection_sample_eta_2_inner
   let byte = Seq.index randomness (v i) in
   let try_0 = byte &. mk_u8 15 in
   let try_1 = byte >>! mk_u8 4 in
-  let s = if try_0 <. mk_u8 15 then 
+  let s = if try_0 <. mk_u8 15 then
     Seq.append s (Seq.create 1 (mk_i32 2 -. ((cast try_0 <: i32) %! mk_i32 5))) else s in
-  if try_1 <. mk_u8 15 then 
+  if try_1 <. mk_u8 15 then
     Seq.append s (Seq.create 1 (mk_i32 2 -. ((cast try_1 <: i32) %! mk_i32 5))) else s
 
 let rejection_sample_eta_2 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
@@ -163,9 +163,9 @@ let rejection_sample_eta_4_inner
   let byte = Seq.index randomness (v i) in
   let try_0 = byte &. mk_u8 15 in
   let try_1 = byte >>! mk_u8 4 in
-  let s = if try_0 <. mk_u8 9 then 
+  let s = if try_0 <. mk_u8 9 then
     Seq.append s (Seq.create 1 (mk_i32 4 -. (cast try_0 <: i32))) else s in
-  if try_1 <. mk_u8 9 then 
+  if try_1 <. mk_u8 9 then
     Seq.append s (Seq.create 1 (mk_i32 4 -. (cast try_1 <: i32))) else s
 
 let rejection_sample_eta_4 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =

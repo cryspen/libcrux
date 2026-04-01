@@ -9,7 +9,7 @@ use libcrux_intrinsics::avx2::*;
 #[hax_lib::fstar::before(r"open Spec.Intrinsics")]
 #[hax_lib::fstar::before(
     r#"
-let butterfly_2_spec re0 re1 zeta_a0 zeta_a1 zeta_a2 zeta_a3 
+let butterfly_2_spec re0 re1 zeta_a0 zeta_a1 zeta_a2 zeta_a3
                      zeta_b0 zeta_b1 zeta_b2 zeta_b3 nre0 nre1 =
     (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 1)) ==
      ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 1)) /\
@@ -92,8 +92,8 @@ fn butterfly_2(
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
-        r#"assert (butterfly_2_spec 
-                            $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 
+        r#"assert (butterfly_2_spec
+                            $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3
                             $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3 $nre0 $nre1)"#
     );
 
@@ -163,7 +163,7 @@ fn butterfly_4(
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
-        r#"assert (butterfly_4_spec 
+        r#"assert (butterfly_4_spec
         $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
     );
 
@@ -225,7 +225,7 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     hax_lib::fstar!(
-        r#"assert (butterfly_8_spec 
+        r#"assert (butterfly_8_spec
          $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
     );
 

@@ -19,21 +19,21 @@ let simd_layer_factor (step:usize) =
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    v step <= 4 /\ v index + v step < 8 /\    
-    Spec.Utils.is_i32b 
+    v step <= 4 /\ v index + v step < 8 /\
+    Spec.Utils.is_i32b
         (v $NTT_BASE_BOUND + (simd_layer_factor $step * v $FIELD_MAX))
         (Seq.index ${simd_unit}.f_values (v $index)) /\
-    Spec.Utils.is_i32b 
+    Spec.Utils.is_i32b
         (v $NTT_BASE_BOUND + (simd_layer_factor $step * v $FIELD_MAX))
         (Seq.index ${simd_unit}.f_values (v $index + v $step)) /\
-    Spec.Utils.is_i32b 4190208 $zeta 
+    Spec.Utils.is_i32b 4190208 $zeta
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.modifies2_8 ${simd_unit}.f_values ${simd_unit}_future.f_values index (index +! step) /\
-    Spec.Utils.is_i32b 
+    Spec.Utils.is_i32b
         (v $NTT_BASE_BOUND + ((simd_layer_factor $step + 1)  * v $FIELD_MAX))
         (Seq.index ${simd_unit}_future.f_values (v $index)) /\
-    Spec.Utils.is_i32b 
+    Spec.Utils.is_i32b
         (v $NTT_BASE_BOUND + ((simd_layer_factor $step + 1)  * v $FIELD_MAX))
         (Seq.index ${simd_unit}_future.f_values (v $index + v $step))
 "#) )]
@@ -123,7 +123,7 @@ fn ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     #[hax_lib::requires(fstar!(r#"
         v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
-        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 7 * v $FIELD_MAX) 
+        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 7 * v $FIELD_MAX)
             (Seq.index ${re} (v index)).f_values /\
         Spec.Utils.is_i32b 4190208 $zeta_0 /\
         Spec.Utils.is_i32b 4190208 $zeta_1 /\
@@ -199,7 +199,7 @@ fn ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     #[hax_lib::requires(fstar!(r#"
         v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
-        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 6 * v $FIELD_MAX) 
+        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 6 * v $FIELD_MAX)
                                  (Seq.index ${re} (v index)).f_values /\
         Spec.Utils.is_i32b 4190208 $zeta_0 /\
         Spec.Utils.is_i32b 4190208 $zeta_1
@@ -271,7 +271,7 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     #[hax_lib::requires(fstar!(r#"
         v index < v $SIMD_UNITS_IN_RING_ELEMENT /\
-        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 5 * v $FIELD_MAX) 
+        Spec.Utils.is_i32b_array_opaque (v $NTT_BASE_BOUND + 5 * v $FIELD_MAX)
                                         (Seq.index ${re} (v index)).f_values /\
         Spec.Utils.is_i32b 4190208 $zeta
     "#))]
@@ -330,16 +330,16 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     (v $OFFSET + v $STEP_BY < v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (v $OFFSET + 2 * v $STEP_BY <= v $SIMD_UNITS_IN_RING_ELEMENT) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
-              Spec.Utils.is_i32b_array_opaque 
-                (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY) * v $FIELD_MAX)) 
+              Spec.Utils.is_i32b_array_opaque
+                (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY) * v $FIELD_MAX))
                 (Seq.index ${re} i).f_values)) /\
     Spec.Utils.is_i32b 4190208 $ZETA
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.modifies_range_32 ${re} ${re}_future $OFFSET (${OFFSET + STEP_BY + STEP_BY}) /\
     (Spec.Utils.forall32 (fun i -> (i >= v $OFFSET /\ i < (v $OFFSET + 2 * v $STEP_BY)) ==>
-              Spec.Utils.is_i32b_array_opaque 
-                (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY + 1) * v $FIELD_MAX)) 
+              Spec.Utils.is_i32b_array_opaque
+                (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY + 1) * v $FIELD_MAX))
                 (Seq.index ${re}_future i).f_values))
 "#))]
 fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
@@ -365,21 +365,21 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     #[hax_lib::requires(fstar!(r#"
         v $step_by > 0 /\
         v $index + v $step_by < v $SIMD_UNITS_IN_RING_ELEMENT /\
-        Spec.Utils.is_i32b_array_opaque 
-                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX)) 
+        Spec.Utils.is_i32b_array_opaque
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX))
                     (Seq.index ${re} (v $index)).f_values /\
-        Spec.Utils.is_i32b_array_opaque 
-                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX)) 
+        Spec.Utils.is_i32b_array_opaque
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by) * v $FIELD_MAX))
                     (Seq.index ${re} (v $index + v $step_by)).f_values /\
         Spec.Utils.is_i32b 4190208 $zeta
     "#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.modifies2_32 ${re} ${re}_future $index (${index + step_by}) /\
-        Spec.Utils.is_i32b_array_opaque 
-                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX)) 
+        Spec.Utils.is_i32b_array_opaque
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX))
                     (Seq.index ${re}_future (v $index)).f_values /\
-        Spec.Utils.is_i32b_array_opaque 
-                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX)) 
+        Spec.Utils.is_i32b_array_opaque
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $step_by + 1) * v $FIELD_MAX))
                     (Seq.index ${re}_future (v $index + v step_by)).f_values
     "#))]
     fn round(
@@ -406,12 +406,12 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
     for j in OFFSET..OFFSET + STEP_BY {
         hax_lib::loop_invariant!(|j: usize| fstar!(
             r#"
-            (Spec.Utils.modifies_range2_32 $orig_re $re 
+            (Spec.Utils.modifies_range2_32 $orig_re $re
                 $OFFSET $j ($OFFSET +! $STEP_BY) ($j +! $STEP_BY)) /\
-            (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/ 
+            (Spec.Utils.forall32 (fun i -> ((i >= v $OFFSET /\ i < v $j) \/
                         (i >= v $OFFSET + v $STEP_BY /\ i < v $j + v $STEP_BY)) ==>
-                Spec.Utils.is_i32b_array_opaque 
-                    (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY + 1) * v $FIELD_MAX)) 
+                Spec.Utils.is_i32b_array_opaque
+                    (v $NTT_BASE_BOUND + ((layer_bound_factor $STEP_BY + 1) * v $FIELD_MAX))
                     (Seq.index ${re} i).f_values))
         "#
         ));

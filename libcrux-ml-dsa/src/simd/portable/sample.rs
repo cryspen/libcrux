@@ -35,7 +35,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 
         hax_lib::fstar!(
             r#"Spec.MLDSA.Math.rejection_sample_coefficient_lemma $randomness ($i);
-            Spec.Utils.unfold_repeati ($i +! sz 1) 
+            Spec.Utils.unfold_repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty ($i)"#
         );
 
@@ -86,7 +86,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
         let try_1 = byte >> 4;
 
         hax_lib::fstar!(
-            r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
+            r#"Spec.Utils.unfold_repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty ($i)"#
         );
 
@@ -159,7 +159,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
         let try_1 = byte >> 4;
 
         hax_lib::fstar!(
-            r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
+            r#"Spec.Utils.unfold_repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty ($i)"#
         );
 

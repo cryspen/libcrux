@@ -3,7 +3,7 @@
  open FStar.Mul
  open Spec.Intrinsics
  open Spec.MLDSA.Math
- 
+
  #set-options "--fuel 0 --ifuel 0 --z3rlimit 100"
 
  let ntt_step zeta (a, b) =
@@ -272,9 +272,9 @@
              |    254 -> 1054478
              |    255 -> 7648983
 
- let zeta_r (i: nat): Pure int 
+ let zeta_r (i: nat): Pure int
      (requires i < 256)
-     (ensures (fun result -> result >= -4190208 /\ result <= 4190208 /\ 
+     (ensures (fun result -> result >= -4190208 /\ result <= 4190208 /\
               Spec.MLDSA.Math.mod_q result == Spec.MLDSA.Math.mod_q (zeta i * pow2 32))) =
      reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
      match i with
