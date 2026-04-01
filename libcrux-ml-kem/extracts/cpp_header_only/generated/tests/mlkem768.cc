@@ -9,7 +9,7 @@
 #include "util.h"
 
 void modify_ciphertext(uint8_t *ciphertext, size_t ciphertext_size) {
-  uint8_t randomness[3] = {0};
+  uint8_t randomness[3] = {};
   generate_random(randomness, 3);
 
   uint8_t random_byte = randomness[0];
@@ -26,7 +26,7 @@ void modify_ciphertext(uint8_t *ciphertext, size_t ciphertext_size) {
 
 void modify_secret_key(uint8_t *secret_key, size_t secret_key_size,
                        bool modify_implicit_rejection_value) {
-  uint8_t randomness[3] = {0};
+  uint8_t randomness[3] = {};
   generate_random(randomness, 3);
 
   uint8_t random_byte = randomness[0];
@@ -53,7 +53,7 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
                                                   size_t secret_key_size) {
   uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
   uint8_t *sharedSecret = new uint8_t[32];
-  Eurydice_mut_borrow_slice_u8 ss = {0};
+  Eurydice_mut_borrow_slice_u8 ss = {};
   ss.ptr = (uint8_t *)sharedSecret;
   ss.meta = 32;
 
@@ -69,9 +69,9 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
 }
 
 TEST(MlKem768TestPortable, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair =
@@ -87,9 +87,9 @@ TEST(MlKem768TestPortable, ConsistencyTest) {
 }
 
 TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   // We put this on the heap to avoid blowing the stack.
@@ -112,9 +112,9 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
 }
 
 TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair =
@@ -141,9 +141,9 @@ TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
 }
 
 TEST(Kyber768TestPortable, ModifiedSecretKeyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair =
@@ -176,8 +176,8 @@ TEST(Kyber768TestPortable, ModifiedSecretKeyTest) {
 TEST(MlKem768TestPortable, NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
   auto kats = read_kats("tests/mlkem768_nistkats.json");
-  Eurydice_arr_06 keygen_rand = {0};
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
+  Eurydice_arr_600 encaps_rand = {};
 
   for (auto kat : kats) {
     memcpy(keygen_rand.data, kat.key_generation_seed.data(), 64);
@@ -217,9 +217,9 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest) {
 #include "libcrux_mlkem768_avx2.h"
 
 TEST(MlKem768TestAvx2, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(keygen_rand);
@@ -234,9 +234,9 @@ TEST(MlKem768TestAvx2, ConsistencyTest) {
 }
 
 TEST(MlKem768TestAvx2Unpacked, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -255,9 +255,9 @@ TEST(MlKem768TestAvx2Unpacked, ConsistencyTest) {
 }
 
 TEST(Kyber768TestAvx2, ModifiedCiphertextTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(keygen_rand);
@@ -283,9 +283,9 @@ TEST(Kyber768TestAvx2, ModifiedCiphertextTest) {
 }
 
 TEST(Kyber768TestAvx2, ModifiedSecretKeyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
   memset(keygen_rand.data, 0x13, 64);
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_600 encaps_rand = {};
   memset(encaps_rand.data, 0x15, 32);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(keygen_rand);
@@ -317,8 +317,8 @@ TEST(Kyber768TestAvx2, ModifiedSecretKeyTest) {
 TEST(MlKem768TestAvx2, NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
   auto kats = read_kats("tests/mlkem768_nistkats.json");
-  Eurydice_arr_06 keygen_rand = {0};
-  Eurydice_arr_600 encaps_rand = {0};
+  Eurydice_arr_060 keygen_rand = {};
+  Eurydice_arr_600 encaps_rand = {};
 
   for (auto kat : kats) {
     memcpy(keygen_rand.data, kat.key_generation_seed.data(), 64);
@@ -358,7 +358,7 @@ TEST(MlKem768TestAvx2, NISTKnownAnswerTest) {
 #include "libcrux_mlkem768_neon.h"
 
 TEST(MlKem768TestNeon, ConsistencyTest) {
-  uint8_t randomness[64] = {0};
+  uint8_t randomness[64] = {};
   for (int i = 0; i < 64; i++) randomness[i] = 13;
   auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
   auto ctxt =
@@ -380,14 +380,14 @@ TEST(MlKem768TestNeon, NISTKnownAnswerTest) {
     auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(
         kat.key_generation_seed.data());
 
-    uint8_t pk_hash[32] = {0};
+    uint8_t pk_hash[32] = {};
     libcrux_sha3_sha256(
         mk_slice(key_pair.pk.value,
                  LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE),
         pk_hash);
     EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
 
-    uint8_t sk_hash[32] = {0};
+    uint8_t sk_hash[32] = {};
     libcrux_sha3_sha256(
         mk_slice(key_pair.sk.value, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE),
         sk_hash);
@@ -395,7 +395,7 @@ TEST(MlKem768TestNeon, NISTKnownAnswerTest) {
 
     auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(
         &key_pair.pk, kat.encapsulation_seed.data());
-    uint8_t ct_hash[32] = {0};
+    uint8_t ct_hash[32] = {};
     libcrux_sha3_sha256(
         mk_slice(ctxt.fst.value,
                  LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE),
@@ -404,7 +404,7 @@ TEST(MlKem768TestNeon, NISTKnownAnswerTest) {
     EXPECT_EQ(0, memcmp(ctxt.snd, kat.shared_secret.data(),
                         LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {0};
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE] = {};
     libcrux_ml_kem_mlkem768_neon_decapsulate(&key_pair.sk, &ctxt.fst,
                                              sharedSecret2);
 

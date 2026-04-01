@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
+ * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
+ * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 4faeb5fdd7bdf29c1f30136c8f32fe24c06cfab0
+ * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
  */
 
 #ifndef internal_libcrux_mlkem_portable_H
@@ -36,24 +36,23 @@ typedef struct Eurydice_arr_b9_s {
 
 /**
 A monomorphic instance of Eurydice.arr
-with types libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
+with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_0d_s {
+typedef struct Eurydice_arr_cf_s {
   Eurydice_arr_b9 data[4U];
-} Eurydice_arr_0d;
+} Eurydice_arr_cf;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$4size_t]] with const
-generics
+with types Eurydice_arr_cf
+with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_95_s {
-  Eurydice_arr_0d data[4U];
-} Eurydice_arr_95;
+typedef struct Eurydice_arr_5c_s {
+  Eurydice_arr_cf data[4U];
+} Eurydice_arr_5c;
 
 /**
 A monomorphic instance of
@@ -62,9 +61,9 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - $4size_t
 */
 typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af_s {
-  Eurydice_arr_0d t_as_ntt;
+  Eurydice_arr_cf t_as_ntt;
   Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_95 A;
+  Eurydice_arr_5c A;
 } libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af;
 
 /**
@@ -77,17 +76,6 @@ typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af_s {
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af ind_cpa_public_key;
   Eurydice_arr_60 public_key_hash;
 } libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_30_s {
-  const Eurydice_arr_b9 *ptr;
-  size_t meta;
-} Eurydice_dst_ref_shared_30;
 
 /**
  Generate an unpacked key from a serialized key.
@@ -112,7 +100,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - $4size_t
 */
 typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_af_s {
-  Eurydice_arr_0d ind_cpa_private_key;
+  Eurydice_arr_cf ind_cpa_private_key;
   Eurydice_arr_60 implicit_rejection_value;
 } libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_af;
 
@@ -255,27 +243,6 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_d0(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$4size_t]], size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_44_s {
-  const Eurydice_arr_0d *ptr;
-  size_t meta;
-} Eurydice_dst_ref_shared_44;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_f3_s {
-  const Eurydice_arr_e2 *ptr;
-  size_t meta;
-} Eurydice_dst_ref_shared_f3;
-
-/**
  Generate Unpacked Keys
 */
 /**
@@ -291,7 +258,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_150(
-    Eurydice_arr_06 randomness,
+    Eurydice_arr_060 randomness,
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *out);
 
 /**
@@ -313,7 +280,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_2b libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c0(
+tuple_4d libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c0(
     const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
     const Eurydice_arr_60 *randomness);
 
@@ -415,7 +382,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_150(const Eurydice_arr_06 *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_150(const Eurydice_arr_060 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -436,7 +403,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_2b libcrux_ml_kem_ind_cca_encapsulate_ca0(
+tuple_4d libcrux_ml_kem_ind_cca_encapsulate_ca0(
     const Eurydice_arr_00 *public_key, const Eurydice_arr_60 *randomness);
 
 /**
@@ -469,24 +436,23 @@ Eurydice_arr_60 libcrux_ml_kem_ind_cca_decapsulate_620(
 
 /**
 A monomorphic instance of Eurydice.arr
-with types libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
+with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_c40_s {
+typedef struct Eurydice_arr_1d_s {
   Eurydice_arr_b9 data[3U];
-} Eurydice_arr_c40;
+} Eurydice_arr_1d;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$3size_t]] with const
-generics
+with types Eurydice_arr_1d
+with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_aa_s {
-  Eurydice_arr_c40 data[3U];
-} Eurydice_arr_aa;
+typedef struct Eurydice_arr_dd_s {
+  Eurydice_arr_1d data[3U];
+} Eurydice_arr_dd;
 
 /**
 A monomorphic instance of
@@ -495,9 +461,9 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - $3size_t
 */
 typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0_s {
-  Eurydice_arr_c40 t_as_ntt;
+  Eurydice_arr_1d t_as_ntt;
   Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_aa A;
+  Eurydice_arr_dd A;
 } libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0;
 
 /**
@@ -534,7 +500,7 @@ libcrux_ml_kem_vector_portable_vector_type_PortableVector with const generics
 - $3size_t
 */
 typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0_s {
-  Eurydice_arr_c40 ind_cpa_private_key;
+  Eurydice_arr_1d ind_cpa_private_key;
   Eurydice_arr_60 implicit_rejection_value;
 } libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0;
 
@@ -708,17 +674,6 @@ libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_1b(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement
-libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$3size_t]], size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_94_s {
-  const Eurydice_arr_c40 *ptr;
-  size_t meta;
-} Eurydice_dst_ref_shared_94;
-
-/**
  Generate Unpacked Keys
 */
 /**
@@ -734,7 +689,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(
-    Eurydice_arr_06 randomness,
+    Eurydice_arr_060 randomness,
     libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out);
 
 /**
@@ -756,7 +711,7 @@ generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_56 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
+tuple_7f libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
     const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
     const Eurydice_arr_60 *randomness);
 
@@ -858,7 +813,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_15(const Eurydice_arr_06 *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_15(const Eurydice_arr_060 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -879,7 +834,7 @@ libcrux_ml_kem_variant_MlKem with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_56 libcrux_ml_kem_ind_cca_encapsulate_ca(
+tuple_7f libcrux_ml_kem_ind_cca_encapsulate_ca(
     const Eurydice_arr_74 *public_key, const Eurydice_arr_60 *randomness);
 
 /**
