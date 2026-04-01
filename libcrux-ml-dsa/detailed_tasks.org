@@ -1,0 +1,268 @@
+#+TITLE: ML-DSA Spec Unification Tasks
+#+DESCRIPTION: Track progress unifying specs between portable and avx2 implementations
+#+STARTUP: overview
+
+* Operations trait functions
+Goal: for each fn, have foo_pre/foo_post in simd/traits/specs.rs, called from traits.rs.
+
+Status legend:
+- DONE = spec fns in specs.rs, traits.rs calls them
+- TODO = needs spec fns created in specs.rs
+- tags: :rust: = expressible in pure Rust, :fstar: = needs fstar::prop!(), :trivial: = requires(true) placeholder
+
+* FIPS 204 reference
+q = 8380417 = 2^23 - 2^13 + 1
+d = 13 (dropped bits in t1 compression)
+gamma1 in {2^17, 2^19} (masking range)
+gamma2 in {(q-1)/88 = 95232, (q-1)/32 = 261888} (decompose rounding)
+eta in {2, 4} (secret key coefficient range)
+Montgomery R = 2^32, R^{-1} mod q = 8265825
+
+** DONE add                                                           :rust:
+
+FIPS 204 Alg 44 AddNTT: c[i] = a[i] + b[i] in Z_q (componentwise).
+Pre: forall i. lhs[i]+rhs[i] fits in i32 (no overflow).
+Post: forall i. result[i] == lhs[i]+rhs[i].
+specs.rs has add_pre/add_post. traits.rs calls them. Portable inner fn uses them too.
+
+** DONE subtract                                                      :rust:
+
+Inverse of AddNTT. Not a separate algorithm in FIPS 204 but used in signing (z = y + cs1).
+Pre: forall i. lhs[i]-rhs[i] fits in i32.
+Post: forall i. result[i] == lhs[i]-rhs[i].
+specs.rs has sub_pre/sub_post. traits.rs calls them. Portable inner fn uses them too.
+
+** TODO zero                                                          :rust:
+
+No FIPS 204 counterpart (initialization helper).
+Pre: true.
+Post: forall i. result[i] == 0.
+traits.rs: requires(true), ensures repr == [0; 8]. No spec fn yet.
+
+** TODO from_coefficient_array                                        :rust:
+
+No FIPS 204 counterpart (data conversion helper).
+Pre: array.len() == 8.
+Post: result.repr() == array.
+traits.rs: requires(len == 8), ensures future(out).repr() == array. No spec fn yet.
+
+** TODO to_coefficient_array                                          :rust:
+
+No FIPS 204 counterpart (data conversion helper).
+Pre: out.len() == 8.
+Post: out == value.repr().
+traits.rs: requires(len == 8), ensures future(out) == value.repr(). No spec fn yet.
+
+** TODO infinity_norm_exceeds                                        :fstar:
+
+Used in signing validity checks (Alg 7, lines 23/28): ||z||_inf >= gamma1 - beta.
+FIPS 204 defines ||w||_inf = max |w[i] mod+- q| for elements of Z_q.
+Pre: bound > 0, coeffs bounded by FIELD_MAX (i.e., in Z_q).
+Post: result == false <==> forall i. |coeff[i] mod+- q| < bound.
+traits.rs: fstar pre (bound > 0, is_i32b_array_opaque FIELD_MAX).
+Portable: own fstar pre/post on inner fn (arithmetic.rs:375).
+AVX2: own fstar pre/post on inner fn (arithmetic.rs:159).
+
+** TODO decompose                                                    :fstar:
+
+FIPS 204 Alg 36 Decompose(r): r mod q = r1*(2*gamma2) + r0.
+Input: r in Z_q. Output: (r1, r0).
+Special case: when r+ - r0 = q-1, returns (r1=0, r0=r0-1).
+Pre: gamma2 in {95232, 261888}, coeffs in Z_q (bounded by FIELD_MAX).
+Post: forall i. (r1[i], r0[i]) == Spec.MLDSA.Math.decompose(gamma2, r[i]).
+traits.rs: fstar pre (gamma2 constraint + is_i32b_array_opaque FIELD_MAX). No post.
+Portable: detailed fstar per-element pre/post (arithmetic.rs:679+).
+AVX2: own fstar pre/post (arithmetic.rs:209).
+
+** TODO compute_hint                                                 :fstar:
+
+FIPS 204 Alg 39 MakeHint(z, r): returns [[HighBits(r) != HighBits(r+z)]].
+Applied componentwise. Total count of 1s must be <= omega (per-ring bound).
+Pre: gamma2 in {95232, 261888}.
+Post: result (count of hints) <= 8 (per SIMD unit).
+traits.rs: fstar pre (gamma2 constraint), Rust post (result <= 8).
+Portable: own fstar pre/post (arithmetic.rs:492).
+AVX2: no annotations on inner fn.
+
+** TODO use_hint                                                     :fstar:
+
+FIPS 204 Alg 40 UseHint(h, r): adjusts HighBits(r) according to hint h.
+m = (q-1)/(2*gamma2). If h=1 and r0>0: return (r1+1) mod m. If h=1 and r0<=0: return (r1-1) mod m. Else: r1.
+Pre: h in {0,1}, r in Z_q, gamma2 constraint.
+Post: 0 <= result <= (q-1)/(2*gamma2) = m.
+traits.rs: fstar pre (gamma2 + is_i32b_array_opaque FIELD_MAX). No post.
+Portable: detailed fstar pre/post (arithmetic.rs:769).
+AVX2: no annotations on inner fn.
+
+** TODO montgomery_multiply                                          :fstar:
+
+FIPS 204 Alg 49 MontgomeryReduce + Alg 45 MultiplyNTT.
+Computes a*b*R^{-1} mod q componentwise, where R = 2^32, R^{-1} mod q = 8265825.
+Pre: rhs bounded by FIELD_MAX (in Z_q).
+Post: result bounded by FIELD_MAX, and mod_q(result[i]) == mod_q(lhs[i] * rhs[i] * 8265825).
+traits.rs: fstar pre (is_i32b_array_opaque FIELD_MAX on rhs), fstar post (bounded + mod_q).
+Portable: own fstar pre/post (arithmetic.rs:250), references Spec.MLDSA.Math.mont_mul.
+AVX2: own fstar pre/post (arithmetic.rs:124), references Spec.MLDSA.Math.mont_mul.
+
+** TODO shift_left_then_reduce                                       :fstar:
+
+Not directly in FIPS 204. Implementation-specific: multiply coeffs by 2^SHIFT_BY, then Barrett reduce.
+Used for computing t*2^d where d=13 (reconstructing t from t1 in verification, Alg 8 line 9).
+Pre: SHIFT_BY == 13, coeffs in [0, 261631] (so that coeff * 2^13 fits in Barrett reduce input range).
+Post: result bounded by FIELD_MAX, mod_q(result[i]) == mod_q(input[i] * 2^SHIFT_BY).
+traits.rs: fstar pre (SHIFT_BY == 13, per-element bounds).
+Portable: own fstar pre/post (arithmetic.rs:451).
+AVX2: own fstar pre/post (arithmetic.rs:138).
+
+** TODO power2round                                                  :fstar:
+
+FIPS 204 Alg 35 Power2Round(r): decomposes r into (r1, r0) where r mod q = r1*2^d + r0, d=13.
+r0 = (r mod q) mod+- 2^d, r1 = (r mod q - r0) / 2^d.
+Pre: coeffs in Z_q (bounded by FIELD_MAX).
+Post: forall i. (t1[i], t0[i]) == Spec.MLDSA.Math.power2round(input[i]).
+      t0 bounded by 2^(d-1) = 4096, t1 in [0, 2^(bitlen(q-1)-d) - 1] = [0, 1023].
+traits.rs: fstar pre (is_i32b_array_opaque FIELD_MAX).
+Portable: own fstar pre/post (arithmetic.rs:339).
+AVX2: own fstar pre/post (arithmetic.rs:183).
+
+** TODO rejection_sample_less_than_field_modulus                   :trivial:
+
+FIPS 204 Alg 30 RejNTTPoly / Alg 14 CoeffFromThreeBytes.
+Takes 3 bytes -> candidate in [0, 2^23-1]. Accept if < q. Per SIMD unit: 24 bytes -> up to 8 coeffs.
+Pre: randomness.len()/3 <= out.len() (capacity check).
+Post: all sampled coeffs in [0, q), count <= 8.
+traits.rs: requires(true). Portable-only specs exist in src/specs.rs.
+Need to move/unify into simd/traits/specs.rs.
+
+** TODO rejection_sample_less_than_eta_equals_2                    :trivial:
+
+FIPS 204 Alg 31 RejBoundedPoly / Alg 15 CoeffFromHalfByte with eta=2.
+Takes half-byte b. If b < 15: return 2 - (b mod 5). Per SIMD unit: 4 bytes -> up to 8 coeffs.
+Pre: randomness.len()*2 <= out.len().
+Post: all sampled coeffs in [-2, 2], count <= 8.
+traits.rs: requires(true). Portable-only specs exist in src/specs.rs.
+Need to move/unify into simd/traits/specs.rs.
+
+** TODO rejection_sample_less_than_eta_equals_4                    :trivial:
+
+FIPS 204 Alg 31 RejBoundedPoly / Alg 15 CoeffFromHalfByte with eta=4.
+Takes half-byte b. If b < 9: return 4 - b. Per SIMD unit: 4 bytes -> up to 8 coeffs.
+Pre: randomness.len()*2 <= out.len().
+Post: all sampled coeffs in [-4, 4], count <= 8.
+traits.rs: requires(true). Portable-only specs exist in src/specs.rs.
+Need to move/unify into simd/traits/specs.rs.
+
+** TODO gamma1_serialize                                           :trivial:
+
+FIPS 204 Alg 26 sigEncode: BitPack(z[i], gamma1-1, gamma1). gamma1 in {2^17, 2^19}.
+Per SIMD unit: 8 coeffs in [-gamma1+1, gamma1].
+Output length: 8*(1+bitlen(gamma1-1)) bits = 18 bytes (gamma1=2^17) or 20 bytes (gamma1=2^19).
+Pre: gamma1_exponent in {17, 19}, coeffs bounded by gamma1, serialized.len() == 1+gamma1_exponent.
+Post: serialized contains BitPack encoding.
+traits.rs: requires(true). Portable inner fn has fstar pre (gamma1.rs:64).
+AVX2 inner fn has fstar pre (gamma1.rs:15+).
+
+** TODO gamma1_deserialize                                         :trivial:
+
+FIPS 204 Alg 27 sigDecode: BitUnpack(v, gamma1-1, gamma1). Since gamma1+1 is power of 2, always in correct range.
+Pre: serialized.len() == 1+gamma1_exponent.
+Post: coeffs in [-gamma1+1, gamma1].
+traits.rs: requires(true). Portable inner fn has fstar pre (gamma1.rs:153).
+AVX2 inner fn has fstar pre (gamma1.rs:152+).
+
+** TODO commitment_serialize                                          :rust:
+
+FIPS 204 Alg 28 w1Encode: SimpleBitPack(w1[i], (q-1)/(2*gamma2) - 1).
+gamma2=95232 -> range [0, 43], 6 bits/coeff -> 6 bytes per 8 coeffs.
+gamma2=261888 -> range [0, 15], 4 bits/coeff -> 4 bytes per 8 coeffs.
+Pre: serialized.len() in {4, 6}, coeffs bounded by bitwidth of (q-1)/(2*gamma2)-1.
+Post: serialized.len() preserved.
+traits.rs: requires(len == 4 || len == 6), ensures len preserved.
+Portable inner fn has fstar pre (commitment.rs:76).
+AVX2 inner fn has ensures (commitment.rs:3).
+
+** TODO error_serialize                                            :trivial:
+
+FIPS 204 Alg 24 skEncode: BitPack(s[i], eta, eta). eta in {2, 4}.
+Per SIMD unit: 8 coeffs in [-eta, eta].
+eta=2: bitlen(2*eta)=3, 8*3=24 bits = 3 bytes. eta=4: bitlen(2*eta)=4, 8*4=32 bits = 4 bytes.
+Pre: eta in {2, 4}, coeffs in [-eta, eta], serialized.len() matches eta.
+Post: serialized contains BitPack encoding.
+traits.rs: requires(true). Portable inner fn: no annotations.
+AVX2 inner fn: has fstar pre/post (error.rs:50+).
+
+** TODO error_deserialize                                          :trivial:
+
+FIPS 204 Alg 25 skDecode: BitUnpack(y, eta, eta).
+WARNING: malformed input can produce coeffs outside [-eta, eta].
+Pre: eta in {2, 4}, serialized.len() matches eta.
+Post: coeffs in [-eta, eta] (if input well-formed).
+traits.rs: requires(true). Portable inner fn: no annotations.
+AVX2 inner fn: has fstar pre/post (error.rs:224+).
+
+** TODO t0_serialize                                               :trivial:
+
+FIPS 204 Alg 24 skEncode: BitPack(t0[i], 2^(d-1)-1, 2^(d-1)). d=13.
+Coeffs in [-2^12+1, 2^12]. bitlen(2^12-1 + 2^12) = bitlen(2^13-1) = 13.
+Per SIMD unit: 8*13=104 bits = 13 bytes.
+Pre: coeffs bounded by 2^12 (13-bit representation), serialized.len() == 13.
+Post: serialized contains BitPack encoding.
+traits.rs: requires(true). Portable inner fn has fstar pre (t0.rs:12).
+AVX2 inner fn has fstar pre (t0.rs:31).
+
+** TODO t0_deserialize                                             :trivial:
+
+FIPS 204 Alg 25 skDecode: BitUnpack(w, 2^(d-1)-1, 2^(d-1)). Always in correct range.
+Pre: serialized.len() == 13.
+Post: coeffs in [-2^12+1, 2^12].
+traits.rs: requires(true). Portable inner fn has requires (t0.rs:45).
+AVX2 inner fn has fstar pre (t0.rs:104).
+
+** TODO t1_serialize                                               :trivial:
+
+FIPS 204 Alg 22 pkEncode: SimpleBitPack(t1[i], 2^(bitlen(q-1)-d)-1). bitlen(q-1)=23, d=13 -> 10 bits.
+Coeffs in [0, 1023]. Per SIMD unit: 8*10=80 bits = 10 bytes.
+Pre: coeffs in [0, 1023], serialized.len() == 10.
+Post: serialized contains SimpleBitPack encoding.
+traits.rs: requires(true). Portable inner fn has requires (t1.rs:6).
+AVX2 inner fn has fstar pre (t1.rs:6).
+
+** TODO t1_deserialize                                             :trivial:
+
+FIPS 204 Alg 23 pkDecode: SimpleBitUnpack(z, 2^10-1). Always in correct range [0, 1023].
+Pre: serialized.len() == 10.
+Post: coeffs in [0, 1023].
+traits.rs: requires(true). Portable inner fn has requires (t1.rs:28).
+AVX2 inner fn has fstar pre (t1.rs:43).
+
+** TODO ntt                                                          :fstar:
+
+FIPS 204 Alg 41 NTT(w): transforms w in R_q to T_q using Cooley-Tukey butterflies.
+zeta = 1753 (512th root of unity mod q). Uses precomputed zetas[k] = zeta^{BitRev8(k)} mod q.
+8 layers of butterfly: len = 128, 64, 32, 16, 8, 4, 2, 1.
+Pre: coeffs bounded (NTT_BASE_BOUND = FIELD_MID = 4190208 per SIMD unit).
+Post: coeffs bounded by FIELD_MAX (output in T_q representatives).
+traits.rs: fstar pre (is_i32b_array_opaque NTT_BASE_BOUND per unit),
+           fstar post (is_i32b_array_opaque FIELD_MAX per unit).
+Portable: extensive annotations across ntt.rs (14+ inner fns).
+AVX2: extensive annotations across ntt.rs (butterfly fns + ntt_loop).
+
+** TODO invert_ntt_montgomery                                        :fstar:
+
+FIPS 204 Alg 42 NTT^{-1}(w_hat): transforms T_q back to R_q using Gentleman-Sande butterflies.
+Uses -zetas[m] (negated). Final multiplication by f = 256^{-1} mod q = 8347681.
+Output is in Montgomery form (multiplied by R^{-1}).
+Pre: coeffs bounded by FIELD_MAX.
+Post: coeffs bounded by FIELD_MAX.
+traits.rs: fstar pre+post (is_i32b_array_opaque FIELD_MAX per unit).
+Portable: extensive annotations across invntt.rs.
+AVX2: extensive annotations across invntt.rs (lax-verified).
+
+** TODO reduce                                                       :fstar:
+
+Not a specific FIPS 204 algorithm. Barrett reduction to canonical range.
+Throughout FIPS 204, "mod q" operations are assumed. This implements the concrete reduction.
+Equivalent to shift_left_then_reduce::<0> applied to all SIMD units.
+Pre: coeffs representable as i32 (implementation-dependent bound).
+Post: coeffs in [0, q) or bounded by FIELD_MAX.
+traits.rs: no annotation at all. Calls shift_left_then_reduce::<0> internally.
