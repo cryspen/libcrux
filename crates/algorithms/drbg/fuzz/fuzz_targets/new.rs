@@ -55,6 +55,10 @@ fuzz_target!(|data: &[u8]| {
                         "InputTooLarge returned but total={total} <= {MAX_SEED}"
                     );
                 }
+                // there are more variants if the rand feature is set on the drbg crate,
+                // so we need the exception here
+                #[allow(unreachable_patterns)]
+                Err(e) => panic!("unexpected error: {e:?}"),
             }
         };
     }

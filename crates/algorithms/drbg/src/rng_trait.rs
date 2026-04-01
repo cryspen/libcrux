@@ -1,9 +1,52 @@
 use core::marker::PhantomData;
 
-use super::{Error, HmacAlgorithm, HmacDrbg, MAX_GENERATE_BYTES};
+use super::{GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
 
 #[cfg(feature = "health-tests")]
 use super::health_tests::HealthState;
+
+// ---------------------------------------------------------------------------
+// Reseedable Rng Trait
+// ---------------------------------------------------------------------------
+
+/// Trait for errors produced by DRBG generation.
+///
+/// Allows the auto-reseeding wrapper (and other callers) to
+/// distinguish "needs reseed" from other failures without
+/// coupling to a specific error type.
+pub trait DrbgError: core::error::Error {
+    /// Returns `true` if the error indicates that the generator
+    /// must be reseeded before it can produce more output.
+    ///
+    /// This corresponds to the reseed counter exceeding the
+    /// mechanism's reseed interval.
+    fn is_needs_reseed(&self) -> bool;
+}
+
+impl DrbgError for GenerateError {
+    fn is_needs_reseed(&self) -> bool {
+        matches!(self, GenerateError::ReseedRequired)
+    }
+}
+
+/// An RNG that is reseedable.
+pub trait TryReseedableRng: rand::TryRngCore
+where
+    Self::Error: DrbgError,
+{
+    /// The type of entropy that is required.
+    type Entropy: AsRef<[u8]>;
+
+    /// The error that the reseeding operation returns.
+    type ReseedError: core::error::Error;
+
+    /// The method that reseeds the RNG with the given entropy and additional input
+    fn reseed(
+        &mut self,
+        entropy_input: &Self::Entropy,
+        additional_input: &[u8],
+    ) -> Result<(), Self::ReseedError>;
+}
 
 // ---------------------------------------------------------------------------
 // Seed type
@@ -35,7 +78,7 @@ impl<const N: usize> AsRef<[u8]> for HmacDrbgSeed<N> {
 }
 
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRngCore for HmacDrbg<OUTLEN, Alg> {
-    type Error = Error;
+    type Error = GenerateError;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         let mut buf = [0u8; 4];
@@ -67,6 +110,19 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRngCore for HmacD
     }
 }
 
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacDrbg<OUTLEN, Alg> {
+    type Entropy = [u8; OUTLEN];
+
+    type ReseedError = ReseedError;
+
+    fn reseed(
+        &mut self,
+        entropy: &Self::Entropy,
+        additional_input: &[u8],
+    ) -> Result<(), Self::ReseedError> {
+        self.reseed(entropy, additional_input)
+    }
+}
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for HmacDrbg<OUTLEN, Alg> {}
 
 /// [`rand::SeedableRng`] implementation for [`HmacDrbg`].

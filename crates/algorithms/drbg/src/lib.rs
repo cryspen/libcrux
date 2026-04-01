@@ -26,7 +26,7 @@
     rustdoc::private_doc_tests
 )]
 
-use core::{fmt, marker::PhantomData, sync::atomic};
+use core::{marker::PhantomData, sync::atomic};
 
 use libcrux_hmac::{hmac_sha2_256_slices, hmac_sha2_384_slices, hmac_sha2_512_slices, HmacState};
 
@@ -44,7 +44,10 @@ use health_tests::*;
 #[cfg(feature = "rand")]
 mod rng_trait;
 #[cfg(feature = "rand")]
-pub use rng_trait::HmacDrbgSeed;
+pub use rng_trait::{DrbgError, HmacDrbgSeed, TryReseedableRng};
+
+mod errors;
+pub use errors::*;
 
 mod utils;
 
@@ -60,55 +63,6 @@ pub const MAX_GENERATE_BYTES: usize = 65_536;
 // ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
-
-/// The Error returned by the Update operation of HMAC-DRBG.
-#[derive(Debug, PartialEq)]
-pub enum UpdateError {
-    /// The combined seed material exceeds the internal limit.
-    InputTooLarge,
-}
-
-/// The Error returned by the Instantiate operation of HMAC-DRBG.
-#[derive(Debug, PartialEq)]
-pub enum InstantiateError {
-    /// The combined seed material exceeds the internal limit.
-    InputTooLarge,
-
-    /// A continuous health test detected a catastrophic internal failure
-    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
-    /// the instance. This should never occur in correct operation.
-    ///
-    /// Note that this error can only occur when enabling the feature.
-    #[cfg(feature = "health-tests")]
-    HealthCheckFailed,
-}
-
-/// Errors returned by HMAC-DRBG operations.
-#[derive(Debug, PartialEq)]
-pub enum GenerateError {
-    /// The reseed counter has exceeded [`RESEED_INTERVAL`]; call `reseed` before generating.
-    ReseedRequired,
-
-    /// The requested output length is zero or exceeds [`MAX_GENERATE_BYTES`].
-    RequestTooLarge,
-
-    /// The combined seed material exceeds the internal limit.
-    InputTooLarge,
-
-    /// The Rng used for seeding failed.
-    ///
-    /// Note that this error can only occur when `feature = "rand"` is enabled.
-    #[cfg(feature = "rand")]
-    RngError,
-
-    /// A continuous health test detected a catastrophic internal failure
-    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
-    /// the instance. This should never occur in correct operation.
-    ///
-    /// Note that this error can only occur when enabling the feature.
-    #[cfg(feature = "health-tests")]
-    HealthCheckFailed,
-}
 
 // ---------------------------------------------------------------------------
 // HMAC_DRBG state
@@ -243,16 +197,16 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         &mut self,
         entropy_input: &[u8],
         additional_input: &[u8],
-    ) -> Result<(), GenerateError> {
+    ) -> Result<(), ReseedError> {
         #[cfg(feature = "health-tests")]
         if self.health.poisoned() {
-            return Err(GenerateError::HealthCheckFailed);
+            return Err(ReseedError::HealthCheckFailed);
         }
 
         // AIS 31 startup test: validate entropy source before reseeding.
         #[cfg(feature = "health-tests")]
         if startup_test(entropy_input, Alg::SECURITY_STRENGTH) {
-            return Err(GenerateError::HealthCheckFailed);
+            return Err(ReseedError::HealthCheckFailed);
         }
 
         // seed_material = entropy_input || additional_input
@@ -391,13 +345,13 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     pub fn new_from_rng<R: rand::TryCryptoRng>(
         rng: &mut R,
         personalization_string: &[u8],
-    ) -> Result<Self, GenerateError> {
+    ) -> Result<Self, InstantiateError> {
         let mut entropy = [0u8; OUTLEN];
         let mut nonce = [0u8; OUTLEN];
         rng.try_fill_bytes(&mut entropy)
-            .map_err(|_| GenerateError::RngError)?;
+            .map_err(|_| InstantiateError::RngError)?;
         rng.try_fill_bytes(&mut nonce)
-            .map_err(|_| GenerateError::RngError)?;
+            .map_err(|_| InstantiateError::RngError)?;
         Self::new(&entropy, &nonce, personalization_string)
     }
 
@@ -405,7 +359,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     //
     // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
-    pub fn new_from_sys_rng(personalization_string: &[u8]) -> Result<Self, GenerateError> {
+    pub fn new_from_sys_rng(personalization_string: &[u8]) -> Result<Self, InstantiateError> {
         Self::new_from_rng(&mut rand::rngs::OsRng, personalization_string)
     }
 
@@ -417,7 +371,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         &mut self,
         rng: &mut R,
         additional_input: &[u8],
-    ) -> Result<(), GenerateError> {
+    ) -> Result<(), ReseedError> {
         let mut entropy = [0u8; OUTLEN];
         rng.fill_bytes(&mut entropy);
         self.reseed(&entropy, additional_input)

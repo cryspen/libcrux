@@ -1,0 +1,176 @@
+use core::{error::Error, fmt};
+
+/// The Error returned by the Update operation of HMAC-DRBG.
+#[derive(Debug, PartialEq)]
+pub enum UpdateError {
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+}
+
+/// The Error returned by the Reseed operation of HMAC-DRBG.
+#[derive(Debug, PartialEq)]
+pub enum ReseedError {
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    #[cfg(feature = "health-tests")]
+    HealthCheckFailed,
+}
+
+/// The Error returned by the Instantiate operation of HMAC-DRBG.
+#[derive(Debug, PartialEq)]
+pub enum InstantiateError {
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
+    /// The Rng used for seeding failed.
+    ///
+    /// Note that this error can only occur when `feature = "rand"` is enabled.
+    #[cfg(feature = "rand")]
+    RngError,
+
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    #[cfg(feature = "health-tests")]
+    HealthCheckFailed,
+}
+
+/// Errors returned by HMAC-DRBG operations.
+#[derive(Debug, PartialEq)]
+pub enum GenerateError {
+    /// The reseed counter has exceeded [`RESEED_INTERVAL`]; call `reseed` before generating.
+    ReseedRequired,
+
+    /// The requested output length is zero or exceeds [`MAX_GENERATE_BYTES`].
+    RequestTooLarge,
+
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
+    /// The Rng used for seeding failed.
+    ///
+    /// Note that this error can only occur when `feature = "rand"` is enabled.
+    #[cfg(feature = "rand")]
+    RngError,
+
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    #[cfg(feature = "health-tests")]
+    HealthCheckFailed,
+}
+
+impl Error for GenerateError {}
+impl fmt::Display for GenerateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            GenerateError::ReseedRequired => f.write_str("reseed required before next generate"),
+            GenerateError::RequestTooLarge => f.write_str("generate request size out of range"),
+            GenerateError::InputTooLarge => {
+                f.write_str("seed material exceeds maximum allowed size")
+            }
+            #[cfg(feature = "rand")]
+            GenerateError::RngError => f.write_str("RNG source failed"),
+            #[cfg(feature = "health-tests")]
+            GenerateError::HealthCheckFailed => {
+                f.write_str("continuous health test failed: DRBG is permanently poisoned")
+            }
+        }
+    }
+}
+
+impl Error for ReseedError {}
+impl fmt::Display for ReseedError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ReseedError::InputTooLarge => f.write_str("seed material exceeds maximum allowed size"),
+
+            #[cfg(feature = "health-tests")]
+            ReseedError::HealthCheckFailed => {
+                f.write_str("continuous health test failed: DRBG is permanently poisoned")
+            }
+        }
+    }
+}
+
+impl Error for InstantiateError {}
+impl fmt::Display for InstantiateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            InstantiateError::InputTooLarge => {
+                f.write_str("seed material exceeds maximum allowed size")
+            }
+            #[cfg(feature = "rand")]
+            InstantiateError::RngError => f.write_str("RNG source failed"),
+            #[cfg(feature = "health-tests")]
+            InstantiateError::HealthCheckFailed => {
+                f.write_str("continuous health test failed: DRBG is permanently poisoned")
+            }
+        }
+    }
+}
+
+impl Error for UpdateError {}
+impl fmt::Display for UpdateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            UpdateError::InputTooLarge => f.write_str("seed material exceeds maximum allowed size"),
+        }
+    }
+}
+
+impl From<UpdateError> for InstantiateError {
+    fn from(error: UpdateError) -> Self {
+        match error {
+            UpdateError::InputTooLarge => InstantiateError::InputTooLarge,
+        }
+    }
+}
+
+impl From<UpdateError> for ReseedError {
+    fn from(error: UpdateError) -> Self {
+        match error {
+            UpdateError::InputTooLarge => ReseedError::InputTooLarge,
+        }
+    }
+}
+
+impl From<UpdateError> for GenerateError {
+    fn from(_: UpdateError) -> Self {
+        Self::InputTooLarge
+    }
+}
+
+impl From<super::hmac::Error> for GenerateError {
+    fn from(err: super::hmac::Error) -> Self {
+        match err {
+            super::hmac::Error::InputTooLarge => GenerateError::InputTooLarge,
+        }
+    }
+}
+
+impl From<super::hmac::Error> for UpdateError {
+    fn from(err: super::hmac::Error) -> Self {
+        match err {
+            super::hmac::Error::InputTooLarge => UpdateError::InputTooLarge,
+        }
+    }
+}
+
+impl From<libcrux_hmac::Error> for UpdateError {
+    fn from(error: libcrux_hmac::Error) -> Self {
+        match error {
+            libcrux_hmac::Error::InvalidInputLength => UpdateError::InputTooLarge,
+        }
+    }
+}

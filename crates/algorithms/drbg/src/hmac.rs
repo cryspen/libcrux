@@ -1,4 +1,4 @@
-use super::*;
+use super::{hmac_sha2_256_slices, hmac_sha2_384_slices, hmac_sha2_512_slices, utils, HmacState};
 
 /// The Error returned by the Update operation of HMAC-DRBG.
 pub enum Error {

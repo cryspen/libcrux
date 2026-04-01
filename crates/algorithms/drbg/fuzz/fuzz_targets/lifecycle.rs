@@ -31,7 +31,7 @@
 #![no_main]
 
 use libcrux_drbg::{
-    GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, RESEED_INTERVAL,
+    GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, ReseedError, RESEED_INTERVAL,
 };
 use libfuzzer_sys::fuzz_target;
 
@@ -99,7 +99,11 @@ macro_rules! run_lifecycle {
                             assert!(!drbg.needs_reseed());
                             assert_eq!(drbg.reseed_counter(), 1);
                         }
-                        Err(GenerateError::InputTooLarge) => {} // expected for large inputs
+                        Err(ReseedError::InputTooLarge) => {} // expected for large inputs
+
+                        // there are more variants if the health tests feature is set on
+                        // the drbg crate, so we need the exception here
+                        #[allow(unreachable_patterns)]
                         Err(e) => panic!("unexpected reseed error: {e:?}"),
                     }
                 }

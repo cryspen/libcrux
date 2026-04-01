@@ -127,7 +127,7 @@ mod startup_tests {
     #[test]
     fn new_rejects_all_zero_entropy() {
         let err = crate::HmacDrbgSha256::new(&[0u8; 32], &[0u8; 16], &[]).unwrap_err();
-        assert_eq!(err, crate::Error::HealthCheckFailed);
+        assert_eq!(err, crate::InstantiateError::HealthCheckFailed);
     }
 
     #[test]
@@ -141,7 +141,7 @@ mod startup_tests {
     fn reseed_rejects_all_zero_entropy() {
         let mut drbg = crate::HmacDrbgSha256::new(&super::E32, &[0u8; 16], &[]).unwrap();
         let err = drbg.reseed(&[0u8; 32], &[]).unwrap_err();
-        assert_eq!(err, crate::Error::HealthCheckFailed);
+        assert_eq!(err, crate::ReseedError::HealthCheckFailed);
     }
 }
 
@@ -177,7 +177,7 @@ mod health_tests {
         let mut out = [0u8; 32];
         assert_eq!(
             drbg.generate(&mut out, None).unwrap_err(),
-            Error::HealthCheckFailed
+            GenerateError::HealthCheckFailed
         );
     }
 
@@ -187,7 +187,7 @@ mod health_tests {
         drbg.poison_for_testing();
         assert_eq!(
             drbg.reseed(&R32, &[]).unwrap_err(),
-            Error::HealthCheckFailed
+            ReseedError::HealthCheckFailed
         );
     }
 
