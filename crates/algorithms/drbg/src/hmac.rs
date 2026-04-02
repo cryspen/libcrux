@@ -15,11 +15,6 @@ pub enum Error {
 pub(super) trait HmacAlgorithm<const OUTLEN: usize>: utils::private::Sealed {
     type State: HmacState<OUTLEN>;
 
-    /// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
-    ///
-    /// For all supported variants this is 32 bytes (256 bits), regardless of `OUTLEN`.
-    const SECURITY_STRENGTH: usize;
-
     /// Single shot HMAC.
     ///
     /// Returns an [`InputTooLarge`] when the input is too long.
@@ -44,7 +39,6 @@ pub struct HmacSha384;
 pub struct HmacSha512;
 
 impl HmacAlgorithm<32> for HmacSha256 {
-    const SECURITY_STRENGTH: usize = 32;
     type State = libcrux_hmac::HmacSha256;
 
     #[inline]
@@ -59,7 +53,6 @@ impl HmacAlgorithm<32> for HmacSha256 {
 }
 
 impl HmacAlgorithm<48> for HmacSha384 {
-    const SECURITY_STRENGTH: usize = 32;
     type State = libcrux_hmac::HmacSha384;
 
     #[inline]
@@ -74,7 +67,6 @@ impl HmacAlgorithm<48> for HmacSha384 {
 }
 
 impl HmacAlgorithm<64> for HmacSha512 {
-    const SECURITY_STRENGTH: usize = 32;
     type State = libcrux_hmac::HmacSha512;
 
     #[inline]

@@ -60,6 +60,11 @@ pub const RESEED_INTERVAL: u64 = 10_000;
 /// Maximum number of bytes that can be requested in a single generate call (§10.1 Table 2).
 pub const MAX_GENERATE_BYTES: usize = 65_536;
 
+/// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
+///
+/// For all supported variants this is 32 bytes (256 bits), regardless of the hash length.
+pub const MIN_ENTROPY_BYTES: usize = 32;
+
 // ---------------------------------------------------------------------------
 // HMAC_DRBG state
 // ---------------------------------------------------------------------------
@@ -162,7 +167,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     ) -> Result<Self, InstantiateError> {
         // AIS 31 startup test: validate entropy source before using it.
         #[cfg(feature = "health-tests")]
-        if startup_test(entropy_input, Alg::SECURITY_STRENGTH) {
+        if startup_test(entropy_input, MIN_ENTROPY_BYTES) {
             return Err(InstantiateError::HealthCheckFailed);
         }
 
@@ -201,7 +206,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
 
         // AIS 31 startup test: validate entropy source before reseeding.
         #[cfg(feature = "health-tests")]
-        if startup_test(entropy_input, Alg::SECURITY_STRENGTH) {
+        if startup_test(entropy_input, MIN_ENTROPY_BYTES) {
             return Err(ReseedError::HealthCheckFailed);
         }
 
