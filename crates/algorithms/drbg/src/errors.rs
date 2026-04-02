@@ -70,12 +70,6 @@ pub enum GenerateError {
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,
 
-    /// The Rng used for seeding failed.
-    ///
-    /// Note that this error can only occur when `feature = "rand"` is enabled.
-    #[cfg(feature = "rand")]
-    RngError,
-
     /// A continuous health test detected a catastrophic internal failure
     /// (feature `health-tests`). The DRBG is permanently poisoned; discard
     /// the instance. This should never occur in correct operation.
@@ -94,8 +88,6 @@ impl fmt::Display for GenerateError {
             GenerateError::InputTooLarge => {
                 f.write_str("seed material exceeds maximum allowed size")
             }
-            #[cfg(feature = "rand")]
-            GenerateError::RngError => f.write_str("RNG source failed"),
             #[cfg(feature = "health-tests")]
             GenerateError::HealthCheckFailed => {
                 f.write_str("continuous health test failed: DRBG is permanently poisoned")
