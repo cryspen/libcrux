@@ -1,9 +1,12 @@
 use core::marker::PhantomData;
 
-use super::{DrbgError, GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
+pub(crate) use ::rand::{rngs, CryptoRng, TryCryptoRng};
 
-#[cfg(feature = "health-tests")]
-use super::health_tests::HealthState;
+use crate::{DrbgError, GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
+
+// ---------------------------------------------------------------------------
+// Reseedable Rng Trait
+// ---------------------------------------------------------------------------
 
 /// An RNG that is reseedable.
 pub trait TryReseedableRng: rand::TryRng
@@ -23,6 +26,9 @@ where
         additional_input: &[u8],
     ) -> Result<(), Self::ReseedError>;
 }
+
+#[cfg(feature = "health-tests")]
+use super::health_tests::HealthState;
 
 // ---------------------------------------------------------------------------
 // Seed type

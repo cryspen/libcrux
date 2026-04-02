@@ -42,9 +42,9 @@ use health_tests::*;
 
 /// rand::TryCryptoRng / SeedableRng integration (feature = "rand")
 #[cfg(feature = "rand")]
-mod rng_trait;
+mod rand;
 #[cfg(feature = "rand")]
-pub use rng_trait::{HmacDrbgSeed, TryReseedableRng};
+pub use rand::{HmacDrbgSeed, TryReseedableRng};
 
 mod errors;
 pub use errors::*;
