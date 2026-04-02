@@ -105,8 +105,78 @@ function extract() {
     rename_core_models_uses
 }
 
+function extract_to_lean() {
+    TARGET="$1"
+    shift 1
+
+    msg "$BLUE" "extract (lean) ${BOLD}$TARGET${RESET}"
+    go_to "$TARGET"
+    cargo hax "$@" || {
+        msg "$RED" "lean extraction failed for ${BOLD}$TARGET${RESET}"
+        exit 1
+    }
+}
+
+function extract_all_lean() {
+    extract_to_lean crates/sys/platform \
+        into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
+        lean
+
+    extract_to_lean crates/utils/core-models into lean
+
+    extract_to_lean crates/utils/intrinsics \
+        into -i "-core_models::**" \
+        lean
+
+    extract_to_lean crates/utils/secrets \
+        into -i "+**" \
+        lean
+
+    extract_to_lean crates/algorithms/sha3 \
+        into -i "+**" \
+        -i "-**::avx2::**" \
+        -i "-**::neon::**" \
+        -i "-**::simd128::**" \
+        -i "-**::simd256::**" \
+        lean
+
+    patch_lean_extractions
+}
+
+function patch_lean_extractions() {
+    # Add dependency imports that hax does not emit automatically.
+    go_to "crates/algorithms/sha3"
+    local sha3="proofs/lean/extraction/libcrux_sha3.lean"
+    sed -i'' -e '/^import Hax$/a\
+import Stubs\
+import extraction.libcrux_intrinsics' "$sha3"
+
+    # Replace all generated proof tactics with sorry.
+    sed -i '' 's/by hax_construct_pure <;> bv_decide/by sorry/g' "$sha3"
+    sed -i '' 's/by hax_mvcgen \[[^]]*\] <;> bv_decide/by sorry/g' "$sha3"
+    sed -i '' 's/by hax_construct_pure <;> rfl/by sorry/g' "$sha3"
+
+    # slices_same_len: replace monadic body with a pure Prop
+    # (hax_lib.prop.constructors.forall can't synthesize pureP for this predicate).
+    python3 -c "
+import re, sys
+t = open(sys.argv[1]).read()
+t = re.sub(
+    r'(def slices_same_len \(N : usize\) \(slices : \(RustArray \(RustSlice u8\) N\)\) :\n    RustM hax_lib\.prop\.Prop) := do\n.*?RustM hax_lib\.prop\.Prop\)\)\)',
+    r\"\"\"\1 :=
+  pure (∀ (i j : Fin N.toNat), slices.toVec[i].val.size = slices.toVec[j].val.size)\"\"\",
+    t, flags=re.DOTALL)
+open(sys.argv[1],'w').write(t)
+" "$sha3"
+
+    # Intrinsic stubs should be irreducible, not @[spec].
+    go_to "crates/utils/intrinsics"
+    local intrinsics="proofs/lean/extraction/libcrux_intrinsics.lean"
+    sed -i'' -e 's/^@\[spec\]$/@[irreducible]/' "$intrinsics"
+}
+
 function help() {
-    echo "Libcrux script to extract Rust to F* via hax."
+    echo "Libcrux script to extract Rust to F* and Lean via hax."
     echo ""
     echo "Usage: $0 [COMMAND]"
     echo ""
@@ -128,6 +198,10 @@ function cli() {
             help;;
         extract) #> Extract the F* code for the proofs.
             extract_all
+            msg "$GREEN" "done"
+            ;;
+        extract_lean) #> Extract Lean code for the proofs.
+            extract_all_lean
             msg "$GREEN" "done"
             ;;
         prove) #> Run F*. This typechecks the extracted code. To lax-typecheck use --admit.
