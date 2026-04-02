@@ -341,21 +341,23 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     pub fn new_from_rng<R: rand::TryCryptoRng>(
         rng: &mut R,
         personalization_string: &[u8],
-    ) -> Result<Self, InstantiateError> {
+    ) -> Result<Self, InstantiateFromRngError> {
         let mut entropy = [0u8; OUTLEN];
         let mut nonce = [0u8; OUTLEN];
         rng.try_fill_bytes(&mut entropy)
-            .map_err(|_| InstantiateError::RngError)?;
+            .map_err(|_| InstantiateFromRngError::RngError)?;
         rng.try_fill_bytes(&mut nonce)
-            .map_err(|_| InstantiateError::RngError)?;
-        Self::new(&entropy, &nonce, personalization_string)
+            .map_err(|_| InstantiateFromRngError::RngError)?;
+        Self::new(&entropy, &nonce, personalization_string).map_err(InstantiateFromRngError::from)
     }
 
     /// Instantiate from the system RNG ([`rand::rngs::OsRng`]).
     //
     // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
-    pub fn new_from_sys_rng(personalization_string: &[u8]) -> Result<Self, InstantiateError> {
+    pub fn new_from_sys_rng(
+        personalization_string: &[u8],
+    ) -> Result<Self, InstantiateFromRngError> {
         Self::new_from_rng(&mut rand::rngs::SysRng, personalization_string)
     }
 

@@ -11,7 +11,9 @@ version.workspace = true
 
 [features]
 default = []
+
 rand = ["dep:rand"]
+
 testing = []
 # Enables continuous health tests per NIST SP 800-90C §9.3.3 and AIS 20/31 T4:
 #   - Intra-call: each V = HMAC(K,V_old) must satisfy V ≠ V_old.

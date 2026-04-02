@@ -28,10 +28,25 @@ pub enum InstantiateError {
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,
 
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    #[cfg(feature = "health-tests")]
+    HealthCheckFailed,
+}
+
+/// The Error returned by the Instantiate operation of HMAC-DRBG, when used with an Rng.
+#[cfg(feature = "rand")]
+#[derive(Debug, PartialEq)]
+pub enum InstantiateFromRngError {
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
     /// The Rng used for seeding failed.
     ///
     /// Note that this error can only occur when `feature = "rand"` is enabled.
-    #[cfg(feature = "rand")]
     RngError,
 
     /// A continuous health test detected a catastrophic internal failure
@@ -110,10 +125,26 @@ impl fmt::Display for InstantiateError {
             InstantiateError::InputTooLarge => {
                 f.write_str("seed material exceeds maximum allowed size")
             }
-            #[cfg(feature = "rand")]
-            InstantiateError::RngError => f.write_str("RNG source failed"),
             #[cfg(feature = "health-tests")]
             InstantiateError::HealthCheckFailed => {
+                f.write_str("continuous health test failed: DRBG is permanently poisoned")
+            }
+        }
+    }
+}
+
+#[cfg(feature = "rand")]
+impl Error for InstantiateFromRngError {}
+#[cfg(feature = "rand")]
+impl fmt::Display for InstantiateFromRngError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            InstantiateFromRngError::InputTooLarge => {
+                f.write_str("seed material exceeds maximum allowed size")
+            }
+            InstantiateFromRngError::RngError => f.write_str("RNG source failed"),
+            #[cfg(feature = "health-tests")]
+            InstantiateFromRngError::HealthCheckFailed => {
                 f.write_str("continuous health test failed: DRBG is permanently poisoned")
             }
         }
@@ -171,6 +202,18 @@ impl From<libcrux_hmac::Error> for UpdateError {
     fn from(error: libcrux_hmac::Error) -> Self {
         match error {
             libcrux_hmac::Error::InvalidInputLength => UpdateError::InputTooLarge,
+        }
+    }
+}
+
+#[cfg(feature = "rand")]
+impl From<InstantiateError> for InstantiateFromRngError {
+    fn from(value: InstantiateError) -> Self {
+        match value {
+            InstantiateError::InputTooLarge => InstantiateFromRngError::InputTooLarge,
+
+            #[cfg(feature = "health-tests")]
+            InstantiateError::HealthCheckFailed => InstantiateFromRngError::HealthCheckFailed,
         }
     }
 }
