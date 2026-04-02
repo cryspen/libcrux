@@ -51,6 +51,10 @@ pub use errors::*;
 
 mod utils;
 
+/// A simpler wrapper type that implements rand::CryptoRng, at the loss of some expressivity
+#[cfg(all(feature = "rand", not(feature = "health-tests")))]
+pub mod simple;
+
 mod hmac;
 use hmac::{HmacAlgorithm, HmacSha256, HmacSha384, HmacSha512};
 
