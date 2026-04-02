@@ -4,29 +4,6 @@ pub(crate) use ::rand::{rngs, CryptoRng, TryCryptoRng};
 
 use crate::{DrbgError, GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
 
-// ---------------------------------------------------------------------------
-// Reseedable Rng Trait
-// ---------------------------------------------------------------------------
-
-/// An RNG that is reseedable.
-pub trait TryReseedableRng: rand::TryRng
-where
-    Self::Error: DrbgError,
-{
-    /// The type of entropy that is required.
-    type Entropy: AsRef<[u8]>;
-
-    /// The error that the reseeding operation returns.
-    type ReseedError: core::error::Error;
-
-    /// The method that reseeds the RNG with the given entropy and additional input
-    fn reseed(
-        &mut self,
-        entropy_input: &Self::Entropy,
-        additional_input: &[u8],
-    ) -> Result<(), Self::ReseedError>;
-}
-
 #[cfg(feature = "health-tests")]
 use super::health_tests::HealthState;
 
@@ -92,19 +69,6 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
     }
 }
 
-impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacDrbg<OUTLEN, Alg> {
-    type Entropy = HmacDrbgSeed<OUTLEN>;
-
-    type ReseedError = ReseedError;
-
-    fn reseed(
-        &mut self,
-        entropy: &Self::Entropy,
-        additional_input: &[u8],
-    ) -> Result<(), Self::ReseedError> {
-        self.reseed(entropy.as_ref(), additional_input)
-    }
-}
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for HmacDrbg<OUTLEN, Alg> {}
 
 /// [`rand::SeedableRng`] implementation for [`HmacDrbg`].
@@ -219,5 +183,42 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
         Ok(Self::new(&entropy, &nonce, &[]).expect(
             "HMAC_DRBG_Instantiate from RNG failed: entropy source produced invalid output",
         ))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Reseedable Rng Trait
+// ---------------------------------------------------------------------------
+
+/// An RNG that is reseedable.
+pub trait TryReseedableRng: rand::TryRng
+where
+    Self::Error: DrbgError,
+{
+    /// The type of entropy that is required.
+    type Entropy: AsRef<[u8]>;
+
+    /// The error that the reseeding operation returns.
+    type ReseedError: core::error::Error;
+
+    /// The method that reseeds the RNG with the given entropy and additional input
+    fn reseed(
+        &mut self,
+        entropy_input: &Self::Entropy,
+        additional_input: &[u8],
+    ) -> Result<(), Self::ReseedError>;
+}
+
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacDrbg<OUTLEN, Alg> {
+    type Entropy = HmacDrbgSeed<OUTLEN>;
+
+    type ReseedError = ReseedError;
+
+    fn reseed(
+        &mut self,
+        entropy: &Self::Entropy,
+        additional_input: &[u8],
+    ) -> Result<(), Self::ReseedError> {
+        self.reseed(entropy.as_ref(), additional_input)
     }
 }
