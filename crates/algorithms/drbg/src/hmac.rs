@@ -59,7 +59,7 @@ impl HmacAlgorithm<32> for HmacSha256 {
 }
 
 impl HmacAlgorithm<48> for HmacSha384 {
-    const SECURITY_STRENGTH: usize = 48;
+    const SECURITY_STRENGTH: usize = 32;
     type State = libcrux_hmac::HmacSha384;
 
     #[inline]
@@ -74,7 +74,7 @@ impl HmacAlgorithm<48> for HmacSha384 {
 }
 
 impl HmacAlgorithm<64> for HmacSha512 {
-    const SECURITY_STRENGTH: usize = 64;
+    const SECURITY_STRENGTH: usize = 32;
     type State = libcrux_hmac::HmacSha512;
 
     #[inline]
