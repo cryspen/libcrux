@@ -503,7 +503,7 @@ let ntt_binomially_sampled_ring_element
 
 #pop-options
 
-#push-options "--z3rlimit 300 --ext context_pruning"
+#push-options "--z3rlimit 300 --ext context_pruning --split_queries always"
 
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
