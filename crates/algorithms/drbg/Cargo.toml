@@ -23,8 +23,8 @@ health-tests = []
 
 [dependencies]
 libcrux-hmac.workspace = true
-rand = { workspace = true, optional = true, default-features = false, features = [
-    "os_rng",
+rand = { version = "0.10", optional = true, default-features = false, features = [
+    "sys_rng",
 ] }
 
 [dev-dependencies]

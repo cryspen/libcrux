@@ -30,7 +30,7 @@ impl DrbgError for GenerateError {
 }
 
 /// An RNG that is reseedable.
-pub trait TryReseedableRng: rand::TryRngCore
+pub trait TryReseedableRng: rand::TryRng
 where
     Self::Error: DrbgError,
 {
@@ -77,7 +77,7 @@ impl<const N: usize> AsRef<[u8]> for HmacDrbgSeed<N> {
     }
 }
 
-impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRngCore for HmacDrbg<OUTLEN, Alg> {
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<OUTLEN, Alg> {
     type Error = GenerateError;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
@@ -111,7 +111,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRngCore for HmacD
 }
 
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacDrbg<OUTLEN, Alg> {
-    type Entropy = [u8; OUTLEN];
+    type Entropy = HmacDrbgSeed<OUTLEN>;
 
     type ReseedError = ReseedError;
 
@@ -120,7 +120,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacD
         entropy: &Self::Entropy,
         additional_input: &[u8],
     ) -> Result<(), Self::ReseedError> {
-        self.reseed(entropy, additional_input)
+        self.reseed(entropy.as_ref(), additional_input)
     }
 }
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for HmacDrbg<OUTLEN, Alg> {}
@@ -191,7 +191,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
     /// [`from_seed`]: rand::SeedableRng::from_seed
     // #hax: requires true   // entropy=[u8;OUTLEN], nonce=[u8;OUTLEN]: 2*OUTLEN <= MAX_SEED_BYTES always holds
     // #hax: ensures result.reseed_counter == 1
-    fn from_rng(rng: &mut impl rand::RngCore) -> Self {
+    fn from_rng<R: rand::Rng + ?Sized>(rng: &mut R) -> Self {
         let mut entropy = [0u8; OUTLEN];
         let mut nonce = [0u8; OUTLEN];
         rng.fill_bytes(&mut entropy);
@@ -229,7 +229,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
     /// [`from_seed`]: rand::SeedableRng::from_seed
     // #hax: requires true   // entropy=[u8;OUTLEN], nonce=[u8;OUTLEN]: 2*OUTLEN <= MAX_SEED_BYTES always holds
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
-    fn try_from_rng<R: rand::TryRngCore>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_from_rng<R: rand::TryRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         let mut entropy = [0u8; OUTLEN];
         let mut nonce = [0u8; OUTLEN];
         rng.try_fill_bytes(&mut entropy)?;

@@ -7,7 +7,7 @@
 #![cfg(feature = "rand")]
 
 use libcrux_drbg::{HmacDrbgSeed, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512};
-use rand::{SeedableRng, TryCryptoRng, TryRngCore};
+use rand::{SeedableRng, TryCryptoRng, TryRng};
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -35,7 +35,7 @@ fn make_sha512() -> HmacDrbgSha512 {
 }
 
 // ---------------------------------------------------------------------------
-// TryRngCore — try_next_u32 / try_next_u64 / try_fill_bytes
+// TryRng — try_next_u32 / try_next_u64 / try_fill_bytes
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -203,24 +203,24 @@ fn from_seed_all_zero_is_accepted() {
 
 #[test]
 fn from_rng_sha256_produces_output() {
-    use rand::TryRngCore as _;
-    let mut drbg = HmacDrbgSha256::from_rng(&mut rand::rngs::OsRng.unwrap_err());
+    use rand::{rand_core::UnwrapErr, rngs::SysRng, TryRng as _};
+    let mut drbg = HmacDrbgSha256::from_rng(&mut UnwrapErr(SysRng));
     let mut out = [0u8; 32];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
 
 #[test]
 fn from_rng_sha384_produces_output() {
-    use rand::TryRngCore as _;
-    let mut drbg = HmacDrbgSha384::from_rng(&mut rand::rngs::OsRng.unwrap_err());
+    use rand::{rand_core::UnwrapErr, rngs::SysRng, TryRng as _};
+    let mut drbg = HmacDrbgSha384::from_rng(&mut UnwrapErr(SysRng));
     let mut out = [0u8; 48];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
 
 #[test]
 fn from_rng_sha512_produces_output() {
-    use rand::TryRngCore as _;
-    let mut drbg = HmacDrbgSha512::from_rng(&mut rand::rngs::OsRng.unwrap_err());
+    use rand::{rand_core::UnwrapErr, rngs::SysRng, TryRng as _};
+    let mut drbg = HmacDrbgSha512::from_rng(&mut UnwrapErr(SysRng));
     let mut out = [0u8; 64];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
@@ -228,9 +228,9 @@ fn from_rng_sha512_produces_output() {
 #[test]
 fn from_rng_two_calls_differ() {
     // Two separate from_rng calls draw fresh OS entropy → different DRBG state.
-    use rand::TryRngCore as _;
-    let mut a = HmacDrbgSha256::from_rng(&mut rand::rngs::OsRng.unwrap_err());
-    let mut b = HmacDrbgSha256::from_rng(&mut rand::rngs::OsRng.unwrap_err());
+    use rand::{rand_core::UnwrapErr, rngs::SysRng, TryRng as _};
+    let mut a = HmacDrbgSha256::from_rng(&mut UnwrapErr(SysRng));
+    let mut b = HmacDrbgSha256::from_rng(&mut UnwrapErr(SysRng));
     let mut out_a = [0u8; 32];
     let mut out_b = [0u8; 32];
     a.try_fill_bytes(&mut out_a).unwrap();
@@ -245,21 +245,21 @@ fn from_rng_two_calls_differ() {
 
 #[test]
 fn try_from_rng_sha256_produces_output() {
-    let mut drbg = HmacDrbgSha256::try_from_rng(&mut rand::rngs::OsRng).unwrap();
+    let mut drbg = HmacDrbgSha256::try_from_rng(&mut rand::rngs::SysRng).unwrap();
     let mut out = [0u8; 32];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
 
 #[test]
 fn try_from_rng_sha384_produces_output() {
-    let mut drbg = HmacDrbgSha384::try_from_rng(&mut rand::rngs::OsRng).unwrap();
+    let mut drbg = HmacDrbgSha384::try_from_rng(&mut rand::rngs::SysRng).unwrap();
     let mut out = [0u8; 48];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
 
 #[test]
 fn try_from_rng_sha512_produces_output() {
-    let mut drbg = HmacDrbgSha512::try_from_rng(&mut rand::rngs::OsRng).unwrap();
+    let mut drbg = HmacDrbgSha512::try_from_rng(&mut rand::rngs::SysRng).unwrap();
     let mut out = [0u8; 64];
     drbg.try_fill_bytes(&mut out).unwrap();
 }
@@ -267,8 +267,8 @@ fn try_from_rng_sha512_produces_output() {
 #[test]
 fn try_from_rng_two_calls_differ() {
     // Two separate try_from_rng calls draw fresh OS entropy → different outputs.
-    let mut a = HmacDrbgSha256::try_from_rng(&mut rand::rngs::OsRng).unwrap();
-    let mut b = HmacDrbgSha256::try_from_rng(&mut rand::rngs::OsRng).unwrap();
+    let mut a = HmacDrbgSha256::try_from_rng(&mut rand::rngs::SysRng).unwrap();
+    let mut b = HmacDrbgSha256::try_from_rng(&mut rand::rngs::SysRng).unwrap();
     let mut out_a = [0u8; 32];
     let mut out_b = [0u8; 32];
     a.try_fill_bytes(&mut out_a).unwrap();
@@ -276,23 +276,35 @@ fn try_from_rng_two_calls_differ() {
     assert_ne!(out_a, out_b);
 }
 
+#[derive(Debug, PartialEq)]
+struct TestError(&'static str);
+
+impl std::fmt::Display for TestError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+impl core::error::Error for TestError {}
+
 #[test]
 fn try_from_rng_propagates_rng_error() {
-    use rand::TryRngCore;
+    use rand::TryRng;
 
     /// A RNG that always fails after N bytes.
     struct FailAfter(usize);
-    impl TryRngCore for FailAfter {
-        type Error = &'static str;
+    impl TryRng for FailAfter {
+        type Error = TestError;
+
         fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
-            Err("injected failure")
+            Err(TestError("injected failure"))
         }
         fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
-            Err("injected failure")
+            Err(TestError("injected failure"))
         }
         fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
             if dst.len() > self.0 {
-                return Err("injected failure");
+                return Err(TestError("injected failure"));
             }
             self.0 -= dst.len();
             dst.fill(0x55);
@@ -305,7 +317,7 @@ fn try_from_rng_propagates_rng_error() {
     let mut rng = FailAfter(32);
     let result = HmacDrbgSha256::try_from_rng(&mut rng);
     assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), "injected failure");
+    assert_eq!(result.unwrap_err().0, "injected failure");
 }
 
 #[test]

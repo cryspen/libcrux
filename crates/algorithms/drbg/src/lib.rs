@@ -356,7 +356,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
     pub fn new_from_sys_rng(personalization_string: &[u8]) -> Result<Self, InstantiateError> {
-        Self::new_from_rng(&mut rand::rngs::OsRng, personalization_string)
+        Self::new_from_rng(&mut rand::rngs::SysRng, personalization_string)
     }
 
     /// Reseed from a [`rand::CryptoRng`] (generates entropy internally).
