@@ -44,7 +44,7 @@ use health_tests::*;
 #[cfg(feature = "rand")]
 mod rng_trait;
 #[cfg(feature = "rand")]
-pub use rng_trait::{DrbgError, HmacDrbgSeed, TryReseedableRng};
+pub use rng_trait::{HmacDrbgSeed, TryReseedableRng};
 
 mod errors;
 pub use errors::*;
