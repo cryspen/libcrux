@@ -20,7 +20,7 @@ pub fn get(state: &State, x: usize, y: usize) -> u64 {
 // =========================================================================
 
 /// Round constants `RC[ir]` for `ir = 0..23` — FIPS 202, Algorithm 5.
-const ROUND_CONSTANTS: [u64; 24] = [
+pub const ROUND_CONSTANTS: [u64; 24] = [
     0x0000_0000_0000_0001,
     0x0000_0000_0000_8082,
     0x8000_0000_0000_808A,
@@ -50,7 +50,7 @@ const ROUND_CONSTANTS: [u64; 24] = [
 /// Rotation offsets for ρ step — FIPS 202, Algorithm 2 / Table 2.
 ///
 /// Indexed as `RHO_OFFSETS[5*x + y]`.
-const RHO_OFFSETS: [u32; 25] = [
+pub const RHO_OFFSETS: [u32; 25] = [
     //  y=0  y=1  y=2  y=3  y=4
     0, 36, 3, 41, 18, // x = 0
     1, 44, 10, 45, 2, // x = 1

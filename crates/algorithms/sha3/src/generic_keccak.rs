@@ -15,7 +15,7 @@ use hax_lib::{constructors::from_bool, int::ToInt};
 pub(crate) mod xof;
 
 /// Constants in SHA3.
-mod constants;
+pub(crate) mod constants;
 use constants::*;
 
 /// Simd128 specific implementations.
@@ -306,5 +306,206 @@ impl<const N: usize, T: KeccakItem<N>> Index<(usize, usize)> for KeccakState<N, 
     #[hax_lib::requires(index.0 < 5 && index.1 < 5)]
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         get_ij(&self.st, index.0, index.1)
+    }
+}
+
+/// Cross-spec tests: compare each permutation step against the hacspec spec.
+#[cfg(test)]
+mod cross_spec_tests {
+    use super::*;
+    use hacspec_sha3::keccak_f as spec_kf;
+    use hacspec_sha3::sponge as spec_sponge;
+
+    fn wrap(st: [u64; 25]) -> KeccakState<1, u64> {
+        KeccakState { st }
+    }
+
+    /// Non-trivial test state: keccak-f applied to state where lane 0 = 1.
+    fn test_state() -> [u64; 25] {
+        let mut st = [0u64; 25];
+        st[0] = 1;
+        spec_kf::keccak_f(st)
+    }
+
+    // -- Layer 1: Constants --
+
+    #[test]
+    fn round_constants_match() {
+        assert_eq!(ROUNDCONSTANTS, spec_kf::ROUND_CONSTANTS);
+    }
+
+    #[test]
+    fn lane_index_matches() {
+        for l in 0..25 {
+            assert_eq!(spec_sponge::lane_index(l), 5 * (l % 5) + l / 5);
+        }
+    }
+
+    // -- Layer 2: Permutation steps --
+
+    #[test]
+    fn theta_rho_matches_spec() {
+        for &st in &[[0u64; 25], test_state()] {
+            let mut s = wrap(st);
+            let t = s.theta();
+            s.rho(t);
+            assert_eq!(s.st, spec_kf::rho(spec_kf::theta(st)));
+        }
+    }
+
+    #[test]
+    fn pi_matches_spec() {
+        let st = test_state();
+        let mut s = wrap(st);
+        s.pi();
+        assert_eq!(s.st, spec_kf::pi(st));
+    }
+
+    #[test]
+    fn chi_matches_spec() {
+        let st = test_state();
+        let mut s = wrap(st);
+        s.chi();
+        assert_eq!(s.st, spec_kf::chi(st));
+    }
+
+    #[test]
+    fn iota_matches_spec() {
+        for round in 0..24 {
+            let st = test_state();
+            let mut s = wrap(st);
+            s.iota(round);
+            assert_eq!(s.st, spec_kf::iota(st, round));
+        }
+    }
+
+    #[test]
+    fn keccak_f_matches_spec() {
+        for &st in &[[0u64; 25], test_state()] {
+            let mut s = wrap(st);
+            s.keccakf1600();
+            assert_eq!(s.st, spec_kf::keccak_f(st));
+        }
+    }
+
+    #[test]
+    fn single_round_matches_spec() {
+        let st = test_state();
+        let spec = spec_kf::iota(
+            spec_kf::chi(spec_kf::pi(spec_kf::rho(spec_kf::theta(st)))),
+            0,
+        );
+        let mut s = wrap(st);
+        let t = s.theta();
+        s.rho(t);
+        s.pi();
+        s.chi();
+        s.iota(0);
+        assert_eq!(s.st, spec);
+    }
+
+    // -- Layer 3: Sponge helpers --
+
+    #[test]
+    fn load_block_matches_spec() {
+        let block = [0xABu8; 200];
+        let mut impl_st = [0u64; 25];
+        crate::simd::portable::load_block::<136>(&mut impl_st, &block, 0);
+        let spec_st = spec_sponge::xor_block_into_state([0u64; 25], &block, 136);
+        assert_eq!(impl_st, spec_st);
+    }
+
+    #[test]
+    fn load_block_with_offset() {
+        let mut data = [0u8; 400];
+        for (i, b) in data.iter_mut().enumerate() {
+            *b = (i & 0xFF) as u8;
+        }
+        let mut impl_st = [0u64; 25];
+        crate::simd::portable::load_block::<136>(&mut impl_st, &data, 136);
+        let spec_st = spec_sponge::xor_block_into_state([0u64; 25], &data[136..272], 136);
+        assert_eq!(impl_st, spec_st);
+    }
+
+    #[test]
+    fn store_block_matches_spec() {
+        let state = test_state();
+        let mut impl_out = [0u8; 200];
+        crate::simd::portable::store_block::<136>(&state, &mut impl_out, 0, 136);
+        let mut spec_out = [0u8; 200];
+        spec_sponge::squeeze_state(&state, &mut spec_out, 0, 136);
+        assert_eq!(impl_out[..136], spec_out[..136]);
+    }
+
+    #[test]
+    fn load_last_matches_spec_padding() {
+        // Test various last-block sizes for SHA3-256 (rate=136, delim=0x06)
+        let rate = 136usize;
+        for len in [0, 1, 7, 8, 9, 15, 16, 17, 64, 100, 135] {
+            let mut msg = [0u8; 135];
+            for i in 0..len {
+                msg[i] = (i & 0xFF) as u8;
+            }
+            let mut impl_st = [0u64; 25];
+            crate::simd::portable::load_last::<136, 0x06>(&mut impl_st, &msg[..len], 0, len);
+
+            let mut last_block = [0u8; 200];
+            last_block[..len].copy_from_slice(&msg[..len]);
+            last_block[len] = 0x06;
+            last_block[rate - 1] |= 0x80;
+            let spec_st = spec_sponge::xor_block_into_state([0u64; 25], &last_block, rate);
+            assert_eq!(impl_st, spec_st, "load_last mismatch at len={len}");
+        }
+    }
+
+    #[test]
+    fn load_block_all_rates() {
+        // Test load_block for every rate used by SHA3/SHAKE variants
+        let data = [0xCDu8; 200];
+        macro_rules! test_rate {
+            ($rate:expr) => {
+                let mut impl_st = [0u64; 25];
+                crate::simd::portable::load_block::<$rate>(&mut impl_st, &data, 0);
+                let spec_st = spec_sponge::xor_block_into_state([0u64; 25], &data, $rate);
+                assert_eq!(impl_st, spec_st, "load_block mismatch at rate={}", $rate);
+            };
+        }
+        test_rate!(72); // SHA3-512
+        test_rate!(104); // SHA3-384
+        test_rate!(136); // SHA3-256 / SHAKE256
+        test_rate!(144); // SHA3-224
+        test_rate!(168); // SHAKE128
+    }
+
+    #[test]
+    fn store_block_partial_len() {
+        // Test squeeze with various lengths (not just the full rate)
+        let state = test_state();
+        for &len in &[8, 16, 64, 72, 104, 136] {
+            let mut impl_out = [0u8; 200];
+            crate::simd::portable::store_block::<136>(&state, &mut impl_out, 0, len);
+            let mut spec_out = [0u8; 200];
+            spec_sponge::squeeze_state(&state, &mut spec_out, 0, len);
+            assert_eq!(
+                impl_out[..len],
+                spec_out[..len],
+                "store_block mismatch at len={len}"
+            );
+        }
+    }
+
+    #[test]
+    fn store_block_with_offset() {
+        let state = test_state();
+        let len = 72;
+        let offset = 64;
+        let mut impl_out = [0u8; 200];
+        crate::simd::portable::store_block::<136>(&state, &mut impl_out, offset, len);
+        let mut spec_out = [0u8; 200];
+        spec_sponge::squeeze_state(&state, &mut spec_out, offset, len);
+        assert_eq!(
+            impl_out[offset..offset + len],
+            spec_out[offset..offset + len]
+        );
     }
 }
