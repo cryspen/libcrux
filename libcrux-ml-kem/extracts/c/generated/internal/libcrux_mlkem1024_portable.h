@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
+ * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
+ * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 4faeb5fdd7bdf29c1f30136c8f32fe24c06cfab0
+ * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
  */
 
 #ifndef internal_libcrux_mlkem1024_portable_H
@@ -50,7 +50,7 @@ Eurydice_arr_60 libcrux_ml_kem_mlkem1024_portable_unpacked_decapsulate(
  TODO: The F* prefix opens required modules, it should go away when the
  following issue is resolved: <https://github.com/hacspec/hax/issues/770>
 */
-tuple_2b libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
+tuple_4d libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
     const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
     Eurydice_arr_60 randomness);
 
@@ -58,7 +58,7 @@ tuple_2b libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
  Generate ML-KEM 1024 Key Pair in "unpacked" form
 */
 void libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair_mut(
-    Eurydice_arr_06 randomness,
+    Eurydice_arr_060 randomness,
     libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
         *key_pair);
 
@@ -67,7 +67,7 @@ void libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair_mut(
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair(
-    Eurydice_arr_06 randomness);
+    Eurydice_arr_060 randomness);
 
 /**
  Create a new, empty unpacked key.

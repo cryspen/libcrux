@@ -32,7 +32,7 @@ files:
         - [ Eurydice, arr_6d]
         - [ core, result, unwrap_26_ab ]
         - [ core, result, Result_a4 ]
-
+        - [ core, result, Result_8e ]
     api:
       - [Eurydice, "*"]
       
