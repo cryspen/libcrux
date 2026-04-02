@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
+ * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
+ * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 4faeb5fdd7bdf29c1f30136c8f32fe24c06cfab0
+ * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
  */
 
 #ifndef libcrux_ct_ops_H
@@ -45,11 +45,9 @@ libcrux_ml_kem_constant_time_ops_is_non_zero(uint8_t value) {
 static KRML_NOINLINE uint8_t libcrux_ml_kem_constant_time_ops_compare(
     Eurydice_borrow_slice_u8 lhs, Eurydice_borrow_slice_u8 rhs) {
   uint8_t r = 0U;
-  for (size_t i = (size_t)0U; i < Eurydice_slice_len(lhs, uint8_t); i++) {
+  for (size_t i = (size_t)0U; i < lhs.meta; i++) {
     size_t i0 = i;
-    uint8_t nr =
-        (uint32_t)r | ((uint32_t)Eurydice_slice_index_shared(lhs, i0, uint8_t) ^
-                       (uint32_t)Eurydice_slice_index_shared(rhs, i0, uint8_t));
+    uint8_t nr = (uint32_t)r | ((uint32_t)lhs.ptr[i0] ^ (uint32_t)rhs.ptr[i0]);
     r = nr;
   }
   return libcrux_ml_kem_constant_time_ops_is_non_zero(r);
@@ -75,10 +73,8 @@ libcrux_ml_kem_constant_time_ops_select_ct(Eurydice_borrow_slice_u8 lhs,
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
        i++) {
     size_t i0 = i;
-    uint8_t outi = ((uint32_t)Eurydice_slice_index_shared(lhs, i0, uint8_t) &
-                    (uint32_t)mask) |
-                   ((uint32_t)Eurydice_slice_index_shared(rhs, i0, uint8_t) &
-                    (uint32_t)~mask);
+    uint8_t outi = ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) |
+                   ((uint32_t)rhs.ptr[i0] & (uint32_t)~mask);
     out.data[i0] = outi;
   }
   return out;

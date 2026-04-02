@@ -69,7 +69,7 @@ uint8_t *compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
 }
 
 TEST(MlKem768TestPortable, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -87,7 +87,7 @@ TEST(MlKem768TestPortable, ConsistencyTest) {
 }
 
 TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -112,7 +112,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
 }
 
 TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -141,7 +141,7 @@ TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
 }
 
 TEST(Kyber768TestPortable, ModifiedSecretKeyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -176,7 +176,7 @@ TEST(Kyber768TestPortable, ModifiedSecretKeyTest) {
 TEST(MlKem768TestPortable, NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
   auto kats = read_kats("tests/mlkem768_nistkats.json");
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   Eurydice_arr_600 encaps_rand = {0};
 
   for (auto kat : kats) {
@@ -217,7 +217,7 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest) {
 #include "libcrux_mlkem768_avx2.h"
 
 TEST(MlKem768TestAvx2, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -234,7 +234,7 @@ TEST(MlKem768TestAvx2, ConsistencyTest) {
 }
 
 TEST(MlKem768TestAvx2Unpacked, ConsistencyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -255,7 +255,7 @@ TEST(MlKem768TestAvx2Unpacked, ConsistencyTest) {
 }
 
 TEST(Kyber768TestAvx2, ModifiedCiphertextTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -283,7 +283,7 @@ TEST(Kyber768TestAvx2, ModifiedCiphertextTest) {
 }
 
 TEST(Kyber768TestAvx2, ModifiedSecretKeyTest) {
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 64);
   Eurydice_arr_600 encaps_rand = {0};
   memset(encaps_rand.data, 0x15, 32);
@@ -317,7 +317,7 @@ TEST(Kyber768TestAvx2, ModifiedSecretKeyTest) {
 TEST(MlKem768TestAvx2, NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
   auto kats = read_kats("tests/mlkem768_nistkats.json");
-  Eurydice_arr_06 keygen_rand = {0};
+  Eurydice_arr_060 keygen_rand = {0};
   Eurydice_arr_600 encaps_rand = {0};
 
   for (auto kat : kats) {
