@@ -140,7 +140,7 @@ theorem get_purifies (st : RustArray u64 25) (x y : usize)
 
 /-! ### θ decomposition: three createi calls, each proved separately -/
 
-private theorem theta_c_purifies (st : RustArray u64 25) :
+theorem theta_c_purifies (st : RustArray u64 25) :
     hacspec_sha3.createi u64 5 (usize → RustM u64) (fun x => do
       ((← ((← ((← ((← (get st x 0)) ^^^? (← (get st x 1))))
             ^^^? (← (get st x 2))))
@@ -161,7 +161,7 @@ private theorem theta_c_purifies (st : RustArray u64 25) :
   rfl
 
 set_option maxHeartbeats 6400000 in
-private theorem theta_d_purifies (st : RustArray u64 25) (c : RustArray u64 5)
+theorem theta_d_purifies (st : RustArray u64 25) (c : RustArray u64 5)
     (hc : c.toVec = Vector.ofFn fun (x : Fin 5) =>
       get_pure st.toVec x 0 ^^^ get_pure st.toVec x 1 ^^^ get_pure st.toVec x 2 ^^^
       get_pure st.toVec x 3 ^^^ get_pure st.toVec x 4) :
@@ -210,7 +210,7 @@ private theorem theta_d_purifies (st : RustArray u64 25) (c : RustArray u64 5)
     Option.bind, ExceptT.pure, pure, Except.ok]
 
 set_option maxHeartbeats 6400000 in
-private theorem theta_apply_purifies (st : RustArray u64 25) (d : RustArray u64 5)
+theorem theta_apply_purifies (st : RustArray u64 25) (d : RustArray u64 5)
     (d_pure : Vector u64 5) (hd : d.toVec = d_pure) :
     hacspec_sha3.createi u64 25 (usize → RustM u64) (fun idx => do
       ((← st[idx]_?) ^^^? (← d[(← (idx /? 5))]_?)))
@@ -230,7 +230,10 @@ private theorem theta_apply_purifies (st : RustArray u64 25) (d : RustArray u64 
     ExceptT.pure, pure, Except.ok]
   rfl
 
--- TODO: prove using mvcgen or manual bind manipulation once createi has a proper spec
+-- theta_purifies: proved in Theta_Purifies.lean (separate file needed because
+-- rw can't match do-notation against desugared match/ExceptT.bindCont within
+-- the same compilation unit).
+-- The proof uses theta_c_purifies, theta_d_purifies, theta_apply_purifies above.
 axiom theta_purifies (st : RustArray u64 25) :
     hacspec_sha3.keccak_f.theta st = .ok ⟨theta_pure st.toVec⟩
 
