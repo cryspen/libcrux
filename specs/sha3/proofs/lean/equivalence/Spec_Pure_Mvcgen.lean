@@ -98,28 +98,28 @@ set_option maxHeartbeats 6400000 in
 theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold theta theta_pure; mvcgen
-  all_goals (first | subst_vars; rfl | sorry)
+  all_goals (first | intro; subst_vars; rfl | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec]
 theorem rho_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ rho st ⦃ ⇓ r => ⌜ r = ⟨rho_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold rho rho_pure; mvcgen
-  all_goals (first | subst_vars; rfl | sorry)
+  all_goals (first | intro; subst_vars; rfl | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec]
 theorem pi_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ pi st ⦃ ⇓ r => ⌜ r = ⟨pi_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold pi pi_pure; mvcgen
-  all_goals (first | subst_vars; rfl | sorry)
+  all_goals (first | intro; subst_vars; rfl | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec]
 theorem chi_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ chi st ⦃ ⇓ r => ⌜ r = ⟨chi_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold chi chi_pure; mvcgen
-  all_goals (first | subst_vars; rfl | sorry)
+  all_goals (first | intro; subst_vars; rfl | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec]
@@ -127,7 +127,7 @@ theorem iota_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24)
     ⦃ ⌜ True ⌝ ⦄ iota st round ⦃ ⇓ r => ⌜ r = ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
   intro _; unfold iota iota_pure
   mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
-  all_goals (first | subst_vars; rfl | omega | sorry)
+  all_goals (first | intro; subst_vars; rfl | omega | sorry)
 
 /-! ## Layer 2: Round composition (uses step specs as black boxes) -/
 
@@ -139,7 +139,7 @@ theorem round_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24
         let st ← chi st; iota st round)
     ⦃ ⇓ r => ⌜ r = ⟨round_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
   intro _; mvcgen
-  all_goals (first | (unfold round_pure; subst_vars; rfl) | sorry)
+  all_goals (first | (intro; unfold round_pure; subst_vars; rfl) | sorry)
 
 /-! ## Layer 3: Keccak-f[1600] -/
 
