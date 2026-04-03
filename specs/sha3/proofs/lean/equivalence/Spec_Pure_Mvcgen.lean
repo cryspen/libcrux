@@ -3,6 +3,7 @@ import Stubs
 import extraction.hacspec_sha3
 import Std.Do.Triple
 import Std.Tactic.Do
+import equivalence.Spec_Pure
 
 /-!
 # Pure specification functions for SHA-3 — mvcgen-based proofs
@@ -121,11 +122,17 @@ theorem rotate_left_spec (x : u64) (n : u32) :
 
 /-! ## Keccak-f step specs -/
 
-set_option maxHeartbeats 6400000 in
+-- theta, iota: equality proofs via the approach in Spec_Pure.lean / Theta_Purifies.lean,
+-- lifted to triples. The createi VCs from mvcgen need f_pure metavars that
+-- mvcgen can't synthesize, so we bypass mvcgen for the createi parts.
+
+-- theta equality (proved in Spec_Pure.lean + Theta_Purifies.lean)
+private theorem theta_purifies' (st : RustArray u64 25) :
+    theta st = .ok ⟨theta_pure st.toVec⟩ := Spec.Pure.theta_purifies st
+
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
-  intro _; unfold theta theta_pure; mvcgen
-  all_goals (first | (intro; subst_vars; rfl) | close_vc | sorry)
+  intro _; rw [theta_purifies']; mvcgen
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
@@ -147,12 +154,13 @@ set_option maxHeartbeats 6400000 in
   hax_mvcgen [usize_div_spec, usize_mod_spec, usize_add_spec, get_spec]
   all_goals close_vc
 
-set_option maxHeartbeats 6400000 in
+private theorem iota_purifies' (st : RustArray u64 25) (round : usize) (h : round.toNat < 24) :
+    iota st round = .ok ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ :=
+  Spec.Pure.iota_purifies st round h
+
 @[spec] theorem iota_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24) :
     ⦃ ⌜ True ⌝ ⦄ iota st round ⦃ ⇓ r => ⌜ r = ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
-  intro _; unfold iota iota_pure
-  mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
-  all_goals (first | (intro; subst_vars; rfl) | close_vc | omega | sorry)
+  intro _; rw [iota_purifies']; mvcgen
 
 /-! ## Round composition -/
 
@@ -171,13 +179,7 @@ set_option maxHeartbeats 1600000 in
 private theorem keccak_f_purifies (st : RustArray u64 25) :
     keccak_f st = .ok ⟨keccak_f_pure st.toVec⟩ := by
   unfold keccak_f keccak_f_pure; simp only [bind_pure]
-  have round_purifies : ∀ (acc : RustArray u64 25) (i : usize) (hi : i.toNat < 24),
-      (do let st ← theta acc; let st ← rho st; let st ← pi st
-          let st ← chi st; iota st i)
-      = .ok ⟨round_pure acc.toVec ⟨i.toNat, hi⟩⟩ := by
-    intro acc i hi
-    have := round_spec acc i hi
-    sorry -- extract equality from triple (round_spec is @[spec])
+  have round_purifies := Spec.Pure.round_purifies
   exact fold_range_purifies (α_pure := Vector u64 25) 24
     (fun a => a.toVec) (fun v => ⟨v⟩) _ _ st (fun _ => rfl) trivial
     (fun acc i hi => round_purifies acc i hi)
