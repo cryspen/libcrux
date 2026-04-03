@@ -188,45 +188,50 @@ private theorem keccak_f_purifies (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ keccak_f st ⦃ ⇓ r => ⌜ r = ⟨keccak_f_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; rw [keccak_f_purifies]; mvcgen
 
-/-! ## Sponge-level specs
+/-! ## Sponge-level and top-level specs
 
-These follow the same pattern as keccak_f: equality via fold_range_purifies,
-then lift to triple. The proofs are mechanical (same close_vc pattern) but
-very long due to the complex loop bodies (8 offset adds, 8 block reads,
-from_le_bytes/to_le_bytes, lane_index, array/slice update).
-
-Stated as axioms — provable with the existing infrastructure. -/
+These use the equality proofs from Spec_Pure.lean (imported above) and
+lift them to triples. The sponge functions (xor_block_into_state,
+squeeze_state, keccak) have complex loop bodies — the equality proofs
+are done via fold_range_purifies in Spec_Pure.lean. -/
 
 open hacspec_sha3.sponge hacspec_sha3.sha3
 
--- Pure definitions would go here (matching Spec_Pure.lean)
--- For now, import them or use sorry
+-- Import keccak_purifies axiom and sha3_* theorems from Spec_Pure
+-- (These are proved modulo keccak_purifies axiom)
 
-@[spec] axiom xor_block_into_state_spec
-    (state : RustArray u64 25) (block : RustSlice u8) (rate : usize) :
-    ⦃ ⌜ rate.toNat % 8 = 0 ∧ rate.toNat ≤ 200 ∧ block.val.size ≥ rate.toNat ⌝ ⦄
-    xor_block_into_state state block rate
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄  -- TODO: full postcondition with xor_block_into_state_pure
+-- Top-level SHA-3 specs — proved by importing Spec_Pure equality proofs
 
-@[spec] axiom squeeze_state_spec
-    (state : RustArray u64 25) (output : RustSlice u8)
-    (out_offset len : usize) :
-    ⦃ ⌜ len.toNat ≤ 200 ⌝ ⦄
-    squeeze_state state output out_offset len
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄  -- TODO: full postcondition with squeeze_state_pure
+@[spec] theorem sha3_224_spec (message : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ sha3_224 message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.sha3_224_pure message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.sha3_224_purifies]; mvcgen
 
-/-! ## Top-level SHA-3 API specs
+@[spec] theorem sha3_256_spec (message : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ sha3_256 message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.sha3_256_pure message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.sha3_256_purifies]; mvcgen
 
-These are thin wrappers around `keccak`. Once `keccak_spec` is proved
-(composing xor_block_into_state_spec, keccak_f_spec, squeeze_state_spec
-via fold_range_purifies), these follow immediately. -/
+@[spec] theorem sha3_384_spec (message : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ sha3_384 message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.sha3_384_pure message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.sha3_384_purifies]; mvcgen
 
-@[spec] axiom keccak_spec (OUTPUT_LEN rate : usize) (delim : u8) (message : RustSlice u8) :
-    ⦃ ⌜ 0 < rate.toNat ∧ rate.toNat ≤ 200 ∧ rate.toNat % 8 = 0 ⌝ ⦄
-    hacspec_sha3.sponge.keccak OUTPUT_LEN rate delim message
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄  -- TODO: full postcondition with keccak_pure
+@[spec] theorem sha3_512_spec (message : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ sha3_512 message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.sha3_512_pure message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.sha3_512_purifies]; mvcgen
 
--- sha3_* and shake* follow from keccak_spec
--- (proved in Spec_Pure.lean using equality-based approach)
+@[spec] theorem shake128_spec (N : usize) (message : RustSlice u8)
+    (hN : N.toNat < USize64.size - 200) :
+    ⦃ ⌜ True ⌝ ⦄ shake128 N message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.shake128_pure N.toNat message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.shake128_purifies _ _ hN]; mvcgen
+
+@[spec] theorem shake256_spec (N : usize) (message : RustSlice u8)
+    (hN : N.toNat < USize64.size - 200) :
+    ⦃ ⌜ True ⌝ ⦄ shake256 N message
+    ⦃ ⇓ r => ⌜ r = ⟨Spec.Pure.shake256_pure N.toNat message.val⟩ ⌝ ⦄ := by
+  intro _; rw [Spec.Pure.shake256_purifies _ _ hN]; mvcgen
 
 end Spec.PureMvcgen
