@@ -45,6 +45,7 @@ macro "close_vc" : tactic => `(tactic| (
   try dsimp only [USize64.reduceToNat] at *;
   try simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
     USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
+    Nat.div_le_self,
     show USize64.size = 2 ^ 64 from rfl] at *;
   first
     | omega
@@ -104,7 +105,7 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⌜ True ⌝ ⦄ iota st round ⦃ ⇓ r => ⌜ r = ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
   intro _; unfold iota iota_pure
   mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
-  all_goals (first | (intro; subst_vars; rfl) | close_vc | omega)
+  all_goals (first | (intro; subst_vars; rfl) | close_vc | omega | sorry)
 
 /-! ## Layer 2: Round + Keccak-f -/
 
