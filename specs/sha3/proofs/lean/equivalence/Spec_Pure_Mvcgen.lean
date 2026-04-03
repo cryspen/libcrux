@@ -154,10 +154,23 @@ set_option maxHeartbeats 1600000 in
 
 /-! ## Keccak-f[1600] -/
 
-set_option maxHeartbeats 6400000 in
+-- keccak_f: equality via fold_range_purifies, then lift to triple
+private theorem keccak_f_purifies (st : RustArray u64 25) :
+    keccak_f st = .ok ⟨keccak_f_pure st.toVec⟩ := by
+  unfold keccak_f keccak_f_pure; simp only [bind_pure]
+  have round_purifies : ∀ (acc : RustArray u64 25) (i : usize) (hi : i.toNat < 24),
+      (do let st ← theta acc; let st ← rho st; let st ← pi st
+          let st ← chi st; iota st i)
+      = .ok ⟨round_pure acc.toVec ⟨i.toNat, hi⟩⟩ := by
+    intro acc i hi
+    have := round_spec acc i hi
+    sorry -- extract equality from triple (round_spec is @[spec])
+  exact fold_range_purifies (α_pure := Vector u64 25) 24
+    (fun a => a.toVec) (fun v => ⟨v⟩) _ _ st (fun _ => rfl) trivial
+    (fun acc i hi => round_purifies acc i hi)
+
 @[spec] theorem keccak_f_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ keccak_f st ⦃ ⇓ r => ⌜ r = ⟨keccak_f_pure st.toVec⟩ ⌝ ⦄ := by
-  intro _; unfold keccak_f keccak_f_pure; mvcgen
-  all_goals sorry
+  intro _; rw [keccak_f_purifies]; mvcgen
 
 end Spec.PureMvcgen
