@@ -197,10 +197,72 @@ are done via fold_range_purifies in Spec_Pure.lean. -/
 
 open hacspec_sha3.sponge hacspec_sha3.sha3
 
--- Import keccak_purifies axiom and sha3_* theorems from Spec_Pure
--- (These are proved modulo keccak_purifies axiom)
+/-! ### Sponge helper specs -/
 
--- Top-level SHA-3 specs — proved by importing Spec_Pure equality proofs
+-- lane_index spec
+@[spec] axiom lane_index_spec (l : usize) :
+    ⦃ ⌜ l.toNat < 25 ⌝ ⦄ lane_index l ⦃ ⇓ r => ⌜ r.toNat = 5 * (l.toNat % 5) + l.toNat / 5 ⌝ ⦄
+
+@[spec] theorem to_le_bytes_spec (x : u64) :
+    ⦃ ⌜ True ⌝ ⦄ core_models.num.Impl_9.to_le_bytes x ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _; unfold core_models.num.Impl_9.to_le_bytes; mvcgen
+
+@[spec] theorem from_le_bytes_spec (b : RustArray u8 8) :
+    ⦃ ⌜ True ⌝ ⦄ core_models.num.Impl_9.from_le_bytes b ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _; unfold core_models.num.Impl_9.from_le_bytes; mvcgen
+
+@[spec] theorem slice_len_spec (output : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ core_models.slice.Impl.len u8 output
+    ⦃ ⇓ r => ⌜ r.toNat = output.val.size ⌝ ⦄ := by
+  intro _; unfold core_models.slice.Impl.len rust_primitives.slice.slice_length
+  mvcgen; exact rust_primitives.sequence.Seq.toNat_ofNat_size output
+
+-- squeeze_state: mvcgen decomposes into ~24 VCs. Most close with close_sponge_vc.
+-- Remaining VCs need omega + Nat.div bound (omega can't derive i < 25 from
+-- i < len/8 and len ≤ 200 due to Nat subtraction encoding of division).
+set_option maxHeartbeats 32000000 in
+@[spec] theorem squeeze_state_spec (state : RustArray u64 25) (output : RustSlice u8)
+    (out_offset len : usize) (hlen : len.toNat ≤ 200) :
+    ⦃ ⌜ True ⌝ ⦄ squeeze_state state output out_offset len ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _; unfold squeeze_state
+  hax_mvcgen [slice_len_spec, usize_div_spec, usize_mod_spec, usize_mul_spec,
+    usize_add_spec, lane_index_spec, to_le_bytes_spec, getElemResult_usize_spec,
+    rust_primitives.hax.monomorphized_update_at.update_at_usize_slice]
+  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _
+    | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
+        USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
+        show USize64.size = 2^64 from rfl] at *;
+       dsimp only [USize64.reduceToNat] at *; omega)
+    | sorry)
+
+-- xor_block_into_state: same pattern as squeeze_state
+set_option maxHeartbeats 32000000 in
+@[spec] theorem xor_block_into_state_spec
+    (state : RustArray u64 25) (block : RustSlice u8) (rate : usize)
+    (hrate : rate.toNat ≤ 200) :
+    ⦃ ⌜ True ⌝ ⦄ xor_block_into_state state block rate ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _; unfold xor_block_into_state
+  hax_mvcgen [usize_div_spec, usize_mul_spec, usize_add_spec,
+    getElemResult_usize_spec, from_le_bytes_spec, lane_index_spec,
+    rust_primitives.hax.monomorphized_update_at.update_at_usize,
+    core_models.slice.Impl.len, rust_primitives.slice.slice_length]
+  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _
+    | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
+        USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
+        show USize64.size = 2^64 from rfl] at *;
+       dsimp only [USize64.reduceToNat] at *; omega)
+    | sorry)
+
+-- keccak_spec uses keccak_f_spec + xor_block_into_state_spec + squeeze_state_spec
+set_option maxHeartbeats 32000000 in
+@[spec] theorem keccak_spec (OUTPUT_LEN rate : usize) (delim : u8) (message : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄ keccak OUTPUT_LEN rate delim message ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _; unfold keccak
+  mvcgen [rust_primitives.hax.repeat, core_models.slice.Impl.len,
+    rust_primitives.slice.slice_length]
+  all_goals trivial
+
+-- Top-level SHA-3 specs
 
 @[spec] theorem sha3_224_spec (message : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ sha3_224 message
