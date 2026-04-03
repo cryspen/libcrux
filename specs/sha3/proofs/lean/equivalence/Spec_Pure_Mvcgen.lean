@@ -7,13 +7,20 @@ import Std.Tactic.Do
 /-!
 # Pure specification functions for SHA-3 — mvcgen-based proofs
 
-Purification lemmas stated as Hoare triples, proved using `mvcgen`.
-The `@[spec] createi.spec_triple` axiom in Stubs.lean lets `mvcgen`
-handle `createi` calls, leaving per-element VCs that close by `subst_vars`.
+Purification lemmas as Hoare triples proved using `mvcgen`.
 
-Key design choices:
-- Pure defs are `@[irreducible]` to prevent term explosion during composition
-- Each spec is `@[spec]` so `mvcgen` uses it as a black box at higher layers
+**What works well with mvcgen:**
+- Primitives (rotate_left, to/from_le_bytes): fully automatic
+- `get` with explicit bound args: mvcgen decomposes, manual omega closes VCs
+- `rho`: mvcgen + createi spec + `intro; subst_vars; rfl` closes everything
+- Round composition: mvcgen composes @[spec] triples in ~1.6M heartbeats
+
+**Current limitation:**
+Functions like `pi`/`chi` that call `get` with computed USize64 indices:
+mvcgen can't auto-discharge `get_spec`'s preconditions (USize64 bounds).
+The `sorry.val` in VCs indicates the precondition resolution failed.
+These work with the equality-based approach (Spec_Pure.lean) using manual
+omega after normalize.
 -/
 
 open Std.Do hacspec_sha3.keccak_f
@@ -59,19 +66,17 @@ abbrev rotate_left_pure (x : u64) (n : u32) : u64 :=
 @[irreducible] def keccak_f_pure (st : Vector u64 25) : Vector u64 25 :=
   Fin.foldl 24 (fun st i => round_pure st i) st
 
-/-! ## Layer 0: Primitive specs (fully proved) -/
+/-! ## Fully proved specs -/
 
 @[spec]
 theorem rotate_left_spec (x : u64) (n : u32) :
-    ⦃ ⌜ True ⌝ ⦄
-    core_models.num.Impl_9.rotate_left x n
+    ⦃ ⌜ True ⌝ ⦄ core_models.num.Impl_9.rotate_left x n
     ⦃ ⇓ r => ⌜ r = rotate_left_pure x n ⌝ ⦄ := by
   intro _; unfold core_models.num.Impl_9.rotate_left rotate_left_pure; mvcgen
 
 @[spec]
 theorem to_le_bytes_spec (x : u64) :
-    ⦃ ⌜ True ⌝ ⦄
-    core_models.num.Impl_9.to_le_bytes x
+    ⦃ ⌜ True ⌝ ⦄ core_models.num.Impl_9.to_le_bytes x
     ⦃ ⇓ r => ⌜ r = ⟨#v[(x % 256).toUInt8, (x >>> 8 % 256).toUInt8,
         (x >>> 16 % 256).toUInt8, (x >>> 24 % 256).toUInt8,
         (x >>> 32 % 256).toUInt8, (x >>> 40 % 256).toUInt8,
@@ -80,8 +85,7 @@ theorem to_le_bytes_spec (x : u64) :
 
 @[spec]
 theorem from_le_bytes_spec (b : RustArray u8 8) :
-    ⦃ ⌜ True ⌝ ⦄
-    core_models.num.Impl_9.from_le_bytes b
+    ⦃ ⌜ True ⌝ ⦄ core_models.num.Impl_9.from_le_bytes b
     ⦃ ⇓ r => ⌜ r = b.toVec[0].toUInt64 + (b.toVec[1].toUInt64 <<< 8)
         + (b.toVec[2].toUInt64 <<< 16) + (b.toVec[3].toUInt64 <<< 24)
         + (b.toVec[4].toUInt64 <<< 32) + (b.toVec[5].toUInt64 <<< 40)
@@ -112,10 +116,7 @@ theorem get_spec (st : RustArray u64 25) (x y : usize) (hx : x.toNat < 5) (hy : 
   case vc3.h => rw [hadd, show (25 : USize64).toNat = 25 from by native_decide]; omega
   case vc4.isFalse.isFalse.success => intro h; subst h; congr 1
 
-/-! ## Layer 1: Keccak-f step specs
-
-`mvcgen` decomposes each step function, uses `createi.spec_triple` for the
-array construction, and leaves per-element VCs that close by `subst_vars`. -/
+/-! ## Step specs (mvcgen + createi spec) -/
 
 set_option maxHeartbeats 6400000 in
 @[spec]
@@ -129,8 +130,10 @@ set_option maxHeartbeats 6400000 in
 theorem rho_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ rho st ⦃ ⇓ r => ⌜ r = ⟨rho_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold rho rho_pure; mvcgen
-  all_goals (first | intro; subst_vars; rfl | sorry)
+  all_goals (intro; subst_vars; rfl)
 
+-- pi/chi/iota: mvcgen can't auto-discharge get_spec's USize64 bound preconditions.
+-- Stated as sorry pending better mvcgen integration for USize64 arithmetic.
 set_option maxHeartbeats 6400000 in
 @[spec]
 theorem pi_spec (st : RustArray u64 25) :
@@ -153,7 +156,7 @@ theorem iota_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24)
   mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
   all_goals (first | intro; subst_vars; rfl | omega | sorry)
 
-/-! ## Layer 2: Round composition (uses step specs as black boxes) -/
+/-! ## Round composition (uses step specs as black boxes) -/
 
 set_option maxHeartbeats 1600000 in
 @[spec]
@@ -165,7 +168,7 @@ theorem round_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24
   intro _; mvcgen
   all_goals (first | (intro; unfold round_pure; subst_vars; rfl) | sorry)
 
-/-! ## Layer 3: Keccak-f[1600] -/
+/-! ## Keccak-f[1600] -/
 
 set_option maxHeartbeats 6400000 in
 @[spec]
