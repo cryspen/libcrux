@@ -1,4 +1,5 @@
 import Hax
+import Std.Do.Triple
 
 /-! # Stubs for missing functions in the hacspec SHA-3 spec extraction -/
 
@@ -81,6 +82,20 @@ axiom createi_purifies (T : Type) (N : usize)
     [inst2 : core_models.ops.function.Fn (usize → RustM T) (rust_primitives.hax.Tuple1 usize)]
     (hf : ∀ (i : usize) (hi : i.toNat < N.toNat), f i = .ok (f_pure ⟨i.toNat, hi⟩)) :
     createi T N (usize → RustM T) f = .ok ⟨Vector.ofFn f_pure⟩
+
+open Std.Do in
+-- Triple-style spec for createi, usable by mvcgen via @[spec].
+-- If each element call purifies, the whole createi returns Vector.ofFn.
+@[spec]
+axiom createi.spec_triple (T : Type) (N : usize)
+    (f : usize → RustM T) (f_pure : Fin N.toNat → T)
+    [inst1 : core_models.ops.function.Fn.AssociatedTypes (usize → RustM T) (rust_primitives.hax.Tuple1 usize)]
+    [inst2 : core_models.ops.function.Fn (usize → RustM T) (rust_primitives.hax.Tuple1 usize)]
+    (hf : ∀ (i : usize) (hi : i.toNat < N.toNat),
+      ⦃ ⌜ True ⌝ ⦄ f i ⦃ ⇓ r => ⌜ r = f_pure ⟨i.toNat, hi⟩ ⌝ ⦄) :
+    ⦃ ⌜ True ⌝ ⦄
+    createi T N (usize → RustM T) f
+    ⦃ ⇓ r => ⌜ r = ⟨Vector.ofFn f_pure⟩ ⌝ ⦄
 
 end hacspec_sha3
 
