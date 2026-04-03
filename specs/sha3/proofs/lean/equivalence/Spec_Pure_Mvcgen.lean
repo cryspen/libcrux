@@ -88,6 +88,30 @@ theorem from_le_bytes_spec (b : RustArray u8 8) :
         + (b.toVec[6].toUInt64 <<< 48) + (b.toVec[7].toUInt64 <<< 56) ⌝ ⦄ := by
   intro _; unfold core_models.num.Impl_9.from_le_bytes; mvcgen
 
+set_option hax_mvcgen.specset "bv" in
+set_option maxHeartbeats 6400000 in
+@[spec]
+theorem get_spec (st : RustArray u64 25) (x y : usize) (hx : x.toNat < 5) (hy : y.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ hacspec_sha3.keccak_f.get st x y
+    ⦃ ⇓ r => ⌜ r = get_pure st.toVec ⟨x.toNat, hx⟩ ⟨y.toNat, hy⟩ ⌝ ⦄ := by
+  intro _; unfold hacspec_sha3.keccak_f.get get_pure
+  have hx' : x.toBitVec.toNat < 5 := hx
+  have hy' : y.toBitVec.toNat < 5 := hy
+  have hmul : (5 * x).toNat = 5 * x.toNat := by
+    rw [USize64.toNat_mul, show (5 : USize64).toNat = 5 from by native_decide]
+    exact Nat.mod_eq_of_lt (by omega)
+  have hmul' : (5 * x).toBitVec.toNat = 5 * x.toBitVec.toNat := hmul
+  have hadd : (5 * x + y).toNat = 5 * x.toNat + y.toNat := by
+    rw [USize64.toNat_add, hmul]; exact Nat.mod_eq_of_lt (by omega)
+  mvcgen [rust_primitives.ops.arith.Mul.mul, rust_primitives.ops.arith.Add.add]
+  case vc1.isTrue =>
+    simp only [BitVec.umulOverflow, decide_eq_true_eq,
+      show (5 : USize64).toBitVec.toNat = 5 from by native_decide] at *; omega
+  case vc2.isFalse.isTrue =>
+    simp only [BitVec.uaddOverflow, decide_eq_true_eq, hmul'] at *; omega
+  case vc3.h => rw [hadd, show (25 : USize64).toNat = 25 from by native_decide]; omega
+  case vc4.isFalse.isFalse.success => intro h; subst h; congr 1
+
 /-! ## Layer 1: Keccak-f step specs
 
 `mvcgen` decomposes each step function, uses `createi.spec_triple` for the
