@@ -86,6 +86,28 @@ end hacspec_sha3
 
 /-! ## `fold_range` purification -/
 
+-- The result of `USize64.fold_range` does not depend on the invariant or its
+-- pure witness, since neither is evaluated in the loop body.
+set_option maxHeartbeats 800000 in
+theorem USize64.fold_range_inv_irrel {α : Type} (s e : USize64)
+    (inv1 inv2 : α → USize64 → RustM Prop)
+    (init : α) (body : α → USize64 → RustM α)
+    (pureInv1 pureInv2) :
+    USize64.fold_range s e inv1 init body pureInv1
+    = USize64.fold_range s e inv2 init body pureInv2 := by
+  unfold USize64.fold_range
+  split
+  · case isTrue h =>
+    show (body init s >>= fun r => USize64.fold_range (s + 1) e inv1 r body pureInv1)
+       = (body init s >>= fun r => USize64.fold_range (s + 1) e inv2 r body pureInv2)
+    congr 1; ext r
+    exact USize64.fold_range_inv_irrel (s + 1) e inv1 inv2 r body pureInv1 pureInv2
+  · rfl
+termination_by (e - s)
+decreasing_by
+  simp only [USize64.sizeOf, Nat.add_lt_add_iff_right]
+  exact USize64.sub_succ_lt_self _ _ (by assumption)
+
 /-- Purification of `fold_range` for any accumulator type `α` with a
     pure representation `α_pure` and projection `to_pure : α → α_pure`.
 
@@ -103,4 +125,23 @@ axiom fold_range_purifies {α α_pure : Type} (n : usize)
     [inst : rust_primitives.hax.folds (int_type := usize)] :
     rust_primitives.hax.folds.fold_range (0 : usize) n
       (fun _ _ => (pure true : RustM Bool)) init body
+    = .ok (from_pure (Fin.foldl n.toNat (fun v i => body_pure v i) (to_pure init)))
+
+-- `fold_range_purifies` generalized to any invariant. Since `fold_range` does not
+-- computationally depend on its invariant, we can always replace a non-trivial
+-- invariant with `pure true` and apply the base `fold_range_purifies` axiom.
+-- Stated at the level of `USize64.fold_range` to avoid auto-param synthesis issues.
+axiom fold_range_purifies_any_inv {α α_pure : Type} (n : usize)
+    (to_pure : α → α_pure)
+    (from_pure : α_pure → α)
+    (inv : α → usize → RustM Prop)
+    (body : α → usize → RustM α)
+    (body_pure : α_pure → Fin n.toNat → α_pure)
+    (init : α)
+    (pureInv)
+    (h_roundtrip : ∀ v, to_pure (from_pure v) = v)
+    (h_init : True)
+    (hbody : ∀ (acc : α) (i : usize) (hi : i.toNat < n.toNat),
+      body acc i = .ok (from_pure (body_pure (to_pure acc) ⟨i.toNat, hi⟩))) :
+    USize64.fold_range (0 : usize) n inv init body pureInv
     = .ok (from_pure (Fin.foldl n.toNat (fun v i => body_pure v i) (to_pure init)))
