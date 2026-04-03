@@ -16,3 +16,12 @@ lean_lib hacspec_sha3 where
 
 lean_lib Spec_Pure where
   roots := #[`equivalence.Spec_Pure]
+
+lean_lib Spec_Pure_Defs where
+  roots := #[`equivalence.Spec_Pure_Defs]
+
+lean_lib Spec_Pure_Mvcgen where
+  roots := #[`equivalence.Spec_Pure_Mvcgen]
+
+lean_lib Spec_Pure_Equality where
+  roots := #[`equivalence.Spec_Pure_Equality]
