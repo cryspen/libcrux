@@ -116,6 +116,18 @@ t = re.sub(
 open(sys.argv[1],'w').write(t)
 " "$sha3"
 
+    # Remove sorry'd @[hax_spec] definitions that block mvcgen from using
+    # our proven @[spec] triples. The hax-generated specs have
+    # `ensures := fun _ => pure True` which is uninformative.
+    python3 -c "
+import re, sys
+t = open(sys.argv[1]).read()
+# Remove all @[hax_spec] attributes — the generated specs have sorry proofs
+# and block mvcgen from using our proven @[spec] triples.
+t = t.replace('@[hax_spec]', '-- @[hax_spec] -- removed by patch')
+open(sys.argv[1],'w').write(t)
+" "$sha3"
+
     # Remove broken createi definition (our Stubs.lean provides it).
     python3 -c "
 import re, sys
