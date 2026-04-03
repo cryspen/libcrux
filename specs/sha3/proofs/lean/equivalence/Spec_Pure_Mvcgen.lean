@@ -38,12 +38,6 @@ namespace Spec.PureMvcgen
     ⦃ ⌜ a.toNat + b.toNat < USize64.size ⌝ ⦄ (a +? b)
     ⦃ ⇓ r => ⌜ r.toNat = a.toNat + b.toNat ⌝ ⦄
 
-/-! ## get spec (black box — bounds in precondition, getD in postcondition) -/
-
-@[spec] axiom get_spec (st : RustArray u64 25) (x y : usize) :
-    ⦃ ⌜ x.toNat < 5 ∧ y.toNat < 5 ⌝ ⦄ hacspec_sha3.keccak_f.get st x y
-    ⦃ ⇓ r => ⌜ r = st.toVec.toArray.getD (5 * x.toNat + y.toNat) 0 ⌝ ⦄
-
 /-! ## VC closer: normalize USize64 constants + omega -/
 
 macro "close_vc" : tactic => `(tactic| (
@@ -58,6 +52,25 @@ macro "close_vc" : tactic => `(tactic| (
     show (25 : USize64).toNat = 25 from by native_decide,
     show USize64.size = 2 ^ 64 from rfl] at *;
   first | omega | (intro h; subst h; congr 1; omega) | (constructor <;> omega) | (intro; subst_vars; rfl) | (subst_vars; congr <;> omega)))
+
+/-! ## Array access spec -/
+
+@[spec] theorem getElemResult_usize_spec {α : Type} [Inhabited α] {n : usize}
+    (xs : RustArray α n) (i : usize) :
+    ⦃ ⌜ i.toNat < n.toNat ⌝ ⦄ xs[i]_?
+    ⦃ ⇓ r => ⌜ r = xs.toVec.toArray.getD i.toNat default ⌝ ⦄ := by
+  intro h; unfold getElemResult usize.instGetElemResultVector; mvcgen; simp [Array.getD, h]
+
+/-! ## get spec -/
+
+set_option maxHeartbeats 6400000 in
+@[spec] theorem get_spec (st : RustArray u64 25) (x y : usize)
+    (hx : x.toNat < 5) (hy : y.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ hacspec_sha3.keccak_f.get st x y
+    ⦃ ⇓ r => ⌜ r = st.toVec.toArray.getD (5 * x.toNat + y.toNat) 0 ⌝ ⦄ := by
+  intro _; unfold hacspec_sha3.keccak_f.get
+  hax_mvcgen [usize_mul_spec, usize_add_spec, getElemResult_usize_spec]
+  all_goals (first | close_vc | (intro h; subst h; simp [Array.getD]; close_vc) | sorry)
 
 /-! ## Pure definitions -/
 
