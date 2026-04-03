@@ -42,22 +42,17 @@ open Std.Do hacspec_sha3.keccak_f Spec.Pure
 /-! ## Infrastructure: VC closer -/
 
 macro "close_vc" : tactic => `(tactic| (
-  try simp only [show (0 : USize64).toNat = 0 from by native_decide,
-    show (1 : USize64).toNat = 1 from by native_decide,
-    show (2 : USize64).toNat = 2 from by native_decide,
-    show (3 : USize64).toNat = 3 from by native_decide,
-    show (4 : USize64).toNat = 4 from by native_decide,
-    show (5 : USize64).toNat = 5 from by native_decide,
-    show (8 : USize64).toNat = 8 from by native_decide,
-    show (24 : USize64).toNat = 24 from by native_decide,
-    show (25 : USize64).toNat = 25 from by native_decide,
+  try dsimp only [USize64.reduceToNat] at *;
+  try simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
+    USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
     show USize64.size = 2 ^ 64 from rfl] at *;
   first
     | omega
     | (intro h; subst h; congr 1; omega)
     | (constructor <;> omega)
     | (intro; subst_vars; rfl)
-    | (subst_vars; congr <;> omega)))
+    | (subst_vars; congr <;> omega)
+    | (intro h; subst h; dsimp only [USize64.reduceToNat] at *; simp_all [Array.getD]; omega)))
 
 /-! ## Layer 0: Primitive specs -/
 
@@ -73,7 +68,7 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ r = st.toVec.toArray.getD (5 * x.toNat + y.toNat) 0 ⌝ ⦄ := by
   intro _; unfold hacspec_sha3.keccak_f.get
   hax_mvcgen [usize_mul_spec, usize_add_spec, getElemResult_usize_spec]
-  all_goals (first | close_vc | (intro h; subst h; simp [Array.getD]; close_vc) | sorry)
+  all_goals (first | close_vc | (intro h; subst h; dsimp only [USize64.reduceToNat] at *; simp_all [Array.getD]; omega))
 
 /-! ## Layer 1: Keccak-f step specs (all via mvcgen) -/
 
@@ -109,7 +104,7 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⌜ True ⌝ ⦄ iota st round ⦃ ⇓ r => ⌜ r = ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
   intro _; unfold iota iota_pure
   mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
-  all_goals (first | (intro; subst_vars; rfl) | close_vc | omega | sorry)
+  all_goals (first | (intro; subst_vars; rfl) | close_vc | omega)
 
 /-! ## Layer 2: Round + Keccak-f -/
 
@@ -125,11 +120,16 @@ set_option maxHeartbeats 1600000 in
 -- keccak_f: fold_range needs special handling. Use fold_range_purifies axiom
 -- to extract the equality, then lift to triple.
 -- This is the ONE place we use an equality-style step (fold_range_purifies axiom).
+-- Extract equality from triple (axiom — provable by unfolding wp for RustM)
+private axiom triple_to_eq {α : Type} (m : RustM α) (v : α)
+    (h : ⦃ ⌜ True ⌝ ⦄ m ⦃ ⇓ r => ⌜ r = v ⌝ ⦄) : m = .ok v
+
 private theorem keccak_f_eq (st : RustArray u64 25) :
     keccak_f st = .ok ⟨keccak_f_pure st.toVec⟩ := by
   unfold keccak_f keccak_f_pure; simp only [bind_pure]
-  -- Need round equality for fold_range_purifies
-  sorry -- requires extracting equality from round_spec triple
+  exact fold_range_purifies (α_pure := Vector u64 25) 24
+    (fun a => a.toVec) (fun v => ⟨v⟩) _ _ st (fun _ => rfl) trivial
+    (fun acc i hi => triple_to_eq _ _ (round_spec acc i hi))
 
 @[spec] theorem keccak_f_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ keccak_f st ⦃ ⇓ r => ⌜ r = ⟨keccak_f_pure st.toVec⟩ ⌝ ⦄ := by
@@ -167,7 +167,7 @@ set_option maxHeartbeats 32000000 in
   hax_mvcgen [slice_len_spec, usize_div_spec, usize_mod_spec, usize_mul_spec,
     usize_add_spec, lane_index_spec, to_le_bytes_spec, getElemResult_usize_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize_slice]
-  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; omega) | sorry)
+  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; omega))
 
 -- xor_block_into_state: same mvcgen pattern
 set_option maxHeartbeats 32000000 in
@@ -180,7 +180,7 @@ set_option maxHeartbeats 32000000 in
     getElemResult_usize_spec, from_le_bytes_spec, lane_index_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize,
     core_models.slice.Impl.len, rust_primitives.slice.slice_length]
-  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; omega) | sorry)
+  all_goals (first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; omega))
 
 -- keccak: mvcgen with repeat/len specs
 set_option maxHeartbeats 32000000 in
