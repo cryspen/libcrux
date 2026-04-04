@@ -88,18 +88,59 @@ private axiom triple_to_eq {α : Type} (m : RustM α) (v : α)
 
 /-! ## Layer 1: Keccak-f step specs (all via mvcgen) -/
 
--- theta: 3 nested createi calls. Each createi body is proved to purify individually,
--- then composed via createi_purifies to get the equality theta = .ok ⟨theta_pure ...⟩.
+-- theta: 3 nested createi calls. Define sub-function specs so mvcgen gets
+-- concrete f_pure instantiations for each createi.
+
+-- theta: 3 nested createi calls. Define sub-specs for each body
+-- so createi_purifies gets concrete f_pure instantiations.
+
+-- Body 1: c[x] = get(x,0) ⊕ get(x,1) ⊕ get(x,2) ⊕ get(x,3) ⊕ get(x,4)
+private def theta_c_pure (st : Vector u64 25) (x : Fin 5) : u64 :=
+  get_pure st x 0 ^^^ get_pure st x 1 ^^^ get_pure st x 2 ^^^
+  get_pure st x 3 ^^^ get_pure st x 4
+
 set_option maxHeartbeats 6400000 in
-private theorem theta_c_body (st : RustArray u64 25) (x : usize) (hx : x.toNat < 5) :
+private theorem theta_c_body (st : RustArray u64 25) (x : usize) :
+    ⦃ ⌜ x.toNat < 5 ⌝ ⦄
     (do let r ← get st x 0; let r ← r ^^^? (← get st x 1)
         let r ← r ^^^? (← get st x 2); let r ← r ^^^? (← get st x 3)
         r ^^^? (← get st x 4))
-    = .ok (get_pure st.toVec ⟨x.toNat, hx⟩ 0 ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 1
-           ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 2 ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 3
-           ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 4) := by
-  sorry
+    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5, r = theta_c_pure st.toVec ⟨x.toNat, hx⟩ ⌝ ⦄ := by
+  intro ⟨hx⟩; unfold theta_c_pure
+  hax_mvcgen [get_spec]
+  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; subst_vars; unfold get_pure; simp only [Array.getD, show st.toVec.toArray.size = 25 from by simp]; split_ifs <;> (first | rfl | omega)) | sorry
 
+-- Body 2: d[x] = c[(x+4)%5] ⊕ rot(c[(x+1)%5], 1)
+private def theta_d_pure (c : Vector u64 5) (x : Fin 5) : u64 :=
+  c[(x.val + 4) % 5] ^^^ rotate_left_pure c[(x.val + 1) % 5] 1
+
+set_option maxHeartbeats 6400000 in
+private theorem theta_d_body (c : RustArray u64 5) (x : usize) :
+    ⦃ ⌜ x.toNat < 5 ⌝ ⦄
+    (do (← c[(← ((← (x +? (4 : usize))) %? (5 : usize)))]_?)
+          ^^^? (← (core_models.num.Impl_9.rotate_left
+            (← c[(← ((← (x +? (1 : usize))) %? (5 : usize)))]_?)
+            (1 : u32))))
+    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5, r = theta_d_pure c.toVec ⟨x.toNat, hx⟩ ⌝ ⦄ := by
+  intro hx; unfold theta_d_pure
+  hax_mvcgen [usize_add_spec, usize_mod_spec, getElemResult_usize_spec, rotate_left_spec]
+  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; simp_all; omega)
+
+-- Body 3: result[idx] = state[idx] ⊕ d[idx/5]
+private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Fin 25) : u64 :=
+  st[idx] ^^^ d[idx.val / 5]
+
+set_option maxHeartbeats 6400000 in
+private theorem theta_r_body (st : RustArray u64 25) (d : RustArray u64 5)
+    (idx : usize) :
+    ⦃ ⌜ idx.toNat < 25 ⌝ ⦄
+    (do (← st[idx]_?) ^^^? (← d[(← (idx /? (5 : usize)))]_?))
+    ⦃ ⇓ r => ⌜ ∀ hidx : idx.toNat < 25, r = theta_r_pure st.toVec d.toVec ⟨idx.toNat, hidx⟩ ⌝ ⦄ := by
+  intro ⟨hidx⟩; unfold theta_r_pure
+  hax_mvcgen [usize_div_spec, getElemResult_usize_spec]
+  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; subst_vars; rfl) | (dsimp only [USize64.reduceToNat] at *; have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega) | sorry
+
+-- theta_eq: compose via createi_purifies
 set_option maxHeartbeats 6400000 in
 private theorem theta_eq (st : RustArray u64 25) :
     theta st = .ok ⟨theta_pure st.toVec⟩ := by
