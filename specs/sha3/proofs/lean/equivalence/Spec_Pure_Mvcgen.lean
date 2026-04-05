@@ -106,20 +106,38 @@ set_option maxHeartbeats 6400000 in
 /-! ## Layer 1: Keccak-f step specs (all via mvcgen) -/
 
 -- theta: provide f_pure for each of the 3 nested createi calls,
--- then close body VCs inline.
--- Nat-indexed pure functions for each createi body in theta.
-private def theta_c_pure (st : Vector u64 25) (x : Fin 5) : u64 :=
-  get_pure st x 0 ^^^ get_pure st x 1 ^^^ get_pure st x 2 ^^^
-  get_pure st x 3 ^^^ get_pure st x 4
-private def theta_d_pure (c : Vector u64 5) (x : Fin 5) : u64 :=
-  c[(x.val + 4) % 5] ^^^ rotate_left_pure c[(x.val + 1) % 5] 1
-private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Fin 25) : u64 :=
-  st[idx] ^^^ d[idx.val / 5]
+-- theta sub-function specs (preconditions carry bounds, ∀ in postcondition for Fin)
+set_option maxHeartbeats 6400000 in
+@[spec] theorem theta_c_spec (st : RustArray u64 25) (x : usize) :
+    ⦃ ⌜ x.toNat < 5 ⌝ ⦄ theta_c st x
+    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5,
+      r = get_pure st.toVec ⟨x.toNat, hx⟩ 0 ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 1
+        ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 2 ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 3
+        ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 4 ⌝ ⦄ := by
+  intro hx; unfold theta_c get_pure; mvcgen
+  all_goals sorry
 
+set_option maxHeartbeats 6400000 in
+@[spec] theorem theta_d_spec (c : RustArray u64 5) (x : usize) :
+    ⦃ ⌜ x.toNat < 5 ⌝ ⦄ theta_d c x
+    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5,
+      r = c.toVec[(x.toNat + 4) % 5]'(Nat.mod_lt _ (by omega)) ^^^ rotate_left_pure (c.toVec[(x.toNat + 1) % 5]'(Nat.mod_lt _ (by omega))) 1 ⌝ ⦄ := by
+  intro hx; unfold theta_d; mvcgen
+  all_goals sorry
+
+set_option maxHeartbeats 6400000 in
+@[spec] theorem theta_r_spec (st : RustArray u64 25) (d : RustArray u64 5) (idx : usize) :
+    ⦃ ⌜ idx.toNat < 25 ⌝ ⦄ theta_r st d idx
+    ⦃ ⇓ r => ⌜ ∀ hidx : idx.toNat < 25,
+      r = st.toVec[idx.toNat]'(hidx) ^^^ d.toVec[idx.toNat / 5]'(Nat.div_lt_of_lt_mul hidx) ⌝ ⦄ := by
+  intro hidx; unfold theta_r; mvcgen
+  all_goals sorry
+
+-- theta: compose via createi over named sub-functions
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
-  sorry -- TODO: rewrite using Nat-based createi.spec_triple + theta_c/d/r_spec
+  sorry
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
