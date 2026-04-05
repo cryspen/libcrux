@@ -95,7 +95,10 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ r = st.toVec.toArray.getD (5 * x.toNat + y.toNat) 0 ⌝ ⦄ := by
   intro ⟨hx, hy⟩; unfold hacspec_sha3.keccak_f.get
   hax_mvcgen [usize_mul_spec, usize_add_spec, getElemResult_usize_spec]
-  all_goals (first | close_vc | (intro h; subst h; dsimp only [USize64.reduceToNat] at *; simp_all [Array.getD]; omega))
+  · simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl] at *; omega
+  · simp only [usize_toNat_5, usize_toNat_25, show USize64.size = 2 ^ 64 from rfl, USize64.lt_iff_toNat_lt] at *; omega
+  · intro h; subst h; simp_all [Array.getD]; omega
+  · simp only [usize_toNat_5, usize_toNat_25, show USize64.size = 2 ^ 64 from rfl, USize64.lt_iff_toNat_lt] at *; omega
 
 /-! ## Infrastructure: triple ↔ equality bridge -/
 
@@ -119,21 +122,26 @@ set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold theta theta_pure; mvcgen
-  next => exact theta_c_pure st.toVec
-  next => exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))
   all_goals first
+    | (exact theta_c_pure st.toVec)
+    | (exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec)))
     | (exact USize64.zero_le _)
     | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
-        usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
-        rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set,
+        usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt,
         show USize64.size = 2 ^ 64 from rfl] at *;
        first | omega | (have := lane_index_bound (by omega); omega))
-    | (subst_vars; native_decide)
     | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
         usize_toNat_5, usize_toNat_25] at *; subst_vars;
-       first | rfl | (unfold theta_c_pure get_pure; simp_all [Array.getD])
-             | (unfold theta_d_pure; congr <;> omega) | (unfold theta_r_pure; rfl))
-    | simp_all
+       first | rfl | (unfold theta_c_pure get_pure; simp_all [Array.getD]; omega)
+             | (unfold theta_d_pure; congr; omega) | (unfold theta_r_pure; rfl))
+    | (simp_all only [USize64.reduceToNat, USize64.toNat_zero, Nat.add_zero,
+        Array.getD_eq_getD_getElem?, bind_pure_comp, WP.bind, WP.map,
+        Fin.getElem_fin, Fin.isValue, Vector.getElem_ofFn];
+       first | omega | trivial
+             | (simp_all only [USize64.reduceToNat, USize64.toNat_zero, Nat.add_zero,
+                 Array.getD_eq_getD_getElem?, bind_pure_comp, WP.bind, WP.map,
+                 Fin.getElem_fin, Fin.isValue, Vector.getElem_ofFn];
+                first | omega | trivial) | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
@@ -220,7 +228,10 @@ set_option maxHeartbeats 32000000 in
   hax_mvcgen [slice_len_spec, usize_div_spec, usize_mod_spec, usize_mul_spec,
     usize_add_spec, lane_index_spec, to_le_bytes_spec, getElemResult_usize_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize_slice]
-  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (exact USize64.zero_le _) | (simp only [usize_toNat_0, usize_toNat_8, usize_toNat_25, usize_toNat_200, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega)) | (subst_vars; native_decide) | simp_all
+  -- Pass 1: trivial, PLift, zero_le, arithmetic
+  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (exact USize64.zero_le _) | (simp only [usize_toNat_0, usize_toNat_8, usize_toNat_25, usize_toNat_200, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega)) | skip
+  -- Pass 2: BEq goals, wp⟦fail⟧ unreachable branches
+  all_goals simp_all
 
 -- xor_block_into_state: same mvcgen pattern
 -- rate bound in precondition so mvcgen can apply this from keccak_terminates.
