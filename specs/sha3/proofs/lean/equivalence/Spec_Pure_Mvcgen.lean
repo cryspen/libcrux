@@ -109,7 +109,7 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5,
       r = c.toVec[(x.toNat + 4) % 5]'(Nat.mod_lt _ (by omega)) ^^^ rotate_left_pure (c.toVec[(x.toNat + 1) % 5]'(Nat.mod_lt _ (by omega))) 1 ⌝ ⦄ := by
   intro hx; unfold theta_d; mvcgen
-  all_goals (first | (simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, USize64.lt_iff_toNat_lt] at *; omega) | (intro hx₂; simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, *]; congr <;> omega))
+  all_goals (first | (simp only [usize_toNat_1, usize_toNat_4, usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, USize64.lt_iff_toNat_lt] at *; omega) | (intro hx₂; simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, *]; congr <;> omega))
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_r_spec (st : RustArray u64 25) (d : RustArray u64 5) (idx : usize) :
@@ -117,7 +117,8 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ ∀ hidx : idx.toNat < 25,
       r = st.toVec[idx.toNat]'(hidx) ^^^ d.toVec[idx.toNat / 5]'(Nat.div_lt_of_lt_mul hidx) ⌝ ⦄ := by
   intro hidx; unfold theta_r; mvcgen
-  all_goals sorry
+  · simp only [usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt, show USize64.size = 2 ^ 64 from rfl] at *; have := Nat.div_lt_of_lt_mul (show USize64.toNat idx < 5 * 5 from by assumption); omega
+  · intro hidx₂; simp only [usize_toNat_5, usize_toNat_25, show USize64.size = 2 ^ 64 from rfl, *]; congr <;> omega
 
 -- theta: compose via createi over named sub-functions
 set_option maxHeartbeats 6400000 in
