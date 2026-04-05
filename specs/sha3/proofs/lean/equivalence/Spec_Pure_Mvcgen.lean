@@ -88,68 +88,25 @@ private axiom triple_to_eq {α : Type} (m : RustM α) (v : α)
 
 /-! ## Layer 1: Keccak-f step specs (all via mvcgen) -/
 
--- theta: 3 nested createi calls. Define sub-function specs so mvcgen gets
--- concrete f_pure instantiations for each createi.
-
--- theta: 3 nested createi calls. Define sub-specs for each body
--- so createi_purifies gets concrete f_pure instantiations.
-
--- Body 1: c[x] = get(x,0) ⊕ get(x,1) ⊕ get(x,2) ⊕ get(x,3) ⊕ get(x,4)
+-- theta: provide f_pure for each of the 3 nested createi calls,
+-- then close body VCs inline.
 private def theta_c_pure (st : Vector u64 25) (x : Fin 5) : u64 :=
   get_pure st x 0 ^^^ get_pure st x 1 ^^^ get_pure st x 2 ^^^
   get_pure st x 3 ^^^ get_pure st x 4
-
-set_option maxHeartbeats 6400000 in
-private theorem theta_c_body (st : RustArray u64 25) (x : usize) :
-    ⦃ ⌜ x.toNat < 5 ⌝ ⦄
-    (do let r ← get st x 0; let r ← r ^^^? (← get st x 1)
-        let r ← r ^^^? (← get st x 2); let r ← r ^^^? (← get st x 3)
-        r ^^^? (← get st x 4))
-    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5, r = theta_c_pure st.toVec ⟨x.toNat, hx⟩ ⌝ ⦄ := by
-  intro ⟨hx⟩; unfold theta_c_pure
-  hax_mvcgen [get_spec]
-  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; subst_vars; unfold get_pure; simp only [Array.getD, show st.toVec.toArray.size = 25 from by simp]; split_ifs <;> (first | rfl | omega)) | sorry
-
--- Body 2: d[x] = c[(x+4)%5] ⊕ rot(c[(x+1)%5], 1)
 private def theta_d_pure (c : Vector u64 5) (x : Fin 5) : u64 :=
   c[(x.val + 4) % 5] ^^^ rotate_left_pure c[(x.val + 1) % 5] 1
-
-set_option maxHeartbeats 6400000 in
-private theorem theta_d_body (c : RustArray u64 5) (x : usize) :
-    ⦃ ⌜ x.toNat < 5 ⌝ ⦄
-    (do (← c[(← ((← (x +? (4 : usize))) %? (5 : usize)))]_?)
-          ^^^? (← (core_models.num.Impl_9.rotate_left
-            (← c[(← ((← (x +? (1 : usize))) %? (5 : usize)))]_?)
-            (1 : u32))))
-    ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5, r = theta_d_pure c.toVec ⟨x.toNat, hx⟩ ⌝ ⦄ := by
-  intro hx; unfold theta_d_pure
-  hax_mvcgen [usize_add_spec, usize_mod_spec, getElemResult_usize_spec, rotate_left_spec]
-  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; simp_all; omega)
-
--- Body 3: result[idx] = state[idx] ⊕ d[idx/5]
 private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Fin 25) : u64 :=
   st[idx] ^^^ d[idx.val / 5]
 
 set_option maxHeartbeats 6400000 in
-private theorem theta_r_body (st : RustArray u64 25) (d : RustArray u64 5)
-    (idx : usize) :
-    ⦃ ⌜ idx.toNat < 25 ⌝ ⦄
-    (do (← st[idx]_?) ^^^? (← d[(← (idx /? (5 : usize)))]_?))
-    ⦃ ⇓ r => ⌜ ∀ hidx : idx.toNat < 25, r = theta_r_pure st.toVec d.toVec ⟨idx.toNat, hidx⟩ ⌝ ⦄ := by
-  intro ⟨hidx⟩; unfold theta_r_pure
-  hax_mvcgen [usize_div_spec, getElemResult_usize_spec]
-  all_goals first | close_vc | (intro; dsimp only [USize64.reduceToNat] at *; subst_vars; rfl) | (dsimp only [USize64.reduceToNat] at *; have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega) | sorry
-
--- theta_eq: compose via createi_purifies
-set_option maxHeartbeats 6400000 in
-private theorem theta_eq (st : RustArray u64 25) :
-    theta st = .ok ⟨theta_pure st.toVec⟩ := by
-  sorry
-
--- theta: proved via theta_eq
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
-  intro _; rw [theta_eq]; mvcgen
+  intro _; unfold theta theta_pure; mvcgen
+  -- f_pure metavars: provide concrete pure functions for the 3 createi calls
+  case vc1.f_pure => exact theta_c_pure st.toVec
+  case vc8.f_pure => exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))
+  -- body VCs and remaining goals
+  all_goals (first | close_vc | (simp only [show (5 : USize64).toNat = 5 from by native_decide, show (25 : USize64).toNat = 25 from by native_decide, show (0 : USize64).toNat = 0 from by native_decide, show (1 : USize64).toNat = 1 from by native_decide, show (2 : USize64).toNat = 2 from by native_decide, show (3 : USize64).toNat = 3 from by native_decide, show (4 : USize64).toNat = 4 from by native_decide, show USize64.size = 2 ^ 64 from rfl] at *; subst_vars; first | rfl | (unfold theta_c_pure get_pure; simp_all [Array.getD]) | (unfold theta_d_pure; congr <;> omega) | (unfold theta_r_pure; rfl) | (have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega) | omega) | sorry)
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
