@@ -48,14 +48,31 @@ private theorem lane_index_bound {d : Nat} (hd : d < 25) : 5 * (d % 5) + d / 5 <
   have h2 : d / 5 < 5 := Nat.div_lt_of_lt_mul (by omega)
   omega
 
+/-! ## Infrastructure: USize64 numeral reduction -/
+
+-- USize64.reduceToNat doesn't fire reliably in all simp/dsimp contexts.
+-- These explicit lemmas ensure omega sees concrete Nat values.
+private theorem usize_toNat_0  : (0  : usize).toNat = 0   := by native_decide
+private theorem usize_toNat_1  : (1  : usize).toNat = 1   := by native_decide
+private theorem usize_toNat_2  : (2  : usize).toNat = 2   := by native_decide
+private theorem usize_toNat_3  : (3  : usize).toNat = 3   := by native_decide
+private theorem usize_toNat_4  : (4  : usize).toNat = 4   := by native_decide
+private theorem usize_toNat_5  : (5  : usize).toNat = 5   := by native_decide
+private theorem usize_toNat_8  : (8  : usize).toNat = 8   := by native_decide
+private theorem usize_toNat_24 : (24 : usize).toNat = 24  := by native_decide
+private theorem usize_toNat_25 : (25 : usize).toNat = 25  := by native_decide
+private theorem usize_toNat_200 : (200 : usize).toNat = 200 := by native_decide
+
 /-! ## Infrastructure: VC closer -/
 
 macro "close_vc" : tactic => `(tactic| (
-  try dsimp only [USize64.reduceToNat] at *;
-  try simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
+  try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3,
+    usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200,
+    Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
     USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
     Nat.div_le_self,
     show USize64.size = 2 ^ 64 from rfl] at *;
+  try dsimp only [USize64.reduceToNat] at *;
   first
     | omega
     | (have := lane_index_bound (by omega); omega)
@@ -102,7 +119,6 @@ set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold theta theta_pure; mvcgen
-  -- f_pure metavars + body VCs — all sorry'd pending USize64.toNat normalization fix
   all_goals sorry
 
 set_option maxHeartbeats 6400000 in
@@ -190,7 +206,7 @@ set_option maxHeartbeats 32000000 in
   hax_mvcgen [slice_len_spec, usize_div_spec, usize_mod_spec, usize_mul_spec,
     usize_add_spec, lane_index_spec, to_le_bytes_spec, getElemResult_usize_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize_slice]
-  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega)) | sorry
+  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | close_vc | sorry
 
 -- xor_block_into_state: same mvcgen pattern
 -- rate bound in precondition so mvcgen can apply this from keccak_terminates.
@@ -203,7 +219,7 @@ set_option maxHeartbeats 32000000 in
     getElemResult_usize_spec, from_le_bytes_spec, lane_index_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize,
     core_models.slice.Impl.len, rust_primitives.slice.slice_length]
-  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (simp only [Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2^64 from rfl] at *; dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega)) | sorry
+  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | close_vc | sorry
 
 -- keccak: mvcgen with repeat/len specs
 -- rate bound in precondition so squeeze/xor preconditions can be discharged.
