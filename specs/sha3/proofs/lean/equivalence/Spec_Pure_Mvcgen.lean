@@ -108,15 +108,13 @@ set_option maxHeartbeats 6400000 in
 -- theta: provide f_pure for each of the 3 nested createi calls,
 -- then close body VCs inline.
 -- Nat-indexed pure functions for each createi body in theta.
--- These match the Nat-based createi.spec_triple signature.
-private def theta_c_pure (st : Vector u64 25) (x : Nat) : u64 :=
-  st.toArray.getD (5 * x) 0 ^^^ st.toArray.getD (5 * x + 1) 0 ^^^
-  st.toArray.getD (5 * x + 2) 0 ^^^ st.toArray.getD (5 * x + 3) 0 ^^^
-  st.toArray.getD (5 * x + 4) 0
-private def theta_d_pure (c : Vector u64 5) (x : Nat) : u64 :=
-  c.toArray.getD ((x + 4) % 5) 0 ^^^ rotate_left_pure (c.toArray.getD ((x + 1) % 5) 0) 1
-private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Nat) : u64 :=
-  st.toArray.getD idx 0 ^^^ d.toArray.getD (idx / 5) 0
+private def theta_c_pure (st : Vector u64 25) (x : Fin 5) : u64 :=
+  get_pure st x 0 ^^^ get_pure st x 1 ^^^ get_pure st x 2 ^^^
+  get_pure st x 3 ^^^ get_pure st x 4
+private def theta_d_pure (c : Vector u64 5) (x : Fin 5) : u64 :=
+  c[(x.val + 4) % 5] ^^^ rotate_left_pure c[(x.val + 1) % 5] 1
+private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Fin 25) : u64 :=
+  st[idx] ^^^ d[idx.val / 5]
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
@@ -147,8 +145,8 @@ set_option maxHeartbeats 6400000 in
 @[spec] theorem iota_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24) :
     ⦃ ⌜ round.toNat < 24 ⌝ ⦄ iota st round
     ⦃ ⇓ r => ⌜ r = ⟨iota_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
-  intro _; unfold iota iota_pure
-  mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize, ROUND_CONSTANTS_pure]
+  intro _; unfold iota iota_pure ROUND_CONSTANTS_pure
+  mvcgen [rust_primitives.hax.monomorphized_update_at.update_at_usize]
   all_goals (first | (dsimp only [USize64.reduceToNat] at *; subst_vars; rfl) | simp_all)
 
 /-! ## Layer 2: Round + Keccak-f -/

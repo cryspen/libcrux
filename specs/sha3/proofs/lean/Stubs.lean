@@ -80,18 +80,17 @@ namespace hacspec_sha3
 
 open Std.Do in
 -- Triple-style spec for createi, usable by mvcgen via @[spec].
--- f_pure takes Nat (not Fin) to avoid proof-term construction in postconditions.
--- The bound i < N becomes a precondition VC that mvcgen generates automatically.
+-- If each element call purifies, the whole createi returns Vector.ofFn.
 @[spec]
 axiom createi.spec_triple (T : Type) (N : usize)
-    (f : usize → RustM T) (f_pure : Nat → T)
+    (f : usize → RustM T) (f_pure : Fin N.toNat → T)
     [inst1 : core_models.ops.function.Fn.AssociatedTypes (usize → RustM T) (rust_primitives.hax.Tuple1 usize)]
     [inst2 : core_models.ops.function.Fn (usize → RustM T) (rust_primitives.hax.Tuple1 usize)]
-    (hf : ∀ (i : usize),
-      ⦃ ⌜ i.toNat < N.toNat ⌝ ⦄ f i ⦃ ⇓ r => ⌜ r = f_pure i.toNat ⌝ ⦄) :
+    (hf : ∀ (i : usize) (hi : i.toNat < N.toNat),
+      ⦃ ⌜ True ⌝ ⦄ f i ⦃ ⇓ r => ⌜ r = f_pure ⟨i.toNat, hi⟩ ⌝ ⦄) :
     ⦃ ⌜ True ⌝ ⦄
     createi T N (usize → RustM T) f
-    ⦃ ⇓ r => ⌜ r = ⟨Vector.ofFn (fun i => f_pure i.val)⟩ ⌝ ⦄
+    ⦃ ⇓ r => ⌜ r = ⟨Vector.ofFn f_pure⟩ ⌝ ⦄
 
 end hacspec_sha3
 

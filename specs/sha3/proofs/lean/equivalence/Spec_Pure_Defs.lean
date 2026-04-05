@@ -18,8 +18,8 @@ namespace Spec.Pure
 
 def get_pure (st : Vector u64 25) (x y : Fin 5) : u64 := st[5 * x.val + y.val]
 
-@[irreducible] def ROUND_CONSTANTS_pure : Vector u64 24 := ROUND_CONSTANTS.toVec
-@[irreducible] def RHO_OFFSETS_pure : Vector u32 25 := RHO_OFFSETS.toVec
+abbrev ROUND_CONSTANTS_pure : Vector u64 24 := ROUND_CONSTANTS.toVec
+abbrev RHO_OFFSETS_pure : Vector u32 25 := RHO_OFFSETS.toVec
 
 @[irreducible] def rotate_left_pure (x : u64) (n : u32) : u64 :=
   UInt64.ofBitVec (BitVec.rotateLeft x.toBitVec n.toNat)
