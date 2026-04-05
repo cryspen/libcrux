@@ -63,6 +63,8 @@ def Impl_9.to_le_bytes (x : u64) : RustM (RustArray u8 8) :=
     (x >>> 56 % 256).toUInt8,
   ])
 
+def Impl_8.MAX : u32 := (4294967295 : u32)
+
 @[irreducible] def Impl_11.MAX : usize := sorry
 
 end core_models.num
