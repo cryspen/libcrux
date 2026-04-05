@@ -63,24 +63,8 @@ private theorem usize_toNat_24 : (24 : usize).toNat = 24  := by native_decide
 private theorem usize_toNat_25 : (25 : usize).toNat = 25  := by native_decide
 private theorem usize_toNat_200 : (200 : usize).toNat = 200 := by native_decide
 
-/-! ## Infrastructure: VC closer -/
-
-macro "close_vc" : tactic => `(tactic| (
-  try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3,
-    usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200,
-    Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size,
-    USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
-    Nat.div_le_self,
-    show USize64.size = 2 ^ 64 from rfl] at *;
-  try dsimp only [USize64.reduceToNat] at *;
-  first
-    | omega
-    | (intro h; subst h; congr 1; omega)
-    | (have := lane_index_bound (by omega); omega)
-    | (constructor <;> omega)
-    | (intro; subst_vars; rfl)
-    | (subst_vars; congr <;> omega)
-    | (intro h; subst h; dsimp only [USize64.reduceToNat] at *; simp_all [Array.getD]; omega)))
+-- (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))) removed (fragile macro — breaks when @[spec] axioms change environment)
+-- All VC closers are now inline in each proof.
 
 /-! ## Layer 0: Primitive specs -/
 
@@ -115,7 +99,9 @@ set_option maxHeartbeats 6400000 in
         ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 2 ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 3
         ^^^ get_pure st.toVec ⟨x.toNat, hx⟩ 4 ⌝ ⦄ := by
   intro hx; unfold theta_c get_pure; mvcgen
-  all_goals sorry
+  all_goals (first | omega | (intro hx₂; subst_vars; simp
+    (discharger := omega) [Array.getD_eq_getD_getElem?,
+     Vector.getElem?_toArray, Vector.getElem?_eq_getElem, Option.getD_some]; rfl))
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_d_spec (c : RustArray u64 5) (x : usize) :
@@ -123,7 +109,7 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ ∀ hx : x.toNat < 5,
       r = c.toVec[(x.toNat + 4) % 5]'(Nat.mod_lt _ (by omega)) ^^^ rotate_left_pure (c.toVec[(x.toNat + 1) % 5]'(Nat.mod_lt _ (by omega))) 1 ⌝ ⦄ := by
   intro hx; unfold theta_d; mvcgen
-  all_goals sorry
+  all_goals (first | (simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, USize64.lt_iff_toNat_lt] at *; omega) | (intro hx₂; simp only [usize_toNat_5, show USize64.size = 2 ^ 64 from rfl, *]; congr <;> omega))
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_r_spec (st : RustArray u64 25) (d : RustArray u64 5) (idx : usize) :
@@ -150,14 +136,14 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⌜ True ⌝ ⦄ pi st ⦃ ⇓ r => ⌜ r = ⟨pi_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold pi pi_pure
   hax_mvcgen [usize_div_spec, usize_mod_spec, usize_mul_spec, usize_add_spec, get_spec]
-  all_goals close_vc
+  all_goals (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega)))
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem chi_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ chi st ⦃ ⇓ r => ⌜ r = ⟨chi_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold chi chi_pure
   hax_mvcgen [usize_div_spec, usize_mod_spec, usize_add_spec, get_spec]
-  all_goals close_vc
+  all_goals (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega)))
 
 -- iota triple: h as parameter for postcondition Fin, precondition for mvcgen use downstream
 @[spec] theorem iota_spec (st : RustArray u64 25) (round : usize) (h : round.toNat < 24) :
@@ -176,7 +162,7 @@ set_option maxHeartbeats 1600000 in
         let st ← chi st; iota st round)
     ⦃ ⇓ r => ⌜ r = ⟨round_pure st.toVec ⟨round.toNat, h⟩⟩ ⌝ ⦄ := by
   intro _; mvcgen
-  all_goals (first | (intro; unfold round_pure; subst_vars; rfl) | close_vc)
+  all_goals (first | (intro; unfold round_pure; subst_vars; rfl) | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 
 -- keccak_f: 24-round fold. TODO: needs fold_range @[spec] triple.
 @[spec] theorem keccak_f_spec (st : RustArray u64 25) :
@@ -205,7 +191,7 @@ open hacspec_sha3.sponge hacspec_sha3.sha3
   intro _; unfold core_models.slice.Impl.len rust_primitives.slice.slice_length
   mvcgen; exact rust_primitives.sequence.Seq.toNat_ofNat_size output
 
--- squeeze_state: mvcgen decomposes fully. VCs close with close_vc + omega.
+-- squeeze_state: mvcgen decomposes fully. VCs close with (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))) + omega.
 -- Postcondition is ⌜ True ⌝ (termination) until pure def is added.
 -- len bound in precondition so mvcgen can apply this from keccak_terminates.
 set_option maxHeartbeats 32000000 in
@@ -242,7 +228,7 @@ set_option maxHeartbeats 32000000 in
   intro hrate; unfold keccak
   mvcgen [rust_primitives.hax.repeat, core_models.slice.Impl.len,
     rust_primitives.slice.slice_length]
-  all_goals first | trivial | exact .down trivial | close_vc
+  all_goals first | trivial | exact .down trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega)))
 
 /-! ## Layer 4: Top-level SHA-3 API -/
 
@@ -250,19 +236,19 @@ set_option maxHeartbeats 32000000 in
 -- Each SHA-3 variant has a concrete rate ≤ 200; mvcgen discharges the precondition.
 @[spec] theorem sha3_224_spec (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ sha3_224 m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold sha3_224; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold sha3_224; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 @[spec] theorem sha3_256_spec (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ sha3_256 m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold sha3_256; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold sha3_256; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 @[spec] theorem sha3_384_spec (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ sha3_384 m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold sha3_384; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold sha3_384; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 @[spec] theorem sha3_512_spec (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ sha3_512 m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold sha3_512; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold sha3_512; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 @[spec] theorem shake128_spec (N : usize) (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ shake128 N m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold shake128; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold shake128; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 @[spec] theorem shake256_spec (N : usize) (m : RustSlice u8) :
     ⦃ ⌜ True ⌝ ⦄ shake256 N m ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
-  intro _; unfold shake256; mvcgen; all_goals (first | trivial | close_vc)
+  intro _; unfold shake256; mvcgen; all_goals (first | trivial | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, usize_toNat_200, Array.size_set, rust_primitives.sequence.Seq.toNat_ofNat_size, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, Nat.div_le_self, show USize64.size = 2 ^ 64 from rfl] at *; try dsimp only [USize64.reduceToNat] at *; first | omega | (have := lane_index_bound (by omega); omega) | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
