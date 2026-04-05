@@ -102,34 +102,26 @@ set_option maxHeartbeats 6400000 in
 
 /-! ## Infrastructure: triple ↔ equality bridge -/
 
--- Extract equality from triple (axiom — provable by unfolding wp for RustM)
-private axiom triple_to_eq {α : Type} (m : RustM α) (v : α)
-    (h : ⦃ ⌜ True ⌝ ⦄ m ⦃ ⇓ r => ⌜ r = v ⌝ ⦄) : m = .ok v
 
 /-! ## Layer 1: Keccak-f step specs (all via mvcgen) -/
 
 -- theta: provide f_pure for each of the 3 nested createi calls,
 -- then close body VCs inline.
-private def theta_c_pure (st : Vector u64 25) (x : Fin 5) : u64 :=
-  get_pure st x 0 ^^^ get_pure st x 1 ^^^ get_pure st x 2 ^^^
-  get_pure st x 3 ^^^ get_pure st x 4
-private def theta_d_pure (c : Vector u64 5) (x : Fin 5) : u64 :=
-  c[(x.val + 4) % 5] ^^^ rotate_left_pure c[(x.val + 1) % 5] 1
-private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Fin 25) : u64 :=
-  st[idx] ^^^ d[idx.val / 5]
+-- Nat-indexed pure functions for each createi body in theta.
+-- These match the Nat-based createi.spec_triple signature.
+private def theta_c_pure (st : Vector u64 25) (x : Nat) : u64 :=
+  st.toArray.getD (5 * x) 0 ^^^ st.toArray.getD (5 * x + 1) 0 ^^^
+  st.toArray.getD (5 * x + 2) 0 ^^^ st.toArray.getD (5 * x + 3) 0 ^^^
+  st.toArray.getD (5 * x + 4) 0
+private def theta_d_pure (c : Vector u64 5) (x : Nat) : u64 :=
+  c.toArray.getD ((x + 4) % 5) 0 ^^^ rotate_left_pure (c.toArray.getD ((x + 1) % 5) 0) 1
+private def theta_r_pure (st : Vector u64 25) (d : Vector u64 5) (idx : Nat) : u64 :=
+  st.toArray.getD idx 0 ^^^ d.toArray.getD (idx / 5) 0
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
-  intro _; unfold theta theta_pure; mvcgen
-  -- Pass 1: f_pure values
-  all_goals first | (exact theta_c_pure st.toVec) | (exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))) | (exact theta_r_pure st.toVec (Vector.ofFn (theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))))) | skip
-  -- Pass 2: arithmetic
-  all_goals first | (exact USize64.zero_le _) | (simp only [usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega) | (have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega)) | skip
-  -- Pass 3: body equalities
-  all_goals first | (subst_vars; unfold theta_c_pure get_pure; simp_all [Array.getD]) | (subst_vars; unfold theta_d_pure; simp [Vector.getElem_ofFn]) | (subst_vars; unfold theta_r_pure; simp [Vector.getElem_ofFn]) | skip
-  -- Pass 4: remaining
-  all_goals (try simp only [USize64.reduceToNat, Vector.getElem_ofFn, Fin.isValue] at *; first | rfl | omega | trivial)
+  sorry -- TODO: rewrite using Nat-based createi.spec_triple + theta_c/d/r_spec
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
@@ -170,18 +162,10 @@ set_option maxHeartbeats 1600000 in
   intro _; mvcgen
   all_goals (first | (intro; unfold round_pure; subst_vars; rfl) | close_vc)
 
--- keccak_f: fold_range needs special handling. Use fold_range_purifies axiom
--- to extract the equality, then lift to triple.
-private theorem keccak_f_eq (st : RustArray u64 25) :
-    keccak_f st = .ok ⟨keccak_f_pure st.toVec⟩ := by
-  unfold keccak_f keccak_f_pure; simp only [bind_pure]
-  exact fold_range_purifies (α_pure := Vector u64 25) 24
-    (fun a => a.toVec) (fun v => ⟨v⟩) _ _ st (fun _ => rfl) trivial
-    (fun acc i hi => triple_to_eq _ _ (round_spec acc i hi))
-
+-- keccak_f: 24-round fold. TODO: needs fold_range @[spec] triple.
 @[spec] theorem keccak_f_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ keccak_f st ⦃ ⇓ r => ⌜ r = ⟨keccak_f_pure st.toVec⟩ ⌝ ⦄ := by
-  intro _; rw [keccak_f_eq]; mvcgen
+  sorry
 
 /-! ## Layer 3: Sponge helpers -/
 
