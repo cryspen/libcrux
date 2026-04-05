@@ -75,8 +75,8 @@ macro "close_vc" : tactic => `(tactic| (
   try dsimp only [USize64.reduceToNat] at *;
   first
     | omega
-    | (have := lane_index_bound (by omega); omega)
     | (intro h; subst h; congr 1; omega)
+    | (have := lane_index_bound (by omega); omega)
     | (constructor <;> omega)
     | (intro; subst_vars; rfl)
     | (subst_vars; congr <;> omega)
@@ -206,7 +206,7 @@ set_option maxHeartbeats 32000000 in
   hax_mvcgen [slice_len_spec, usize_div_spec, usize_mod_spec, usize_mul_spec,
     usize_add_spec, lane_index_spec, to_le_bytes_spec, getElemResult_usize_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize_slice]
-  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | close_vc | sorry
+  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (exact USize64.zero_le _) | (simp only [usize_toNat_0, usize_toNat_8, usize_toNat_25, usize_toNat_200, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega)) | (subst_vars; native_decide) | simp_all
 
 -- xor_block_into_state: same mvcgen pattern
 -- rate bound in precondition so mvcgen can apply this from keccak_terminates.
@@ -219,7 +219,7 @@ set_option maxHeartbeats 32000000 in
     getElemResult_usize_spec, from_le_bytes_spec, lane_index_spec,
     rust_primitives.hax.monomorphized_update_at.update_at_usize,
     core_models.slice.Impl.len, rust_primitives.slice.slice_length]
-  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | close_vc | sorry
+  all_goals first | trivial | exact .down trivial | exact Nat.zero_le _ | (exact USize64.zero_le _) | (simp only [usize_toNat_0, usize_toNat_8, usize_toNat_25, usize_toNat_200, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega)) | (subst_vars; native_decide) | simp_all
 
 -- keccak: mvcgen with repeat/len specs
 -- rate bound in precondition so squeeze/xor preconditions can be discharged.
@@ -229,7 +229,7 @@ set_option maxHeartbeats 32000000 in
   intro hrate; unfold keccak
   mvcgen [rust_primitives.hax.repeat, core_models.slice.Impl.len,
     rust_primitives.slice.slice_length]
-  all_goals (first | trivial | exact .down trivial | close_vc | sorry)
+  all_goals first | trivial | exact .down trivial | close_vc
 
 /-! ## Layer 4: Top-level SHA-3 API -/
 
