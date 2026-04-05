@@ -122,24 +122,14 @@ set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold theta theta_pure; mvcgen
-  all_goals first
-    | (exact theta_c_pure st.toVec)
-    | (exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec)))
-    | (exact USize64.zero_le _)
-    | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
-        usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt,
-        show USize64.size = 2 ^ 64 from rfl] at *;
-       first | omega | (have := lane_index_bound (by omega); omega))
-    -- Body equalities and remaining arithmetic:
-    -- First normalize all USize64.toNat constants, then close
-    | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
-        usize_toNat_5, usize_toNat_25] at *;
-       first
-       | (subst_vars; unfold theta_c_pure get_pure; simp_all [Array.getD])
-       | (subst_vars; unfold theta_d_pure; simp [Vector.getElem_ofFn])
-       | (subst_vars; unfold theta_r_pure; simp [Vector.getElem_ofFn])
-       | (have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega)
-       | omega)
+  -- Pass 1: f_pure values
+  all_goals first | (exact theta_c_pure st.toVec) | (exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))) | (exact theta_r_pure st.toVec (Vector.ofFn (theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))))) | skip
+  -- Pass 2: arithmetic
+  all_goals first | (exact USize64.zero_le _) | (simp only [usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (have := lane_index_bound (by omega); omega) | (have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega)) | skip
+  -- Pass 3: body equalities
+  all_goals first | (subst_vars; unfold theta_c_pure get_pure; simp_all [Array.getD]) | (subst_vars; unfold theta_d_pure; simp [Vector.getElem_ofFn]) | (subst_vars; unfold theta_r_pure; simp [Vector.getElem_ofFn]) | skip
+  -- Pass 4: remaining
+  all_goals (try simp only [USize64.reduceToNat, Vector.getElem_ofFn, Fin.isValue] at *; first | rfl | omega | trivial)
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
