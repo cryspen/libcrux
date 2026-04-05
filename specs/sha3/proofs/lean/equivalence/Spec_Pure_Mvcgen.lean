@@ -130,18 +130,16 @@ set_option maxHeartbeats 6400000 in
         usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt,
         show USize64.size = 2 ^ 64 from rfl] at *;
        first | omega | (have := lane_index_bound (by omega); omega))
-    | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
-        usize_toNat_5, usize_toNat_25] at *; subst_vars;
-       first | rfl | (unfold theta_c_pure get_pure; simp_all [Array.getD]; omega)
-             | (unfold theta_d_pure; congr; omega) | (unfold theta_r_pure; rfl))
-    | (simp_all only [USize64.reduceToNat, USize64.toNat_zero, Nat.add_zero,
-        Array.getD_eq_getD_getElem?, bind_pure_comp, WP.bind, WP.map,
-        Fin.getElem_fin, Fin.isValue, Vector.getElem_ofFn];
-       first | omega | trivial
-             | (simp_all only [USize64.reduceToNat, USize64.toNat_zero, Nat.add_zero,
-                 Array.getD_eq_getD_getElem?, bind_pure_comp, WP.bind, WP.map,
-                 Fin.getElem_fin, Fin.isValue, Vector.getElem_ofFn];
-                first | omega | trivial) | sorry)
+    -- Body equalities and remaining arithmetic:
+    -- First normalize all USize64.toNat constants, then close
+    | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
+        usize_toNat_5, usize_toNat_25] at *;
+       first
+       | (subst_vars; unfold theta_c_pure get_pure; simp_all [Array.getD])
+       | (subst_vars; unfold theta_d_pure; simp [Vector.getElem_ofFn])
+       | (subst_vars; unfold theta_r_pure; simp [Vector.getElem_ofFn])
+       | (have := Nat.div_lt_of_lt_mul (by omega : _ < 5 * 5); omega)
+       | omega)
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
