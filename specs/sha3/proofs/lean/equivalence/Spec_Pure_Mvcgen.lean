@@ -119,7 +119,21 @@ set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
   intro _; unfold theta theta_pure; mvcgen
-  all_goals sorry
+  next => exact theta_c_pure st.toVec
+  next => exact theta_d_pure (Vector.ofFn (theta_c_pure st.toVec))
+  all_goals first
+    | (exact USize64.zero_le _)
+    | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
+        usize_toNat_5, usize_toNat_25, USize64.lt_iff_toNat_lt, USize64.le_iff_toNat_le,
+        rust_primitives.sequence.Seq.toNat_ofNat_size, Array.size_set,
+        show USize64.size = 2 ^ 64 from rfl] at *;
+       first | omega | (have := lane_index_bound (by omega); omega))
+    | (subst_vars; native_decide)
+    | (simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4,
+        usize_toNat_5, usize_toNat_25] at *; subst_vars;
+       first | rfl | (unfold theta_c_pure get_pure; simp_all [Array.getD])
+             | (unfold theta_d_pure; congr <;> omega) | (unfold theta_r_pure; rfl))
+    | simp_all
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
