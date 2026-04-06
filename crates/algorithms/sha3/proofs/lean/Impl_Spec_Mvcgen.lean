@@ -270,9 +270,37 @@ set_option maxHeartbeats 400000 in
       have : k ≠ 0 := by omega
       simp only [this, ite_false]
 
+-- Pi: lane permutation. Unrolled into pi_0..pi_4, each writing one column.
+-- mvcgen times out on the full pi (24 writes + 24 reads), so we prove each
+-- pi_k separately and compose.
+-- TODO: impl_pi_0..4_spec, impl_pi_spec — these are large straight-line
+-- computations. Each pi_k has 4-5 set+get pairs. Even individually they
+-- may be slow with mvcgen. If mvcgen+vc_omega can't close within budget,
+-- we sorry with a description of what's needed.
+
+-- pi_0 writes positions (1,0), (2,0), (3,0), (4,0) from old
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_0_spec (self old : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi_0 1 u64 self old
+    ⦃ ⇓ r => ⌜
+      -- Written positions (flat index 5*0+i for i=1..4):
+      r.st.toVec.toArray.getD 1 0 = old.st.toVec.toArray.getD 15 0 ∧  -- self[1,0] = old[0,3]
+      r.st.toVec.toArray.getD 2 0 = old.st.toVec.toArray.getD 5 0 ∧   -- self[2,0] = old[0,1]
+      r.st.toVec.toArray.getD 3 0 = old.st.toVec.toArray.getD 20 0 ∧  -- self[3,0] = old[0,4]
+      r.st.toVec.toArray.getD 4 0 = old.st.toVec.toArray.getD 10 0    -- self[4,0] = old[0,2]
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.pi_0
+  mvcgen
+  -- sorry.val goals: mvcgen couldn't resolve Impl_2_set_spec / KeccakState_getElem_spec
+  -- preconditions. These are ⌜i<5 ∧ j<5⌝ for concrete i,j.
+  all_goals first
+    | exact ⟨by vc_omega, by vc_omega⟩
+    | sorry
+
 -- TODO: impl_theta_spec
 -- TODO: impl_rho_0..4_spec, impl_rho_spec
--- TODO: impl_pi_0..4_spec, impl_pi_spec
 -- TODO: impl_chi_spec (loop — leave for user)
 
 /-! ## Layer 3: Bridge + composition -/
