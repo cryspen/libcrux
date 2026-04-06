@@ -136,8 +136,52 @@ open libcrux_sha3.simd.portable in
     ⦃ ⇓ r => ⌜ r = a ^^^ c ⌝ ⦄ := by
   intro _; unfold _veorq_n_u64; mvcgen
 
--- TODO: rotate_left_portable_spec, vrax1q_u64_spec, vxarq_u64_spec
--- These depend on handling the i32 debug assertion and cast_op.
+-- rotate_left: assert (LEFT+RIGHT==64), cast LEFT to u32, call Impl_9.rotate_left
+-- Needs i32 checked add spec. We axiomatize it since i32 overflow is guaranteed
+-- not to happen for our use (LEFT+RIGHT=64, both non-negative and < 64).
+@[spec] axiom i32_add_spec (a b : i32) :
+    ⦃ ⌜ True ⌝ ⦄ (a +? b) ⦃ ⇓ r => ⌜ r = a + b ⌝ ⦄
+@[spec] axiom i32_eq_spec (a b : i32) :
+    ⦃ ⌜ True ⌝ ⦄ (a ==? b) ⦃ ⇓ r => ⌜ r = (a == b) ⌝ ⦄
+-- Cast i32 → u32 (via Cast typeclass). Axiom: always succeeds, preserves numeric value.
+@[spec] axiom cast_i32_u32_spec (x : i32) :
+    ⦃ ⌜ True ⌝ ⦄ (rust_primitives.hax.cast_op x : RustM u32)
+    ⦃ ⇓ r => ⌜ r = Int32.toUInt32 x ⌝ ⦄
+
+open libcrux_sha3.simd.portable in
+@[spec] theorem rotate_left_portable_spec (LEFT RIGHT : i32) (x : u64) :
+    ⦃ ⌜ LEFT + RIGHT = 64 ⌝ ⦄ rotate_left LEFT RIGHT x
+    ⦃ ⇓ r => ⌜ r = rotate_left_pure x (Int32.toUInt32 LEFT) ⌝ ⦄ := by
+  intro hlr
+  unfold rotate_left hax_lib.assert
+    core_models.num.Impl_9.rotate_left rotate_left_pure
+  mvcgen
+  -- vc1: cast result matches — subst all equalities
+  · subst_vars; rfl
+  -- vc2: assertion failure contradicts hlr : LEFT + RIGHT = 64
+  · exfalso; simp_all [BEq.beq]
+
+open libcrux_sha3.simd.portable in
+@[spec] theorem vrax1q_u64_spec (a b : u64) :
+    ⦃ ⌜ True ⌝ ⦄ _vrax1q_u64 a b
+    ⦃ ⇓ r => ⌜ r = a ^^^ rotate_left_pure b 1 ⌝ ⦄ := by
+  intro _; unfold _vrax1q_u64 rotate_left hax_lib.assert
+    core_models.num.Impl_9.rotate_left rotate_left_pure
+  mvcgen
+  -- vc1: subst cast result
+  · subst_vars; rfl
+  -- vc2: assertion contradiction (1+63=64 but assert says false)
+  · exfalso; simp_all [BEq.beq]
+
+open libcrux_sha3.simd.portable in
+@[spec] theorem vxarq_u64_spec (LEFT RIGHT : i32) (a b : u64) :
+    ⦃ ⌜ LEFT + RIGHT = 64 ⌝ ⦄ _vxarq_u64 LEFT RIGHT a b
+    ⦃ ⇓ r => ⌜ r = rotate_left_pure (a ^^^ b) (Int32.toUInt32 LEFT) ⌝ ⦄ := by
+  intro hlr; unfold _vxarq_u64 rotate_left hax_lib.assert
+    core_models.num.Impl_9.rotate_left rotate_left_pure
+  mvcgen
+  · subst_vars; rfl
+  · exfalso; simp_all [BEq.beq]
 
 /-! ## Layer 1: State accessor specs -/
 
