@@ -290,100 +290,43 @@ set_option maxHeartbeats 1600000 in
       r.st.toVec.toArray.getD 3 0 = old.st.toVec.toArray.getD 20 0 ∧  -- self[3,0] = old[0,4]
       r.st.toVec.toArray.getD 4 0 = old.st.toVec.toArray.getD 10 0    -- self[4,0] = old[0,2]
     ⌝ ⦄ := by
-  -- Use Triple.bind to compose specs step by step.
-  -- Pi_0 body: old[⟨0,3⟩] >>= set(self,1,0,_) >>= ... >>= pure
-  unfold Impl_2.pi_0
-  -- Step 1: read old[⟨0,3⟩]
-  apply Triple.bind (Q := fun v => ⌜ v = old.st.toVec.toArray.getD 15 0 ⌝)
-  · -- Step 1: old[⟨0,3⟩] gives getD 15 0
-    -- We need to strengthen the precondition from ⌜True⌝ to ⌜0<5 ∧ 3<5⌝
-    -- and show the postcondition matches.
-    -- First, convert to a form KeccakState_getElem_spec can close:
-    change ⦃⌜True⌝⦄ old[(rust_primitives.hax.Tuple2.mk (0:usize) (3:usize))]_?
-      ⦃PostCond.noThrow fun v => ⌜ v = old.st.toVec.toArray.getD 15 0 ⌝⦄
-    exact Triple.of_entails_left
-      ⌜ (0:usize).toNat < 5 ∧ (3:usize).toNat < 5 ⌝  -- P (original precond)
-      ⌜ True ⌝  -- Q (weakened precond)
-      (PostCond.noThrow fun v => ⌜ v = old.st.toVec.toArray.getD 15 0 ⌝)
-      _  -- the command
-      (KeccakState_getElem_spec old 0 3)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 2: Impl_2.set self 1 0 v1
-  intro v1
-  apply Triple.bind (Q := fun s => ⌜ s.st.toVec.size = 25 ∧
-      ∀ k (hk : k < 25), s.st.toVec[k] =
-        if k = 1 then v1 else self.st.toVec[k] ⌝)
-  · -- Normalize postcondition: (Q, (PostCond.noThrow R).snd) ↝ PostCond.noThrow Q
-    simp only [PostCond.noThrow]
-    exact Triple.of_entails_left
-      ⌜ (1:usize).toNat < 5 ∧ (0:usize).toNat < 5 ⌝ _ _ _
-      (Impl_2_set_spec self 1 0 v1)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 3: old[⟨0,1⟩]
-  intro s1
-  apply Triple.bind (Q := fun v => ⌜ v = old.st.toVec.toArray.getD 5 0 ⌝)
-  · change ⦃⌜ _ ⌝⦄ old[(rust_primitives.hax.Tuple2.mk (0:usize) (1:usize))]_? ⦃PostCond.noThrow _⦄
-    exact Triple.of_entails_left
-      ⌜ (0:usize).toNat < 5 ∧ (1:usize).toNat < 5 ⌝ _ _ _
-      (KeccakState_getElem_spec old 0 1)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 4: Impl_2.set s1 2 0 v2
-  intro v2
-  apply Triple.bind (Q := fun s => ⌜ s.st.toVec.size = 25 ∧
-      ∀ k (hk : k < 25), s.st.toVec[k] =
-        if k = 2 then v2 else s1.st.toVec[k] ⌝)
-  · simp only [PostCond.noThrow]
-    exact Triple.of_entails_left
-      ⌜ (2:usize).toNat < 5 ∧ (0:usize).toNat < 5 ⌝ _ _ _
-      (Impl_2_set_spec s1 2 0 v2)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 5: old[⟨0,4⟩]
-  intro s2
-  apply Triple.bind (Q := fun v => ⌜ v = old.st.toVec.toArray.getD 20 0 ⌝)
-  · change ⦃⌜ _ ⌝⦄ old[(rust_primitives.hax.Tuple2.mk (0:usize) (4:usize))]_? ⦃PostCond.noThrow _⦄
-    exact Triple.of_entails_left
-      ⌜ (0:usize).toNat < 5 ∧ (4:usize).toNat < 5 ⌝ _ _ _
-      (KeccakState_getElem_spec old 0 4)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 6: Impl_2.set s2 3 0 v3
-  intro v3
-  apply Triple.bind (Q := fun s => ⌜ s.st.toVec.size = 25 ∧
-      ∀ k (hk : k < 25), s.st.toVec[k] =
-        if k = 3 then v3 else s2.st.toVec[k] ⌝)
-  · simp only [PostCond.noThrow]
-    exact Triple.of_entails_left
-      ⌜ (3:usize).toNat < 5 ∧ (0:usize).toNat < 5 ⌝ _ _ _
-      (Impl_2_set_spec s2 3 0 v3)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 7: old[⟨0,2⟩]
-  intro s3
-  apply Triple.bind (Q := fun v => ⌜ v = old.st.toVec.toArray.getD 10 0 ⌝)
-  · change ⦃⌜ _ ⌝⦄ old[(rust_primitives.hax.Tuple2.mk (0:usize) (2:usize))]_? ⦃PostCond.noThrow _⦄
-    exact Triple.of_entails_left
-      ⌜ (0:usize).toNat < 5 ∧ (2:usize).toNat < 5 ⌝ _ _ _
-      (KeccakState_getElem_spec old 0 2)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 8: Impl_2.set s3 4 0 v4
-  intro v4
-  apply Triple.bind (Q := fun s => ⌜ s.st.toVec.size = 25 ∧
-      ∀ k (hk : k < 25), s.st.toVec[k] =
-        if k = 4 then v4 else s3.st.toVec[k] ⌝)
-  · simp only [PostCond.noThrow]
-    exact Triple.of_entails_left
-      ⌜ (4:usize).toNat < 5 ∧ (0:usize).toNat < 5 ⌝ _ _ _
-      (Impl_2_set_spec s3 4 0 v4)
-      (by simp only [SPred.entails, SPred.pure, USize64.reduceToNat]; intro; exact ⟨by omega, by omega⟩)
-  -- Step 9: pure s4 — close the postcondition from chain of set properties
-  -- Context has: v1=old.st[15], s1[k]=if k=1 then v1 else self[k],
-  -- v2=old.st[5], s2[k]=if k=2 then v2 else s1[k], etc.
-  intro s4
-  apply Triple.pure
-  -- Goal: ⌜ s4 props ⌝ ⊢ₛ ⌜ postcond ⌝
-  simp only [SPred.entails, SPred.pure]
-  intro ⟨hs4sz, hs4⟩
-  -- We also need to pull out the earlier hypotheses from the pure assertions
-  -- They should be in context from the Triple.bind intros
-  sorry
+  -- Approach: unfold everything to raw EStateM, let Lean evaluate the concrete computation.
+  -- All indices are concrete, so bounds checks all pass and the computation is deterministic.
+  intro _
+  unfold Impl_2.pi_0 Impl_2.set
+    libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3,
+    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index,
+    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij]
+  -- Now it's a raw chain of *?, +?, if-then-else, Vector.set, Vector.getElem
+  -- Use mvcgen on this fully-unfolded form
+  mvcgen
+  all_goals (try vc_omega)
+  -- Remaining: postcondition about (v.set i₁ x₁).set i₂ x₂ ... at indices 1,2,3,4
+  -- Reduce USize64 literals, then simplify Vector.set/getD with concrete indices.
+  · -- Reduce USize64 literals, then use dsimp to evaluate Vector.set/getInternal
+    simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    -- The goal has Vector.set at USize64.toNat of variables. We need to reduce
+    -- these to concrete Nat values. Use omega to derive, then rewrite.
+    -- But we can't name inaccessible vars. Instead, try dsimp with omega-derived facts.
+    -- Actually: the key insight is that all USize64.toNat values in the goal
+    -- are determined by the hypotheses. Let's try `omega` on the subgoals after splitting.
+    -- Close the 4 conjuncts about Vector.set chain.
+    -- Pattern: dsimp to reduce USize64 → Nat, simp [*] to propagate index equalities,
+    -- then evaluate the Vector.set/getD chain at concrete indices.
+    -- The fourth conjunct closes automatically; the first 3 need Array.set evaluation.
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> {
+      dsimp only [USize64.reduceToNat, KeccakState.st] at *
+      simp only [*, Vector.getElem_set, Vector.getElem_toArray,
+        Array.getD, Vector.size_toArray, dite_true] at *
+      -- Remaining goals about ((arr.set 1 v₁).set 2 v₂ ...).getD k 0 = old.getD m 0
+      -- where all indices are now concrete. TODO: close with Array.getElem_set evaluation.
+      sorry
+    }
 
 -- TODO: impl_theta_spec
 -- TODO: impl_rho_0..4_spec, impl_rho_spec
