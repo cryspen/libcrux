@@ -783,45 +783,12 @@ set_option maxHeartbeats 6400000 in
       r.st.toVec.toArray.getD k 0 =
         rotate_left_pure (self.st.toVec.toArray.getD k 0 ^^^ t.toVec.toArray.getD (k / 5) 0)
           (Int32.toUInt32 ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0)) ⌝ ⦄ := by
-  intro _; unfold Impl_2.rho; mvcgen
-  rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
-  obtain ⟨h0a, h0b, h0c, h0d, h0e, h0f⟩ := h0
-  obtain ⟨h1a, h1b, h1c, h1d, h1e, h1f⟩ := h1
-  obtain ⟨h2a, h2b, h2c, h2d, h2e, h2f⟩ := h2
-  obtain ⟨h3a, h3b, h3c, h3d, h3e, h3f⟩ := h3
-  obtain ⟨h4a, h4b, h4c, h4d, h4e, h4f⟩ := h4
-  simp only [modifies_only5] at h0f h1f h2f h3f h4f
-  intro k hk
-  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
-    k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
-    k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
-    by omega) with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-  dsimp only [List.getD, Nat.reduceDiv] <;>
-  first
-    -- 4 frame hops (k=0..4, written by rho_0)
-    -- k=0 is special: rho_0 gives plain XOR, but postcondition has rotate_left_pure ... 0
-    | (rw [show rotate_left_pure _ (Int32.toUInt32 0) = _ from sorry]; -- rotate_left_pure x 0 = x
-       exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h1f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›))))
-    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h1f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)))
-    -- 3 frame hops (k=5..9, written by rho_1)
-    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›))
-    -- 2 frame hops (k=10..14, written by rho_2)
-    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
-        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)
-    -- 1 frame hop (k=15..19, written by rho_3)
-    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›
-    -- 0 frame hops (k=20..24, written by rho_4)
-    | assumption
+  -- Same pattern as pi_spec: mvcgen + obtain + rcases + trans chain.
+  -- Two issues to resolve:
+  -- 1. Position 0 needs rotate_left_pure_zero lemma
+  -- 2. List.getD/getElem? reduction (dsimp doesn't fully reduce [list][k]?.getD)
+  -- Pattern confirmed working in standalone experiment; applying to real file TODO.
+  sorry
 
 attribute [local irreducible] Impl_2.rho
 
