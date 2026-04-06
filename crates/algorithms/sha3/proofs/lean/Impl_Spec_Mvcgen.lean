@@ -116,6 +116,18 @@ theorem Vector.toArray_getD_eq {n : Nat} {α : Type}
     v.toArray.getD i d = v[i] := by
   simp [Array.getD, Vector.size_toArray, hi, Vector.getElem_toArray]
 
+/-! ## Frame condition helpers
+
+`modifies_only` says: the result array matches `self` at all positions except the listed ones. -/
+
+def modifies_only4 (r self : RustArray u64 25) (i₁ i₂ i₃ i₄ : Nat) : Prop :=
+  ∀ k, k < 25 → k ≠ i₁ → k ≠ i₂ → k ≠ i₃ → k ≠ i₄ →
+    r.toVec.toArray.getD k 0 = self.toVec.toArray.getD k 0
+
+def modifies_only5 (r self : RustArray u64 25) (i₁ i₂ i₃ i₄ i₅ : Nat) : Prop :=
+  ∀ k, k < 25 → k ≠ i₁ → k ≠ i₂ → k ≠ i₃ → k ≠ i₄ → k ≠ i₅ →
+    r.toVec.toArray.getD k 0 = self.toVec.toArray.getD k 0
+
 /-! ## Layer 0: KeccakItem primitive specs (portable, N=1, T=u64) -/
 
 open libcrux_sha3.simd.portable in
@@ -343,7 +355,9 @@ set_option maxHeartbeats 1600000 in
       r.st.toVec.toArray.getD 1 0 = old.st.toVec.toArray.getD 15 0 ∧  -- self[1,0] = old[0,3]
       r.st.toVec.toArray.getD 2 0 = old.st.toVec.toArray.getD 5 0 ∧   -- self[2,0] = old[0,1]
       r.st.toVec.toArray.getD 3 0 = old.st.toVec.toArray.getD 20 0 ∧  -- self[3,0] = old[0,4]
-      r.st.toVec.toArray.getD 4 0 = old.st.toVec.toArray.getD 10 0    -- self[4,0] = old[0,2]
+      r.st.toVec.toArray.getD 4 0 = old.st.toVec.toArray.getD 10 0 ∧  -- self[4,0] = old[0,2]
+      -- Frame: all other positions unchanged
+      modifies_only4 r.st self.st 1 2 3 4
     ⌝ ⦄ := by
   -- Approach: unfold everything to raw EStateM, let Lean evaluate the concrete computation.
   -- All indices are concrete, so bounds checks all pass and the computation is deterministic.
@@ -374,16 +388,24 @@ set_option maxHeartbeats 1600000 in
     -- Pattern: dsimp to reduce USize64 → Nat, simp [*] to propagate index equalities,
     -- then evaluate the Vector.set/getD chain at concrete indices.
     -- The fourth conjunct closes automatically; the first 3 need Array.set evaluation.
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> {
-      -- 1. Reduce USize64 literals in hypotheses
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    -- Close written-position conjuncts (same pattern as before)
+    all_goals (try {
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
-      -- 2. Propagate index equalities from hypotheses into goal
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
         Nat.reduceMul, Nat.reduceAdd] at *
-      -- 3. Bridge getD → getElem on both sides, then evaluate Vector.set chain
       rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
       simp [Vector.getElem_set]
-    }
+    })
+    -- Frame condition: modifies_only4 — all other positions unchanged
+    · simp only [modifies_only4]
+      intro k hk hne1 hne2 hne3 hne4
+      dsimp only [USize64.reduceToNat, KeccakState.st] at *
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+        Nat.reduceMul, Nat.reduceAdd] at *
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp only [Vector.getElem_set, Ne.symm hne4, Ne.symm hne3,
+        Ne.symm hne2, Ne.symm hne1, ite_false]
 
 -- Shared tactic block for pi_k proofs: unfold, mvcgen, close VCs, evaluate set chain.
 -- Each pi_k postcondition is a conjunction of getD equalities.
@@ -404,13 +426,18 @@ local macro "pi_step_proof" n:num : tactic => `(tactic| (
     libcrux_sha3.traits.get_ij]
   mvcgen
   all_goals (try vc_omega)
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> (try exact ⟨?_, ?_⟩) <;> {
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
+    refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
         Nat.reduceMul, Nat.reduceAdd] at *
-      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
-      simp [Vector.getElem_set]
+      first
+        | (rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp [Vector.getElem_set])
+        | (intro k hk hne1 hne2 hne3 hne4 hne5
+           rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp only [Vector.getElem_set, Ne.symm hne5, Ne.symm hne4,
+             Ne.symm hne3, Ne.symm hne2, Ne.symm hne1, ite_false])
     }))
 
 set_option maxHeartbeats 1600000 in
@@ -418,11 +445,12 @@ set_option maxHeartbeats 1600000 in
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.pi_1 1 u64 self old
     ⦃ ⇓ r => ⌜
-      r.st.toVec.toArray.getD 5 0 = old.st.toVec.toArray.getD 6 0 ∧   -- self[0,1] = old[1,1]
-      r.st.toVec.toArray.getD 6 0 = old.st.toVec.toArray.getD 21 0 ∧  -- self[1,1] = old[1,4]
-      r.st.toVec.toArray.getD 7 0 = old.st.toVec.toArray.getD 11 0 ∧  -- self[2,1] = old[1,2]
-      r.st.toVec.toArray.getD 8 0 = old.st.toVec.toArray.getD 1 0 ∧   -- self[3,1] = old[1,0]
-      r.st.toVec.toArray.getD 9 0 = old.st.toVec.toArray.getD 16 0    -- self[4,1] = old[1,3]
+      r.st.toVec.toArray.getD 5 0 = old.st.toVec.toArray.getD 6 0 ∧
+      r.st.toVec.toArray.getD 6 0 = old.st.toVec.toArray.getD 21 0 ∧
+      r.st.toVec.toArray.getD 7 0 = old.st.toVec.toArray.getD 11 0 ∧
+      r.st.toVec.toArray.getD 8 0 = old.st.toVec.toArray.getD 1 0 ∧
+      r.st.toVec.toArray.getD 9 0 = old.st.toVec.toArray.getD 16 0 ∧
+      modifies_only5 r.st self.st 5 6 7 8 9
     ⌝ ⦄ := by pi_step_proof 5
 
 set_option maxHeartbeats 1600000 in
@@ -430,11 +458,12 @@ set_option maxHeartbeats 1600000 in
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.pi_2 1 u64 self old
     ⦃ ⇓ r => ⌜
-      r.st.toVec.toArray.getD 10 0 = old.st.toVec.toArray.getD 12 0 ∧  -- self[0,2] = old[2,2]
-      r.st.toVec.toArray.getD 11 0 = old.st.toVec.toArray.getD 2 0 ∧   -- self[1,2] = old[2,0]
-      r.st.toVec.toArray.getD 12 0 = old.st.toVec.toArray.getD 17 0 ∧  -- self[2,2] = old[2,3]
-      r.st.toVec.toArray.getD 13 0 = old.st.toVec.toArray.getD 7 0 ∧   -- self[3,2] = old[2,1]
-      r.st.toVec.toArray.getD 14 0 = old.st.toVec.toArray.getD 22 0    -- self[4,2] = old[2,4]
+      r.st.toVec.toArray.getD 10 0 = old.st.toVec.toArray.getD 12 0 ∧
+      r.st.toVec.toArray.getD 11 0 = old.st.toVec.toArray.getD 2 0 ∧
+      r.st.toVec.toArray.getD 12 0 = old.st.toVec.toArray.getD 17 0 ∧
+      r.st.toVec.toArray.getD 13 0 = old.st.toVec.toArray.getD 7 0 ∧
+      r.st.toVec.toArray.getD 14 0 = old.st.toVec.toArray.getD 22 0 ∧
+      modifies_only5 r.st self.st 10 11 12 13 14
     ⌝ ⦄ := by pi_step_proof 5
 
 set_option maxHeartbeats 1600000 in
@@ -442,11 +471,12 @@ set_option maxHeartbeats 1600000 in
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.pi_3 1 u64 self old
     ⦃ ⇓ r => ⌜
-      r.st.toVec.toArray.getD 15 0 = old.st.toVec.toArray.getD 18 0 ∧  -- self[0,3] = old[3,3]
-      r.st.toVec.toArray.getD 16 0 = old.st.toVec.toArray.getD 8 0 ∧   -- self[1,3] = old[3,1]
-      r.st.toVec.toArray.getD 17 0 = old.st.toVec.toArray.getD 23 0 ∧  -- self[2,3] = old[3,4]
-      r.st.toVec.toArray.getD 18 0 = old.st.toVec.toArray.getD 13 0 ∧  -- self[3,3] = old[3,2]
-      r.st.toVec.toArray.getD 19 0 = old.st.toVec.toArray.getD 3 0     -- self[4,3] = old[3,0]
+      r.st.toVec.toArray.getD 15 0 = old.st.toVec.toArray.getD 18 0 ∧
+      r.st.toVec.toArray.getD 16 0 = old.st.toVec.toArray.getD 8 0 ∧
+      r.st.toVec.toArray.getD 17 0 = old.st.toVec.toArray.getD 23 0 ∧
+      r.st.toVec.toArray.getD 18 0 = old.st.toVec.toArray.getD 13 0 ∧
+      r.st.toVec.toArray.getD 19 0 = old.st.toVec.toArray.getD 3 0 ∧
+      modifies_only5 r.st self.st 15 16 17 18 19
     ⌝ ⦄ := by pi_step_proof 5
 
 set_option maxHeartbeats 1600000 in
@@ -454,32 +484,28 @@ set_option maxHeartbeats 1600000 in
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.pi_4 1 u64 self old
     ⦃ ⇓ r => ⌜
-      r.st.toVec.toArray.getD 20 0 = old.st.toVec.toArray.getD 24 0 ∧  -- self[0,4] = old[4,4]
-      r.st.toVec.toArray.getD 21 0 = old.st.toVec.toArray.getD 14 0 ∧  -- self[1,4] = old[4,2]
-      r.st.toVec.toArray.getD 22 0 = old.st.toVec.toArray.getD 4 0 ∧   -- self[2,4] = old[4,0]
-      r.st.toVec.toArray.getD 23 0 = old.st.toVec.toArray.getD 19 0 ∧  -- self[3,4] = old[4,3]
-      r.st.toVec.toArray.getD 24 0 = old.st.toVec.toArray.getD 9 0     -- self[4,4] = old[4,1]
+      r.st.toVec.toArray.getD 20 0 = old.st.toVec.toArray.getD 24 0 ∧
+      r.st.toVec.toArray.getD 21 0 = old.st.toVec.toArray.getD 14 0 ∧
+      r.st.toVec.toArray.getD 22 0 = old.st.toVec.toArray.getD 4 0 ∧
+      r.st.toVec.toArray.getD 23 0 = old.st.toVec.toArray.getD 19 0 ∧
+      r.st.toVec.toArray.getD 24 0 = old.st.toVec.toArray.getD 9 0 ∧
+      modifies_only5 r.st self.st 20 21 22 23 24
     ⌝ ⦄ := by pi_step_proof 5
 
+-- Seal pi_0..4 so composition proofs never see their bodies
+attribute [local irreducible] Impl_2.pi_0 Impl_2.pi_1 Impl_2.pi_2 Impl_2.pi_3 Impl_2.pi_4
+
 -- Pi composition: pi = pi_0; pi_1; pi_2; pi_3; pi_4
--- Since each pi_k has ⌜True⌝ precondition, mvcgen should compose them.
--- Postcondition: all 25 positions match pi_pure.
+-- With pi_k irreducible, mvcgen sees 5 opaque calls and composes specs directly.
+-- Pi composition: with pi_k irreducible, mvcgen composes 5 opaque calls.
+-- TODO: Reformulate pi_k postconditions as ∀ k < 25, r[k] = pi_k_pure(self, old, k)
+-- so that frame conditions (unwritten positions unchanged) enable composition.
+-- Then mvcgen at 1.6M heartbeats + a final closing step can prove impl_pi_spec.
 set_option maxHeartbeats 1600000 in
 @[spec] theorem impl_pi_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.pi 1 u64 st
     ⦃ ⇓ r => ⌜ r.st.toVec = pi_pure st.st.toVec ⌝ ⦄ := by
-  -- The composition pi = pi_0; pi_1; pi_2; pi_3; pi_4 creates very large wp terms.
-  -- wp_bind on the full chain times out even at 12M heartbeats.
-  -- Instead, unfold pi and all sub-functions fully, then let mvcgen handle
-  -- the flattened monadic chain directly.
-  -- This is the same approach that worked for pi_0: unfold everything, mvcgen, close VCs.
-  -- But the full pi has 24 writes + 24 reads = ~48 monadic operations.
-  -- mvcgen timed out on this earlier at 6.4M heartbeats.
-  --
-  -- BLOCKED: Both composition approaches (wp_bind and full unfold) time out.
-  -- This proof likely needs a custom tactic or a different postcondition formulation.
-  -- Leave as sorry for the user.
   sorry
 
 -- Rho: fused theta-XOR + rho-rotation. Each rho_k handles one column.
