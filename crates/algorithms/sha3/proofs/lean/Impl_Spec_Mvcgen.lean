@@ -36,6 +36,10 @@ namespace Pure
 def rotate_left_pure (x : u64) (n : u32) : u64 :=
   UInt64.ofBitVec (BitVec.rotateLeft x.toBitVec n.toNat)
 
+theorem rotate_left_pure_zero (x : u64) : rotate_left_pure x 0 = x := by
+  simp [rotate_left_pure, BitVec.rotateLeft, BitVec.rotateLeftAux,
+    BitVec.shiftLeft_zero, BitVec.ushiftRight_eq_zero]
+
 abbrev ROUND_CONSTANTS_pure : Vector u64 24 := ROUND_CONSTANTS.toVec
 abbrev RHO_OFFSETS_pure : Vector u32 25 := RHO_OFFSETS.toVec
 
@@ -783,12 +787,66 @@ set_option maxHeartbeats 6400000 in
       r.st.toVec.toArray.getD k 0 =
         rotate_left_pure (self.st.toVec.toArray.getD k 0 ^^^ t.toVec.toArray.getD (k / 5) 0)
           (Int32.toUInt32 ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0)) ⌝ ⦄ := by
-  -- Same pattern as pi_spec: mvcgen + obtain + rcases + trans chain.
-  -- Two issues to resolve:
-  -- 1. Position 0 needs rotate_left_pure_zero lemma
-  -- 2. List.getD/getElem? reduction (dsimp doesn't fully reduce [list][k]?.getD)
-  -- Pattern confirmed working in standalone experiment; applying to real file TODO.
-  sorry
+  intro _; unfold Impl_2.rho; mvcgen
+  rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
+  obtain ⟨h0a, h0b, h0c, h0d, h0e, h0f⟩ := h0
+  obtain ⟨h1a, h1b, h1c, h1d, h1e, h1f⟩ := h1
+  obtain ⟨h2a, h2b, h2c, h2d, h2e, h2f⟩ := h2
+  obtain ⟨h3a, h3b, h3c, h3d, h3e, h3f⟩ := h3
+  obtain ⟨h4a, h4b, h4c, h4d, h4e, h4f⟩ := h4
+  simp only [modifies_only5] at h0f h1f h2f h3f h4f
+  -- Rewrite written-position hypotheses to reference `self` instead of intermediate states.
+  -- rho_1 hyps (reference rho_0 output r✝⁴) → rewrite via h0f to self
+  rw [h0f 5 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h1a
+  rw [h0f 6 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h1b
+  rw [h0f 7 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h1c
+  rw [h0f 8 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h1d
+  rw [h0f 9 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h1e
+  -- rho_2 hyps → via h1f then h0f
+  rw [h1f 10 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 10 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h2a
+  rw [h1f 11 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 11 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h2b
+  rw [h1f 12 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 12 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h2c
+  rw [h1f 13 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 13 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h2d
+  rw [h1f 14 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 14 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h2e
+  -- rho_3 hyps → via h2f, h1f, h0f
+  rw [h2f 15 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 15 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 15 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h3a
+  rw [h2f 16 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 16 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 16 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h3b
+  rw [h2f 17 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 17 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 17 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h3c
+  rw [h2f 18 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 18 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 18 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h3d
+  rw [h2f 19 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 19 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 19 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h3e
+  -- rho_4 hyps → via h3f, h2f, h1f, h0f
+  rw [h3f 20 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h2f 20 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 20 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 20 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h4a
+  rw [h3f 21 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h2f 21 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 21 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 21 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h4b
+  rw [h3f 22 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h2f 22 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 22 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 22 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h4c
+  rw [h3f 23 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h2f 23 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 23 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 23 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h4d
+  rw [h3f 24 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h2f 24 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h1f 24 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), h0f 24 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)] at h4e
+  -- All hyps now reference self. Standard rcases + frame chain closing.
+  intro k hk
+  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
+    k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
+    k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  simp only [List.getD, List.getElem?_cons_zero, List.getElem?_cons_succ, Option.getD,
+    Nat.reduceDiv, Nat.reduceAdd, Nat.reduceSub] <;>
+  first
+    | (rw [show Int32.toUInt32 (0 : i32) = (0 : u32) from rfl, rotate_left_pure_zero];
+       exact (h4f 0 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f 0 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f 0 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h1f 0 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans h0a))))
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h1f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)))
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›))
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›
+    | assumption
 
 attribute [local irreducible] Impl_2.rho
 
