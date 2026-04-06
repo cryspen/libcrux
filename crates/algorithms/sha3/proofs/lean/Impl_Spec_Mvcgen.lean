@@ -29,6 +29,23 @@ open hacspec_sha3.keccak_f
 
 set_option linter.unusedVariables false
 
+/-! ## Seal external functions that have @[spec] lemmas.
+    Prevents mvcgen/simp from unfolding them — only specs should be used. -/
+
+-- External functions: always irreducible (we never unfold them, only use @[spec])
+attribute [local irreducible]
+  rust_primitives.hax.monomorphized_update_at.update_at_usize
+  rust_primitives.hax.monomorphized_update_at.update_at_usize_slice
+  rust_primitives.hax.update_at
+  rust_primitives.hax.repeat
+  rust_primitives.unsize
+  rust_primitives.hax.cast_op
+  core_models.num.Impl_9.rotate_left
+  core_models.num.Impl_9.from_le_bytes
+  core_models.num.Impl_9.to_le_bytes
+  hax_lib.assert
+
+
 /-! ## Pure reference definitions -/
 
 namespace Pure
@@ -198,6 +215,7 @@ open libcrux_sha3.simd.portable in
   mvcgen
   · subst_vars; rfl
   · exfalso; simp_all [BEq.beq]
+
 
 /-! ## Layer 1: State accessor specs -/
 
@@ -496,8 +514,24 @@ set_option maxHeartbeats 1600000 in
       modifies_only5 r.st self.st 20 21 22 23 24
     ⌝ ⦄ := by pi_step_proof 5
 
--- Seal pi_0..4 so composition proofs never see their bodies
-attribute [local irreducible] Impl_2.pi_0 Impl_2.pi_1 Impl_2.pi_2 Impl_2.pi_3 Impl_2.pi_4
+-- Seal all sub-step functions after their specs are proved.
+-- Prevents mvcgen/simp from unfolding bodies — only @[spec] lemmas used downstream.
+attribute [local irreducible]
+  -- Primitives
+  libcrux_sha3.simd.portable._veor5q_u64
+  libcrux_sha3.simd.portable._vbcaxq_u64
+  libcrux_sha3.simd.portable._veorq_n_u64
+  libcrux_sha3.simd.portable.rotate_left
+  libcrux_sha3.simd.portable._vrax1q_u64
+  libcrux_sha3.simd.portable._vxarq_u64
+  -- Accessors
+  libcrux_sha3.traits.get_ij
+  libcrux_sha3.traits.set_ij
+  libcrux_sha3.generic_keccak.Impl_2.set
+  -- Iota
+  libcrux_sha3.generic_keccak.Impl_2.iota
+  -- Pi sub-steps
+  Impl_2.pi_0 Impl_2.pi_1 Impl_2.pi_2 Impl_2.pi_3 Impl_2.pi_4
 
 -- Pi composition: pi = pi_0; pi_1; pi_2; pi_3; pi_4
 -- With pi_k irreducible, mvcgen sees 5 opaque calls and composes specs directly.
@@ -928,6 +962,8 @@ set_option maxHeartbeats 6400000 in
   -- The context has ¬(LEFT+RIGHT == 64) = true where LEFT+RIGHT=64.
   -- vc_omega handles these by reducing USize64/i32 literals.
   all_goals (first | vc_omega | sorry)
+
+attribute [local irreducible] Impl_2.theta
 
 -- TODO: impl_chi_spec (loop — leave for user)
 
