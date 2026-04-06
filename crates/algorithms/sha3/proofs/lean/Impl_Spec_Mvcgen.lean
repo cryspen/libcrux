@@ -501,6 +501,28 @@ attribute [local irreducible] Impl_2.pi_0 Impl_2.pi_1 Impl_2.pi_2 Impl_2.pi_3 Im
 -- TODO: Reformulate pi_k postconditions as ∀ k < 25, r[k] = pi_k_pure(self, old, k)
 -- so that frame conditions (unwritten positions unchanged) enable composition.
 -- Then mvcgen at 1.6M heartbeats + a final closing step can prove impl_pi_spec.
+-- Test: can mvcgen now compose pi_0..4 and close a simple postcondition?
+set_option maxHeartbeats 1600000 in
+example (st : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.pi 1 u64 st
+    ⦃ ⇓ r => ⌜ r.st.toVec.toArray.getD 1 0 = st.st.toVec.toArray.getD 15 0 ⌝ ⦄ := by
+  intro _; unfold Impl_2.pi; mvcgen
+  -- Name the hypotheses so we can access them
+  rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
+  -- Extract frame conditions and written-position facts
+  obtain ⟨h0_1, _, _, _, h0_frame⟩ := h0
+  obtain ⟨_, _, _, _, _, h1_frame⟩ := h1
+  obtain ⟨_, _, _, _, _, h2_frame⟩ := h2
+  obtain ⟨_, _, _, _, _, h3_frame⟩ := h3
+  obtain ⟨_, _, _, _, _, h4_frame⟩ := h4
+  -- Chain: r✝[1] = r✝¹[1] = ... = r✝⁴[1] = st[15]
+  simp only [modifies_only4, modifies_only5] at h0_frame h1_frame h2_frame h3_frame h4_frame
+  rw [h4_frame 1 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      h3_frame 1 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      h2_frame 1 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      h1_frame 1 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+      h0_1]
+
 set_option maxHeartbeats 1600000 in
 @[spec] theorem impl_pi_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
