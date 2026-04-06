@@ -105,6 +105,17 @@ open Pure
     ⦃ ⇓ r => ⌜ r = xs.toVec.toArray.getD i.toNat default ⌝ ⦄ := by
   intro h; unfold getElemResult usize.instGetElemResultVector; mvcgen; simp [Array.getD, h]
 
+/-! ## Bridge lemma: Array.getD → Vector.getElem
+
+`getElemResult_usize_spec` gives postconditions in terms of `Array.getD`,
+but `Vector.getElem_set` works with `Vector.getElem`. This lemma bridges them,
+enabling `simp [Vector.getElem_set]` to evaluate set chains after `rw [toArray_getD_eq]`. -/
+
+theorem Vector.toArray_getD_eq {n : Nat} {α : Type}
+    (v : Vector α n) (i : Nat) (d : α) (hi : i < n) :
+    v.toArray.getD i d = v[i] := by
+  simp [Array.getD, Vector.size_toArray, hi, Vector.getElem_toArray]
+
 /-! ## Layer 0: KeccakItem primitive specs (portable, N=1, T=u64) -/
 
 open libcrux_sha3.simd.portable in
@@ -320,31 +331,14 @@ set_option maxHeartbeats 1600000 in
     -- then evaluate the Vector.set/getD chain at concrete indices.
     -- The fourth conjunct closes automatically; the first 3 need Array.set evaluation.
     refine ⟨?_, ?_, ?_, ?_⟩ <;> {
+      -- 1. Reduce USize64 literals in hypotheses
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
-      simp only [*, Vector.getElem_set, Vector.getElem_toArray,
-        Array.getD, Vector.size_toArray, dite_true,
-        Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+      -- 2. Propagate index equalities from hypotheses into goal
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
         Nat.reduceMul, Nat.reduceAdd] at *
-      -- Close remaining goals: both sides have `dite (k < 25) getInternal 0`
-      -- where k < 25 is trivially true. Simplify dite, then rfl.
-      simp only [show (1 : Nat) < 25 from by omega, show (2 : Nat) < 25 from by omega,
-        show (3 : Nat) < 25 from by omega, show (4 : Nat) < 25 from by omega,
-        show (5 : Nat) < 25 from by omega, show (10 : Nat) < 25 from by omega,
-        show (15 : Nat) < 25 from by omega, show (20 : Nat) < 25 from by omega,
-        dite_true]
-      -- Now: ((v.set 1 x₁).set 2 x₂ ...).getInternal k _ = old.getInternal m _
-      -- getInternal is rfl with getElem. Vector.set at distinct indices preserves elements.
-      -- Since all set indices (1,2,3,4) differ from the get index in each conjunct:
-      -- conjunct 1: get at 1 from set at 1 → x₁ = old[15] ✓
-      -- conjunct 2: get at 2 from set at 2 → x₂ = old[5] ✓  etc.
-      -- Goal: (v.set 1 x₁ ... .set 4 x₄).toArray.getInternal k = old.toArray.getInternal m
-      -- Since getInternal is rfl with getElem, and the set chain at index k retrieves x_k = old[m]:
-      simp only [Vector.toArray_set, Array.getElem_set, Array.size_set, Vector.size_toArray,
-        show (1:Nat) ≠ 4 from by omega, show (1:Nat) ≠ 3 from by omega,
-        show (1:Nat) ≠ 2 from by omega, show (2:Nat) ≠ 4 from by omega,
-        show (2:Nat) ≠ 3 from by omega, show (3:Nat) ≠ 4 from by omega,
-        ite_true, ite_false, if_neg, if_pos]
-      first | rfl | simp_all
+      -- 3. Bridge getD → getElem on both sides, then evaluate Vector.set chain
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp [Vector.getElem_set]
     }
 
 -- TODO: impl_theta_spec
