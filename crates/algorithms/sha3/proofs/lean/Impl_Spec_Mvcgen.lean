@@ -341,6 +341,82 @@ set_option maxHeartbeats 1600000 in
       simp [Vector.getElem_set]
     }
 
+-- Shared tactic block for pi_k proofs: unfold, mvcgen, close VCs, evaluate set chain.
+-- Each pi_k postcondition is a conjunction of getD equalities.
+-- `n` is the number of conjuncts.
+local macro "pi_step_proof" n:num : tactic => `(tactic| (
+  intro _
+  first
+    | unfold Impl_2.pi_0 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.pi_1 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.pi_2 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.pi_3 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.pi_4 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3,
+    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index,
+    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij]
+  mvcgen
+  all_goals (try vc_omega)
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> (try exact ⟨?_, ?_⟩) <;> {
+      dsimp only [USize64.reduceToNat, KeccakState.st] at *
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+        Nat.reduceMul, Nat.reduceAdd] at *
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp [Vector.getElem_set]
+    }))
+
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_1_spec (self old : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi_1 1 u64 self old
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 5 0 = old.st.toVec.toArray.getD 6 0 ∧   -- self[0,1] = old[1,1]
+      r.st.toVec.toArray.getD 6 0 = old.st.toVec.toArray.getD 21 0 ∧  -- self[1,1] = old[1,4]
+      r.st.toVec.toArray.getD 7 0 = old.st.toVec.toArray.getD 11 0 ∧  -- self[2,1] = old[1,2]
+      r.st.toVec.toArray.getD 8 0 = old.st.toVec.toArray.getD 1 0 ∧   -- self[3,1] = old[1,0]
+      r.st.toVec.toArray.getD 9 0 = old.st.toVec.toArray.getD 16 0    -- self[4,1] = old[1,3]
+    ⌝ ⦄ := by pi_step_proof 5
+
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_2_spec (self old : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi_2 1 u64 self old
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 10 0 = old.st.toVec.toArray.getD 12 0 ∧  -- self[0,2] = old[2,2]
+      r.st.toVec.toArray.getD 11 0 = old.st.toVec.toArray.getD 2 0 ∧   -- self[1,2] = old[2,0]
+      r.st.toVec.toArray.getD 12 0 = old.st.toVec.toArray.getD 17 0 ∧  -- self[2,2] = old[2,3]
+      r.st.toVec.toArray.getD 13 0 = old.st.toVec.toArray.getD 7 0 ∧   -- self[3,2] = old[2,1]
+      r.st.toVec.toArray.getD 14 0 = old.st.toVec.toArray.getD 22 0    -- self[4,2] = old[2,4]
+    ⌝ ⦄ := by pi_step_proof 5
+
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_3_spec (self old : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi_3 1 u64 self old
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 15 0 = old.st.toVec.toArray.getD 18 0 ∧  -- self[0,3] = old[3,3]
+      r.st.toVec.toArray.getD 16 0 = old.st.toVec.toArray.getD 8 0 ∧   -- self[1,3] = old[3,1]
+      r.st.toVec.toArray.getD 17 0 = old.st.toVec.toArray.getD 23 0 ∧  -- self[2,3] = old[3,4]
+      r.st.toVec.toArray.getD 18 0 = old.st.toVec.toArray.getD 13 0 ∧  -- self[3,3] = old[3,2]
+      r.st.toVec.toArray.getD 19 0 = old.st.toVec.toArray.getD 3 0     -- self[4,3] = old[3,0]
+    ⌝ ⦄ := by pi_step_proof 5
+
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_4_spec (self old : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi_4 1 u64 self old
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 20 0 = old.st.toVec.toArray.getD 24 0 ∧  -- self[0,4] = old[4,4]
+      r.st.toVec.toArray.getD 21 0 = old.st.toVec.toArray.getD 14 0 ∧  -- self[1,4] = old[4,2]
+      r.st.toVec.toArray.getD 22 0 = old.st.toVec.toArray.getD 4 0 ∧   -- self[2,4] = old[4,0]
+      r.st.toVec.toArray.getD 23 0 = old.st.toVec.toArray.getD 19 0 ∧  -- self[3,4] = old[4,3]
+      r.st.toVec.toArray.getD 24 0 = old.st.toVec.toArray.getD 9 0     -- self[4,4] = old[4,1]
+    ⌝ ⦄ := by pi_step_proof 5
+
 -- TODO: impl_theta_spec
 -- TODO: impl_rho_0..4_spec, impl_rho_spec
 -- TODO: impl_chi_spec (loop — leave for user)
