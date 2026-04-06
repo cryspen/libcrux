@@ -889,11 +889,14 @@ set_option maxHeartbeats 6400000 in
   -- The state passes through unchanged (theta only computes c and d, doesn't write to self)
   -- Goal 0: True ∧ ∀ j, j < 5 → d[j] = theta_d st j
   · -- d-value conjunction: True ∧ ∀ j < 5, d[j] = theta_d st j
-    -- The ∀ j part needs: after subst_vars, each d[j] is a concrete XOR/rotate expression
-    -- that should match theta_d. rfl fails because subst_vars doesn't fully normalize
-    -- with 80+ intermediate variables from mvcgen decomposition.
-    -- TODO: close by normalizing d expressions via dsimp/simp to match theta_d.
-    exact ⟨trivial, by intro j hj; sorry⟩
+    -- The d array is concrete after mvcgen but uses USize64.toNat r✝... indices.
+    -- dsimp reduces literals, simp [*] propagates index chains, then Array.getD + theta_d match.
+    refine ⟨trivial, fun j hj => ?_⟩
+    -- The d array is #[d0,...,d4].getD j 0 where each di is concrete XOR/rotate of st.st.toVec[k].
+    -- The indices k are determined by 80+ intermediate usize variables connected by equality chains.
+    -- subst_vars + dsimp + rfl should close but "Ambiguous term" errors arise from the huge context.
+    -- TODO: needs either a custom normalization tactic or a separate helper lemma.
+    sorry
   -- Goals 1-5: assertion failure branches (1+63≠64 contradicts concrete check)
   -- Assertion failures: the goals are wp⟦RustM.fail⟧ applied to postcond.
   -- The context has ¬(LEFT+RIGHT == 64) = true where LEFT+RIGHT=64.
