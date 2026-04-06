@@ -69,10 +69,39 @@ Similarly, `USize64.size` doesn't reduce for overflow VCs. Need `simp only
 work with `Vector.getElem`. Bridging these requires manual `simp [Array.getD, h]`
 proofs that are tedious.
 
+### 5. Extra parameters on @[spec] theorems cause sorry.val
+
+**Problem**: `sorry.val` is caused by ANY parameter on an `@[spec]` theorem
+that mvcgen can't auto-fill — not just conjunction preconditions. Even with
+`⌜ True ⌝` precondition, extra explicit parameters like `(hi : i.toNat < 5)`
+generate `sorry.val` because mvcgen can't synthesize them.
+
+**Example**:
+```lean
+-- This causes sorry.val when mvcgen tries to use it:
+@[spec] theorem set_spec (st : ...) (i j : usize) (v : u64)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :  -- ← extra params
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.set st i j v ⦃ ⇓ r => ⌜ ... ⌝ ⦄
+```
+
+**Solutions**:
+- Remove extra params, embed ALL constraints in `⌜ precondition ⌝`
+- Use conditional postcondition: `⌜ i < 5 → j < 5 → r = val ⌝` (no extra params, always applies)
+- Full unfold approach: don't use specs at all, unfold to raw operations (slow but reliable)
+
+### 6. Composition works when postconditions are single equalities
+
+The legacy `round_spec` composed theta/rho/pi/chi/iota at 1.6M heartbeats because
+each step's postcondition was `⌜ r = ⟨pure_fn input⟩ ⌝`. mvcgen chains these by
+`subst_vars; rfl`. Conjunction postconditions prevent this substitution.
+
 ## Recommended approach
 
 For **small proofs** (1-3 monadic operations): use mvcgen.
 
-For **composite proofs** (chaining multiple `@[spec]` functions): use
-`Triple.bind`/`Triple.pure` to compose specs directly, avoiding mvcgen's
-precondition resolution issues entirely.
+For **sub-step proofs** (pi_0, rho_0, etc.): full unfold + mvcgen (current approach, 1-3M heartbeats).
+
+For **composition proofs** (pi_spec = pi_0; ...; pi_4): needs either
+- Single-equality postconditions for sub-steps (then mvcgen composes automatically)
+- wp_bind stepping (verbose but preserves context)
+- Full unfold (times out for large chains — >48 ops)
