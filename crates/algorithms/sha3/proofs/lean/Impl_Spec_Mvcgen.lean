@@ -482,8 +482,207 @@ set_option maxHeartbeats 1600000 in
   -- Leave as sorry for the user.
   sorry
 
+-- Rho: fused theta-XOR + rho-rotation. Each rho_k handles one column.
+-- rho_0: position (i,0) for i=0..4. First position uses plain xor (offset 0),
+-- others use xor_and_rotate with concrete LEFT/RIGHT offsets.
+
+-- Shared tactic for rho_k proofs. Same as pi but also unfolds KeccakItem trait methods.
+local macro "rho_step_proof" : tactic => `(tactic| (
+  intro _
+  first
+    | unfold Impl_2.rho_0 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.rho_1 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.rho_2 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.rho_3 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+    | unfold Impl_2.rho_4 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3,
+    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index,
+    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij,
+    -- KeccakItem trait methods for N=1, T=u64
+    libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
+    libcrux_sha3.simd.portable.Impl,
+    -- Unfold xor_and_rotate → _vxarq_u64 → rotate_left → core rotate_left
+    libcrux_sha3.simd.portable._vxarq_u64,
+    libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert,
+    core_models.num.Impl_9.rotate_left,
+    rust_primitives.hax.cast_op]
+  mvcgen
+  all_goals (try vc_omega)
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> (try exact ⟨?_, ?_⟩) <;> {
+      dsimp only [USize64.reduceToNat, KeccakState.st] at *
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+        Nat.reduceMul, Nat.reduceAdd] at *
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp [Vector.getElem_set]
+    }))
+
+set_option maxHeartbeats 3200000 in
+@[spec] theorem impl_rho_0_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.rho_0 1 u64 self t
+    ⦃ ⇓ r => ⌜
+      -- flat 0: self[0] ^^^ t[0] (plain xor, rotation offset 0)
+      r.st.toVec.toArray.getD 0 0 =
+        self.st.toVec.toArray.getD 0 0 ^^^ t.toVec.toArray.getD 0 0 ∧
+      -- flat 1: rotate_left(self[1] ^^^ t[0], 36)
+      r.st.toVec.toArray.getD 1 0 =
+        rotate_left_pure (self.st.toVec.toArray.getD 1 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 36) ∧
+      -- flat 2: rotate_left(self[2] ^^^ t[0], 3)
+      r.st.toVec.toArray.getD 2 0 =
+        rotate_left_pure (self.st.toVec.toArray.getD 2 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 3) ∧
+      -- flat 3: rotate_left(self[3] ^^^ t[0], 41)
+      r.st.toVec.toArray.getD 3 0 =
+        rotate_left_pure (self.st.toVec.toArray.getD 3 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 41) ∧
+      -- flat 4: rotate_left(self[4] ^^^ t[0], 18)
+      r.st.toVec.toArray.getD 4 0 =
+        rotate_left_pure (self.st.toVec.toArray.getD 4 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 18)
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.rho_0 Impl_2.set libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3,
+    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index,
+    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij,
+    libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
+    libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._vxarq_u64,
+    libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert,
+    core_models.num.Impl_9.rotate_left,
+    rust_primitives.hax.cast_op]
+  mvcgen
+  all_goals (try vc_omega)
+  -- Goal 0: postcondition conjunction
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> {
+      dsimp only [USize64.reduceToNat, KeccakState.st, Int32.toUInt32, rotate_left_pure] at *
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+        Nat.reduceMul, Nat.reduceAdd] at *
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp [Vector.getElem_set]
+    }
+  -- Goals 1-4: assertion failure branches (LEFT+RIGHT≠64 is false for concrete offsets)
+  all_goals (exfalso; simp_all [BEq.beq])
+
+-- Updated rho_step_proof: handles postcondition + assertion failure branches
+local macro "rho_step_close" : tactic => `(tactic| (
+  all_goals (try vc_omega)
+  -- Goal 0: postcondition conjunction
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> {
+      dsimp only [USize64.reduceToNat, KeccakState.st, Int32.toUInt32, rotate_left_pure] at *
+      simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
+        Nat.reduceMul, Nat.reduceAdd] at *
+      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+      simp [Vector.getElem_set]
+    }
+  -- Assertion failure branches (LEFT+RIGHT≠64 contradicts concrete offsets)
+  all_goals (exfalso; simp_all [BEq.beq])))
+
+set_option maxHeartbeats 3200000 in
+@[spec] theorem impl_rho_1_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.rho_1 1 u64 self t
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 5 0 = rotate_left_pure (self.st.toVec.toArray.getD 5 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 1) ∧
+      r.st.toVec.toArray.getD 6 0 = rotate_left_pure (self.st.toVec.toArray.getD 6 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 44) ∧
+      r.st.toVec.toArray.getD 7 0 = rotate_left_pure (self.st.toVec.toArray.getD 7 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 10) ∧
+      r.st.toVec.toArray.getD 8 0 = rotate_left_pure (self.st.toVec.toArray.getD 8 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 45) ∧
+      r.st.toVec.toArray.getD 9 0 = rotate_left_pure (self.st.toVec.toArray.getD 9 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 2)
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.rho_1 Impl_2.set libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
+  mvcgen
+  rho_step_close
+
+set_option maxHeartbeats 3200000 in
+@[spec] theorem impl_rho_2_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.rho_2 1 u64 self t
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 10 0 = rotate_left_pure (self.st.toVec.toArray.getD 10 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 62) ∧
+      r.st.toVec.toArray.getD 11 0 = rotate_left_pure (self.st.toVec.toArray.getD 11 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 6) ∧
+      r.st.toVec.toArray.getD 12 0 = rotate_left_pure (self.st.toVec.toArray.getD 12 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 43) ∧
+      r.st.toVec.toArray.getD 13 0 = rotate_left_pure (self.st.toVec.toArray.getD 13 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 15) ∧
+      r.st.toVec.toArray.getD 14 0 = rotate_left_pure (self.st.toVec.toArray.getD 14 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 61)
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.rho_2 Impl_2.set libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
+  mvcgen
+  rho_step_close
+
+set_option maxHeartbeats 3200000 in
+@[spec] theorem impl_rho_3_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.rho_3 1 u64 self t
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 15 0 = rotate_left_pure (self.st.toVec.toArray.getD 15 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 28) ∧
+      r.st.toVec.toArray.getD 16 0 = rotate_left_pure (self.st.toVec.toArray.getD 16 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 55) ∧
+      r.st.toVec.toArray.getD 17 0 = rotate_left_pure (self.st.toVec.toArray.getD 17 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 25) ∧
+      r.st.toVec.toArray.getD 18 0 = rotate_left_pure (self.st.toVec.toArray.getD 18 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 21) ∧
+      r.st.toVec.toArray.getD 19 0 = rotate_left_pure (self.st.toVec.toArray.getD 19 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 56)
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.rho_3 Impl_2.set libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
+  mvcgen
+  rho_step_close
+
+set_option maxHeartbeats 3200000 in
+@[spec] theorem impl_rho_4_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.rho_4 1 u64 self t
+    ⦃ ⇓ r => ⌜
+      r.st.toVec.toArray.getD 20 0 = rotate_left_pure (self.st.toVec.toArray.getD 20 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 27) ∧
+      r.st.toVec.toArray.getD 21 0 = rotate_left_pure (self.st.toVec.toArray.getD 21 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 20) ∧
+      r.st.toVec.toArray.getD 22 0 = rotate_left_pure (self.st.toVec.toArray.getD 22 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 39) ∧
+      r.st.toVec.toArray.getD 23 0 = rotate_left_pure (self.st.toVec.toArray.getD 23 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 8) ∧
+      r.st.toVec.toArray.getD 24 0 = rotate_left_pure (self.st.toVec.toArray.getD 24 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 14)
+    ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.rho_4 Impl_2.set libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
+    hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
+  mvcgen
+  rho_step_close
+
+-- TODO: impl_rho_spec (composition of rho_0..4)
 -- TODO: impl_theta_spec
--- TODO: impl_rho_0..4_spec, impl_rho_spec
 -- TODO: impl_chi_spec (loop — leave for user)
 
 /-! ## Layer 3: Bridge + composition -/
