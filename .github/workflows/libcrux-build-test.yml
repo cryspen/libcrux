@@ -141,7 +141,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
+      - uses: mymindstorm/setup-emsdk@667eb33f24e84e7f362c16d8d7fff0629a73e15e
 
       - name: Setup
         run: |
