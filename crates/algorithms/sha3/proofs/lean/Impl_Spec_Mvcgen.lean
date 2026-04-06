@@ -417,6 +417,27 @@ set_option maxHeartbeats 1600000 in
       r.st.toVec.toArray.getD 24 0 = old.st.toVec.toArray.getD 9 0     -- self[4,4] = old[4,1]
     ⌝ ⦄ := by pi_step_proof 5
 
+-- Pi composition: pi = pi_0; pi_1; pi_2; pi_3; pi_4
+-- Since each pi_k has ⌜True⌝ precondition, mvcgen should compose them.
+-- Postcondition: all 25 positions match pi_pure.
+set_option maxHeartbeats 1600000 in
+@[spec] theorem impl_pi_spec (st : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.pi 1 u64 st
+    ⦃ ⇓ r => ⌜ r.st.toVec = pi_pure st.st.toVec ⌝ ⦄ := by
+  -- The composition pi = pi_0; pi_1; pi_2; pi_3; pi_4 creates very large wp terms.
+  -- wp_bind on the full chain times out even at 12M heartbeats.
+  -- Instead, unfold pi and all sub-functions fully, then let mvcgen handle
+  -- the flattened monadic chain directly.
+  -- This is the same approach that worked for pi_0: unfold everything, mvcgen, close VCs.
+  -- But the full pi has 24 writes + 24 reads = ~48 monadic operations.
+  -- mvcgen timed out on this earlier at 6.4M heartbeats.
+  --
+  -- BLOCKED: Both composition approaches (wp_bind and full unfold) time out.
+  -- This proof likely needs a custom tactic or a different postcondition formulation.
+  -- Leave as sorry for the user.
+  sorry
+
 -- TODO: impl_theta_spec
 -- TODO: impl_rho_0..4_spec, impl_rho_spec
 -- TODO: impl_chi_spec (loop — leave for user)
