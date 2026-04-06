@@ -852,12 +852,20 @@ attribute [local irreducible] Impl_2.rho
 
 -- Theta: computes c (column parities) and d (theta offsets).
 -- Returns (self_unchanged, d). ~35 monadic operations.
--- Postcondition: self unchanged, d matches theta_d_pure(theta_c_pure(self)).
+-- c[j] = XOR of column j: st[5j] ^^^ st[5j+1] ^^^ st[5j+2] ^^^ st[5j+3] ^^^ st[5j+4]
+-- d[j] = c[(j+4)%5] ^^^ rotate_left_pure(c[(j+1)%5], 1)
+-- Postcondition: st' = st, and d values expressed in terms of self.st getD positions.
+def theta_c (sv : Array u64) (j : Nat) : u64 :=
+  sv.getD (5*j) 0 ^^^ sv.getD (5*j+1) 0 ^^^ sv.getD (5*j+2) 0 ^^^ sv.getD (5*j+3) 0 ^^^ sv.getD (5*j+4) 0
+def theta_d (sv : Array u64) (j : Nat) : u64 :=
+  theta_c sv ((j+4) % 5) ^^^ rotate_left_pure (theta_c sv ((j+1) % 5)) 1
+
 set_option maxHeartbeats 6400000 in
 @[spec] theorem impl_theta_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.theta 1 u64 st
-    ⦃ ⇓ ⟨st', d⟩ => ⌜ st' = st ⌝ ⦄ := by
+    ⦃ ⇓ ⟨st', d⟩ => ⌜ st' = st ∧
+      ∀ j, j < 5 → d.toVec.toArray.getD j 0 = theta_d st.st.toVec.toArray j ⌝ ⦄ := by
   intro _
   unfold Impl_2.theta
   simp only [getElemResult, instGetElemResultOfIndex,
@@ -879,10 +887,18 @@ set_option maxHeartbeats 6400000 in
   all_goals (try vc_omega)
   -- Remaining VCs: st' = st (theta doesn't modify state) + assertion failures
   -- The state passes through unchanged (theta only computes c and d, doesn't write to self)
-  all_goals first
-    | (subst_vars; rfl)
-    | (exfalso; simp_all [BEq.beq])
-    | sorry
+  -- Goal 0: True ∧ ∀ j, j < 5 → d[j] = theta_d st j
+  · -- d-value conjunction: True ∧ ∀ j < 5, d[j] = theta_d st j
+    -- The ∀ j part needs: after subst_vars, each d[j] is a concrete XOR/rotate expression
+    -- that should match theta_d. rfl fails because subst_vars doesn't fully normalize
+    -- with 80+ intermediate variables from mvcgen decomposition.
+    -- TODO: close by normalizing d expressions via dsimp/simp to match theta_d.
+    exact ⟨trivial, by intro j hj; sorry⟩
+  -- Goals 1-5: assertion failure branches (1+63≠64 contradicts concrete check)
+  -- Assertion failures: the goals are wp⟦RustM.fail⟧ applied to postcond.
+  -- The context has ¬(LEFT+RIGHT == 64) = true where LEFT+RIGHT=64.
+  -- vc_omega handles these by reducing USize64/i32 literals.
+  all_goals (first | vc_omega | sorry)
 
 -- TODO: impl_chi_spec (loop — leave for user)
 
