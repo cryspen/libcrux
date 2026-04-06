@@ -850,22 +850,41 @@ set_option maxHeartbeats 6400000 in
 
 attribute [local irreducible] Impl_2.rho
 
+-- Theta helper definitions (Array-based, matching mvcgen output shape)
+def theta_c_arr (sv : Array u64) (j : Nat) : u64 :=
+  sv.getD (5*j) 0 ^^^ sv.getD (5*j+1) 0 ^^^ sv.getD (5*j+2) 0 ^^^ sv.getD (5*j+3) 0 ^^^ sv.getD (5*j+4) 0
+def theta_d_arr (sv : Array u64) (j : Nat) : u64 :=
+  theta_c_arr sv ((j+4) % 5) ^^^ rotate_left_pure (theta_c_arr sv ((j+1) % 5)) 1
+
+-- Helper lemma for theta d-value normalization.
+-- Proved separately to avoid the 80-variable context from mvcgen.
+private theorem theta_d_from_c (sv c d : Array u64)
+    (hc0 : c.getD 0 0 = theta_c_arr sv 0) (hc1 : c.getD 1 0 = theta_c_arr sv 1)
+    (hc2 : c.getD 2 0 = theta_c_arr sv 2) (hc3 : c.getD 3 0 = theta_c_arr sv 3)
+    (hc4 : c.getD 4 0 = theta_c_arr sv 4)
+    (hd0 : d.getD 0 0 = c.getD 4 0 ^^^ ⟨(c.getD 1 0).toBitVec.rotateLeft (Int32.toUInt32 1).toNat⟩)
+    (hd1 : d.getD 1 0 = c.getD 0 0 ^^^ ⟨(c.getD 2 0).toBitVec.rotateLeft (Int32.toUInt32 1).toNat⟩)
+    (hd2 : d.getD 2 0 = c.getD 1 0 ^^^ ⟨(c.getD 3 0).toBitVec.rotateLeft (Int32.toUInt32 1).toNat⟩)
+    (hd3 : d.getD 3 0 = c.getD 2 0 ^^^ ⟨(c.getD 4 0).toBitVec.rotateLeft (Int32.toUInt32 1).toNat⟩)
+    (hd4 : d.getD 4 0 = c.getD 3 0 ^^^ ⟨(c.getD 0 0).toBitVec.rotateLeft (Int32.toUInt32 1).toNat⟩)
+    (j : Nat) (hj : j < 5) :
+    d.getD j 0 = theta_d_arr sv j := by
+  rcases (show j = 0 ∨ j = 1 ∨ j = 2 ∨ j = 3 ∨ j = 4 by omega) with
+    rfl | rfl | rfl | rfl | rfl <;>
+  simp only [theta_d_arr, theta_c_arr, rotate_left_pure, Nat.reduceMod, Nat.reduceMul, Nat.reduceAdd,
+    show (Int32.toUInt32 1).toNat = UInt32.toNat 1 from rfl, *]
+
 -- Theta: computes c (column parities) and d (theta offsets).
 -- Returns (self_unchanged, d). ~35 monadic operations.
 -- c[j] = XOR of column j: st[5j] ^^^ st[5j+1] ^^^ st[5j+2] ^^^ st[5j+3] ^^^ st[5j+4]
 -- d[j] = c[(j+4)%5] ^^^ rotate_left_pure(c[(j+1)%5], 1)
 -- Postcondition: st' = st, and d values expressed in terms of self.st getD positions.
-def theta_c (sv : Array u64) (j : Nat) : u64 :=
-  sv.getD (5*j) 0 ^^^ sv.getD (5*j+1) 0 ^^^ sv.getD (5*j+2) 0 ^^^ sv.getD (5*j+3) 0 ^^^ sv.getD (5*j+4) 0
-def theta_d (sv : Array u64) (j : Nat) : u64 :=
-  theta_c sv ((j+4) % 5) ^^^ rotate_left_pure (theta_c sv ((j+1) % 5)) 1
-
 set_option maxHeartbeats 6400000 in
 @[spec] theorem impl_theta_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.theta 1 u64 st
     ⦃ ⇓ ⟨st', d⟩ => ⌜ st' = st ∧
-      ∀ j, j < 5 → d.toVec.toArray.getD j 0 = theta_d st.st.toVec.toArray j ⌝ ⦄ := by
+      ∀ j, j < 5 → d.toVec.toArray.getD j 0 = theta_d_arr st.st.toVec.toArray j ⌝ ⦄ := by
   intro _
   unfold Impl_2.theta
   simp only [getElemResult, instGetElemResultOfIndex,
@@ -892,10 +911,14 @@ set_option maxHeartbeats 6400000 in
     -- The d array is concrete after mvcgen but uses USize64.toNat r✝... indices.
     -- dsimp reduces literals, simp [*] propagates index chains, then Array.getD + theta_d match.
     refine ⟨trivial, fun j hj => ?_⟩
-    -- The d array is #[d0,...,d4].getD j 0 where each di is concrete XOR/rotate of st.st.toVec[k].
-    -- The indices k are determined by 80+ intermediate usize variables connected by equality chains.
-    -- subst_vars + dsimp + rfl should close but "Ambiguous term" errors arise from the huge context.
-    -- TODO: needs either a custom normalization tactic or a separate helper lemma.
+    -- Direct approach: dsimp to reduce USize64 in hypotheses, propagate via simp [*],
+    -- then case split on j and close by rfl after full reduction.
+    -- The d-array is concrete after mvcgen but the 80+ variable context causes
+    -- "Ambiguous term" errors with any tactic that touches hypotheses (dsimp at *, simp [*]).
+    -- Even rcases + omega fails in this context.
+    -- FIX: break theta into sub-functions (theta_c_impl, theta_d_impl) like pi/rho,
+    -- then compose with irreducible + frame conditions. This keeps the context small.
+    -- The theta_d_from_c lemma above would then apply cleanly.
     sorry
   -- Goals 1-5: assertion failure branches (1+63≠64 contradicts concrete check)
   -- Assertion failures: the goals are wp⟦RustM.fail⟧ applied to postcond.
