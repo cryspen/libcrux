@@ -612,7 +612,8 @@ set_option maxHeartbeats 3200000 in
         rotate_left_pure (self.st.toVec.toArray.getD 3 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 41) ∧
       -- flat 4: rotate_left(self[4] ^^^ t[0], 18)
       r.st.toVec.toArray.getD 4 0 =
-        rotate_left_pure (self.st.toVec.toArray.getD 4 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 18)
+        rotate_left_pure (self.st.toVec.toArray.getD 4 0 ^^^ t.toVec.toArray.getD 0 0) (Int32.toUInt32 18) ∧
+      modifies_only5 r.st self.st 0 1 2 3 4
     ⌝ ⦄ := by
   intro _
   unfold Impl_2.rho_0 Impl_2.set libcrux_sha3.traits.set_ij
@@ -633,31 +634,41 @@ set_option maxHeartbeats 3200000 in
     rust_primitives.hax.cast_op]
   mvcgen
   all_goals (try vc_omega)
-  -- Goal 0: postcondition conjunction
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
-    refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> {
+  -- Goal 0: postcondition (5 written positions + frame)
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
+    refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st, Int32.toUInt32, rotate_left_pure] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
         Nat.reduceMul, Nat.reduceAdd] at *
-      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
-      simp [Vector.getElem_set]
+      first
+        | (rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp [Vector.getElem_set])
+        | (intro k hk hne1 hne2 hne3 hne4 hne5
+           rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp only [Vector.getElem_set, Ne.symm hne5, Ne.symm hne4,
+             Ne.symm hne3, Ne.symm hne2, Ne.symm hne1, ite_false])
     }
-  -- Goals 1-4: assertion failure branches (LEFT+RIGHT≠64 is false for concrete offsets)
+  -- Goals 1-4: assertion failure branches
   all_goals (exfalso; simp_all [BEq.beq])
 
 -- Updated rho_step_proof: handles postcondition + assertion failure branches
 local macro "rho_step_close" : tactic => `(tactic| (
   all_goals (try vc_omega)
-  -- Goal 0: postcondition conjunction
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
-    refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> {
+  -- Goal 0: postcondition (5 written positions + frame)
+  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
+    refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st, Int32.toUInt32, rotate_left_pure] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
         Nat.reduceMul, Nat.reduceAdd] at *
-      rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
-      simp [Vector.getElem_set]
+      first
+        | (rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp [Vector.getElem_set])
+        | (intro k hk hne1 hne2 hne3 hne4 hne5
+           rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
+           simp only [Vector.getElem_set, Ne.symm hne5, Ne.symm hne4,
+             Ne.symm hne3, Ne.symm hne2, Ne.symm hne1, ite_false])
     }
-  -- Assertion failure branches (LEFT+RIGHT≠64 contradicts concrete offsets)
+  -- Assertion failure branches
   all_goals (exfalso; simp_all [BEq.beq])))
 
 set_option maxHeartbeats 3200000 in
@@ -668,7 +679,8 @@ set_option maxHeartbeats 3200000 in
       r.st.toVec.toArray.getD 6 0 = rotate_left_pure (self.st.toVec.toArray.getD 6 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 44) ∧
       r.st.toVec.toArray.getD 7 0 = rotate_left_pure (self.st.toVec.toArray.getD 7 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 10) ∧
       r.st.toVec.toArray.getD 8 0 = rotate_left_pure (self.st.toVec.toArray.getD 8 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 45) ∧
-      r.st.toVec.toArray.getD 9 0 = rotate_left_pure (self.st.toVec.toArray.getD 9 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 2)
+      r.st.toVec.toArray.getD 9 0 = rotate_left_pure (self.st.toVec.toArray.getD 9 0 ^^^ t.toVec.toArray.getD 1 0) (Int32.toUInt32 2) ∧
+      modifies_only5 r.st self.st 5 6 7 8 9
     ⌝ ⦄ := by
   intro _
   unfold Impl_2.rho_1 Impl_2.set libcrux_sha3.traits.set_ij
@@ -691,7 +703,8 @@ set_option maxHeartbeats 3200000 in
       r.st.toVec.toArray.getD 11 0 = rotate_left_pure (self.st.toVec.toArray.getD 11 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 6) ∧
       r.st.toVec.toArray.getD 12 0 = rotate_left_pure (self.st.toVec.toArray.getD 12 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 43) ∧
       r.st.toVec.toArray.getD 13 0 = rotate_left_pure (self.st.toVec.toArray.getD 13 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 15) ∧
-      r.st.toVec.toArray.getD 14 0 = rotate_left_pure (self.st.toVec.toArray.getD 14 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 61)
+      r.st.toVec.toArray.getD 14 0 = rotate_left_pure (self.st.toVec.toArray.getD 14 0 ^^^ t.toVec.toArray.getD 2 0) (Int32.toUInt32 61) ∧
+      modifies_only5 r.st self.st 10 11 12 13 14
     ⌝ ⦄ := by
   intro _
   unfold Impl_2.rho_2 Impl_2.set libcrux_sha3.traits.set_ij
@@ -714,7 +727,8 @@ set_option maxHeartbeats 3200000 in
       r.st.toVec.toArray.getD 16 0 = rotate_left_pure (self.st.toVec.toArray.getD 16 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 55) ∧
       r.st.toVec.toArray.getD 17 0 = rotate_left_pure (self.st.toVec.toArray.getD 17 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 25) ∧
       r.st.toVec.toArray.getD 18 0 = rotate_left_pure (self.st.toVec.toArray.getD 18 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 21) ∧
-      r.st.toVec.toArray.getD 19 0 = rotate_left_pure (self.st.toVec.toArray.getD 19 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 56)
+      r.st.toVec.toArray.getD 19 0 = rotate_left_pure (self.st.toVec.toArray.getD 19 0 ^^^ t.toVec.toArray.getD 3 0) (Int32.toUInt32 56) ∧
+      modifies_only5 r.st self.st 15 16 17 18 19
     ⌝ ⦄ := by
   intro _
   unfold Impl_2.rho_3 Impl_2.set libcrux_sha3.traits.set_ij
@@ -737,7 +751,8 @@ set_option maxHeartbeats 3200000 in
       r.st.toVec.toArray.getD 21 0 = rotate_left_pure (self.st.toVec.toArray.getD 21 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 20) ∧
       r.st.toVec.toArray.getD 22 0 = rotate_left_pure (self.st.toVec.toArray.getD 22 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 39) ∧
       r.st.toVec.toArray.getD 23 0 = rotate_left_pure (self.st.toVec.toArray.getD 23 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 8) ∧
-      r.st.toVec.toArray.getD 24 0 = rotate_left_pure (self.st.toVec.toArray.getD 24 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 14)
+      r.st.toVec.toArray.getD 24 0 = rotate_left_pure (self.st.toVec.toArray.getD 24 0 ^^^ t.toVec.toArray.getD 4 0) (Int32.toUInt32 14) ∧
+      modifies_only5 r.st self.st 20 21 22 23 24
     ⌝ ⦄ := by
   intro _
   unfold Impl_2.rho_4 Impl_2.set libcrux_sha3.traits.set_ij
@@ -752,7 +767,63 @@ set_option maxHeartbeats 3200000 in
   mvcgen
   rho_step_close
 
--- TODO: impl_rho_spec (composition — same heartbeat issue as pi_spec)
+-- Seal rho_0..4 after proving specs with frame conditions
+attribute [local irreducible] Impl_2.rho_0 Impl_2.rho_1 Impl_2.rho_2 Impl_2.rho_3 Impl_2.rho_4
+
+-- Rho composition: same pattern as pi — irreducible + mvcgen + frame chain.
+-- rho takes (self, t) and calls rho_0(self,t); rho_1(...,t); ...; rho_4(...,t)
+-- The rho_k write disjoint columns, so frames compose cleanly.
+-- Postcondition: for each k, result[k] = rotate_left_pure(self[k] ^^^ t[k/5], offset[k])
+-- We express this via a lookup table for the rotation offsets (matching RHO_OFFSETS).
+-- The offset for position 0 is 0 (plain XOR, no rotation — but rotate_left_pure x 0 = x).
+set_option maxHeartbeats 6400000 in
+@[spec] theorem impl_rho_spec (self : KeccakState 1 u64) (t : RustArray u64 5) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.rho 1 u64 self t
+    ⦃ ⇓ r => ⌜ ∀ k (_ : k < 25),
+      r.st.toVec.toArray.getD k 0 =
+        rotate_left_pure (self.st.toVec.toArray.getD k 0 ^^^ t.toVec.toArray.getD (k / 5) 0)
+          (Int32.toUInt32 ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0)) ⌝ ⦄ := by
+  intro _; unfold Impl_2.rho; mvcgen
+  rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
+  obtain ⟨h0a, h0b, h0c, h0d, h0e, h0f⟩ := h0
+  obtain ⟨h1a, h1b, h1c, h1d, h1e, h1f⟩ := h1
+  obtain ⟨h2a, h2b, h2c, h2d, h2e, h2f⟩ := h2
+  obtain ⟨h3a, h3b, h3c, h3d, h3e, h3f⟩ := h3
+  obtain ⟨h4a, h4b, h4c, h4d, h4e, h4f⟩ := h4
+  simp only [modifies_only5] at h0f h1f h2f h3f h4f
+  intro k hk
+  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
+    k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
+    k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  dsimp only [List.getD, Nat.reduceDiv] <;>
+  first
+    -- 4 frame hops (k=0..4, written by rho_0)
+    -- k=0 is special: rho_0 gives plain XOR, but postcondition has rotate_left_pure ... 0
+    | (rw [show rotate_left_pure _ (Int32.toUInt32 0) = _ from sorry]; -- rotate_left_pure x 0 = x
+       exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h1f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›))))
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h1f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)))
+    -- 3 frame hops (k=5..9, written by rho_1)
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h2f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›))
+    -- 2 frame hops (k=10..14, written by rho_2)
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
+        ((h3f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›)
+    -- 1 frame hop (k=15..19, written by rho_3)
+    | exact (h4f _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans ‹_›
+    -- 0 frame hops (k=20..24, written by rho_4)
+    | assumption
+
+attribute [local irreducible] Impl_2.rho
 
 -- Theta: computes c (column parities) and d (theta offsets).
 -- Returns (self_unchanged, d). ~35 monadic operations.

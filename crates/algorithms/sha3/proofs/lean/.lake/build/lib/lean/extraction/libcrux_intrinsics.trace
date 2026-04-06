@@ -1,0 +1,297 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["571f1c6b2c87d089.olean"],
+  "i": "0cf55ad39a488c18.ilean",
+  "c": "901796378ce741c2.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/packages/Qq/.lake/build/lib/lean:/Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/packages/Hax/hax-lib/proof-libs/lean/.lake/build/lib/lean:/Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/build/lib/lean /Users/karthik/.elan/toolchains/leanprover--lean4---v4.29.0-rc1/bin/lean /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/extraction/libcrux_intrinsics.lean -o /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/build/lib/lean/extraction/libcrux_intrinsics.olean -i /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/build/lib/lean/extraction/libcrux_intrinsics.ilean -c /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/build/ir/extraction/libcrux_intrinsics.c --setup /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/.lake/build/ir/extraction/libcrux_intrinsics.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:180:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:183:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:198:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:201:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:204:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:208:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:223:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:227:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:231:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:235:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:239:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:243:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:247:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:251:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:256:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:260:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:264:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:268:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:272:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:276:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:280:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:284:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:288:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:293:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:297:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:301:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:305:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:310:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:315:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:319:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:324:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:327:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:332:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:336:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:340:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:344:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:348:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:352:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:356:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:360:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:364:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:368:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:372:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:376:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:380:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:384:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:388:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:392:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:396:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:400:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:404:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:408:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:412:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:416:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:419:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:423:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:428:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:433:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:436:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:440:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:444:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:448:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:452:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:456:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:459:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:462:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:465:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:468:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:473:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:477:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:482:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:492:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:495:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:499:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:503:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:506:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:510:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:513:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:516:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:520:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:523:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:528:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:531:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:535:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:539:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:544:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:547:4: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "extraction/libcrux_intrinsics.lean:551:4: declaration uses `sorry`",
+   "level": "warning"}],
+ "inputs":
+ [["extraction.libcrux_intrinsics:deps",
+   [["deps",
+     [["libcrux_sha3/libcrux_intrinsics:extraDep",
+       [["@libcrux_sha3:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Hax transitive imports (legacy)", "186da7e5ae2cca3e"],
+        ["Hax:importAllArts", "909810f9a928ca1f"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.29.0, commit 985f350dcd18fc7814dfa677cac09933f44f3215",
+   "25953b0996e8f9b7"],
+  ["/Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/lean/extraction/libcrux_intrinsics.lean",
+   "3160940d2658455f"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: extraction.libcrux_intrinsics", "de696c3143279a9d"],
+  ["Package.id?: (some libcrux_sha3)", "cdbc796a191f5aa6"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "35ed4d66627b40d4"}
