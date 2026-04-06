@@ -227,9 +227,48 @@ set_option maxHeartbeats 400000 in
             libcrux_sha3.generic_keccak.constants.ROUNDCONSTANTS.toVec.toArray.getD i.toNat 0
         else st.st.toVec[k] ⌝ ⦄ := by
   intro _
-  unfold Impl_2.iota
-  -- Iota body: set(self, 0, 0, xor_constant(self[0,0], ROUNDCONSTANTS[i]))
-  sorry
+  -- Unfold iota and set/update layers
+  unfold Impl_2.iota Impl_2.set
+    libcrux_sha3.traits.set_ij
+    rust_primitives.hax.monomorphized_update_at.update_at_usize
+  -- Unfold KeccakState indexing and trait methods to concrete portable ops
+  simp only [getElemResult, instGetElemResultOfIndex,
+    libcrux_sha3.generic_keccak.Impl_3,
+    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+    core_models.ops.index.Index.index,
+    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
+    libcrux_sha3.traits.KeccakItem.xor_constant,
+    libcrux_sha3.simd.portable.Impl,
+    libcrux_sha3.simd.portable._veorq_n_u64,
+    libcrux_sha3.traits.get_ij]
+  mvcgen
+  all_goals (try vc_omega)
+  -- Remaining VC: Vector.set element-wise property
+  · intro k hk
+    simp only [USize64.reduceToNat, Vector.size] at *
+    rw [Vector.getElem_set]
+    -- Both the set index and the getElem indices reduce to 0
+    -- Use omega to establish r✝.toNat = 0 and r✝².toNat = 0
+    split
+    · -- k = set_idx = 0: the written value
+      rename_i heq
+      have h0 : k = 0 := by omega
+      subst h0
+      simp only [ite_true]
+      congr 1
+      · -- st.st.toVec[r✝².toNat] = st.st.toVec.toArray.getD 0 0
+        -- r✝².toNat = 0 from hypotheses
+        have hlt : 0 < st.st.toVec.toArray.size := by vc_omega
+        simp only [Array.getD, hlt, dite_true]; congr 1; omega
+      · -- ROUNDCONSTANTS.toVec[i] = ROUNDCONSTANTS.toVec.toArray.getD i 0
+        simp only [Array.getD, Vector.size_toArray, USize64.reduceToNat]
+        split
+        · rfl
+        · omega
+    · -- k ≠ 0: unchanged
+      rename_i hne
+      have : k ≠ 0 := by omega
+      simp only [this, ite_false]
 
 -- TODO: impl_theta_spec
 -- TODO: impl_rho_0..4_spec, impl_rho_spec
