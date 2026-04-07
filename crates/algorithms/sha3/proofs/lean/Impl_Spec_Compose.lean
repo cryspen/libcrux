@@ -342,8 +342,84 @@ set_option maxHeartbeats 6400000 in
       Nat.not_lt_zero, and_false, or_false] at hinv
     exact hinv
 
-/-! ## Bridge + composition -/
+/-! ## Round + keccak_f composition -/
 
--- TODO: rho_theta_bridge — compose impl_theta_spec + impl_rho_spec → rho_theta_pure
--- TODO: round_impl_spec — compose bridges → round_pure (depends on chi)
--- TODO: keccakf1600_spec — 24-round fold (depends on round_impl_spec)
+-- Seal chi after proof
+attribute [local irreducible] Impl_2.chi
+
+-- Local wrapper for iota (mvcgen needs this to handle the hi parameter)
+private def round_iota (st : KeccakState 1 u64) (i : usize) :=
+  Impl_2.iota 1 u64 st i
+
+private theorem round_iota_unfold (st i) : round_iota st i = Impl_2.iota 1 u64 st i := rfl
+
+@[spec] private theorem round_iota_spec (st : KeccakState 1 u64) (i : usize)
+    (hi : i.toNat < 24) :
+    ⦃ ⌜ True ⌝ ⦄ round_iota st i
+    ⦃ ⇓ r => ⌜ ∀ k (hk : k < 25), r.st.toVec[k] =
+        if k = 0 then
+          st.st.toVec.toArray.getD 0 0 ^^^
+            libcrux_sha3.generic_keccak.constants.ROUNDCONSTANTS.toVec.toArray.getD i.toNat 0
+        else st.st.toVec[k] ⌝ ⦄ := by
+  intro _; rw [round_iota_unfold]
+  exact impl_iota_spec st i hi trivial
+
+attribute [irreducible] round_iota
+
+/-! ### Bridge lemmas: element-wise specs → pure functions
+
+Each step spec gives element-wise getD postconditions. These bridges
+show the output Vector equals the pure function, via Vector.ext. -/
+
+private theorem iota_bridge (sv rv : Vector u64 25) (i : Nat) (hi : i < 24)
+    (h : ∀ k (hk : k < 25), rv[k]'(by omega) =
+      if k = 0 then sv.toArray.getD 0 0 ^^^
+        ROUND_CONSTANTS_pure[i]'(by omega)
+      else sv[k]'(by omega)) :
+    rv = iota_pure sv ⟨i, hi⟩ := by
+  apply Vector.ext; intro k; intro hk
+  specialize h k hk; rw [h]
+  simp only [iota_pure, Vector.getElem_set, Vector.toArray_getD_eq _ _ _ (by omega : 0 < 25)]
+  split <;> (split <;> simp_all)
+
+set_option linter.unusedSimpArgs false in
+private theorem chi_bridge (sv rv : Vector u64 25)
+    (h : ∀ k, k < 25 → rv.toArray.getD k 0 = chi_body_arr sv.toArray k) :
+    rv = chi_pure sv := by
+  apply Vector.ext; intro k; intro hk
+  rw [← Vector.toArray_getD_eq rv k 0 hk, h k hk]
+  simp only [chi_pure, Vector.getElem_ofFn, chi_body_arr]
+  rw [Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega),
+      UInt64.and_comm]
+
+private theorem pi_bridge (sv rv : Vector u64 25)
+    (h : ∀ k (_ : k < 25), rv.toArray.getD k 0 = sv.toArray.getD (pi_perm_table.getD k 0) 0) :
+    rv = pi_pure sv := by
+  apply Vector.ext; intro k; intro hk
+  rw [← Vector.toArray_getD_eq rv k 0 hk, h k hk]
+  simp only [pi_pure, Vector.getElem_ofFn]
+  -- Verify pi_perm_table matches pi_pure by exhaustion on k
+  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
+    k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
+    k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  simp [pi_perm_table, List.getD, Vector.toArray_getD_eq] <;> rfl
+
+-- Try mvcgen on the round body with True postcondition first
+set_option maxHeartbeats 6400000 in
+theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24) :
+    ⦃ ⌜ True ⌝ ⦄
+    (do let ⟨tmp0, out⟩ ← Impl_2.theta 1 u64 st
+        let self := tmp0; let t := out
+        let self ← Impl_2.rho 1 u64 self t
+        let self ← Impl_2.pi 1 u64 self
+        let self ← Impl_2.chi 1 u64 self
+        let self ← round_iota self i
+        pure self)
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _
+  hax_mvcgen

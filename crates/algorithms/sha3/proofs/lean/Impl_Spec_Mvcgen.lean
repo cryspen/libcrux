@@ -535,7 +535,7 @@ attribute [local irreducible]
 -- so that frame conditions (unwritten positions unchanged) enable composition.
 -- Then mvcgen at 1.6M heartbeats + a final closing step can prove impl_pi_spec.
 -- Pi permutation table: pi_perm_table[k] is the source index for position k.
-private def pi_perm_table : List Nat := [0,15,5,20,10,6,21,11,1,16,12,2,17,7,22,18,8,23,13,3,24,14,4,19,9]
+def pi_perm_table : List Nat := [0,15,5,20,10,6,21,11,1,16,12,2,17,7,22,18,8,23,13,3,24,14,4,19,9]
 
 set_option maxHeartbeats 3200000 in
 @[spec] theorem impl_pi_spec (st : KeccakState 1 u64) :
