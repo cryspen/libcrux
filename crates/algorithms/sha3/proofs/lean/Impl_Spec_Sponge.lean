@@ -142,6 +142,73 @@ theorem xor_loop_inv_step (old_state state_flat cur_state new_state : Array u64)
 
 end Sponge
 
+/-! ## XOR loop standalone spec (loop 2 of load_block) -/
+
+-- Local wrappers for get_ij/set_ij (mvcgen can't match type-level args)
+private def lb_get (arr : RustArray u64 25) (i j : usize) :=
+  libcrux_sha3.traits.get_ij 1 u64 arr i j
+private def lb_set (arr : RustArray u64 25) (i j : usize) (v : u64) :=
+  libcrux_sha3.traits.set_ij 1 u64 arr i j v
+
+private theorem lb_get_eq (arr i j) :
+    lb_get arr i j = libcrux_sha3.traits.get_ij 1 u64 arr i j := rfl
+private theorem lb_set_eq (arr i j v) :
+    lb_set arr i j v = libcrux_sha3.traits.set_ij 1 u64 arr i j v := rfl
+
+@[spec] private theorem lb_get_spec (arr : RustArray u64 25) (i j : usize)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ lb_get arr i j
+    ⦃ ⇓ r => ⌜ r = arr.toVec.toArray.getD (5 * j.toNat + i.toNat) 0 ⌝ ⦄ := by
+  intro _; rw [lb_get_eq]; exact get_ij_spec arr i j hi hj trivial
+
+@[spec] private theorem lb_set_spec (arr : RustArray u64 25) (i j : usize) (v : u64)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ lb_set arr i j v
+    ⦃ ⇓ r => ⌜ r.toVec.size = 25 ∧
+      (∀ k (hk : k < 25), r.toVec[k] =
+        if k = 5 * j.toNat + i.toNat then v else arr.toVec[k]) ⌝ ⦄ := by
+  intro _; rw [lb_set_eq]; exact set_ij_spec arr i j v hi hj trivial
+
+attribute [irreducible] lb_get lb_set
+
+-- The XOR loop: for i in 0..n, state[i/5, i%5] ^= state_flat[i]
+-- Uses the chi pattern: swap trivial invariant → real invariant, then hax_mvcgen.
+set_option maxHeartbeats 3200000 in
+theorem xor_loop_spec (n : usize) (state state_flat : RustArray u64 25)
+    (hn : n.toNat ≤ 25) :
+    ⦃ ⌜ True ⌝ ⦄
+    rust_primitives.hax.folds.fold_range (0 : usize) n
+      (fun state _ => (do (pure true) : RustM Bool))
+      state
+      (fun state i => do
+        libcrux_sha3.traits.set_ij 1 u64 state (← (i /? 5)) (← (i %? 5))
+          (← ((← (libcrux_sha3.traits.get_ij 1 u64 state (← (i /? 5)) (← (i %? 5))))
+            ^^^? (← state_flat[i]_?))))
+      ⟨fun _ _ => True, sorry⟩
+    ⦃ ⇓ r => ⌜ Sponge.xor_loop_inv state.toVec.toArray state_flat.toVec.toArray
+        r.toVec.toArray n.toNat ⌝ ⦄ := by
+  intro _
+  -- Rewrite get_ij/set_ij to local wrappers
+  simp only [← lb_get_eq, ← lb_set_eq]
+  -- Swap trivial invariant → xor_loop_inv
+  rw [show rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun state _ => (do (pure true) : RustM Bool)) state _ ⟨fun _ _ => True, sorry⟩ =
+    rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun (acc : RustArray u64 25) (k : USize64) =>
+      pure (Sponge.xor_loop_inv state.toVec.toArray state_flat.toVec.toArray acc.toVec.toArray k.toNat))
+    state _
+    ⟨fun acc k => Sponge.xor_loop_inv state.toVec.toArray state_flat.toVec.toArray acc.toVec.toArray k.toNat,
+      fun _ _ => by intro _; rfl⟩
+    from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
+  hax_mvcgen
+  all_goals (try vc_omega)
+  -- vc2: initial invariant
+  · exact Sponge.xor_loop_inv_init _ _
+  -- vc11: r✝⁴ < 5 where r✝⁴ = i % 5 (USize64.reduceToNat not reducing in all hyps)
+  · sorry
+  -- vc12: step — set postcondition → xor_loop_inv (i+1)
+  · sorry
+
 /-! ## State initialization -/
 
 @[spec] theorem impl_new_spec :
