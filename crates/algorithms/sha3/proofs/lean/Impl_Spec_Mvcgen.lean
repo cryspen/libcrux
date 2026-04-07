@@ -96,8 +96,13 @@ def iota_pure (sv : Vector u64 25) (round : Fin 24) : Vector u64 25 :=
 def round_pure (sv : Vector u64 25) (round : Fin 24) : Vector u64 25 :=
   iota_pure (chi_pure (pi_pure (rho_theta_pure sv))) round
 
+def apply_rounds (sv : Vector u64 25) : Nat → Vector u64 25
+  | 0 => sv
+  | n + 1 => if h : n < 24 then round_pure (apply_rounds sv n) ⟨n, h⟩
+             else apply_rounds sv n
+
 def keccak_f_pure (sv : Vector u64 25) : Vector u64 25 :=
-  Fin.foldl 24 (fun sv i => round_pure sv i) sv
+  apply_rounds sv 24
 
 end Pure
 

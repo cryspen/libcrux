@@ -540,22 +540,9 @@ private theorem keccak_round_eq (st i) : (do
 
 attribute [irreducible] keccak_round
 
--- Iterated rounds
-def apply_rounds (sv : Vector u64 25) : Nat → Vector u64 25
-  | 0 => sv
-  | n + 1 => if h : n < 24 then round_pure (apply_rounds sv n) ⟨n, h⟩
-             else apply_rounds sv n
-
 private theorem apply_rounds_step (sv : Vector u64 25) (k : Nat) (hk : k < 24) :
     round_pure (apply_rounds sv k) ⟨k, hk⟩ = apply_rounds sv (k + 1) := by
   simp [apply_rounds, hk]
-
--- apply_rounds 24 = keccak_f_pure (proved before round_pure becomes irreducible)
--- Note: This should be earlier in the file, but apply_rounds is defined here.
--- We temporarily unfold round_pure for this proof.
-private theorem apply_rounds_eq_keccak_f (sv : Vector u64 25) :
-    apply_rounds sv 24 = keccak_f_pure sv := by
-  sorry
 
 attribute [local irreducible] keccak_f_pure
 
@@ -587,4 +574,4 @@ set_option maxHeartbeats 6400000 in
   -- vc5: final — apply_rounds(st, 24) = keccak_f_pure(st)
   · rename_i _ _ h24
     simp only [USize64.reduceToNat] at h24
-    rw [h24, apply_rounds_eq_keccak_f]
+    simp only [h24, keccak_f_pure]
