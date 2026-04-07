@@ -21,6 +21,9 @@ lean_lib libcrux_sha3 where
 lean_lib Impl_Spec_Mvcgen where
   roots := #[`Impl_Spec_Mvcgen]
 
-@[default_target]
 lean_lib Impl_Spec_Compose where
   roots := #[`Impl_Spec_Compose]
+
+@[default_target]
+lean_lib Impl_Spec_Sponge where
+  roots := #[`Impl_Spec_Sponge]
