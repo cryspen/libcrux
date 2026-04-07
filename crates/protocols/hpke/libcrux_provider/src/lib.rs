@@ -84,8 +84,16 @@ impl HpkeCrypto for HpkeLibcrux {
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         match alg {
+            #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+                let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
+                libcrux_kem::key_gen(kem_alg, prng)
+                    .map(|(sk, pk)| (pk.encode(), sk.encode()))
+                    .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
+            }
             KemAlgorithm::XWingDraft06 => {
-                libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, prng)
+                let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
+                libcrux_kem::key_gen(kem_alg, prng)
                     .map(|(sk, pk)| (pk.encode(), sk.encode()))
                     .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
             }
@@ -249,7 +257,13 @@ impl HpkeCrypto for HpkeLibcrux {
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
         match alg {
-            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::XWingDraft06 => {
+            KemAlgorithm::DhKem25519
+            | KemAlgorithm::DhKemP256
+            | KemAlgorithm::XWingDraft06 => {
+                Ok(())
+            }
+            #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
                 Ok(())
             }
             _ => Err(Error::UnknownKemAlgorithm),
@@ -302,6 +316,10 @@ fn kem_key_type_to_libcrux_alg(alg: KemAlgorithm) -> Result<libcrux_kem::Algorit
     match alg {
         KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
         KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
+        #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+        KemAlgorithm::MlKem768 => Ok(libcrux_kem::Algorithm::MlKem768),
+        #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+        KemAlgorithm::MlKem1024 => Ok(libcrux_kem::Algorithm::MlKem1024),
         KemAlgorithm::XWingDraft06 => Ok(libcrux_kem::Algorithm::XWingKemDraft06),
         _ => Err(Error::UnknownKemAlgorithm),
     }

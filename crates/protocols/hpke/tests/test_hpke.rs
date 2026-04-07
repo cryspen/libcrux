@@ -526,6 +526,173 @@ generate_test_case!(
     HpkeLibcrux
 );
 
+#[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+mod mlkem_libcrux {
+    use super::*;
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha256_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha256_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha256_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha384_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha384_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha512_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha512_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem768_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem768,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha256_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha256_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha256_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha256,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha384_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha384_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha512_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha512_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+
+    generate_test_case!(
+        base_mlkem1024_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::MlKem1024,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+}
+
 // XXX: These are broken and pre-releases. Disabling them until they are stable.
 #[cfg(feature = "experimental")]
 mod pq_kems {
