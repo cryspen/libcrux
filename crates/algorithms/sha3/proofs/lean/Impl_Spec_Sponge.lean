@@ -135,3 +135,53 @@ attribute [local irreducible] Impl_2.absorb_final
     ⦃ ⇓ r => ⌜ r.st.toVec = Sponge.absorb_final_pure RATE.toNat DELIM st.st.toVec
         sorry sorry sorry ⌝ ⦄ := by  -- TODO: input/start/len extraction
   sorry
+
+/-! ## Squeeze -/
+
+-- Squeeze.squeeze (portable) = store_block on st.st
+-- The trait instance dispatches to store_block directly.
+-- We need a spec for the trait method call as it appears in keccak1.
+
+attribute [local irreducible]
+  libcrux_sha3.traits.Squeeze.squeeze
+
+@[spec] theorem squeeze_spec (RATE : usize)
+    (st : KeccakState 1 u64) (out : RustSlice u8)
+    (start : usize) (len : usize)
+    (hlen : len.toNat ≤ RATE.toNat) :
+    ⦃ ⌜ True ⌝ ⦄
+    libcrux_sha3.traits.Squeeze.squeeze
+      (KeccakState 1 u64) u64 RATE st out start len
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by  -- TODO: postcondition about output bytes
+  sorry
+
+-- Also need: core_models.slice.Impl.len
+@[spec] theorem slice_len_spec (out : RustSlice u8) :
+    ⦃ ⌜ True ⌝ ⦄
+    core_models.slice.Impl.len u8 out
+    ⦃ ⇓ r => ⌜ r.toNat = out.val.size ⌝ ⦄ := by
+  sorry
+
+-- proof_utils.lemmas.lemma_mul_succ_le (ghost lemma used in keccak1)
+@[spec] theorem lemma_mul_succ_le_spec (i n RATE : usize) :
+    ⦃ ⌜ True ⌝ ⦄
+    libcrux_sha3.proof_utils.lemmas.lemma_mul_succ_le i n RATE
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  sorry
+
+/-! ## keccak1: try mvcgen with True postcondition to test composition -/
+
+attribute [local irreducible] libcrux_sha3.generic_keccak.portable.keccak1
+
+set_option maxHeartbeats 6400000 in
+theorem keccak1_spec (RATE : usize) (DELIM : u8)
+    (input output : RustSlice u8)
+    (hrate : RATE.toNat % 8 = 0)
+    (hrate_pos : 0 < RATE.toNat) :
+    ⦃ ⌜ True ⌝ ⦄
+    libcrux_sha3.generic_keccak.portable.keccak1 RATE DELIM input output
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+  intro _
+  unfold libcrux_sha3.generic_keccak.portable.keccak1
+  hax_mvcgen
+  all_goals sorry
