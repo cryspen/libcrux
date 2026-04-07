@@ -297,11 +297,7 @@ local macro "vc_omega" : tactic =>
     ⦃ ⇓ r => ⌜ r = st.st.toVec.toArray.getD (5 * j.toNat + i.toNat) 0 ⌝ ⦄ := by
   intro _
   -- Unfold the indexing chain: KeccakState[⟨i,j⟩] → Index.index → get_ij
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    core_models.ops.index.Index.index,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1]
+  simp only [getElemResult, core_models.ops.index.Index.index]
   -- Now it's wp⟦get_ij 1 u64 st.st i j⟧ — apply get_ij_spec directly
   exact get_ij_spec st.st i j hi hj trivial
 
@@ -330,20 +326,16 @@ set_option maxHeartbeats 400000 in
     libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
   -- Unfold KeccakState indexing and trait methods to concrete portable ops
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+  simp only [getElemResult,
     core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.KeccakItem.xor_constant,
-    libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._veorq_n_u64,
     libcrux_sha3.traits.get_ij]
   hax_mvcgen
   all_goals (try vc_omega)
   -- Remaining VC: Vector.set element-wise property
   · intro k hk
-    simp only [USize64.reduceToNat, Vector.size] at *
+    simp only [USize64.reduceToNat] at *
     rw [Vector.getElem_set]
     -- Both the set index and the getElem indices reduce to 0
     -- Use omega to establish r✝.toNat = 0 and r✝².toNat = 0
@@ -359,7 +351,7 @@ set_option maxHeartbeats 400000 in
         have hlt : 0 < st.st.toVec.toArray.size := by vc_omega
         simp only [Array.getD, hlt, dite_true]; congr 1; omega
       · -- ROUNDCONSTANTS.toVec[i] = ROUNDCONSTANTS.toVec.toArray.getD i 0
-        simp only [Array.getD, Vector.size_toArray, USize64.reduceToNat]
+        simp only [Array.getD, Vector.size_toArray]
         split
         · rfl
         · omega
@@ -396,11 +388,8 @@ set_option maxHeartbeats 1600000 in
   unfold Impl_2.pi_0 Impl_2.set
     libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+  simp only [getElemResult,
     core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.get_ij]
   -- Now it's a raw chain of *?, +?, if-then-else, Vector.set, Vector.getElem
   -- Use mvcgen on this fully-unfolded form
@@ -409,7 +398,7 @@ set_option maxHeartbeats 1600000 in
   -- Remaining: postcondition about (v.set i₁ x₁).set i₂ x₂ ... at indices 1,2,3,4
   -- Reduce USize64 literals, then simplify Vector.set/getD with concrete indices.
   · -- Reduce USize64 literals, then use dsimp to evaluate Vector.set/getInternal
-    simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+    simp only [USize64.reduceToNat] at *
     -- The goal has Vector.set at USize64.toNat of variables. We need to reduce
     -- these to concrete Nat values. Use omega to derive, then rewrite.
     -- But we can't name inaccessible vars. Instead, try dsimp with omega-derived facts.
@@ -424,7 +413,7 @@ set_option maxHeartbeats 1600000 in
     all_goals (try {
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
-        Nat.reduceMul, Nat.reduceAdd] at *
+        Nat.reduceMul] at *
       rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
       simp [Vector.getElem_set]
     })
@@ -433,7 +422,7 @@ set_option maxHeartbeats 1600000 in
       intro k hk hne1 hne2 hne3 hne4
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
-        Nat.reduceMul, Nat.reduceAdd] at *
+        Nat.reduceMul] at *
       rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
       simp only [Vector.getElem_set, Ne.symm hne4, Ne.symm hne3,
         Ne.symm hne2, Ne.symm hne1, ite_false]
@@ -449,15 +438,12 @@ local macro "pi_step_proof" n:num : tactic => `(tactic| (
     | unfold Impl_2.pi_2 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
     | unfold Impl_2.pi_3 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
     | unfold Impl_2.pi_4 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+  simp only [getElemResult,
     core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.get_ij]
   hax_mvcgen
   all_goals (try vc_omega)
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
+  · simp only [USize64.reduceToNat, modifies_only5] at *
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
@@ -613,17 +599,10 @@ local macro "rho_step_proof" : tactic => `(tactic| (
     | unfold Impl_2.rho_2 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
     | unfold Impl_2.rho_3 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
     | unfold Impl_2.rho_4 Impl_2.set libcrux_sha3.traits.set_ij rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+  simp only [getElemResult,
     core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.get_ij,
-    -- KeccakItem trait methods for N=1, T=u64
-    libcrux_sha3.traits.KeccakItem.xor,
     libcrux_sha3.traits.KeccakItem.xor_and_rotate,
-    libcrux_sha3.simd.portable.Impl,
-    -- Unfold xor_and_rotate → _vxarq_u64 → rotate_left → core rotate_left
     libcrux_sha3.simd.portable._vxarq_u64,
     libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert,
@@ -631,7 +610,7 @@ local macro "rho_step_proof" : tactic => `(tactic| (
     rust_primitives.hax.cast_op]
   hax_mvcgen
   all_goals (try vc_omega)
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
+  · simp only [USize64.reduceToNat] at *
     refine ⟨?_, ?_, ?_, ?_⟩ <;> (try exact ⟨?_, ?_⟩) <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
@@ -665,15 +644,11 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold Impl_2.rho_0 Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
+  simp only [getElemResult,
     core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.get_ij,
     libcrux_sha3.traits.KeccakItem.xor,
     libcrux_sha3.traits.KeccakItem.xor_and_rotate,
-    libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._vxarq_u64,
     libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert,
@@ -702,11 +677,11 @@ set_option maxHeartbeats 3200000 in
 local macro "rho_step_close" : tactic => `(tactic| (
   all_goals (try vc_omega)
   -- Goal 0: postcondition (5 written positions + frame)
-  · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
+  · simp only [USize64.reduceToNat, modifies_only5] at *
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
       dsimp only [USize64.reduceToNat, KeccakState.st, Int32.toUInt32, rotate_left_pure] at *
       simp only [*, Nat.mul_zero, Nat.zero_add, Nat.add_zero,
-        Nat.reduceMul, Nat.reduceAdd] at *
+        Nat.reduceMul] at *
       first
         | (rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega)]
            simp [Vector.getElem_set])
@@ -732,11 +707,10 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold Impl_2.rho_1 Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
-    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
-    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+  simp only [getElemResult,
+    core_models.ops.index.Index.index,
+    libcrux_sha3.traits.get_ij,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
   hax_mvcgen
@@ -756,11 +730,10 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold Impl_2.rho_2 Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
-    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
-    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+  simp only [getElemResult,
+    core_models.ops.index.Index.index,
+    libcrux_sha3.traits.get_ij,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
   hax_mvcgen
@@ -780,11 +753,10 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold Impl_2.rho_3 Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
-    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
-    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+  simp only [getElemResult,
+    core_models.ops.index.Index.index,
+    libcrux_sha3.traits.get_ij,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
   hax_mvcgen
@@ -804,11 +776,10 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold Impl_2.rho_4 Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3, libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    core_models.ops.index.Index.index, rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
-    libcrux_sha3.traits.get_ij, libcrux_sha3.traits.KeccakItem.xor,
-    libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
+  simp only [getElemResult,
+    core_models.ops.index.Index.index,
+    libcrux_sha3.traits.get_ij,
+    libcrux_sha3.traits.KeccakItem.xor_and_rotate,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
   hax_mvcgen
@@ -874,7 +845,7 @@ set_option maxHeartbeats 6400000 in
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
   simp only [List.getD, List.getElem?_cons_zero, List.getElem?_cons_succ, Option.getD,
-    Nat.reduceDiv, Nat.reduceAdd, Nat.reduceSub] <;>
+    Nat.reduceDiv] <;>
   first
     | (rw [show Int32.toUInt32 (0 : i32) = (0 : u32) from rfl, rotate_left_pure_zero];
        exact (h4f 0 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)).trans
@@ -936,8 +907,7 @@ set_option maxHeartbeats 6400000 in
   -- Everything else stays opaque for mvcgen to use @[spec] lemmas.
   simp only [
     libcrux_sha3.traits.KeccakItem.xor5,
-    libcrux_sha3.traits.KeccakItem.rotate_left1_and_xor,
-    libcrux_sha3.simd.portable.Impl]
+    libcrux_sha3.traits.KeccakItem.rotate_left1_and_xor]
   hax_mvcgen
   all_goals (try vc_omega)
   -- Remaining VCs: st' = st (theta doesn't modify state) + assertion failures
