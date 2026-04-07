@@ -120,7 +120,7 @@ attribute [local irreducible] Impl_2.absorb_block
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.absorb_block 1 u64 RATE st input start
     ⦃ ⇓ r => ⌜ r.st.toVec = Sponge.absorb_block_pure RATE.toNat st.st.toVec
-        sorry sorry ⌝ ⦄ := by  -- TODO: extract input[0].toList, start.toNat
+        (input.toVec[(0 : Fin 1)]).val.toList start.toNat ⌝ ⦄ := by
   sorry
 
 -- absorb_final = Absorb.load_last + keccakf1600
@@ -133,7 +133,7 @@ attribute [local irreducible] Impl_2.absorb_final
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.absorb_final 1 u64 RATE DELIM st input start len
     ⦃ ⇓ r => ⌜ r.st.toVec = Sponge.absorb_final_pure RATE.toNat DELIM st.st.toVec
-        sorry sorry sorry ⌝ ⦄ := by  -- TODO: input/start/len extraction
+        (input.toVec[(0 : Fin 1)]).val.toList start.toNat len.toNat ⌝ ⦄ := by
   sorry
 
 /-! ## Squeeze -/
