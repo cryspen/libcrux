@@ -55,6 +55,91 @@ def absorb_final_pure (RATE : Nat) (DELIM : u8) (state : Vector u64 25)
     (input : List u8) (start : Nat) (len : Nat) : Vector u64 25 :=
   keccak_f_pure (load_last_pure RATE DELIM state input start len)
 
+/-- Transposition permutation: loop index i maps to flat position 5*(i%5) + i/5.
+    set_ij(state, i/5, i%5, v) writes to this flat position. -/
+def flat_perm (i : Nat) : Nat := 5 * (i % 5) + i / 5
+
+/-- Inverse: flat position k maps to loop index 5*(k%5) + k/5 -/
+def flat_perm_inv (k : Nat) : Nat := 5 * (k % 5) + k / 5
+
+-- flat_perm is an involution on [0,25): verify by exhaustion
+theorem flat_perm_inv_flat_perm (i : Nat) (hi : i < 25) :
+    flat_perm_inv (flat_perm i) = i := by
+  rcases (show i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 ∨ i = 4 ∨ i = 5 ∨ i = 6 ∨ i = 7 ∨
+    i = 8 ∨ i = 9 ∨ i = 10 ∨ i = 11 ∨ i = 12 ∨ i = 13 ∨ i = 14 ∨ i = 15 ∨ i = 16 ∨
+    i = 17 ∨ i = 18 ∨ i = 19 ∨ i = 20 ∨ i = 21 ∨ i = 22 ∨ i = 23 ∨ i = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  simp [flat_perm, flat_perm_inv]
+
+theorem flat_perm_lt (i : Nat) (hi : i < 25) : flat_perm i < 25 := by
+  rcases (show i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 ∨ i = 4 ∨ i = 5 ∨ i = 6 ∨ i = 7 ∨
+    i = 8 ∨ i = 9 ∨ i = 10 ∨ i = 11 ∨ i = 12 ∨ i = 13 ∨ i = 14 ∨ i = 15 ∨ i = 16 ∨
+    i = 17 ∨ i = 18 ∨ i = 19 ∨ i = 20 ∨ i = 21 ∨ i = 22 ∨ i = 23 ∨ i = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  simp [flat_perm]
+
+-- k = flat_perm i ↔ flat_perm_inv k = i (for k,i < 25)
+theorem flat_perm_inv_eq_iff (k i : Nat) (hk : k < 25) (hi : i < 25) :
+    flat_perm_inv k = i ↔ k = flat_perm i := by
+  constructor
+  · intro h
+    have : flat_perm (flat_perm_inv k) = flat_perm i := by rw [h]
+    rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
+      k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
+      k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
+      by omega) with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [flat_perm, flat_perm_inv] at this ⊢ <;> omega
+  · intro h; rw [h, flat_perm_inv_flat_perm i hi]
+
+/-- Invariant for XOR loop (loop 2 of load_block):
+    After i iterations, positions flat_perm(j) for j < i have been XOR'd
+    with state_flat[j]. All other positions unchanged. -/
+def xor_loop_inv (old_state state_flat cur_state : Array u64) (i : Nat) : Prop :=
+  ∀ k, k < 25 →
+    cur_state.getD k 0 =
+      if flat_perm_inv k < i
+      then old_state.getD k 0 ^^^ state_flat.getD (flat_perm_inv k) 0
+      else old_state.getD k 0
+
+theorem xor_loop_inv_init (state state_flat : Array u64) :
+    xor_loop_inv state state_flat state 0 := by
+  intro k hk; simp [xor_loop_inv, Nat.not_lt_zero]
+
+theorem xor_loop_inv_step (old_state state_flat cur_state new_state : Array u64)
+    (i : Nat) (hi : i < 25)
+    (hinv : xor_loop_inv old_state state_flat cur_state i)
+    (hset : ∀ k, k < 25 → new_state.getD k 0 =
+      if k = flat_perm i then
+        cur_state.getD (flat_perm i) 0 ^^^ state_flat.getD i 0
+      else cur_state.getD k 0) :
+    xor_loop_inv old_state state_flat new_state (i + 1) := by
+  intro k hk
+  simp only [xor_loop_inv] at hinv
+  specialize hset k hk
+  have hinv_k := hinv k hk
+  rw [hset]
+  by_cases hki : k = flat_perm i
+  · -- k = flat_perm i: just written
+    rw [if_pos hki, hki, flat_perm_inv_flat_perm i hi]
+    simp only [Nat.lt_succ_iff, Nat.le_refl, ite_true]
+    congr 1
+    -- cur_state at flat_perm(i) was unchanged (flat_perm_inv(flat_perm(i)) = i, not < i)
+    rw [hki] at hinv_k
+    rw [flat_perm_inv_flat_perm i hi] at hinv_k
+    rw [hinv_k, if_neg (by omega)]
+  · -- k ≠ flat_perm i: unchanged from cur_state
+    rw [if_neg hki]
+    have hne : flat_perm_inv k ≠ i :=
+      fun h => hki ((flat_perm_inv_eq_iff k i hk hi).mp h)
+    simp only [show (flat_perm_inv k < i + 1) ↔ (flat_perm_inv k < i) from by omega]
+    exact hinv_k
+
 end Sponge
 
 /-! ## State initialization -/
