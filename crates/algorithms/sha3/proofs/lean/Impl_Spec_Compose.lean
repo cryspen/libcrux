@@ -509,3 +509,82 @@ theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24)
     exact h_ι k hk)
   -- Chain
   unfold round_pure; rw [e_ι, e_pi, e_rθ]
+
+/-! ## keccak_f: 24-round fold -/
+
+-- Named round function → spec → irreducible
+private def keccak_round (st : KeccakState 1 u64) (i : usize) : RustM (KeccakState 1 u64) := do
+  let ⟨tmp0, out⟩ ← Impl_2.theta 1 u64 st
+  let self := tmp0; let t := out
+  let self ← Impl_2.rho 1 u64 self t
+  let self ← Impl_2.pi 1 u64 self
+  let self ← Impl_2.chi 1 u64 self
+  let self ← round_iota self i
+  pure self
+
+-- Fold lemma (before irreducible)
+private theorem keccak_round_eq (st i) : (do
+    let ⟨tmp0, out⟩ ← Impl_2.theta 1 u64 st
+    let self := tmp0; let t := out
+    let self ← Impl_2.rho 1 u64 self t
+    let self ← Impl_2.pi 1 u64 self
+    let self ← Impl_2.chi 1 u64 self
+    let self ← round_iota self i
+    pure self : RustM (KeccakState 1 u64)) = keccak_round st i := rfl
+
+@[spec] private theorem keccak_round_spec (st : KeccakState 1 u64) (i : usize)
+    (hi : i.toNat < 24) :
+    ⦃ ⌜ True ⌝ ⦄ keccak_round st i
+    ⦃ ⇓ r => ⌜ r.st.toVec = round_pure st.st.toVec ⟨i.toNat, hi⟩ ⌝ ⦄ := by
+  unfold keccak_round; exact round_body_spec st i hi
+
+attribute [irreducible] keccak_round
+
+-- Iterated rounds
+def apply_rounds (sv : Vector u64 25) : Nat → Vector u64 25
+  | 0 => sv
+  | n + 1 => if h : n < 24 then round_pure (apply_rounds sv n) ⟨n, h⟩
+             else apply_rounds sv n
+
+private theorem apply_rounds_step (sv : Vector u64 25) (k : Nat) (hk : k < 24) :
+    round_pure (apply_rounds sv k) ⟨k, hk⟩ = apply_rounds sv (k + 1) := by
+  simp [apply_rounds, hk]
+
+-- apply_rounds 24 = keccak_f_pure (proved before round_pure becomes irreducible)
+-- Note: This should be earlier in the file, but apply_rounds is defined here.
+-- We temporarily unfold round_pure for this proof.
+private theorem apply_rounds_eq_keccak_f (sv : Vector u64 25) :
+    apply_rounds sv 24 = keccak_f_pure sv := by
+  sorry
+
+attribute [local irreducible] keccak_f_pure
+
+set_option maxHeartbeats 6400000 in
+@[spec] theorem keccakf1600_spec (st : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄
+    Impl_2.keccakf1600 1 u64 st
+    ⦃ ⇓ r => ⌜ r.st.toVec = keccak_f_pure st.st.toVec ⌝ ⦄ := by
+  intro _
+  unfold Impl_2.keccakf1600
+  simp only [← round_iota_unfold, keccak_round_eq]
+  -- Swap trivial invariant → apply_rounds
+  rw [show rust_primitives.hax.folds.fold_range (0 : USize64) (24 : USize64)
+    (fun self x => do let a ← pure true; pure (a = true)) st _ _ =
+    rust_primitives.hax.folds.fold_range (0 : USize64) (24 : USize64)
+    (fun (acc : KeccakState 1 u64) (k : USize64) =>
+      pure (acc.st.toVec = apply_rounds st.st.toVec k.toNat))
+    st _ ⟨fun acc k => acc.st.toVec = apply_rounds st.st.toVec k.toNat,
+      fun _ _ => by intro _; rfl⟩
+    from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
+  hax_mvcgen
+  -- vc4: step — round_pure(acc, i) with acc = apply_rounds(st, i) → apply_rounds(st, i+1)
+  · rename_i _ _ k _ hlt hinv _
+    intro h_round
+    simp only [USize64.reduceToNat] at hlt
+    rw [h_round, hinv, apply_rounds_step _ _ hlt]
+    congr 1
+    exact (USize64.toNat_add_of_lt (x := k) (y := 1) (by vc_omega)).symm
+  -- vc5: final — apply_rounds(st, 24) = keccak_f_pure(st)
+  · rename_i _ _ h24
+    simp only [USize64.reduceToNat] at h24
+    rw [h24, apply_rounds_eq_keccak_f]
