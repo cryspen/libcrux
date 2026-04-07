@@ -409,6 +409,54 @@ private theorem pi_bridge (sv rv : Vector u64 25)
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
   simp [pi_perm_table, List.getD, Vector.toArray_getD_eq] <;> rfl
 
+-- theta_c: Array helper = pure function
+private theorem theta_c_arr_eq_pure (sv : Vector u64 25) (j : Nat) (hj : j < 5) :
+    theta_c_arr sv.toArray j = theta_c_pure sv ⟨j, hj⟩ := by
+  simp only [theta_c_arr, theta_c_pure]
+  rw [Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega), Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega)]
+
+-- theta_d: Array helper = pure function (uses theta_c bridge)
+private theorem theta_d_arr_eq_pure (sv : Vector u64 25) (j : Nat) (hj : j < 5) :
+    theta_d_arr sv.toArray j = theta_d_pure (Vector.ofFn (theta_c_pure sv)) ⟨j, hj⟩ := by
+  simp only [theta_d_arr, theta_d_pure, Vector.getElem_ofFn]
+  rw [theta_c_arr_eq_pure sv _ (by omega), theta_c_arr_eq_pure sv _ (by omega)]
+
+-- Rho offsets: hardcoded list matches RHO_OFFSETS_pure after Int32.toUInt32
+private theorem rho_offsets_eq (k : Nat) (hk : k < 25) :
+    (Int32.toUInt32
+      ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0)) =
+    RHO_OFFSETS_pure[k]'(by omega) := by
+  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 ∨
+    k = 8 ∨ k = 9 ∨ k = 10 ∨ k = 11 ∨ k = 12 ∨ k = 13 ∨ k = 14 ∨ k = 15 ∨ k = 16 ∨
+    k = 17 ∨ k = 18 ∨ k = 19 ∨ k = 20 ∨ k = 21 ∨ k = 22 ∨ k = 23 ∨ k = 24
+    by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  native_decide +revert
+
+-- Full rho∘theta bridge
+set_option maxHeartbeats 400000 in
+private theorem rho_theta_bridge (sv rv : Vector u64 25) (d_arr : Array u64)
+    (hd : ∀ j, j < 5 → d_arr.getD j 0 = theta_d_arr sv.toArray j)
+    (hrho : ∀ k (_ : k < 25), rv.toArray.getD k 0 =
+      rotate_left_pure (sv.toArray.getD k 0 ^^^ d_arr.getD (k / 5) 0)
+        (Int32.toUInt32
+          ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0))) :
+    rv = rho_theta_pure sv := by
+  apply Vector.ext; intro k; intro hk
+  -- Unfold RHS
+  simp only [rho_theta_pure, Vector.getElem_ofFn]
+  -- Rewrite LHS to match
+  rw [← Vector.toArray_getD_eq rv k 0 hk, hrho k hk,
+      Vector.toArray_getD_eq _ _ _ hk,
+      hd (k / 5) (by omega),
+      theta_d_arr_eq_pure sv (k / 5) (by omega),
+      rho_offsets_eq k hk,
+      show sv[k]'hk = sv[(⟨k, hk⟩ : Fin 25)] from rfl,
+      show RHO_OFFSETS_pure[k]'hk = RHO_OFFSETS_pure[(⟨k, hk⟩ : Fin 25)] from rfl]
+
 -- Try mvcgen on the round body with True postcondition first
 set_option maxHeartbeats 6400000 in
 theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24) :
