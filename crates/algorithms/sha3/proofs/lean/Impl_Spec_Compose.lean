@@ -179,7 +179,7 @@ private theorem chi_body_arr_flat (old_arr : Array u64) (i j : Nat)
           ~~~old_arr.getD (5 * ((j + 1) % 5) + i) 0) := by
   have hdiv : (5 * j + i) / 5 = j := by omega
   have hmod : (5 * j + i) % 5 = i := by omega
-  sorry -- TODO: simp [chi_body_arr, hdiv, hmod] + AND commutativity for u64
+  simp only [chi_body_arr, hdiv, hmod, UInt64.and_comm]
 
 private theorem chi_processed_succ_iff (i j k : Nat)
     (hk : k < 25) (hi : i < 5) (hj : j < 5) :
@@ -213,30 +213,74 @@ private theorem chi_inv_update
               ~~~old_arr.getD (5 * ((j + 1) % 5) + i) 0)
         else acc_arr.getD k 0) :
     chi_inv old_arr res_arr i (j + 1) := by
-  sorry -- TODO: Array.getD vs Array[i]?.getD mismatch needs resolution
+  intro k hk
+  specialize hacc k hk
+  specialize hres k hk
+  rw [hres]
+  by_cases heq : k = 5 * j + i
+  · -- k is the just-updated position
+    simp only [heq, ite_true]
+    rw [if_pos (by omega)]
+    exact (chi_body_arr_flat old_arr i j hi hj).symm
+  · -- k is not the updated position
+    simp only [heq, ite_false]
+    -- The processed-so-far condition for (i, j+1) is equivalent to (i, j) since k ≠ 5*j+i
+    have : (k % 5 < i ∨ (k % 5 = i ∧ k / 5 < j + 1)) ↔
+           (k % 5 < i ∨ (k % 5 = i ∧ k / 5 < j)) := by
+      constructor
+      · rintro (h | ⟨hm, hd⟩)
+        · left; exact h
+        · right; exact ⟨hm, by omega⟩
+      · rintro (h | h)
+        · left; exact h
+        · right; exact ⟨h.1, by omega⟩
+    rw [show (if k % 5 < i ∨ (k % 5 = i ∧ k / 5 < j + 1) then _ else _) =
+        (if k % 5 < i ∨ (k % 5 = i ∧ k / 5 < j) then _ else _) from
+      by congr 1; exact propext this]
+    exact hacc
 
--- Experiment: try mvcgen on chi with abstract loop variables
+-- Local wrappers for chi proof: mvcgen needs these to match specs correctly
+private def chi_set (st : KeccakState 1 u64) (i j : usize) (v : u64) :=
+  Impl_2.set 1 u64 st i j v
+
+private def chi_get (st : KeccakState 1 u64) (i j : usize) :=
+  st[(rust_primitives.hax.Tuple2.mk i j)]_?
+
+-- Unfold lemmas: prove BEFORE making wrappers irreducible
+private theorem chi_set_unfold (st i j v) : chi_set st i j v = Impl_2.set 1 u64 st i j v := rfl
+private theorem chi_get_unfold (st i j) : chi_get st i j = st[(rust_primitives.hax.Tuple2.mk i j)]_? := rfl
+
+@[spec] private theorem chi_set_spec (st : KeccakState 1 u64) (i j : usize) (v : u64)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ chi_set st i j v
+    ⦃ ⇓ r => ⌜ r.st.toVec.size = 25 ∧
+      (∀ k (hk : k < 25), r.st.toVec[k] =
+        if k = 5 * j.toNat + i.toNat then v else st.st.toVec[k]) ⌝ ⦄ := by
+  intro _; rw [chi_set_unfold]
+  exact Impl_2_set_spec st i j v hi hj trivial
+
+@[spec] private theorem chi_get_spec (st : KeccakState 1 u64) (i j : usize)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄ chi_get st i j
+    ⦃ ⇓ r => ⌜ r = st.st.toVec.toArray.getD (5 * j.toNat + i.toNat) 0 ⌝ ⦄ := by
+  intro _; rw [chi_get_unfold]
+  exact KeccakState_getElem_spec st i j hi hj trivial
+
+attribute [irreducible] chi_set chi_get
+
 set_option maxHeartbeats 6400000 in
 @[spec] theorem impl_chi_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.chi 1 u64 st
     ⦃ ⇓ r => ⌜ ∀ k, k < 25 →
       r.st.toVec.toArray.getD k 0 = chi_body_arr st.st.toVec.toArray k ⌝ ⦄ := by
-  sorry
-  /- Proof outline (all structural steps verified, one sorry remains):
-  1. unfold Impl_2.chi; simp only [KeccakItem.and_not_xor]
-  2. Swap trivial outer invariant → chi_inv via fold_range_inv_irrelevant
-  3. mvcgen decomposes outer fold_range via fold_range_usize_spec → 2 VCs:
-     - VC1: 0≤5 ∧ chi_inv_init ∧ step preservation (inner loop)
-       - Swap trivial inner invariant → chi_inv(i,j) via fold_range_inv_irrelevant
-       - mvcgen decomposes inner fold_range → 2 inner VCs:
-         - Inner VC1: initial + single-step preservation
-           - Single step: mvcgen decomposes chi body (get, add, mod, get, get, vbcaxq, set)
-           - BLOCKER: mvcgen generates sorry.val for Impl_2.set's ∧-precondition
-             with abstract loop variables i,j. Fix: use `conj` wrapper on precondition.
-         - Inner VC2: chi_inv(i,5) → chi_inv(i+1,0) — proved via chi_inv_finish_column
-     - VC2: chi_inv(5,0) → postcondition — proved (k%5 < 5 always true)
-  -/
+  intro _
+  unfold Impl_2.chi
+  simp only [libcrux_sha3.traits.KeccakItem.and_not_xor,
+    libcrux_sha3.simd.portable.Impl,
+    ← chi_set_unfold, ← chi_get_unfold]
+  hax_mvcgen
+  all_goals sorry
 
 /-! ## Bridge + composition -/
 
