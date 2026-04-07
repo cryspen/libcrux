@@ -114,6 +114,7 @@ attribute [local irreducible] libcrux_sha3.simd.portable.load_last
 -- absorb_block = Absorb.load_block + keccakf1600
 attribute [local irreducible] Impl_2.absorb_block
 
+set_option maxHeartbeats 800000 in
 @[spec] theorem absorb_block_spec (RATE : usize) (st : KeccakState 1 u64)
     (input : RustArray (RustSlice u8) 1) (start : usize)
     (hrate : RATE.toNat % 8 = 0) :
@@ -121,7 +122,15 @@ attribute [local irreducible] Impl_2.absorb_block
     Impl_2.absorb_block 1 u64 RATE st input start
     ⦃ ⇓ r => ⌜ r.st.toVec = Sponge.absorb_block_pure RATE.toNat st.st.toVec
         (input.toVec[(0 : Fin 1)]).val.toList start.toNat ⌝ ⦄ := by
-  sorry
+  intro _
+  unfold Impl_2.absorb_block
+  -- Resolve Absorb trait dispatch to portable load_block
+  simp only [libcrux_sha3.traits.Absorb.load_block,
+    libcrux_sha3.simd.portable.Impl_1,
+    libcrux_sha3.traits.Absorb.AssociatedTypes,
+    libcrux_sha3.simd.portable.Impl_1.AssociatedTypes]
+  hax_mvcgen
+  all_goals sorry
 
 -- absorb_final = Absorb.load_last + keccakf1600
 attribute [local irreducible] Impl_2.absorb_final
