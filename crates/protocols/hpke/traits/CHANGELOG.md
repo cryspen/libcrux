@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- [#146](https://github.com/cryspen/hpke-rs/pull/146): Add support for ML-KEM768 and ML-KEM1024 gated behind the `draft-connolly-cfrg-hpke-mlkem` feature flag.
+
 ## [0.4.0] - 2025-12-16
 
 - [#103](https://github.com/cryspen/hpke-rs/pull/103): Add correct code point for `XWingDraft06` ciphersuite and move old code point to `XWingDraft06Hpke`.
