@@ -268,12 +268,26 @@ private theorem chi_get_unfold (st i j) : chi_get st i j = st[(rust_primitives.h
 
 attribute [irreducible] chi_set chi_get
 
+-- chi bridge: element-wise → chi_pure (needed inside impl_chi_spec)
+set_option linter.unusedSimpArgs false in
+private theorem chi_bridge (sv rv : Vector u64 25)
+    (h : ∀ k, k < 25 → rv.toArray.getD k 0 = chi_body_arr sv.toArray k) :
+    rv = chi_pure sv := by
+  apply Vector.ext; intro k; intro hk
+  rw [← Vector.toArray_getD_eq rv k 0 hk, h k hk]
+  simp only [chi_pure, Vector.getElem_ofFn, chi_body_arr]
+  rw [Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega),
+      Vector.toArray_getD_eq _ _ _ (by omega),
+      UInt64.and_comm]
+
+attribute [local irreducible] chi_pure
+
 set_option maxHeartbeats 6400000 in
 @[spec] theorem impl_chi_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.chi 1 u64 st
-    ⦃ ⇓ r => ⌜ ∀ k, k < 25 →
-      r.st.toVec.toArray.getD k 0 = chi_body_arr st.st.toVec.toArray k ⌝ ⦄ := by
+    ⦃ ⇓ r => ⌜ r.st.toVec = chi_pure st.st.toVec ⌝ ⦄ := by
   intro _
   unfold Impl_2.chi
   simp only [libcrux_sha3.traits.KeccakItem.and_not_xor,
@@ -333,14 +347,12 @@ set_option maxHeartbeats 6400000 in
     rw [USize64.toNat_add_of_lt (by simp only [USize64.reduceToNat]; omega)]
     simp only [USize64.reduceToNat]
     exact chi_inv_finish_column _ _ _ (by omega) h5
-  -- vc19: final — chi_inv(5, 0) → postcondition
+  -- vc19: final — chi_inv(5, 0) → r.st.toVec = chi_pure
   · rename_i _ r hinv
-    intro k hk
     simp only [USize64.reduceToNat] at hinv
-    specialize hinv k hk
-    simp only [show k % 5 < 5 from Nat.mod_lt k (by omega), ite_true,
-      Nat.not_lt_zero, and_false, or_false] at hinv
-    exact hinv
+    exact chi_bridge _ _ (fun k hk => by
+      have := hinv k hk
+      rw [if_pos (by left; omega)] at this; exact this)
 
 /-! ## Round + keccak_f composition -/
 
@@ -381,18 +393,6 @@ private theorem iota_bridge (sv rv : Vector u64 25) (i : Nat) (hi : i < 24)
   specialize h k hk; rw [h]
   simp only [iota_pure, Vector.getElem_set, Vector.toArray_getD_eq _ _ _ (by omega : 0 < 25)]
   split <;> (split <;> simp_all)
-
-set_option linter.unusedSimpArgs false in
-private theorem chi_bridge (sv rv : Vector u64 25)
-    (h : ∀ k, k < 25 → rv.toArray.getD k 0 = chi_body_arr sv.toArray k) :
-    rv = chi_pure sv := by
-  apply Vector.ext; intro k; intro hk
-  rw [← Vector.toArray_getD_eq rv k 0 hk, h k hk]
-  simp only [chi_pure, Vector.getElem_ofFn, chi_body_arr]
-  rw [Vector.toArray_getD_eq _ _ _ (by omega),
-      Vector.toArray_getD_eq _ _ _ (by omega),
-      Vector.toArray_getD_eq _ _ _ (by omega),
-      UInt64.and_comm]
 
 private theorem pi_bridge (sv rv : Vector u64 25)
     (h : ∀ k (_ : k < 25), rv.toArray.getD k 0 = sv.toArray.getD (pi_perm_table.getD k 0) 0) :
@@ -459,14 +459,6 @@ private theorem rho_theta_bridge (sv rv : Vector u64 25) (d_arr : Array u64)
 
 /-! ### Stronger specs: postconditions as pure function equalities -/
 
-@[spec] theorem impl_chi_pure_spec (st : KeccakState 1 u64) :
-    ⦃ ⌜ True ⌝ ⦄ Impl_2.chi 1 u64 st
-    ⦃ ⇓ r => ⌜ r.st.toVec = chi_pure st.st.toVec ⌝ ⦄ :=
-  Std.Do.Triple.of_entails_right _ _ _ _ (impl_chi_spec st) (by
-    simp only [Std.Do.PostCond.entails]; constructor
-    · exact fun r h => chi_bridge _ _ h
-    · simp [Std.Do.ExceptConds.entails])
-
 @[spec] theorem impl_pi_pure_spec (st : KeccakState 1 u64) :
     ⦃ ⌜ True ⌝ ⦄ Impl_2.pi 1 u64 st
     ⦃ ⇓ r => ⌜ r.st.toVec = pi_pure st.st.toVec ⌝ ⦄ :=
@@ -491,6 +483,8 @@ private theorem rho_theta_bridge (sv rv : Vector u64 25) (d_arr : Array u64)
     · simp [Std.Do.ExceptConds.entails])
 
 -- Try mvcgen on the round body with True postcondition first
+attribute [local irreducible] round_pure
+
 set_option maxHeartbeats 6400000 in
 theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24) :
     ⦃ ⌜ True ⌝ ⦄
@@ -501,6 +495,17 @@ theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24)
         let self ← Impl_2.chi 1 u64 self
         let self ← round_iota self i
         pure self)
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+    ⦃ ⇓ r => ⌜ r.st.toVec = round_pure st.st.toVec ⟨i.toNat, hi⟩ ⌝ ⦄ := by
   intro _
   hax_mvcgen
+  rename_i _ _ h_θ _ h_ρ _ h_π _ h_χ _ h_ι
+  obtain ⟨hst_eq, hd⟩ := h_θ; subst hst_eq
+  -- Build equalities from bridges
+  have e_rθ := rho_theta_bridge _ _ _ hd h_ρ
+  have e_pi := pi_bridge _ _ h_π
+  -- h_χ is already an equality
+  have e_ι := iota_bridge _ _ _ hi (fun k hk => by
+    simp only [h_χ, Vector.toArray_getD_eq _ _ _ (show i.toNat < 24 from by vc_omega)] at h_ι
+    exact h_ι k hk)
+  -- Chain
+  unfold round_pure; rw [e_ι, e_pi, e_rθ]
