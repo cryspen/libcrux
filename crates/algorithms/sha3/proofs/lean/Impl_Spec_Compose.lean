@@ -457,7 +457,8 @@ private theorem rho_theta_bridge (sv rv : Vector u64 25) (d_arr : Array u64)
       show sv[k]'hk = sv[(⟨k, hk⟩ : Fin 25)] from rfl,
       show RHO_OFFSETS_pure[k]'hk = RHO_OFFSETS_pure[(⟨k, hk⟩ : Fin 25)] from rfl]
 
--- Try mvcgen on the round body with True postcondition first
+attribute [local irreducible] round_pure
+
 set_option maxHeartbeats 6400000 in
 theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24) :
     ⦃ ⌜ True ⌝ ⦄
@@ -468,6 +469,16 @@ theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24)
         let self ← Impl_2.chi 1 u64 self
         let self ← round_iota self i
         pure self)
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+    ⦃ ⇓ r => ⌜ r.st.toVec = round_pure st.st.toVec ⟨i.toNat, hi⟩ ⌝ ⦄ := by
   intro _
   hax_mvcgen
+  -- Single remaining VC: chain specs via bridge lemmas → round_pure
+  -- Name: _ r_θ h_θ r_ρ h_ρ r_π h_π r_χ h_χ r_ι h_ι
+  rename_i _ _ h_θ _ h_ρ _ h_π _ h_χ _ h_ι
+  obtain ⟨hst_eq, hd⟩ := h_θ
+  subst hst_eq
+  unfold round_pure
+  rw [← iota_bridge _ _ _ hi h_ι,
+      ← chi_bridge _ _ h_χ,
+      ← pi_bridge _ _ h_π,
+      ← rho_theta_bridge _ _ _ hd h_ρ]
