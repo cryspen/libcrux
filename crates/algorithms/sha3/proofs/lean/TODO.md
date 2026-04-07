@@ -3,64 +3,69 @@
 ## Completed (no sorry)
 
 **File: `Impl_Spec_Mvcgen.lean`** — All step proofs fully verified:
-- Pure reference definitions (rotate_left_pure, theta_c/d, pi_pure, chi_pure, iota_pure, round_pure, keccak_f_pure)
+- Pure reference definitions (rotate_left_pure, theta_c/d, pi_pure, chi_pure, iota_pure, round_pure, apply_rounds, keccak_f_pure)
 - Infrastructure specs (usize_mul/add/div/mod, getElemResult, i32_add/eq, cast_i32_u32)
+- All specs use P → ⦃ True ⦄ form with hax_mvcgen
 - Layer 0: Primitive specs (veor5q, vbcaxq, veorq_n, rotate_left_portable, vrax1q, vxarq)
 - Layer 1: Accessor specs (get_ij, set_ij, Impl_2_set, KeccakState_getElem)
 - Layer 2: Step specs — iota, pi (5 sub-steps + composition), rho (5 sub-steps + composition), theta
-- Helper lemmas: Vector.toArray_getD_eq, modifies_only4/5, pi_perm_table, rotate_left_pure_zero, theta_d_from_c
 
-## In Progress
+**File: `Impl_Spec_Compose.lean`** — Chi, round, keccak_f fully verified:
+- Chi: nested 5×5 loop with invariant swap + hax_mvcgen. Postcondition: r.st.toVec = chi_pure
+- Bridge lemmas: iota_bridge, chi_bridge, pi_bridge, rho_theta_bridge (with sub-bridges for theta_c/d, rho offsets)
+- Stronger specs: impl_pi_pure_spec, round_iota_pure_spec (via Triple.of_entails_right)
+- round_body_spec: hax_mvcgen chains 5 specs, bridges connect to round_pure
+- keccakf1600_spec: 24-round loop with apply_rounds invariant, postcondition = keccak_f_pure
 
-**File: `Impl_Spec_Compose.lean`** — Chi proof (2 sorry in helpers, 1 sorry in main proof):
+**File: `Impl_Spec_Sponge.lean`** — State initialization verified:
+- impl_new_spec: zero-initialized state
 
-### Chi proof structure (complete, 1 blocker)
+## In Progress — Sponge Layer
 
-The proof uses loop invariant approach:
-1. `fold_range_usize_spec` — custom @[spec] wrapping existing fold_range_spec_int_USize64
-2. `fold_range_inv_irrelevant` — swap trivial extraction invariant for real one
-3. Outer loop invariant: `chi_inv old_arr st_arr i 0` (columns < i updated)
-4. Inner loop invariant: `chi_inv old_arr st_arr i j` (positions in column i with row < j updated)
+### XOR loop (loop 2 of load_block) — 1 sorry
 
-**Verified VCs:**
-- Outer initial: `chi_inv st st 0 0` — trivial (nothing processed)
-- Inner initial: inherits from outer
-- Inner VC2 (column complete): `chi_inv i 5 → chi_inv (i+1) 0` — proved via `chi_inv_finish_column`
-- Outer VC2 (all done): `chi_inv 5 0 → postcondition` — proved (k%5 < 5 always true)
-- All arithmetic/bounds VCs: closed by `vc_omega`
+**What's proved:**
+- flat_perm / flat_perm_inv: transposition permutation, involution by 25-case exhaustion
+- xor_loop_inv_init, xor_loop_inv_step: loop invariant helpers
+- lb_get/lb_set: local wrappers for get_ij/set_ij (mvcgen matching)
+- xor_loop_spec structure: invariant swap + hax_mvcgen decomposes body
+- All arithmetic VCs closed (vc_omega + grind for i%5 < 5)
 
-**BLOCKER: Inner step (vc8/vc9)**
-mvcgen generates `sorry.val` for `Impl_2_set_spec`'s `⌜ i.toNat < 5 ∧ j.toNat < 5 ⌝` precondition when `i` and `j` are abstract loop variables (not concrete literals).
+**1 sorry (vc12 — step VC):**
+- Need to wire set_ij postcondition through xor_loop_inv_step
+- Requires: Vector.getElem ↔ Array.getD conversion + flat_perm index matching
+- The xor_loop_inv_step helper is already proved — just needs mechanical wiring
 
-### Fix: `conj` wrapper approach
+### Next steps (bottom-up order):
 
-Wrapping `∧` in an opaque `@[irreducible] def conj (a b : Prop) := a ∧ b` makes mvcgen emit it as a normal VC goal (confirmed by experiment). The fix requires:
+1. **Close xor_loop_spec vc12** — wire set postcondition through xor_loop_inv_step
+2. **Loop 1 of load_block** (byte parsing) — parse 8 bytes → u64 via from_le_bytes
+   - Needs specs for: from_le_bytes, unwrap, try_into, range indexing
+   - Define parse_bytes_pure, invariant, use same loop pattern
+3. **Compose loops 1+2** into full load_block_spec
+   - Also handle the two `hax_lib.assert` checks
+4. **load_last_spec** — similar to load_block + padding
+5. **store_block_spec** — extract bytes from state (reverse of load_block)
+6. **absorb_block_spec** — already structurally validated (trait dispatch + hax_mvcgen)
+7. **absorb_final_spec** — same pattern as absorb_block
+8. **squeeze_spec** — wraps store_block via Squeeze trait
+9. **keccak1_spec** — full sponge, already decomposed by hax_mvcgen into ~20 VCs
 
-1. Change `Impl_2_set_spec` and `KeccakState_getElem_spec` in `Impl_Spec_Mvcgen.lean` to use `conj` instead of `∧` in their preconditions
-2. Update all existing proofs that pattern-match on the conjunction: add `unfold conj at h; obtain ⟨hi, hj⟩ := h` or use a `vc_conj` macro
-3. Existing pi/rho proofs use these specs with concrete indices — mvcgen will generate `conj (0 < 5) (1 < 5)` VCs, which `unfold conj; exact ⟨by vc_omega, by vc_omega⟩` closes
-
-**Alternative:** Use separate `_conj` specs in Compose only. But `@[spec]` can't be erased, so having both registered means mvcgen may pick the original. Would need to make the conj version higher priority.
-
-**Alternative 2 (user suggestion):** Reformulate specs as `P → ⦃ True ⦄ f x ⦃ Q ⦄` instead of `⦃ P ⦄ f x ⦃ Q ⦄`. This moves the precondition outside the Hoare triple. Not tested yet.
-
-### Helper lemma issues
-
-- `chi_body_arr_flat` — needs `&&&` commutativity for `u64` (bitwise AND). `and_comm` in Lean's `Bool` doesn't directly apply to `UInt64.HAnd`.
-- `chi_inv_update` — references `Array.getD` but the environment uses `Array[i]?.getD` (Array API version mismatch). Needs `Array.getD` ↔ `Array.getElem?` bridge.
-
-## TODO (not started)
-
-- `impl_chi_spec` — close inner step (requires conj fix or wp_bind for set)
-- `rho_theta_bridge` — compose `impl_theta_spec` + `impl_rho_spec` into `rho_theta_pure`
-- `round_impl_spec` — compose theta+rho bridge + pi + chi + iota → `round_pure`
-- `keccakf1600_spec` — 24-round fold → `keccak_f_pure`
+### Key infrastructure needed for sponge:
+- `@[spec]` for `core_models.num.Impl_9.from_le_bytes` (u8[8] → u64)
+- `@[spec]` for `core_models.num.Impl_9.to_le_bytes` (u64 → u8[8])
+- `@[spec]` for `core_models.result.Impl.unwrap` (Result → value)
+- `@[spec]` for `core_models.convert.TryInto.try_into` (slice → array)
+- `@[spec]` for range indexing `blocks[start..end]_?`
+- `@[spec]` for `core_models.slice.Impl.len` (already sorry'd)
+- `@[spec]` for `libcrux_sha3.proof_utils.lemmas.lemma_mul_succ_le` (ghost lemma)
+- `@[spec]` for `rust_primitives.hax.repeat` (array initialization)
 
 ## Build instructions
 
 ```bash
 cd crates/algorithms/sha3/proofs/lean
-# Clean build (needed after changing Impl_Spec_Mvcgen):
+# Clean build:
 rm -f .lake/build/lib/lean/Impl_Spec_*.olean .lake/build/lib/lean/Impl_Spec_*.ilean
 lake build 2>&1 | tee /tmp/build.log
 # Quick check:
@@ -69,7 +74,12 @@ grep -E '(error|sorry)' /tmp/build.log | grep -v 'Stubs\|LibcruxStubs\|extractio
 
 ## Key learnings (see also Mvcgen.md)
 
-1. **fold_range invariant swap**: `fold_range` ignores invariant at runtime (ghost args). `fold_range_inv_irrelevant` lets us swap any invariant.
-2. **fold_range_usize_spec**: The existing `fold_range_spec_int_USize64` is `@[specset int]`, not `@[spec]`, so mvcgen doesn't use it. Wrapping it as `@[spec]` makes mvcgen decompose loops.
-3. **conj wrapper**: `@[irreducible] def conj (a b : Prop) := a ∧ b` tricks mvcgen into generating proper VCs for conjunction preconditions with abstract arguments.
-4. **`(i + 1).toNat` reduction**: For USize64, `(i + 1).toNat = i.toNat + 1` requires `USize64.add_def`, `BitVec.toNat_add`, `Nat.mod_eq_of_lt` — not just `vc_omega`.
+1. **P → ⦃ True ⦄ form**: All specs must use this. Conjunction preconditions generate sorry.val.
+2. **Local wrappers**: Needed when mvcgen can't match type-level args (get_ij, set_ij, Impl_2.set, Impl_2.iota).
+3. **Invariant swap**: fold_range_inv_irrelevant before hax_mvcgen. Inner loops use conv + ext.
+4. **Bridge lemmas**: element-wise getD → pure Vector equality via Vector.ext + toArray_getD_eq.
+5. **Triple.of_entails_right**: Strengthen postconditions from element-wise to pure function equalities.
+6. **Make pure functions irreducible**: Before proofs that mention them in postconditions. Otherwise mvcgen timeout.
+7. **grind for USize64 modular arithmetic**: vc_omega can't handle x = y % n → x < n. grind can.
+8. **flat_perm transposition**: set_ij(state, i/5, i%5) writes to 5*(i%5)+i/5, not i. Prove involution by exhaustion.
+9. **native_decide +revert**: For concrete equality goals after rcases that still have free variables.

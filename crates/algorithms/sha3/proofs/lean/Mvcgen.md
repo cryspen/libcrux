@@ -30,7 +30,7 @@ mvcgen emits each parameter as a named VC (e.g., `vc3.hi`, `vc4.hj`).
 ### Pattern 2: Local wrappers for opaque specs
 
 When mvcgen can't match an `@[spec]` against a function call (e.g., type-level
-arguments `Impl_2.set 1 u64`), create a local wrapper:
+arguments like `Impl_2.set 1 u64`, `get_ij 1 u64`), create a local wrapper:
 
 ```lean
 private def chi_set (st : KeccakState 1 u64) (i j : usize) (v : u64) :=
@@ -44,6 +44,9 @@ private theorem chi_set_unfold ... : chi_set st i j v = Impl_2.set 1 u64 st i j 
 -- THEN make irreducible
 attribute [irreducible] chi_set
 ```
+
+Used in: chi proof (chi_set/chi_get), round (round_iota), keccakf1600 (keccak_round),
+sponge (lb_get/lb_set for get_ij/set_ij).
 
 ### Pattern 3: define → spec → irreducible (strict ordering)
 
@@ -104,7 +107,19 @@ theorem chi_bridge (sv rv : Vector u64 25)
 
 Key bridge: `Vector.toArray_getD_eq v i d hi : v.toArray.getD i d = v[i]`
 
-### Pattern 7: Composition via hax_mvcgen + bridges
+### Pattern 7: Postcondition strengthening via Triple.of_entails_right
+
+Strengthen element-wise postconditions to pure function equalities:
+
+```lean
+@[spec] theorem impl_chi_pure_spec ... :=
+  Std.Do.Triple.of_entails_right _ _ _ _ (impl_chi_spec st) (by
+    simp only [Std.Do.PostCond.entails]; constructor
+    · exact fun r h => chi_bridge _ _ h
+    · simp [Std.Do.ExceptConds.entails])
+```
+
+### Pattern 8: Composition via hax_mvcgen + bridges
 
 With all sub-functions irreducible + specs, hax_mvcgen composes them:
 
@@ -120,6 +135,39 @@ rw [← iota_bridge ..., ← chi_bridge ..., ← pi_bridge ..., ← rho_theta_br
 **Critical**: Make `round_pure` `@[local irreducible]` so hax_mvcgen doesn't
 try to reduce it (causes 6.4M+ heartbeat timeout).
 
+### Pattern 9: grind for USize64 arithmetic
+
+`vc_omega` can't handle goals like `x = y % 5 → x < 5` because
+`USize64.reduceToNat` doesn't always reduce in all hypotheses. Use `grind`:
+
+```lean
+all_goals (try vc_omega)
+· grind  -- closes USize64 modular arithmetic that omega can't
+```
+
+### Pattern 10: Trait dispatch resolution
+
+For extracted Rust code with type-class dispatch, resolve trait methods to
+concrete implementations before mvcgen:
+```lean
+simp only [
+  libcrux_sha3.traits.Absorb.load_block,
+  libcrux_sha3.simd.portable.Impl_1,
+  libcrux_sha3.traits.Absorb.AssociatedTypes,
+  libcrux_sha3.simd.portable.Impl_1.AssociatedTypes]
+```
+
+### Pattern 11: flat_perm transposition for set_ij loops
+
+`set_ij(state, i/5, i%5, v)` writes to flat position `5*(i%5) + i/5`, NOT `i`.
+This is a transposition permutation. Define:
+```lean
+def flat_perm (i : Nat) : Nat := 5 * (i % 5) + i / 5
+def flat_perm_inv (k : Nat) : Nat := 5 * (k % 5) + k / 5  -- same formula = involution
+```
+Prove involution by 25-case exhaustion. Loop invariants must use `flat_perm_inv k < i`
+not `k < i`.
+
 ## vc_omega macro
 
 ```lean
@@ -134,18 +182,20 @@ Handles: overflow checks, modular bounds, index bounds, USize64 literal reductio
 
 For `(i + 1).toNat` where `i : USize64` and `i.toNat < n`:
 ```lean
-rw [USize64.toNat_add_of_lt (by simp only [USize64.reduceToNat]; omega)]
+rw [USize64.toNat_add_of_lt (x := k) (y := 1) (by vc_omega)]
 ```
 
 ## What does NOT work
 
 - **sorry.val from `⦃ P ⌝ ⦄` preconditions**: Use `P →` form instead
 - **sorry.val from type-level args**: Use local wrappers
+- **sorry.val from sorry'd spec proofs**: Expected — disappears when proof filled in
 - **simp_all in spec proofs**: Too aggressive; use `simp only`
 - **grind for ∀ k < 25**: Generates huge case splits; use `rcases` + 25 cases
 - **native_decide after rcases**: "free variables" error; use `native_decide +revert`
 - **hax_mvcgen with non-irreducible postcondition types**: Heartbeat timeout from
   reducing pure function definitions; make them irreducible first
+- **vc_omega for x = y % n → x < n**: Use `grind` instead
 
 ## Heartbeat budget reference
 
@@ -157,10 +207,12 @@ rw [USize64.toNat_add_of_lt (by simp only [USize64.reduceToNat]; omega)]
 | Pi/rho composition | 3.2M-6.4M | `impl_pi_spec`, `impl_rho_spec` |
 | Theta | 6.4M | `impl_theta_spec` |
 | Chi (nested 5×5 loop) | 6.4M | `impl_chi_spec` |
+| XOR loop (sponge) | 3.2M | `xor_loop_spec` |
 
 ## File structure
 
 | File | Contents | Build time |
 |------|----------|------------|
-| `Impl_Spec_Mvcgen.lean` | Pure defs + all step proofs (iota, pi, rho, theta) | ~90s |
-| `Impl_Spec_Compose.lean` | Chi proof, bridge lemmas, round/keccak_f composition | ~2s |
+| `Impl_Spec_Mvcgen.lean` | Pure defs + all step proofs (iota, pi, rho, theta) | ~89s |
+| `Impl_Spec_Compose.lean` | Chi proof, bridge lemmas, round + keccak_f | ~2.4s |
+| `Impl_Spec_Sponge.lean` | Sponge layer: load_block, absorb, squeeze, keccak1 | WIP |
