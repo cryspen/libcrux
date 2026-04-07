@@ -304,11 +304,43 @@ set_option maxHeartbeats 6400000 in
   -- vc2: initial invariant
   · simp only [USize64.reduceToNat]; exact chi_inv_init _
   -- vc15: inner step — set postcondition → chi_inv(i, j+1)
-  · sorry
+  · -- Name the critical inaccessible variables (28 total, in order)
+    rename_i _ _ col _ _ _ acc j _ _ hinv _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ res
+    intro hsize hset
+    simp only [USize64.reduceToNat] at *
+    rw [USize64.toNat_add_of_lt (by simp only [USize64.reduceToNat]; omega)]
+    simp only [USize64.reduceToNat]
+    -- Extract from invariant: acc[5*j+col] = old[5*j+col] (not yet processed)
+    have hinv_eq : acc.st.toVec.toArray.getD (5 * j.toNat + col.toNat) 0 =
+        st.st.toVec.toArray.getD (5 * j.toNat + col.toNat) 0 := by
+      have := hinv (5 * j.toNat + col.toNat) (by omega)
+      simp only [show (5 * j.toNat + col.toNat) % 5 = col.toNat from by omega,
+        show (5 * j.toNat + col.toNat) / 5 = j.toNat from by omega,
+        Nat.lt_irrefl, and_false, or_false, ite_false] at this
+      exact this
+    apply chi_inv_update _ _ _ _ _ (by omega) (by omega) hinv
+    intro k hk
+    rw [Vector.toArray_getD_eq _ _ _ (by omega)]
+    simp only [hset k (by omega : k < 25)]
+    split
+    next heq =>
+      -- k = 5*j+col: stored value = chi body
+      simp_all [Vector.toArray_getD_eq]
+    next heq =>
+      exact (Vector.toArray_getD_eq _ _ _ (by simp only [USize64.reduceToNat]; omega)).symm
   -- vc18: column finish — chi_inv(i, 5) → chi_inv(i+1, 0)
-  · sorry
+  · intro h5; simp only [USize64.reduceToNat] at *
+    rw [USize64.toNat_add_of_lt (by simp only [USize64.reduceToNat]; omega)]
+    simp only [USize64.reduceToNat]
+    exact chi_inv_finish_column _ _ _ (by omega) h5
   -- vc19: final — chi_inv(5, 0) → postcondition
-  · sorry
+  · rename_i _ r hinv
+    intro k hk
+    simp only [USize64.reduceToNat] at hinv
+    specialize hinv k hk
+    simp only [show k % 5 < 5 from Nat.mod_lt k (by omega), ite_true,
+      Nat.not_lt_zero, and_false, or_false] at hinv
+    exact hinv
 
 /-! ## Bridge + composition -/
 
