@@ -457,6 +457,39 @@ private theorem rho_theta_bridge (sv rv : Vector u64 25) (d_arr : Array u64)
       show sv[k]'hk = sv[(⟨k, hk⟩ : Fin 25)] from rfl,
       show RHO_OFFSETS_pure[k]'hk = RHO_OFFSETS_pure[(⟨k, hk⟩ : Fin 25)] from rfl]
 
+/-! ### Stronger specs: postconditions as pure function equalities -/
+
+@[spec] theorem impl_chi_pure_spec (st : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.chi 1 u64 st
+    ⦃ ⇓ r => ⌜ r.st.toVec = chi_pure st.st.toVec ⌝ ⦄ :=
+  Std.Do.Triple.of_entails_right _ _ _ _ (impl_chi_spec st) (by
+    simp only [Std.Do.PostCond.entails]; constructor
+    · exact fun r h => chi_bridge _ _ h
+    · simp [Std.Do.ExceptConds.entails])
+
+@[spec] theorem impl_pi_pure_spec (st : KeccakState 1 u64) :
+    ⦃ ⌜ True ⌝ ⦄ Impl_2.pi 1 u64 st
+    ⦃ ⇓ r => ⌜ r.st.toVec = pi_pure st.st.toVec ⌝ ⦄ :=
+  Std.Do.Triple.of_entails_right _ _ _ _ (impl_pi_spec st) (by
+    simp only [Std.Do.PostCond.entails]; constructor
+    · exact fun r h => pi_bridge _ _ h
+    · simp [Std.Do.ExceptConds.entails])
+
+@[spec] theorem round_iota_pure_spec (st : KeccakState 1 u64) (i : usize)
+    (hi : i.toNat < 24) :
+    ⦃ ⌜ True ⌝ ⦄ round_iota st i
+    ⦃ ⇓ r => ⌜ r.st.toVec = iota_pure st.st.toVec ⟨i.toNat, hi⟩ ⌝ ⦄ :=
+  Std.Do.Triple.of_entails_right _ _ _ _ (round_iota_spec st i hi) (by
+    simp only [Std.Do.PostCond.entails]; constructor
+    · intro r h
+      apply iota_bridge _ _ _ hi
+      intro k hk
+      have := h k hk
+      -- Convert getD → getElem on the round constant in `this`
+      simp only [Vector.toArray_getD_eq _ _ _ (show i.toNat < 24 from by vc_omega)] at this
+      exact this
+    · simp [Std.Do.ExceptConds.entails])
+
 -- Try mvcgen on the round body with True postcondition first
 set_option maxHeartbeats 6400000 in
 theorem round_body_spec (st : KeccakState 1 u64) (i : usize) (hi : i.toNat < 24) :
