@@ -18,6 +18,9 @@ lean_lib libcrux_intrinsics where
 lean_lib libcrux_sha3 where
   roots := #[`extraction.libcrux_sha3]
 
-@[default_target]
 lean_lib Impl_Spec_Mvcgen where
   roots := #[`Impl_Spec_Mvcgen]
+
+@[default_target]
+lean_lib Impl_Spec_Compose where
+  roots := #[`Impl_Spec_Compose]

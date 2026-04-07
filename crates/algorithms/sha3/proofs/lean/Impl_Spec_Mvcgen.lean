@@ -807,6 +807,8 @@ set_option maxHeartbeats 3200000 in
 
 -- Seal rho_0..4 after proving specs with frame conditions
 attribute [local irreducible] Impl_2.rho_0 Impl_2.rho_1 Impl_2.rho_2 Impl_2.rho_3 Impl_2.rho_4
+-- Also seal typeclass indexing (reduces theta mvcgen context)
+attribute [local irreducible] getElemResult instGetElemResultOfIndex
 
 -- Rho composition: same pattern as pi — irreducible + mvcgen + frame chain.
 -- rho takes (self, t) and calls rho_0(self,t); rho_1(...,t); ...; rho_4(...,t)
@@ -921,21 +923,12 @@ set_option maxHeartbeats 6400000 in
       ∀ j, j < 5 → d.toVec.toArray.getD j 0 = theta_d_arr st.st.toVec.toArray j ⌝ ⦄ := by
   intro _
   unfold Impl_2.theta
-  simp only [getElemResult, instGetElemResultOfIndex,
-    libcrux_sha3.generic_keccak.Impl_3,
-    libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
-    core_models.ops.index.Index.index,
-    rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
-    libcrux_sha3.traits.get_ij,
+  -- Resolve trait dispatch only (KeccakItem methods → portable implementations).
+  -- Everything else stays opaque for mvcgen to use @[spec] lemmas.
+  simp only [
     libcrux_sha3.traits.KeccakItem.xor5,
     libcrux_sha3.traits.KeccakItem.rotate_left1_and_xor,
-    libcrux_sha3.simd.portable.Impl,
-    libcrux_sha3.simd.portable._veor5q_u64,
-    libcrux_sha3.simd.portable._vrax1q_u64,
-    libcrux_sha3.simd.portable.rotate_left,
-    hax_lib.assert,
-    core_models.num.Impl_9.rotate_left,
-    rust_primitives.hax.cast_op]
+    libcrux_sha3.simd.portable.Impl]
   mvcgen
   all_goals (try vc_omega)
   -- Remaining VCs: st' = st (theta doesn't modify state) + assertion failures
@@ -943,20 +936,18 @@ set_option maxHeartbeats 6400000 in
   -- Goal 0: True ∧ ∀ j, j < 5 → d[j] = theta_d st j
   · -- d-value conjunction: True ∧ ∀ j < 5, d[j] = theta_d st j
     -- The d array is concrete after mvcgen but uses USize64.toNat r✝... indices.
-    -- dsimp reduces literals, simp [*] propagates index chains, then Array.getD + theta_d match.
     refine ⟨trivial, fun j hj => ?_⟩
-    -- Direct approach: dsimp to reduce USize64 in hypotheses, propagate via simp [*],
-    -- then case split on j and close by rfl after full reduction.
-    -- Apply the separate theta_d_from_c lemma to avoid normalizing in the 80-var context.
-    -- The goal has d as a concrete #[...] array; theta_d_from_c unifies with it.
-    apply theta_d_from_c st.st.toVec.toArray
-    -- 12 subgoals from theta_d_from_c. Try closing each.
-    all_goals first
-      | exact hj
-      | (dsimp only [USize64.reduceToNat, theta_c_arr, Array.getD, Vector.size_toArray,
-           Vector.getElem_toArray, Nat.reduceMul, Nat.reduceAdd]; subst_vars; rfl)
-      | (subst_vars; rfl)
-      | exact sorry
+    subst_vars
+    -- Case split j into 0..4, then close each case:
+    -- simp [*] uses usize hypotheses as rewrite rules to resolve index chains,
+    -- USize64.reduceToNat reduces literals, Vector.size_toArray resolves array sizes.
+    rcases (show j = 0 ∨ j = 1 ∨ j = 2 ∨ j = 3 ∨ j = 4 by omega) with
+      rfl | rfl | rfl | rfl | rfl <;>
+    (simp only [*, USize64.reduceToNat, Nat.reduceMul, Nat.reduceAdd, Nat.reduceMod,
+      Nat.reduceLT, ↓reduceDIte,
+      theta_d_arr, theta_c_arr, rotate_left_pure, Array.getD,
+      Vector.size_toArray, List.size_toArray, List.length_cons, List.length_nil]
+     <;> rfl)
   -- Goals 1-5: assertion failure branches (1+63≠64 contradicts concrete check)
   -- Assertion failures: the goals are wp⟦RustM.fail⟧ applied to postcond.
   -- The context has ¬(LEFT+RIGHT == 64) = true where LEFT+RIGHT=64.
@@ -964,10 +955,3 @@ set_option maxHeartbeats 6400000 in
   all_goals (first | vc_omega | sorry)
 
 attribute [local irreducible] Impl_2.theta
-
--- TODO: impl_chi_spec (loop — leave for user)
-
-/-! ## Layer 3: Bridge + composition -/
-
--- TODO: rho_theta_bridge, round_impl_spec, keccakf1600_spec
-
