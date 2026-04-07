@@ -279,8 +279,36 @@ set_option maxHeartbeats 6400000 in
   simp only [libcrux_sha3.traits.KeccakItem.and_not_xor,
     libcrux_sha3.simd.portable.Impl,
     ← chi_set_unfold, ← chi_get_unfold]
+  -- Swap both loop invariants: True → real chi_inv
+  -- Outer: chi_inv(old, acc, i, 0)
+  rw [show rust_primitives.hax.folds.fold_range (0 : USize64) (5 : USize64)
+    (fun self x => do let a ← pure true; pure (a = true)) st _ _ =
+    rust_primitives.hax.folds.fold_range (0 : USize64) (5 : USize64)
+    (fun (acc : KeccakState 1 u64) (i : USize64) =>
+      pure (chi_inv st.st.toVec.toArray acc.st.toVec.toArray i.toNat 0))
+    st _ ⟨fun acc i => chi_inv st.st.toVec.toArray acc.st.toVec.toArray i.toNat 0,
+      fun _ _ => by intro _; rfl⟩
+    from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
+  -- Inner: chi_inv(old, acc, i, j) — swap inside the outer body lambda
+  conv in (fun (self : KeccakState 1 u64) (i : USize64) => rust_primitives.hax.folds.fold_range
+    (0 : USize64) (5 : USize64) _ self _ _) =>
+    ext self i
+    rw [fold_range_inv_irrelevant _ _ _ -- s, e, inv₁
+      (fun (acc : KeccakState 1 u64) (j : USize64) =>
+        pure (chi_inv st.st.toVec.toArray acc.st.toVec.toArray i.toNat j.toNat)) -- inv₂
+      _ _ _ -- init, body, pureInv₁
+      ⟨fun acc j => chi_inv st.st.toVec.toArray acc.st.toVec.toArray i.toNat j.toNat,
+        fun _ _ => by intro _; rfl⟩] -- pureInv₂
   hax_mvcgen
-  all_goals sorry
+  all_goals (try vc_omega)
+  -- vc2: initial invariant
+  · simp only [USize64.reduceToNat]; exact chi_inv_init _
+  -- vc15: inner step — set postcondition → chi_inv(i, j+1)
+  · sorry
+  -- vc18: column finish — chi_inv(i, 5) → chi_inv(i+1, 0)
+  · sorry
+  -- vc19: final — chi_inv(5, 0) → postcondition
+  · sorry
 
 /-! ## Bridge + composition -/
 
