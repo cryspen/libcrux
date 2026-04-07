@@ -27,6 +27,7 @@ open Std.Do
 open libcrux_sha3.generic_keccak
 open hacspec_sha3.keccak_f
 
+set_option hax_mvcgen.specset "int"
 set_option linter.unusedVariables false
 
 /-! ## Seal external functions that have @[spec] lemmas.
@@ -104,27 +105,29 @@ open Pure
 
 /-! ## Infrastructure: checked arithmetic specs -/
 
-@[spec] axiom usize_mul_spec (a b : usize) :
-    ⦃ ⌜ a.toNat * b.toNat < USize64.size ⌝ ⦄ (a *? b)
+@[spec] axiom usize_mul_spec (a b : usize)
+    (h : a.toNat * b.toNat < USize64.size) :
+    ⦃ ⌜ True ⌝ ⦄ (a *? b)
     ⦃ ⇓ r => ⌜ r.toNat = a.toNat * b.toNat ⌝ ⦄
 
-@[spec] axiom usize_add_spec (a b : usize) :
-    ⦃ ⌜ a.toNat + b.toNat < USize64.size ⌝ ⦄ (a +? b)
+@[spec] axiom usize_add_spec (a b : usize)
+    (h : a.toNat + b.toNat < USize64.size) :
+    ⦃ ⌜ True ⌝ ⦄ (a +? b)
     ⦃ ⇓ r => ⌜ r.toNat = a.toNat + b.toNat ⌝ ⦄
 
-@[spec] theorem usize_div_spec (a b : usize) :
-    ⦃ ⌜ b ≠ 0 ⌝ ⦄ (a /? b) ⦃ ⇓ r => ⌜ r.toNat = a.toNat / b.toNat ⌝ ⦄ := by
-  intro h; unfold rust_primitives.ops.arith.Div.div instDivUSize64_1; simp [h]; mvcgen
+@[spec] theorem usize_div_spec (a b : usize) (h : b ≠ 0) :
+    ⦃ ⌜ True ⌝ ⦄ (a /? b) ⦃ ⇓ r => ⌜ r.toNat = a.toNat / b.toNat ⌝ ⦄ := by
+  intro _; unfold rust_primitives.ops.arith.Div.div instDivUSize64_1; simp [h]
 
-@[spec] theorem usize_mod_spec (a b : usize) :
-    ⦃ ⌜ b ≠ 0 ⌝ ⦄ (a %? b) ⦃ ⇓ r => ⌜ r.toNat = a.toNat % b.toNat ⌝ ⦄ := by
-  intro h; unfold rust_primitives.ops.arith.Rem.rem instRemUSize64; simp [h]; mvcgen
+@[spec] theorem usize_mod_spec (a b : usize) (h : b ≠ 0) :
+    ⦃ ⌜ True ⌝ ⦄ (a %? b) ⦃ ⇓ r => ⌜ r.toNat = a.toNat % b.toNat ⌝ ⦄ := by
+  intro _; unfold rust_primitives.ops.arith.Rem.rem instRemUSize64; simp [h]
 
 @[spec] theorem getElemResult_usize_spec {α : Type} [Inhabited α] {n : usize}
-    (xs : RustArray α n) (i : usize) :
-    ⦃ ⌜ i.toNat < n.toNat ⌝ ⦄ xs[i]_?
+    (xs : RustArray α n) (i : usize) (h : i.toNat < n.toNat) :
+    ⦃ ⌜ True ⌝ ⦄ xs[i]_?
     ⦃ ⇓ r => ⌜ r = xs.toVec.toArray.getD i.toNat default ⌝ ⦄ := by
-  intro h; unfold getElemResult usize.instGetElemResultVector; mvcgen; simp [Array.getD, h]
+  intro _; unfold getElemResult usize.instGetElemResultVector; hax_mvcgen; simp [Array.getD, h]
 
 /-! ## Bridge lemma: Array.getD → Vector.getElem
 
@@ -155,19 +158,19 @@ open libcrux_sha3.simd.portable in
 @[spec] theorem veor5q_u64_spec (a b c d e : u64) :
     ⦃ ⌜ True ⌝ ⦄ _veor5q_u64 a b c d e
     ⦃ ⇓ r => ⌜ r = a ^^^ b ^^^ c ^^^ d ^^^ e ⌝ ⦄ := by
-  intro _; unfold _veor5q_u64; mvcgen
+  intro _; unfold _veor5q_u64; hax_mvcgen
 
 open libcrux_sha3.simd.portable in
 @[spec] theorem vbcaxq_u64_spec (a b c : u64) :
     ⦃ ⌜ True ⌝ ⦄ _vbcaxq_u64 a b c
     ⦃ ⇓ r => ⌜ r = a ^^^ (b &&& ~~~c) ⌝ ⦄ := by
-  intro _; unfold _vbcaxq_u64; mvcgen
+  intro _; unfold _vbcaxq_u64; hax_mvcgen
 
 open libcrux_sha3.simd.portable in
 @[spec] theorem veorq_n_u64_spec (a c : u64) :
     ⦃ ⌜ True ⌝ ⦄ _veorq_n_u64 a c
     ⦃ ⇓ r => ⌜ r = a ^^^ c ⌝ ⦄ := by
-  intro _; unfold _veorq_n_u64; mvcgen
+  intro _; unfold _veorq_n_u64; hax_mvcgen
 
 -- rotate_left: assert (LEFT+RIGHT==64), cast LEFT to u32, call Impl_9.rotate_left
 -- Needs i32 checked add spec. We axiomatize it since i32 overflow is guaranteed
@@ -182,13 +185,14 @@ open libcrux_sha3.simd.portable in
     ⦃ ⇓ r => ⌜ r = Int32.toUInt32 x ⌝ ⦄
 
 open libcrux_sha3.simd.portable in
-@[spec] theorem rotate_left_portable_spec (LEFT RIGHT : i32) (x : u64) :
-    ⦃ ⌜ LEFT + RIGHT = 64 ⌝ ⦄ rotate_left LEFT RIGHT x
+@[spec] theorem rotate_left_portable_spec (LEFT RIGHT : i32) (x : u64)
+    (hlr : LEFT + RIGHT = 64) :
+    ⦃ ⌜ True ⌝ ⦄ rotate_left LEFT RIGHT x
     ⦃ ⇓ r => ⌜ r = rotate_left_pure x (Int32.toUInt32 LEFT) ⌝ ⦄ := by
-  intro hlr
+  intro _
   unfold rotate_left hax_lib.assert
     core_models.num.Impl_9.rotate_left rotate_left_pure
-  mvcgen
+  hax_mvcgen
   -- vc1: cast result matches — subst all equalities
   · subst_vars; rfl
   -- vc2: assertion failure contradicts hlr : LEFT + RIGHT = 64
@@ -200,19 +204,20 @@ open libcrux_sha3.simd.portable in
     ⦃ ⇓ r => ⌜ r = a ^^^ rotate_left_pure b 1 ⌝ ⦄ := by
   intro _; unfold _vrax1q_u64 rotate_left hax_lib.assert
     core_models.num.Impl_9.rotate_left rotate_left_pure
-  mvcgen
+  hax_mvcgen
   -- vc1: subst cast result
   · subst_vars; rfl
   -- vc2: assertion contradiction (1+63=64 but assert says false)
   · exfalso; simp_all [BEq.beq]
 
 open libcrux_sha3.simd.portable in
-@[spec] theorem vxarq_u64_spec (LEFT RIGHT : i32) (a b : u64) :
-    ⦃ ⌜ LEFT + RIGHT = 64 ⌝ ⦄ _vxarq_u64 LEFT RIGHT a b
+@[spec] theorem vxarq_u64_spec (LEFT RIGHT : i32) (a b : u64)
+    (hlr : LEFT + RIGHT = 64) :
+    ⦃ ⌜ True ⌝ ⦄ _vxarq_u64 LEFT RIGHT a b
     ⦃ ⇓ r => ⌜ r = rotate_left_pure (a ^^^ b) (Int32.toUInt32 LEFT) ⌝ ⦄ := by
-  intro hlr; unfold _vxarq_u64 rotate_left hax_lib.assert
+  intro _; unfold _vxarq_u64 rotate_left hax_lib.assert
     core_models.num.Impl_9.rotate_left rotate_left_pure
-  mvcgen
+  hax_mvcgen
   · subst_vars; rfl
   · exfalso; simp_all [BEq.beq]
 
@@ -225,13 +230,14 @@ local macro "vc_omega" : tactic =>
   `(tactic| (simp only [USize64.reduceToNat, USize64.size, UInt64.size,
       Vector.size, Vector.size_toArray] at *; omega))
 
-@[spec] theorem get_ij_spec (arr : RustArray u64 25) (i j : usize) :
-    ⦃ ⌜ i.toNat < 5 ∧ j.toNat < 5 ⌝ ⦄
+@[spec] theorem get_ij_spec (arr : RustArray u64 25) (i j : usize)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.traits.get_ij 1 u64 arr i j
     ⦃ ⇓ r => ⌜ r = arr.toVec.toArray.getD (5 * j.toNat + i.toNat) 0 ⌝ ⦄ := by
-  intro ⟨hi, hj⟩
+  intro _
   unfold libcrux_sha3.traits.get_ij
-  mvcgen
+  hax_mvcgen
   · vc_omega
   · vc_omega
   -- vc3: Vector.getElem result = Array.getD at same index
@@ -244,16 +250,17 @@ local macro "vc_omega" : tactic =>
   · simp only [USize64.reduceToNat] at *; omega
 
 -- set_ij: element-wise postcondition.
-@[spec] theorem set_ij_spec (arr : RustArray u64 25) (i j : usize) (v : u64) :
-    ⦃ ⌜ i.toNat < 5 ∧ j.toNat < 5 ⌝ ⦄
+@[spec] theorem set_ij_spec (arr : RustArray u64 25) (i j : usize) (v : u64)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.traits.set_ij 1 u64 arr i j v
     ⦃ ⇓ r => ⌜ r.toVec.size = 25 ∧
       (∀ k (hk : k < 25), r.toVec[k] =
         if k = 5 * j.toNat + i.toNat then v else arr.toVec[k]) ⌝ ⦄ := by
-  intro ⟨hi, hj⟩
+  intro _
   unfold libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- vc3: in-bounds case — prove element-wise property of Vector.set
   refine ⟨by simp [Vector.size], fun k hk => ?_⟩
@@ -264,16 +271,17 @@ local macro "vc_omega" : tactic =>
 /-! ## Impl_2.set and KeccakState indexing -/
 
 -- Impl_2.set wraps set_ij on st.st, returning a new KeccakState.
-@[spec] theorem Impl_2_set_spec (st : KeccakState 1 u64) (i j : usize) (v : u64) :
-    ⦃ ⌜ i.toNat < 5 ∧ j.toNat < 5 ⌝ ⦄
+@[spec] theorem Impl_2_set_spec (st : KeccakState 1 u64) (i j : usize) (v : u64)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄
     Impl_2.set 1 u64 st i j v
     ⦃ ⇓ r => ⌜ r.st.toVec.size = 25 ∧
       (∀ k (hk : k < 25), r.st.toVec[k] =
         if k = 5 * j.toNat + i.toNat then v else st.st.toVec[k]) ⌝ ⦄ := by
-  intro ⟨hi, hj⟩
+  intro _
   unfold Impl_2.set libcrux_sha3.traits.set_ij
     rust_primitives.hax.monomorphized_update_at.update_at_usize
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- vc3: in-bounds — element-wise property
   refine ⟨by simp [Vector.size], fun k hk => ?_⟩
@@ -282,11 +290,12 @@ local macro "vc_omega" : tactic =>
   congr 1; ext; constructor <;> (intro; omega)
 
 -- KeccakState indexing via Tuple2: st[⟨i,j⟩] = st.st[5*j+i]
-@[spec] theorem KeccakState_getElem_spec (st : KeccakState 1 u64) (i j : usize) :
-    ⦃ ⌜ i.toNat < 5 ∧ j.toNat < 5 ⌝ ⦄
+@[spec] theorem KeccakState_getElem_spec (st : KeccakState 1 u64) (i j : usize)
+    (hi : i.toNat < 5) (hj : j.toNat < 5) :
+    ⦃ ⌜ True ⌝ ⦄
     st[(rust_primitives.hax.Tuple2.mk i j)]_?
     ⦃ ⇓ r => ⌜ r = st.st.toVec.toArray.getD (5 * j.toNat + i.toNat) 0 ⌝ ⦄ := by
-  intro ⟨hi, hj⟩
+  intro _
   -- Unfold the indexing chain: KeccakState[⟨i,j⟩] → Index.index → get_ij
   simp only [getElemResult, instGetElemResultOfIndex,
     libcrux_sha3.generic_keccak.Impl_3,
@@ -294,7 +303,7 @@ local macro "vc_omega" : tactic =>
     libcrux_sha3.generic_keccak.Impl_3.AssociatedTypes,
     rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1]
   -- Now it's wp⟦get_ij 1 u64 st.st i j⟧ — apply get_ij_spec directly
-  exact get_ij_spec st.st i j ⟨hi, hj⟩
+  exact get_ij_spec st.st i j hi hj trivial
 
 /-! ## Layer 0 continued: rotate_left and related -/
 
@@ -308,7 +317,7 @@ local macro "vc_omega" : tactic =>
 set_option maxHeartbeats 400000 in
 @[spec] theorem impl_iota_spec (st : KeccakState 1 u64) (i : usize)
     (hi : i.toNat < 24) :
-    ⦃ ⌜ i.toNat < 24 ⌝ ⦄
+    ⦃ ⌜ True ⌝ ⦄
     Impl_2.iota 1 u64 st i
     ⦃ ⇓ r => ⌜ ∀ k (hk : k < 25), r.st.toVec[k] =
         if k = 0 then
@@ -330,7 +339,7 @@ set_option maxHeartbeats 400000 in
     libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._veorq_n_u64,
     libcrux_sha3.traits.get_ij]
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- Remaining VC: Vector.set element-wise property
   · intro k hk
@@ -395,7 +404,7 @@ set_option maxHeartbeats 1600000 in
     libcrux_sha3.traits.get_ij]
   -- Now it's a raw chain of *?, +?, if-then-else, Vector.set, Vector.getElem
   -- Use mvcgen on this fully-unfolded form
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- Remaining: postcondition about (v.set i₁ x₁).set i₂ x₂ ... at indices 1,2,3,4
   -- Reduce USize64 literals, then simplify Vector.set/getD with concrete indices.
@@ -446,7 +455,7 @@ local macro "pi_step_proof" n:num : tactic => `(tactic| (
     core_models.ops.index.Index.index,
     rust_primitives.hax.Tuple2._0, rust_primitives.hax.Tuple2._1,
     libcrux_sha3.traits.get_ij]
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> {
@@ -547,7 +556,7 @@ set_option maxHeartbeats 3200000 in
     ⦃ ⌜ True ⌝ ⦄ Impl_2.pi 1 u64 st
     ⦃ ⇓ r => ⌜ ∀ k (_ : k < 25),
       r.st.toVec.toArray.getD k 0 = st.st.toVec.toArray.getD (pi_perm_table.getD k 0) 0 ⌝ ⦄ := by
-  intro _; unfold Impl_2.pi; mvcgen
+  intro _; unfold Impl_2.pi; hax_mvcgen
   rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
   obtain ⟨h0a, h0b, h0c, h0d, h0f⟩ := h0
   obtain ⟨h1a, h1b, h1c, h1d, h1e, h1f⟩ := h1
@@ -620,7 +629,7 @@ local macro "rho_step_proof" : tactic => `(tactic| (
     hax_lib.assert,
     core_models.num.Impl_9.rotate_left,
     rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray] at *
     refine ⟨?_, ?_, ?_, ?_⟩ <;> (try exact ⟨?_, ?_⟩) <;> {
@@ -670,7 +679,7 @@ set_option maxHeartbeats 3200000 in
     hax_lib.assert,
     core_models.num.Impl_9.rotate_left,
     rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- Goal 0: postcondition (5 written positions + frame)
   · simp only [USize64.reduceToNat, Vector.size, Vector.size_toArray, modifies_only5] at *
@@ -730,7 +739,7 @@ set_option maxHeartbeats 3200000 in
     libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   rho_step_close
 
 set_option maxHeartbeats 3200000 in
@@ -754,7 +763,7 @@ set_option maxHeartbeats 3200000 in
     libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   rho_step_close
 
 set_option maxHeartbeats 3200000 in
@@ -778,7 +787,7 @@ set_option maxHeartbeats 3200000 in
     libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   rho_step_close
 
 set_option maxHeartbeats 3200000 in
@@ -802,7 +811,7 @@ set_option maxHeartbeats 3200000 in
     libcrux_sha3.traits.KeccakItem.xor_and_rotate, libcrux_sha3.simd.portable.Impl,
     libcrux_sha3.simd.portable._vxarq_u64, libcrux_sha3.simd.portable.rotate_left,
     hax_lib.assert, core_models.num.Impl_9.rotate_left, rust_primitives.hax.cast_op]
-  mvcgen
+  hax_mvcgen
   rho_step_close
 
 -- Seal rho_0..4 after proving specs with frame conditions
@@ -823,7 +832,7 @@ set_option maxHeartbeats 6400000 in
       r.st.toVec.toArray.getD k 0 =
         rotate_left_pure (self.st.toVec.toArray.getD k 0 ^^^ t.toVec.toArray.getD (k / 5) 0)
           (Int32.toUInt32 ([0,36,3,41,18,1,44,10,45,2,62,6,43,15,61,28,55,25,21,56,27,20,39,8,14].getD k 0)) ⌝ ⦄ := by
-  intro _; unfold Impl_2.rho; mvcgen
+  intro _; unfold Impl_2.rho; hax_mvcgen
   rename_i _ _ h0 _ h1 _ h2 _ h3 _ h4
   obtain ⟨h0a, h0b, h0c, h0d, h0e, h0f⟩ := h0
   obtain ⟨h1a, h1b, h1c, h1d, h1e, h1f⟩ := h1
@@ -929,7 +938,7 @@ set_option maxHeartbeats 6400000 in
     libcrux_sha3.traits.KeccakItem.xor5,
     libcrux_sha3.traits.KeccakItem.rotate_left1_and_xor,
     libcrux_sha3.simd.portable.Impl]
-  mvcgen
+  hax_mvcgen
   all_goals (try vc_omega)
   -- Remaining VCs: st' = st (theta doesn't modify state) + assertion failures
   -- The state passes through unchanged (theta only computes c and d, doesn't write to self)

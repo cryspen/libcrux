@@ -18,6 +18,7 @@ open libcrux_sha3.generic_keccak
 open hacspec_sha3.keccak_f
 open Pure
 
+set_option hax_mvcgen.specset "int"
 set_option linter.unusedVariables false
 
 /-! ## Seal all proved functions
@@ -92,15 +93,17 @@ theorem fold_range_usize_spec {α : Type}
     (init : α)
     (body : α → USize64 → RustM α)
     (pureInv : {i : α → USize64 → Prop //
-      ∀ a b, ⦃⌜True⌝⦄ inv a b ⦃Std.Do.PostCond.noThrow fun r => ⌜r = i a b⌝⦄}) :
-    ⦃ ⌜ s.toNat ≤ e.toNat ∧ pureInv.val init s ∧
-        (∀ (acc : α) (i : USize64),
+      ∀ a b, ⦃⌜True⌝⦄ inv a b ⦃Std.Do.PostCond.noThrow fun r => ⌜r = i a b⌝⦄})
+    (hle : s.toNat ≤ e.toNat)
+    (hinit : pureInv.val init s)
+    (hstep : ∀ (acc : α) (i : USize64),
           s.toNat ≤ i.toNat → i.toNat < e.toNat → pureInv.val acc i →
           ⦃ ⌜ True ⌝ ⦄ body acc i
-          ⦃ Std.Do.PostCond.noThrow fun res => ⌜ pureInv.val res (i+1) ⌝ ⦄) ⌝ ⦄
+          ⦃ Std.Do.PostCond.noThrow fun res => ⌜ pureInv.val res (i+1) ⌝ ⦄) :
+    ⦃ ⌜ True ⌝ ⦄
     rust_primitives.hax.folds.fold_range s e inv init body pureInv
     ⦃ Std.Do.PostCond.noThrow fun r => ⌜ pureInv.val r e ⌝ ⦄ := by
-  intro ⟨hle, hinit, hstep⟩
+  intro _
   have h := rust_primitives.hax.folds.fold_range_spec_int_USize64
     s e inv pureInv init body hle hinit hstep
   exact h trivial
