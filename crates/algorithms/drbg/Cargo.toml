@@ -12,9 +12,14 @@ version.workspace = true
 [features]
 default = []
 
+# Enables integration with the `rand` crate:
+#   - Defines extensions to the traits in `rand` for better expressing the interface of a DRBG.
+#   - Implements traits from `rand` (and the extensions) using the DRBG algorithms.
 rand = ["dep:rand"]
 
+# Exposes APIs that should only be used for testing this library.
 testing = []
+
 # Enables continuous health tests per NIST SP 800-90C §9.3.3 and AIS 20/31 T4:
 #   - Intra-call: each V = HMAC(K,V_old) must satisfy V ≠ V_old.
 #   - Inter-call: first generated block must differ from last block of the

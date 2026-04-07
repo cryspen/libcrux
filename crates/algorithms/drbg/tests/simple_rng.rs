@@ -1,26 +1,26 @@
-//! Integration tests for the `SimpleRng` wrapper types.
+//! Integration tests for the `HmacDrbgRng` wrapper types.
 //!
 //! Requires the `rand` feature (but NOT `health-tests`).  Run with:
 //! ```text
 //! cargo test -p libcrux-drbg --features rand --test simple_rng
 //! ```
-#![cfg(feature = "rand")]
+#![cfg(all(feature = "rand", not(feature = "health-tests")))]
 
-use libcrux_drbg::simple::{SimpleHmacSha256Drbg, SimpleHmacSha384Drbg, SimpleHmacSha512Drbg};
+use libcrux_drbg::{HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng};
 use rand::{rand_core::UnwrapErr, rngs::SysRng, CryptoRng, Rng};
 
 type OsRng = UnwrapErr<SysRng>;
 
-fn make_sha256() -> SimpleHmacSha256Drbg<OsRng> {
-    SimpleHmacSha256Drbg::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+fn make_sha256() -> HmacSha256DrbgRng<OsRng> {
+    HmacSha256DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
 }
 
-fn make_sha384() -> SimpleHmacSha384Drbg<OsRng> {
-    SimpleHmacSha384Drbg::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+fn make_sha384() -> HmacSha384DrbgRng<OsRng> {
+    HmacSha384DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
 }
 
-fn make_sha512() -> SimpleHmacSha512Drbg<OsRng> {
-    SimpleHmacSha512Drbg::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+fn make_sha512() -> HmacSha512DrbgRng<OsRng> {
+    HmacSha512DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
 }
 
 // ---------------------------------------------------------------------------

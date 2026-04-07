@@ -1,3 +1,4 @@
+use core::convert::Infallible;
 use core::marker::PhantomData;
 
 pub(crate) use ::rand::{rngs, CryptoRng, TryCryptoRng};
@@ -221,4 +222,126 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> TryReseedableRng for HmacD
     ) -> Result<(), Self::ReseedError> {
         self.reseed(entropy.as_ref(), additional_input)
     }
+}
+
+// ---------------------------------------------------------------------------
+// HmacDrbgRng — auto-reseeding, infallible CryptoRng wrapper
+// ---------------------------------------------------------------------------
+
+/// Auto-reseeding, infallible HMAC-DRBG RNG using HMAC-SHA-256.
+#[cfg(not(feature = "health-tests"))]
+pub type HmacSha256DrbgRng<ReseedRng> = HmacDrbgRng<32, crate::hmac::HmacSha256, ReseedRng>;
+/// Auto-reseeding, infallible HMAC-DRBG RNG using HMAC-SHA-384.
+#[cfg(not(feature = "health-tests"))]
+pub type HmacSha384DrbgRng<ReseedRng> = HmacDrbgRng<48, crate::hmac::HmacSha384, ReseedRng>;
+/// Auto-reseeding, infallible HMAC-DRBG RNG using HMAC-SHA-512.
+#[cfg(not(feature = "health-tests"))]
+pub type HmacSha512DrbgRng<ReseedRng> = HmacDrbgRng<64, crate::hmac::HmacSha512, ReseedRng>;
+
+/// Auto-reseeding, infallible [`rand::CryptoRng`] wrapper around [`HmacDrbg`].
+///
+/// Unlike [`HmacDrbg`] (which implements the fallible [`rand::TryCryptoRng`]),
+/// `HmacDrbgRng` implements the infallible [`rand::CryptoRng`] by automatically
+/// reseeding from an inner `ReseedRng` when needed.
+///
+/// Use the type aliases [`HmacSha256DrbgRng`], [`HmacSha384DrbgRng`],
+/// [`HmacSha512DrbgRng`] for convenience.
+#[cfg(not(feature = "health-tests"))]
+#[allow(private_bounds)]
+pub struct HmacDrbgRng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
+{
+    drbg: HmacDrbg<OUTLEN, Hmac>,
+    rng: ReseedRng,
+}
+
+#[cfg(not(feature = "health-tests"))]
+#[allow(private_bounds)]
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
+    HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
+{
+    /// Instantiates a new `HmacDrbgRng`.
+    pub fn new(mut rng: ReseedRng, nonce: &[u8; 32], personalization: &[u8; 32]) -> Self {
+        let mut init_entropy = [0u8; crate::MIN_ENTROPY_BYTES];
+        rng.fill_bytes(&mut init_entropy);
+
+        let drbg = match HmacDrbg::new(&init_entropy, nonce, personalization) {
+            Ok(drbg) => drbg,
+            Err(error) => match error {
+                // We ensure the lengths are in bounds by setting fixed lengths in the argument
+                // types
+                crate::InstantiateError::InputTooLarge => unreachable!(),
+            },
+        };
+
+        Self { drbg, rng }
+    }
+
+    //hax: assume dst.len() < crate::MAX_GENERATE_BYTES
+    fn safe_generate_small(&mut self, dst: &mut [u8]) {
+        if self.drbg.needs_reseed() {
+            match self.drbg.reseed_from_rng(&mut self.rng, &[]) {
+                Ok(()) => (),
+                // we know how much data we put in and it's fine
+                Err(crate::ReseedError::InputTooLarge) => unreachable!(),
+            }
+        }
+
+        match self.drbg.generate(dst, None) {
+            Ok(()) => (),
+            // we just ensured that no reseed is required
+            Err(crate::GenerateError::ReseedRequired) => unreachable!(),
+            // We know how much data we request and it's fine
+            Err(crate::GenerateError::RequestTooLarge) => unreachable!(),
+            // Again, the input size is safe.
+            Err(crate::GenerateError::InputTooLarge) => unreachable!(),
+        }
+    }
+}
+
+#[cfg(not(feature = "health-tests"))]
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng> rand::TryRng
+    for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
+{
+    type Error = Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        let mut out = [0u8; 4];
+        self.safe_generate_small(&mut out);
+        Ok(u32::from_le_bytes(out))
+    }
+
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        let mut out = [0u8; 8];
+        self.safe_generate_small(&mut out);
+        Ok(u64::from_le_bytes(out))
+    }
+
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        let (chunks, rest): (&mut [[u8; MAX_GENERATE_BYTES]], _) = dst.as_chunks_mut();
+
+        for chunk in chunks {
+            self.safe_generate_small(chunk);
+        }
+
+        self.safe_generate_small(rest);
+
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "health-tests"))]
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
+    rand::TryCryptoRng for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
+{
+}
+
+/// Ensure that HmacDrbgRng implements CryptoRng
+#[cfg(not(feature = "health-tests"))]
+fn _assert_crypto_rng<
+    const OUTLEN: usize,
+    Hmac: HmacAlgorithm<OUTLEN>,
+    ReseedRng: rand::CryptoRng,
+>() {
+    fn must_impl<T: CryptoRng>() {}
+    must_impl::<HmacDrbgRng<OUTLEN, Hmac, ReseedRng>>();
 }
