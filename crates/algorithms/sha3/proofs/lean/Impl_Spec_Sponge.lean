@@ -204,9 +204,11 @@ theorem xor_loop_spec (n : usize) (state state_flat : RustArray u64 25)
   all_goals (try vc_omega)
   -- vc2: initial invariant
   · exact Sponge.xor_loop_inv_init _ _
-  -- vc11: r✝⁴ < 5 where r✝⁴ = i % 5 (USize64.reduceToNat not reducing in all hyps)
-  · sorry
+  -- vc11: r✝⁴ < 5 where r✝⁴ = i % 5
+  · grind
   -- vc12: step — set postcondition → xor_loop_inv (i+1)
+  -- Structure: apply xor_loop_inv_step, convert Vector.getElem ↔ Array.getD,
+  -- wire set_ij postcondition (flat_perm matching). Needs careful name management.
   · sorry
 
 /-! ## State initialization -/
