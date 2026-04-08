@@ -431,8 +431,34 @@ set_option maxHeartbeats 6400000 in
   -- With True invariants we have no info. Use sorry pending restructure.
   · sorry
 
+/-! ## Specs for store_block helpers -/
+
+-- copy_from_slice: replaces destination with source (requires equal lengths)
+@[spec] theorem copy_from_slice_spec {α : Type}
+    [inst1 : core_models.marker.Copy.AssociatedTypes α]
+    [inst2 : core_models.marker.Copy α]
+    (s src : RustSlice α)
+    (hlen : s.val.size = src.val.size) :
+    ⦃ ⌜ True ⌝ ⦄
+    core_models.slice.Impl.copy_from_slice α s src
+    ⦃ ⇓ r => ⌜ r = src ⌝ ⦄ := by
+  intro _
+  unfold core_models.slice.Impl.copy_from_slice rust_primitives.mem.replace
+  simp
+
+-- RangeTo indexing for RustArray
+open core_models.ops.range in
+@[spec] theorem RangeTo_getElemRustArray_spec {α : Type} {n : usize}
+    (a : RustArray α n) (e : usize) (he : e.toNat ≤ a.toVec.size) :
+    ⦃ ⌜ True ⌝ ⦄
+    (a[RangeTo.mk e]_?)
+    ⦃ ⇓ r => ⌜ r.val = (Vector.extract a.toVec 0 e.toNat).toArray ⌝ ⦄ := by
+  sorry
+
 -- store_block
-attribute [local irreducible] libcrux_sha3.simd.portable.store_block
+attribute [local irreducible]
+  libcrux_sha3.simd.portable.store_block
+  core_models.slice.Impl.copy_from_slice
 
 attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
