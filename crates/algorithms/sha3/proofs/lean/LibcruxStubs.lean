@@ -1,4 +1,5 @@
 import Hax
+import Std.Do.Triple
 import Stubs  -- from spec project (hacspec_sha3), provides coercions + core_models.num
 
 /-! # Stubs for missing functions and instances (implementation-specific)
@@ -84,6 +85,29 @@ def update_at_range (s : rust_primitives.sequence.Seq α)
     RustM S := sorry
 
 end rust_primitives.hax.monomorphized_update_at
+
+/-! ## `copy_from_slice` wrapper for specset "int"
+
+The Hax library's `copy_from_slice` only has `@[hax_spec]` for specset "bv".
+With specset "int", mvcgen cannot find a spec and falls back to unfolding,
+causing OOM. This irreducible wrapper with `@[spec]` provides a spec that
+mvcgen can use with any specset. Use `simp only [← copy_from_slice_u8_eq]`
+before `hax_mvcgen` to substitute. -/
+
+def copy_from_slice_u8 (s src : RustSlice u8) : RustM (RustSlice u8) :=
+  core_models.slice.Impl.copy_from_slice u8 s src
+
+theorem copy_from_slice_u8_eq (s src) :
+    copy_from_slice_u8 s src = core_models.slice.Impl.copy_from_slice u8 s src := rfl
+
+open Std.Do in
+@[spec] theorem copy_from_slice_u8_spec (s src : RustSlice u8)
+    (hlen : s.val.size = src.val.size) :
+    ⦃ ⌜ True ⌝ ⦄ copy_from_slice_u8 s src ⦃ ⇓ r => ⌜ r = src ⌝ ⦄ := by
+  intro _; rw [copy_from_slice_u8_eq]
+  unfold core_models.slice.Impl.copy_from_slice rust_primitives.mem.replace; simp
+
+attribute [irreducible] copy_from_slice_u8
 
 /-! ## `hax_lib.int` — integer-from-string literal -/
 
