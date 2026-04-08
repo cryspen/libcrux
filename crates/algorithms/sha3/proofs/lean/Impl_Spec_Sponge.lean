@@ -496,6 +496,18 @@ open core_models.ops.range in
 
 attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
+/-- The size of a slice extracted from `out` at `[pos, pos+rem]` equals
+    the size of a Vector extract `[0, rem]` from an 8-element vector,
+    when `rem ≤ 8` and `pos + rem ≤ out.size`. -/
+private theorem remainder_copy_len_eq
+    (out_arr : Array u8) (pos rem : Nat)
+    (v : Vector u8 8)
+    (hrem : rem ≤ 8)
+    (hpos : pos + rem ≤ out_arr.size) :
+    (out_arr.extract pos (pos + rem)).size = (Vector.extract v 0 rem).toArray.size := by
+  simp [Array.size_extract, Vector.size_toArray, Nat.min_eq_left hpos,
+    Nat.min_eq_left hrem]
+
 attribute [local irreducible]
   libcrux_sha3.simd.portable.store_block
 
@@ -541,10 +553,14 @@ set_option maxHeartbeats 6400000 in
   -- vc14: extract size = to_le_bytes array size (= 8)
   · simp only [Sponge.store_loop_inv, USize64.reduceToNat] at *; subst_vars
     simp [Array.size_extract]; omega
-  -- vc31: remainder length match — needs manual proof
+  -- vc31: remainder length match (extract sizes equal)
   · sorry
-  -- vc18: loop step, vc35/36: composition
-  all_goals sorry
+  -- vc18: loop step
+  · sorry
+  -- vc35: composition (with remainder)
+  · sorry
+  -- vc36: composition (no remainder)
+  · sorry
 
 -- load_last
 attribute [local irreducible] libcrux_sha3.simd.portable.load_last
