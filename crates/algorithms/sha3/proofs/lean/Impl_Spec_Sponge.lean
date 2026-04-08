@@ -265,8 +265,29 @@ theorem byte_loop_spec (n : usize) (blocks : RustSlice u8) (start : usize)
     have := hbounds i.toNat (by vc_omega)
     have := blocks.size_lt_usizeSize; vc_omega
   -- vc11: step — byte_loop_inv maintained after Vector.set with from_le_bytes result
-  -- Needs: Array.set/getD wiring + bridge from_le_bytes ↔ bytes_to_u64_le
-  · sorry
+  · rename_i _ acc i _ hi_lt inv _ _ _ _ _ _ _ _ _ _ bytes hbytes _
+    simp only [USize64.reduceToNat] at *
+    rw [USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
+    have hbd := hbounds i.toNat (by vc_omega)
+    have ⟨hsize_inv, hspec_inv⟩ := inv
+    unfold Sponge.byte_loop_inv
+    refine ⟨by simp [Vector.size_toArray], ?_⟩
+    intro j hj
+    subst hbytes
+    simp only [Vector.toArray_set, USize64.reduceToNat] at *
+    have ⟨_, hspec⟩ := inv
+    simp_all [Array.getElem_set, Array.getD]
+    -- Goal: (if i=j then from_le_bytes_expanded else old_inv) = (if j<i+1 then bytes_to_u64_le else 0)
+    split
+    · -- i = j: bridge from_le_bytes ↔ bytes_to_u64_le
+      rename_i hji; subst hji; simp only [show i.toNat < i.toNat + 1 from by omega, ite_true]
+      have hbd := hbounds i.toNat (by vc_omega)
+      unfold Sponge.bytes_to_u64_le; unfold List.getD
+      simp [show ∀ k, k ≤ 7 → USize64.toNat start + 8 * i.toNat + k < blocks.val.size from by omega,
+        show USize64.toNat start + 8 * i.toNat < blocks.val.size from by omega]
+    · -- i ≠ j: old invariant, j < i+1 ↔ j < i
+      rename_i hji
+      simp only [show (j < i.toNat + 1) ↔ (j < i.toNat) from by omega]
 
 /-! ## XOR loop standalone spec (loop 2 of load_block) -/
 
