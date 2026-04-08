@@ -474,6 +474,8 @@ set_option maxHeartbeats 6400000 in
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
+  -- store_block has loop + remainder + copy_from_slice + update_at_range
+  -- hax_mvcgen OOMs on the full function. Factor into standalone loop spec.
   sorry
 
 -- load_last
