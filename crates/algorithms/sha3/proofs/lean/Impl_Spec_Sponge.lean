@@ -526,12 +526,19 @@ set_option maxHeartbeats 6400000 in
       fun _ _ => by intro _; rfl⟩)]
   -- Eliminate dead `let out_len ← Impl.len` binding
   simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, pure_bind]
-  -- Replace copy_from_slice with irreducible wrapper
-  simp only [← copy_from_slice_u8_eq]
+  -- Replace get_ij and copy_from_slice with irreducible wrappers
+  simp only [← lb_get_eq, ← copy_from_slice_u8_eq]
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try (have := out.size_lt_usizeSize; vc_omega))
   all_goals (try grind)
+  -- vc3: initial invariant
+  · simp only [USize64.reduceToNat]; unfold Sponge.store_loop_inv
+    exact ⟨rfl, fun _ h => absurd h (by omega)⟩
+  -- vc13/14/15/29/32: bounds + size equalities
+  all_goals (try (simp only [Sponge.store_loop_inv, USize64.reduceToNat, Array.size_extract,
+    Vector.size_toArray] at *; omega))
+  -- remaining: vc31 (remainder length match), vc18 (loop step), vc35/36 (composition)
   all_goals sorry
 
 -- load_last
