@@ -77,8 +77,30 @@ namespace core_models.num
 @[irreducible] def Impl_8.MAX : u32 := sorry
 
 @[irreducible] def Impl_9.rotate_left (x : u64) (n : u32) : RustM u64 := sorry
-@[irreducible] def Impl_9.from_le_bytes (b : RustArray u8 8) : RustM u64 := sorry
-@[irreducible] def Impl_9.to_le_bytes (x : u64) : RustM (RustArray u8 8) := sorry
+@[spec]
+def Impl_9.from_le_bytes (b : RustArray u8 8) : RustM u64 :=
+  pure (b.toVec[0].toUInt64
+  + (b.toVec[1].toUInt64 <<< 8)
+  + (b.toVec[2].toUInt64 <<< 16)
+  + (b.toVec[3].toUInt64 <<< 24)
+  + (b.toVec[4].toUInt64 <<< 32)
+  + (b.toVec[5].toUInt64 <<< 40)
+  + (b.toVec[6].toUInt64 <<< 48)
+  + (b.toVec[7].toUInt64 <<< 56))
+
+@[spec]
+def Impl_9.to_le_bytes (x : u64) : RustM (RustArray u8 8) :=
+  pure (.ofVec #v[
+    (x % 256).toUInt8,
+    (x >>> 8 % 256).toUInt8,
+    (x >>> 16 % 256).toUInt8,
+    (x >>> 24 % 256).toUInt8,
+    (x >>> 32 % 256).toUInt8,
+    (x >>> 40 % 256).toUInt8,
+    (x >>> 48 % 256).toUInt8,
+    (x >>> 56 % 256).toUInt8])
+
+attribute [irreducible] Impl_9.from_le_bytes Impl_9.to_le_bytes
 
 end core_models.num
 

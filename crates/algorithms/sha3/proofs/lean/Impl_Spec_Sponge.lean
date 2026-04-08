@@ -29,13 +29,38 @@ local macro "vc_omega" : tactic =>
   `(tactic| (simp only [USize64.reduceToNat, USize64.size, UInt64.size,
       Vector.size, Vector.size_toArray] at *; omega))
 
-/-! ## Pure sponge functions (abstract — details to be filled in) -/
+/-! ## Pure sponge functions -/
 
 namespace Sponge
 
-/-- XOR RATE/8 lanes from input bytes into state -/
+/-- Transposition permutation: loop index i maps to flat position 5*(i%5) + i/5.
+    set_ij(state, i/5, i%5, v) writes to this flat position. -/
+def flat_perm (i : Nat) : Nat := 5 * (i % 5) + i / 5
+
+/-- Inverse: flat position k maps to loop index 5*(k%5) + k/5 -/
+def flat_perm_inv (k : Nat) : Nat := 5 * (k % 5) + k / 5
+
+/-- Convert 8 little-endian bytes from a list at offset `off` to a u64. -/
+def bytes_to_u64_le (bytes : List u8) (off : Nat) : u64 :=
+  let get (i : Nat) : u64 := (bytes.getD (off + i) 0).toUInt64
+  get 0
+  + (get 1 <<< 8)
+  + (get 2 <<< 16)
+  + (get 3 <<< 24)
+  + (get 4 <<< 32)
+  + (get 5 <<< 40)
+  + (get 6 <<< 48)
+  + (get 7 <<< 56)
+
+/-- XOR RATE/8 lanes from input bytes into state.
+    Lane i of input (8 bytes at start + 8*i, LE) is XOR'd into
+    state position flat_perm(i) = 5*(i%5) + i/5. -/
 def load_block_pure (RATE : Nat) (state : Vector u64 25)
-    (input : List u8) (start : Nat) : Vector u64 25 := sorry
+    (input : List u8) (start : Nat) : Vector u64 25 :=
+  Vector.ofFn fun ⟨k, hk⟩ =>
+    if flat_perm_inv k < RATE / 8
+    then state[k] ^^^ bytes_to_u64_le input (start + 8 * flat_perm_inv k)
+    else state[k]
 
 /-- Extract bytes from state lanes -/
 def store_block_pure (RATE : Nat) (state : Vector u64 25)
@@ -55,12 +80,7 @@ def absorb_final_pure (RATE : Nat) (DELIM : u8) (state : Vector u64 25)
     (input : List u8) (start : Nat) (len : Nat) : Vector u64 25 :=
   keccak_f_pure (load_last_pure RATE DELIM state input start len)
 
-/-- Transposition permutation: loop index i maps to flat position 5*(i%5) + i/5.
-    set_ij(state, i/5, i%5, v) writes to this flat position. -/
-def flat_perm (i : Nat) : Nat := 5 * (i % 5) + i / 5
-
-/-- Inverse: flat position k maps to loop index 5*(k%5) + k/5 -/
-def flat_perm_inv (k : Nat) : Nat := 5 * (k % 5) + k / 5
+attribute [irreducible] bytes_to_u64_le load_block_pure
 
 -- flat_perm is an involution on [0,25): verify by exhaustion
 theorem flat_perm_inv_flat_perm (i : Nat) (hi : i < 25) :
@@ -140,7 +160,85 @@ theorem xor_loop_inv_step (old_state state_flat cur_state new_state : Array u64)
     simp only [show (flat_perm_inv k < i + 1) ↔ (flat_perm_inv k < i) from by omega]
     exact hinv_k
 
+/-- Invariant for byte conversion loop (loop 1 of load_block):
+    After i iterations, state_flat[j] for j < i holds the LE-decoded lane,
+    and state_flat[j] for j ≥ i is still 0. -/
+def byte_loop_inv (input : List u8) (start : Nat) (state_flat : Array u64) (i : Nat) : Prop :=
+  state_flat.size = 25 ∧
+  ∀ j, j < 25 →
+    state_flat.getD j 0 = if j < i then bytes_to_u64_le input (start + 8 * j) else 0
+
+theorem byte_loop_inv_init (input : List u8) (start : Nat) :
+    byte_loop_inv input start (Vector.replicate 25 (0 : u64)).toArray 0 := by
+  constructor
+  · simp [Vector.size_toArray]
+  · intro j hj; simp [byte_loop_inv, Array.getD, Nat.not_lt_zero]
+
+/-- Composition: byte_loop_inv + xor_loop_inv → load_block_pure -/
+theorem byte_xor_compose (RATE : Nat) (state : Vector u64 25)
+    (input : List u8) (start : Nat) (state_flat result : Array u64)
+    (n : Nat) (hn : n = RATE / 8)
+    (hbyte : byte_loop_inv input start state_flat n)
+    (hxor : xor_loop_inv state.toArray state_flat result n)
+    (hsize : result.size = 25) :
+    (⟨result, by rw [hsize]⟩ : Vector u64 25) = load_block_pure RATE state input start := by
+  have ⟨hsf_size, hsf_spec⟩ := hbyte
+  have toVec_getD {m : Nat} (v : Vector u64 m) (j : Nat) (hj : j < m) :
+      v.toArray.getD j 0 = v[j] := by
+    unfold Array.getD
+    rw [dif_pos (show j < v.toArray.size by rw [Vector.size_toArray]; exact hj)]
+    exact Vector.getElem_toArray _
+  subst hn
+  ext k hk
+  simp only [Vector.getElem_mk, load_block_pure, Vector.getElem_ofFn]
+  rw [show result[k] = result.getD k 0 from by
+    simp [Array.getD, show k < result.size from by omega]]
+  rw [hxor k (by omega), toVec_getD state k hk]
+  split <;> rename_i hlt
+  · congr 1
+    have h := hsf_spec (flat_perm_inv k) (show flat_perm_inv k < 25 from flat_perm_lt k hk)
+    rw [h, if_pos hlt]
+  · rfl
+
 end Sponge
+
+/-! ## Byte conversion loop standalone spec (loop 1 of load_block) -/
+
+set_option maxHeartbeats 6400000 in
+theorem byte_loop_spec (n : usize) (blocks : RustSlice u8) (start : usize)
+    (state_flat : RustArray u64 25)
+    (hn : n.toNat ≤ 25)
+    (hbounds : ∀ i, i < n.toNat → start.toNat + 8 * i + 8 ≤ blocks.val.size) :
+    ⦃ ⌜ Sponge.byte_loop_inv blocks.val.toList start.toNat state_flat.toVec.toArray 0 ⌝ ⦄
+    rust_primitives.hax.folds.fold_range (0 : usize) n
+      (fun state_flat _ => (do (pure true) : RustM Bool))
+      state_flat
+      (fun state_flat i => do
+        let offset ← (start +? (← ((8 : usize) *? i)))
+        let slice ← blocks[core_models.ops.range.Range.mk offset (← (offset +? (8 : usize)))]_?
+        let arr ← core_models.convert.TryInto.try_into (RustSlice u8) (RustArray u8 8) slice
+        let bytes ← core_models.result.Impl.unwrap (RustArray u8 8)
+          core_models.array.TryFromSliceError arr
+        let val ← core_models.num.Impl_9.from_le_bytes bytes
+        rust_primitives.hax.monomorphized_update_at.update_at_usize state_flat i val)
+      ⟨fun _ _ => True, sorry⟩
+    ⦃ ⇓ r => ⌜ Sponge.byte_loop_inv blocks.val.toList start.toNat
+        r.toVec.toArray n.toNat ⌝ ⦄ := by
+  intro _
+  rw [show rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun state_flat x => do let a ← pure true; pure (a = true)) state_flat _ _ =
+    rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun (sf : RustArray u64 25) (k : USize64) =>
+      pure (Sponge.byte_loop_inv blocks.val.toList start.toNat sf.toVec.toArray k.toNat))
+    state_flat _
+    ⟨fun sf k => Sponge.byte_loop_inv blocks.val.toList start.toNat sf.toVec.toArray k.toNat,
+      fun _ _ => by intro _; rfl⟩
+    from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
+  hax_mvcgen
+  all_goals (try vc_omega)
+  all_goals (try (have := blocks.size_lt_usizeSize; have := hbounds; vc_omega))
+  all_goals (try grind)
+  all_goals sorry
 
 /-! ## XOR loop standalone spec (loop 2 of load_block) -/
 
@@ -209,7 +307,28 @@ theorem xor_loop_spec (n : usize) (state state_flat : RustArray u64 25)
   -- vc12: step — set postcondition → xor_loop_inv (i+1)
   -- Structure: apply xor_loop_inv_step, convert Vector.getElem ↔ Array.getD,
   -- wire set_ij postcondition (flat_perm matching). Needs careful name management.
-  · sorry
+  · rename_i _ acc i _ hi_lt inv rdiv hdiv rmod hmod rdiv2 hdiv2 rmod2 hmod2 rget hget rsf hsf rnew
+    intro hsize hset_post
+    have hi : i.toNat < 25 := by omega
+    rw [show (i + 1).toNat = i.toNat + 1 from
+      USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
+    apply Sponge.xor_loop_inv_step _ _ _ _ _ hi inv
+    intro k hk
+    simp only [USize64.reduceToNat, USize64.size, UInt64.size] at hdiv hmod hdiv2 hmod2
+    simp only [Sponge.flat_perm]
+    -- Convert hpost: substitute all intermediate USize64 values
+    have hpost := hset_post k hk
+    rw [hget, hsf, hmod, hdiv, hmod2, hdiv2] at hpost
+    -- Convert between Array.getD and Vector.getElem
+    have toVec_getD {n : Nat} (v : Vector u64 n) (j : Nat) (hj : j < n) :
+        v.toArray.getD j 0 = v[j] := by
+      unfold Array.getD
+      rw [dif_pos (show j < v.toArray.size by rw [Vector.size_toArray]; exact hj)]
+      exact Vector.getElem_toArray _
+    have hfp_lt : 5 * (i.toNat % 5) + i.toNat / 5 < 25 := by omega
+    rw [toVec_getD _ _ hfp_lt] at hpost
+    rw [toVec_getD _ k hk, toVec_getD _ _ hfp_lt, toVec_getD _ _ hi, toVec_getD _ k hk]
+    exact hpost
 
 /-! ## State initialization -/
 
@@ -231,15 +350,30 @@ attribute [local irreducible] Impl_2.keccakf1600
 -- load_block
 attribute [local irreducible] libcrux_sha3.simd.portable.load_block
 
+set_option maxHeartbeats 6400000 in
 @[spec] theorem load_block_spec (RATE : usize) (state : RustArray u64 25)
     (blocks : RustSlice u8) (start : usize)
     (hrate : RATE.toNat % 8 = 0)
+    (hrate_le : RATE.toNat ≤ 200)
     (hbounds : start.toNat + RATE.toNat ≤ blocks.val.size) :
     ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.simd.portable.load_block RATE state blocks start
     ⦃ ⇓ r => ⌜ r.toVec = Sponge.load_block_pure RATE.toNat state.toVec
         blocks.val.toList start.toNat ⌝ ⦄ := by
-  sorry
+  intro _
+  unfold libcrux_sha3.simd.portable.load_block
+  -- Rewrite get_ij/set_ij to local wrappers for loop 2
+  simp only [← lb_get_eq, ← lb_set_eq]
+  -- Simplify if True branches and swap both trivial invariants
+  simp only [ite_true, fold_range_inv_irrelevant (α := RustArray u64 25)
+    (inv₂ := fun _ _ => pure True)
+    (pureInv₂ := ⟨fun _ _ => True, fun _ _ => by intro _; rfl⟩)]
+  hax_mvcgen
+  all_goals (try vc_omega)
+  all_goals (try (have := blocks.size_lt_usizeSize; vc_omega))
+  all_goals (try grind)
+  -- vc29: compose byte_loop_inv + xor_loop_inv → load_block_pure
+  · sorry
 
 -- store_block
 attribute [local irreducible] libcrux_sha3.simd.portable.store_block
