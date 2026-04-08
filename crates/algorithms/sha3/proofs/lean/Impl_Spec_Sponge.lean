@@ -62,9 +62,15 @@ def load_block_pure (RATE : Nat) (state : Vector u64 25)
     then state[k] ^^^ bytes_to_u64_le input (start + 8 * flat_perm_inv k)
     else state[k]
 
-/-- Extract bytes from state lanes -/
+/-- Extract the k-th LE byte (k < 8) from a u64 lane. -/
+def lane_byte (lane : u64) (k : Nat) : u8 := (lane >>> (UInt64.ofNat (8 * k))).toUInt8
+
+/-- Extract `len` bytes from state lanes (LE, lane-interleaved via flat_perm).
+    Byte b comes from the (b%8)-th LE byte of lane at flat_perm(b/8). -/
 def store_block_pure (RATE : Nat) (state : Vector u64 25)
-    (start : Nat) (len : Nat) : List u8 := sorry
+    (start : Nat) (len : Nat) : List u8 :=
+  (List.range len).map fun b =>
+    lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)
 
 /-- Pad last block + XOR into state -/
 def load_last_pure (RATE : Nat) (DELIM : u8) (state : Vector u64 25)
@@ -428,12 +434,20 @@ set_option maxHeartbeats 6400000 in
 -- store_block
 attribute [local irreducible] libcrux_sha3.simd.portable.store_block
 
+attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
+
+set_option maxHeartbeats 6400000 in
 @[spec] theorem store_block_spec (RATE : usize) (s : RustArray u64 25)
     (out : RustSlice u8) (start : usize) (len : usize)
-    (hlen : len.toNat ≤ RATE.toNat) :
+    (hrate_le : RATE.toNat ≤ 200)
+    (hlen : len.toNat ≤ RATE.toNat)
+    (hout : start.toNat + len.toNat ≤ out.val.size) :
     ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.simd.portable.store_block RATE s out start len
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by  -- TODO: strengthen
+    ⦃ ⇓ r => ⌜ r.val.size = out.val.size ∧
+      (∀ b, b < len.toNat →
+        r.val.toList.getD (start.toNat + b) 0 =
+          Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
   sorry
 
 -- load_last
