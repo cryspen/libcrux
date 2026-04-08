@@ -411,17 +411,18 @@ set_option maxHeartbeats 6400000 in
         blocks.val.toList start.toNat ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.simd.portable.load_block
-  -- Rewrite get_ij/set_ij to local wrappers for loop 2
-  simp only [← lb_get_eq, ← lb_set_eq]
-  -- Simplify if True branches and swap both trivial invariants
-  simp only [ite_true, fold_range_inv_irrelevant (α := RustArray u64 25)
+  simp only [← lb_get_eq, ← lb_set_eq, ite_true]
+  -- Use hax_mvcgen for assertions/repeat, with True invariants for both loops
+  simp only [fold_range_inv_irrelevant (α := RustArray u64 25)
     (inv₂ := fun _ _ => pure True)
     (pureInv₂ := ⟨fun _ _ => True, fun _ _ => by intro _; rfl⟩)]
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try (have := blocks.size_lt_usizeSize; vc_omega))
   all_goals (try grind)
-  -- vc29: compose byte_loop_inv + xor_loop_inv → load_block_pure
+  -- vc29: compose byte_loop_spec + xor_loop_spec + byte_xor_compose
+  -- r✝² = state_flat (loop 1 result), r✝ = final result (loop 2 result)
+  -- With True invariants we have no info. Use sorry pending restructure.
   · sorry
 
 -- store_block
