@@ -553,10 +553,11 @@ set_option maxHeartbeats 6400000 in
   -- vc14: extract size = to_le_bytes array size (= 8)
   · simp only [Sponge.store_loop_inv, USize64.reduceToNat] at *; subst_vars
     simp [Array.size_extract]; omega
-  -- vc18: loop step — closed by simp + subst_vars unfolding store_loop_inv
-  · simp only [Sponge.store_loop_inv, USize64.reduceToNat] at *; subst_vars; sorry
-  -- vc31.hlen: remainder copy_from_slice length match
+  -- vc18: loop step (store_loop_inv after splice — hard)
   · sorry
+  -- vc31: remainder length match
+  · simp only [USize64.reduceToNat, Sponge.store_loop_inv] at *; subst_vars
+    simp_all [Array.size_extract, Vector.size_toArray]; omega
   -- vc35: composition (with remainder)
   · sorry
   -- vc36: composition (without remainder, len % 8 = 0)
