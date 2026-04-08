@@ -936,6 +936,6 @@ set_option maxHeartbeats 6400000 in
   -- Assertion failures: the goals are wp⟦RustM.fail⟧ applied to postcond.
   -- The context has ¬(LEFT+RIGHT == 64) = true where LEFT+RIGHT=64.
   -- vc_omega handles these by reducing USize64/i32 literals.
-  all_goals (first | vc_omega | sorry)
+  all_goals vc_omega
 
 attribute [local irreducible] Impl_2.theta
