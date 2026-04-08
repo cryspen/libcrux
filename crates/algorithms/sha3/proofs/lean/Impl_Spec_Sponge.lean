@@ -174,6 +174,25 @@ theorem byte_loop_inv_init (input : List u8) (start : Nat) :
   · simp [Vector.size_toArray]
   · intro j hj; simp [byte_loop_inv, Array.getD, Nat.not_lt_zero]
 
+theorem byte_loop_inv_step (input : List u8) (start : Nat)
+    (cur_state : Array u64) (i : Nat) (hi : i < 25)
+    (hinv : byte_loop_inv input start cur_state i)
+    (val : u64)
+    (hval : val = bytes_to_u64_le input (start + 8 * i))
+    (new_state : Array u64)
+    (hset_size : new_state.size = 25)
+    (hset : ∀ j, j < 25 → new_state.getD j 0 =
+      if j = i then val else cur_state.getD j 0) :
+    byte_loop_inv input start new_state (i + 1) := by
+  have ⟨hsize, hspec⟩ := hinv
+  exact ⟨hset_size, fun j hj => by
+    rw [hset j hj]
+    split
+    · rename_i hji; subst hji; rw [if_pos (by omega), hval]
+    · rename_i hji
+      rw [hspec j hj]
+      simp only [show (j < i + 1) ↔ (j < i) from by omega]⟩
+
 /-- Composition: byte_loop_inv + xor_loop_inv → load_block_pure -/
 theorem byte_xor_compose (RATE : Nat) (state : Vector u64 25)
     (input : List u8) (start : Nat) (state_flat result : Array u64)
@@ -238,7 +257,16 @@ theorem byte_loop_spec (n : usize) (blocks : RustSlice u8) (start : usize)
   all_goals (try vc_omega)
   all_goals (try (have := blocks.size_lt_usizeSize; have := hbounds; vc_omega))
   all_goals (try grind)
-  all_goals sorry
+  -- vc4/vc5: overflow
+  all_goals (try (rename_i _ _ i _ _ _ _; exact absurd (hbounds i.toNat (by vc_omega)) (by have := blocks.size_lt_usizeSize; vc_omega)))
+  all_goals (try (rename_i _ _ i _ _ _ _ _ _ _; have := hbounds i.toNat (by vc_omega); have := blocks.size_lt_usizeSize; vc_omega))
+  -- vc4: overflow (missed by earlier tactics)
+  · rename_i _ _ i _ hi_lt _ _ _
+    have := hbounds i.toNat (by vc_omega)
+    have := blocks.size_lt_usizeSize; vc_omega
+  -- vc11: step — byte_loop_inv maintained after Vector.set with from_le_bytes result
+  -- Needs: Array.set/getD wiring + bridge from_le_bytes ↔ bytes_to_u64_le
+  · sorry
 
 /-! ## XOR loop standalone spec (loop 2 of load_block) -/
 
