@@ -444,7 +444,9 @@ set_option maxHeartbeats 6400000 in
 /-! ## Specs for store_block helpers -/
 
 -- copy_from_slice: replaces destination with source (requires equal lengths)
-@[spec] theorem copy_from_slice_spec {α : Type}
+-- Must be @[specset int] so hax_mvcgen with specset "int" finds it
+-- (the Hax library only has a @[hax_spec] with specset "bv")
+@[specset int] theorem copy_from_slice_spec {α : Type}
     [inst1 : core_models.marker.Copy.AssociatedTypes α]
     [inst2 : core_models.marker.Copy α]
     (s src : RustSlice α)
@@ -490,18 +492,129 @@ open core_models.ops.range in
     ⦃ ⇓ r => ⌜ r.val = (Vector.extract a.toVec 0 e.toNat).toArray ⌝ ⦄ := by
   sorry
 
--- store_block
+/-! ## Store loop standalone spec (main loop of store_block) -/
+
+attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
 attribute [local irreducible]
-  libcrux_sha3.simd.portable.store_block
   core_models.slice.Impl.copy_from_slice
   core_models.slice.Impl.len
   rust_primitives.unsize
   rust_primitives.hax.monomorphized_update_at.update_at_range
 
-attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
+-- Store loop body: write 8 LE bytes of lane i into out[start+8*i..start+8*i+8]
+private def sb_body (s : RustArray u64 25) (start : usize)
+    (out : RustSlice u8) (i : usize) : RustM (RustSlice u8) := do
+  let lane ← libcrux_sha3.traits.get_ij 1 u64 s (← (i /? 5)) (← (i %? 5))
+  let bytes ← core_models.num.Impl_9.to_le_bytes lane
+  let out_pos ← (start +? (← ((8 : usize) *? i)))
+  let end_pos ← (out_pos +? (8 : usize))
+  let slice ← out[core_models.ops.range.Range.mk out_pos end_pos]_?
+  let src ← rust_primitives.unsize bytes
+  let new_slice ← core_models.slice.Impl.copy_from_slice u8 slice src
+  rust_primitives.hax.monomorphized_update_at.update_at_range out
+    (core_models.ops.range.Range.mk out_pos end_pos) new_slice
 
-set_option maxHeartbeats 12800000 in
+-- Store remainder body: write first `remaining` LE bytes of lane `octets`
+private def sb_remainder (s : RustArray u64 25) (start len : usize)
+    (out : RustSlice u8) (octets remaining : usize) : RustM (RustSlice u8) := do
+  let lane ← libcrux_sha3.traits.get_ij 1 u64 s (← (octets /? 5)) (← (octets %? 5))
+  let bytes ← core_models.num.Impl_9.to_le_bytes lane
+  let out_pos ← ((← (start +? len)) -? remaining)
+  let end_pos ← (out_pos +? remaining)
+  let slice ← out[core_models.ops.range.Range.mk out_pos end_pos]_?
+  let partial ← bytes[core_models.ops.range.RangeTo.mk remaining]_?
+  let new_slice ← core_models.slice.Impl.copy_from_slice u8 slice partial
+  rust_primitives.hax.monomorphized_update_at.update_at_range out
+    (core_models.ops.range.Range.mk out_pos end_pos) new_slice
+
+-- Bisect: chain ops incrementally to find where mvcgen blows up
+
+-- 2 ops: get_ij + to_le_bytes
+set_option maxHeartbeats 800000 in
+private theorem bisect_2ops (s : RustArray u64 25) (out : RustSlice u8) (start i : usize) :
+    ⦃ ⌜ True ⌝ ⦄ (do
+      let lane ← libcrux_sha3.traits.get_ij 1 u64 s (← (i /? 5)) (← (i %? 5))
+      let _bytes ← core_models.num.Impl_9.to_le_bytes lane
+      pure out)
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by intro _; hax_mvcgen; all_goals sorry
+
+-- 4 ops: + arithmetic + range index
+set_option maxHeartbeats 1600000 in
+private theorem bisect_4ops (s : RustArray u64 25) (out : RustSlice u8) (start i : usize) :
+    ⦃ ⌜ True ⌝ ⦄ (do
+      let lane ← libcrux_sha3.traits.get_ij 1 u64 s (← (i /? 5)) (← (i %? 5))
+      let _bytes ← core_models.num.Impl_9.to_le_bytes lane
+      let out_pos ← (start +? (← ((8 : usize) *? i)))
+      let _slice ← out[core_models.ops.range.Range.mk out_pos (← (out_pos +? 8))]_?
+      pure out)
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by intro _; hax_mvcgen; all_goals sorry
+
+-- 6 ops: + unsize + copy_from_slice
+set_option maxHeartbeats 3200000 in
+private theorem bisect_6ops (s : RustArray u64 25) (out : RustSlice u8) (start i : usize) :
+    ⦃ ⌜ True ⌝ ⦄ (do
+      let lane ← libcrux_sha3.traits.get_ij 1 u64 s (← (i /? 5)) (← (i %? 5))
+      let bytes ← core_models.num.Impl_9.to_le_bytes lane
+      let out_pos ← (start +? (← ((8 : usize) *? i)))
+      let end_pos ← (out_pos +? (8 : usize))
+      let slice ← out[core_models.ops.range.Range.mk out_pos end_pos]_?
+      let src ← rust_primitives.unsize bytes
+      let _new ← core_models.slice.Impl.copy_from_slice u8 slice src
+      pure out)
+    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by intro _; hax_mvcgen; all_goals sorry
+
+-- 8 ops: SKIPPED — suspected OOM cause
+-- private theorem bisect_8ops := sorry
+
+-- Specs for both bodies (sorry pending bisect results)
+@[spec] private theorem sb_body_spec (s : RustArray u64 25) (start : usize)
+    (out : RustSlice u8) (i : usize)
+    (hi : i.toNat < 25)
+    (hpos : start.toNat + 8 * i.toNat + 8 ≤ out.val.size) :
+    ⦃ ⌜ True ⌝ ⦄ sb_body s start out i
+    ⦃ ⇓ r => ⌜ r.val.size = out.val.size ⌝ ⦄ := by sorry
+
+@[spec] private theorem sb_remainder_spec (s : RustArray u64 25) (start len : usize)
+    (out : RustSlice u8) (octets remaining : usize)
+    (hoct : octets.toNat < 25)
+    (hrem : remaining.toNat ≤ 8)
+    (hpos : start.toNat + len.toNat ≤ out.val.size) :
+    ⦃ ⌜ True ⌝ ⦄ sb_remainder s start len out octets remaining
+    ⦃ ⇓ r => ⌜ r.val.size = out.val.size ⌝ ⦄ := by sorry
+
+attribute [irreducible] sb_body sb_remainder
+
+-- Store loop spec: fold_range with sb_body as opaque loop body
+set_option maxHeartbeats 6400000 in
+theorem store_loop_spec (n : usize) (s : RustArray u64 25)
+    (out : RustSlice u8) (start : usize)
+    (hn : n.toNat ≤ 25)
+    (hbounds : ∀ i, i < n.toNat → start.toNat + 8 * i + 8 ≤ out.val.size) :
+    ⦃ ⌜ Sponge.store_loop_inv s.toVec out.val.size start.toNat out.val 0 ⌝ ⦄
+    rust_primitives.hax.folds.fold_range (0 : usize) n
+      (fun out _ => (do (pure true) : RustM Bool))
+      out (sb_body s start) ⟨fun _ _ => True, sorry⟩
+    ⦃ ⇓ r => ⌜ Sponge.store_loop_inv s.toVec out.val.size start.toNat r.val n.toNat ⌝ ⦄ := by
+  intro _
+  rw [show rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun out _ => (do (pure true) : RustM Bool)) out _ _ =
+    rust_primitives.hax.folds.fold_range (0 : USize64) n
+    (fun (o : RustSlice u8) (k : USize64) =>
+      pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat))
+    out _
+    ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat,
+      fun _ _ => by intro _; rfl⟩
+    from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
+  hax_mvcgen
+  all_goals (try vc_omega)
+  all_goals (try grind)
+  all_goals sorry
+
+-- store_block: compose loop + remainder using factored specs
+attribute [local irreducible] libcrux_sha3.simd.portable.store_block
+
+set_option maxHeartbeats 6400000 in
 @[spec] theorem store_block_spec (RATE : usize) (s : RustArray u64 25)
     (out : RustSlice u8) (start : usize) (len : usize)
     (hrate_le : RATE.toNat ≤ 200)
@@ -515,17 +628,19 @@ set_option maxHeartbeats 12800000 in
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.simd.portable.store_block
-  -- Swap loop invariant FROM True/sorry TO store_loop_inv
-  simp only [ite_true, fold_range_inv_irrelevant (α := RustSlice u8)
-    (inv₂ := fun (o : RustSlice u8) (k : USize64) =>
-      pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat))
-    (pureInv₂ := ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat,
-      fun _ _ => by intro _; rfl⟩)]
-  -- Eliminate dead `let _ ← Impl.len` binding
-  simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, Pure.pure_bind]
-  -- hax_mvcgen OOMs (~376s, code 137) despite all functions being irreducible.
-  -- Root cause: term complexity (loop body has 8 ops × loop + remainder block).
-  -- Solution: factor out loop body as standalone spec, like byte_loop_spec.
+  -- Rewrite loop body to sb_body, remainder to sb_remainder
+  simp only [ite_true, show (fun out i => do
+      let __do_lift ← i /? 5; let __do_lift_1 ← i %? 5
+      let __do_lift ← libcrux_sha3.traits.get_ij 1 u64 s __do_lift __do_lift_1
+      let bytes ← core_models.num.Impl_9.to_le_bytes __do_lift
+      let __do_lift ← 8 *? i; let out_pos ← start +? __do_lift
+      let __do_lift ← out_pos +? 8; let __do_lift_2 ← out_pos +? 8
+      let __do_lift_3 ← out[core_models.ops.range.Range.mk out_pos __do_lift_2]_?
+      let __do_lift_4 ← rust_primitives.unsize bytes
+      let __do_lift_5 ← core_models.slice.Impl.copy_from_slice u8 __do_lift_3 __do_lift_4
+      rust_primitives.hax.monomorphized_update_at.update_at_range out
+        (core_models.ops.range.Range.mk out_pos __do_lift) __do_lift_5) =
+    sb_body s start from rfl]
   sorry
 
 -- load_last

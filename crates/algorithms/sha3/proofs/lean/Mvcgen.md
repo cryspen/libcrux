@@ -178,6 +178,46 @@ def flat_perm_inv (k : Nat) : Nat := 5 * (k % 5) + k / 5  -- same formula = invo
 Prove involution by 25-case exhaustion. Loop invariants must use `flat_perm_inv k < i`
 not `k < i`.
 
+### Pattern 12: Local wrappers for functions missing specset "int" specs
+
+Functions from Hax `core_models` that only have `@[hax_spec]` with `specset "bv"`
+(e.g. `copy_from_slice`) will NOT be found by mvcgen with `specset "int"`. Mvcgen
+falls back to unfolding, causing OOM. `attribute [local irreducible]` does NOT
+prevent this.
+
+**Fix**: Define a local wrapper, prove its spec, make it irreducible, then
+`simp only [← wrapper_eq]` to substitute before `hax_mvcgen`:
+
+```lean
+-- Same pattern as lb_get/lb_set for get_ij/set_ij
+private def sb_copy (s src : RustSlice u8) :=
+  core_models.slice.Impl.copy_from_slice u8 s src
+private theorem sb_copy_eq s src :
+    sb_copy s src = core_models.slice.Impl.copy_from_slice u8 s src := rfl
+@[spec] private theorem sb_copy_spec (s src : RustSlice u8)
+    (h : s.val.size = src.val.size) :
+    ⦃ ⌜ True ⌝ ⦄ sb_copy s src ⦃ ⇓ r => ⌜ r = src ⌝ ⦄ := by
+  rw [sb_copy_eq]; ...
+attribute [irreducible] sb_copy
+-- In proof: simp only [← sb_copy_eq] before hax_mvcgen
+```
+
+**How to detect**: If `hax_mvcgen` OOMs, check each function in the goal:
+1. Is it `@[irreducible]` or `[local irreducible]`? If not, it will be unfolded.
+2. Even if irreducible, does it have a spec for the active specset?
+   - `@[spec]` works for all specsets
+   - `@[specset int]` works only for "int"
+   - `@[hax_spec]` with `specset "bv"` does NOT work for "int"
+3. Bisect by replacing suspect functions with opaque sorry stubs to isolate.
+
+**Known affected**: `copy_from_slice` (only has bv spec in Hax library).
+
+### Pattern 13: Memory limits
+
+Limit each Lean process to 16GB max. If a proof takes >2 minutes in `lake build`,
+it is likely blowing up. Use `timeout 30 lake env lean file.lean` for experiments.
+Test in standalone snippet files (just `import Hax`) to avoid slow import chains.
+
 ## vc_omega macro
 
 ```lean
