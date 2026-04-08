@@ -96,6 +96,29 @@ def store_loop_inv (state : Vector u64 25) (out_size start : Nat)
     cur_out.toList.getD (start + b) 0 =
       lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)
 
+/-- Step lemma for store_loop_inv: after splicing 8 LE bytes of lane i,
+    the invariant holds at i+1. -/
+theorem store_loop_inv_step (state : Vector u64 25) (out_size start : Nat)
+    (cur_out : Array u8) (i : Nat) (hi : i < 25)
+    (hinv : store_loop_inv state out_size start cur_out i)
+    (lane : u64) (hlane : lane = state.toArray.getD (flat_perm i) 0)
+    (new_out : Array u8)
+    (hsize : new_out.size = out_size)
+    (hsplice : ∀ k, k < out_size →
+      new_out.toList.getD k 0 =
+        if start + 8 * i ≤ k ∧ k < start + 8 * i + 8
+        then #[UInt64.toUInt8 (lane % 256),
+               UInt64.toUInt8 (lane >>> 8 % 256),
+               UInt64.toUInt8 (lane >>> 16 % 256),
+               UInt64.toUInt8 (lane >>> 24 % 256),
+               UInt64.toUInt8 (lane >>> 32 % 256),
+               UInt64.toUInt8 (lane >>> 40 % 256),
+               UInt64.toUInt8 (lane >>> 48 % 256),
+               UInt64.toUInt8 (lane >>> 56 % 256)].toList.getD (k - (start + 8 * i)) 0
+        else cur_out.toList.getD k 0) :
+    store_loop_inv state out_size start new_out (i + 1) := by
+  sorry
+
 attribute [irreducible] bytes_to_u64_le load_block_pure
 
 -- flat_perm is an involution on [0,25): verify by exhaustion
