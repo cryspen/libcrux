@@ -491,11 +491,13 @@ open core_models.ops.range in
   sorry
 
 -- store_block
+
 attribute [local irreducible]
   libcrux_sha3.simd.portable.store_block
   core_models.slice.Impl.copy_from_slice
   core_models.slice.Impl.len
   rust_primitives.unsize
+  rust_primitives.hax.monomorphized_update_at.update_at_range
 
 attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
@@ -511,7 +513,19 @@ set_option maxHeartbeats 12800000 in
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
-  -- hax_mvcgen OOMs on full store_block. Needs investigation (update_at_range spec blowup?)
+  intro _
+  unfold libcrux_sha3.simd.portable.store_block
+  -- Swap loop invariant FROM True/sorry TO store_loop_inv
+  simp only [ite_true, fold_range_inv_irrelevant (α := RustSlice u8)
+    (inv₂ := fun (o : RustSlice u8) (k : USize64) =>
+      pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat))
+    (pureInv₂ := ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat,
+      fun _ _ => by intro _; rfl⟩)]
+  -- Eliminate dead `let _ ← Impl.len` binding
+  simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, Pure.pure_bind]
+  -- hax_mvcgen OOMs (~376s, code 137) despite all functions being irreducible.
+  -- Root cause: term complexity (loop body has 8 ops × loop + remainder block).
+  -- Solution: factor out loop body as standalone spec, like byte_loop_spec.
   sorry
 
 -- load_last
