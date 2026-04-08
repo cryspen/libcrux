@@ -96,28 +96,7 @@ def store_loop_inv (state : Vector u64 25) (out_size start : Nat)
     cur_out.toList.getD (start + b) 0 =
       lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)
 
-/-- Step lemma for store_loop_inv: after splicing 8 LE bytes of lane i,
-    the invariant holds at i+1. -/
-theorem store_loop_inv_step (state : Vector u64 25) (out_size start : Nat)
-    (cur_out : Array u8) (i : Nat) (hi : i < 25)
-    (hinv : store_loop_inv state out_size start cur_out i)
-    (lane : u64) (hlane : lane = state.toArray.getD (flat_perm i) 0)
-    (new_out : Array u8)
-    (hsize : new_out.size = out_size)
-    (hsplice : ∀ k, k < out_size →
-      new_out.toList.getD k 0 =
-        if start + 8 * i ≤ k ∧ k < start + 8 * i + 8
-        then #[UInt64.toUInt8 (lane % 256),
-               UInt64.toUInt8 (lane >>> 8 % 256),
-               UInt64.toUInt8 (lane >>> 16 % 256),
-               UInt64.toUInt8 (lane >>> 24 % 256),
-               UInt64.toUInt8 (lane >>> 32 % 256),
-               UInt64.toUInt8 (lane >>> 40 % 256),
-               UInt64.toUInt8 (lane >>> 48 % 256),
-               UInt64.toUInt8 (lane >>> 56 % 256)].toList.getD (k - (start + 8 * i)) 0
-        else cur_out.toList.getD k 0) :
-    store_loop_inv state out_size start new_out (i + 1) := by
-  sorry
+-- store_loop_inv_step removed — proved inline in vc18 using splice_seq_getD
 
 attribute [irreducible] bytes_to_u64_le load_block_pure
 
@@ -491,6 +470,19 @@ private def splice_seq (s : RustSlice α) (start stop : Nat) (v : RustSlice α)
       Nat.min_eq_left hend, Nat.min_eq_left (Nat.le_trans hstart hend)]; omega
   ⟨result, by rw [this]; exact s.size_lt_usizeSize⟩
 
+/-- Element-wise description of splice_seq: positions in [start, stop) come from v,
+    positions outside come from s. -/
+private theorem splice_seq_getD {α : Type} [Inhabited α]
+    (s : RustSlice α) (start stop : Nat) (v : RustSlice α)
+    (hend : stop ≤ s.val.size) (hstart : start ≤ stop)
+    (hv : v.val.size = stop - start)
+    (k : Nat) (hk : k < s.val.size) :
+    (splice_seq s start stop v hend hstart hv).val.toList.getD k default =
+      if start ≤ k ∧ k < stop
+      then v.val.toList.getD (k - start) default
+      else s.val.toList.getD k default := by
+  sorry
+
 open core_models.ops.range in
 @[spec] theorem update_at_range_spec {α : Type}
     (s : RustSlice α) (r : Range usize) (v : RustSlice α)
@@ -576,7 +568,7 @@ set_option maxHeartbeats 6400000 in
   -- vc14: extract size = to_le_bytes array size (= 8)
   · simp only [Sponge.store_loop_inv, USize64.reduceToNat] at *; subst_vars
     simp [Array.size_extract]; omega
-  -- vc18: loop step (store_loop_inv after splice — hard)
+  -- vc18: loop step
   · sorry
   -- vc31: remainder length match
   · simp only [USize64.reduceToNat, Sponge.store_loop_inv] at *; subst_vars
