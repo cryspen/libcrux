@@ -2,103 +2,72 @@
 
 ## Completed (no sorry)
 
-**File: `Stubs.lean`** — Byte conversion stubs filled in:
-- `Impl_9.from_le_bytes`: real LE byte→u64 implementation (@[spec] + @[irreducible])
-- `Impl_9.to_le_bytes`: real u64→LE byte implementation (@[spec] + @[irreducible])
+**File: `LibcruxStubs.lean`**:
+- `update_at_range`: real splice definition (extract ++ v ++ extract)
+- `copy_from_slice_u8`: irreducible wrapper with @[spec] for specset "int"
+  (fixes OOM: raw copy_from_slice only has @[hax_spec] for specset "bv")
 
-**File: `Impl_Spec_Mvcgen.lean`** — All step proofs fully verified:
-- Pure reference definitions (rotate_left_pure, theta_c/d, pi_pure, chi_pure, iota_pure, round_pure, apply_rounds, keccak_f_pure)
-- Infrastructure specs (usize_mul/add/div/mod, getElemResult, i32_add/eq, cast_i32_u32)
-- All specs use P → ⦃ True ⦄ form with hax_mvcgen
-- Layer 0: Primitive specs (veor5q, vbcaxq, veorq_n, rotate_left_portable, vrax1q, vxarq)
-- Layer 1: Accessor specs (get_ij, set_ij, Impl_2_set, KeccakState_getElem)
-- Layer 2: Step specs — iota, pi (5 sub-steps + composition), rho (5 sub-steps + composition), theta
+**File: `Impl_Spec_Mvcgen.lean`** (~960 lines):
+- All step proofs fully verified (theta, rho, pi, iota, chi helpers)
 
-**File: `Impl_Spec_Compose.lean`** — Chi, round, keccak_f fully verified:
-- Chi: nested 5×5 loop with invariant swap + hax_mvcgen. Postcondition: r.st.toVec = chi_pure
-- Bridge lemmas: iota_bridge, chi_bridge, pi_bridge, rho_theta_bridge (with sub-bridges for theta_c/d, rho offsets)
-- Stronger specs: impl_pi_pure_spec, round_iota_pure_spec (via Triple.of_entails_right)
-- round_body_spec: hax_mvcgen chains 5 specs, bridges connect to round_pure
-- keccakf1600_spec: 24-round loop with apply_rounds invariant, postcondition = keccak_f_pure
+**File: `Impl_Spec_Compose.lean`** (~580 lines):
+- Chi, round, keccak_f fully verified
+- fold_range_inv_irrelevant lemma
 
-**File: `Impl_Spec_Sponge.lean`** — Sponge layer infrastructure:
-- impl_new_spec: zero-initialized state
-- flat_perm / flat_perm_inv: transposition permutation, involution by 25-case exhaustion
-- bytes_to_u64_le: pure LE byte→u64 conversion (@[irreducible])
-- load_block_pure: concrete definition using flat_perm_inv + bytes_to_u64_le (@[irreducible])
-- xor_loop_inv, xor_loop_inv_init, xor_loop_inv_step: all proved
-- xor_loop_spec: fully proved (loop 2 of load_block)
-- lb_get/lb_set wrappers with specs
-- byte_loop_inv, byte_loop_inv_init: proved
-- byte_xor_compose: proved — connects byte_loop_inv + xor_loop_inv → load_block_pure
+**File: `Impl_Spec_Sponge.lean`** — Sponge layer:
+- impl_new_spec: proved
+- Pure functions: flat_perm/flat_perm_inv, bytes_to_u64_le, load_block_pure, lane_byte, store_block_pure
+- byte_loop_inv + byte_loop_inv_init + byte_loop_inv_step: proved
+- byte_xor_compose: proved (connects byte_loop_inv + xor_loop_inv → load_block_pure)
+- xor_loop_spec: fully proved
+- byte_loop_spec: fully proved
+- store_loop_inv: defined
+- splice_seq + splice_seq_getD: defined (getD sorry)
+- store_block_spec: hax_mvcgen succeeds (67s), 8 of 11 VCs closed
 
-## In Progress — Sponge Layer
+## Immediate TODOs (store_block_spec)
 
-### byte_loop_spec (loop 1 of load_block) — 3 sorries
+3 sorry VCs remain. Close them using helper lemmas:
 
-Standalone spec for the byte conversion fold_range. Structure: invariant swap + hax_mvcgen.
+### vc18: loop step
+Goal: `store_loop_inv` holds at `i+1` after `splice_seq`.
+Approach: Use `splice_seq_getD` to get element-wise access. Split on `b < 8*i` (old invariant) vs `8*i ≤ b < 8*(i+1)` (new bytes = lane_byte).
+Needs: `splice_seq_getD` proved, plus bridge `to_le_bytes` literal → `lane_byte`.
 
-**Remaining VCs:**
-1. **vc4, vc5** (overflow): `start + 8*i < USize64.size` — mechanical, needs `hbounds` specialized with current `i` + `blocks.size_lt_usizeSize`
-2. **vc8** (slice size): `(blocks.extract offset (offset+8)).size = 8` — needs `hbounds` + `Array.size_extract`
-3. **vc11** (step): `byte_loop_inv` maintained after `update_at_usize` with `from_le_bytes` result — needs bridge between `from_le_bytes` output (on extracted slice) and `bytes_to_u64_le` (on input list). The byte values should match: `extractedArray.toVec[k] = blocks.val.toList.getD (start + 8*i + k) 0`.
+### vc35: composition (remainder path, len % 8 > 0)
+Goal: After loop + remainder splice, full postcondition holds.
+Has `store_loop_inv` at `len/8` + remainder splice via `splice_seq`.
+Approach: Combine loop invariant (covers `b < 8*(len/8)`) with remainder splice (covers `8*(len/8) ≤ b < len`).
 
-### load_block_spec — 1 sorry
+### vc36: composition (no remainder, len % 8 = 0)
+Goal: Loop result directly satisfies postcondition.
+Has `store_loop_inv` at `len/8` and `¬(len % 8 > 0)` i.e. `len % 8 = 0`.
+Approach: `len = 8 * (len/8)` so `store_loop_inv` at `len/8` IS the postcondition.
 
-All VCs closed except vc29 (compositional goal). Will close by wiring `byte_loop_spec` + `xor_loop_spec` + `byte_xor_compose`.
+### Helper lemmas needed (sorry):
+1. **`splice_seq_getD`**: Element-wise access to splice result.
+   `(extract 0 start ++ v ++ extract stop size).toList.getD k = if start ≤ k < stop then v[k-start] else s[k]`
+2. **`remainder_copy_len_eq`**: Already defined but unused (vc31 closed differently).
 
-Added precondition: `hrate_le : RATE.toNat ≤ 200` (needed for array bounds since state is 25 lanes × 8 bytes).
+## Other sorry proofs in Impl_Spec_Sponge.lean
 
-### Next steps (priority order):
+- **load_block_spec** vc29: needs manual wp decomposition to apply byte_loop_spec + xor_loop_spec
+- **load_last_pure**: sorry body (pure function definition)
+- **load_last_spec, absorb_block_spec, absorb_final_spec, squeeze_spec**: sorry proofs
+- **slice_len_spec, lemma_mul_succ_le_spec, RangeTo_getElemRustArray_spec**: sorry proofs
+- **keccak1_spec**: sorry (top-level sponge)
 
-1. **Close byte_loop_spec VCs** — vc4/5/8 are mechanical overflow/size. vc11 needs the from_le_bytes ↔ bytes_to_u64_le bridge (main proof work).
-2. **Wire load_block_spec vc29** — compose byte_loop_spec + xor_loop_spec + byte_xor_compose
-3. **store_block_spec** — extract bytes from state (reverse of load_block)
-4. **load_last_spec** — similar to load_block + padding
-5. **absorb_block_spec** — already structurally validated (trait dispatch + hax_mvcgen), 2 sorry VCs
-6. **absorb_final_spec** — same pattern as absorb_block
-7. **squeeze_spec** — wraps store_block via Squeeze trait
-8. **keccak1_spec** — full sponge, already decomposed by hax_mvcgen into ~20 VCs
+## Key patterns (see Mvcgen.md)
 
-### Key infrastructure available (from Hax library):
-All needed @[spec] definitions exist:
-- `hax_lib.assert` — checks bool, returns unit
-- `rust_primitives.hax.repeat` — creates array filled with value
-- `update_at_usize` — array point update
-- `from_le_bytes` (Impl_9) — now has real body (@[spec] + @[irreducible])
-- `core_models.result.Impl.unwrap` — unwraps Result
-- `core_models.convert.TryInto.try_into` — slice to array
-- `Range.getElemArrayUSize64_spec` / `getElemVectorUSize64_spec` — slice range indexing
-- `core_models.slice.Impl.len.spec` — slice length
-- `fold_range` specs for USize64
+1. **fold_range_inv_irrelevant**: Swap FROM extraction's True/sorry invariant TO real invariant. Two-step for store_block (extraction inv → True → real inv).
+2. **Local wrappers**: `lb_get`/`lb_set` for get_ij/set_ij, `copy_from_slice_u8` for copy_from_slice. Needed when Hax function only has @[hax_spec] for specset "bv".
+3. **Dead binding elimination**: `simp only [Impl.len, slice_length, pure_bind]` removes unused `let _ ← Impl.len`.
+4. **splice_seq**: Pure function for update_at_range result. `@[spec]` on update_at_range returns `splice_seq`.
 
-### Hacspec reference (specs/sha3/proofs/lean/extraction/hacspec_sha3.lean):
-- `xor_block_into_state`: single-loop version of load_block (combines byte conversion + XOR)
-- `lane_index`: same as flat_perm (5*(l%5) + l/5)
-- `keccak`: full sponge with absorb/squeeze phases
-
-## Build instructions
+## Build
 
 ```bash
 cd crates/algorithms/sha3/proofs/lean
-# Clean build:
-rm -f .lake/build/lib/lean/Impl_Spec_*.olean .lake/build/lib/lean/Impl_Spec_*.ilean
-lake build 2>&1 | tee /tmp/build.log
-# Quick check:
-grep -E '(error|sorry)' /tmp/build.log | grep -v 'Stubs\|LibcruxStubs\|extraction'
+rm -f .lake/build/lib/lean/Impl_Spec_Sponge.olean .lake/build/lib/lean/Impl_Spec_Sponge.ilean .lake/build/lib/lean/Impl_Spec_Sponge.trace
+time lake build Impl_Spec_Sponge  # ~67s
 ```
-
-## Key learnings (see also Mvcgen.md)
-
-1. **P → ⦃ True ⦄ form**: All specs must use this. Conjunction preconditions generate sorry.val.
-2. **Local wrappers**: Needed when mvcgen can't match type-level args (get_ij, set_ij, Impl_2.set, Impl_2.iota).
-3. **Invariant swap**: fold_range_inv_irrelevant before hax_mvcgen. Inner loops use conv + ext.
-4. **Bridge lemmas**: element-wise getD → pure Vector equality via Vector.ext + toArray_getD_eq.
-5. **Triple.of_entails_right**: Strengthen postconditions from element-wise to pure function equalities.
-6. **Make pure functions irreducible**: Before proofs that mention them in postconditions. Otherwise mvcgen timeout.
-7. **grind for USize64 modular arithmetic**: vc_omega can't handle x = y % n → x < n. grind can.
-8. **flat_perm transposition**: set_ij(state, i/5, i%5) writes to 5*(i%5)+i/5, not i. Prove involution by exhaustion.
-9. **native_decide +revert**: For concrete equality goals after rcases that still have free variables.
-10. **Seq.size_lt_usizeSize**: Needed for overflow VCs involving slice sizes (`blocks.val.size < USize64.size`).
-11. **Factoring loop specs**: When two loops are nested in `do` blocks, `rw [show ... from fold_range_inv_irrelevant]` can't find them through `bind`. Factor each loop as a standalone spec lemma and compose.
-12. **Vector.getElem ↔ Array.getD bridge**: `v.toArray.getD j 0 = v[j]` via `unfold Array.getD; rw [dif_pos ...]; exact Vector.getElem_toArray _`.
