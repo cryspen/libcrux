@@ -513,16 +513,21 @@ set_option maxHeartbeats 6400000 in
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.simd.portable.store_block
-  -- Swap loop invariant FROM True/sorry TO store_loop_inv
-  simp only [ite_true, fold_range_inv_irrelevant (α := RustSlice u8)
+  simp only [ite_true]
+  -- Step 1: Replace extraction's invariant with True (removes the sorry in pureInv)
+  simp only [fold_range_inv_irrelevant (α := RustSlice u8)
+    (inv₂ := fun _ _ => pure True)
+    (pureInv₂ := ⟨fun _ _ => True, fun _ _ => by intro _; rfl⟩)]
+  -- Step 2: Replace True with our real invariant
+  simp only [fold_range_inv_irrelevant (α := RustSlice u8)
     (inv₂ := fun (o : RustSlice u8) (k : USize64) =>
       pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat))
     (pureInv₂ := ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat,
       fun _ _ => by intro _; rfl⟩)]
+  -- Eliminate dead `let out_len ← Impl.len` binding
+  simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, pure_bind]
   -- Replace copy_from_slice with irreducible wrapper
   simp only [← copy_from_slice_u8_eq]
-  -- Eliminate dead `let _ ← Impl.len` binding
-  simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, pure_bind]
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try (have := out.size_lt_usizeSize; vc_omega))
