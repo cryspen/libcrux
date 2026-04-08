@@ -86,6 +86,16 @@ def absorb_final_pure (RATE : Nat) (DELIM : u8) (state : Vector u64 25)
     (input : List u8) (start : Nat) (len : Nat) : Vector u64 25 :=
   keccak_f_pure (load_last_pure RATE DELIM state input start len)
 
+/-- Invariant for store_block main loop:
+    After i iterations, the first 8*i bytes starting at `start` have been written
+    with LE encodings of the corresponding state lanes. Size is preserved. -/
+def store_loop_inv (state : Vector u64 25) (out_size start : Nat)
+    (cur_out : Array u8) (i : Nat) : Prop :=
+  cur_out.size = out_size ∧
+  ∀ b, b < 8 * i →
+    cur_out.toList.getD (start + b) 0 =
+      lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)
+
 attribute [irreducible] bytes_to_u64_le load_block_pure
 
 -- flat_perm is an involution on [0,25): verify by exhaustion
@@ -446,6 +456,31 @@ set_option maxHeartbeats 6400000 in
   unfold core_models.slice.Impl.copy_from_slice rust_primitives.mem.replace
   simp
 
+/-- Splice: replace s[start..stop] with v, keep the rest. -/
+private def splice_seq (s : RustSlice α) (start stop : Nat) (v : RustSlice α)
+    (hend : stop ≤ s.val.size) (hstart : start ≤ stop)
+    (hv : v.val.size = stop - start) : RustSlice α :=
+  let result := (s.val.extract 0 start) ++ v.val ++ (s.val.extract stop s.val.size)
+  have : result.size = s.val.size := by
+    simp only [result, Array.size_append, Array.size_extract, Nat.min_self,
+      Nat.min_eq_left hend, Nat.min_eq_left (Nat.le_trans hstart hend)]; omega
+  ⟨result, by rw [this]; exact s.size_lt_usizeSize⟩
+
+open core_models.ops.range in
+@[spec] theorem update_at_range_spec {α : Type}
+    (s : RustSlice α) (r : Range usize) (v : RustSlice α)
+    (hend : r._end.toNat ≤ s.val.size) (hstart : r.start.toNat ≤ r._end.toNat)
+    (hv : v.val.size = r._end.toNat - r.start.toNat) :
+    ⦃ ⌜ True ⌝ ⦄
+    rust_primitives.hax.monomorphized_update_at.update_at_range s r v
+    ⦃ ⇓ res => ⌜ res = splice_seq s r.start.toNat r._end.toNat v hend hstart hv ⌝ ⦄ := by
+  intro _
+  unfold rust_primitives.hax.monomorphized_update_at.update_at_range
+  rw [dif_pos ⟨hend, hstart, hv⟩]
+  simp [splice_seq]
+
+attribute [local irreducible] rust_primitives.hax.monomorphized_update_at.update_at_range
+
 -- RangeTo indexing for RustArray
 open core_models.ops.range in
 @[spec] theorem RangeTo_getElemRustArray_spec {α : Type} {n : usize}
@@ -459,10 +494,12 @@ open core_models.ops.range in
 attribute [local irreducible]
   libcrux_sha3.simd.portable.store_block
   core_models.slice.Impl.copy_from_slice
+  core_models.slice.Impl.len
+  rust_primitives.unsize
 
 attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
-set_option maxHeartbeats 6400000 in
+set_option maxHeartbeats 12800000 in
 @[spec] theorem store_block_spec (RATE : usize) (s : RustArray u64 25)
     (out : RustSlice u8) (start : usize) (len : usize)
     (hrate_le : RATE.toNat ≤ 200)
@@ -474,8 +511,7 @@ set_option maxHeartbeats 6400000 in
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
-  -- store_block has loop + remainder + copy_from_slice + update_at_range
-  -- hax_mvcgen OOMs on the full function. Factor into standalone loop spec.
+  -- hax_mvcgen OOMs on full store_block. Needs investigation (update_at_range spec blowup?)
   sorry
 
 -- load_last

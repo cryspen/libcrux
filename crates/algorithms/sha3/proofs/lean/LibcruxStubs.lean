@@ -64,9 +64,20 @@ instance RangeFrom.instGetElemResultRustArray {α : Type} {n : usize} :
 
 namespace rust_primitives.hax.monomorphized_update_at
 
-@[irreducible] def update_at_range {S : Type}
-    (s : S) (r : core_models.ops.range.Range usize) (v : S) :
-    RustM S := sorry
+/-- Replace `s[r.start .. r.end]` with `v`. Requires matching lengths. -/
+def update_at_range (s : rust_primitives.sequence.Seq α)
+    (r : core_models.ops.range.Range usize) (v : rust_primitives.sequence.Seq α) :
+    RustM (rust_primitives.sequence.Seq α) :=
+  if h : r._end.toNat ≤ s.val.size ∧ r.start.toNat ≤ r._end.toNat ∧
+      v.val.size = r._end.toNat - r.start.toNat then
+    let arr := s.val
+    let result := (arr.extract 0 r.start.toNat) ++ v.val ++ (arr.extract r._end.toNat arr.size)
+    have ⟨h1, h2, h3⟩ := h
+    have hsz : result.size = s.val.size := by
+      simp only [result, arr, Array.size_append, Array.size_extract, Nat.min_self,
+        Nat.min_eq_left (by omega : r.start.toNat ≤ s.val.size)]; omega
+    pure ⟨result, by rw [hsz]; exact s.size_lt_usizeSize⟩
+  else .fail .arrayOutOfBounds
 
 @[irreducible] def update_at_range_from {S : Type}
     (s : S) (r : core_models.ops.range.RangeFrom usize) (v : S) :

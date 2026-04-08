@@ -71,15 +71,23 @@ The `unfold` in the spec proof itself must happen BEFORE the attribute is set.
 
 ### Pattern 5: Loop invariant swap for fold_range
 
-`fold_range` from extraction has trivial invariants `(fun _ _ => pure true)`.
-Swap to real invariants before hax_mvcgen:
+`fold_range` from extraction has trivial invariants `⟨fun _ _ => True, sorry⟩`.
+**Direction**: swap FROM trivial/sorry TO a meaningful invariant. This serves
+two purposes: (1) removes the sorry, (2) gives hax_mvcgen real invariant info
+so the final composition VC is provable. Swapping TO True just removes the sorry
+but loses all postcondition information.
 
 ```lean
--- Outer loop
+-- Single loop: simp swaps all fold_range calls matching α
+simp only [fold_range_inv_irrelevant (α := StateType)
+  (inv₂ := fun acc k => pure (my_real_inv acc.field k.toNat))
+  (pureInv₂ := ⟨fun acc k => my_real_inv acc.field k.toNat,
+    fun _ _ => by intro _; rfl⟩)]
+
+-- Nested loops (chi pattern): rw for outer, conv+ext+rw for inner
 rw [show fold_range 0 5 trivial_inv st trivial_body trivial_pureInv =
     fold_range 0 5 real_inv st trivial_body real_pureInv
     from fold_range_inv_irrelevant _ _ _ _ _ _ _ _]
--- Inner loop (inside outer body lambda)
 conv in (fun (self : α) (i : USize64) => fold_range 0 5 _ self _ _) =>
   ext self i
   rw [fold_range_inv_irrelevant _ _ _ real_inner_inv _ _ _ real_inner_pureInv]
@@ -89,6 +97,8 @@ The `pureInv` argument has the form:
 ```lean
 ⟨fun acc k => my_invariant acc k, fun _ _ => by intro _; rfl⟩
 ```
+The `rfl` works because `inv₂ acc k = pure (my_invariant acc k)` and
+wp⟦pure x⟧ gives x directly.
 
 ### Pattern 6: Bridge lemmas (element-wise → pure function)
 

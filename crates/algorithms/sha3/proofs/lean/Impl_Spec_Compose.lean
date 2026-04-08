@@ -112,7 +112,17 @@ theorem fold_range_usize_spec {α : Type}
 
 `fold_range` never inspects `inv`/`pureInv` at runtime — they are ghost arguments
 for specification only. This lets us replace a trivial invariant (as in chi's
-extraction) with a meaningful one and still apply `fold_range_spec`. -/
+extraction) with a meaningful one and still apply `fold_range_spec`.
+
+**Usage**: Swap FROM the trivial `⟨fun _ _ => True, sorry⟩` (from extraction)
+TO a real invariant `⟨real_inv, fun _ _ => by intro _; rfl⟩`:
+
+    simp only [fold_range_inv_irrelevant (α := StateType)
+      (inv₂ := fun acc k => pure (real_inv acc.field k.toNat))
+      (pureInv₂ := ⟨fun acc k => real_inv acc.field k.toNat,
+        fun _ _ => by intro _; rfl⟩)]
+
+This removes the sorry AND gives hax_mvcgen a meaningful invariant for VCs. -/
 
 theorem fold_range_inv_irrelevant {α : Type}
     (s e : USize64)
