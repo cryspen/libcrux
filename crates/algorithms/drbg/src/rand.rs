@@ -259,16 +259,30 @@ pub struct HmacDrbgRng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedR
 impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
     HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
-    /// Instantiates a new `HmacDrbgRng`.
-    pub fn new(mut rng: ReseedRng, nonce: &[u8; 32], personalization: &[u8; 32]) -> Self {
+    /// Instantiates a new `HmacDrbgRng`, sampling both entropy and nonce from
+    /// the `ReseedRng`.
+    pub fn new(mut rng: ReseedRng, personalization: &[u8; 32]) -> Self {
         let mut init_entropy = [0u8; crate::MIN_ENTROPY_BYTES];
+        let mut nonce = [0u8; 32];
         rng.fill_bytes(&mut init_entropy);
+        rng.fill_bytes(&mut nonce);
 
-        let drbg = match HmacDrbg::new(&init_entropy, nonce, personalization) {
+        Self::new_from_seed(rng, &init_entropy, &nonce, personalization)
+    }
+
+    /// Instantiates a new `HmacDrbgRng` from explicit entropy and nonce.
+    ///
+    /// The `ReseedRng` is only used for automatic reseeding, not for initial
+    /// seeding.
+    pub fn new_from_seed(
+        rng: ReseedRng,
+        entropy: &[u8; crate::MIN_ENTROPY_BYTES],
+        nonce: &[u8; 32],
+        personalization: &[u8; 32],
+    ) -> Self {
+        let drbg = match HmacDrbg::new(entropy, nonce, personalization) {
             Ok(drbg) => drbg,
             Err(error) => match error {
-                // We ensure the lengths are in bounds by setting fixed lengths in the argument
-                // types
                 crate::InstantiateError::InputTooLarge => unreachable!(),
             },
         };

@@ -12,15 +12,15 @@ use rand::{rand_core::UnwrapErr, rngs::SysRng, CryptoRng, Rng};
 type OsRng = UnwrapErr<SysRng>;
 
 fn make_sha256() -> HmacSha256DrbgRng<OsRng> {
-    HmacSha256DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+    HmacSha256DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32])
 }
 
 fn make_sha384() -> HmacSha384DrbgRng<OsRng> {
-    HmacSha384DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+    HmacSha384DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32])
 }
 
 fn make_sha512() -> HmacSha512DrbgRng<OsRng> {
-    HmacSha512DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32], &[0u8; 32])
+    HmacSha512DrbgRng::new(UnwrapErr(SysRng), &[0u8; 32])
 }
 
 // ---------------------------------------------------------------------------
