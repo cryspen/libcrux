@@ -1,9 +1,8 @@
-use core::convert::Infallible;
 use core::marker::PhantomData;
 
 pub(crate) use ::rand::{rngs, CryptoRng, TryCryptoRng};
 
-use crate::{DrbgError, GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
+use crate::{GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
 
 #[cfg(feature = "health-tests")]
 use super::health_tests::HealthState;
@@ -196,10 +195,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
 /// This is separate from [`rand::SeedableRng`] because reseeding an already-running
 /// DRBG takes entropy + additional input, whereas `SeedableRng` only covers initial
 /// construction.
-pub trait TryReseedableRng: rand::TryRng
-where
-    Self::Error: DrbgError,
-{
+pub trait TryReseedableRng: rand::TryRng {
     /// The seed/entropy type accepted by [`reseed`].
     ///
     /// [`reseed`]: Self::reseed
@@ -338,7 +334,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRn
 impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng> rand::TryRng
     for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
-    type Error = Infallible;
+    type Error = core::convert::Infallible;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         let mut out = [0u8; 4];

@@ -81,26 +81,6 @@ pub enum GenerateError {
     HealthCheckFailed,
 }
 
-/// Trait for errors produced by DRBG generation.
-///
-/// Allows the auto-reseeding wrapper (and other callers) to
-/// distinguish "needs reseed" from other failures without
-/// coupling to a specific error type.
-pub trait DrbgError: core::error::Error {
-    /// Returns `true` if the error indicates that the generator
-    /// must be reseeded before it can produce more output.
-    ///
-    /// This corresponds to the reseed counter exceeding the
-    /// mechanism's reseed interval.
-    fn is_needs_reseed(&self) -> bool;
-}
-
-impl DrbgError for GenerateError {
-    fn is_needs_reseed(&self) -> bool {
-        matches!(self, GenerateError::ReseedRequired)
-    }
-}
-
 impl Error for GenerateError {}
 impl fmt::Display for GenerateError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
