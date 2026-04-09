@@ -92,6 +92,36 @@ def absorb_final_pure (RATE : Nat) (DELIM : u8) (state : Vector u64 25)
     (input : List u8) (start : Nat) (len : Nat) : Vector u64 25 :=
   keccak_f_pure (load_last_pure RATE DELIM state input start len)
 
+/-- Absorb all full blocks: fold absorb_block_pure over n_blocks blocks of RATE bytes. -/
+def absorb_all_pure (RATE : Nat) (state : Vector u64 25)
+    (input : List u8) (n_blocks : Nat) : Vector u64 25 :=
+  (List.range n_blocks).foldl (fun st i => absorb_block_pure RATE st input (i * RATE)) state
+
+/-- Full squeeze phase: extract `output_len` bytes from state.
+    Applies keccak_f between rate-sized blocks.
+    Round 0 extracts from the current state; subsequent rounds apply keccak_f first.
+    This matches FIPS 202 Algorithm 8 squeeze loop. -/
+def squeeze_pure (RATE : Nat) (state : Vector u64 25) (output_len : Nat) : List u8 :=
+  if RATE = 0 ∨ output_len = 0 then [] else
+  let n_rounds := (output_len + RATE - 1) / RATE
+  ((List.range n_rounds).foldl (fun (acc : List u8 × Vector u64 25) i =>
+    let st := if i = 0 then acc.2 else keccak_f_pure acc.2
+    let to_copy := min RATE (output_len - i * RATE)
+    (acc.1 ++ store_block_pure RATE st 0 to_copy, st))
+    ([], state)).1
+
+/-- Full keccak sponge: absorb input, squeeze output.
+    Matches FIPS 202 Algorithm 8 (with pad10*1). -/
+def keccak1_pure (RATE : Nat) (DELIM : u8) (input : List u8) (output_len : Nat) : List u8 :=
+  if RATE = 0 then [] else
+  let n_blocks := input.length / RATE
+  let input_rem := input.length % RATE
+  let state0 := Vector.replicate 25 (0 : u64)
+  let state1 := absorb_all_pure RATE state0 input n_blocks
+  let start := input.length - input_rem
+  let state2 := absorb_final_pure RATE DELIM state1 input start input_rem
+  squeeze_pure RATE state2 output_len
+
 /-- Invariant for store_block main loop:
     After i iterations, the first 8*i bytes starting at `start` have been written
     with LE encodings of the corresponding state lanes. Size is preserved. -/
@@ -724,7 +754,8 @@ set_option maxHeartbeats 3200000 in
     (start : usize) (len : usize)
     (hrate : RATE.toNat % 8 = 0)
     (hlen : start.toNat + len.toNat ≤ blocks.val.size)
-    (hlen_rate : len.toNat < RATE.toNat) :
+    (hlen_rate : len.toNat < RATE.toNat)
+    (hrate_le : RATE.toNat ≤ 200) :
     ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.simd.portable.load_last RATE DELIM state blocks start len
     ⦃ ⇓ r => ⌜ r.toVec = Sponge.load_last_pure RATE.toNat DELIM state.toVec
@@ -735,18 +766,16 @@ set_option maxHeartbeats 3200000 in
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try grind)
-  -- vc1, vc4: start + len < USize64.size (overflow)
   all_goals (try (have := blocks.size_lt_usizeSize; omega))
-  -- vc3, vc8: len ≤ RATE (replicate size)
   all_goals (try (simp only [Vector.size, Vector.size_toArray]; omega))
-  -- vc7: copy_from_slice size match (both extracts have size len)
   all_goals (try (subst_vars; simp only [Array.size_extract, Vector.size_toArray,
     Vector.extract, Vector.replicate, Nat.min_eq_left (by omega : len.toNat ≤ RATE.toNat)] at *; omega))
-  -- vc17: assert failure path (contradiction: len < RATE but ¬len < buffer.size where buffer.size = RATE)
   all_goals (try (exfalso; simp only [splice_seq, Vector.size, Array.size_append,
     Array.size_extract, Vector.replicate, Vector.size_toArray,
     Nat.min_eq_left (by omega : len.toNat ≤ RATE.toNat)] at *; omega))
-  -- vc14, vc15: depend on load_block sorry
+  -- vc15: RATE ≤ 200 (from load_block_spec precondition)
+  all_goals (try exact hrate_le)
+  -- vc17: composition — load_block on padded buffer = load_last_pure
   all_goals sorry
 
 -- absorb_block = Absorb.load_block + keccakf1600
@@ -772,17 +801,10 @@ set_option maxHeartbeats 800000 in
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try grind)
-  -- vc2: load_block precondition (sorry from hax_spec pureRequires)
-  · sorry
-  -- vc3: composition — load_block (sorry postcondition) + keccakf1600
-  · rename_i _ blocks hblocks st' hst' result hresult
-    -- hst' : sorry.val st' (= st'.toVec = load_block_pure ...)
-    -- hresult : result.st.toVec = keccak_f_pure st'.toVec
-    rw [hresult]
-    unfold Sponge.absorb_block_pure
-    congr 1
-    -- st'.toVec = load_block_pure ... (depends on load_block sorry)
-    sorry
+  all_goals (try (simp_all; omega))
+  all_goals (try rfl)
+  all_goals (try (simp_all [Sponge.absorb_block_pure]; rfl))
+  all_goals sorry
 
 -- absorb_final = Absorb.load_last + keccakf1600
 attribute [local irreducible] Impl_2.absorb_final
@@ -792,7 +814,9 @@ set_option maxHeartbeats 800000 in
     (st : KeccakState 1 u64) (input : RustArray (RustSlice u8) 1)
     (start : usize) (len : usize)
     (hrate : RATE.toNat % 8 = 0)
-    (hlen : len.toNat < RATE.toNat) :
+    (hlen : len.toNat < RATE.toNat)
+    (hbounds : start.toNat + len.toNat ≤ (input.toVec[(0 : Fin 1)]).val.size)
+    (hrate_le : RATE.toNat ≤ 200) :
     ⦃ ⌜ True ⌝ ⦄
     Impl_2.absorb_final 1 u64 RATE DELIM st input start len
     ⦃ ⇓ r => ⌜ r.st.toVec = Sponge.absorb_final_pure RATE.toNat DELIM st.st.toVec
@@ -806,15 +830,11 @@ set_option maxHeartbeats 800000 in
   hax_mvcgen
   all_goals (try vc_omega)
   all_goals (try grind)
-  -- vc2: load_last precondition (sorry from hax_spec pureRequires)
-  · sorry
-  -- vc3: composition — load_last (sorry postcondition) + keccakf1600
-  · rename_i _ _ _ _ _ _ _ blocks hblocks st' hst' result hresult
-    rw [hresult]
-    unfold Sponge.absorb_final_pure
-    congr 1
-    -- st'.toVec = load_last_pure ... (depends on load_last sorry)
-    sorry
+  all_goals (try (simp_all; omega))
+  all_goals (try exact hrate_le)
+  all_goals (try rfl)
+  all_goals (try (simp_all [Sponge.absorb_final_pure]; rfl))
+  all_goals sorry
 
 /-! ## Squeeze -/
 
@@ -831,14 +851,15 @@ set_option maxHeartbeats 800000 in
     ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.traits.Squeeze.squeeze
       (KeccakState 1 u64) u64 RATE st out start len
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+    ⦃ ⇓ r => ⌜ r.val.size = out.val.size ∧
+      (∀ b, b < len.toNat →
+        r.val.toList.getD (start.toNat + b) 0 =
+          Sponge.lane_byte (st.st.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.traits.Squeeze.squeeze
   simp only [libcrux_sha3.simd.portable.Impl_2]
   simp only [Std.Do.WPMonad.wp_bind, Std.Do.WPMonad.wp_pure, bind_pure]
-  exact Std.Do.Triple.of_entails_right _ _ _ _
-    (store_block_spec RATE st.st out start len hrate_le hlen hout)
-    (by simp [Std.Do.PostCond.entails, Std.Do.ExceptConds.entails]) trivial
+  exact store_block_spec RATE st.st out start len hrate_le hlen hout trivial
 
 attribute [local irreducible]
   libcrux_sha3.traits.Squeeze.squeeze
@@ -873,8 +894,43 @@ private theorem sub_no_overflow {a b : usize}
   rw [BitVec.usubOverflow_eq, decide_eq_false_iff_not]
   intro hlt; simp [BitVec.lt_def, USize64.toNat_toBitVec] at hlt; omega
 
--- Helper: USize64.ofNat a.val.size == output_len from squeeze_spec preserving size
--- (squeeze/store_block preserves slice size — needed for loop invariant)
+-- Nonlinear bridge: i * RATE < USize64.size from loop bound chain
+private theorem mul_lt_size_from_loop {i blocks n RATE : Nat}
+    (h_loop : i < blocks) (h_blocks : blocks = n / RATE) (h_size : n < USize64.size) :
+    i * RATE < USize64.size := by
+  have h1 : (i + 1) * RATE ≤ (n / RATE) * RATE := Nat.mul_le_mul_right RATE (by omega)
+  have h2 : (n / RATE) * RATE ≤ n := Nat.div_mul_le_self n RATE
+  have h3 : i * RATE + RATE = (i + 1) * RATE := by rw [Nat.add_mul]; simp
+  omega
+
+-- Nonlinear bridge: i * RATE + RATE ≤ n from loop bound chain
+private theorem mul_add_le_from_loop {i blocks n RATE : Nat}
+    (h_loop : i < blocks) (h_blocks : blocks = n / RATE) :
+    i * RATE + RATE ≤ n := by
+  have h1 : (i + 1) * RATE ≤ (n / RATE) * RATE := Nat.mul_le_mul_right RATE (by omega)
+  have h2 : (n / RATE) * RATE ≤ n := Nat.div_mul_le_self n RATE
+  have h3 : i * RATE + RATE = (i + 1) * RATE := by rw [Nat.add_mul]; simp
+  omega
+
+-- Bridge: division result ≥ 1 implies divisor ≤ dividend
+private theorem le_of_div_pos {a b : Nat} (_ : 0 < b) (h : 0 < a / b) : b ≤ a := by
+  have h1 : 1 * b ≤ (a / b) * b := Nat.mul_le_mul_right b h
+  have h2 : (a / b) * b ≤ a := Nat.div_mul_le_self a b
+  omega
+
+-- Bridge: division = 0 implies dividend < divisor
+private theorem lt_of_div_zero {a b : Nat} (hb : 0 < b) (h : a / b = 0) : a < b := by
+  have h1 := Nat.div_add_mod a b; rw [h] at h1
+  have h2 := Nat.mod_lt a hb; omega
+
+-- Squeeze loop invariant decoder
+private theorem squeeze_inv_size (acc : RustSlice u8) (r : USize64)
+    (h_inv : (USize64.ofNat acc.val.size == r) = true) (h_r : r.toNat = n) :
+    acc.val.size = n := by
+  simp [beq_iff_eq] at h_inv
+  have h : (USize64.ofNat acc.val.size).toNat = r.toNat := by rw [h_inv]
+  simp [USize64.toNat_ofNat'] at h
+  have := acc.size_lt_usizeSize; have : USize64.size = 2 ^ 64 := rfl; omega
 
 set_option maxHeartbeats 6400000 in
 theorem keccak1_spec (RATE : usize) (DELIM : u8)
@@ -884,19 +940,35 @@ theorem keccak1_spec (RATE : usize) (DELIM : u8)
     (hrate_le : RATE.toNat ≤ 200) :
     ⦃ ⌜ True ⌝ ⦄
     libcrux_sha3.generic_keccak.portable.keccak1 RATE DELIM input output
-    ⦃ ⇓ r => ⌜ True ⌝ ⦄ := by
+    ⦃ ⇓ r => ⌜ r.val.toList = Sponge.keccak1_pure RATE.toNat DELIM
+        input.val.toList output.val.size ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.generic_keccak.portable.keccak1
   hax_mvcgen
+  -- Phase 1: Easy VCs
   all_goals (try vc_omega)
   all_goals (try grind)
   all_goals (try trivial)
-  -- RATE ≠ 0 goals
   all_goals (try exact rate_ne_zero hrate_pos)
-  -- RATE ≤ 200 goals
   all_goals (try exact hrate_le)
-  -- subOverflow goals: mod ≤ value
-  all_goals (try (apply sub_no_overflow; simp_all [USize64.reduceToNat]; omega))
-  -- output_rem ≤ RATE: mod < divisor
-  all_goals (try (simp_all [USize64.reduceToNat]; omega))
+  -- Phase 2: vc5, vc26 (loop overflow: i * RATE < USize64.size)
+  all_goals (try exact mul_lt_size_from_loop ‹_› ‹_› (by (have := input.size_lt_usizeSize; have := output.size_lt_usizeSize; omega)))
+  -- Phase 3: remaining arithmetic VCs via bridge lemmas + omega
+  all_goals (try (
+    dsimp;
+    (try (have := mul_add_le_from_loop ‹_› ‹_›));
+    (try (have := Nat.mod_le (USize64.toNat _) (USize64.toNat RATE)));
+    (try (have := Nat.mod_lt (USize64.toNat _) hrate_pos));
+    (try (have := squeeze_inv_size _ _ ‹_› ‹_›));
+    (try (have := input.size_lt_usizeSize));
+    (try (have := output.size_lt_usizeSize));
+    (try (apply sub_no_overflow));
+    (try (subst ‹_ = true›; simp [beq_iff_eq, bne_iff_ne] at *));
+    (try (subst ‹_ = (_ == _)›; simp [beq_iff_eq] at *));
+    (try (have : (USize64.toNat _) / (USize64.toNat RATE) = 0 := by omega));
+    (try (have := lt_of_div_zero hrate_pos ‹_ / _ = 0›));
+    (try (have : 0 < (USize64.toNat _) / (USize64.toNat RATE) := by omega));
+    (try (have := le_of_div_pos hrate_pos ‹0 < _ / _›));
+    omega))
+  -- Remaining: composition VCs (vc20, vc35, vc36)
   all_goals sorry
