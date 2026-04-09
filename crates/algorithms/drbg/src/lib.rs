@@ -43,10 +43,10 @@ use health_tests::*;
 /// rand::TryCryptoRng / SeedableRng integration (feature = "rand")
 #[cfg(feature = "rand")]
 mod rand;
-#[cfg(feature = "rand")]
-pub use rand::{HmacDrbgSeed, TryReseedableRng};
 #[cfg(all(feature = "rand", not(feature = "health-tests")))]
 pub use rand::{HmacDrbgRng, HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng};
+#[cfg(feature = "rand")]
+pub use rand::{HmacDrbgSeed, TryReseedableRng};
 
 mod errors;
 pub use errors::*;
