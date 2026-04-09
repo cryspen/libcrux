@@ -191,12 +191,20 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
 // Reseedable Rng Trait
 // ---------------------------------------------------------------------------
 
-/// An RNG that is reseedable.
+/// Extension trait for an RNG that supports explicit reseeding with caller-supplied entropy.
+///
+/// This is separate from [`rand::SeedableRng`] because reseeding an already-running
+/// DRBG takes entropy + additional input, whereas `SeedableRng` only covers initial
+/// construction.
 pub trait TryReseedableRng: rand::TryRng
 where
     Self::Error: DrbgError,
 {
-    /// The type of entropy that is required.
+    /// The seed/entropy type accepted by [`reseed`].
+    ///
+    /// [`reseed`]: Self::reseed
+    ///
+    /// For [`HmacDrbg`] this is [`HmacDrbgSeed<OUTLEN>`].
     type Entropy: AsRef<[u8]>;
 
     /// The error that the reseeding operation returns.
@@ -244,6 +252,9 @@ pub type HmacSha512DrbgRng<ReseedRng> = HmacDrbgRng<64, crate::hmac::HmacSha512,
 /// `HmacDrbgRng` implements the infallible [`rand::CryptoRng`] by automatically
 /// reseeding from an inner `ReseedRng` when needed.
 ///
+/// Only available without `feature = "health-tests"`, because health-test failures
+/// cannot be expressed through the infallible `CryptoRng` interface.
+///
 /// Use the type aliases [`HmacSha256DrbgRng`], [`HmacSha384DrbgRng`],
 /// [`HmacSha512DrbgRng`] for convenience.
 #[cfg(not(feature = "health-tests"))]
@@ -259,8 +270,11 @@ pub struct HmacDrbgRng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedR
 impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
     HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
-    /// Instantiates a new `HmacDrbgRng`, sampling both entropy and nonce from
-    /// the `ReseedRng`.
+    /// Instantiate a new `HmacDrbgRng`, sampling entropy and nonce from the `ReseedRng`.
+    ///
+    /// `personalization` is a 32-byte application-specific label mixed into the
+    /// initial seed material (use `&[0u8; 32]` if not needed). The `rng` is kept
+    /// for automatic reseeding on subsequent generate calls.
     pub fn new(mut rng: ReseedRng, personalization: &[u8; 32]) -> Self {
         let mut init_entropy = [0u8; crate::MIN_ENTROPY_BYTES];
         let mut nonce = [0u8; 32];
@@ -290,7 +304,15 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRn
         Self { drbg, rng }
     }
 
-    //hax: assume dst.len() < crate::MAX_GENERATE_BYTES
+    /// Somewhat safely generates a bit or randomness:
+    ///  - ensures we don't pass in too much additional_input (none, in fact)
+    ///  - reseeds if needed
+    ///
+    /// The caller MUST ensure that they don't ask fo too much data. Ideally enforce this using
+    /// hax.
+    ///
+    ///
+    //hax: requires dst.len() < crate::MAX_GENERATE_BYTES
     fn safe_generate_small(&mut self, dst: &mut [u8]) {
         if self.drbg.needs_reseed() {
             match self.drbg.reseed_from_rng(&mut self.rng, &[]) {

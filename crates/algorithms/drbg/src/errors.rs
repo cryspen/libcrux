@@ -58,7 +58,9 @@ pub enum InstantiateFromRngError {
     HealthCheckFailed,
 }
 
-/// Errors returned by HMAC-DRBG operations.
+/// Errors returned by [`HmacDrbg::generate`].
+///
+/// [`HmacDrbg::generate`]: crate::HmacDrbg::generate
 #[derive(Debug, PartialEq)]
 pub enum GenerateError {
     /// The reseed counter has exceeded [`RESEED_INTERVAL`]; call `reseed` before generating.

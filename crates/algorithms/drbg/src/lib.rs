@@ -56,10 +56,16 @@ mod utils;
 mod hmac;
 use hmac::{HmacAlgorithm, HmacSha256, HmacSha384, HmacSha512};
 
-/// Maximum number of generate calls before a reseed is required (§10.1 Table 2).
+/// Maximum number of generate calls before a reseed is required (SP 800-90A §10.1 Table 2).
+///
+/// After this many calls to [`HmacDrbg::generate`], the next call returns
+/// [`GenerateError::ReseedRequired`]. Use [`HmacDrbg::needs_reseed`] to check proactively.
 pub const RESEED_INTERVAL: u64 = 10_000;
 
-/// Maximum number of bytes that can be requested in a single generate call (§10.1 Table 2).
+/// Maximum number of bytes that can be requested in a single [`HmacDrbg::generate`] call
+/// (SP 800-90A §10.1 Table 2).
+///
+/// Requesting more returns [`GenerateError::RequestTooLarge`].
 pub const MAX_GENERATE_BYTES: usize = 65_536;
 
 /// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
@@ -154,11 +160,15 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     // §10.1.2.3  Instantiate
     // -----------------------------------------------------------------------
 
-    /// Instantiate an HMAC_DRBG from explicit entropy material (§10.1.2.3).
+    /// Instantiate an HMAC_DRBG from explicit entropy material (SP 800-90A §10.1.2.3).
     ///
-    /// `entropy_input`, `nonce`, and `personalization_string` are concatenated
-    /// to form the seed material. Their combined length must not exceed
-    /// `MAX_SEED_BYTES` (384 bytes). Overflow is ignored.
+    /// - `entropy_input`: must contain at least [`MIN_ENTROPY_BYTES`] bytes of entropy.
+    /// - `nonce`: at least `OUTLEN / 2` bytes (the spec minimum); using `OUTLEN` bytes is
+    ///   recommended.
+    /// - `personalization_string`: optional application-specific context (may be empty).
+    ///
+    /// Returns [`InstantiateError::InputTooLarge`] if the combined length of the three
+    /// inputs exceeds the maximum input size of the underlying hash function.
     //
     // #hax: requires true
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
@@ -192,7 +202,13 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     // §10.1.2.4  Reseed
     // -----------------------------------------------------------------------
 
-    /// Reseed the DRBG with fresh entropy (§10.1.2.4).
+    /// Reseed the DRBG with fresh entropy (SP 800-90A §10.1.2.4).
+    ///
+    /// - `entropy_input`: fresh entropy from a live source (at least [`MIN_ENTROPY_BYTES`]).
+    /// - `additional_input`: optional caller-supplied data mixed into the reseed
+    ///   (pass `&[]` for none).
+    ///
+    /// Resets the reseed counter to 1 on success.
     //
     // #hax: requires true
     // #hax: ensures result.is_ok() ==> self.reseed_counter == 1
@@ -321,7 +337,13 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         self.reseed_counter > RESEED_INTERVAL
     }
 
-    /// Expose the reseed counter (useful for testing).
+    /// Returns the current reseed counter.
+    ///
+    /// The counter starts at 1 after instantiation or reseed and increments by 1 on each
+    /// successful [`generate`] call. When it exceeds [`RESEED_INTERVAL`],
+    /// further generation is refused until a reseed.
+    ///
+    /// [`generate`]: Self::generate
     //
     // #hax: ensures result == self.reseed_counter
     pub fn reseed_counter(&self) -> u64 {
@@ -338,10 +360,13 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
 #[cfg(feature = "rand")]
 #[allow(private_bounds)]
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
-    /// Instantiate from a [`rand::TryCryptoRng`] (generates entropy and nonce internally).
+    /// Instantiate from a [`rand::TryCryptoRng`], drawing entropy and nonce internally.
     ///
-    /// Uses `OUTLEN` bytes of entropy and `OUTLEN` bytes of nonce (conservative;
-    /// the spec minimum for the nonce is `OUTLEN / 2`).
+    /// Draws `OUTLEN` bytes of entropy and `OUTLEN` bytes of nonce from `rng`
+    /// (conservative; the spec minimum for the nonce is `OUTLEN / 2`).
+    ///
+    /// Returns [`InstantiateFromRngError::RngError`] if the source RNG fails, or
+    /// an instantiation error if the seed material is rejected.
     //
     // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1

@@ -248,7 +248,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     }
 
     /// Returns `true` if a health-test failure has been detected and the
-    /// instance is permanently unusable (feature `health-tests`).
+    /// instance is permanently unusable.
     pub fn is_poisoned(&self) -> bool {
         self.health.poisoned()
     }
