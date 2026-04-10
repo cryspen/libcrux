@@ -294,7 +294,7 @@ theorem byte_loop_spec (n : usize) (blocks : RustSlice u8) (start : usize)
           core_models.array.TryFromSliceError arr
         let val ← core_models.num.Impl_9.from_le_bytes bytes
         rust_primitives.hax.monomorphized_update_at.update_at_usize state_flat i val)
-      ⟨fun _ _ => True, sorry⟩
+      ⟨fun _ _ => True, by intros; intro; mvcgen⟩
     ⦃ ⇓ r => ⌜ Sponge.byte_loop_inv blocks.val.toList start.toNat
         r.toVec.toArray n.toNat ⌝ ⦄ := by
   intro _
@@ -385,7 +385,7 @@ theorem xor_loop_spec (n : usize) (state state_flat : RustArray u64 25)
         libcrux_sha3.traits.set_ij 1 u64 state (← (i /? 5)) (← (i %? 5))
           (← ((← (libcrux_sha3.traits.get_ij 1 u64 state (← (i /? 5)) (← (i %? 5))))
             ^^^? (← state_flat[i]_?))))
-      ⟨fun _ _ => True, sorry⟩
+      ⟨fun _ _ => True, by intros; intro; mvcgen⟩
     ⦃ ⇓ r => ⌜ Sponge.xor_loop_inv state.toVec.toArray state_flat.toVec.toArray
         r.toVec.toArray n.toNat ⌝ ⦄ := by
   intro _
@@ -393,7 +393,7 @@ theorem xor_loop_spec (n : usize) (state state_flat : RustArray u64 25)
   simp only [← lb_get_eq, ← lb_set_eq]
   -- Swap trivial invariant → xor_loop_inv
   rw [show rust_primitives.hax.folds.fold_range (0 : USize64) n
-    (fun state _ => (do (pure true) : RustM Bool)) state _ ⟨fun _ _ => True, sorry⟩ =
+    (fun state _ => (do (pure true) : RustM Bool)) state _ ⟨fun _ _ => True, by intros; intro; mvcgen⟩ =
     rust_primitives.hax.folds.fold_range (0 : USize64) n
     (fun (acc : RustArray u64 25) (k : USize64) =>
       pure (Sponge.xor_loop_inv state.toVec.toArray state_flat.toVec.toArray acc.toVec.toArray k.toNat))
@@ -495,12 +495,58 @@ set_option maxHeartbeats 6400000 in
   -- vc5: byte_loop_inv init (all zeros, iteration 0)
   · simp only [USize64.reduceToNat]
     exact Sponge.byte_loop_inv_init blocks.val.toList start.toNat
-  -- vc14: byte_loop_inv step (TODO: bridge from_le_bytes ↔ bytes_to_u64_le with USize64 arithmetic)
-  · sorry
+  -- vc14: byte_loop_inv step
+  · rename_i _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ acc i _ hi_lt inv _ _ _ _ _ _ _ _ _ _ bytes hbytes _
+    simp only [USize64.reduceToNat] at *
+    have hi25 : i.toNat < 25 := by grind
+    rw [USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
+    have ⟨hsize_inv, hspec_inv⟩ := inv
+    unfold Sponge.byte_loop_inv
+    refine ⟨by simp [Vector.size_toArray], ?_⟩
+    intro j hj
+    subst hbytes
+    simp only [Vector.toArray_set, USize64.reduceToNat] at *
+    have ⟨_, hspec⟩ := inv
+    simp_all [Array.getElem_set, Array.getD]
+    split
+    · -- j = i: bridge from_le_bytes ↔ bytes_to_u64_le
+      rename_i hji; subst hji; simp only [show i.toNat < i.toNat + 1 from by omega, ite_true]
+      have hbd : start.toNat + 8 * i.toNat + 8 ≤ blocks.val.size := by
+        have : i.toNat + 1 ≤ RATE.toNat / 8 := by grind
+        have : (i.toNat + 1) * 8 ≤ (RATE.toNat / 8) * 8 :=
+          Nat.mul_le_mul_right 8 this
+        have := Nat.div_mul_le_self RATE.toNat 8; omega
+      unfold Sponge.bytes_to_u64_le; unfold List.getD
+      simp [show ∀ k, k ≤ 7 → start.toNat + 8 * i.toNat + k < blocks.val.size from by omega,
+        show start.toNat + 8 * i.toNat < blocks.val.size from by omega]
+    · -- j ≠ i: old invariant
+      rename_i hji
+      simp only [show (j < i.toNat + 1) ↔ (j < i.toNat) from by omega]
   -- vc18: xor_loop_inv init
   · exact Sponge.xor_loop_inv_init _ _
   -- vc28: xor_loop_inv step (same as xor_loop_spec vc12)
-  · sorry -- vc28: xor_loop_inv step (TODO: USize64 arithmetic issues)
+  · -- vc28: xor_loop_inv step
+    rename_i _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ acc i _ hi_lt inv rdiv hdiv rmod hmod rdiv2 hdiv2 rmod2 hmod2 rget hget rsf hsf rnew
+    intro hsize hset_post
+    simp only [USize64.reduceToNat] at *
+    have hi : i.toNat < 25 := by grind
+    rw [show (i + 1).toNat = i.toNat + 1 from
+      USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
+    apply Sponge.xor_loop_inv_step _ _ _ _ _ hi inv
+    intro k hk
+    simp only [USize64.reduceToNat, USize64.size, UInt64.size] at hdiv hmod hdiv2 hmod2
+    simp only [Sponge.flat_perm]
+    have hpost := hset_post k hk
+    rw [hget, hsf, hmod, hdiv, hmod2, hdiv2] at hpost
+    have toVec_getD {m : Nat} (v : Vector u64 m) (j : Nat) (hj : j < m) :
+        v.toArray.getD j 0 = v[j] := by
+      unfold Array.getD
+      rw [dif_pos (show j < v.toArray.size by rw [Vector.size_toArray]; exact hj)]
+      exact Vector.getElem_toArray _
+    have hfp_lt : 5 * (i.toNat % 5) + i.toNat / 5 < 25 := by omega
+    rw [toVec_getD _ _ hfp_lt] at hpost
+    rw [toVec_getD _ k hk, toVec_getD _ _ hfp_lt, toVec_getD _ _ hi, toVec_getD _ k hk]
+    exact hpost
   -- vc29: composition via byte_xor_compose
   · simp only [USize64.reduceToNat] at *
     rename_i _ _ _ _ _ _ _ _ _ _ _ _ _ _ rn hn sf hbyte rn2 hn2 result hxor
@@ -548,7 +594,26 @@ private theorem splice_seq_getD {α : Type}
       if start ≤ k ∧ k < stop
       then v.val.toList.getD (k - start) d
       else s.val.toList.getD k d := by
-  sorry
+  unfold splice_seq
+  simp only [Array.toList_append, Array.toList_extract, List.getD_eq_getElem?_getD,
+    List.getElem?_append, List.length_append, Array.length_toList,
+    List.extract_eq_take_drop, List.length_take, List.length_drop, Nat.sub_zero,
+    List.drop_zero, hv, Nat.min_eq_left (show start ≤ s.val.size by omega),
+    Nat.min_self, show start + (stop - start) = stop by omega]
+  split <;> rename_i hlt
+  · -- k < stop
+    split <;> rename_i hlt2
+    · -- k < start
+      simp only [show ¬(start ≤ k ∧ k < stop) from by omega, ite_false,
+        List.getElem?_take, if_pos hlt2]
+    · -- start ≤ k < stop
+      simp only [show (start ≤ k) from by omega, show (k < stop) from hlt,
+        true_and, ite_true]
+  · -- k ≥ stop
+    have hkstop : k - stop < s.val.size - stop := by omega
+    simp only [show ¬(start ≤ k ∧ k < stop) from by omega, ite_false,
+      List.getElem?_take, hkstop, ite_true,
+      List.getElem?_drop, show stop + (k - stop) = k from by omega]
 
 open core_models.ops.range in
 @[spec] theorem update_at_range_spec {α : Type}
@@ -559,7 +624,9 @@ open core_models.ops.range in
     rust_primitives.hax.monomorphized_update_at.update_at_range s r v
     ⦃ ⇓ res => ⌜ res = splice_seq s r.start.toNat r._end.toNat v hend hstart hv ⌝ ⦄ := by
   intro _
-  unfold rust_primitives.hax.monomorphized_update_at.update_at_range
+  simp only [rust_primitives.hax.monomorphized_update_at.update_at_range,
+    rust_primitives.hax.monomorphized_update_at.UpdateAtRange.doUpdateAtRange,
+    rust_primitives.hax.monomorphized_update_at.instUpdateAtRangeSeq]
   rw [dif_pos ⟨hend, hstart, hv⟩]
   simp [splice_seq]
 
@@ -572,9 +639,48 @@ open core_models.ops.range in
     ⦃ ⌜ True ⌝ ⦄
     (a[RangeTo.mk e]_?)
     ⦃ ⇓ r => ⌜ r.val = (Vector.extract a.toVec 0 e.toNat).toArray ⌝ ⦄ := by
-  sorry
+  intro _
+  unfold getElemResult RangeTo.instGetElemResultRustArray GetElemResult.getElemResult Range.instGetElemResultRustArrayUSize64
+  dsimp only []
+  have hle2 : e.toNat ≤ n.toNat := by simp [Vector.size] at he; exact he
+  rw [show (decide ((0 : usize) ≤ e) && decide (e.toNat ≤ n.toNat)) = true from by
+    simp only [decide_eq_true_eq, Bool.and_eq_true]; exact ⟨Nat.zero_le _, hle2⟩]
+  simp
 
 /-! ## store_block proof -/
+
+private theorem toUInt8_mod_256 (x : UInt64) : UInt64.toUInt8 (x % 256) = UInt64.toUInt8 x := by
+  have h256 : (256 : UInt64).toNat = 256 := by native_decide
+  simp only [UInt64.toUInt8]
+  suffices h : (x % 256).toNat % 256 = x.toNat % 256 by
+    simp only [Nat.toUInt8, UInt8.ofNat, BitVec.ofNat]
+    exact congrArg _ (congrArg _ (Fin.ext h))
+  rw [UInt64.toNat_mod, h256]
+  exact Nat.mod_mod_of_dvd _ ⟨1, rfl⟩
+
+/-- The k-th byte of a partial lane extraction equals the k-th byte shift.
+    Key lemma for the remainder case of store_block. -/
+private theorem lane_bytes_extract_getD (x : UInt64) (n k : Nat) (hk : k < n) (hn : n ≤ 8) :
+  (#v[UInt64.toUInt8 (x % 256), UInt64.toUInt8 (x >>> 8 % 256), UInt64.toUInt8 (x >>> 16 % 256),
+      UInt64.toUInt8 (x >>> 24 % 256), UInt64.toUInt8 (x >>> 32 % 256), UInt64.toUInt8 (x >>> 40 % 256),
+      UInt64.toUInt8 (x >>> 48 % 256), UInt64.toUInt8 (x >>> 56 % 256)].extract
+    0 n).toArray.toList.getD k (0 : UInt8) =
+  UInt64.toUInt8 (x >>> UInt64.ofNat (8 * k)) := by
+  -- Reduce Vector.extract to List.take, then strip take via k < n
+  simp only [Vector.toArray_extract, Array.toList_extract, List.extract, Nat.sub_zero, List.drop_zero]
+  have h_take : (List.take n [UInt64.toUInt8 (x % 256), UInt64.toUInt8 (x >>> 8 % 256),
+      UInt64.toUInt8 (x >>> 16 % 256), UInt64.toUInt8 (x >>> 24 % 256),
+      UInt64.toUInt8 (x >>> 32 % 256), UInt64.toUInt8 (x >>> 40 % 256),
+      UInt64.toUInt8 (x >>> 48 % 256), UInt64.toUInt8 (x >>> 56 % 256)]).getD k (0 : UInt8) =
+    [UInt64.toUInt8 (x % 256), UInt64.toUInt8 (x >>> 8 % 256), UInt64.toUInt8 (x >>> 16 % 256),
+      UInt64.toUInt8 (x >>> 24 % 256), UInt64.toUInt8 (x >>> 32 % 256), UInt64.toUInt8 (x >>> 40 % 256),
+      UInt64.toUInt8 (x >>> 48 % 256), UInt64.toUInt8 (x >>> 56 % 256)].getD k (0 : UInt8) := by
+    simp [List.getD_eq_getElem?_getD, hk]
+  rw [h_take]
+  -- 8-way case split on k, then evaluate getD + apply toUInt8_mod_256
+  rcases (show k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 ∨ k = 4 ∨ k = 5 ∨ k = 6 ∨ k = 7 from by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+  simp [List.getD, toUInt8_mod_256]
 
 attribute [irreducible] Sponge.lane_byte Sponge.store_block_pure
 
@@ -605,8 +711,6 @@ set_option maxHeartbeats 6400000 in
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
           Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
-  sorry
-  /- Original proof (depends on splice_seq_getD):
   intro _
   unfold libcrux_sha3.simd.portable.store_block
   simp only [ite_true]
@@ -646,10 +750,11 @@ set_option maxHeartbeats 6400000 in
     -- Eliminate intermediate variables
     subst hspliced hslice
     -- Unfold the invariant
+    have hi25 : i.toNat < 25 := by grind
     rw [USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
     obtain ⟨hsize, hspec⟩ := hinv
     unfold Sponge.store_loop_inv
-    refine ⟨by simp [splice_seq, hsize]; vc_omega, ?_⟩
+    refine ⟨by simp [splice_seq, hsize]; grind, ?_⟩
     intro b hb
     -- Use splice_seq_getD to case-split
     have hb_lt : start.toNat + b < acc.val.size := by
@@ -663,10 +768,8 @@ set_option maxHeartbeats 6400000 in
       -- So b is in [8*i, 8*(i+1)), meaning b/8 = i and b%8 = b - 8*i
       rename_i hcase
       obtain ⟨hlo, hhi⟩ := hcase
-      rw [hpos, h8i] at hlo hhi
-      simp only [USize64.reduceToNat] at hlo hhi
-      subst hbytes hlane hpos h8i hmod hdiv
-      simp only [USize64.reduceToNat] at *
+      subst hbytes hlane
+      simp only [hpos, hend, h8i, hdiv, hmod, USize64.reduceToNat] at *
       -- b - (start + 8*i) selects the byte within the 8-byte LE encoding
       have hbi : b / 8 = i.toNat := by omega
       have hbm : b % 8 = b - 8 * i.toNat := by omega
@@ -679,12 +782,14 @@ set_option maxHeartbeats 6400000 in
       -- The array is #[lane%256, (lane>>>8)%256, ..., (lane>>>56)%256]
       -- and we're accessing index (b - 8*i) = b%8
       rw [show start.toNat + b - (start.toNat + 8 * i.toNat) = b - 8 * i.toNat from by omega]
-      interval_cases (b - 8 * i.toNat) <;> simp_all
+      rcases (show b - 8 * i.toNat = 0 ∨ b - 8 * i.toNat = 1 ∨ b - 8 * i.toNat = 2 ∨
+        b - 8 * i.toNat = 3 ∨ b - 8 * i.toNat = 4 ∨ b - 8 * i.toNat = 5 ∨
+        b - 8 * i.toNat = 6 ∨ b - 8 * i.toNat = 7 from by omega) with
+        h | h | h | h | h | h | h | h <;> simp_all [toUInt8_mod_256]
     · -- Old region: b < 8*i or b ≥ 8*(i+1)
       -- But b < 8*(i+1), so b < 8*i
       rename_i hold
-      rw [hpos, h8i] at hold
-      simp only [USize64.reduceToNat] at hold
+      simp only [hpos, hend, hend2, h8i, USize64.reduceToNat] at *
       have hbi : b < 8 * i.toNat := by omega
       exact hspec b hbi
   -- vc31: remainder length match
@@ -700,50 +805,43 @@ set_option maxHeartbeats 6400000 in
     subst hspliced hcopy
     obtain ⟨hsize, hspec⟩ := hinv
     -- Derive key arithmetic facts
-    have hrem_pos : rem.toNat > 0 := by omega
-    have hrem_le8 : rem.toNat ≤ 8 := by omega
-    have hlen_eq : len.toNat = 8 * nfull.toNat + rem.toNat := by omega
+    have hrem_pos : rem.toNat > 0 := by grind
+    have hrem_le8 : rem.toNat ≤ 8 := by grind
+    have hlen_eq : len.toNat = 8 * nfull.toNat + rem.toNat := by grind
     constructor
     · -- size preserved by splice_seq
-      simp [splice_seq, hsize]; vc_omega
+      simp [splice_seq, hsize]; grind
     · intro b hb
       have hb_lt : start.toNat + b < loop_out.val.size := by rw [hsize]; vc_omega
-      have hgetD := splice_seq_getD loop_out (rsub.toNat) (rpos.toNat) rbytes
-        (by vc_omega) (by vc_omega) (by subst hbytes hlane hslice; simp [Array.size_extract, Vector.size_toArray]; vc_omega)
+      have hgetD := splice_seq_getD loop_out (rsub.toNat) (rpos.toNat) rcopy
+        (by vc_omega) (by vc_omega) (by simp [hbytes, hlane, hslice, Array.size_extract, Vector.size_toArray]; vc_omega)
         (start.toNat + b) hb_lt (0 : u8)
       rw [hgetD]
       split
       · -- New region: in the remainder splice [start+8*nfull, start+len)
         rename_i hcase
         obtain ⟨hlo, hhi⟩ := hcase
-        rw [hsub, hend, hpos] at hlo hhi
-        simp only [USize64.reduceToNat] at hlo hhi
-        subst hbytes hlane hslice hsub hend hpos hmod hdiv hrem hnfull
-        simp only [USize64.reduceToNat] at *
+        simp only [hbytes, hlane, hslice, hsub, hend, hpos, hdiv, hmod, hrem, hnfull, USize64.reduceToNat] at *
         -- b/8 = nfull (= len/8), b%8 = b - 8*nfull
-        have hbi : b / 8 = nfull.toNat := by omega
+        have hbi : b / 8 = len.toNat / 8 := by omega
         simp only [Sponge.flat_perm, hbi, Sponge.lane_byte]
-        -- The rbytes array is the first `rem` bytes of the LE encoding, accessed at index (b - 8*nfull)
-        -- rbytes.val = (Vector.extract #v[..8 bytes..] 0 rem).toArray
         -- getD at (start+b - (start+8*nfull)) = getD at (b - 8*nfull)
         rw [show start.toNat + b - (start.toNat + len.toNat - len.toNat % 8) =
           b - 8 * (len.toNat / 8) from by omega]
-        -- The extract of the 8-byte vector at index (b - 8*nfull) where b - 8*nfull < rem ≤ 8
-        have hbm_lt : b - 8 * (len.toNat / 8) < len.toNat % 8 := by omega
-        -- 8-way case split on b - 8*nfull to match byte positions
-        interval_cases (b - 8 * (len.toNat / 8)) <;> simp_all [Vector.extract, Vector.toArray, Array.extract, List.getD, Array.toList]
+        -- b - 8*(len/8) = b%8, then apply byte extraction lemma
+        have hbmod : b - 8 * (len.toNat / 8) = b % 8 := by omega
+        rw [hbmod]
+        exact lane_bytes_extract_getD _ _ _ (by grind) (by grind)
       · -- Old region: b < 8*nfull (outside splice range)
         rename_i hold
-        rw [hsub, hend, hpos] at hold
-        simp only [USize64.reduceToNat] at hold
-        have hbi : b < 8 * nfull.toNat := by omega
+        simp only [hsub, hend, hpos, hrem, hnfull, USize64.reduceToNat] at *
+        have hbi : b < 8 * (len.toNat / 8) := by omega
         exact hspec b hbi
   -- vc36: composition (without remainder, len % 8 = 0)
   · rename_i _ nfull hnfull loop_out hinv rem hrem rdec hdec_false hdec_eq
     simp only [USize64.reduceToNat, decide_eq_true_eq] at *
     obtain ⟨hsize, hspec⟩ := hinv
-    exact ⟨hsize, fun b hb => hspec b (by omega)⟩
-  -/
+    exact ⟨hsize, fun b hb => hspec b (by grind)⟩
 
 -- load_last
 attribute [local irreducible] libcrux_sha3.simd.portable.load_last
@@ -763,7 +861,7 @@ set_option maxHeartbeats 3200000 in
   intro _
   unfold libcrux_sha3.simd.portable.load_last
   simp only [← copy_from_slice_u8_eq]
-  hax_mvcgen
+  hax_mvcgen [-libcrux_sha3.simd.portable.load_block.spec.contract]
   all_goals (try vc_omega)
   all_goals (try grind)
   all_goals (try (have := blocks.size_lt_usizeSize; omega))
@@ -798,13 +896,12 @@ set_option maxHeartbeats 800000 in
     libcrux_sha3.simd.portable.Impl_1,
     libcrux_sha3.traits.Absorb.AssociatedTypes,
     libcrux_sha3.simd.portable.Impl_1.AssociatedTypes]
-  hax_mvcgen
+  hax_mvcgen [-libcrux_sha3.simd.portable.load_block.spec.contract]
   all_goals (try vc_omega)
   all_goals (try grind)
   all_goals (try (simp_all; omega))
   all_goals (try rfl)
   all_goals (try (simp_all [Sponge.absorb_block_pure]; rfl))
-  all_goals sorry
 
 -- absorb_final = Absorb.load_last + keccakf1600
 attribute [local irreducible] Impl_2.absorb_final
@@ -827,14 +924,13 @@ set_option maxHeartbeats 800000 in
     libcrux_sha3.simd.portable.Impl_1,
     libcrux_sha3.traits.Absorb.AssociatedTypes,
     libcrux_sha3.simd.portable.Impl_1.AssociatedTypes]
-  hax_mvcgen
+  hax_mvcgen [-libcrux_sha3.simd.portable.load_last.spec.contract]
   all_goals (try vc_omega)
   all_goals (try grind)
   all_goals (try (simp_all; omega))
   all_goals (try exact hrate_le)
   all_goals (try rfl)
   all_goals (try (simp_all [Sponge.absorb_final_pure]; rfl))
-  all_goals sorry
 
 /-! ## Squeeze -/
 
@@ -944,7 +1040,8 @@ theorem keccak1_spec (RATE : usize) (DELIM : u8)
         input.val.toList output.val.size ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.generic_keccak.portable.keccak1
-  hax_mvcgen
+  hax_mvcgen [-libcrux_sha3.generic_keccak.Impl_2.absorb_block.spec.contract,
+    -libcrux_sha3.generic_keccak.Impl_2.absorb_final.spec.contract]
   -- Phase 1: Easy VCs
   all_goals (try vc_omega)
   all_goals (try grind)
