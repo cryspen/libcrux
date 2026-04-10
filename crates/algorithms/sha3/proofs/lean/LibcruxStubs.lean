@@ -65,20 +65,47 @@ instance RangeFrom.instGetElemResultRustArray {α : Type} {n : usize} :
 
 namespace rust_primitives.hax.monomorphized_update_at
 
-/-- Replace `s[r.start .. r.end]` with `v`. Requires matching lengths. -/
-def update_at_range (s : rust_primitives.sequence.Seq α)
+/-- Typeclass for `update_at_range`, overloaded for `Seq` and `RustArray`.
+    The extraction emits `update_at_range` on both types; the `RustArray` overload
+    threads the size proof so that the unsound `instCoeSeqRustArray` is not needed. -/
+class UpdateAtRange (C : Type) (α : outParam Type) where
+  doUpdateAtRange : C → core_models.ops.range.Range usize →
+    rust_primitives.sequence.Seq α → RustM C
+
+instance instUpdateAtRangeSeq {α : Type} :
+    UpdateAtRange (rust_primitives.sequence.Seq α) α where
+  doUpdateAtRange s r v :=
+    if h : r._end.toNat ≤ s.val.size ∧ r.start.toNat ≤ r._end.toNat ∧
+        v.val.size = r._end.toNat - r.start.toNat then
+      let result := (s.val.extract 0 r.start.toNat) ++ v.val ++
+        (s.val.extract r._end.toNat s.val.size)
+      have hsz : result.size = s.val.size := by
+        simp only [result, Array.size_append, Array.size_extract, Nat.min_self,
+          Nat.min_eq_left (by omega : r.start.toNat ≤ s.val.size)]; omega
+      pure ⟨result, by rw [hsz]; exact s.size_lt_usizeSize⟩
+    else .fail .arrayOutOfBounds
+
+instance instUpdateAtRangeArray {α : Type} {n : usize} :
+    UpdateAtRange (RustArray α n) α where
+  doUpdateAtRange s r v :=
+    let arr := s.toVec.toArray
+    if h : r._end.toNat ≤ arr.size ∧ r.start.toNat ≤ r._end.toNat ∧
+        v.val.size = r._end.toNat - r.start.toNat then
+      let result := (arr.extract 0 r.start.toNat) ++ v.val ++
+        (arr.extract r._end.toNat arr.size)
+      have harr : arr.size = n.toNat := s.toVec.size_toArray
+      have hsz : result.size = n.toNat := by
+        simp only [result, Array.size_append, Array.size_extract, Nat.min_self,
+          Nat.min_eq_left (by omega : r.start.toNat ≤ arr.size)]; omega
+      pure ⟨⟨result, hsz⟩⟩
+    else .fail .arrayOutOfBounds
+
+/-- Replace `s[r.start .. r.end]` with `v`. Requires matching lengths.
+    Overloaded for `Seq` (returns `Seq`) and `RustArray` (returns `RustArray`). -/
+def update_at_range {C : Type} {α : Type} [UpdateAtRange C α] (s : C)
     (r : core_models.ops.range.Range usize) (v : rust_primitives.sequence.Seq α) :
-    RustM (rust_primitives.sequence.Seq α) :=
-  if h : r._end.toNat ≤ s.val.size ∧ r.start.toNat ≤ r._end.toNat ∧
-      v.val.size = r._end.toNat - r.start.toNat then
-    let arr := s.val
-    let result := (arr.extract 0 r.start.toNat) ++ v.val ++ (arr.extract r._end.toNat arr.size)
-    have ⟨h1, h2, h3⟩ := h
-    have hsz : result.size = s.val.size := by
-      simp only [result, arr, Array.size_append, Array.size_extract, Nat.min_self,
-        Nat.min_eq_left (by omega : r.start.toNat ≤ s.val.size)]; omega
-    pure ⟨result, by rw [hsz]; exact s.size_lt_usizeSize⟩
-  else .fail .arrayOutOfBounds
+    RustM C :=
+  UpdateAtRange.doUpdateAtRange s r v
 
 @[irreducible] def update_at_range_from {S : Type}
     (s : S) (r : core_models.ops.range.RangeFrom usize) (v : S) :
