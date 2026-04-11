@@ -124,7 +124,8 @@ set_option maxHeartbeats 6400000 in
 set_option maxHeartbeats 6400000 in
 @[spec] theorem theta_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ theta st ⦃ ⇓ r => ⌜ r = ⟨theta_pure st.toVec⟩ ⌝ ⦄ := by
-  sorry
+  intro _; unfold theta theta_pure; mvcgen
+  all_goals (first | (intro; subst_vars; rfl) | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_24, usize_toNat_25, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 
 set_option maxHeartbeats 6400000 in
 @[spec] theorem rho_spec (st : RustArray u64 25) :
@@ -168,7 +169,8 @@ set_option maxHeartbeats 1600000 in
 -- keccak_f: 24-round fold. TODO: needs fold_range @[spec] triple.
 @[spec] theorem keccak_f_spec (st : RustArray u64 25) :
     ⦃ ⌜ True ⌝ ⦄ keccak_f st ⦃ ⇓ r => ⌜ r = ⟨keccak_f_pure st.toVec⟩ ⌝ ⦄ := by
-  sorry
+  intro _; unfold keccak_f keccak_f_pure; mvcgen
+  all_goals (first | (intro; subst_vars; rfl) | (try simp only [usize_toNat_0, usize_toNat_1, usize_toNat_2, usize_toNat_3, usize_toNat_4, usize_toNat_5, usize_toNat_8, usize_toNat_24, usize_toNat_25, show USize64.size = 2 ^ 64 from rfl] at *; first | omega | (constructor <;> omega) | (subst_vars; first | rfl | (congr <;> omega))))
 
 /-! ## Layer 3: Sponge helpers -/
 

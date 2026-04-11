@@ -11,9 +11,16 @@ instance instCoeRustArraySeq {α : Type} {n : usize} :
     CoeOut (RustArray α n) (rust_primitives.sequence.Seq α) where
   coe a := ⟨a.toVec.toArray, by grind⟩
 
-instance instCoeSeqRustArray {α : Type} {n : usize} (s : rust_primitives.sequence.Seq α) :
+-- The old instCoeSeqRustArray used sorry to fill s.val.size = n.toNat, which was
+-- unsound (could prove False). This version uses a decidable check instead:
+-- on match, it preserves the data; on mismatch, it returns a default-filled array.
+-- Sound: no sorry, no false proofs.  The else branch is unreachable in practice
+-- (all extraction call sites have matching sizes).
+instance instCoeSeqRustArray {α : Type} [Inhabited α] {n : usize}
+    (s : rust_primitives.sequence.Seq α) :
     CoeDep (rust_primitives.sequence.Seq α) s (RustArray α n) where
-  coe := ⟨⟨s.val, sorry⟩⟩
+  coe := if h : s.val.size = n.toNat then ⟨⟨s.val, h⟩⟩
+         else ⟨Vector.replicate n.toNat default⟩
 
 /-! ## `update_at_usize` for `RustSlice` (missing from Hax library) -/
 
