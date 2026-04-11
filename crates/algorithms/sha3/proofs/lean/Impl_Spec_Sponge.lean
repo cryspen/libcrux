@@ -102,13 +102,11 @@ def absorb_all_pure (RATE : Nat) (state : Vector u64 25)
     Round 0 extracts from the current state; subsequent rounds apply keccak_f first.
     This matches FIPS 202 Algorithm 8 squeeze loop. -/
 def squeeze_pure (RATE : Nat) (state : Vector u64 25) (output_len : Nat) : List u8 :=
-  if RATE = 0 ∨ output_len = 0 then [] else
-  let n_rounds := (output_len + RATE - 1) / RATE
-  ((List.range n_rounds).foldl (fun (acc : List u8 × Vector u64 25) i =>
-    let st := if i = 0 then acc.2 else keccak_f_pure acc.2
-    let to_copy := min RATE (output_len - i * RATE)
-    (acc.1 ++ store_block_pure RATE st 0 to_copy, st))
-    ([], state)).1
+  if RATE = 0 ∨ output_len = 0 then []
+  else if output_len ≤ RATE then store_block_pure RATE state 0 output_len
+  else store_block_pure RATE state 0 RATE ++
+       squeeze_pure RATE (keccak_f_pure state) (output_len - RATE)
+termination_by output_len
 
 /-- Full keccak sponge: absorb input, squeeze output.
     Matches FIPS 202 Algorithm 8 (with pad10*1). -/
@@ -147,7 +145,129 @@ theorem keccak1_pure_eq_squeeze (RATE : Nat) (DELIM : u8) (input : List u8) (out
   unfold keccak1_pure keccak1_absorb_state
   simp [show ¬(RATE = 0) from by omega]
 
+theorem squeeze_pure_le_rate (RATE : Nat) (state : Vector u64 25) (output_len : Nat)
+    (hR : 0 < RATE) (hle : output_len ≤ RATE) :
+    squeeze_pure RATE state output_len = store_block_pure RATE state 0 output_len := by
+  rw [squeeze_pure.eq_1]
+  by_cases hout0 : output_len = 0
+  · subst hout0; simp [store_block_pure]
+  · simp [show ¬(RATE = 0 ∨ output_len = 0) from by omega, hle]
+
+-- Helper: length of store_block_pure
+private theorem store_block_pure_length' (RATE : Nat) (state : Vector u64 25) (start len : Nat) :
+    (store_block_pure RATE state start len).length = len := by simp [store_block_pure]
+
+-- Length of squeeze_pure
+theorem squeeze_pure_length (RATE : Nat) (state : Vector u64 25) (output_len : Nat) (hR : 0 < RATE) :
+    (squeeze_pure RATE state output_len).length = output_len := by
+  induction output_len using Nat.strongRecOn generalizing state with
+  | _ output_len ih =>
+    by_cases h0 : output_len = 0
+    · subst h0; simp [squeeze_pure]
+    · rw [squeeze_pure.eq_1]
+      simp only [show ¬(RATE = 0 ∨ output_len = 0) from by omega, ite_false]
+      by_cases hle : output_len ≤ RATE
+      · simp only [hle, ite_true, store_block_pure, List.length_map, List.length_range]
+      · simp only [hle, ite_false, List.length_append, store_block_pure, List.length_map, List.length_range]
+        rw [ih (output_len - RATE) (by omega) (keccak_f_pure state)]; omega
+
+-- Helper: getD of append
+private theorem getD_append_left {l₁ l₂ : List α} (h : n < l₁.length) :
+    (l₁ ++ l₂).getD n d = l₁.getD n d := by
+  simp only [List.getD, List.getElem?_append_left h]
+private theorem getD_append_right {l₁ l₂ : List α} (h : l₁.length ≤ n) :
+    (l₁ ++ l₂).getD n d = l₂.getD (n - l₁.length) d := by
+  simp only [List.getD, List.getElem?_append_right h]
+
+-- Helper: getD of store_block_pure
+private theorem store_block_pure_getD' (RATE : Nat) (state : Vector u64 25)
+    (len b : Nat) (hb : b < len) :
+    (store_block_pure RATE state 0 len).getD b (0 : u8) =
+    lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8) := by
+  simp only [store_block_pure, List.getD]
+  rw [List.getElem?_eq_getElem (by simp; omega)]; simp
+
+-- Helper: (b - RATE) % RATE = b % RATE
+private theorem sub_mod_rate (b RATE : Nat) (h : RATE ≤ b) : (b - RATE) % RATE = b % RATE := by
+  have := Nat.add_mod_right (b - RATE) RATE; rw [Nat.sub_add_cancel h] at this; exact this.symm
+
+-- Helper: (b - RATE) / RATE = b / RATE - 1
+private theorem sub_div_rate (b RATE : Nat) (h : RATE ≤ b) (hR : 0 < RATE) :
+    (b - RATE) / RATE = b / RATE - 1 := by
+  have key : b / RATE = (b - RATE) / RATE + 1 := by
+    rw [← Nat.add_div_right (b - RATE) hR, Nat.sub_add_cancel h]
+  exact Nat.eq_sub_of_add_eq' (by rw [Nat.add_comm]; exact key.symm)
+
+-- Helper: Nat.repeat keccak_f_pure shift
+private theorem repeat_kf_shift (m : Nat) (s : Vector u64 25) :
+    Nat.repeat keccak_f_pure m (keccak_f_pure s) = Nat.repeat keccak_f_pure (m + 1) s := by
+  induction m with | zero => rfl | succ n ih => simp [Nat.repeat, ih]
+
+-- Key access lemma: byte b of squeeze_pure = lane_byte of iterate(b/RATE) state
+theorem squeeze_pure_getD (RATE : Nat) (state : Vector u64 25) (output_len : Nat)
+    (hR : 0 < RATE) (b : Nat) (hb : b < output_len) :
+    (squeeze_pure RATE state output_len).getD b (0 : u8) =
+    lane_byte ((Nat.repeat keccak_f_pure (b / RATE) state).toArray.getD
+      (flat_perm ((b % RATE) / 8)) 0) ((b % RATE) % 8) := by
+  induction output_len using Nat.strongRecOn generalizing state b with
+  | _ output_len ih =>
+    rw [squeeze_pure.eq_1]
+    simp only [show ¬(RATE = 0 ∨ output_len = 0) from by omega, ite_false]
+    by_cases hle : output_len ≤ RATE
+    · simp only [hle, ite_true]
+      have hbR : b < RATE := by omega
+      rw [show b / RATE = 0 from Nat.div_eq_zero_iff.mpr (Or.inr hbR)]
+      simp only [Nat.repeat, Nat.mod_eq_of_lt hbR]
+      exact store_block_pure_getD' RATE state output_len b hb
+    · simp only [hle, ite_false]
+      by_cases hb_first : b < RATE
+      · rw [getD_append_left (by rw [store_block_pure_length']; exact hb_first)]
+        rw [show b / RATE = 0 from Nat.div_eq_zero_iff.mpr (Or.inr hb_first)]
+        simp only [Nat.repeat, Nat.mod_eq_of_lt hb_first]
+        exact store_block_pure_getD' RATE state RATE b hb_first
+      · have hge : RATE ≤ b := Nat.not_lt.mp hb_first
+        rw [getD_append_right (by rw [store_block_pure_length']; exact hge), store_block_pure_length']
+        rw [ih (output_len - RATE) (by omega) (keccak_f_pure state) (b - RATE) (by omega)]
+        rw [sub_mod_rate b RATE hge, sub_div_rate b RATE hge hR]
+        obtain ⟨m, hm⟩ := Nat.exists_eq_succ_of_ne_zero (show b / RATE ≠ 0 by
+          intro h; have := Nat.div_eq_zero_iff.mp h; omega)
+        rw [hm, show m + 1 - 1 = m from by omega, repeat_kf_shift]
+
+-- Length of keccak1_pure
+theorem keccak1_pure_length (RATE : Nat) (DELIM : u8) (input : List u8)
+    (output_len : Nat) (hR : 0 < RATE) :
+    (keccak1_pure RATE DELIM input output_len).length = output_len := by
+  unfold keccak1_pure; simp [show ¬(RATE = 0) from by omega, squeeze_pure_length _ _ _ hR]
+
 end Sponge
+
+private theorem list_eq_map_range_of_getD {l : List u8} {n : Nat} {f : Nat → u8}
+    (hlen : l.length = n)
+    (helems : ∀ i, i < n → l.getD i 0 = f i) :
+    l = (List.range n).map f := by
+  apply List.ext_getElem (by simp; exact hlen)
+  intro i hi₁ _
+  have hi : i < n := by omega
+  specialize helems i hi
+  simp only [List.getD] at helems
+  rw [List.getElem?_eq_getElem (by omega)] at helems
+  simp only [Option.getD_some] at helems
+  simp only [List.getElem_map, List.getElem_range, helems]
+
+-- Chain absorb hypotheses to show state = keccak1_absorb_state
+private theorem absorb_state_connection {RATE : Nat} {DELIM : u8}
+    {input_arr : Array u8} (_ : 0 < RATE)
+    {n_input n_blocks n_rem start : Nat}
+    {st_all st_final : Vector u64 25}
+    (h1 : n_input = input_arr.size)
+    (h2 : n_blocks = n_input / RATE)
+    (h3 : n_rem = n_input % RATE)
+    (h4 : start = n_input - n_rem)
+    (h5 : st_all = Sponge.absorb_all_pure RATE (Vector.replicate 25 0) input_arr.toList n_blocks)
+    (h6 : st_final = Sponge.absorb_final_pure RATE DELIM st_all input_arr.toList start n_rem) :
+    Sponge.keccak1_absorb_state RATE DELIM input_arr.toList = st_final := by
+  unfold Sponge.keccak1_absorb_state
+  simp only [Array.length_toList, ← h1, ← h2, ← h3, ← h4, ← h5, ← h6]
 
 private theorem new_state_is_replicate {v : Vector u64 25}
     (h : ∀ k, k < 25 → v.toArray.getD k 0 = 0) :
@@ -163,11 +283,13 @@ namespace Sponge
     After i iterations, the first 8*i bytes starting at `start` have been written
     with LE encodings of the corresponding state lanes. Size is preserved. -/
 def store_loop_inv (state : Vector u64 25) (out_size start : Nat)
-    (cur_out : Array u8) (i : Nat) : Prop :=
+    (orig_out : List u8) (cur_out : Array u8) (i : Nat) : Prop :=
   cur_out.size = out_size ∧
-  ∀ b, b < 8 * i →
+  (∀ b, b < 8 * i →
     cur_out.toList.getD (start + b) 0 =
-      lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)
+      lane_byte (state.toArray.getD (flat_perm (b / 8)) 0) (b % 8)) ∧
+  (∀ b, b < out_size → (b < start ∨ b ≥ start + 8 * i) →
+    cur_out.toList.getD b 0 = orig_out.getD b 0)
 
 -- store_loop_inv_step removed — proved inline in vc18 using splice_seq_getD
 
@@ -747,7 +869,9 @@ set_option maxHeartbeats 6400000 in
     ⦃ ⇓ r => ⌜ r.val.size = out.val.size ∧
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
-          Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
+          Sponge.lane_byte (s.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ∧
+      (∀ b, b < out.val.size → (b < start.toNat ∨ b ≥ start.toNat + len.toNat) →
+        r.val.toList.getD b 0 = out.val.toList.getD b 0) ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.simd.portable.store_block
   simp only [ite_true]
@@ -758,8 +882,8 @@ set_option maxHeartbeats 6400000 in
   -- Step 2: Replace True with our real invariant
   simp only [fold_range_inv_irrelevant (α := RustSlice u8)
     (inv₂ := fun (o : RustSlice u8) (k : USize64) =>
-      pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat))
-    (pureInv₂ := ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat o.val k.toNat,
+      pure (Sponge.store_loop_inv s.toVec out.val.size start.toNat out.val.toList o.val k.toNat))
+    (pureInv₂ := ⟨fun o k => Sponge.store_loop_inv s.toVec out.val.size start.toNat out.val.toList o.val k.toNat,
       fun _ _ => by intro _; rfl⟩)]
   -- Eliminate dead `let out_len ← Impl.len` binding
   simp only [core_models.slice.Impl.len, rust_primitives.slice.slice_length, pure_bind]
@@ -771,7 +895,7 @@ set_option maxHeartbeats 6400000 in
   all_goals (try grind)
   -- vc3: initial invariant
   · simp only [USize64.reduceToNat]; unfold Sponge.store_loop_inv
-    exact ⟨rfl, fun _ h => absurd h (by omega)⟩
+    exact ⟨rfl, fun _ h => absurd h (by omega), fun _ _ _ => rfl⟩
   -- vc13/14/15/29/32: bounds + size equalities
   all_goals (try (simp only [Sponge.store_loop_inv, USize64.reduceToNat, Array.size_extract,
     Vector.size_toArray] at *; omega))
@@ -789,46 +913,57 @@ set_option maxHeartbeats 6400000 in
     -- Unfold the invariant
     have hi25 : i.toNat < 25 := by grind
     rw [USize64.toNat_add_of_lt (by simp [USize64.size, UInt64.size]; omega)]
-    obtain ⟨hsize, hspec⟩ := hinv
+    obtain ⟨hsize, hspec, hpres⟩ := hinv
     unfold Sponge.store_loop_inv
-    refine ⟨by simp [splice_seq, hsize]; grind, ?_⟩
-    intro b hb
-    -- Use splice_seq_getD to case-split
-    have hb_lt : start.toNat + b < acc.val.size := by
-      rw [hsize]; vc_omega
-    have hgetD := splice_seq_getD acc (rpos.toNat) (rend.toNat) rbytes
-      (by vc_omega) (by vc_omega) (by subst hbytes hlane; simp; vc_omega)
-      (start.toNat + b) hb_lt (0 : u8)
-    rw [hgetD]
-    split
-    · -- New region: start + 8*i ≤ start + b < start + 8*i + 8
-      -- So b is in [8*i, 8*(i+1)), meaning b/8 = i and b%8 = b - 8*i
-      rename_i hcase
-      obtain ⟨hlo, hhi⟩ := hcase
-      subst hbytes hlane
-      simp only [hpos, hend, h8i, hdiv, hmod, USize64.reduceToNat] at *
-      -- b - (start + 8*i) selects the byte within the 8-byte LE encoding
-      have hbi : b / 8 = i.toNat := by omega
-      have hbm : b % 8 = b - 8 * i.toNat := by omega
-      -- The getD into the 8-element array selects the (b - 8*i)-th byte
-      simp only [Sponge.flat_perm, hbi]
-      -- Unfold lane_byte
-      simp only [Sponge.lane_byte]
-      -- Now we need: rbytes.val.toList.getD (start+b - rpos) 0 = (lane >>> (8*(b%8))).toUInt8
-      -- where rbytes is the 8-byte LE encoding of lane
-      -- The array is #[lane%256, (lane>>>8)%256, ..., (lane>>>56)%256]
-      -- and we're accessing index (b - 8*i) = b%8
-      rw [show start.toNat + b - (start.toNat + 8 * i.toNat) = b - 8 * i.toNat from by omega]
-      rcases (show b - 8 * i.toNat = 0 ∨ b - 8 * i.toNat = 1 ∨ b - 8 * i.toNat = 2 ∨
-        b - 8 * i.toNat = 3 ∨ b - 8 * i.toNat = 4 ∨ b - 8 * i.toNat = 5 ∨
-        b - 8 * i.toNat = 6 ∨ b - 8 * i.toNat = 7 from by omega) with
-        h | h | h | h | h | h | h | h <;> simp_all [toUInt8_mod_256]
-    · -- Old region: b < 8*i or b ≥ 8*(i+1)
-      -- But b < 8*(i+1), so b < 8*i
-      rename_i hold
-      simp only [hpos, hend, hend2, h8i, USize64.reduceToNat] at *
-      have hbi : b < 8 * i.toNat := by omega
-      exact hspec b hbi
+    refine ⟨by simp [splice_seq, hsize]; grind, ?_, ?_⟩
+    · -- Written bytes
+      intro b hb
+      have hb_lt : start.toNat + b < acc.val.size := by
+        rw [hsize]; vc_omega
+      have hgetD := splice_seq_getD acc (rpos.toNat) (rend.toNat) rbytes
+        (by vc_omega) (by vc_omega) (by subst hbytes hlane; simp; vc_omega)
+        (start.toNat + b) hb_lt (0 : u8)
+      rw [hgetD]
+      split
+      · -- New region: start + 8*i ≤ start + b < start + 8*i + 8
+        rename_i hcase
+        obtain ⟨hlo, hhi⟩ := hcase
+        subst hbytes hlane
+        simp only [hpos, hend, h8i, hdiv, hmod, USize64.reduceToNat] at *
+        have hbi : b / 8 = i.toNat := by omega
+        have hbm : b % 8 = b - 8 * i.toNat := by omega
+        simp only [Sponge.flat_perm, hbi]
+        simp only [Sponge.lane_byte]
+        rw [show start.toNat + b - (start.toNat + 8 * i.toNat) = b - 8 * i.toNat from by omega]
+        rcases (show b - 8 * i.toNat = 0 ∨ b - 8 * i.toNat = 1 ∨ b - 8 * i.toNat = 2 ∨
+          b - 8 * i.toNat = 3 ∨ b - 8 * i.toNat = 4 ∨ b - 8 * i.toNat = 5 ∨
+          b - 8 * i.toNat = 6 ∨ b - 8 * i.toNat = 7 from by omega) with
+          h | h | h | h | h | h | h | h <;> simp_all [toUInt8_mod_256]
+      · -- Old region: b < 8*i
+        rename_i hold
+        simp only [hpos, hend, hend2, h8i, USize64.reduceToNat] at *
+        have hbi : b < 8 * i.toNat := by omega
+        exact hspec b hbi
+    · -- Preservation: bytes outside [start, start + 8*(i+1)) unchanged from orig_out
+      intro b hb_out hb_range
+      have hb_lt : b < acc.val.size := by rw [hsize]; exact hb_out
+      have hgetD := splice_seq_getD acc (rpos.toNat) (rend.toNat) rbytes
+        (by vc_omega) (by vc_omega) (by subst hbytes hlane; simp; vc_omega)
+        b hb_lt (0 : u8)
+      rw [hgetD]
+      split
+      · -- b in splice region [start+8*i, start+8*i+8) — contradicts hb_range
+        rename_i hcase
+        obtain ⟨hlo, hhi⟩ := hcase
+        simp only [hpos, hend, h8i, USize64.reduceToNat] at *
+        exfalso; omega
+      · -- b outside splice — use IH
+        rename_i hout_splice
+        simp only [hpos, hend, hend2, h8i, USize64.reduceToNat] at *
+        apply hpres b hb_out
+        rcases hb_range with hlt | hge
+        · left; exact hlt
+        · right; omega
   -- vc31: remainder length match
   · simp only [USize64.reduceToNat, Sponge.store_loop_inv] at *; subst_vars
     simp_all [Array.size_extract, Vector.size_toArray]; omega
@@ -840,15 +975,14 @@ set_option maxHeartbeats 6400000 in
     simp only [USize64.reduceToNat, decide_eq_true_eq] at *
     -- Eliminate intermediate variables
     subst hspliced hcopy
-    obtain ⟨hsize, hspec⟩ := hinv
+    obtain ⟨hsize, hspec, hpres⟩ := hinv
     -- Derive key arithmetic facts
     have hrem_pos : rem.toNat > 0 := by grind
     have hrem_le8 : rem.toNat ≤ 8 := by grind
     have hlen_eq : len.toNat = 8 * nfull.toNat + rem.toNat := by grind
-    constructor
-    · -- size preserved by splice_seq
-      simp [splice_seq, hsize]; grind
-    · intro b hb
+    refine ⟨by simp [splice_seq, hsize]; grind, ?_, ?_⟩
+    · -- Written bytes
+      intro b hb
       have hb_lt : start.toNat + b < loop_out.val.size := by rw [hsize]; vc_omega
       have hgetD := splice_seq_getD loop_out (rsub.toNat) (rpos.toNat) rcopy
         (by vc_omega) (by vc_omega) (by simp [hbytes, hlane, hslice, Array.size_extract, Vector.size_toArray]; vc_omega)
@@ -859,13 +993,10 @@ set_option maxHeartbeats 6400000 in
         rename_i hcase
         obtain ⟨hlo, hhi⟩ := hcase
         simp only [hbytes, hlane, hslice, hsub, hend, hpos, hdiv, hmod, hrem, hnfull, USize64.reduceToNat] at *
-        -- b/8 = nfull (= len/8), b%8 = b - 8*nfull
         have hbi : b / 8 = len.toNat / 8 := by omega
         simp only [Sponge.flat_perm, hbi, Sponge.lane_byte]
-        -- getD at (start+b - (start+8*nfull)) = getD at (b - 8*nfull)
         rw [show start.toNat + b - (start.toNat + len.toNat - len.toNat % 8) =
           b - 8 * (len.toNat / 8) from by omega]
-        -- b - 8*(len/8) = b%8, then apply byte extraction lemma
         have hbmod : b - 8 * (len.toNat / 8) = b % 8 := by omega
         rw [hbmod]
         exact lane_bytes_extract_getD _ _ _ (by grind) (by grind)
@@ -874,12 +1005,33 @@ set_option maxHeartbeats 6400000 in
         simp only [hsub, hend, hpos, hrem, hnfull, USize64.reduceToNat] at *
         have hbi : b < 8 * (len.toNat / 8) := by omega
         exact hspec b hbi
+    · -- Preservation: bytes outside [start, start+len) unchanged
+      intro b hb_out hb_range
+      have hb_lt : b < loop_out.val.size := by rw [hsize]; exact hb_out
+      have hgetD := splice_seq_getD loop_out (rsub.toNat) (rpos.toNat) rcopy
+        (by vc_omega) (by vc_omega) (by simp [hbytes, hlane, hslice, Array.size_extract, Vector.size_toArray]; vc_omega)
+        b hb_lt (0 : u8)
+      rw [hgetD]
+      split
+      · -- b in remainder splice — contradicts hb_range
+        rename_i hcase
+        obtain ⟨hlo, hhi⟩ := hcase
+        simp only [hsub, hend, hpos, hrem, hnfull, USize64.reduceToNat] at *
+        exfalso; omega
+      · -- b outside splice — use IH from loop
+        rename_i hout_splice
+        simp only [hsub, hend, hpos, hrem, hnfull, USize64.reduceToNat] at *
+        apply hpres b hb_out
+        rcases hb_range with hlt | hge
+        · left; exact hlt
+        · right; omega
   -- vc36: composition (without remainder, len % 8 = 0)
   · rename_i _ nfull hnfull loop_out hinv rem hrem rdec hdec_false hdec_eq
     simp only [USize64.reduceToNat, decide_eq_true_eq] at *
-    obtain ⟨hsize, hspec⟩ := hinv
-    exact ⟨hsize, fun b hb => hspec b (by grind)⟩
+    obtain ⟨hsize, hspec, hpres⟩ := hinv
+    exact ⟨hsize, fun b hb => hspec b (by grind), fun b hb hr => hpres b hb (by grind)⟩
 
+-- store_block_preserves removed — subsumed by strengthened store_block_spec
 -- load_last
 attribute [local irreducible] libcrux_sha3.simd.portable.load_last
 
@@ -1039,12 +1191,16 @@ attribute [irreducible] k1_absorb_final
     ⦃ ⇓ r => ⌜ r.val.size = out.val.size ∧
       (∀ b, b < len.toNat →
         r.val.toList.getD (start.toNat + b) 0 =
-          Sponge.lane_byte (st.st.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ⌝ ⦄ := by
+          Sponge.lane_byte (st.st.toVec.toArray.getD (Sponge.flat_perm (b / 8)) 0) (b % 8)) ∧
+      (∀ b, b < out.val.size → (b < start.toNat ∨ b ≥ start.toNat + len.toNat) →
+        r.val.toList.getD b 0 = out.val.toList.getD b 0) ⌝ ⦄ := by
   intro _
   unfold libcrux_sha3.traits.Squeeze.squeeze
   simp only [libcrux_sha3.simd.portable.Impl_2]
   simp only [Std.Do.WPMonad.wp_bind, Std.Do.WPMonad.wp_pure, bind_pure]
   exact store_block_spec RATE st.st out start len hrate_le hlen hout trivial
+
+-- squeeze_preserves removed — subsumed by strengthened squeeze_spec
 
 attribute [local irreducible]
   libcrux_sha3.traits.Squeeze.squeeze
@@ -1094,6 +1250,12 @@ private theorem store_block_pure_getD (RATE : Nat) (state : Vector u64 25) (star
   rw [List.getElem?_eq_getElem (by simp; omega)]
   simp [List.getElem_map, hb]
 
+-- Helper: USize64 loop bound implies add-one fits
+private theorem usize_add_lt {i n : USize64} (_ : i.toNat < n.toNat) :
+    i.toNat + (1 : USize64).toNat < 2 ^ 64 := by
+  have : n.toNat < 2 ^ 64 := n.toBitVec.isLt
+  simp only [USize64.reduceToNat] at *; omega
+
 -- Helper: RATE ≠ 0 from 0 < RATE.toNat
 private theorem rate_ne_zero {RATE : usize} (h : 0 < RATE.toNat) : RATE ≠ 0 := by
   intro heq; subst heq; simp [USize64.reduceToNat] at h
@@ -1128,6 +1290,11 @@ private theorem le_of_div_pos {a b : Nat} (_ : 0 < b) (h : 0 < a / b) : b ≤ a 
   have h1 : 1 * b ≤ (a / b) * b := Nat.mul_le_mul_right b h
   have h2 : (a / b) * b ≤ a := Nat.div_mul_le_self a b
   omega
+
+-- Bridge: Nat.repeat keccak_f_pure shift (used outside Sponge namespace)
+private theorem repeat_kf_shift' (m : Nat) (s : Vector u64 25) :
+    Nat.repeat keccak_f_pure m (keccak_f_pure s) = Nat.repeat keccak_f_pure (m + 1) s := by
+  induction m with | zero => rfl | succ n ih => simp [Nat.repeat, ih]
 
 -- Bridge: division = 0 implies dividend < divisor
 private theorem lt_of_div_zero {a b : Nat} (hb : 0 < b) (h : a / b = 0) : a < b := by
@@ -1168,6 +1335,16 @@ private theorem mod_lt_of_eq {a b RATE : usize} (hR : 0 < RATE.toNat)
     (h : b.toNat = a.toNat % RATE.toNat) : b.toNat < RATE.toNat := by
   have := Nat.mod_lt a.toNat hR; omega
 
+-- Squeeze loop invariant: tracks size, state, and byte correctness
+private def squeeze_loop_inv (RATE : usize) (DELIM : u8) (input output : RustSlice u8)
+    (pair : rust_primitives.hax.Tuple2 (RustSlice u8) (KeccakState 1 u64)) (k : USize64) : Prop :=
+  pair._0.val.size = output.val.size ∧
+  pair._1.st.toVec = Nat.repeat keccak_f_pure (k.toNat - 1)
+    (Sponge.keccak1_absorb_state RATE.toNat DELIM input.val.toList) ∧
+  ∀ b, b < k.toNat * RATE.toNat → b < output.val.size →
+    pair._0.val.toList.getD b 0 =
+    (Sponge.keccak1_pure RATE.toNat DELIM input.val.toList output.val.size).getD b 0
+
 set_option maxHeartbeats 6400000 in
 theorem keccak1_spec (RATE : usize) (DELIM : u8)
     (input output : RustSlice u8)
@@ -1191,6 +1368,16 @@ theorem keccak1_spec (RATE : usize) (DELIM : u8)
     (pureInv₂ := ⟨fun (st : KeccakState 1 u64) (k : USize64) =>
       st.st.toVec = Sponge.absorb_all_pure RATE.toNat
         (Vector.replicate 25 0) input.val.toList k.toNat,
+      fun _ _ => by intro _; rfl⟩)]
+  -- Swap squeeze loop invariant from True to real invariant (Pattern 5)
+  simp only [fold_range_inv_irrelevant
+    (α := rust_primitives.hax.Tuple2 (RustSlice u8) (KeccakState 1 u64))
+    (inv₂ := fun (pair : rust_primitives.hax.Tuple2 (RustSlice u8)
+        (KeccakState 1 u64)) (k : USize64) =>
+      pure (squeeze_loop_inv RATE DELIM input output pair k))
+    (pureInv₂ := ⟨fun (pair : rust_primitives.hax.Tuple2 (RustSlice u8)
+        (KeccakState 1 u64)) (k : USize64) =>
+      squeeze_loop_inv RATE DELIM input output pair k,
       fun _ _ => by intro _; rfl⟩)]
   hax_mvcgen [-libcrux_sha3.generic_keccak.Impl_2.absorb_block.spec.contract,
     -libcrux_sha3.generic_keccak.Impl_2.absorb_final.spec.contract]
@@ -1217,33 +1404,166 @@ theorem keccak1_spec (RATE : usize) (DELIM : u8)
   all_goals (try (exact sub_no_overflow_mod ‹_›))
   -- Phase 3d: mod_def + omega for remaining mod/sub goals (vc13, vc34)
   all_goals (try (simp only [Nat.mod_def] at *; omega))
-  -- Phase 3e: Boolean branch + division bounds (vc17, vc23)
-  all_goals (try (
-    have h1 : _ := ‹_ = _ / _›
-    have h2 : _ := ‹_ = 0›
-    have := lt_of_div_zero hrate_pos (by omega)
-    omega))
-  all_goals (try (
-    have h1 : _ := ‹_ = _ / _›
-    have h2 : ¬_ = 0 := ‹_›
-    have := le_of_div_pos hrate_pos (by omega)
-    omega))
-  -- Phase 3f: Squeeze loop size invariant + arithmetic (vc29)
-  all_goals (try (
-    have := squeeze_inv_size' _ _ ‹_› ‹_›
-    have := mul_add_le_from_loop ‹_› ‹_›; omega))
-  -- Phase 3g: Squeeze size + mod_def (vc34 remainder)
-  all_goals (try (
-    have := squeeze_inv_size' _ _ ‹_› ‹_›
-    simp only [Nat.mod_def] at *; omega))
   -- Phase 4: absorb loop base case (vc4.hinit)
-  all_goals (try (
-    rw [Sponge.absorb_all_pure_zero];
-    exact new_state_is_replicate ‹_›))
-  -- Phase 5: absorb loop step (vc9.hstep)
-  all_goals (try (
-    rw [USize64.toNat_add_of_lt (by (have := input.size_lt_usizeSize; vc_omega))]
-    rw [← Sponge.absorb_all_pure_succ]
-    simp_all))
-  -- Remaining: composition VCs (vc20, vc35, vc36)
-  all_goals sorry
+  all_goals (try (rw [Sponge.absorb_all_pure_zero]; exact new_state_is_replicate ‹_›))
+  -- Phase 5: subOverflow from mod
+  all_goals (try (exact sub_no_overflow_mod ‹_›))
+  -- Remaining VCs: explicit case analysis
+  case vc9.hstep.success.success.success =>
+    -- Absorb step: invariant at i → invariant at i+1
+    rw [USize64.toNat_add_of_lt (usize_add_lt ‹_›)]
+    simp only [USize64.reduceToNat]
+    rw [Sponge.absorb_all_pure_succ]; simp_all
+  case vc17.hlen =>
+    -- Output ≤ RATE when output_blocks = 0
+    apply Nat.le_of_lt; apply lt_of_div_zero hrate_pos; omega
+  case vc23.hout =>
+    -- RATE ≤ output when output_blocks ≠ 0
+    have h := ‹_ = output.val.size›
+    simp only [Nat.zero_add, ← h]
+    apply le_of_div_pos hrate_pos; omega
+  case vc25.hinit =>
+    -- Squeeze loop init: establish invariant at k=1
+    unfold squeeze_loop_inv
+    obtain ⟨hsize, helems, _⟩ := ‹_ ∧ _ ∧ _›
+    simp only [Nat.zero_add] at helems
+    have hstate := absorb_state_connection hrate_pos
+      (show _ = input.val.size from ‹_›) ‹_› ‹_› ‹_› ‹_› ‹_›
+    simp only [USize64.reduceToNat, Nat.sub_self, Nat.one_mul, Nat.repeat]
+    refine ⟨hsize, hstate.symm, ?_⟩
+    intro b hb_rate hb_out
+    have h_elem := helems b hb_rate
+    symm
+    rw [Sponge.keccak1_pure_eq_squeeze _ _ _ _ hrate_pos, hstate,
+        Sponge.squeeze_pure_getD _ _ _ hrate_pos b hb_out,
+        show b / USize64.toNat RATE = 0 from Nat.div_eq_of_lt hb_rate,
+        show b % USize64.toNat RATE = b from Nat.mod_eq_of_lt hb_rate]
+    simp only [Nat.repeat]
+    exact h_elem.symm
+  case vc29.hout =>
+    -- Squeeze loop: offset + RATE ≤ output_size
+    have h_inv := ‹squeeze_loop_inv RATE DELIM input output _ _›
+    unfold squeeze_loop_inv at h_inv
+    obtain ⟨hsize, _, _⟩ := h_inv
+    have := mul_add_le_from_loop ‹_› ‹_›; omega
+  case vc30.hstep.success.success.success.success =>
+    -- Squeeze loop step: invariant at i → invariant at i+1
+    -- Extract loop invariant from hypothesis
+    have h_inv := ‹squeeze_loop_inv RATE DELIM input output _ _›
+    unfold squeeze_loop_inv at h_inv
+    obtain ⟨h_size, h_state, h_bytes⟩ := h_inv
+    -- Extract keccak_f step and offset
+    have hkf : _ = keccak_f_pure _ := ‹_›
+    have h_offset : (_ : USize64).toNat = (_ : USize64).toNat * USize64.toNat RATE := ‹_›
+    -- Extract squeeze result triple
+    obtain ⟨h_new_size, h_new_bytes, h_pres⟩ := ‹_ ∧ (∀ b, b < USize64.toNat RATE →
+      _ = Sponge.lane_byte _ _) ∧ _›
+    -- Name the offset bound (= i * RATE) using Exists packing
+    obtain ⟨off, h_bytes_off, h_off_eq⟩ :
+        ∃ n, (∀ b, b < n → b < output.val.size →
+          (_ : RustSlice u8).val.toList.getD b 0 =
+          (Sponge.keccak1_pure (USize64.toNat RATE) DELIM
+            input.val.toList output.val.size).getD b 0) ∧
+        (_ : USize64).toNat = n := ⟨_, h_bytes, h_offset⟩
+    -- Derive off = i * RATE (connects off to loop index)
+    have h_off_val := h_off_eq.symm.trans h_offset
+    -- h_off_val : off = i✝.toNat * USize64.toNat RATE
+    -- Rewrite h_pres and h_new_bytes to use `off` instead of USize64.toNat r✝¹
+    rw [h_off_eq] at h_pres h_new_bytes
+    -- Linearize hb: rewrite (i+1)*RATE to off + RATE using h_off_val
+    -- Unfold goal and normalize (i+1)
+    unfold squeeze_loop_inv
+    rw [USize64.toNat_add_of_lt (usize_add_lt ‹_›)]
+    simp only [USize64.reduceToNat, Nat.add_sub_cancel]
+    -- Linearize the (i+1)*RATE in the goal to off + RATE for omega accessibility
+    have h_bound : ∀ n, n < (_ + 1) * USize64.toNat RATE → n < off + USize64.toNat RATE := by
+      intro n hn; rw [Nat.add_mul] at hn; simp only [Nat.one_mul] at hn; omega
+    refine ⟨by omega, ?_, ?_⟩
+    · -- State: r✝².st.toVec = Nat.repeat keccak_f_pure i✝.toNat absorb_state
+      rw [hkf, h_state]; symm
+      show Nat.repeat _ ((_ - 1) + 1) _ = Nat.repeat _ _ _
+      congr 1; omega
+    · -- Bytes: ∀ b < (i+1)*RATE → b < out.size → r.getD b = keccak1_pure.getD b
+      intro b hb hb_out
+      have hb_lin := h_bound b hb
+      rcases Nat.lt_or_ge b off with hb_old | hb_new
+      · -- Old byte: preserved from acc by h_pres, matches keccak1_pure by IH
+        have h1 := h_pres b (by omega) (Or.inl hb_old)
+        rw [h1]
+        exact h_bytes_off b hb_old hb_out
+      · -- New byte: written by squeeze at offset off (= i*RATE)
+        have hb_new_lt : b - off < USize64.toNat RATE := by omega
+        have h1 := h_new_bytes (b - off) hb_new_lt
+        rw [show off + (b - off) = b from by omega] at h1
+        rw [h1]
+        -- Connect lane_byte to keccak1_pure via squeeze_pure_getD
+        symm
+        rw [Sponge.keccak1_pure_eq_squeeze _ _ _ _ hrate_pos]
+        have habsorb := absorb_state_connection hrate_pos
+          (show _ = input.val.size from ‹_›) ‹_› ‹_› ‹_› ‹_› ‹_›
+        rw [habsorb]
+        rw [Sponge.squeeze_pure_getD _ _ _ hrate_pos b hb_out]
+        -- b / RATE = off / RATE (since off ≤ b < off + RATE)
+        have h_bdiv : b / USize64.toNat RATE = off / USize64.toNat RATE := by
+          have h1 : off / USize64.toNat RATE ≤ b / USize64.toNat RATE :=
+            Nat.div_le_div_right hb_new
+          have h2 : b / USize64.toNat RATE < off / USize64.toNat RATE + 1 :=
+            Nat.div_lt_iff_lt_mul hrate_pos |>.mpr (by
+              rw [h_off_val, Nat.mul_div_cancel _ hrate_pos, Nat.add_mul]
+              simp only [Nat.one_mul]; omega)
+          omega
+        -- b % RATE = b - off (since off = i * RATE and b / RATE = i)
+        have h_bmod : b % USize64.toNat RATE = b - off := by
+          rw [Nat.mod_def, h_bdiv, h_off_val, Nat.mul_div_cancel _ hrate_pos, Nat.mul_comm]
+        rw [h_bmod]
+        congr 1
+        · -- State equality: Nat.repeat (off/RATE) absorb_state = r✝².st.toVec
+          rw [h_off_val, Nat.mul_div_cancel _ hrate_pos, hkf, h_state]
+          symm
+          show Nat.repeat _ ((_ - 1) + 1) _ = Nat.repeat _ _ _
+          congr 1; omega
+  case vc34.hout =>
+    -- Remainder: start + rem ≤ output_size
+    have h_inv := ‹squeeze_loop_inv RATE DELIM input output _ _›
+    unfold squeeze_loop_inv at h_inv
+    obtain ⟨hsize, _, _⟩ := h_inv
+    simp only [Nat.mod_def] at *; omega
+  case vc35.success.success.success.success.success.success.success.success.success.success.success.isFalse.success.success.success.isTrue.success.success.success =>
+    -- Composition with remainder: final squeeze after loop
+    sorry
+  case vc36.success.success.success.success.success.success.success.success.success.success.success.isFalse.success.success.success.isFalse =>
+    -- Composition without remainder: squeeze loop covered all bytes
+    have h_osize_eq : _ = output.val.size := ‹_›
+    simp only [h_osize_eq] at *
+    have h_rem0 : output.val.size % USize64.toNat RATE = 0 := by omega
+    have h_dm := Nat.div_add_mod output.val.size (USize64.toNat RATE)
+    have h_inv := ‹squeeze_loop_inv RATE DELIM input output _ _›
+    unfold squeeze_loop_inv at h_inv
+    obtain ⟨h_size, _, h_bytes⟩ := h_inv
+    apply list_eq_of_getD
+    · rw [Array.length_toList, h_size, Sponge.keccak1_pure_length _ _ _ _ hrate_pos]
+    · intro i hi
+      rw [Array.length_toList, h_size] at hi
+      apply h_bytes
+      · have h_oblocks := ‹_ = output.val.size / USize64.toNat RATE›
+        have h_dvd : USize64.toNat RATE ∣ output.val.size :=
+          Nat.dvd_of_mod_eq_zero h_rem0
+        rw [h_oblocks, Nat.div_mul_cancel h_dvd]; exact hi
+      · exact hi
+  case vc20.success.success.success.success.success.success.success.success.success.success.success.isTrue.success =>
+    -- Single squeeze (output_blocks = 0): all bytes fit in one RATE block
+    -- Normalize output size variable
+    have h_osize_eq : _ = output.val.size := ‹_›
+    simp only [h_osize_eq] at *
+    obtain ⟨hsize, helems, _⟩ := ‹_ ∧ _ ∧ _›
+    simp only [Nat.zero_add] at helems
+    have hle : output.val.size ≤ USize64.toNat RATE := by
+      apply Nat.le_of_lt; apply lt_of_div_zero hrate_pos; omega
+    have hstate := absorb_state_connection hrate_pos
+      (show _ = input.val.size from ‹_›) ‹_› ‹_› ‹_› ‹_› ‹_›
+    rw [Sponge.keccak1_pure_eq_squeeze _ _ _ _ hrate_pos, hstate,
+        Sponge.squeeze_pure_le_rate _ _ _ hrate_pos hle]
+    unfold Sponge.store_block_pure
+    apply list_eq_map_range_of_getD
+    · rw [Array.length_toList]; exact hsize
+    · intro b hb; exact helems b (by omega)
