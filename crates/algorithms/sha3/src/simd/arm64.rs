@@ -1,3 +1,9 @@
+#[cfg(hax)]
+use hax_lib::int::ToInt;
+
+#[cfg(hax)]
+use crate::proof_utils::valid_rate;
+
 use libcrux_intrinsics::arm64::*;
 
 use crate::{generic_keccak::KeccakState, traits::*};
@@ -38,6 +44,7 @@ fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE) && RATE <= blocks[0].len() && blocks[0].len() == blocks[1].len() && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int())]
 pub(crate) fn load_block<const RATE: usize>(
     s: &mut [uint64x2_t; 25],
     blocks: &[&[u8]; 2],
@@ -78,6 +85,7 @@ pub(crate) fn load_block<const RATE: usize>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE) && len < RATE && offset.to_int() + len.to_int() <= blocks[0].len().to_int() && blocks[0].len() == blocks[1].len())]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     state: &mut [uint64x2_t; 25],
     blocks: &[&[u8]; 2],
@@ -101,6 +109,8 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE) && len <= RATE && start.to_int() + len.to_int() <= out0.len().to_int() && out0.len() == out1.len())]
+#[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[uint64x2_t; 25],
     out0: &mut [u8],
@@ -110,7 +120,14 @@ pub(crate) fn store_block<const RATE: usize>(
 ) {
     #[cfg(not(eurydice))]
     debug_assert!(len <= RATE && start + len <= out0.len() && out0.len() == out1.len());
+
+    #[cfg(hax)]
+    let out0_len = out0.len();
+    #[cfg(hax)]
+    let out1_len = out1.len();
+
     for i in 0..len / 16 {
+        hax_lib::loop_invariant!(|i: usize| out0.len() == out0_len && out1.len() == out1_len);
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;
@@ -175,11 +192,23 @@ impl KeccakItem<2> for uint64x2_t {
     }
 }
 
+#[hax_lib::attributes]
 impl Absorb<2> for KeccakState<2, uint64x2_t> {
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        start.to_int() + RATE.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len()
+    )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 2], start: usize) {
         load_block::<RATE>(&mut self.st, input, start);
     }
 
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        len < RATE &&
+        start.to_int() + len.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len()
+    )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
         input: &[&[u8]; 2],
@@ -190,7 +219,15 @@ impl Absorb<2> for KeccakState<2, uint64x2_t> {
     }
 }
 
+#[hax_lib::attributes]
 impl Squeeze2<uint64x2_t> for KeccakState<2, uint64x2_t> {
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        len <= RATE &&
+        start.to_int() + len.to_int() <= out0.len().to_int() &&
+        out0.len() == out1.len()
+    )]
+    #[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
     fn squeeze2<const RATE: usize>(
         &self,
         out0: &mut [u8],

@@ -24,6 +24,8 @@ function extract_all() {
         -i "-**::simd128::**" \
         -i "-**::simd256::**" \
         fstar --z3rlimit 80
+
+    patch_fstar_extractions
 }
 
 function prove() {
@@ -39,10 +41,27 @@ function prove() {
     make -C proofs/fstar/extraction -j $JOBS "$@"
 }
 
+function detect_sed() {
+    # GNU sed is required for -i without a backup suffix argument.
+    # On Linux, the system sed is GNU sed. On macOS, install gnu-sed
+    # via Homebrew and it will be available as gsed.
+    if sed --version >/dev/null 2>&1; then
+        SED=sed
+    elif command -v gsed >/dev/null 2>&1; then
+        SED=gsed
+    else
+        echo "Error: GNU sed is required but not found."
+        echo "On macOS, install it with: brew install gnu-sed"
+        exit 1
+    fi
+}
+
 function init_vars() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
     SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_NAME}"
+
+    detect_sed
 
     if [ -t 1 ]; then
         BLUE='\033[34m'
@@ -79,14 +98,32 @@ function rename_core_models_files() {
         new_filename="Libcrux_core_models${filename#Core_models}"
         mv "$file" "$dir_path/$new_filename"
     done
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec $SED -i'' \
         -e 's/module Core_models/module Libcrux_core_models/g' \
         {} +
 }
 
+function patch_fstar_extractions() {
+    go_to "crates/algorithms/sha3"
+    local target_dir="proofs/fstar/extraction"
+    # hax emits Core_models.Array.from_fn which has the wrong type;
+    # replace with Rust_primitives.Slice.array_from_fn and supply the
+    # extra implicit #(usize -> u8) that array_from_fn requires.
+    $SED -i'' \
+        -e 's/Core_models\.Array\.from_fn/Rust_primitives.Slice.array_from_fn/g' \
+        -e '/array_from_fn/{n;/v_PARALLEL_LANES/{a\    #(usize -> u8)
+}}' \
+        "$target_dir"/Libcrux_sha3.Generic_keccak.Xof.fst
+
+    # hax omits the _super_i0 (KeccakItem superclass) field in the
+    # Squeeze2 trait instance; insert it so F* can resolve the class.
+    $SED -i '/f_squeeze2_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
+        "$target_dir"/Libcrux_sha3.Simd.Arm64.fst
+}
+
 function rename_core_models_uses() {
     local target_dir="proofs/fstar/extraction"
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec $SED -i'' \
         -e 's/Core_models\.Abstractions/Libcrux_core_models.Abstractions/g' \
         -e 's/Core_models\.Core_arch/Libcrux_core_models.Core_arch/g' \
         {} +
@@ -147,14 +184,14 @@ function patch_lean_extractions() {
     # Add dependency imports that hax does not emit automatically.
     go_to "crates/algorithms/sha3"
     local sha3="proofs/lean/extraction/libcrux_sha3.lean"
-    sed -i'' -e '/^import Hax$/a\
+    $SED -i'' -e '/^import Hax$/a\
 import Stubs\
 import extraction.libcrux_intrinsics' "$sha3"
 
     # Replace all generated proof tactics with sorry.
-    sed -i '' 's/by hax_construct_pure <;> bv_decide/by sorry/g' "$sha3"
-    sed -i '' 's/by hax_mvcgen \[[^]]*\] <;> bv_decide/by sorry/g' "$sha3"
-    sed -i '' 's/by hax_construct_pure <;> rfl/by sorry/g' "$sha3"
+    $SED -i '' 's/by hax_construct_pure <;> bv_decide/by sorry/g' "$sha3"
+    $SED -i '' 's/by hax_mvcgen \[[^]]*\] <;> bv_decide/by sorry/g' "$sha3"
+    $SED -i '' 's/by hax_construct_pure <;> rfl/by sorry/g' "$sha3"
 
     # slices_same_len: replace monadic body with a pure Prop
     # (hax_lib.prop.constructors.forall can't synthesize pureP for this predicate).
@@ -172,7 +209,7 @@ open(sys.argv[1],'w').write(t)
     # Intrinsic stubs should be irreducible, not @[spec].
     go_to "crates/utils/intrinsics"
     local intrinsics="proofs/lean/extraction/libcrux_intrinsics.lean"
-    sed -i'' -e 's/^@\[spec\]$/@[irreducible]/' "$intrinsics"
+    $SED -i'' -e 's/^@\[spec\]$/@[irreducible]/' "$intrinsics"
 }
 
 function help() {
@@ -182,7 +219,7 @@ function help() {
     echo ""
     echo "Comands:"
     echo ""
-    grep '[#]>' "$SCRIPT_PATH" | sed 's/[)] #[>]/\t/g'
+    grep '[#]>' "$SCRIPT_PATH" | $SED 's/[)] #[>]/\t/g'
     echo ""
 }
 

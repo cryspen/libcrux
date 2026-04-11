@@ -100,12 +100,14 @@ pub fn _vld1q_u64(array: &[u64]) -> _uint64x2_t {
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|()| future(out).len() == out.len())]
 #[hax_lib::lean::replace_body("()")]
 pub fn _vst1q_u64(out: &mut [u64], v: _uint64x2_t) {
     unimplemented!()
 }
 
 #[inline(always)]
+#[hax_lib::ensures(|()| future(out).len() == out.len())]
 #[hax_lib::lean::replace_body("()")]
 pub fn _vst1q_bytes_u64(out: &mut [u8], v: _uint64x2_t) {
     unimplemented!()
