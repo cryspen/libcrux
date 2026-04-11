@@ -567,6 +567,7 @@ let lemma_theta_rho_equiv
     // Conclude by extensionality
     let expected = Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state) in
     Rust_primitives.Arrays.eq_intro ks4.f_st expected
+#pop-options
 
 (* ================================================================
    Phase 6: Pi Step Equivalence
@@ -597,6 +598,202 @@ let lemma_theta_rho_equiv
    as Z3 can normalize the small number of concrete set operations.
    ================================================================ *)
 
+(** Bridge: impl_2__pi unfolds to the chain of pi_0_ through pi_4_. *)
+#push-options "--z3rlimit 100 "
+let lemma_pi_unfold (ks: impl_state)
+  : Lemma
+      (let open Libcrux_sha3.Generic_keccak in
+       impl_2__pi (mk_usize 1) #u64 ks ==
+       (let old = ks in
+        let ks0 = impl_2__pi_0_ (mk_usize 1) #u64 ks old in
+        let ks1 = impl_2__pi_1_ (mk_usize 1) #u64 ks0 old in
+        let ks2 = impl_2__pi_2_ (mk_usize 1) #u64 ks1 old in
+        let ks3 = impl_2__pi_3_ (mk_usize 1) #u64 ks2 old in
+        impl_2__pi_4_ (mk_usize 1) #u64 ks3 old))
+  = ()
+#pop-options
+
+(** Per-function pi lemmas: each captures all 25 index values.
+    pi_0_ sets column 0 (indices 1-4), preserves 5-24, index 0 unchanged.
+    pi_1_..pi_4_ each set 5 indices in their column, preserve the rest.
+    All reads are from old.f_st, not the evolving state. *)
+
+#push-options "--z3rlimit 100 "
+let lemma_pi_0_ (ks old: impl_state)
+  : Lemma
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let o = old.Libcrux_sha3.Generic_keccak.f_st in
+       let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_0_ (mk_usize 1) #u64 ks old)
+                .Libcrux_sha3.Generic_keccak.f_st in
+       // index 0 unchanged (identity in pi)
+       r.[mk_usize 0] == s.[mk_usize 0] /\
+       // column 0 set from old
+       r.[mk_usize 1] == o.[mk_usize 15] /\
+       r.[mk_usize 2] == o.[mk_usize 5] /\
+       r.[mk_usize 3] == o.[mk_usize 20] /\
+       r.[mk_usize 4] == o.[mk_usize 10] /\
+       // columns 1-4 preserved
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
+       r.[mk_usize 9] == s.[mk_usize 9] /\ r.[mk_usize 10] == s.[mk_usize 10] /\
+       r.[mk_usize 11] == s.[mk_usize 11] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
+       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
+       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
+  = ()
+#pop-options
+
+#push-options "--z3rlimit 100 "
+let lemma_pi_1_ (ks old: impl_state)
+  : Lemma
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let o = old.Libcrux_sha3.Generic_keccak.f_st in
+       let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_1_ (mk_usize 1) #u64 ks old)
+                .Libcrux_sha3.Generic_keccak.f_st in
+       // columns 0 preserved
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
+       r.[mk_usize 4] == s.[mk_usize 4] /\
+       // column 1 set from old
+       r.[mk_usize 5] == o.[mk_usize 6] /\
+       r.[mk_usize 6] == o.[mk_usize 21] /\
+       r.[mk_usize 7] == o.[mk_usize 11] /\
+       r.[mk_usize 8] == o.[mk_usize 1] /\
+       r.[mk_usize 9] == o.[mk_usize 16] /\
+       // columns 2-4 preserved
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
+       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
+       r.[mk_usize 24] == s.[mk_usize 24])
+  = ()
+#pop-options
+
+#push-options "--z3rlimit 100 "
+let lemma_pi_2_ (ks old: impl_state)
+  : Lemma
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let o = old.Libcrux_sha3.Generic_keccak.f_st in
+       let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_2_ (mk_usize 1) #u64 ks old)
+                .Libcrux_sha3.Generic_keccak.f_st in
+       // columns 0-1 preserved
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
+       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
+       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       // column 2 set from old
+       r.[mk_usize 10] == o.[mk_usize 12] /\
+       r.[mk_usize 11] == o.[mk_usize 2] /\
+       r.[mk_usize 12] == o.[mk_usize 17] /\
+       r.[mk_usize 13] == o.[mk_usize 7] /\
+       r.[mk_usize 14] == o.[mk_usize 22] /\
+       // columns 3-4 preserved
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
+       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
+       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
+  = ()
+#pop-options
+
+#push-options "--z3rlimit 100 "
+let lemma_pi_3_ (ks old: impl_state)
+  : Lemma
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let o = old.Libcrux_sha3.Generic_keccak.f_st in
+       let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_3_ (mk_usize 1) #u64 ks old)
+                .Libcrux_sha3.Generic_keccak.f_st in
+       // columns 0-2 preserved
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
+       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
+       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\
+       // column 3 set from old
+       r.[mk_usize 15] == o.[mk_usize 18] /\
+       r.[mk_usize 16] == o.[mk_usize 8] /\
+       r.[mk_usize 17] == o.[mk_usize 23] /\
+       r.[mk_usize 18] == o.[mk_usize 13] /\
+       r.[mk_usize 19] == o.[mk_usize 3] /\
+       // column 4 preserved
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
+       r.[mk_usize 24] == s.[mk_usize 24])
+  = ()
+#pop-options
+
+#push-options "--z3rlimit 100 "
+let lemma_pi_4_ (ks old: impl_state)
+  : Lemma
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let o = old.Libcrux_sha3.Generic_keccak.f_st in
+       let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_4_ (mk_usize 1) #u64 ks old)
+                .Libcrux_sha3.Generic_keccak.f_st in
+       // columns 0-3 preserved
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
+       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
+       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
+       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       // column 4 set from old
+       r.[mk_usize 20] == o.[mk_usize 24] /\
+       r.[mk_usize 21] == o.[mk_usize 14] /\
+       r.[mk_usize 22] == o.[mk_usize 4] /\
+       r.[mk_usize 23] == o.[mk_usize 19] /\
+       r.[mk_usize 24] == o.[mk_usize 9])
+  = ()
+#pop-options
+
+(** Spec-side: fully reduce pi(state).[i] for all 25 indices.
+    pi(state)[5x+y] = get(state, (x+3y)%5, x) = state[5*((x+3y)%5) + x] *)
+#push-options "--z3rlimit 200 --split_queries always"
+let lemma_pi_spec (state: spec_state)
+  : Lemma
+      (let p = Hacspec_sha3.Keccak_f.pi state in
+       p.[mk_usize 0] == state.[mk_usize 0] /\
+       p.[mk_usize 1] == state.[mk_usize 15] /\
+       p.[mk_usize 2] == state.[mk_usize 5] /\
+       p.[mk_usize 3] == state.[mk_usize 20] /\
+       p.[mk_usize 4] == state.[mk_usize 10] /\
+       p.[mk_usize 5] == state.[mk_usize 6] /\
+       p.[mk_usize 6] == state.[mk_usize 21] /\
+       p.[mk_usize 7] == state.[mk_usize 11] /\
+       p.[mk_usize 8] == state.[mk_usize 1] /\
+       p.[mk_usize 9] == state.[mk_usize 16] /\
+       p.[mk_usize 10] == state.[mk_usize 12] /\
+       p.[mk_usize 11] == state.[mk_usize 2] /\
+       p.[mk_usize 12] == state.[mk_usize 17] /\
+       p.[mk_usize 13] == state.[mk_usize 7] /\
+       p.[mk_usize 14] == state.[mk_usize 22] /\
+       p.[mk_usize 15] == state.[mk_usize 18] /\
+       p.[mk_usize 16] == state.[mk_usize 8] /\
+       p.[mk_usize 17] == state.[mk_usize 23] /\
+       p.[mk_usize 18] == state.[mk_usize 13] /\
+       p.[mk_usize 19] == state.[mk_usize 3] /\
+       p.[mk_usize 20] == state.[mk_usize 24] /\
+       p.[mk_usize 21] == state.[mk_usize 14] /\
+       p.[mk_usize 22] == state.[mk_usize 4] /\
+       p.[mk_usize 23] == state.[mk_usize 19] /\
+       p.[mk_usize 24] == state.[mk_usize 9])
+  = ()
+#pop-options
+
+#push-options "--z3rlimit 400 --split_queries always"
 let lemma_pi_equiv
       (ks: impl_state)
       (state: spec_state)
@@ -606,7 +803,26 @@ let lemma_pi_equiv
         (Libcrux_sha3.Generic_keccak.impl_2__pi (mk_usize 1) #u64 ks)
           .Libcrux_sha3.Generic_keccak.f_st ==
         Hacspec_sha3.Keccak_f.pi state)
-  = admit ()
+  = let open Libcrux_sha3.Generic_keccak in
+    // Impl side: chain pi_0_ through pi_4_, all reading from old = ks
+    let ks0 = impl_2__pi_0_ (mk_usize 1) #u64 ks ks in
+    lemma_pi_0_ ks ks;
+    let ks1 = impl_2__pi_1_ (mk_usize 1) #u64 ks0 ks in
+    lemma_pi_1_ ks0 ks;
+    let ks2 = impl_2__pi_2_ (mk_usize 1) #u64 ks1 ks in
+    lemma_pi_2_ ks1 ks;
+    let ks3 = impl_2__pi_3_ (mk_usize 1) #u64 ks2 ks in
+    lemma_pi_3_ ks2 ks;
+    let ks4 = impl_2__pi_4_ (mk_usize 1) #u64 ks3 ks in
+    lemma_pi_4_ ks3 ks;
+    // Bridge: ks4 == impl_2__pi ks
+    lemma_pi_unfold ks;
+    // Spec side
+    lemma_pi_spec state;
+    // Conclude by extensionality
+    let expected = Hacspec_sha3.Keccak_f.pi state in
+    Rust_primitives.Arrays.eq_intro ks4.f_st expected
+#pop-options
 
 (* ================================================================
    Phase 7: Chi Step Equivalence
