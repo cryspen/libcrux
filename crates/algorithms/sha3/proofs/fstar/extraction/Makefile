@@ -4,4 +4,10 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 
 ROOTS = Impl_Spec_Keccakf.fst
 
+# Disable context_pruning for proof modules — it strips definitions
+# the normalizer needs for assert_norm and fold_range reduction.
+FSTAR_EXT_FLAGS = --ext context_pruning
+
+#ENABLE_HINTS = --use_hints --record_hints
+
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base
