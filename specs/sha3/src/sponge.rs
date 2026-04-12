@@ -20,16 +20,7 @@ pub fn lane_index(l: usize) -> usize {
 pub fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> State {
     for i in 0..(rate / 8) {
         let offset = 8 * i;
-        let lane_val = u64::from_le_bytes([
-            block[offset],
-            block[offset + 1],
-            block[offset + 2],
-            block[offset + 3],
-            block[offset + 4],
-            block[offset + 5],
-            block[offset + 6],
-            block[offset + 7],
-        ]);
+        let lane_val = u64::from_le_bytes(block[offset..offset + 8].try_into().unwrap());
         let idx = lane_index(i);
         state[idx] ^= lane_val;
     }
@@ -49,20 +40,64 @@ pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: u
         hax_lib::loop_invariant!(|i: usize| output.len() == _orig_len);
         let idx = lane_index(i);
         let bytes = state[idx].to_le_bytes();
-        for b in 0..8 {
-            hax_lib::loop_invariant!(|b: usize| output.len() == _orig_len);
-            output[out_offset + 8 * i + b] = bytes[b];
-        }
+        output[out_offset + 8 * i..out_offset + 8 * (i + 1)].copy_from_slice(&bytes);
     }
     let remaining = len % 8;
     if remaining > 0 {
         let idx = lane_index(full_lanes);
         let bytes = state[idx].to_le_bytes();
-        for b in 0..remaining {
-            hax_lib::loop_invariant!(|b: usize| output.len() == _orig_len);
-            output[out_offset + 8 * full_lanes + b] = bytes[b];
-        }
+        let pos = out_offset + 8 * full_lanes;
+        output[pos..pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
+}
+
+/// Absorb one full block: XOR it into the state, then apply Keccak-f.
+///
+/// Corresponds to one iteration of the absorb loop in Algorithm 8 (step 6).
+#[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() >= rate)]
+pub fn absorb_block(state: State, block: &[u8], rate: usize) -> State {
+    let state = xor_block_into_state(state, block, rate);
+    keccak_f(state)
+}
+
+/// Build the padded last block: copy remaining message bytes, add the
+/// domain-separation byte `delim`, and set the final bit of pad10*1.
+///
+/// Returns a `rate`-byte buffer ready to be absorbed via `xor_block_into_state`.
+#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && remaining < rate
+                     && msg_offset <= message.len() && remaining <= message.len() - msg_offset)]
+pub fn pad_last_block(
+    message: &[u8],
+    msg_offset: usize,
+    remaining: usize,
+    rate: usize,
+    delim: u8,
+) -> [u8; 200] {
+    let mut buffer = [0u8; 200];
+    buffer[..remaining].copy_from_slice(&message[msg_offset..msg_offset + remaining]);
+    buffer[remaining] = delim;
+    buffer[rate - 1] = buffer[rate - 1] | 0x80;
+    buffer
+}
+
+/// Absorb the final (possibly partial) block: pad it, XOR into state, and
+/// apply Keccak-f.
+///
+/// Combines `pad_last_block` + `absorb_block`.
+#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && remaining < rate
+                     && msg_offset <= message.len() && remaining <= message.len() - msg_offset)]
+pub fn absorb_final(
+    state: State,
+    message: &[u8],
+    msg_offset: usize,
+    remaining: usize,
+    rate: usize,
+    delim: u8,
+) -> State {
+    let block = pad_last_block(message, msg_offset, remaining, rate, delim);
+    absorb_block(state, &block, rate)
 }
 
 /// Keccak sponge — FIPS 202, Algorithm 8 combined with pad10*1 (Algorithm 9).
@@ -83,40 +118,27 @@ pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -
 
     // --- Absorb full blocks (Algorithm 8, step 6) ---
     let num_full_blocks = message.len() / rate;
-    for block_idx in 0..num_full_blocks {
-        let offset = block_idx * rate;
-        state = xor_block_into_state(state, &message[offset..offset + rate], rate);
-        state = keccak_f(state);
+    for _block_idx in 0..num_full_blocks {
+        let offset = _block_idx * rate;
+        state = absorb_block(state, &message[offset..offset + rate], rate);
     }
 
-    // --- Pad final block (Algorithm 9: pad10*1) ---
-    let mut last_block = [0u8; 200];
+    // --- Pad and absorb final block (Algorithm 9: pad10*1) ---
     let remaining = message.len() - num_full_blocks * rate;
-    for i in 0..remaining {
-        last_block[i] = message[num_full_blocks * rate + i];
-    }
-    last_block[remaining] = delim; // domain separation + first bit of pad
-    last_block[rate - 1] |= 0x80; // last bit of pad10*1
-
-    state = xor_block_into_state(state, &last_block, rate);
-    state = keccak_f(state);
+    state = absorb_final(state, message, num_full_blocks * rate, remaining, rate, delim);
 
     // --- Squeeze (Algorithm 8, steps 8–9) ---
     let mut output = [0u8; OUTPUT_LEN];
-    let mut offset = 0;
-
-    for _squeeze_round in 0..((OUTPUT_LEN + rate - 1) / rate) {
+    let mut offset: usize = 0;
+    let num_squeeze_blocks = (OUTPUT_LEN + rate - 1) / rate;
+    for _squeeze_round in 0..num_squeeze_blocks {
         hax_lib::loop_invariant!(|_squeeze_round: usize| offset <= OUTPUT_LEN);
-        let to_copy = if OUTPUT_LEN - offset < rate {
-            OUTPUT_LEN - offset
-        } else {
-            rate
-        };
-        squeeze_state(&state, &mut output, offset, to_copy);
-        offset += to_copy;
-        if offset < OUTPUT_LEN {
+        if _squeeze_round > 0 {
             state = keccak_f(state);
         }
+        let to_copy = core::cmp::min(OUTPUT_LEN - offset, rate);
+        squeeze_state(&state, &mut output, offset, to_copy);
+        offset += to_copy;
     }
 
     output

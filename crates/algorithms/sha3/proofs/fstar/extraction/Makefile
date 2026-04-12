@@ -2,7 +2,7 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
 	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction
 
-ROOTS = Impl_Spec_Keccakf.fst
+ROOTS = Impl_Spec_Keccakf.fst Impl_Spec_Sponge.fst
 
 # Disable context_pruning for proof modules — it strips definitions
 # the normalizer needs for assert_norm and fold_range reduction.
