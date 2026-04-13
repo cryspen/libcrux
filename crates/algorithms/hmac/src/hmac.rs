@@ -15,7 +15,6 @@ mod hacl {
 
 #[cfg(feature = "expose-hacl")]
 pub mod hacl {
-    pub mod hash_sha1;
     pub mod hmac;
 }
 
@@ -26,7 +25,6 @@ pub use impl_hacl::*;
 /// The HMAC algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Algorithm {
-    Sha1,
     // Not implemented
     // Sha224
     Sha256,
@@ -37,7 +35,6 @@ pub enum Algorithm {
 /// Get the tag size for a given algorithm.
 pub const fn tag_size(alg: Algorithm) -> usize {
     match alg {
-        Algorithm::Sha1 => 20,
         Algorithm::Sha256 => 32,
         Algorithm::Sha384 => 48,
         Algorithm::Sha512 => 64,
@@ -55,7 +52,6 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
         None => native_tag_length,
     };
     let mut dst: Vec<_> = match alg {
-        Algorithm::Sha1 => wrap_bufalloc(|buf| hmac_sha1(buf, key, data)),
         Algorithm::Sha256 => wrap_bufalloc(|buf| hmac_sha2_256(buf, key, data)),
         Algorithm::Sha384 => wrap_bufalloc(|buf| hmac_sha2_384(buf, key, data)),
         Algorithm::Sha512 => wrap_bufalloc(|buf| hmac_sha2_512(buf, key, data)),
