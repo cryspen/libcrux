@@ -558,10 +558,9 @@ let lemma_new_state_equiv (_: unit)
       (Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 1) #u64 ())
         .Libcrux_sha3.Generic_keccak.f_st ==
       Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25))
-  = admit ()
+  = ()
   (* Proof: impl_2__new creates { f_st = repeat (f_zero()) 25 }.
-     f_zero() for u64 = mk_u64 0. So f_st = repeat (mk_u64 0) 25.
-     Should be definitional, possibly needs unfolding f_zero. *)
+     f_zero() for u64 = mk_u64 0. Definitional. *)
 
 (** Absorb-phase equivalence: after all full blocks + final block,
     the impl and spec states match. *)
@@ -656,8 +655,7 @@ let lemma_keccak1_equiv
   : Lemma
       (requires
         Libcrux_sha3.Proof_utils.valid_rate rate /\
-        v output_len < v Core_models.Num.impl_usize__MAX - 200 /\
-        Seq.length data <= v (cast Core_models.Num.impl_u32__MAX <: usize))
+        v output_len < v Core_models.Num.impl_usize__MAX - 200)
       (ensures (
         let impl_out : t_Slice u8 = Rust_primitives.Hax.repeat (mk_u8 0) output_len in
         let impl_result = Libcrux_sha3.Generic_keccak.Portable.keccak1
@@ -693,6 +691,13 @@ let lemma_keccak1_equiv
    (Phase 16) plus rate/delimiter matching (Phase 9).
    ================================================================ *)
 
+(* Each top-level hash function is a chain of thin wrappers:
+     sha256(data) -> sha256_ema(repeat 0 32, data) -> Portable.sha256(repeat 0 32, data)
+       -> keccak1(136, 6, data, repeat 0 32)
+   On the spec side: sha3_256_(data) = keccak(32, 136, 6, data).
+   The solver unfolds the non-recursive wrappers and uses lemma_keccak1_equiv. *)
+
+#push-options "--z3rlimit 300"
 let lemma_sha256_equiv (data: t_Slice u8)
   : Lemma
       (requires
@@ -700,12 +705,7 @@ let lemma_sha256_equiv (data: t_Slice u8)
       (ensures
         Libcrux_sha3.sha256 data ==
         (Hacspec_sha3.Sha3.sha3_256_ data <: t_Slice u8))
-  = admit ()
-  (* Proof:
-     1. Unfold sha256 -> sha256_ema -> Portable.sha256 -> keccak1(136, 6, data, zeros_32)
-     2. Unfold sha3_256_ -> keccak(32, 136, 6, data)
-     3. Apply lemma_keccak1_equiv with rate=136, delim=6, output_len=32
-     4. lemma_sha3_256_rate, lemma_sha3_delim for constant matching *)
+  = lemma_keccak1_equiv (mk_usize 136) (mk_u8 6) (mk_usize 32) data
 
 let lemma_sha224_equiv (data: t_Slice u8)
   : Lemma
@@ -714,7 +714,7 @@ let lemma_sha224_equiv (data: t_Slice u8)
       (ensures
         Libcrux_sha3.sha224 data ==
         (Hacspec_sha3.Sha3.sha3_224_ data <: t_Slice u8))
-  = admit ()
+  = lemma_keccak1_equiv (mk_usize 144) (mk_u8 6) (mk_usize 28) data
 
 let lemma_sha384_equiv (data: t_Slice u8)
   : Lemma
@@ -723,7 +723,7 @@ let lemma_sha384_equiv (data: t_Slice u8)
       (ensures
         Libcrux_sha3.sha384 data ==
         (Hacspec_sha3.Sha3.sha3_384_ data <: t_Slice u8))
-  = admit ()
+  = lemma_keccak1_equiv (mk_usize 104) (mk_u8 6) (mk_usize 48) data
 
 let lemma_sha512_equiv (data: t_Slice u8)
   : Lemma
@@ -732,7 +732,7 @@ let lemma_sha512_equiv (data: t_Slice u8)
       (ensures
         Libcrux_sha3.sha512 data ==
         (Hacspec_sha3.Sha3.sha3_512_ data <: t_Slice u8))
-  = admit ()
+  = lemma_keccak1_equiv (mk_usize 72) (mk_u8 6) (mk_usize 64) data
 
 let lemma_shake128_equiv (v_BYTES: usize) (data: t_Slice u8)
   : Lemma
@@ -741,7 +741,7 @@ let lemma_shake128_equiv (v_BYTES: usize) (data: t_Slice u8)
       (ensures
         Libcrux_sha3.shake128 v_BYTES data ==
         (Hacspec_sha3.Sha3.shake128 v_BYTES data <: t_Slice u8))
-  = admit ()
+  = lemma_keccak1_equiv (mk_usize 168) (mk_u8 31) v_BYTES data
 
 let lemma_shake256_equiv (v_BYTES: usize) (data: t_Slice u8)
   : Lemma
@@ -750,4 +750,5 @@ let lemma_shake256_equiv (v_BYTES: usize) (data: t_Slice u8)
       (ensures
         Libcrux_sha3.shake256 v_BYTES data ==
         (Hacspec_sha3.Sha3.shake256 v_BYTES data <: t_Slice u8))
-  = admit ()
+  = lemma_keccak1_equiv (mk_usize 136) (mk_u8 31) v_BYTES data
+#pop-options
