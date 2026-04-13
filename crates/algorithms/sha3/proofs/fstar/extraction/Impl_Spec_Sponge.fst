@@ -2021,6 +2021,306 @@ let lemma_squeeze_single_equiv
   lemma_store_block_equiv rate state impl_out (mk_usize 0) output_len
   (* Proof: direct application of lemma_store_block_equiv *)
 
+(* One impl squeeze step through the trait instance. *)
+let impl_squeeze_once
+      (rate: usize)
+      (ks: impl_state)
+      (output: t_Slice u8)
+      (start len: usize)
+  : Pure (t_Slice u8)
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v len <= v rate /\
+        v start + v len <= Seq.length output)
+      (ensures fun output' -> Seq.length output' == Seq.length output)
+  =
+  Libcrux_sha3.Traits.f_squeeze #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+    #u64
+    #FStar.Tactics.Typeclasses.solve
+    rate
+    ks
+    output
+    start
+    len
+
+(* In the portable backend, [f_squeeze] is exactly [store_block] on ks.f_st. *)
+let lemma_impl_squeeze_once_store_block
+      (rate: usize)
+      (ks: impl_state)
+      (output: t_Slice u8)
+      (start len: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v len <= v rate /\
+        v start + v len <= Seq.length output)
+      (ensures
+        impl_squeeze_once rate ks output start len ==
+        Libcrux_sha3.Simd.Portable.store_block
+          rate
+          ks.Libcrux_sha3.Generic_keccak.f_st
+          output
+          start
+          len)
+  = ()
+
+(* Recursive mirror of the impl's squeeze fold_range body. *)
+let rec impl_squeeze_loop
+      (ks: impl_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Pure (t_Slice u8 & impl_state)
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures (fun res ->
+        let output', _ = res in
+        Seq.length output' == Seq.length output))
+      (decreases (v output_blocks - v i))
+  =
+  if i =. output_blocks then
+    output, ks
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i output_blocks rate
+    in
+    let ks' =
+      Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks
+    in
+    let output' =
+      Libcrux_sha3.Traits.f_squeeze #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+        #u64
+        #FStar.Tactics.Typeclasses.solve
+        rate
+        ks'
+        output
+        (i *! rate)
+        rate
+    in
+    impl_squeeze_loop ks' output' rate (i +! mk_usize 1) output_blocks
+
+(* Recursive mirror of the spec's squeeze fold_range body. *)
+let rec spec_squeeze_loop
+      (state: spec_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Pure (t_Slice u8 & spec_state)
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures (fun res ->
+        let output', _ = res in
+        Seq.length output' == Seq.length output))
+      (decreases (v output_blocks - v i))
+  =
+  if i =. output_blocks then
+    output, state
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i output_blocks rate
+    in
+    let state' = Hacspec_sha3.Keccak_f.keccak_f state in
+    let output' = Hacspec_sha3.Sponge.squeeze_state state' output (i *! rate) rate in
+    spec_squeeze_loop state' output' rate (i +! mk_usize 1) output_blocks
+
+(* Named fold expressions for squeeze-side bridging. *)
+assume val impl_squeeze_fold
+      (ks: impl_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Pure (t_Slice u8 & impl_state)
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures fun _ -> True)
+
+assume val spec_squeeze_fold
+      (state: spec_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Pure (t_Slice u8 & spec_state)
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures fun _ -> True)
+
+(* Local fold-bridge axiom: impl fold_range == recursive squeeze loop. *)
+assume val lemma_impl_squeeze_fold_is_loop
+      (ks: impl_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures
+        impl_squeeze_fold ks output rate i output_blocks ==
+        impl_squeeze_loop ks output rate i output_blocks)
+
+(* Local fold-bridge axiom: spec fold_range == recursive squeeze loop. *)
+assume val lemma_spec_squeeze_fold_is_loop
+      (state: spec_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures
+        spec_squeeze_fold state output rate i output_blocks ==
+        spec_squeeze_loop state output rate i output_blocks)
+
+#push-options "--fuel 1 --z3rlimit 300 --split_queries always"
+let rec lemma_squeeze_loop_equiv
+      (ks: impl_state)
+      (state: spec_state)
+      (output: t_Slice u8)
+      (rate: usize)
+      (i output_blocks: usize)
+  : Lemma
+      (requires
+        ks.Libcrux_sha3.Generic_keccak.f_st == state /\
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length output)
+      (ensures (
+        let output_impl, ks_impl = impl_squeeze_loop ks output rate i output_blocks in
+        let output_spec, state_spec = spec_squeeze_loop state output rate i output_blocks in
+        output_impl == output_spec /\
+        ks_impl.Libcrux_sha3.Generic_keccak.f_st == state_spec))
+      (decreases (v output_blocks - v i))
+  =
+  if i =. output_blocks then
+    ()
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i output_blocks rate
+    in
+    let ks' =
+      Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks
+    in
+    let state' = Hacspec_sha3.Keccak_f.keccak_f state in
+    let output_impl =
+      Libcrux_sha3.Traits.f_squeeze #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+        #u64
+        #FStar.Tactics.Typeclasses.solve
+        rate
+        ks'
+        output
+        (i *! rate)
+        rate
+    in
+    let output_spec = Hacspec_sha3.Sponge.squeeze_state state' output (i *! rate) rate in
+    Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks state;
+    lemma_impl_squeeze_once_store_block rate ks' output (i *! rate) rate;
+    lemma_store_block_equiv rate state' output (i *! rate) rate;
+    assert (output_impl == output_spec);
+    assert (ks'.Libcrux_sha3.Generic_keccak.f_st == state');
+    assert (v i < v output_blocks);
+    assert (v (i +! mk_usize 1) <= v output_blocks);
+    assert (Seq.length output_impl == Seq.length output);
+    assert (v output_blocks * v rate <= Seq.length output_impl);
+    lemma_squeeze_loop_equiv ks' state' output_impl rate (i +! mk_usize 1) output_blocks
+#pop-options
+
+let lemma_squeeze_zero_blocks_equiv
+      (rate: usize)
+      (ks: impl_state)
+      (state: spec_state)
+      (out: t_Slice u8)
+      (output_len: usize)
+  : Lemma
+      (requires
+        ks.Libcrux_sha3.Generic_keccak.f_st == state /\
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v output_len <= v rate /\
+        Seq.length out == v output_len)
+      (ensures
+        impl_squeeze_once rate ks out (mk_usize 0) output_len ==
+        Hacspec_sha3.Sponge.squeeze_state state out (mk_usize 0) output_len)
+  =
+  lemma_impl_squeeze_once_store_block rate ks out (mk_usize 0) output_len;
+  lemma_store_block_equiv rate state out (mk_usize 0) output_len
+
+let lemma_squeeze_first_block_equiv
+      (rate: usize)
+      (ks: impl_state)
+      (state: spec_state)
+      (out: t_Slice u8)
+  : Lemma
+      (requires
+        ks.Libcrux_sha3.Generic_keccak.f_st == state /\
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        Seq.length out >= v rate)
+      (ensures
+        impl_squeeze_once rate ks out (mk_usize 0) rate ==
+        Hacspec_sha3.Sponge.squeeze_state state out (mk_usize 0) rate)
+  =
+  lemma_impl_squeeze_once_store_block rate ks out (mk_usize 0) rate;
+  lemma_store_block_equiv rate state out (mk_usize 0) rate
+
+let lemma_squeeze_remainder_equiv
+      (rate: usize)
+      (ks: impl_state)
+      (state: spec_state)
+      (out: t_Slice u8)
+      (output_len output_rem: usize)
+  : Lemma
+      (requires
+        ks.Libcrux_sha3.Generic_keccak.f_st == state /\
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        output_rem <>. mk_usize 0 /\
+        v output_rem < v rate /\
+        v rate <= v output_len /\
+        Seq.length out == v output_len)
+      (ensures
+        impl_squeeze_once
+          rate
+          (Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks)
+          out
+          (output_len -! output_rem)
+          output_rem
+        ==
+        Hacspec_sha3.Sponge.squeeze_state
+          (Hacspec_sha3.Keccak_f.keccak_f state)
+          out
+          (output_len -! output_rem)
+          output_rem)
+  =
+  let ks_tail =
+    Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks
+  in
+  let state_tail = Hacspec_sha3.Keccak_f.keccak_f state in
+  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks state;
+  assert (ks_tail.Libcrux_sha3.Generic_keccak.f_st == state_tail);
+  assert (v output_rem <= v output_len);
+  assert (v (output_len -! output_rem) + v output_rem == v output_len);
+  assert (v (output_len -! output_rem) + v output_rem <= Seq.length out);
+  lemma_impl_squeeze_once_store_block
+    rate
+    ks_tail
+    out
+    (output_len -! output_rem)
+    output_rem;
+  lemma_store_block_equiv
+    rate
+    state_tail
+    out
+    (output_len -! output_rem)
+    output_rem
+
 (** Squeeze-phase equivalence (general case).
     Handles multi-block squeezing for SHAKE with large outputs.
 
@@ -2282,7 +2582,8 @@ let lemma_squeeze_general_equiv
      - removed: 1 monolithic axiom (this lemma_keccak1_bridge)
      - added:   2 small fold-range axioms (items 7 and 8)
 *)
-assume val lemma_keccak1_bridge
+#push-options "--fuel 1 --z3rlimit 600"
+let lemma_keccak1_bridge
       (rate: usize)
       (delim: u8)
       (output_len: usize)
@@ -2297,6 +2598,81 @@ assume val lemma_keccak1_bridge
                             rate delim data impl_out in
         let spec_result = Hacspec_sha3.Sponge.keccak output_len rate delim data in
         impl_result == (spec_result <: t_Slice u8)))
+  =
+  let impl_out : t_Slice u8 = Rust_primitives.Hax.repeat (mk_u8 0) output_len in
+  let input_len = Core_models.Slice.impl__len #u8 data in
+  let n = input_len /! rate in
+  let remaining = input_len %! rate in
+  let start = n *! rate in
+  let ks0 = Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 1) #u64 () in
+  let spec0 = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+  let ks_abs = impl_absorb_loop ks0 data rate (mk_usize 0) n in
+  let spec_abs = spec_absorb_loop spec0 data rate (mk_usize 0) n in
+  let ks_final =
+    Libcrux_sha3.Generic_keccak.impl_2__absorb_final (mk_usize 1)
+      #u64
+      rate
+      delim
+      ks_abs
+      (let list = [data] in
+       FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+       Rust_primitives.Hax.array_of_list 1 list)
+      start
+      remaining
+  in
+  let spec_final =
+    Hacspec_sha3.Sponge.absorb_final spec_abs data start remaining rate delim
+  in
+  let output_blocks = output_len /! rate in
+  let output_rem = output_len %! rate in
+  lemma_new_state_equiv ();
+  lemma_impl_absorb_is_loop ks0 data rate n;
+  lemma_spec_absorb_is_loop spec0 data rate n;
+  lemma_absorb_loop_equiv ks0 spec0 data rate (mk_usize 0) n;
+  lemma_absorb_final_equiv ks_abs spec_abs rate delim data start remaining;
+  Libcrux_sha3.Proof_utils.Lemmas.lemma_div_mul_mod output_len rate;
+  assert (ks_final.Libcrux_sha3.Generic_keccak.f_st == spec_final);
+  assert (Seq.length impl_out == v output_len);
+  assert (v output_len == v output_blocks * v rate + v output_rem);
+  assert (v output_rem < v rate);
+  if output_blocks =. mk_usize 0 then begin
+    assert (v output_blocks == 0);
+    assert (v output_len == v output_rem);
+    assert (v output_len < v rate);
+    assert (v output_len <= v rate);
+    lemma_squeeze_zero_blocks_equiv rate ks_final spec_final impl_out output_len
+  end
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le (mk_usize 0) output_blocks rate
+    in
+    assert (v rate <= v output_len);
+    let out1 = impl_squeeze_once rate ks_final impl_out (mk_usize 0) rate in
+    assert (Seq.length out1 == Seq.length impl_out);
+    lemma_squeeze_first_block_equiv rate ks_final spec_final impl_out;
+    lemma_impl_squeeze_fold_is_loop ks_final out1 rate (mk_usize 1) output_blocks;
+    lemma_spec_squeeze_fold_is_loop spec_final out1 rate (mk_usize 1) output_blocks;
+    lemma_squeeze_loop_equiv ks_final spec_final out1 rate (mk_usize 1) output_blocks;
+    let out_after_loop, ks_after_loop =
+      impl_squeeze_loop ks_final out1 rate (mk_usize 1) output_blocks
+    in
+    let out_spec_after_loop, spec_after_loop =
+      spec_squeeze_loop spec_final out1 rate (mk_usize 1) output_blocks
+    in
+    assert (Seq.length out_after_loop == Seq.length out1);
+    assert (Seq.length out_after_loop == v output_len);
+    assert (out_after_loop == out_spec_after_loop);
+    assert (ks_after_loop.Libcrux_sha3.Generic_keccak.f_st == spec_after_loop);
+    if output_rem <>. mk_usize 0 then
+      lemma_squeeze_remainder_equiv
+        rate
+        ks_after_loop
+        spec_after_loop
+        out_after_loop
+        output_len
+        output_rem
+    else ()
+#pop-options
 
 let lemma_keccak1_equiv
       (rate: usize)
