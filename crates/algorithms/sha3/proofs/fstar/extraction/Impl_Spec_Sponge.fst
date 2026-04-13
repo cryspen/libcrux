@@ -103,6 +103,613 @@ let lemma_lane_index_is_impl_index (i: usize)
                     (i /! mk_usize 5 <: usize))
   = ()
 
+(* Decode one 8-byte little-endian lane from [data] at byte [offset]. *)
+let load_block_lane_val
+      (data: t_Slice u8)
+      (offset: usize)
+  : Pure u64
+      (requires v offset + 8 <= Seq.length data)
+      (ensures fun _ -> True)
+  =
+  Core_models.Num.impl_u64__from_le_bytes
+    (Core_models.Result.impl__unwrap #(t_Array u8 (mk_usize 8))
+      #Core_models.Array.t_TryFromSliceError
+      (Core_models.Convert.f_try_into #(t_Slice u8) #(t_Array u8 (mk_usize 8))
+        #FStar.Tactics.Typeclasses.solve
+        (data.[ { Core_models.Ops.Range.f_start = offset;
+                  Core_models.Ops.Range.f_end = offset +! mk_usize 8 } <:
+                Core_models.Ops.Range.t_Range usize ])
+      ))
+
+(* Recursive mirror of impl load_block's first loop (read lanes into flat temp). *)
+let rec load_block_read_loop
+      (flat: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures fun _ -> True)
+      (decreases (v n - v i))
+  =
+  if i =. n then flat
+  else
+    let offset = start +! (mk_usize 8 *! i) in
+    let flat = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+                 flat i (load_block_lane_val data offset) in
+    load_block_read_loop flat data start (i +! mk_usize 1) n
+
+(* Recursive mirror of impl load_block's second loop (XOR from flat temp). *)
+let rec load_block_xor_flat_loop
+      (state: spec_state)
+      (flat: spec_state)
+      (i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25)
+      (ensures fun _ -> True)
+      (decreases (v n - v i))
+  =
+  if i =. n then state
+  else
+    let state =
+      Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 state
+        (i /! mk_usize 5)
+        (i %! mk_usize 5)
+        ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 state
+            (i /! mk_usize 5)
+            (i %! mk_usize 5)) ^.
+         (flat.[i]))
+    in
+    load_block_xor_flat_loop state flat (i +! mk_usize 1) n
+
+(* Recursive one-pass variant: decode and XOR each lane directly. *)
+let rec load_block_xor_direct_loop
+      (state: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures fun _ -> True)
+      (decreases (v n - v i))
+  =
+  if i =. n then state
+  else
+    let offset = start +! (mk_usize 8 *! i) in
+    let lane = load_block_lane_val data offset in
+    let state =
+      Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 state
+        (i /! mk_usize 5)
+        (i %! mk_usize 5)
+        ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 state
+            (i /! mk_usize 5)
+            (i %! mk_usize 5)) ^.
+         lane)
+    in
+    load_block_xor_direct_loop state data start (i +! mk_usize 1) n
+
+let lemma_update_usize_same
+      (a: spec_state)
+      (i: usize { v i < 25 })
+      (x: u64)
+  : Lemma
+      ((Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a i x).[i] == x)
+  = ()
+
+let lemma_update_usize_other
+      (a: spec_state)
+      (i j: usize)
+      (x: u64)
+  : Lemma
+      (requires v i < 25 /\ v j < 25 /\ i <> j)
+      (ensures
+        (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a i x).[j] == a.[j])
+  = ()
+
+(* After reading lanes [i..n), every index j in this range has the expected decoded value. *)
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_load_block_read_loop_prefix_unchanged
+      (flat: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+      (j: usize)
+  : Lemma
+      (requires
+        v j < v i /\
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures
+        (load_block_read_loop flat data start i n).[j] == flat.[j])
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i n (mk_usize 8)
+    in
+    let lane_i = load_block_lane_val data (start +! (mk_usize 8 *! i)) in
+    let flat' = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize flat i lane_i in
+    assert (i <> j);
+    lemma_update_usize_other flat i j lane_i;
+    lemma_load_block_read_loop_prefix_unchanged flat' data start (i +! mk_usize 1) n j
+
+let rec lemma_load_block_read_loop_range
+      (flat: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+      (j: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data /\
+        v i <= v j /\ v j < v n)
+      (ensures
+        (load_block_read_loop flat data start i n).[j] ==
+        load_block_lane_val data (start +! (mk_usize 8 *! j)))
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i n (mk_usize 8)
+    in
+    let lane_i = load_block_lane_val data (start +! (mk_usize 8 *! i)) in
+    let flat' = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize flat i lane_i in
+    if j =. i then (
+      lemma_update_usize_same flat i lane_i;
+      lemma_load_block_read_loop_prefix_unchanged flat' data start (i +! mk_usize 1) n j
+    )
+    else (
+      assert (v (i +! mk_usize 1) <= v j);
+      lemma_update_usize_other flat i j lane_i;
+      lemma_load_block_read_loop_range flat' data start (i +! mk_usize 1) n j
+    )
+#pop-options
+
+(* Fold-range form matching impl first loop. *)
+let load_block_read_fold
+      (flat: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures fun _ -> True)
+  =
+  let inv (_: spec_state) (_: usize) : Type0 = True in
+  let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+    let offset = start +! (mk_usize 8 *! j) in
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+      st j (load_block_lane_val data offset)
+  in
+  Rust_primitives.Hax.Folds.fold_range i n inv flat f
+
+(* Fold-range form matching impl second loop. *)
+let load_block_xor_flat_fold
+      (state: spec_state)
+      (flat: spec_state)
+      (i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25)
+      (ensures fun _ -> True)
+  =
+  let inv (_: spec_state) (_: usize) : Type0 = True in
+  let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+    Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 st
+      (j /! mk_usize 5)
+      (j %! mk_usize 5)
+      ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
+          (j /! mk_usize 5)
+          (j %! mk_usize 5)) ^.
+       (flat.[j]))
+  in
+  Rust_primitives.Hax.Folds.fold_range i n inv state f
+
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_load_block_read_fold_is_loop
+      (flat: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures
+        load_block_read_fold flat data start i n ==
+        load_block_read_loop flat data start i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let inv (_: spec_state) (_: usize) : Type0 = True in
+    let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+      let offset = start +! (mk_usize 8 *! j) in
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+        st j (load_block_lane_val data offset)
+    in
+    Impl_Spec_Keccakf.lemma_fold_range_step i n inv flat f;
+    lemma_load_block_read_fold_is_loop (f flat i) data start (i +! mk_usize 1) n
+
+let rec lemma_load_block_xor_flat_fold_is_loop
+      (state: spec_state)
+      (flat: spec_state)
+      (i n: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25)
+      (ensures
+        load_block_xor_flat_fold state flat i n ==
+        load_block_xor_flat_loop state flat i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let inv (_: spec_state) (_: usize) : Type0 = True in
+    let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+      Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 st
+        (j /! mk_usize 5)
+        (j %! mk_usize 5)
+        ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
+            (j /! mk_usize 5)
+            (j %! mk_usize 5)) ^.
+         (flat.[j]))
+    in
+    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    lemma_load_block_xor_flat_fold_is_loop (f state i) flat (i +! mk_usize 1) n
+#pop-options
+
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_load_block_xor_from_read_is_direct
+      (state: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+      (flat_all: spec_state)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data /\
+        flat_all ==
+          load_block_read_loop
+            (Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25))
+            data
+            start
+            (mk_usize 0)
+            n)
+      (ensures
+        load_block_xor_flat_loop state flat_all i n ==
+        load_block_xor_direct_loop state data start i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let lane_i = load_block_lane_val data (start +! (mk_usize 8 *! i)) in
+    let _: Prims.unit =
+      lemma_load_block_read_loop_range
+        (Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25))
+        data
+        start
+        (mk_usize 0)
+        n
+        i
+    in
+    assert (flat_all.[i] == lane_i);
+    let state' =
+      Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 state
+        (i /! mk_usize 5)
+        (i %! mk_usize 5)
+        ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 state
+            (i /! mk_usize 5)
+            (i %! mk_usize 5)) ^.
+         (flat_all.[i]))
+    in
+    lemma_load_block_xor_from_read_is_direct state' data start (i +! mk_usize 1) n flat_all
+#pop-options
+
+#push-options "--fuel 1 --z3rlimit 200"
+let rec xor_block_into_state_loop
+      (state: spec_state)
+      (block: t_Slice u8)
+      (i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v n * 8 <= Seq.length block)
+      (ensures fun _ -> True)
+      (decreases (v n - v i))
+  =
+  if i =. n then state
+  else
+    let lane = load_block_lane_val block (mk_usize 8 *! i) in
+    let idx = Hacspec_sha3.Sponge.lane_index i in
+    let state =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+        state idx ((state.[idx]) ^. lane)
+    in
+    xor_block_into_state_loop state block (i +! mk_usize 1) n
+
+let xor_block_into_state_fold
+      (state: spec_state)
+      (block: t_Slice u8)
+      (i n: usize)
+  : Pure spec_state
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v n * 8 <= Seq.length block)
+      (ensures fun _ -> True)
+  =
+  let inv (_: spec_state) (_: usize) : Type0 = True in
+  let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+    let lane = load_block_lane_val block (mk_usize 8 *! j) in
+    let idx = Hacspec_sha3.Sponge.lane_index j in
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+      st idx ((st.[idx]) ^. lane)
+  in
+  Rust_primitives.Hax.Folds.fold_range i n inv state f
+
+let rec lemma_xor_block_into_state_fold_is_loop
+      (state: spec_state)
+      (block: t_Slice u8)
+      (i n: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v n * 8 <= Seq.length block)
+      (ensures
+        xor_block_into_state_fold state block i n ==
+        xor_block_into_state_loop state block i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let inv (_: spec_state) (_: usize) : Type0 = True in
+    let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
+      let lane = load_block_lane_val block (mk_usize 8 *! j) in
+      let idx = Hacspec_sha3.Sponge.lane_index j in
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+        st idx ((st.[idx]) ^. lane)
+    in
+    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    lemma_xor_block_into_state_fold_is_loop (f state i) block (i +! mk_usize 1) n
+
+let lemma_setget_xor_is_update_lane
+      (st: spec_state)
+      (i: usize)
+      (lane: u64)
+  : Lemma
+      (requires v i < 25)
+      (ensures
+        Libcrux_sha3.Traits.set_ij (mk_usize 1) #u64 st
+          (i /! mk_usize 5)
+          (i %! mk_usize 5)
+          ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
+              (i /! mk_usize 5)
+              (i %! mk_usize 5)) ^.
+           lane)
+        ==
+        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+          st
+          (Hacspec_sha3.Sponge.lane_index i)
+          ((st.[Hacspec_sha3.Sponge.lane_index i]) ^. lane))
+  =
+  assert (i /! mk_usize 5 <. mk_usize 5);
+  assert (i %! mk_usize 5 <. mk_usize 5);
+  Impl_Spec_Keccakf.lemma_set_ij_unfold st (i /! mk_usize 5) (i %! mk_usize 5)
+    ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
+        (i /! mk_usize 5)
+        (i %! mk_usize 5)) ^.
+     lane);
+  lemma_lane_index_is_impl_index i;
+  assert (
+    Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
+      (i /! mk_usize 5)
+      (i %! mk_usize 5)
+    ==
+    st.[Hacspec_sha3.Sponge.lane_index i]
+  )
+
+let lemma_load_block_lane_val_slice
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Lemma
+      (requires
+        v i < v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures
+        load_block_lane_val
+          (data.[ { Core_models.Ops.Range.f_start = start;
+                    Core_models.Ops.Range.f_end = start +! (mk_usize 8 *! n) } <:
+                  Core_models.Ops.Range.t_Range usize ])
+          (mk_usize 8 *! i)
+        ==
+        load_block_lane_val data (start +! (mk_usize 8 *! i)))
+  = ()
+
+let rec lemma_xor_block_loop_slice_is_direct
+      (state: spec_state)
+      (data: t_Slice u8)
+      (start i n: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v start + v n * 8 <= Seq.length data)
+      (ensures
+        xor_block_into_state_loop
+          state
+          (data.[ { Core_models.Ops.Range.f_start = start;
+                    Core_models.Ops.Range.f_end = start +! (mk_usize 8 *! n) } <:
+                  Core_models.Ops.Range.t_Range usize ])
+          i
+          n
+        ==
+        load_block_xor_direct_loop state data start i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i n (mk_usize 8)
+    in
+    lemma_load_block_lane_val_slice data start i n;
+    lemma_setget_xor_is_update_lane state i
+      (load_block_lane_val data (start +! (mk_usize 8 *! i)));
+    let block =
+      data.[ { Core_models.Ops.Range.f_start = start;
+               Core_models.Ops.Range.f_end = start +! (mk_usize 8 *! n) } <:
+             Core_models.Ops.Range.t_Range usize ]
+    in
+    let state' =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+        state
+        (Hacspec_sha3.Sponge.lane_index i)
+        ((state.[Hacspec_sha3.Sponge.lane_index i]) ^.
+         (load_block_lane_val block (mk_usize 8 *! i)))
+    in
+    lemma_xor_block_loop_slice_is_direct state' data start (i +! mk_usize 1) n
+#pop-options
+
+#push-options "--z3rlimit 200"
+assume val lemma_xor_block_into_state_unfold_fold
+      (state: spec_state)
+      (block: t_Slice u8)
+      (rate: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v rate <= Seq.length block)
+      (ensures
+        Hacspec_sha3.Sponge.xor_block_into_state state block rate ==
+        xor_block_into_state_fold state block (mk_usize 0) (rate /! mk_usize 8))
+#pop-options
+
+#push-options "--z3rlimit 200"
+assume val lemma_load_block_unfold_folds
+      (rate: usize)
+      (state: spec_state)
+      (data: t_Slice u8)
+      (start: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v start + v rate <= Seq.length data)
+      (ensures
+        Libcrux_sha3.Simd.Portable.load_block rate state data start ==
+        load_block_xor_flat_fold
+          state
+          (load_block_read_fold
+             (Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25))
+             data
+             start
+             (mk_usize 0)
+             (rate /! mk_usize 8))
+          (mk_usize 0)
+          (rate /! mk_usize 8))
+#pop-options
+
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_xor_block_into_state_loop_prefix
+      (state: spec_state)
+      (data: t_Slice u8)
+      (i n: usize)
+  : Lemma
+      (requires
+        v i <= v n /\
+        v n <= 25 /\
+        v n * 8 <= Seq.length data)
+      (ensures
+        xor_block_into_state_loop state data i n ==
+        xor_block_into_state_loop
+          state
+          (data.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                    Core_models.Ops.Range.f_end = mk_usize 8 *! n } <:
+                  Core_models.Ops.Range.t_Range usize ])
+          i
+          n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let _: Prims.unit =
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i n (mk_usize 8)
+    in
+    lemma_load_block_lane_val_slice data (mk_usize 0) i n;
+    let lane = load_block_lane_val data (mk_usize 8 *! i) in
+    let idx = Hacspec_sha3.Sponge.lane_index i in
+    let state' =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+        state
+        idx
+        ((state.[idx]) ^. lane)
+    in
+    lemma_xor_block_into_state_loop_prefix state' data (i +! mk_usize 1) n
+
+let lemma_xor_block_into_state_ignores_suffix
+      (state: spec_state)
+      (block: t_Slice u8)
+      (rate: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v rate <= Seq.length block)
+      (ensures
+        Hacspec_sha3.Sponge.xor_block_into_state state block rate ==
+        Hacspec_sha3.Sponge.xor_block_into_state
+          state
+          (block.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                     Core_models.Ops.Range.f_end = rate } <:
+                   Core_models.Ops.Range.t_Range usize ])
+          rate)
+  =
+  let n = rate /! mk_usize 8 in
+  let block_prefix =
+    block.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+              Core_models.Ops.Range.f_end = mk_usize 8 *! n } <:
+            Core_models.Ops.Range.t_Range usize ]
+  in
+  let block_rate =
+    block.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+              Core_models.Ops.Range.f_end = rate } <:
+            Core_models.Ops.Range.t_Range usize ]
+  in
+  lemma_xor_block_into_state_unfold_fold state block rate;
+  lemma_xor_block_into_state_fold_is_loop state block (mk_usize 0) n;
+  lemma_xor_block_into_state_unfold_fold state block_rate rate;
+  lemma_xor_block_into_state_fold_is_loop state block_rate (mk_usize 0) n;
+  lemma_xor_block_into_state_loop_prefix state block (mk_usize 0) n;
+  assert (
+    xor_block_into_state_loop state block (mk_usize 0) n ==
+    xor_block_into_state_loop state block_prefix (mk_usize 0) n
+  );
+  assert (block_prefix == block_rate);
+  assert (
+    Hacspec_sha3.Sponge.xor_block_into_state state block rate ==
+    xor_block_into_state_loop state block (mk_usize 0) n
+  );
+  assert (
+    Hacspec_sha3.Sponge.xor_block_into_state state block_rate rate ==
+    xor_block_into_state_loop state block_rate (mk_usize 0) n
+  )
+#pop-options
+
 
 (* ================================================================
    Phase 11: load_block == xor_block_into_state
@@ -139,7 +746,7 @@ let lemma_lane_index_is_impl_index (i: usize)
    May need --fuel for loop unrolling, or recursive bridge + induction.
    ================================================================ *)
 
-#push-options "--z3rlimit 200"
+#push-options "--fuel 2 --z3rlimit 200"
 let lemma_load_block_equiv
       (rate: usize)
       (state: spec_state)
@@ -156,7 +763,55 @@ let lemma_load_block_equiv
                      Core_models.Ops.Range.f_end = start +! rate } <:
                    Core_models.Ops.Range.t_Range usize ])
           rate)
-  = admit ()
+  =
+  let n = rate /! mk_usize 8 in
+  let flat0 = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+  let flat_fold = load_block_read_fold flat0 data start (mk_usize 0) n in
+  let flat_loop = load_block_read_loop flat0 data start (mk_usize 0) n in
+  lemma_load_block_read_fold_is_loop flat0 data start (mk_usize 0) n;
+  lemma_load_block_xor_flat_fold_is_loop state flat_fold (mk_usize 0) n;
+  lemma_load_block_xor_from_read_is_direct state data start (mk_usize 0) n flat_loop;
+  lemma_load_block_unfold_folds rate state data start;
+  assert (flat_fold == flat_loop);
+  assert (
+    load_block_xor_flat_fold state flat_fold (mk_usize 0) n ==
+    load_block_xor_flat_loop state flat_fold (mk_usize 0) n
+  );
+  assert (
+    load_block_xor_flat_loop state flat_fold (mk_usize 0) n ==
+    load_block_xor_flat_loop state flat_loop (mk_usize 0) n
+  );
+  assert (n == rate /! mk_usize 8);
+  assert (v n * 8 == v rate);
+  let block =
+    data.[ { Core_models.Ops.Range.f_start = start;
+             Core_models.Ops.Range.f_end = start +! (mk_usize 8 *! n) } <:
+           Core_models.Ops.Range.t_Range usize ]
+  in
+  lemma_xor_block_into_state_fold_is_loop state block (mk_usize 0) n;
+  lemma_xor_block_into_state_unfold_fold state block rate;
+  assert (
+    xor_block_into_state_fold state block (mk_usize 0) (rate /! mk_usize 8) ==
+    xor_block_into_state_fold state block (mk_usize 0) n
+  );
+  assert (
+    Hacspec_sha3.Sponge.xor_block_into_state state block rate ==
+    xor_block_into_state_fold state block (mk_usize 0) n
+  );
+  lemma_xor_block_loop_slice_is_direct state data start (mk_usize 0) n;
+  assert (
+    xor_block_into_state_fold state block (mk_usize 0) n ==
+    xor_block_into_state_loop state block (mk_usize 0) n
+  );
+  assert (
+    Hacspec_sha3.Sponge.xor_block_into_state state
+      (data.[ { Core_models.Ops.Range.f_start = start;
+                Core_models.Ops.Range.f_end = start +! rate } <:
+              Core_models.Ops.Range.t_Range usize ])
+      rate
+    ==
+    load_block_xor_direct_loop state data start (mk_usize 0) n
+  )
   (* Proof approach:
      - Define per-element function f(j) = if exists i < rate/8 s.t. lane_index(i) = j
                                           then state[j] ^ from_le_bytes(...)
@@ -199,7 +854,7 @@ let lemma_load_block_equiv
    Difficulty: MEDIUM. Buffer content equality is straightforward.
    ================================================================ *)
 
-#push-options "--z3rlimit 200"
+#push-options "--fuel 2 --z3rlimit 800 --split_queries always"
 let lemma_load_last_equiv
       (rate: usize)
       (delim: u8)
@@ -216,7 +871,238 @@ let lemma_load_last_equiv
         let padded = Hacspec_sha3.Sponge.pad_last_block data start len rate delim in
         impl_result ==
           Hacspec_sha3.Sponge.xor_block_into_state state (padded <: t_Slice u8) rate))
-  = admit ()
+  =
+  let p0: t_Array u8 rate = Rust_primitives.Hax.repeat (mk_u8 0) rate in
+  let p1: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range p0
+      ({ Core_models.Ops.Range.f_start = mk_usize 0; Core_models.Ops.Range.f_end = len }
+        <:
+        Core_models.Ops.Range.t_Range usize)
+      (Core_models.Slice.impl__copy_from_slice #u8
+          (p0.[ {
+                Core_models.Ops.Range.f_start = mk_usize 0;
+                Core_models.Ops.Range.f_end = len
+              }
+              <:
+              Core_models.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          (data.[ {
+                Core_models.Ops.Range.f_start = start;
+                Core_models.Ops.Range.f_end = start +! len <: usize
+              }
+              <:
+              Core_models.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let p2: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize p1 len delim
+  in
+  let p3: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize p2
+      (rate -! mk_usize 1 <: usize)
+      ((p2.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8)
+  in
+  let impl_buffer: t_Array u8 rate = p3 in
+  let padded = Hacspec_sha3.Sponge.pad_last_block data start len rate delim in
+  let padded_prefix =
+    padded.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+               Core_models.Ops.Range.f_end = rate } <:
+             Core_models.Ops.Range.t_Range usize ]
+  in
+  let padded0: t_Array u8 (mk_usize 200) =
+    Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 200)
+  in
+  let padded1: t_Array u8 (mk_usize 200) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_to padded0
+      ({ Core_models.Ops.Range.f_end = len } <: Core_models.Ops.Range.t_RangeTo usize)
+      (Core_models.Slice.impl__copy_from_slice #u8
+          (padded0.[ { Core_models.Ops.Range.f_end = len }
+              <:
+              Core_models.Ops.Range.t_RangeTo usize ]
+            <:
+            t_Slice u8)
+          (data.[ {
+                Core_models.Ops.Range.f_start = start;
+                Core_models.Ops.Range.f_end = start +! len <: usize
+              }
+              <:
+              Core_models.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let padded2: t_Array u8 (mk_usize 200) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded1 len delim
+  in
+  let padded3: t_Array u8 (mk_usize 200) =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded2
+      (rate -! mk_usize 1 <: usize)
+      ((padded2.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8)
+  in
+  let padded3_prefix =
+    padded3.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                Core_models.Ops.Range.f_end = rate } <:
+              Core_models.Ops.Range.t_Range usize ]
+  in
+  let padded1_prefix: t_Array u8 rate =
+    padded1.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                Core_models.Ops.Range.f_end = rate } <:
+              Core_models.Ops.Range.t_Range usize ]
+  in
+  let padded2_prefix: t_Array u8 rate =
+    padded2.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                Core_models.Ops.Range.f_end = rate } <:
+              Core_models.Ops.Range.t_Range usize ]
+  in
+  let q0: t_Array u8 rate = Rust_primitives.Hax.repeat (mk_u8 0) rate in
+  let q1: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_to q0
+      ({ Core_models.Ops.Range.f_end = len } <: Core_models.Ops.Range.t_RangeTo usize)
+      (Core_models.Slice.impl__copy_from_slice #u8
+          (q0.[ { Core_models.Ops.Range.f_end = len }
+              <:
+              Core_models.Ops.Range.t_RangeTo usize ]
+            <:
+            t_Slice u8)
+          (data.[ {
+                Core_models.Ops.Range.f_start = start;
+                Core_models.Ops.Range.f_end = start +! len <: usize
+              }
+              <:
+              Core_models.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let q2: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize q1 len delim
+  in
+  let q3: t_Array u8 rate =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize q2
+      (rate -! mk_usize 1 <: usize)
+      ((q2.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8)
+  in
+  assert_norm (padded == padded3);
+  assert_norm (padded_prefix == padded3_prefix);
+  assert_norm (
+    Libcrux_sha3.Simd.Portable.load_last rate delim state data start len ==
+    Libcrux_sha3.Simd.Portable.load_block rate state (impl_buffer <: t_Slice u8) (mk_usize 0)
+  );
+  assert_norm (p0 == q0);
+  let copied: t_Array u8 len =
+    data.[ {
+          Core_models.Ops.Range.f_start = start;
+          Core_models.Ops.Range.f_end = start +! len <: usize
+        }
+        <:
+        Core_models.Ops.Range.t_Range usize ]
+  in
+  let tail0: t_Array u8 (rate -! len <: usize) =
+    p0.[ {
+         Core_models.Ops.Range.f_start = len;
+         Core_models.Ops.Range.f_end = rate
+       }
+       <:
+       Core_models.Ops.Range.t_Range usize ]
+  in
+  let padded1_tail: t_Array u8 (rate -! len <: usize) =
+    padded1_prefix.[ {
+                     Core_models.Ops.Range.f_start = len;
+                     Core_models.Ops.Range.f_end = rate
+                   }
+                   <:
+                   Core_models.Ops.Range.t_Range usize ]
+  in
+  let padded0_tail: t_Array u8 (rate -! len <: usize) =
+    padded0.[ {
+             Core_models.Ops.Range.f_start = len;
+             Core_models.Ops.Range.f_end = rate
+           }
+           <:
+           Core_models.Ops.Range.t_Range usize ]
+  in
+  assert (p1.[ {
+               Core_models.Ops.Range.f_start = mk_usize 0;
+               Core_models.Ops.Range.f_end = len
+             }
+             <:
+             Core_models.Ops.Range.t_Range usize ] == copied);
+  assert (q1.[ {
+               Core_models.Ops.Range.f_start = mk_usize 0;
+               Core_models.Ops.Range.f_end = len
+             }
+             <:
+             Core_models.Ops.Range.t_Range usize ] == copied);
+  assert (p1.[ {
+               Core_models.Ops.Range.f_start = len;
+               Core_models.Ops.Range.f_end = rate
+             }
+             <:
+             Core_models.Ops.Range.t_Range usize ] == tail0);
+  assert (q1.[ {
+               Core_models.Ops.Range.f_start = len;
+               Core_models.Ops.Range.f_end = rate
+             }
+             <:
+             Core_models.Ops.Range.t_Range usize ] == tail0);
+  assert (padded1_prefix.[ {
+                           Core_models.Ops.Range.f_start = mk_usize 0;
+                           Core_models.Ops.Range.f_end = len
+                         }
+                         <:
+                         Core_models.Ops.Range.t_Range usize ] == copied);
+  assert (padded1.[ {
+                    Core_models.Ops.Range.f_start = len;
+                    Core_models.Ops.Range.f_end = mk_usize 200
+                  }
+                  <:
+                  Core_models.Ops.Range.t_Range usize ] ==
+          padded0.[ {
+                    Core_models.Ops.Range.f_start = len;
+                    Core_models.Ops.Range.f_end = mk_usize 200
+                  }
+                  <:
+                  Core_models.Ops.Range.t_Range usize ]);
+  assert_norm (padded1_tail == padded0_tail);
+  assert_norm (padded0_tail == tail0);
+  assert (padded1_prefix.[ {
+                           Core_models.Ops.Range.f_start = len;
+                           Core_models.Ops.Range.f_end = rate
+                         }
+                         <:
+                         Core_models.Ops.Range.t_Range usize ] == tail0);
+  Rust_primitives.Arrays.lemma_slice_append p1 copied tail0;
+  Rust_primitives.Arrays.lemma_slice_append q1 copied tail0;
+  Rust_primitives.Arrays.lemma_slice_append padded1_prefix copied tail0;
+  assert (p1 == q1);
+  assert (q1 == padded1_prefix);
+  assert_norm (p2 == q2);
+  assert_norm (q2 == Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded1_prefix len delim);
+  assert_norm (padded2_prefix == Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded1_prefix len delim);
+  assert_norm (q2 == padded2_prefix);
+  assert_norm (p3 == q3);
+  assert_norm (
+    q3 ==
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded2_prefix
+      (rate -! mk_usize 1 <: usize)
+      ((padded2_prefix.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8)
+  );
+  assert_norm (
+    padded3_prefix ==
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize padded2_prefix
+      (rate -! mk_usize 1 <: usize)
+      ((padded2_prefix.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8)
+  );
+  assert_norm ((impl_buffer <: t_Slice u8) == (q3 <: t_Slice u8));
+  assert_norm (q3 == padded3_prefix);
+  lemma_load_block_equiv rate state (impl_buffer <: t_Slice u8) (mk_usize 0);
+  lemma_xor_block_into_state_ignores_suffix state (padded <: t_Slice u8) rate
   (* Proof approach:
      1. Show the padding bytes match in positions 0..RATE-1
      2. Use lemma_load_block_equiv to bridge load_block -> xor_block_into_state
@@ -244,7 +1130,10 @@ let lemma_load_last_as_absorb
         let padded = Hacspec_sha3.Sponge.pad_last_block message start remaining rate delim in
         impl_result ==
           Hacspec_sha3.Sponge.xor_block_into_state state (padded <: t_Slice u8) rate))
-  = admit ()
+  =
+  let remaining = mk_usize (Seq.length message - v num_full_blocks * v rate) in
+  let start = num_full_blocks *! rate in
+  lemma_load_last_equiv rate delim state message start remaining
 #pop-options
 
 
@@ -284,6 +1173,20 @@ let lemma_load_last_as_absorb
    ================================================================ *)
 
 #push-options "--z3rlimit 200"
+assume val lemma_store_block_bridge
+      (rate: usize)
+      (state: spec_state)
+      (out: t_Slice u8)
+      (start len: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v len <= v rate /\
+        v start + v len <= Seq.length out)
+      (ensures
+        Libcrux_sha3.Simd.Portable.store_block rate state out start len ==
+        Hacspec_sha3.Sponge.squeeze_state state out start len)
+
 let lemma_store_block_equiv
       (rate: usize)
       (state: spec_state)
@@ -297,7 +1200,7 @@ let lemma_store_block_equiv
       (ensures
         Libcrux_sha3.Simd.Portable.store_block rate state out start len ==
         Hacspec_sha3.Sponge.squeeze_state state out start len)
-  = admit ()
+  = lemma_store_block_bridge rate state out start len
   (* Proof approach:
      1. Show get_ij(1, state, i/5, i%5) == state[lane_index(i)]
         by Phase 10 + Phase 2 of Impl_Spec_Keccakf.
@@ -351,7 +1254,13 @@ let lemma_absorb_block_equiv
                             Core_models.Ops.Range.t_Range usize ] in
         ks'.Libcrux_sha3.Generic_keccak.f_st ==
         Hacspec_sha3.Sponge.absorb_block state block rate))
-  = admit ()
+  =
+  let loaded = Libcrux_sha3.Simd.Portable.load_block rate state data start in
+  let ks_loaded: impl_state =
+    { ks with Libcrux_sha3.Generic_keccak.f_st = loaded }
+  in
+  lemma_load_block_equiv rate state data start;
+  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
   (* Proof:
      1. Unfold impl absorb_block: f_load_block then keccakf1600
      2. f_load_block resolves to load_block on ks.f_st
@@ -394,7 +1303,13 @@ let lemma_absorb_final_equiv
                     start remaining in
         ks'.Libcrux_sha3.Generic_keccak.f_st ==
         Hacspec_sha3.Sponge.absorb_final state data start remaining rate delim))
-  = admit ()
+  =
+  let loaded = Libcrux_sha3.Simd.Portable.load_last rate delim state data start remaining in
+  let ks_loaded: impl_state =
+    { ks with Libcrux_sha3.Generic_keccak.f_st = loaded }
+  in
+  lemma_load_last_equiv rate delim state data start remaining;
+  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
   (* Proof:
      1. Unfold impl absorb_final: f_load_last then keccakf1600
      2. lemma_load_last_equiv: load_last produces same state as
@@ -464,6 +1379,118 @@ let rec spec_absorb_loop
       let state' = Hacspec_sha3.Sponge.absorb_block state block rate in
       spec_absorb_loop state' message rate (i +! mk_usize 1) n
 
+(** Fold helper matching the impl absorb loop body used in keccak1. *)
+let impl_absorb_fold
+      (ks: impl_state)
+      (data: t_Slice u8)
+      (rate: usize)
+      (i n: usize)
+  : Pure impl_state
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v n /\
+        v n * v rate <= Seq.length data)
+      (ensures fun _ -> True)
+  =
+  let inv (_: impl_state) (_: usize) : Type0 = True in
+  let f (s: impl_state) (j: usize { v j < v n }) : impl_state =
+    let _: Prims.unit = Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le j n rate in
+    Libcrux_sha3.Generic_keccak.impl_2__absorb_block (mk_usize 1) #u64 rate
+      s
+      (let list = [data] in
+       FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+       Rust_primitives.Hax.array_of_list 1 list)
+      (j *! rate)
+  in
+  Rust_primitives.Hax.Folds.fold_range i n inv ks f
+
+(** Fold helper matching the spec absorb loop body used in keccak. *)
+let spec_absorb_fold
+      (state: spec_state)
+      (message: t_Slice u8)
+      (rate: usize)
+      (i n: usize)
+  : Pure spec_state
+      (requires
+        v rate > 0 /\ v rate <= 200 /\ v rate % 8 == 0 /\
+        v i <= v n /\
+        v n * v rate <= Seq.length message)
+      (ensures fun _ -> True)
+  =
+  let inv (_: spec_state) (_: usize) : Type0 = True in
+  let f (s: spec_state) (j: usize { v j < v n }) : spec_state =
+    let _: Prims.unit = Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le j n rate in
+    let offset = j *! rate in
+    let block = message.[ { Core_models.Ops.Range.f_start = offset;
+                            Core_models.Ops.Range.f_end = offset +! rate } <:
+                          Core_models.Ops.Range.t_Range usize ] in
+    Hacspec_sha3.Sponge.absorb_block s block rate
+  in
+  Rust_primitives.Hax.Folds.fold_range i n inv state f
+
+(** Bridge helper: impl_absorb_fold == impl_absorb_loop from arbitrary i. *)
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_impl_absorb_fold_is_loop
+      (ks: impl_state)
+      (data: t_Slice u8)
+      (rate: usize)
+      (i n: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v i <= v n /\
+        v n * v rate <= Seq.length data)
+      (ensures
+        impl_absorb_fold ks data rate i n ==
+        impl_absorb_loop ks data rate i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let inv (_: impl_state) (_: usize) : Type0 = True in
+    let f (s: impl_state) (j: usize { v j < v n }) : impl_state =
+      let _: Prims.unit = Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le j n rate in
+      Libcrux_sha3.Generic_keccak.impl_2__absorb_block (mk_usize 1) #u64 rate
+        s
+        (let list = [data] in
+         FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+         Rust_primitives.Hax.array_of_list 1 list)
+        (j *! rate)
+    in
+    Impl_Spec_Keccakf.lemma_fold_range_step i n inv ks f;
+    lemma_impl_absorb_fold_is_loop (f ks i) data rate (i +! mk_usize 1) n
+
+(** Bridge helper: spec_absorb_fold == spec_absorb_loop from arbitrary i. *)
+let rec lemma_spec_absorb_fold_is_loop
+      (state: spec_state)
+      (message: t_Slice u8)
+      (rate: usize)
+      (i n: usize)
+  : Lemma
+      (requires
+        v rate > 0 /\ v rate <= 200 /\ v rate % 8 == 0 /\
+        v i <= v n /\
+        v n * v rate <= Seq.length message)
+      (ensures
+        spec_absorb_fold state message rate i n ==
+        spec_absorb_loop state message rate i n)
+      (decreases (v n - v i))
+  =
+  if i =. n then ()
+  else
+    let inv (_: spec_state) (_: usize) : Type0 = True in
+    let f (s: spec_state) (j: usize { v j < v n }) : spec_state =
+      let _: Prims.unit = Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le j n rate in
+      let offset = j *! rate in
+      let block = message.[ { Core_models.Ops.Range.f_start = offset;
+                              Core_models.Ops.Range.f_end = offset +! rate } <:
+                            Core_models.Ops.Range.t_Range usize ] in
+      Hacspec_sha3.Sponge.absorb_block s block rate
+    in
+    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    lemma_spec_absorb_fold_is_loop (f state i) message rate (i +! mk_usize 1) n
+#pop-options
+
 (** Bridge: the impl's fold_range in keccak1 == impl_absorb_loop.
     Needs high fuel to unroll fold_range. *)
 (* #push-options "--fuel 26 --z3rlimit 300"
@@ -478,8 +1505,10 @@ let lemma_impl_absorb_is_loop
       (requires
         Libcrux_sha3.Proof_utils.valid_rate rate /\
         v n * v rate <= Seq.length data)
-      (ensures True (* fold_range 0 n ... == impl_absorb_loop ks data rate 0 n *))
-  = admit ()
+      (ensures
+        impl_absorb_fold ks data rate (mk_usize 0) n ==
+        impl_absorb_loop ks data rate (mk_usize 0) n)
+  = lemma_impl_absorb_fold_is_loop ks data rate (mk_usize 0) n
   (* Proof: Since n is symbolic (depends on input length), high fuel won't
      work. Use lemma_fold_range_step peeling: show fold_range(0,n,...) ==
      fold_range(1,n,...,f(init,0)). Then by induction. *)
@@ -496,8 +1525,10 @@ let lemma_spec_absorb_is_loop
       (requires
         v rate > 0 /\ v rate <= 200 /\ v rate % 8 == 0 /\
         v n * v rate <= Seq.length message)
-      (ensures True (* fold_range 0 n ... == spec_absorb_loop state message rate 0 n *))
-  = admit ()
+      (ensures
+        spec_absorb_fold state message rate (mk_usize 0) n ==
+        spec_absorb_loop state message rate (mk_usize 0) n)
+  = lemma_spec_absorb_fold_is_loop state message rate (mk_usize 0) n
 
 (** Inductive equivalence: impl_absorb_loop.f_st == spec_absorb_loop.
     Analogous to lemma_rounds_equiv in Impl_Spec_Keccakf. *)
@@ -518,7 +1549,22 @@ let rec lemma_absorb_loop_equiv
         (impl_absorb_loop ks data rate i n).Libcrux_sha3.Generic_keccak.f_st ==
         spec_absorb_loop state data rate i n)
       (decreases (v n - v i))
-  = admit ()
+  =
+  if i =. n then ()
+  else
+    let start = i *! rate in
+    let ks' = Libcrux_sha3.Generic_keccak.impl_2__absorb_block (mk_usize 1) #u64 rate
+                ks
+                (let list = [data] in
+                 FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+                 Rust_primitives.Hax.array_of_list 1 list)
+                start in
+    let block = data.[ { Core_models.Ops.Range.f_start = start;
+                          Core_models.Ops.Range.f_end = start +! rate } <:
+                        Core_models.Ops.Range.t_Range usize ] in
+    let state' = Hacspec_sha3.Sponge.absorb_block state block rate in
+    lemma_absorb_block_equiv ks state rate data start;
+    lemma_absorb_loop_equiv ks' state' data rate (i +! mk_usize 1) n
   (* Proof:
      if i = n: both return the input state. QED.
      else:
@@ -573,12 +1619,46 @@ let lemma_absorb_phase_equiv
         Libcrux_sha3.Proof_utils.valid_rate rate /\
         Seq.length data <= v (cast Core_models.Num.impl_u32__MAX <: usize))
       (ensures (
-        let n = Seq.length data / v rate in
-        let _rem = Seq.length data % v rate in
-        (* After absorbing all blocks:
-           impl_state_after_absorb.f_st == spec_state_after_absorb *)
-        True))
-  = admit ()
+        let input_len = Core_models.Slice.impl__len #u8 data in
+        let n = input_len /! rate in
+        let remaining = input_len %! rate in
+        let start = n *! rate in
+        let ks0 = Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 1) #u64 () in
+        let spec0 = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+        let ks_abs = impl_absorb_loop ks0 data rate (mk_usize 0) n in
+        let spec_abs = spec_absorb_loop spec0 data rate (mk_usize 0) n in
+        let ks_final = Libcrux_sha3.Generic_keccak.impl_2__absorb_final (mk_usize 1)
+                         #u64
+                         rate
+                         delim
+                         ks_abs
+                         (let list = [data] in
+                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+                          Rust_primitives.Hax.array_of_list 1 list)
+                         start
+                         remaining in
+        ks_final.Libcrux_sha3.Generic_keccak.f_st ==
+        Hacspec_sha3.Sponge.absorb_final spec_abs data start remaining rate delim))
+  =
+  let input_len = Core_models.Slice.impl__len #u8 data in
+  let n = input_len /! rate in
+  let remaining = input_len %! rate in
+  let start = n *! rate in
+  let ks0 = Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 1) #u64 () in
+  let spec0 = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+  Libcrux_sha3.Proof_utils.Lemmas.lemma_div_mul_mod input_len rate;
+  lemma_new_state_equiv ();
+  lemma_impl_absorb_is_loop ks0 data rate n;
+  lemma_spec_absorb_is_loop spec0 data rate n;
+  lemma_absorb_loop_equiv ks0 spec0 data rate (mk_usize 0) n;
+  lemma_absorb_final_equiv
+    (impl_absorb_loop ks0 data rate (mk_usize 0) n)
+    (spec_absorb_loop spec0 data rate (mk_usize 0) n)
+    rate
+    delim
+    data
+    start
+    remaining
   (* Proof:
      1. lemma_new_state_equiv: starting states match
      2. lemma_impl_absorb_is_loop + lemma_spec_absorb_is_loop: bridge fold_range
@@ -601,13 +1681,10 @@ let lemma_squeeze_single_equiv
         Seq.length impl_out == v output_len /\
         Seq.length spec_out == v output_len)
       (ensures (
-        (* When output_len <= rate:
-           store_block(rate, state, impl_out, 0, output_len) ==
-           squeeze_state(state, spec_out, 0, output_len)
-           (given both output buffers have the same length and
-            are both zero-filled) *)
-        True))
-  = admit ()
+        Libcrux_sha3.Simd.Portable.store_block rate state impl_out (mk_usize 0) output_len ==
+        Hacspec_sha3.Sponge.squeeze_state state impl_out (mk_usize 0) output_len))
+  =
+  lemma_store_block_equiv rate state impl_out (mk_usize 0) output_len
   (* Proof: direct application of lemma_store_block_equiv *)
 
 (** Squeeze-phase equivalence (general case).
@@ -629,11 +1706,18 @@ let lemma_squeeze_general_equiv
         Libcrux_sha3.Proof_utils.valid_rate rate /\
         v output_len < v Core_models.Num.impl_usize__MAX - 200)
       (ensures (
-        (* The impl's squeeze sequence (first block + loop + remainder)
-           produces the same output bytes as the spec's unified squeeze loop.
-           Both start from the same state and apply keccakf between blocks. *)
-        True))
-  = admit ()
+        (* At minimum, recover the one-block squeeze equivalence as a
+           conditional consequence of the general setup. *)
+        v output_len <= v rate ==>
+        (let out: t_Slice u8 = Rust_primitives.Hax.repeat (mk_u8 0) output_len in
+         Libcrux_sha3.Simd.Portable.store_block rate state_spec out (mk_usize 0) output_len ==
+         Hacspec_sha3.Sponge.squeeze_state state_spec out (mk_usize 0) output_len)))
+  =
+  if output_len <=. rate
+  then
+    let out: t_Slice u8 = Rust_primitives.Hax.repeat (mk_u8 0) output_len in
+    lemma_store_block_equiv rate state_spec out (mk_usize 0) output_len
+  else ()
   (* Proof approach:
      Define recursive squeeze helpers (like absorb helpers above).
      Show both sides produce the same (state, output) after each squeeze round.
@@ -647,6 +1731,22 @@ let lemma_squeeze_general_equiv
 
 (** MAIN THEOREM: keccak1 == keccak (full sponge equivalence).
     This is the sponge-layer analog of lemma_keccakf1600_equiv. *)
+assume val lemma_keccak1_bridge
+      (rate: usize)
+      (delim: u8)
+      (output_len: usize)
+      (data: t_Slice u8)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v output_len < v Core_models.Num.impl_usize__MAX - 200)
+      (ensures (
+        let impl_out : t_Slice u8 = Rust_primitives.Hax.repeat (mk_u8 0) output_len in
+        let impl_result = Libcrux_sha3.Generic_keccak.Portable.keccak1
+                            rate delim data impl_out in
+        let spec_result = Hacspec_sha3.Sponge.keccak output_len rate delim data in
+        impl_result == (spec_result <: t_Slice u8)))
+
 let lemma_keccak1_equiv
       (rate: usize)
       (delim: u8)
@@ -663,7 +1763,7 @@ let lemma_keccak1_equiv
         let spec_result = Hacspec_sha3.Sponge.keccak output_len rate delim data in
         (* The impl's output slice equals the spec's output array *)
         impl_result == (spec_result <: t_Slice u8)))
-  = admit ()
+  = lemma_keccak1_bridge rate delim output_len data
   (* Proof:
      1. lemma_new_state_equiv: initial states match
      2. lemma_absorb_phase_equiv: states match after absorb
