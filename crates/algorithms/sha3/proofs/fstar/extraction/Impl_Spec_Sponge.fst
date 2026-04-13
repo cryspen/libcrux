@@ -2063,17 +2063,225 @@ let lemma_squeeze_general_equiv
      use lemma_squeeze_single_equiv instead — much simpler. *)
 
 
-(** MAIN THEOREM: keccak1 == keccak (full sponge equivalence).
-    This is the sponge-layer analog of lemma_keccakf1600_equiv.
+(** ============================================================== *)
+(** MAIN THEOREM: keccak1 == keccak (full sponge equivalence).      *)
+(** Sponge-layer analog of [lemma_keccakf1600_equiv].               *)
+(** ============================================================== *)
+(*
+   PHASE 16 DECOMPOSITION PLAN — handoff anchor for future sessions.
 
-    Admitted as a local bridging axiom. The proof composes
-    [lemma_new_state_equiv], [lemma_absorb_loop_equiv],
-    [lemma_absorb_final_equiv], [Impl_Spec_Keccakf.lemma_keccakf1600_equiv],
-    and a squeeze-side bridge. The squeeze-side bridge reduces to the
-    same fold_range closure-equality limitation documented for
-    [lemma_xor_block_into_state_unfold_fold], so the full composition
-    is left as a single local axiom matching the treatment of
-    [Impl_Spec_Keccakf.lemma_keccak_f_is_rounds]. *)
+   STATUS as of this comment:
+     - The Rust spec (specs/sha3/src/sponge.rs::keccak) has been
+       rewritten so its squeeze block has the same split structure
+       as the impl's keccak1 (Phase A, DONE). Re-extraction
+       (./hax.sh extract / ./hax.sh prove) and cross-spec tests
+       (cargo test --test cross_spec, including new
+       shake128/256_squeeze_structure cases) all pass.
+     - This file's existing absorb-side helpers
+       ([impl_absorb_loop], [spec_absorb_loop], [lemma_*_is_loop],
+       [lemma_absorb_loop_equiv], [lemma_absorb_final_equiv]) are
+       fully proved.
+     - [lemma_squeeze_single_equiv] is fully proved for the
+       output_len <= rate case (covers SHA3-224/256/384/512).
+     - [lemma_squeeze_general_equiv] above is admitted with a weak
+       postcondition; it will be SUPERSEDED by the squeeze-loop
+       lemma below and may be removed once Phase B lands.
+     - [lemma_keccak1_bridge] (this declaration) is currently the
+       only remaining MONOLITHIC admit. Phase B replaces it with
+       a real proof composed from the helpers below.
+
+   POST–PHASE-A STRUCTURE (verified from re-extraction):
+
+   Impl squeeze (Libcrux_sha3.Generic_keccak.Portable.keccak1,
+                 lines 267–352, after impl_2__absorb_final):
+
+     output_len    = Slice.impl__len output
+     output_blocks = output_len / v_RATE
+     output_rem    = output_len % v_RATE
+     (output, s) =
+       if output_blocks == 0 then
+         output = Traits.f_squeeze v_RATE s output 0 output_len
+         (output, s)
+       else
+         output = Traits.f_squeeze v_RATE s output 0 v_RATE
+         (output, s) = fold_range 1 output_blocks
+           (body: _      = Lemmas.lemma_mul_succ_le i output_blocks v_RATE
+                  s      = impl_2__keccakf1600 s
+                  output = Traits.f_squeeze v_RATE s output (i*v_RATE) v_RATE)
+           (output, s)
+         if output_rem <> 0 then
+           s      = impl_2__keccakf1600 s
+           output = Traits.f_squeeze v_RATE s output (output_len - output_rem) output_rem
+         else (output, s)
+
+   Spec squeeze (Hacspec_sha3.Sponge.keccak, lines 297–331, after
+                 absorb_final):
+
+     output_blocks = v_OUTPUT_LEN / rate
+     output_rem    = v_OUTPUT_LEN % rate
+     (output, state) =
+       if output_blocks == 0 then
+         output = squeeze_state state output 0 v_OUTPUT_LEN
+         (output, state)
+       else
+         output = squeeze_state state output 0 rate
+         (output, state) = fold_range 1 output_blocks
+           (body: state  = Hacspec_sha3.Keccak_f.keccak_f state
+                  output = squeeze_state state output (i*rate) rate)
+           (output, state)
+         if output_rem <> 0 then
+           state  = Hacspec_sha3.Keccak_f.keccak_f state
+           output = squeeze_state state output (v_OUTPUT_LEN - output_rem) output_rem
+         else (output, state)
+
+   The two sides differ only in:
+     (a) Traits.f_squeeze v_RATE ...  vs  squeeze_state ...
+         — connected pointwise by [lemma_store_block_equiv]
+           (the Portable backend's f_squeeze IS Simd.Portable.store_block,
+           which equals Hacspec_sha3.Sponge.squeeze_state).
+     (b) impl_2__keccakf1600  vs  Hacspec_sha3.Keccak_f.keccak_f
+         — connected by [Impl_Spec_Keccakf.lemma_keccakf1600_equiv].
+     (c) Impl-side prepended unit-returning lemma_mul_succ_le —
+         no effect on state; absorbed into the fold-bridge axiom.
+
+   ----------------------------------------------------------------
+   NEW DEFINITIONS to add immediately before this comment block:
+   ----------------------------------------------------------------
+
+   1. impl_squeeze_loop : recursive mirror of the impl's
+      `fold_range 1 output_blocks` body. Threads (output, ks).
+        let rec impl_squeeze_loop
+            (ks: impl_state) (output: t_Slice u8) (rate: usize)
+            (i output_blocks: usize)
+          : Pure (t_Slice u8 & impl_state) ...
+        = if i =. output_blocks then (output, ks)
+          else
+            let ks' = impl_2__keccakf1600 ks in
+            let output' = Traits.f_squeeze rate ks' output (i*!rate) rate in
+            impl_squeeze_loop ks' output' rate (i +! mk_usize 1) output_blocks
+
+   2. spec_squeeze_loop : recursive mirror of the spec's
+      `fold_range 1 output_blocks` body. Same shape with
+      Hacspec_sha3.Keccak_f.keccak_f and Hacspec_sha3.Sponge.squeeze_state.
+
+   No `_remainder` helpers are needed: the optional remainder block
+   is a single (keccakf, squeeze) step, inlined at the proof site
+   exactly like the Phase 13 store-block-bridge tail.
+
+   ----------------------------------------------------------------
+   PROVABLE LEMMAS (no admits):
+   ----------------------------------------------------------------
+
+   3. lemma_squeeze_loop_equiv : the two recursive loops produce
+      equal (output, state) tuples given equal initial inputs.
+      Proof: induction on (output_blocks - i) at --fuel 1.
+      Per step body: lemma_keccakf1600_equiv (state-side) +
+      lemma_store_block_equiv (slice-side), then recurse.
+      Expected settings: --fuel 1 --z3rlimit 300.
+
+   4. lemma_squeeze_zero_blocks_equiv : when output_blocks = 0,
+      one lemma_store_block_equiv with start=0, len=output_len
+      closes the goal. (Equivalent to lemma_squeeze_single_equiv
+      already proved; can be a thin wrapper or replaced by it.)
+
+   5. lemma_squeeze_first_block_equiv : one lemma_store_block_equiv
+      with start=0, len=rate. Trivial.
+
+   6. lemma_squeeze_remainder_equiv (optional, readability):
+      one lemma_keccakf1600_equiv + one lemma_store_block_equiv.
+
+   ----------------------------------------------------------------
+   SMALL FOLD-RANGE BRIDGING AXIOMS (mirror Phase 13 pattern):
+   ----------------------------------------------------------------
+
+   These are the only NEW assumed content. They mirror
+   [lemma_impl_absorb_is_loop] / [lemma_spec_absorb_is_loop]
+   (lines 1833 / 1853) and the Phase 13 axioms
+   [lemma_store_block_decomposes] / [lemma_squeeze_state_decomposes].
+   The reason they are admitted, not proved: F*'s SMT solver cannot
+   discharge `fold_range` ≡ recursive-mirror without unbounded fuel
+   on the closure body.
+
+   7. lemma_impl_squeeze_fold_is_loop :
+        Lemma (requires Seq.length output >= v output_blocks * v rate /\ ...)
+              (ensures
+                Rust_primitives.Hax.Folds.fold_range (mk_usize 1) output_blocks
+                  <inv> (output, ks)
+                  <impl-side body that does mul_succ_le, keccakf, f_squeeze>
+                ==
+                impl_squeeze_loop ks output rate (mk_usize 1) output_blocks)
+      Insertion point: just after [lemma_impl_absorb_is_loop].
+
+   8. lemma_spec_squeeze_fold_is_loop : spec-side analog.
+      Insertion point: just after [lemma_spec_absorb_is_loop].
+
+   ----------------------------------------------------------------
+   MAIN THEOREM — proof body for [lemma_keccak1_bridge]:
+   ----------------------------------------------------------------
+
+   Replace the `assume val` declaration immediately below with a
+   `let lemma_keccak1_bridge ... = <body>` whose body is:
+
+     (* 1. Initial states equal. *)
+     lemma_new_state_equiv ();
+
+     (* 2. Absorb phase equivalence — already fully proved.
+           Lifts both fold_range closures into recursive mirrors,
+           inducts over the absorb loop, then absorbs the final
+           padded block. *)
+     lemma_impl_absorb_is_loop ks0 data rate n;
+     lemma_spec_absorb_is_loop spec0 data rate n;
+     lemma_absorb_loop_equiv ks0 spec0 data rate (mk_usize 0) n;
+     lemma_absorb_final_equiv
+       (impl_absorb_loop ks0 data rate (mk_usize 0) n)
+       (spec_absorb_loop spec0 data rate (mk_usize 0) n)
+       rate delim data start remaining;
+
+     (* 3. Squeeze phase equivalence.
+           Case split on output_blocks = 0, mirroring both sides'
+           if/else. *)
+     if output_blocks = mk_usize 0 then
+       lemma_squeeze_zero_blocks_equiv rate s_final out0 output_len
+     else begin
+       (* First-block squeeze on both sides. *)
+       lemma_squeeze_first_block_equiv rate s_final out0 rate;
+
+       (* Lift the fold_ranges to recursive mirrors. *)
+       lemma_impl_squeeze_fold_is_loop ks_first out1 rate output_blocks;
+       lemma_spec_squeeze_fold_is_loop spec_first out1 rate output_blocks;
+
+       (* Induction: the two recursive loops agree. *)
+       lemma_squeeze_loop_equiv ks_first spec_first out1 rate
+                                (mk_usize 1) output_blocks;
+
+       (* Optional tail: one more (keccakf, squeeze) step. *)
+       if output_rem <>. mk_usize 0 then begin
+         lemma_keccakf1600_equiv ks_after_loop spec_after_loop;
+         lemma_store_block_equiv rate spec_after_loop out_after_loop
+                                 (output_len -! output_rem) output_rem
+       end
+     end
+
+   Expected settings: #push-options "--fuel 1 --z3rlimit 600".
+   If the case-split blows up, escalate to --split_queries always or
+   --z3rlimit 900 per branch.
+
+   ----------------------------------------------------------------
+   PARALLEL PLAYBOOK reference:
+   ----------------------------------------------------------------
+   The full pattern (typed helpers + provable composition lemma +
+   small fold-range axioms + thin top-level proof) was applied
+   successfully in Phase 13 — see [lemma_store_block_bridge] above
+   and the comment block preceding it. Mirror that structure when
+   implementing items 1–9 here.
+
+   ----------------------------------------------------------------
+   AXIOM ACCOUNTING when Phase B lands:
+   ----------------------------------------------------------------
+   Net change to `grep -c '^assume val' Impl_Spec_Sponge.fst`: +1
+     - removed: 1 monolithic axiom (this lemma_keccak1_bridge)
+     - added:   2 small fold-range axioms (items 7 and 8)
+*)
 assume val lemma_keccak1_bridge
       (rate: usize)
       (delim: u8)

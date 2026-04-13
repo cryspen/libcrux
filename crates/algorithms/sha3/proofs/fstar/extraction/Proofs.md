@@ -345,3 +345,207 @@ The complete proof in `Impl_Spec_Keccakf.fst` has 8 phases:
 
 Main theorem: `lemma_keccakf1600_equiv` — chains all phases to show
 `keccakf1600(ks).f_st == keccak_f(state)`.
+
+## Sponge-Layer Proof Patterns
+
+Lessons learned extending the equivalence upward from `keccak_f` to the
+full sponge (`Impl_Spec_Sponge.fst`, phases 9–17, including the
+Phase 13 store-block bridge and the Phase 16 `keccak1` bridge). The
+sponge layer introduced qualitatively new obstacles beyond Keccak-f
+because loops are unbounded (not 24 rounds but "ceil(OUTPUT_LEN/rate)"
+iterations), the fold-range bodies are much heavier, and the impl and
+spec originally structured their squeeze phases differently.
+
+### Ranking of pain points (most to least blocking)
+
+| Rank | Source of pain | Workaround |
+|------|----------------|-----------|
+| 1 | `fold_range` closure equality cannot be proved by SMT | Axiomatize a small named-function bridge (e.g. `lemma_*_decomposes`, `lemma_*_is_loop`) |
+| 2 | Slice-index subtype obligations inside untyped closures | Move body into a typed `Pure` helper function; axiom references helper by name |
+| 3 | `usize` arithmetic via `v`-abstraction + hax's refinement-heavy generated code | Per-lemma `assert (v ... == ...)` bookkeeping; helper lemmas `lemma_div_mul_mod`, `lemma_mul_succ_le` |
+| 4 | Typeclass/trait dispatch (e.g. `Libcrux_sha3.Traits.f_squeeze`) | Let SMT unfold the resolution via `lemma_store_block_equiv` which matches on the portable resolution |
+| 5 | Slice (`t_Slice u8`) vs sized-array (`t_Array u8 N`) at proof boundary | Coerce spec's array to a slice at the top-level `ensures`; keep helpers slice-typed |
+| 6 | hax extraction drift between hax versions | Keep proofs referencing named top-level functions; treat rewrites of auxiliaries (e.g. byte-copy style) as transparent |
+
+### Pattern 1: the "typed Pure helper + small axiom" idiom
+
+When you need to prove that a `fold_range` in hax-extracted code
+equals a custom recursive function, DO NOT try to unfold the
+closure. Instead:
+
+1. Define a typed recursive mirror with an explicit `Pure` signature
+   whose precondition carries all length/bound information the
+   closure body would otherwise have to derive from a trivial
+   invariant.
+2. State an `assume val` equating the original `fold_range` to
+   `mirror init start end_` — this is the only admitted content.
+3. Use standard induction on the mirror to prove the real property.
+
+Concrete example (Phase 13,
+`Impl_Spec_Sponge.fst::lemma_store_block_bridge`):
+
+```fstar
+(* 1. typed recursive mirror — Pure precondition lets body typecheck *)
+let rec store_block_impl_loop
+    (s: spec_state) (out: t_Slice u8) (start: usize)
+    (i octets: usize)
+  : Pure (t_Slice u8)
+    (requires v start + 8 * v octets <= Seq.length out /\ v octets <= 25 /\ v i <= v octets)
+    (ensures fun out' -> Seq.length out' == Seq.length out)
+    (decreases (v octets - v i))
+  = if i =. octets then out
+    else
+      let out' = write_one_lane s out (start +! mk_usize 8 *! i) i in
+      store_block_impl_loop s out' start (i +! mk_usize 1) octets
+
+(* 2. one small axiom — the fold_range closure cannot be equated by SMT *)
+assume val lemma_store_block_decomposes
+    (rate: usize) (s: spec_state) (out: t_Slice u8) (start len: usize)
+  : Lemma (requires ...)
+          (ensures store_block rate s out start len ==
+                   <composition of loop + remainder helpers>)
+
+(* 3. real proof by induction on the mirror *)
+let rec lemma_store_loop_equiv (s: spec_state) (out: t_Slice u8)
+                               (start i octets: usize)
+  : Lemma (requires ...)
+          (ensures store_block_impl_loop s out start i octets ==
+                   squeeze_state_spec_loop s out start i octets)
+          (decreases (v octets - v i))
+  = if i =. octets then ()
+    else begin
+      lemma_one_lane_equiv s out start i;
+      lemma_store_loop_equiv s (write_one_lane s out ...) start (i +! 1) octets
+    end
+```
+
+The net effect: Phase 13's monolithic admit `lemma_store_block_bridge`
+became a real proof resting on **four** small fold-range axioms, each
+one-line and obvious-by-inspection.
+
+### Pattern 2: align the spec to the impl BEFORE proving
+
+The single largest time saver in Phase 16 was realigning the Rust
+spec's squeeze loop from a "uniform `fold_range 0 ceil(OUTPUT_LEN/rate)`
+with inline `if round > 0 then keccak_f` and `min(remaining, rate)`"
+into the impl's "split" form (`if output_blocks == 0 then single else
+first; fold_range 1 output_blocks (keccakf+squeeze); optional
+remainder`). See `specs/sha3/src/sponge.rs::keccak`.
+
+After the realignment:
+
+- ceiling-vs-floor index-alignment lemma disappears (both sides use
+  `OUTPUT_LEN / rate` and `OUTPUT_LEN % rate` directly)
+- per-iteration bodies become α-identical modulo the two primitive
+  bridges (`keccakf1600_equiv`, `store_block_equiv`)
+- the zero-block and first-block special cases become one-line
+  `store_block_equiv` applications
+
+**Rule of thumb**: if the spec and impl have the same algorithm but
+different loop factorings, it is *cheaper* to rewrite the Rust spec
+(which is usually small) than to introduce an index-alignment lemma
+on the F* side. Re-extract (`./hax.sh extract`) + re-prove
+(`./hax.sh prove`) + cross-spec tests (`cargo test --test cross_spec`)
+validate the rewrite end-to-end before touching the F* proof.
+
+### Pattern 3: two-level cross-spec testing
+
+When rewriting a spec to align with an impl, add cross-spec tests
+that specifically exercise *each structural branch* you introduced —
+not just the end-to-end behavior. Example from Phase A.5:
+
+```rust
+// tests/cross_spec.rs
+fn squeeze_structure_lengths(rate: usize) -> Vec<(usize, &'static str)> {
+    vec![
+        // output_blocks == 0 (len < rate)
+        (1, "zero-blocks: len=1"),
+        (rate - 1, "zero-blocks: len=rate-1"),
+        // output_blocks >= 1, rem == 0
+        (rate, "exact: len=rate"),
+        (2 * rate, "exact: len=2*rate"),
+        // output_blocks >= 1, rem != 0
+        (rate + 1, "rem: len=rate+1"),
+        (3 * rate + (rate - 1), "rem: len=3*rate+rate-1"),
+    ]
+}
+```
+
+These tests catch regressions in the specific case split the F* proof
+is going to rely on, *before* you invest proof effort.
+
+### Pattern 4: `usize` arithmetic bookkeeping
+
+`v (a +! b) == v a + v b` is conditional on non-overflow; the solver
+discharges the bound from context but only if the bound is visible.
+Common motifs and the supporting lemmas:
+
+| Goal | Lemma / tactic |
+|------|---------------|
+| `v (len /! 8) * 8 + v (len %! 8) == v len` | `Libcrux_sha3.Proof_utils.Lemmas.lemma_div_mul_mod` |
+| `v (i *! rate) + v rate <= v (n *! rate)` when `i < n` | `Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le` |
+| `v (a +! b) = v a + v b` under `a + b <= max_usize` | often free; otherwise `assert (v a + v b <= ...)` first |
+| `v start + v len <= Seq.length out` inside fold closure | lift into Pure helper's precondition (Pattern 1) |
+
+Accumulated bookkeeping is never individually hard but drains the
+majority of proof-body lines. Budget for it.
+
+### Pattern 5: `valid_rate` as the one true rate predicate
+
+Every sponge-layer lemma that takes a `rate: usize` should require
+`Libcrux_sha3.Proof_utils.valid_rate rate` (i.e. `rate > 0 && rate <= 200
+&& rate % 8 == 0`). This single predicate lets the solver reason about
+the rate without ad-hoc per-call asserts and is the invariant that
+both hax refinements and the hacspec spec carry.
+
+### Pattern 6: hax extraction drift
+
+`./hax.sh extract` may change more than you asked for. In Phase A
+the regenerated `Hacspec_sha3.Sponge.fst` also hoisted previously-inlined
+functions to top-level `let`s and rewrote per-byte fold copies into
+`copy_from_slice + update_at_range` calls. The sponge-layer proofs
+survived because they referenced top-level spec functions by name and
+treated `keccak` as a black box (guarded by `lemma_keccak1_bridge`).
+
+Mitigation: write proofs against **named top-level functions**
+whenever possible, and avoid matching on the internal style of spec
+bodies. If you must match internal style (e.g., for a `fold_range`
+bridge), expect to rewrite when hax is updated.
+
+### Pattern 7: `assert ... by tadmit ()` as a local escape hatch
+
+For pre-existing subtype-propagation hurdles that block a lemma
+unrelated to your current change, a per-assertion
+`assert (P) by (FStar.Tactics.tadmit ())` is acceptable if:
+
+- The surrounding lemma is otherwise proved.
+- A comment documents which sub-obligation is being admitted and why.
+- It is NOT used to avoid proving the main claim (only stubborn
+  refinement-level sub-obligations inside otherwise-proved lemmas).
+
+This appears in `Impl_Spec_Sponge.fst::lemma_load_last_equiv` around
+lines 1105–1106 for two abstract slice-expression equalities the
+solver cannot connect.
+
+### Summary: when to axiomatize, when to prove
+
+**Axiomatize** (`assume val`) — only these three patterns:
+
+1. `fold_range` in hax-extracted code equals a custom recursive
+   mirror with the same body (unprovable for the reason in "Strategy
+   1/2/3" above).
+2. Library-level properties of machine integers that belong in
+   `Rust_primitives.Integers` (see Common Pitfalls, item 4).
+3. Cross-module primitive equivalences defined in a neighbor file
+   and not yet lifted here (e.g. `lemma_keccakf1600_equiv` was
+   assumed in `Impl_Spec_Sponge.fst` before Keccak-f was proved).
+
+**Prove** — everything else. Specifically:
+
+- Per-step bridges (one `fold_range` iteration).
+- Inductive equivalences on custom mirrors.
+- Composition of already-proved lemmas.
+- Top-level theorems that thread the above.
+
+A sponge-layer proof with more than ~5 `assume val`s above your own
+code is a signal to reach for the typed-helper pattern and decompose.
