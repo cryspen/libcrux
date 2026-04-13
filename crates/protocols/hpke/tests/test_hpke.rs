@@ -696,6 +696,7 @@ mod mlkem_libcrux {
 // XXX: These are broken and pre-releases. Disabling them until they are stable.
 #[cfg(feature = "experimental")]
 mod pq_kems {
+    use super::*;
 
     // X-Wing RustCrypto tests
     generate_test_case!(

@@ -146,7 +146,7 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn dh_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
+            KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
                 .map(|sk| sk.0.to_vec()),
             _ => Err(Error::UnknownKemAlgorithm),
@@ -257,15 +257,11 @@ impl HpkeCrypto for HpkeLibcrux {
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
         match alg {
-            KemAlgorithm::DhKem25519
-            | KemAlgorithm::DhKemP256
-            | KemAlgorithm::XWingDraft06 => {
+            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::XWingDraft06 => {
                 Ok(())
             }
             #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
-                Ok(())
-            }
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }

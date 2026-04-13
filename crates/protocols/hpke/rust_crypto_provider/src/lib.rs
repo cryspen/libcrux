@@ -128,6 +128,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         #[cfg(feature = "experimental")]
         return pq_kem::kem_key_gen_derand(_alg, _seed);
 
+        #[cfg(not(feature = "experimental"))]
         Err(Error::UnsupportedKemOperation)
     }
 
@@ -140,6 +141,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         #[cfg(feature = "experimental")]
         return pq_kem::kem_encaps(_alg, _pk_r, _prng);
 
+        #[cfg(not(feature = "experimental"))]
         Err(Error::UnsupportedKemOperation)
     }
 
@@ -148,6 +150,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         #[cfg(feature = "experimental")]
         return pq_kem::kem_decaps(_alg, _ct, _sk_r);
 
+        #[cfg(not(feature = "experimental"))]
         Err(Error::UnsupportedKemOperation)
     }
 
