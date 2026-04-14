@@ -5,6 +5,7 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 
 ROOTS = \
 	Impl_Spec_Keccakf.fst \
+	Impl_Spec_Keccakf.Generic.fst \
 	Impl_Spec_Sponge.Core.fst \
 	Impl_Spec_Sponge.Absorb.fst \
 	Impl_Spec_Sponge.Squeeze.fst \
