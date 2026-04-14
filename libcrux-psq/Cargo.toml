@@ -27,7 +27,7 @@ classic-mceliece-rust = { version = "3.1.0", features = [
     "mceliece460896f",
     "zeroize",
 ], optional = true }
-rand = { version = "0.9" }
+rand = { version = "0.10" }
 rand_old = { version = "0.8", package = "rand", optional = true }
 libcrux-ecdh = { workspace = true, default-features = true }
 libcrux-ml-kem = { workspace = true, default-features = true, features = [

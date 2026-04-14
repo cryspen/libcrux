@@ -14,7 +14,7 @@ repository.workspace = true
 path = "src/ecdh.rs"
 
 [dependencies]
-rand = { version = "0.9", default-features = false }
+rand = { version = "0.10", default-features = false }
 libcrux-curve25519 = { workspace = true, default-features = true }
 libcrux-p256 = { workspace = true, default-features = true, features = [
     "expose-hacl",

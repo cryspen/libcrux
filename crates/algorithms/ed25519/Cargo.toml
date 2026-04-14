@@ -21,7 +21,7 @@ tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
 
 [dev-dependencies]
 hex = "0.4.3"
-rand = { version = "0.9" }
+rand = { version = "0.10" }
 wycheproof = "0.6.0"
 
 [features]
