@@ -200,7 +200,8 @@ mod tests {
             let via_keccak: [u8; OUT] = keccak::<OUT>(rate, delim, msg);
             let via_split: [u8; OUT] = squeeze::<OUT>(absorb(rate, delim, msg), rate);
             assert_eq!(
-                via_keccak, via_split,
+                via_keccak,
+                via_split,
                 "keccak != squeeze(absorb) for rate={rate}, delim={delim:#x}, msg.len()={}",
                 msg.len()
             );

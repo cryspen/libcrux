@@ -528,7 +528,8 @@ mod cross_spec_tests {
                     crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
                 let spec_s = spec_sponge::absorb(RATE, DELIM, msg);
                 assert_eq!(
-                    impl_s.st, spec_s,
+                    impl_s.st,
+                    spec_s,
                     "absorb mismatch at RATE={RATE}, DELIM={DELIM:#x}, len={}",
                     msg.len()
                 );
@@ -570,7 +571,8 @@ mod cross_spec_tests {
             crate::generic_keccak::portable::squeeze::<RATE>(impl_s, &mut impl_out);
             let spec_out = spec_sponge::squeeze::<OUT>(spec_s, RATE);
             assert_eq!(
-                impl_out, spec_out,
+                impl_out,
+                spec_out,
                 "squeeze mismatch at RATE={RATE}, DELIM={DELIM:#x}, OUT={OUT}, msg.len()={}",
                 msg.len()
             );
@@ -583,7 +585,7 @@ mod cross_spec_tests {
         check::<136, 0x06, 32>(msg); // SHA3-256
         check::<104, 0x06, 48>(msg); // SHA3-384
         check::<72, 0x06, 64>(msg); // SHA3-512
-        // SHAKE: OUT exercising loop and tail
+                                    // SHAKE: OUT exercising loop and tail
         check::<168, 0x1f, 16>(msg); // short shake128
         check::<168, 0x1f, 200>(msg); // multi-block shake128 (loop + tail)
         check::<136, 0x1f, 64>(msg); // short shake256
@@ -764,7 +766,10 @@ mod neon_to_spec_tests {
         let result = to_spec(&s);
         let spec = spec_kf::keccak_f([0u64; 25]);
         for l in 0..2 {
-            assert_eq!(result[l], spec, "keccakf1600 zero-state mismatch on lane {l}");
+            assert_eq!(
+                result[l], spec,
+                "keccakf1600 zero-state mismatch on lane {l}"
+            );
         }
     }
 
