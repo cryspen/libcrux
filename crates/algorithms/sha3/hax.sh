@@ -38,7 +38,7 @@ function prove() {
     go_to "crates/algorithms/sha3"
     JOBS="${JOBS:-$(nproc --all)}"
     JOBS="${JOBS:-4}"
-    make -C proofs/fstar/extraction -j $JOBS "$@"
+    make -C proofs/fstar JOBS=$JOBS "$@"
 }
 
 function detect_sed() {

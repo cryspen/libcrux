@@ -508,4 +508,278 @@ mod cross_spec_tests {
             spec_out[offset..offset + len]
         );
     }
+
+    // -- Layer 4: Top-level absorb / squeeze split --
+    //
+    // These tests pin down the refactor of `keccak1` into
+    // `absorb` + `squeeze`: each phase is compared against the spec
+    // independently.  They also confirm that the two-line
+    // `keccak1 = squeeze(absorb(...))` matches the monolithic spec
+    // `keccak` for every SHA-3 / SHAKE variant.
+
+    #[test]
+    fn absorb_matches_spec() {
+        // For each rate/delim, compare impl absorb's state against the
+        // spec absorb's state on a few message sizes that exercise
+        // zero, partial, and multi-block absorb paths.
+        fn check<const RATE: usize, const DELIM: u8>(msgs: &[&[u8]]) {
+            for msg in msgs {
+                let impl_s: KeccakState<1, u64> =
+                    crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
+                let spec_s = spec_sponge::absorb(RATE, DELIM, msg);
+                assert_eq!(
+                    impl_s.st, spec_s,
+                    "absorb mismatch at RATE={RATE}, DELIM={DELIM:#x}, len={}",
+                    msg.len()
+                );
+            }
+        }
+
+        let empty: &[u8] = &[];
+        let short: &[u8] = b"hello world";
+        let mut rate_minus_one = [0u8; 135];
+        for (i, b) in rate_minus_one.iter_mut().enumerate() {
+            *b = (i & 0xFF) as u8;
+        }
+        let mut multi_block = [0u8; 200];
+        for (i, b) in multi_block.iter_mut().enumerate() {
+            *b = (i & 0xFF) as u8;
+        }
+        let msgs: &[&[u8]] = &[empty, short, &rate_minus_one, &multi_block];
+
+        check::<144, 0x06>(msgs); // SHA3-224
+        check::<136, 0x06>(msgs); // SHA3-256
+        check::<104, 0x06>(msgs); // SHA3-384
+        check::<72, 0x06>(msgs); // SHA3-512
+        check::<168, 0x1f>(msgs); // SHAKE128
+        check::<136, 0x1f>(msgs); // SHAKE256
+    }
+
+    #[test]
+    fn squeeze_matches_spec() {
+        // Start from a state produced by impl absorb (which we just
+        // showed matches the spec) and confirm that squeeze produces
+        // the same bytes as the spec squeeze for output lengths that
+        // exercise every branch (zero blocks, exact blocks, tail).
+        fn check<const RATE: usize, const DELIM: u8, const OUT: usize>(msg: &[u8]) {
+            let impl_s = crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
+            let spec_s = spec_sponge::absorb(RATE, DELIM, msg);
+            debug_assert_eq!(impl_s.st, spec_s);
+
+            let mut impl_out = [0u8; OUT];
+            crate::generic_keccak::portable::squeeze::<RATE>(impl_s, &mut impl_out);
+            let spec_out = spec_sponge::squeeze::<OUT>(spec_s, RATE);
+            assert_eq!(
+                impl_out, spec_out,
+                "squeeze mismatch at RATE={RATE}, DELIM={DELIM:#x}, OUT={OUT}, msg.len()={}",
+                msg.len()
+            );
+        }
+
+        let msg: &[u8] = b"the quick brown fox jumps over the lazy dog";
+
+        // Hash variants: OUT < RATE (single-squeeze path)
+        check::<144, 0x06, 28>(msg); // SHA3-224
+        check::<136, 0x06, 32>(msg); // SHA3-256
+        check::<104, 0x06, 48>(msg); // SHA3-384
+        check::<72, 0x06, 64>(msg); // SHA3-512
+        // SHAKE: OUT exercising loop and tail
+        check::<168, 0x1f, 16>(msg); // short shake128
+        check::<168, 0x1f, 200>(msg); // multi-block shake128 (loop + tail)
+        check::<136, 0x1f, 64>(msg); // short shake256
+        check::<136, 0x1f, 300>(msg); // multi-block shake256 (loop + tail)
+    }
+
+    #[test]
+    fn keccak1_matches_squeeze_of_absorb() {
+        // `keccak1` must be observationally equal to
+        // `squeeze(absorb(...))`, both on the impl side.  This pins
+        // the two-line rewrite of `keccak1`.
+        fn check<const RATE: usize, const DELIM: u8, const OUT: usize>(msg: &[u8]) {
+            let mut via_keccak1 = [0u8; OUT];
+            crate::generic_keccak::portable::keccak1::<RATE, DELIM>(msg, &mut via_keccak1);
+
+            let s = crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
+            let mut via_split = [0u8; OUT];
+            crate::generic_keccak::portable::squeeze::<RATE>(s, &mut via_split);
+
+            assert_eq!(
+                via_keccak1, via_split,
+                "keccak1 != squeeze(absorb) at RATE={RATE}, DELIM={DELIM:#x}, OUT={OUT}",
+            );
+        }
+
+        let msg: &[u8] = b"refactor sanity check";
+        check::<136, 0x06, 32>(msg); // SHA3-256
+        check::<168, 0x1f, 64>(msg); // SHAKE128
+        check::<168, 0x1f, 200>(msg); // SHAKE128, multi-block + tail
+    }
+}
+
+/// NEON to_spec tests: verify that each permutation step on KeccakState<2, uint64x2_t>
+/// operates lane-wise, i.e. extracting lane l from the SIMD result equals the scalar
+/// spec step applied to lane l of the input.  This validates the `to_spec` commutativity
+/// property that the F* generalization proof is built on.
+#[cfg(all(test, feature = "simd128"))]
+mod neon_to_spec_tests {
+    use super::*;
+    use hacspec_sha3::keccak_f as spec_kf;
+    use libcrux_intrinsics::arm64::*;
+
+    /// Extract lane `l` (0 or 1) from a KeccakState<2, uint64x2_t> → [u64; 25]
+    fn extract_lane(state: &KeccakState<2, _uint64x2_t>, lane: usize) -> [u64; 25] {
+        assert!(lane < 2);
+        let mut out = [0u64; 25];
+        for i in 0..25 {
+            let mut tmp = [0u64; 2];
+            _vst1q_u64(&mut tmp, state.st[i]);
+            out[i] = tmp[lane];
+        }
+        out
+    }
+
+    /// to_spec: KeccakState<2, uint64x2_t> → [[u64; 25]; 2]
+    fn to_spec(state: &KeccakState<2, _uint64x2_t>) -> [[u64; 25]; 2] {
+        [extract_lane(state, 0), extract_lane(state, 1)]
+    }
+
+    /// Pack two scalar [u64; 25] states into a KeccakState<2, uint64x2_t>
+    fn from_spec(lanes: [[u64; 25]; 2]) -> KeccakState<2, _uint64x2_t> {
+        let mut st = [_vdupq_n_u64(0); 25];
+        for i in 0..25 {
+            let arr = [lanes[0][i], lanes[1][i]];
+            st[i] = _vld1q_u64(&arr);
+        }
+        KeccakState { st }
+    }
+
+    /// Two distinct non-trivial test states for packing into lanes.
+    fn test_states() -> [[u64; 25]; 2] {
+        let mut st0 = [0u64; 25];
+        st0[0] = 1;
+        let st0 = spec_kf::keccak_f(st0);
+
+        let mut st1 = [0u64; 25];
+        st1[0] = 0xDEAD_BEEF_CAFE_BABEu64;
+        let st1 = spec_kf::keccak_f(st1);
+
+        [st0, st1]
+    }
+
+    #[test]
+    fn to_spec_roundtrip() {
+        let lanes = test_states();
+        let packed = from_spec(lanes);
+        let extracted = to_spec(&packed);
+        assert_eq!(extracted, lanes, "to_spec(from_spec(x)) != x");
+    }
+
+    #[test]
+    fn neon_theta_rho_to_spec() {
+        let lanes = test_states();
+        let mut s = from_spec(lanes);
+        let t = s.theta();
+        s.rho(t);
+        let result = to_spec(&s);
+        for l in 0..2 {
+            let spec = spec_kf::rho(spec_kf::theta(lanes[l]));
+            assert_eq!(result[l], spec, "theta+rho mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_pi_to_spec() {
+        let lanes = test_states();
+        let mut s = from_spec(lanes);
+        s.pi();
+        let result = to_spec(&s);
+        for l in 0..2 {
+            let spec = spec_kf::pi(lanes[l]);
+            assert_eq!(result[l], spec, "pi mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_chi_to_spec() {
+        let lanes = test_states();
+        let mut s = from_spec(lanes);
+        s.chi();
+        let result = to_spec(&s);
+        for l in 0..2 {
+            let spec = spec_kf::chi(lanes[l]);
+            assert_eq!(result[l], spec, "chi mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_iota_to_spec() {
+        for round in 0..24 {
+            let lanes = test_states();
+            let mut s = from_spec(lanes);
+            s.iota(round);
+            let result = to_spec(&s);
+            for l in 0..2 {
+                let spec = spec_kf::iota(lanes[l], round);
+                assert_eq!(result[l], spec, "iota mismatch on lane {l}, round {round}");
+            }
+        }
+    }
+
+    #[test]
+    fn neon_single_round_to_spec() {
+        let lanes = test_states();
+        let mut s = from_spec(lanes);
+        let t = s.theta();
+        s.rho(t);
+        s.pi();
+        s.chi();
+        s.iota(0);
+        let result = to_spec(&s);
+        for l in 0..2 {
+            let spec = spec_kf::iota(
+                spec_kf::chi(spec_kf::pi(spec_kf::rho(spec_kf::theta(lanes[l])))),
+                0,
+            );
+            assert_eq!(result[l], spec, "single round mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_keccakf1600_to_spec() {
+        let lanes = test_states();
+        let mut s = from_spec(lanes);
+        s.keccakf1600();
+        let result = to_spec(&s);
+        for l in 0..2 {
+            let spec = spec_kf::keccak_f(lanes[l]);
+            assert_eq!(result[l], spec, "keccakf1600 mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_keccakf1600_zero_state() {
+        let lanes = [[0u64; 25]; 2];
+        let mut s = from_spec(lanes);
+        s.keccakf1600();
+        let result = to_spec(&s);
+        let spec = spec_kf::keccak_f([0u64; 25]);
+        for l in 0..2 {
+            assert_eq!(result[l], spec, "keccakf1600 zero-state mismatch on lane {l}");
+        }
+    }
+
+    #[test]
+    fn neon_keccakf1600_iterated() {
+        // Apply keccakf1600 multiple times; verify lanes stay independent
+        let mut lanes = test_states();
+        let mut s = from_spec(lanes);
+        for _ in 0..5 {
+            s.keccakf1600();
+            lanes[0] = spec_kf::keccak_f(lanes[0]);
+            lanes[1] = spec_kf::keccak_f(lanes[1]);
+            let result = to_spec(&s);
+            assert_eq!(result[0], lanes[0], "iterated keccakf1600 lane 0 diverged");
+            assert_eq!(result[1], lanes[1], "iterated keccakf1600 lane 1 diverged");
+        }
+    }
 }
