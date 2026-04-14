@@ -313,6 +313,13 @@ fn chachapoly_test_invalid_buffer_lengths() {
     let mut long_ctxt = [0; 30];
     libcrux_chacha20poly1305::encrypt(&key, msg, &mut long_ctxt, aad, &nonce).unwrap();
 
+    let mut decrypted = [0u8; 13];
+    assert!(
+        libcrux_chacha20poly1305::decrypt(&key, &mut decrypted, &long_ctxt[..29], aad, &nonce)
+            .is_ok()
+    );
+    assert_eq!(decrypted, *msg);
+
     // test that calling with incorrect-length buffers returns error: non-detached
     let err = libcrux_chacha20poly1305::decrypt(&key, &mut [], &ctxt, aad, &nonce).unwrap_err();
     assert!(matches!(
