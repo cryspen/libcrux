@@ -150,6 +150,66 @@ fn shake256_boundary_outputs() {
 }
 
 // =========================================================================
+// Squeeze structure — exercises the three branches of the split squeeze
+// (output_blocks == 0 / rem == 0 / rem != 0), the F* proof's structural
+// claim in Phase 16.  See specs/sha3/src/sponge.rs keccak().
+// =========================================================================
+
+/// For a given SHAKE rate, pick output lengths that fall into each of the
+/// three structural branches.
+fn squeeze_structure_lengths(rate: usize) -> Vec<(usize, &'static str)> {
+    vec![
+        // output_blocks == 0 (output_len < rate)
+        (1, "zero-blocks: len=1"),
+        (rate / 2, "zero-blocks: len=rate/2"),
+        (rate - 1, "zero-blocks: len=rate-1"),
+        // output_blocks >= 1, output_rem == 0 (exact multiple of rate)
+        (rate, "exact: len=rate"),
+        (2 * rate, "exact: len=2*rate"),
+        (3 * rate, "exact: len=3*rate"),
+        // output_blocks >= 1, output_rem != 0 (multiple + nonzero remainder)
+        (rate + 1, "rem: len=rate+1"),
+        (2 * rate + 7, "rem: len=2*rate+7"),
+        (3 * rate + (rate - 1), "rem: len=3*rate+rate-1"),
+    ]
+}
+
+#[test]
+fn shake128_squeeze_structure() {
+    let input = b"squeeze structure test";
+    let rate = 168;
+    // Spec call emits the longest output; slice to compare for each case.
+    let spec_long = hacspec_sha3::shake128::<2048>(input);
+    for (out_len, label) in squeeze_structure_lengths(rate) {
+        assert!(out_len <= 2048);
+        let mut out = [0u8; 2048];
+        libcrux_sha3::portable::shake128(&mut out[..out_len], input);
+        assert_eq!(
+            out[..out_len],
+            spec_long[..out_len],
+            "shake128 structure mismatch ({label})"
+        );
+    }
+}
+
+#[test]
+fn shake256_squeeze_structure() {
+    let input = b"squeeze structure test";
+    let rate = 136;
+    let spec_long = hacspec_sha3::shake256::<2048>(input);
+    for (out_len, label) in squeeze_structure_lengths(rate) {
+        assert!(out_len <= 2048);
+        let mut out = [0u8; 2048];
+        libcrux_sha3::portable::shake256(&mut out[..out_len], input);
+        assert_eq!(
+            out[..out_len],
+            spec_long[..out_len],
+            "shake256 structure mismatch ({label})"
+        );
+    }
+}
+
+// =========================================================================
 // EMA variants match return variants
 // =========================================================================
 

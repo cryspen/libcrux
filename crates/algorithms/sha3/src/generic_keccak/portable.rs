@@ -65,15 +65,14 @@ impl KeccakState<1, u64> {
     }
 }
 
+/// Absorb phase of `keccak1`: initialise a Keccak state, absorb all full
+/// rate-byte blocks of `input`, then pad and absorb the final partial block
+/// with domain-separation byte `DELIM` and the pad10*1 terminator.
 #[hax_lib::requires(valid_rate(RATE))]
-#[hax_lib::ensures(|_| future(output).len() == output.len())]
-#[hax_lib::fstar::options("--split_queries always --z3rlimit 300")]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[inline]
-pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: &mut [u8]) {
-    // Initialize Keccak state
+pub(crate) fn absorb<const RATE: usize, const DELIM: u8>(input: &[u8]) -> KeccakState<1, u64> {
     let mut s = KeccakState::<1, u64>::new();
-
-    // Absorb input
     let input_len = input.len();
     let input_blocks = input_len / RATE;
     let input_rem = input_len % RATE;
@@ -84,8 +83,16 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: 
         s.absorb_block::<RATE>(&[input], i * RATE);
     }
     s.absorb_final::<RATE, DELIM>(&[input], input_len - input_rem, input_rem);
+    s
+}
 
-    // Squeeze output
+/// Squeeze phase of `keccak1`: extract `output.len()` bytes from `s`,
+/// applying Keccak-f between each full rate-byte block of output.
+#[hax_lib::requires(valid_rate(RATE))]
+#[hax_lib::ensures(|_| future(output).len() == output.len())]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[inline]
+pub(crate) fn squeeze<const RATE: usize>(mut s: KeccakState<1, u64>, output: &mut [u8]) {
     let output_len = output.len();
     let output_blocks = output_len / RATE;
     let output_rem = output_len % RATE;
@@ -106,4 +113,12 @@ pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: 
             s.squeeze::<RATE>(output, output_len - output_rem, output_rem);
         }
     }
+}
+
+#[hax_lib::requires(valid_rate(RATE))]
+#[hax_lib::ensures(|_| future(output).len() == output.len())]
+#[inline]
+pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: &mut [u8]) {
+    let s = absorb::<RATE, DELIM>(input);
+    squeeze::<RATE>(s, output);
 }

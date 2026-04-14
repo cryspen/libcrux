@@ -100,20 +100,16 @@ pub fn absorb_final(
     absorb_block(state, &block, rate)
 }
 
-/// Keccak sponge — FIPS 202, Algorithm 8 combined with pad10*1 (Algorithm 9).
+/// Absorb phase of the Keccak sponge (FIPS 202, Algorithm 8, step 6 combined
+/// with the pad10*1 padding of Algorithm 9).
 ///
-/// 1. Absorb: split `message` into `rate`-byte blocks, XOR each into the
-///    state, and apply Keccak-f. The final partial block is padded with
-///    the domain separation byte `delim` and the pad10*1 terminator `0x80`.
-/// 2. Squeeze: extract `OUTPUT_LEN` bytes from the state, applying
-///    Keccak-f between each `rate`-byte block of output.
-///
-/// The `OUTPUT_LEN < usize::MAX - 200` precondition is a Rust implementation
-/// artifact to prevent arithmetic overflow; FIPS 202 places no upper bound
-/// on the output length.
-#[hax_lib::fstar::options("--z3rlimit 500")]
-#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
-pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -> [u8; OUTPUT_LEN] {
+/// Splits `message` into `rate`-byte blocks, XORing each into the state and
+/// applying Keccak-f. The final partial block is padded with the domain
+/// separation byte `delim` and the pad10*1 terminator `0x80` before being
+/// absorbed.
+#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0)]
+pub fn absorb(rate: usize, delim: u8, message: &[u8]) -> State {
     let mut state: State = [0u64; 25];
 
     // --- Absorb full blocks (Algorithm 8, step 6) ---
@@ -125,23 +121,61 @@ pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -
 
     // --- Pad and absorb final block (Algorithm 9: pad10*1) ---
     let remaining = message.len() - num_full_blocks * rate;
-    state = absorb_final(state, message, num_full_blocks * rate, remaining, rate, delim);
+    absorb_final(
+        state,
+        message,
+        num_full_blocks * rate,
+        remaining,
+        rate,
+        delim,
+    )
+}
 
-    // --- Squeeze (Algorithm 8, steps 8–9) ---
+/// Squeeze phase of the Keccak sponge (FIPS 202, Algorithm 8, steps 8–9).
+///
+/// Extracts `OUTPUT_LEN` bytes from `state`, applying Keccak-f between each
+/// `rate`-byte block of output.
+///
+/// Structure chosen to mirror the libcrux impl (`keccak1` in
+/// `crates/algorithms/sha3/src/generic_keccak/portable.rs`) so the F*
+/// equivalence proof can line the two sides up iteration-for-iteration.
+#[hax_lib::fstar::options("--z3rlimit 500")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
+pub fn squeeze<const OUTPUT_LEN: usize>(mut state: State, rate: usize) -> [u8; OUTPUT_LEN] {
     let mut output = [0u8; OUTPUT_LEN];
-    let mut offset: usize = 0;
-    let num_squeeze_blocks = (OUTPUT_LEN + rate - 1) / rate;
-    for _squeeze_round in 0..num_squeeze_blocks {
-        hax_lib::loop_invariant!(|_squeeze_round: usize| offset <= OUTPUT_LEN);
-        if _squeeze_round > 0 {
+    let output_blocks = OUTPUT_LEN / rate;
+    let output_rem = OUTPUT_LEN % rate;
+    if output_blocks == 0 {
+        squeeze_state(&state, &mut output, 0, OUTPUT_LEN);
+    } else {
+        squeeze_state(&state, &mut output, 0, rate);
+        for i in 1..output_blocks {
             state = keccak_f(state);
+            squeeze_state(&state, &mut output, i * rate, rate);
         }
-        let to_copy = core::cmp::min(OUTPUT_LEN - offset, rate);
-        squeeze_state(&state, &mut output, offset, to_copy);
-        offset += to_copy;
+        if output_rem != 0 {
+            state = keccak_f(state);
+            squeeze_state(&state, &mut output, OUTPUT_LEN - output_rem, output_rem);
+        }
     }
 
     output
+}
+
+/// Keccak sponge — FIPS 202, Algorithm 8 combined with pad10*1 (Algorithm 9).
+///
+/// 1. Absorb: split `message` into `rate`-byte blocks, XOR each into the
+///    state, and apply Keccak-f. The final partial block is padded with
+///    the domain separation byte `delim` and the pad10*1 terminator `0x80`.
+/// 2. Squeeze: extract `OUTPUT_LEN` bytes from the state, applying
+///    Keccak-f between each `rate`-byte block of output.
+///
+/// The `OUTPUT_LEN < usize::MAX - 200` precondition is a Rust implementation
+/// artifact to prevent arithmetic overflow; FIPS 202 places no upper bound
+/// on the output length.
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
+pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -> [u8; OUTPUT_LEN] {
+    squeeze::<OUTPUT_LEN>(absorb(rate, delim, message), rate)
 }
 
 #[cfg(test)]
@@ -155,5 +189,44 @@ mod tests {
         assert_eq!(lane_index(1), 5); // A[1,0] → 5
         assert_eq!(lane_index(5), 1); // A[0,1] → 1
         assert_eq!(lane_index(6), 6); // A[1,1] → 6
+    }
+
+    /// Every SHA-3 variant must satisfy `keccak == squeeze ∘ absorb`.
+    /// This pins down the refactor that split `keccak` into its two
+    /// phases so the F* equivalence proof can be structured per-phase.
+    #[test]
+    fn keccak_equals_squeeze_of_absorb() {
+        fn check<const OUT: usize>(rate: usize, delim: u8, msg: &[u8]) {
+            let via_keccak: [u8; OUT] = keccak::<OUT>(rate, delim, msg);
+            let via_split: [u8; OUT] = squeeze::<OUT>(absorb(rate, delim, msg), rate);
+            assert_eq!(
+                via_keccak, via_split,
+                "keccak != squeeze(absorb) for rate={rate}, delim={delim:#x}, msg.len()={}",
+                msg.len()
+            );
+        }
+
+        let empty: [u8; 0] = [];
+        let short = b"hello world";
+        let long: Vec<u8> = (0u8..200).collect();
+
+        // SHA3-224: rate=144, delim=0x06, out=28
+        check::<28>(144, 0x06, &empty);
+        check::<28>(144, 0x06, short);
+        check::<28>(144, 0x06, &long);
+        // SHA3-256: rate=136, delim=0x06, out=32
+        check::<32>(136, 0x06, &empty);
+        check::<32>(136, 0x06, short);
+        check::<32>(136, 0x06, &long);
+        // SHA3-384: rate=104, delim=0x06, out=48
+        check::<48>(104, 0x06, short);
+        // SHA3-512: rate=72, delim=0x06, out=64
+        check::<64>(72, 0x06, short);
+        // SHAKE128: rate=168, delim=0x1f — short and long output exercise the squeeze loop.
+        check::<16>(168, 0x1f, short);
+        check::<200>(168, 0x1f, short);
+        // SHAKE256: rate=136, delim=0x1f.
+        check::<64>(136, 0x1f, short);
+        check::<300>(136, 0x1f, short);
     }
 }
