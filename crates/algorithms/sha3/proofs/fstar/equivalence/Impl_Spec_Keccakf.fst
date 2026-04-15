@@ -7,8 +7,9 @@ module Impl_Spec_Keccakf
 
    All lemmas target the portable u64 instantiation (N=1, T=u64).
 
-   All proofs are complete except two library-level admits
-   (logand_commutative, rotate_left_zero) that belong in hax-lib.
+   All proofs are complete; the two library-level admits
+   ([logand_commutative], [lemma_rotate_left_zero]) live in
+   [Proof_Utils.Lemmas] with [TODO] tags for upstreaming to hax-lib.
 
    Structure:
      Phase 1: Primitive operation equivalence
@@ -25,6 +26,7 @@ module Impl_Spec_Keccakf
 
 open FStar.Mul
 open Core_models
+open Proof_Utils.Lemmas      (* logand_commutative, lemma_rotate_left_zero *)
 
 (* Bring typeclass instances into scope so that
    t_KeccakItem u64 (mk_usize 1) resolves to the portable impl. *)
@@ -254,13 +256,7 @@ let spec_d (state: spec_state) (x: usize{x <. mk_usize 5}) : u64 =
     (spec_c state ((x +! mk_usize 1) %! mk_usize 5))
     (mk_u32 1))
 
-(** rotate_left by 0 is the identity.
-    Needed for index 0 where RHO_OFFSETS[0] = 0.
-    The spec applies rotate_left(x, 0) which should equal x, but
-    rotate_left may be opaque in the F* model of machine integers. *)
-let lemma_rotate_left_zero (x: u64)
-  : Lemma (Core_models.Num.impl_u64__rotate_left x (mk_u32 0) == x)
-  = admit () (* TODO: belongs in hax-lib / core-models library *)
+(* [lemma_rotate_left_zero] moved to [Proof_Utils.Lemmas]. *)
 
 (** Helper: impl_c and impl_d for column parities. *)
 let impl_c (state: spec_state) (j: usize{v j < 5}) : u64 =
@@ -893,12 +889,7 @@ let lemma_pi_equiv
       forall_intro + eq_intro.
    ================================================================ *)
 
-(** Bitwise AND commutativity — true for machine integers but not
-    provable from the abstract logand interface.
-    TODO: belongs in hax-lib / Rust_primitives.Integers *)
-let logand_commutative (#t: Rust_primitives.Integers.inttype) (a b: Rust_primitives.Integers.int_t t)
-  : Lemma ((a &. b) == (b &. a))
-  = admit ()
+(* [logand_commutative] moved to [Proof_Utils.Lemmas]. *)
 
 (** One-step unfolding of fold_range: peel off the first iteration. *)
 #push-options "--fuel 1"
@@ -1249,14 +1240,10 @@ let lemma_keccakf1600_equiv
     lemma_rounds_equiv ks state (mk_usize 0)
 
 (* ================================================================
-   Remaining admits (library-level, not provable in this file):
+   Remaining library-level admits now live in [Proof_Utils.Lemmas]
+   with [TODO] tags for upstreaming to hax-lib / core-models:
 
-   1. logand_commutative: bitwise AND commutativity.
-      True for machine integers. The abstract logand interface in
-      Rust_primitives.Integers doesn't expose commutativity.
-      Should be added to hax-lib / Rust_primitives.Integers.
-
-   2. lemma_rotate_left_zero: rotate_left(x, 0) == x.
-      True by definition. Should be added to hax-lib / core-models.
+     - [logand_commutative]     : bitwise AND commutativity
+     - [lemma_rotate_left_zero] : [rotate_left(x, 0) == x]
    ================================================================ *)
 

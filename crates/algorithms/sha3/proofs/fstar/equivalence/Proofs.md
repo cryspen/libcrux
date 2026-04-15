@@ -549,3 +549,225 @@ solver cannot connect.
 
 A sponge-layer proof with more than ~5 `assume val`s above your own
 code is a signal to reach for the typed-helper pattern and decompose.
+
+## Learnings from the Generic Keccak-f Proof
+
+The generic proof (`Impl_Spec_Keccakf.Generic.fst`) proves keccak_f
+equivalence for *any* `KeccakItem` implementation (not just portable
+`u64`), using a `lane_correctness` typeclass that abstracts per-lane
+extraction. This section records patterns and anti-patterns discovered
+while eliminating `admit()` calls.
+
+### Patterns (what works)
+
+#### 1. Named body extraction eliminates closure equality
+
+Factor `fold_range` lambda bodies into named top-level functions.
+When both spec and impl reference the same named function, the
+closure-equality problem disappears entirely.
+
+```fstar
+(* Named body — same definition used in fold_range on both sides *)
+let impl_round_body v_N #v_T {|inst|} (self: t_KeccakState v_N v_T) (i: usize{v i < 24})
+  : t_KeccakState v_N v_T =
+  let ks', d = impl_2__theta v_N self in ...
+
+let impl_keccakf1600 v_N #v_T {|inst|} self =
+  fold_range 0 24 (fun _ _ -> true) self
+    (fun self i -> impl_round_body v_N self i)
+```
+
+This pattern requires a **uniform change to extracted code**: both
+spec and impl must factor their `fold_range` bodies into named
+functions. The extraction itself should produce these names.
+
+#### 2. Lockstep fold induction (fuel 1)
+
+When both sides have `fold_range` with the same range and named
+bodies, prove equivalence by peeling one step from each:
+
+```fstar
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_keccakf_commutes v_N {|inst|} lc ks spec i l
+  : Lemma (requires ...)
+      (ensures extract_lane (fold_range i 24 inv ks f_impl) l ==
+               fold_range i 24 inv_s spec f_spec)
+      (decreases (24 - v i))
+  = if i = 24 then ()
+    else begin
+      lemma_fold_range_step i 24 inv ks f_impl;
+      lemma_fold_range_step i 24 inv_s spec f_spec;
+      lemma_one_round_commutes v_N lc ks i l;
+      lemma_keccakf_commutes v_N lc
+        (impl_round_body v_N ks i) (spec_round_body spec i) (i+1) l
+    end
+#pop-options
+```
+
+Cost: fuel 1, rlimit 200, ~1.2s total. Compared to fuel 26 (which
+OOMs for generic types), this is essentially free.
+
+#### 3. Chi fold unrolling with fuel 6
+
+For small concrete folds (`fold_range 0 5`), fuel 6 lets Z3 unfold
+the loop step by step:
+
+```fstar
+#push-options "--fuel 6 --z3rlimit 400"
+let lemma_chi_named_unfolds v_N #v_T {|inst|} ks
+  : Lemma (chi_named v_N ks == chi_unrolled v_N ks) = ()
+#pop-options
+```
+
+Name both the inner body (`chi_inner_body`) and outer body
+(`chi_outer_body`), then unroll both loops independently.
+
+#### 4. Explicit `Seq.upd`/`Seq.index` guidance for per-element chi
+
+Z3 cannot trace through 5 layers of
+`chi_inner_body → impl_2__set → set_ij → update_at_usize → Seq.upd`
+automatically. Prove a single-step lemma stating `chi_inner_body`
+produces `Seq.upd`, then call it explicitly for each step:
+
+```fstar
+(* Single-step lemma: chi_inner_body is Seq.upd *)
+let lemma_chi_inner_body_set (old self: impl_state) (i j: usize)
+  : Lemma (chi_inner_body 1 old self i j).f_st ==
+      Seq.upd self.f_st (v (5*j+i)) (f_and_not_xor ...))
+  = ()
+
+(* Per-element: call the single-step lemma for each of 5 steps *)
+let lemma_chi_row_element_0_0 (old self: impl_state)
+  : Lemma (...) =
+  lemma_chi_inner_body_set old self 0 0;
+  lemma_chi_inner_body_set old s0 0 1;
+  lemma_chi_inner_body_set old s1 0 2;
+  lemma_chi_inner_body_set old s2 0 3;
+  lemma_chi_inner_body_set old s3 0 4
+```
+
+Z3 then uses `Seq.index (Seq.upd s k v) j` axioms to chain:
+updates at positions 5,10,15,20 don't affect position 0.
+
+#### 5. Raw `Seq.index` in postconditions, not accessor notation
+
+Use `Seq.index s.f_st N` with concrete numeric positions, not
+`s.[mk_usize i, mk_usize j]`:
+
+```fstar
+(* GOOD: concrete positions via Seq.index *)
+Seq.index result.f_st 0 ==
+  f_and_not_xor (Seq.index self.f_st 0) (Seq.index old.f_st 10) (Seq.index old.f_st 5)
+
+(* BAD: accessor notation introduces get_ij / set_ij mismatch *)
+result.[mk_usize 0, mk_usize 0] == f_and_not_xor ...
+```
+
+The `.[i,j]` notation goes through `get_ij → Seq.index ... (5*j+i)`
+while `lemma_chi_inner_body_set` states results via `Seq.upd` at
+`(5*j+i)`. Z3 can't connect these different accessor paths.
+
+#### 6. High fuel for spec-side fold (when bodies are cheap)
+
+```fstar
+#push-options "--fuel 25 --z3rlimit 200"
+let lemma_keccak_f_is_rounds (state: spec_state)
+  : Lemma (keccak_f state == spec_rounds state 0) = ()
+#pop-options
+```
+
+Works because the spec body (`iota(chi(pi(rho(theta(state)))))`) is
+lightweight for Z3. The impl body (multiple typeclass dispatches,
+tuple returns) is NOT, so fuel 26 fails for the impl side.
+
+#### 7. Chi proof structure: unrolling + per-element + forall_intro + eq_intro
+
+The complete chi proof chains four layers:
+
+1. `lemma_chi_outer_unfolds`: fold_range → unrolled (fuel 6)
+2. `lemma_chi_fold_reduces`: unrolled → per-element value (each index)
+3. `logand_commutative`: bridge AND argument order (impl ↔ spec)
+4. `forall_intro + eq_intro`: lift per-element to array equality
+
+### Anti-patterns (what fails)
+
+#### 1. `fold_range_ext_trivial_inv` for bridging extracted lambdas
+
+The extracted code uses `(fun _ _ -> true)` (returns `bool`) while
+`fold_range_ext_trivial_inv` uses `trivial_inv` (returns `Type0`).
+These create different `fold_range` calls with incompatible types.
+**Tested across 6+ variations (Test_Fold_Impl4 through Impl9), all
+fail at the final postcondition.**
+
+#### 2. Narrow `assume val` for closure equality
+
+```fstar
+(* Mechanically correct but unverifiable by inspection *)
+assume val lemma_keccakf1600_decomposes (ks: impl_state)
+  : Lemma (impl_2__keccakf1600 1 ks == fold_range 0 24 ... ks keccakf_body)
+```
+
+This works but is **unintuitive** — the axiom asserts syntactic
+equality of closures, which isn't a mathematical property anyone can
+inspect for correctness. Prefer the named-body extraction approach
+(Pattern 1) which eliminates the need entirely.
+
+#### 3. `.[mk_usize k]` accessor in per-element lemma postconditions
+
+```fstar
+(* FAILS: accessor goes through get_ij, creates different SMT term *)
+(chi_row_unrolled 1 old self 0).[mk_usize 0, mk_usize 0] ==
+  f_and_not_xor (old.[mk_usize 0, mk_usize 0]) ...
+```
+
+Even when the values are definitionally equal, Z3 can't connect
+`get_ij` terms with `Seq.upd`/`Seq.index` terms because they
+produce different SMT encodings.
+
+#### 4. Expecting Z3 to trace deep abstraction chains at low fuel
+
+`chi_inner_body → impl_2__set → set_ij → update_at_usize → Seq.upd`
+is 4 levels. At fuel 1, Z3 unfolds one level. At fuel 0, none.
+Even `= ()` fails because Z3 can't reach the `Seq.upd` at the
+bottom. **Always provide explicit intermediate lemmas** that
+collapse multi-layer abstractions to `Seq.upd`/`Seq.index`.
+
+#### 5. `normalize_term` or `assert_norm` on `fold_range`
+
+The recursive guard `v start < v end_` involves `v` (machine-int
+to nat) which doesn't simplify during normalization. `assert_norm`
+on any expression containing `fold_range` will fail. Use fuel-based
+unfolding instead.
+
+#### 6. Per-element chi with `= ()` (no proof guidance)
+
+Even with fuel 6 + rlimit 400, Z3 cannot simultaneously:
+- unfold `fold_range 0..5` (inner loop)
+- trace through 5 `chi_inner_body` calls
+- resolve `Seq.upd`/`Seq.index` at a specific position
+
+**Each layer requires separate guidance.** Unroll the fold (fuel 6),
+state per-step results (explicit lemma calls), let Z3 chain
+`Seq.index`/`Seq.upd` (automatic at fuel 1).
+
+#### 7. Wrong accumulator in postconditions (`old` vs `self`)
+
+Chi's `chi_inner_body` uses THREE state references:
+- `self.[i,j]` — from the **accumulator** (mutating state)
+- `old.[i,(j+2)%5]` — from the **original** (frozen snapshot)
+- `old.[i,(j+1)%5]` — from the **original** (frozen snapshot)
+
+A common mistake: writing the postcondition as
+`f_and_not_xor(old[0], old[10], old[5])` when the first argument
+should be `self[0]`. In the full chi, `old == self` initially,
+masking the error. But for intermediate row lemmas where
+`old ≠ self`, the postcondition becomes unprovable.
+
+#### 8. Generic (parametric) per-element proofs without lane extraction lemmas
+
+The portable proof works directly on `u64` values. The generic
+proof must additionally invoke `lc_and_not_xor` (to convert
+typeclass `f_and_not_xor` to `u64` operations) and
+`logand_commutative` (to bridge `a &. ~b` ↔ `~b &. a`). These
+extra layers multiply the proof obligations: 25 elements ×
+(`lc_and_not_xor` + `logand_commutative`) = 50 extra lemma calls.

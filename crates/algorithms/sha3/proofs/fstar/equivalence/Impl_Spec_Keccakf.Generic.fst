@@ -77,6 +77,7 @@ module Impl_Spec_Keccakf.Generic
 
 open FStar.Mul
 open Core_models
+open Proof_Utils.NatFold   (* fold_range_nat, lemma_fold_range_is_range_nat *)
 
 let _ =
   let open Libcrux_sha3.Traits in
@@ -1537,19 +1538,167 @@ let rec lemma_rounds_to_spec
     end
 #pop-options
 
-(** Bridge lemmas: keccakf1600 == impl_rounds, keccak_f == spec_rounds. *)
+(** Named fold body — matches the extracted lambda body in impl_2__keccakf1600
+    (modulo identity let-bindings that normalize away). *)
+let keccakf_body
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (i: usize{v i < 24})
+  : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+  let open Libcrux_sha3.Generic_keccak in
+  let (tmp0: t_KeccakState v_N v_T), (out: t_Array v_T (mk_usize 5)) =
+    impl_2__theta v_N #v_T self
+  in
+  let self: t_KeccakState v_N v_T = tmp0 in
+  let t: t_Array v_T (mk_usize 5) = out in
+  let self: t_KeccakState v_N v_T = impl_2__rho v_N #v_T self t in
+  let self: t_KeccakState v_N v_T = impl_2__pi v_N #v_T self in
+  let self: t_KeccakState v_N v_T = impl_2__chi v_N #v_T self in
+  let self: t_KeccakState v_N v_T = impl_2__iota v_N #v_T self i in
+  self
+
+(** Fold wrapper with local bindings — amenable to lemma_fold_range_step. *)
+let keccakf_fold_local
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (i: usize{v i <= 24})
+  : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+  let inv (_: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T) (_: usize) : Type0 = True in
+  let f (self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+        (j: usize{v j < 24}) : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+    keccakf_body v_N self j
+  in
+  Rust_primitives.Hax.Folds.fold_range i (mk_usize 24) inv ks f
+
+(** Recursive bridge: keccakf_fold_local == impl_rounds. *)
+#push-options "--fuel 1 --z3rlimit 200"
+let rec lemma_keccakf_fold_local_is_rounds
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (i: usize)
+  : Lemma
+      (requires i <=. mk_usize 24)
+      (ensures keccakf_fold_local v_N ks i == impl_rounds v_N ks i)
+      (decreases (v (mk_usize 24) - v i))
+  = if i =. mk_usize 24 then ()
+    else begin
+      let inv (_: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T) (_: usize) : Type0 = True in
+      let f (self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+            (j: usize{v j < 24}) : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+        keccakf_body v_N self j
+      in
+      Impl_Spec_Keccakf.lemma_fold_range_step i (mk_usize 24) inv ks f;
+      lemma_keccakf_fold_local_is_rounds v_N (f ks i) (i +! mk_usize 1)
+    end
+#pop-options
+
+(** Nat-indexed body matching [keccakf_body] (lifted to nat index). *)
+let keccakf_body_rnat
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (j: nat{0 <= j /\ j < 24})
+    : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+  keccakf_body v_N #v_T self (mk_usize j)
+
+(** [keccakf_body] equals [impl_one_round]. Both unfold to the same
+    sequence of theta/rho/pi/chi/iota calls; extractor's extra identity
+    let-bindings in [keccakf_body] normalize away via zeta/iota. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_keccakf_body_is_one_round
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (i: usize{v i < 24})
+    : Lemma (keccakf_body v_N #v_T ks i == impl_one_round v_N #v_T ks i)
+    = ()
+#pop-options
+
+(** Inductive bridge: the [fold_range_nat] iteration of [keccakf_body_rnat]
+    equals [impl_rounds]. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let rec lemma_fold_range_nat_is_impl_rounds
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (i: nat{0 <= i /\ i <= 24})
+    : Lemma
+        (ensures fold_range_nat 0 24 i ks (keccakf_body_rnat v_N #v_T) ==
+                 impl_rounds v_N #v_T ks (mk_usize i))
+        (decreases 24 - i)
+    = if i = 24 then ()
+      else begin
+        lemma_keccakf_body_is_one_round v_N #v_T ks (mk_usize i);
+        lemma_fold_range_nat_is_impl_rounds v_N #v_T
+          (keccakf_body_rnat v_N #v_T ks i) (i + 1)
+      end
+#pop-options
+
+(** Bridge lemma: the extracted [impl_2__keccakf1600] (a refined [fold_range]
+    with inline lambda body) equals the recursive [impl_rounds] helper.
+
+    Two-step proof:
+      (A) Apply [lemma_fold_range_is_range_nat] with the SAME inline lambdas
+          the extractor produces — F* matches syntactically. This rewrites
+          the refined [fold_range] as [fold_range_nat 0 24 0 ks body_rnat].
+      (B) Apply [lemma_fold_range_nat_is_impl_rounds] to relate the
+          nat-indexed fold to [impl_rounds]. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
 let lemma_keccakf1600_is_rounds
       (v_N: usize) (#v_T: Type0)
       {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
   : Lemma (Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 v_N #v_T ks ==
            impl_rounds v_N ks (mk_usize 0))
-  = admit ()
+  =
+    (* (A) Rewrite the extracted fold_range as a fold_range_nat via the
+       bridge. Inline lambdas must match the extractor's shape verbatim. *)
+    lemma_fold_range_is_range_nat
+      #(Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T) #USIZE
+      (mk_usize 0) (mk_usize 24) (mk_usize 0)
+      (fun self temp_1_ ->
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T = self in
+          let _: usize = temp_1_ in
+          true)
+      ks
+      (fun self i ->
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T = self in
+          let i: usize = i in
+          let (tmp0: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T),
+              (out: t_Array v_T (mk_usize 5)) =
+            Libcrux_sha3.Generic_keccak.impl_2__theta v_N #v_T self
+          in
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T = tmp0 in
+          let t: t_Array v_T (mk_usize 5) = out in
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+            Libcrux_sha3.Generic_keccak.impl_2__rho v_N #v_T self t in
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+            Libcrux_sha3.Generic_keccak.impl_2__pi v_N #v_T self in
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+            Libcrux_sha3.Generic_keccak.impl_2__chi v_N #v_T self in
+          let self: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
+            Libcrux_sha3.Generic_keccak.impl_2__iota v_N #v_T self i in
+          self)
+      (keccakf_body_rnat v_N #v_T)
+      (fun acc i -> ());   (* pointwise: both sides β-reduce to keccakf_body v_N acc i *)
+    (* (B) Relate the nat-fold to impl_rounds. *)
+    lemma_fold_range_nat_is_impl_rounds v_N #v_T ks 0
+#pop-options
 
+(** Bridge: spec's [keccak_f] equals [spec_rounds]. The spec body is simple
+    enough — no refined argument types, no extractor identity let-bindings
+    beyond the outer [let state = fold_range ... in state] wrapper — that
+    Z3 can unroll all 24 iterations of the [fold_range] directly once it
+    also unfolds [spec_rounds]. [fuel 25] unfolds both. *)
+#push-options "--fuel 25 --ifuel 1 --z3rlimit 300"
 let lemma_keccak_f_is_rounds (state: spec_state)
   : Lemma (Hacspec_sha3.Keccak_f.keccak_f state ==
            spec_rounds state (mk_usize 0))
-  = admit ()
+  = ()
+#pop-options
 
 (* ================================================================
    MAIN THEOREM: Generic keccak_f lane-wise equivalence.
