@@ -163,3 +163,23 @@ let rec lemma_fold_range_is_range_nat
     end
     else ()
 #pop-options
+
+(** Direct unrolling of a [fold_range 0 5]: the fold equals five sequential
+    applications of the body.
+
+    Useful when the body is a refined inline lambda that would be painful
+    to bridge via [lemma_fold_range_is_nat] / [lemma_fold_range_is_range_nat].
+    Instead, specialize [f] to the extracted lambda: F* β-reduces each
+    application, yielding a direct expression the SMT can chain through
+    with a small fuel budget. *)
+#push-options "--fuel 6 --ifuel 2 --z3rlimit 200"
+let lemma_fold_range_unroll_5
+      (#acc_t: Type0) (#u: uinttype)
+      (inv: acc_t -> (i:int_t u{Rust_primitives.Hax.Folds.fold_range_wf_index (mk_int #u 0) (mk_int #u 5) false (v i)}) -> Type0)
+      (init: acc_t {inv init (mk_int #u 0)})
+      (f: (acc:acc_t -> i:int_t u {v i <= 5 /\ Rust_primitives.Hax.Folds.fold_range_wf_index (mk_int #u 0) (mk_int #u 5) true (v i) /\ inv acc i}
+                     -> acc':acc_t {inv acc' (mk_int #u (v i + 1))}))
+  : Lemma (Rust_primitives.Hax.Folds.fold_range #acc_t #u (mk_int #u 0) (mk_int #u 5) inv init f ==
+           f (f (f (f (f init (mk_int #u 0)) (mk_int #u 1)) (mk_int #u 2)) (mk_int #u 3)) (mk_int #u 4))
+  = ()
+#pop-options

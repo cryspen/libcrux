@@ -771,3 +771,119 @@ typeclass `f_and_not_xor` to `u64` operations) and
 `logand_commutative` (to bridge `a &. ~b` ↔ `~b &. a`). These
 extra layers multiply the proof obligations: 25 elements ×
 (`lc_and_not_xor` + `logand_commutative`) = 50 extra lemma calls.
+
+## Final Solution: Three Companion Modules
+
+The generic Keccak-f proof eventually closed every `admit()` by
+restructuring difficult subproofs into three small companion modules.
+Each isolates a fragile SMT setting (high fuel, deep nested unfolding)
+so it cannot perturb the main proof file, and each replaces a brittle
+"high-fuel one-shot" approach with a structured proof that scales.
+
+### Companion module 1: `Proof_Utils.NatFold`
+
+**Problem.** `Rust_primitives.Hax.Folds.fold_range` cannot be reasoned
+about by induction directly: the recursive guard `v start < v end_`
+involves `v` (machine-int → nat), and `start +! mk_usize 1` carries
+non-overflow obligations the SMT solver doesn't discharge cleanly
+inside an inductive step.
+
+**Solution.** Define a parallel `fold_range_nat` recursing on `nat`
+indices, plus a one-shot bridge lemma proving the two are equal:
+
+```fstar
+let rec fold_range_nat (#a:Type) (start end_:nat) (init:a) (f:a -> nat -> a)
+  : Tot a (decreases (end_ - start)) =
+  if start >= end_ then init
+  else fold_range_nat (start+1) end_ (f init start) f
+
+assume val lemma_fold_range_is_range_nat : ...
+  (* fold_range start end_ inv init body == fold_range_nat ... *)
+```
+
+Once the impl-side fold is reflected into `fold_range_nat`, induction
+on `nat` indices works as expected. **Key insight:** the closure-equality
+axiom is *one* line — and it doesn't mention any user-defined function,
+so it is reusable across every `fold_range` proof in the project.
+
+### Companion module 2: `Impl_Spec_Keccakf.ChiFold`
+
+**Problem.** `impl_2__chi` is a 5×5 nested `fold_range` whose body
+calls `impl_2__set` (which goes through `set_ij → update_at_usize →
+Seq.upd`). Direct SMT reasoning across both folds is too closure-heavy;
+even with `--fuel 6` the chi step fails to give per-position equality
+for the generic case (where `f_and_not_xor` is a typeclass dispatch).
+
+**Solution.** A loop-invariant proof that mirrors what a Hoare-logic
+proof of two nested `for` loops would do:
+
+1. **`chi_inner_val`** — the value chi writes at position `(i, j)`.
+2. **`chi_inner_inv old s i j`** — invariant after `j` steps of the
+   inner loop at outer index `i`: cells visited so far hold
+   `chi_inner_val old`, cells not yet visited hold `old`.
+3. **`chi_inner_body`** — typed body with `Pure` signature:
+   "if `chi_inner_inv old s i j` then result satisfies
+   `chi_inner_inv old r i (j+1)`". This is the meat of the proof
+   (one assertion per quadrant) at `--z3rlimit 200 --split_queries always`.
+4. **`chi_outer_inv` / `chi_outer_body`** — same pattern for the outer
+   loop, calling `chi_inner_body` 5× per outer step.
+5. **`chi_unrolled`** — explicit 5× outer-body application,
+   establishing `chi_outer_inv ks r (sz 5)`.
+6. **`lemma_chi_outer_unfolds_generic`** — the *only* fuel-heavy lemma:
+   `--fuel 6 --ifuel 0 --z3rlimit 800` to prove
+   `impl_2__chi v_N #v_T ks == chi_unrolled #v_N #v_T ks`. With
+   `ifuel 0`, Z3 can't get distracted by `t_KeccakItem` instances —
+   it just unfolds the two nested `fold_range 0 5` step by step.
+7. **`lemma_chi_val_i`** — the export: per-flat-index `k < 25`,
+   `(impl_2__chi ks).f_st.[k] == chi_inner_val ks (k%5) (k/5)`.
+
+**Key insights:**
+- The loop invariant carries the proof; high fuel only bridges the
+  named (typed) form to the extracted (closure) form.
+- `--split_queries always` on `chi_inner_body` separates the four
+  quadrants of the invariant (visited-row, current-row-before,
+  current-row-after, future-row), each of which is easy individually
+  but together overwhelm Z3.
+- `--ifuel 0` on the unrolling bridge prevents Z3 from destructing
+  the typeclass dictionary, which is the source of the 800s timeouts
+  the older `--fuel 6 --ifuel 1` approach hit on generic types.
+
+### Companion module 3: `Impl_Spec_Keccakf.SpecRounds`
+
+**Problem.** The spec-side bridge `keccak_f state == spec_rounds state 0`
+needs `--fuel 25` to unfold both sides simultaneously. While this works
+in isolation (the spec body `iota∘chi∘pi∘rho∘theta` is light), having
+`--fuel 25` in scope of the surrounding SMT context (even bracketed by
+`#push-options`/`#pop-options`) leaves stale facts in the cache and
+intermittently makes neighboring lemmas time out.
+
+**Solution.** Move `spec_state`, `spec_one_round`, `spec_rounds`, and
+`lemma_keccak_f_is_rounds` into their own module, with the only
+import being `Hacspec_sha3.Keccak_f`. The main proof file imports
+them as `module SpecRounds = Impl_Spec_Keccakf.SpecRounds` and aliases
+local names:
+
+```fstar
+let spec_state = SpecRounds.spec_state
+let spec_one_round = SpecRounds.spec_one_round
+let spec_rounds = SpecRounds.spec_rounds
+let lemma_keccak_f_is_rounds = SpecRounds.lemma_keccak_f_is_rounds
+```
+
+**Key insight:** module isolation is the *only* hygiene strong enough
+for `fuel 25`. `#push-options`/`#pop-options` restores the *parser*
+options but not the SMT cache that built up while those options were
+in scope. When you see "this lemma works alone but fails in context",
+suspect leaked solver state and split the lemma into its own module.
+
+### When to reach for each companion-module pattern
+
+| Symptom | Pattern |
+|---------|---------|
+| Inductive proof on `fold_range` blocks on `start +! 1` non-overflow obligations | NatFold-style nat reflection |
+| Nested `fold_range` with closure-heavy body (typeclass dispatch, `Seq.upd` chains) | ChiFold-style loop-invariant unfolding (`Pure` body, explicit unroll, `--ifuel 0` bridge) |
+| Single lemma needs `--fuel ≥ 20` and other lemmas in the same file start failing | Move it to its own module |
+
+The unifying principle: **isolate fragility**. Whenever a proof
+demands an unusual SMT setting, put it in a small file by itself
+so the cost is paid once and contained.

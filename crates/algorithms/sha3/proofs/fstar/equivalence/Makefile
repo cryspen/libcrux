@@ -6,6 +6,8 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 ROOTS = \
 	Proof_Utils.Lemmas.fst \
 	Proof_Utils.NatFold.fst \
+	Impl_Spec_Keccakf.ChiFold.fst \
+	Impl_Spec_Keccakf.SpecRounds.fst \
 	Impl_Spec_Keccakf.fst \
 	Impl_Spec_Keccakf.Generic.fst \
 	Impl_Spec_Sponge.Core.fst \

@@ -78,6 +78,8 @@ module Impl_Spec_Keccakf.Generic
 open FStar.Mul
 open Core_models
 open Proof_Utils.NatFold   (* fold_range_nat, lemma_fold_range_is_range_nat *)
+module ChiFold = Impl_Spec_Keccakf.ChiFold
+module SpecRounds = Impl_Spec_Keccakf.SpecRounds
 
 let _ =
   let open Libcrux_sha3.Traits in
@@ -158,7 +160,7 @@ let lemma_extract_lane_index
   = assert_norm ((extract_lane v_N lc state l).[i] == lc.lane state.[i] l)
 
 (* Shorthand for the spec's state type *)
-let spec_state = t_Array u64 (mk_usize 25)
+let spec_state = SpecRounds.spec_state
 
 (* Shorthand for the impl's state type *)
 let impl_state (v_N: usize) (v_T: Type0)
@@ -800,63 +802,6 @@ let lemma_pi_spec (state: spec_state)
     assert (p.[mk_usize 24] == state.[mk_usize 9])
 #pop-options
 
-#push-options "--z3rlimit 400"
-let lemma_chi_spec (state: spec_state)
-  : Lemma
-      (let c = Hacspec_sha3.Keccak_f.chi state in
-       c.[mk_usize 0] == state.[mk_usize 0] ^. ((~.(state.[mk_usize 5] <: u64)) &. state.[mk_usize 10]) /\
-       c.[mk_usize 1] == state.[mk_usize 1] ^. ((~.(state.[mk_usize 6] <: u64)) &. state.[mk_usize 11]) /\
-       c.[mk_usize 2] == state.[mk_usize 2] ^. ((~.(state.[mk_usize 7] <: u64)) &. state.[mk_usize 12]) /\
-       c.[mk_usize 3] == state.[mk_usize 3] ^. ((~.(state.[mk_usize 8] <: u64)) &. state.[mk_usize 13]) /\
-       c.[mk_usize 4] == state.[mk_usize 4] ^. ((~.(state.[mk_usize 9] <: u64)) &. state.[mk_usize 14]) /\
-       c.[mk_usize 5] == state.[mk_usize 5] ^. ((~.(state.[mk_usize 10] <: u64)) &. state.[mk_usize 15]) /\
-       c.[mk_usize 6] == state.[mk_usize 6] ^. ((~.(state.[mk_usize 11] <: u64)) &. state.[mk_usize 16]) /\
-       c.[mk_usize 7] == state.[mk_usize 7] ^. ((~.(state.[mk_usize 12] <: u64)) &. state.[mk_usize 17]) /\
-       c.[mk_usize 8] == state.[mk_usize 8] ^. ((~.(state.[mk_usize 13] <: u64)) &. state.[mk_usize 18]) /\
-       c.[mk_usize 9] == state.[mk_usize 9] ^. ((~.(state.[mk_usize 14] <: u64)) &. state.[mk_usize 19]) /\
-       c.[mk_usize 10] == state.[mk_usize 10] ^. ((~.(state.[mk_usize 15] <: u64)) &. state.[mk_usize 20]) /\
-       c.[mk_usize 11] == state.[mk_usize 11] ^. ((~.(state.[mk_usize 16] <: u64)) &. state.[mk_usize 21]) /\
-       c.[mk_usize 12] == state.[mk_usize 12] ^. ((~.(state.[mk_usize 17] <: u64)) &. state.[mk_usize 22]) /\
-       c.[mk_usize 13] == state.[mk_usize 13] ^. ((~.(state.[mk_usize 18] <: u64)) &. state.[mk_usize 23]) /\
-       c.[mk_usize 14] == state.[mk_usize 14] ^. ((~.(state.[mk_usize 19] <: u64)) &. state.[mk_usize 24]) /\
-       c.[mk_usize 15] == state.[mk_usize 15] ^. ((~.(state.[mk_usize 20] <: u64)) &. state.[mk_usize 0]) /\
-       c.[mk_usize 16] == state.[mk_usize 16] ^. ((~.(state.[mk_usize 21] <: u64)) &. state.[mk_usize 1]) /\
-       c.[mk_usize 17] == state.[mk_usize 17] ^. ((~.(state.[mk_usize 22] <: u64)) &. state.[mk_usize 2]) /\
-       c.[mk_usize 18] == state.[mk_usize 18] ^. ((~.(state.[mk_usize 23] <: u64)) &. state.[mk_usize 3]) /\
-       c.[mk_usize 19] == state.[mk_usize 19] ^. ((~.(state.[mk_usize 24] <: u64)) &. state.[mk_usize 4]) /\
-       c.[mk_usize 20] == state.[mk_usize 20] ^. ((~.(state.[mk_usize 0] <: u64)) &. state.[mk_usize 5]) /\
-       c.[mk_usize 21] == state.[mk_usize 21] ^. ((~.(state.[mk_usize 1] <: u64)) &. state.[mk_usize 6]) /\
-       c.[mk_usize 22] == state.[mk_usize 22] ^. ((~.(state.[mk_usize 2] <: u64)) &. state.[mk_usize 7]) /\
-       c.[mk_usize 23] == state.[mk_usize 23] ^. ((~.(state.[mk_usize 3] <: u64)) &. state.[mk_usize 8]) /\
-       c.[mk_usize 24] == state.[mk_usize 24] ^. ((~.(state.[mk_usize 4] <: u64)) &. state.[mk_usize 9]))
-  = let c = Hacspec_sha3.Keccak_f.chi state in
-    assert (c.[mk_usize 0] == state.[mk_usize 0] ^. ((~.(state.[mk_usize 5] <: u64)) &. state.[mk_usize 10]));
-    assert (c.[mk_usize 1] == state.[mk_usize 1] ^. ((~.(state.[mk_usize 6] <: u64)) &. state.[mk_usize 11]));
-    assert (c.[mk_usize 2] == state.[mk_usize 2] ^. ((~.(state.[mk_usize 7] <: u64)) &. state.[mk_usize 12]));
-    assert (c.[mk_usize 3] == state.[mk_usize 3] ^. ((~.(state.[mk_usize 8] <: u64)) &. state.[mk_usize 13]));
-    assert (c.[mk_usize 4] == state.[mk_usize 4] ^. ((~.(state.[mk_usize 9] <: u64)) &. state.[mk_usize 14]));
-    assert (c.[mk_usize 5] == state.[mk_usize 5] ^. ((~.(state.[mk_usize 10] <: u64)) &. state.[mk_usize 15]));
-    assert (c.[mk_usize 6] == state.[mk_usize 6] ^. ((~.(state.[mk_usize 11] <: u64)) &. state.[mk_usize 16]));
-    assert (c.[mk_usize 7] == state.[mk_usize 7] ^. ((~.(state.[mk_usize 12] <: u64)) &. state.[mk_usize 17]));
-    assert (c.[mk_usize 8] == state.[mk_usize 8] ^. ((~.(state.[mk_usize 13] <: u64)) &. state.[mk_usize 18]));
-    assert (c.[mk_usize 9] == state.[mk_usize 9] ^. ((~.(state.[mk_usize 14] <: u64)) &. state.[mk_usize 19]));
-    assert (c.[mk_usize 10] == state.[mk_usize 10] ^. ((~.(state.[mk_usize 15] <: u64)) &. state.[mk_usize 20]));
-    assert (c.[mk_usize 11] == state.[mk_usize 11] ^. ((~.(state.[mk_usize 16] <: u64)) &. state.[mk_usize 21]));
-    assert (c.[mk_usize 12] == state.[mk_usize 12] ^. ((~.(state.[mk_usize 17] <: u64)) &. state.[mk_usize 22]));
-    assert (c.[mk_usize 13] == state.[mk_usize 13] ^. ((~.(state.[mk_usize 18] <: u64)) &. state.[mk_usize 23]));
-    assert (c.[mk_usize 14] == state.[mk_usize 14] ^. ((~.(state.[mk_usize 19] <: u64)) &. state.[mk_usize 24]));
-    assert (c.[mk_usize 15] == state.[mk_usize 15] ^. ((~.(state.[mk_usize 20] <: u64)) &. state.[mk_usize 0]));
-    assert (c.[mk_usize 16] == state.[mk_usize 16] ^. ((~.(state.[mk_usize 21] <: u64)) &. state.[mk_usize 1]));
-    assert (c.[mk_usize 17] == state.[mk_usize 17] ^. ((~.(state.[mk_usize 22] <: u64)) &. state.[mk_usize 2]));
-    assert (c.[mk_usize 18] == state.[mk_usize 18] ^. ((~.(state.[mk_usize 23] <: u64)) &. state.[mk_usize 3]));
-    assert (c.[mk_usize 19] == state.[mk_usize 19] ^. ((~.(state.[mk_usize 24] <: u64)) &. state.[mk_usize 4]));
-    assert (c.[mk_usize 20] == state.[mk_usize 20] ^. ((~.(state.[mk_usize 0] <: u64)) &. state.[mk_usize 5]));
-    assert (c.[mk_usize 21] == state.[mk_usize 21] ^. ((~.(state.[mk_usize 1] <: u64)) &. state.[mk_usize 6]));
-    assert (c.[mk_usize 22] == state.[mk_usize 22] ^. ((~.(state.[mk_usize 2] <: u64)) &. state.[mk_usize 7]));
-    assert (c.[mk_usize 23] == state.[mk_usize 23] ^. ((~.(state.[mk_usize 3] <: u64)) &. state.[mk_usize 8]));
-    assert (c.[mk_usize 24] == state.[mk_usize 24] ^. ((~.(state.[mk_usize 4] <: u64)) &. state.[mk_usize 9]))
-#pop-options
-
 (* ================================================================
    Phase 4: to_spec commutativity for each step
 
@@ -1241,68 +1186,59 @@ let lemma_pi_to_spec
 #pop-options
 
 (** Chi extract_lane: states all 25 indices of chi result at u64 level.
-    lane_and_not_xor converts f_and_not_xor to u64: a ^. (b &. (~. c)).
-    logand_commutative bridges to spec convention: a ^. ((~. c) &. b). *)
 
-(* TODO: chi fold_range unfolding — same issue as portable lemma_chi_fold_reduces.
-   Z3 can't connect impl_2__chi's fold_range result to f_and_not_xor at each index.
-   Needs a generic chi unfolding lemma (like chi_outer_unfolds for portable).
-   Proof sketch (912/913 split queries succeed, 1 flaky):
+    Strategy:
+      1. [ChiFold.lemma_chi_val_i] gives, for any flat index [k < 25]:
+           (impl_2__chi v_N #v_T ks).f_st.[k] == chi_inner_val ks (k%5) (k/5)
+         and [chi_inner_val] is a transparent [let] that unfolds to
+         [f_and_not_xor] of three indices.
+      2. [lane_and_not_xor] (operation-level commutativity above) lifts
+         that equality through [lc.lane].
+      3. [logand_commutative] swaps `(b &. ~.c)` to `(~.c &. b)` to
+         match the spec orientation. *)
 
-  = let open Libcrux_sha3.Generic_keccak in
-    let s = ks.f_st in
-    let state = extract_lane v_N lc s l in
-    lane_and_not_xor v_N lc s.[mk_usize 0] s.[mk_usize 10] s.[mk_usize 5] l;
-    lane_and_not_xor v_N lc s.[mk_usize 1] s.[mk_usize 11] s.[mk_usize 6] l;
-    ... (25 lane_and_not_xor calls, one per index) ...
-    logand_commutative (~.(state.[mk_usize 5]) <: u64) (state.[mk_usize 10] <: u64);
-    ... (25 logand_commutative calls to bridge impl→spec form) ...
-*)
-let lemma_chi_extract_lane
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_chi_extract_lane_aux
       (v_N: usize) (#v_T: Type0)
       {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
       (lc: lane_correctness v_N #v_T)
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
       (l: nat{l < v v_N})
+      (k: usize{v k < 25})
   : Lemma
-      (let state = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
-       let r = extract_lane v_N lc
-                (Libcrux_sha3.Generic_keccak.impl_2__chi v_N #v_T ks)
-                  .Libcrux_sha3.Generic_keccak.f_st l in
-       r.[mk_usize 0] == state.[mk_usize 0] ^. ((~.(state.[mk_usize 5] <: u64)) &. state.[mk_usize 10]) /\
-       r.[mk_usize 1] == state.[mk_usize 1] ^. ((~.(state.[mk_usize 6] <: u64)) &. state.[mk_usize 11]) /\
-       r.[mk_usize 2] == state.[mk_usize 2] ^. ((~.(state.[mk_usize 7] <: u64)) &. state.[mk_usize 12]) /\
-       r.[mk_usize 3] == state.[mk_usize 3] ^. ((~.(state.[mk_usize 8] <: u64)) &. state.[mk_usize 13]) /\
-       r.[mk_usize 4] == state.[mk_usize 4] ^. ((~.(state.[mk_usize 9] <: u64)) &. state.[mk_usize 14]) /\
-       r.[mk_usize 5] == state.[mk_usize 5] ^. ((~.(state.[mk_usize 10] <: u64)) &. state.[mk_usize 15]) /\
-       r.[mk_usize 6] == state.[mk_usize 6] ^. ((~.(state.[mk_usize 11] <: u64)) &. state.[mk_usize 16]) /\
-       r.[mk_usize 7] == state.[mk_usize 7] ^. ((~.(state.[mk_usize 12] <: u64)) &. state.[mk_usize 17]) /\
-       r.[mk_usize 8] == state.[mk_usize 8] ^. ((~.(state.[mk_usize 13] <: u64)) &. state.[mk_usize 18]) /\
-       r.[mk_usize 9] == state.[mk_usize 9] ^. ((~.(state.[mk_usize 14] <: u64)) &. state.[mk_usize 19]) /\
-       r.[mk_usize 10] == state.[mk_usize 10] ^. ((~.(state.[mk_usize 15] <: u64)) &. state.[mk_usize 20]) /\
-       r.[mk_usize 11] == state.[mk_usize 11] ^. ((~.(state.[mk_usize 16] <: u64)) &. state.[mk_usize 21]) /\
-       r.[mk_usize 12] == state.[mk_usize 12] ^. ((~.(state.[mk_usize 17] <: u64)) &. state.[mk_usize 22]) /\
-       r.[mk_usize 13] == state.[mk_usize 13] ^. ((~.(state.[mk_usize 18] <: u64)) &. state.[mk_usize 23]) /\
-       r.[mk_usize 14] == state.[mk_usize 14] ^. ((~.(state.[mk_usize 19] <: u64)) &. state.[mk_usize 24]) /\
-       r.[mk_usize 15] == state.[mk_usize 15] ^. ((~.(state.[mk_usize 20] <: u64)) &. state.[mk_usize 0]) /\
-       r.[mk_usize 16] == state.[mk_usize 16] ^. ((~.(state.[mk_usize 21] <: u64)) &. state.[mk_usize 1]) /\
-       r.[mk_usize 17] == state.[mk_usize 17] ^. ((~.(state.[mk_usize 22] <: u64)) &. state.[mk_usize 2]) /\
-       r.[mk_usize 18] == state.[mk_usize 18] ^. ((~.(state.[mk_usize 23] <: u64)) &. state.[mk_usize 3]) /\
-       r.[mk_usize 19] == state.[mk_usize 19] ^. ((~.(state.[mk_usize 24] <: u64)) &. state.[mk_usize 4]) /\
-       r.[mk_usize 20] == state.[mk_usize 20] ^. ((~.(state.[mk_usize 0] <: u64)) &. state.[mk_usize 5]) /\
-       r.[mk_usize 21] == state.[mk_usize 21] ^. ((~.(state.[mk_usize 1] <: u64)) &. state.[mk_usize 6]) /\
-       r.[mk_usize 22] == state.[mk_usize 22] ^. ((~.(state.[mk_usize 2] <: u64)) &. state.[mk_usize 7]) /\
-       r.[mk_usize 23] == state.[mk_usize 23] ^. ((~.(state.[mk_usize 3] <: u64)) &. state.[mk_usize 8]) /\
-       r.[mk_usize 24] == state.[mk_usize 24] ^. ((~.(state.[mk_usize 4] <: u64)) &. state.[mk_usize 9]))
-  = admit ()
+      (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+       let i = k %! sz 5 in
+       let j = k /! sz 5 in
+       lc.lane (Libcrux_sha3.Generic_keccak.impl_2__chi v_N #v_T ks)
+                 .Libcrux_sha3.Generic_keccak.f_st.[k] l ==
+         lc.lane s.[k] l ^.
+           ((~. (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 1) %! mk_usize 5)) +! i ] l)) &.
+             lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 2) %! mk_usize 5)) +! i ] l))
+  = let i = k %! sz 5 in
+    let j = k /! sz 5 in
+    let s = ks.Libcrux_sha3.Generic_keccak.f_st in
+    assert (k == sz 5 *! j +! i);
+    ChiFold.lemma_chi_val_i v_N #v_T ks k;
+    lane_and_not_xor v_N lc
+      (ks.[ i, j <: (usize & usize) ] <: v_T)
+      (ks.[ i, ((j +! mk_usize 2) %! mk_usize 5) <: (usize & usize) ] <: v_T)
+      (ks.[ i, ((j +! mk_usize 1) %! mk_usize 5) <: (usize & usize) ] <: v_T)
+      l;
+    logand_commutative
+      (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 2) %! mk_usize 5)) +! i ] l)
+      (~. (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 1) %! mk_usize 5)) +! i ] l))
+#pop-options
 
 (** Chi commutativity:
     extract_lane lc (chi(ks)).f_st l == chi(extract_lane lc ks.f_st l)
 
-    lemma_chi_extract_lane provides u64-level facts via extract_lane,
-    lemma_chi_spec provides the spec side, eq_intro closes. *)
+    Direct pointwise proof: [lemma_chi_extract_lane_aux] gives the
+    per-index equality at the u64 level, and [Hacspec_sha3.createi_lemma]
+    is an SMTPat that unfolds [(chi state).[k]] on the spec side. We
+    introduce the universal pointwise fact via [Classical.forall_intro]
+    and conclude with array extensionality. *)
 
-#push-options "--z3rlimit 800"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
 let lemma_chi_to_spec
       (v_N: usize) (#v_T: Type0)
       {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
@@ -1315,12 +1251,19 @@ let lemma_chi_to_spec
           .Libcrux_sha3.Generic_keccak.f_st l ==
        Hacspec_sha3.Keccak_f.chi (extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l))
   = let open Libcrux_sha3.Generic_keccak in
-    lemma_chi_extract_lane v_N lc ks l;
+    let lhs = extract_lane v_N lc (impl_2__chi v_N #v_T ks).f_st l in
     let state = extract_lane v_N lc ks.f_st l in
-    lemma_chi_spec state;
-    Rust_primitives.Arrays.eq_intro
-      (extract_lane v_N lc (impl_2__chi v_N #v_T ks).f_st l)
-      (Hacspec_sha3.Keccak_f.chi state)
+    let rhs = Hacspec_sha3.Keccak_f.chi state in
+    let aux (i: nat{i < 25}) : Lemma (Seq.index lhs i == Seq.index rhs i) =
+      let k : usize = mk_usize i in
+      assert (v k == i);
+      lemma_chi_extract_lane_aux v_N #v_T lc ks l k;
+      assert (lhs.[k] == rhs.[k]);
+      assert (lhs.[k] == Seq.index lhs i);
+      assert (rhs.[k] == Seq.index rhs i)
+    in
+    Classical.forall_intro aux;
+    Rust_primitives.Arrays.eq_intro lhs rhs
 #pop-options
 
 (** Iota spec-side: unfold iota at each index.
@@ -1455,14 +1398,7 @@ let impl_one_round
   let ks3 = impl_2__chi v_N #v_T ks2 in
   impl_2__iota v_N #v_T ks3 i
 
-let spec_one_round (state: spec_state) (i: usize)
-  : Pure spec_state (requires i <. mk_usize 24) (fun _ -> True) =
-  Hacspec_sha3.Keccak_f.iota
-    (Hacspec_sha3.Keccak_f.chi
-      (Hacspec_sha3.Keccak_f.pi
-        (Hacspec_sha3.Keccak_f.rho
-          (Hacspec_sha3.Keccak_f.theta state))))
-    i
+let spec_one_round = SpecRounds.spec_one_round
 
 (** One-round commutativity: composition of per-step commutativity. *)
 #push-options "--z3rlimit 200"
@@ -1509,12 +1445,7 @@ let rec impl_rounds
   if r =. mk_usize 24 then ks
   else impl_rounds v_N (impl_one_round v_N ks r) (r +! mk_usize 1)
 
-let rec spec_rounds (state: spec_state) (r: usize)
-  : Pure spec_state
-      (requires r <=. mk_usize 24) (fun _ -> True)
-      (decreases (v (mk_usize 24) - v r)) =
-  if r =. mk_usize 24 then state
-  else spec_rounds (spec_one_round state r) (r +! mk_usize 1)
+let spec_rounds = SpecRounds.spec_rounds
 
 (** Induction: impl_rounds and spec_rounds commute with extract_lane. *)
 #push-options "--fuel 1 --z3rlimit 200"
@@ -1688,17 +1619,10 @@ let lemma_keccakf1600_is_rounds
     lemma_fold_range_nat_is_impl_rounds v_N #v_T ks 0
 #pop-options
 
-(** Bridge: spec's [keccak_f] equals [spec_rounds]. The spec body is simple
-    enough — no refined argument types, no extractor identity let-bindings
-    beyond the outer [let state = fold_range ... in state] wrapper — that
-    Z3 can unroll all 24 iterations of the [fold_range] directly once it
-    also unfolds [spec_rounds]. [fuel 25] unfolds both. *)
-#push-options "--fuel 25 --ifuel 1 --z3rlimit 300"
-let lemma_keccak_f_is_rounds (state: spec_state)
-  : Lemma (Hacspec_sha3.Keccak_f.keccak_f state ==
-           spec_rounds state (mk_usize 0))
-  = ()
-#pop-options
+(** Bridge: spec's [keccak_f] equals [spec_rounds]. Re-exported from
+    [Impl_Spec_Keccakf.SpecRounds] which isolates the fragile [fuel 25]
+    setting from the surrounding SMT context here. *)
+let lemma_keccak_f_is_rounds = SpecRounds.lemma_keccak_f_is_rounds
 
 (* ================================================================
    MAIN THEOREM: Generic keccak_f lane-wise equivalence.
