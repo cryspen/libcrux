@@ -160,8 +160,8 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     /// Instantiate an HMAC_DRBG from explicit entropy material (SP 800-90A §10.1.2.3).
     ///
     /// - `entropy_input`: must contain at least [`MIN_ENTROPY_BYTES`] bytes of entropy.
-    /// - `nonce`: at least `OUTLEN / 2` bytes (the spec minimum); using `OUTLEN` bytes is
-    ///   recommended.
+    /// - `nonce`: a unique value (technically a value that is not more likely to repeat than a
+    ///   a random value of length OUTLEN/2)
     /// - `personalization_string`: optional application-specific context (may be empty).
     ///
     /// Returns [`InstantiateError::InputTooLarge`] if the combined length of the three
