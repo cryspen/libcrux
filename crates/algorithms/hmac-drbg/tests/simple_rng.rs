@@ -6,7 +6,7 @@
 //! ```
 #![cfg(all(feature = "rand", not(feature = "health-tests")))]
 
-use libcrux_drbg::{HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng};
+use libcrux_hmac_drbg::{HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng};
 use rand::{rand_core::UnwrapErr, rngs::SysRng, CryptoRng, Rng};
 
 type OsRng = UnwrapErr<SysRng>;

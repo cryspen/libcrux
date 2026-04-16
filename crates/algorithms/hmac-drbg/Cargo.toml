@@ -1,11 +1,11 @@
 [package]
-name = "libcrux-drbg"
+name = "libcrux-hmac-drbg"
+readme = "Readme.md"
 
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
 license.workspace = true
-readme.workspace = true
 repository.workspace = true
 version.workspace = true
 

@@ -4,7 +4,7 @@
 //!
 //! # Example
 //! ```
-//! use libcrux_drbg::HmacDrbgSha256;
+//! use libcrux_hmac_drbg::HmacDrbgSha256;
 //!
 //! // In production obtain entropy from the OS (e.g. `new_from_sys_rng`).
 //! let entropy = {

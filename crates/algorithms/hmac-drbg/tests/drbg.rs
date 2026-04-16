@@ -1,5 +1,5 @@
 use cavp::drbg::HmacDrbgTest;
-use libcrux_drbg::{
+use libcrux_hmac_drbg::{
     GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES,
 };
 

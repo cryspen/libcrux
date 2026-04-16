@@ -6,7 +6,7 @@
 //! ```
 #![cfg(feature = "rand")]
 
-use libcrux_drbg::{HmacDrbgSeed, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512};
+use libcrux_hmac_drbg::{HmacDrbgSeed, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512};
 use rand::{SeedableRng, TryCryptoRng, TryRng};
 
 // ---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ fn try_fill_bytes_small() {
 fn try_fill_bytes_exact_max_generate() {
     // MAX_GENERATE_BYTES = 65_536 — exactly one chunk, no splitting needed.
     let mut drbg = make_sha256();
-    let mut buf = vec![0u8; libcrux_drbg::MAX_GENERATE_BYTES];
+    let mut buf = vec![0u8; libcrux_hmac_drbg::MAX_GENERATE_BYTES];
     drbg.try_fill_bytes(&mut buf).unwrap();
 }
 
@@ -84,7 +84,7 @@ fn try_fill_bytes_larger_than_max_generate() {
     // try_fill_bytes must split the request into chunks of MAX_GENERATE_BYTES
     // and must NOT return RequestTooLarge.
     let mut drbg = make_sha256();
-    let mut buf = vec![0u8; libcrux_drbg::MAX_GENERATE_BYTES + 1];
+    let mut buf = vec![0u8; libcrux_hmac_drbg::MAX_GENERATE_BYTES + 1];
     drbg.try_fill_bytes(&mut buf).unwrap();
 }
 
@@ -92,7 +92,7 @@ fn try_fill_bytes_larger_than_max_generate() {
 fn try_fill_bytes_two_chunks() {
     // 2 × MAX_GENERATE_BYTES — two separate generate() calls internally.
     let mut drbg = make_sha256();
-    let mut buf = vec![0u8; libcrux_drbg::MAX_GENERATE_BYTES * 2];
+    let mut buf = vec![0u8; libcrux_hmac_drbg::MAX_GENERATE_BYTES * 2];
     drbg.try_fill_bytes(&mut buf).unwrap();
 }
 

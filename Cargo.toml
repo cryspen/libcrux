@@ -38,14 +38,14 @@ members = [
     "crates/algorithms/aesgcm",
     "crates/algorithms/blake2",
     "crates/algorithms/aesgcm/fuzz",
-    "crates/algorithms/drbg/fuzz",
     "crates/algorithms/chacha20poly1305",
     "crates/algorithms/curve25519",
-    "crates/algorithms/drbg",
     "crates/algorithms/ecdsa",
     "crates/algorithms/ed25519",
     "crates/algorithms/hkdf",
     "crates/algorithms/hmac",
+    "crates/algorithms/hmac-drbg",
+    "crates/algorithms/hmac-drbg/fuzz",
     "crates/algorithms/p256",
     "crates/algorithms/poly1305",
     "crates/algorithms/rsa",
@@ -98,7 +98,7 @@ libcrux-poly1305 = { version = "=0.0.5", path = "crates/algorithms/poly1305" }
 libcrux-ecdsa = { version = "=0.0.6", path = "crates/algorithms/ecdsa" }
 libcrux-ed25519 = { version = "=0.0.7", path = "crates/algorithms/ed25519" }
 libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
-libcrux-drbg = { version = "=0.0.3", path = "crates/algorithms/drbg" }
+libcrux-hmac-drbg = { version = "=0.0.3", path = "crates/algorithms/hmac-drbg" }
 libcrux-hkdf = { version = "=0.0.6", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.6", path = "crates/algorithms/hmac" }
 libcrux-intrinsics = { version = "=0.0.6", path = "crates/utils/intrinsics" }
@@ -159,7 +159,7 @@ all_algorithms = [
     "mldsa",
     "rsapss",
     "poly1305",
-    "drbg"
+    "hmac_drbg",
 ]
 aes_gcm = []
 blake2 = []
@@ -176,7 +176,7 @@ mlkem = []
 mldsa = []
 rsapss = []
 poly1305 = []
-drbg = []
+hmac_drbg = []
 
 # Primitives
 all_primitives = ["aead", "digest", "kem"]
@@ -214,6 +214,7 @@ libcrux-ecdsa.workspace = true
 libcrux-ed25519.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-hmac.workspace = true
+libcrux-hmac-drbg.workspace = true
 libcrux-ml-kem.workspace = true
 libcrux-ml-dsa.workspace = true
 libcrux-p256.workspace = true
