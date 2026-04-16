@@ -394,13 +394,15 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     //
     // #hax: requires additional_input.len() <= MAX_SEED_BYTES - OUTLEN
     // #hax: ensures result.is_ok() ==> self.reseed_counter == 1
-    pub fn reseed_from_rng<R: rand::CryptoRng>(
+    pub fn reseed_from_rng<R: rand::TryCryptoRng>(
         &mut self,
         rng: &mut R,
         additional_input: &[u8],
-    ) -> Result<(), ReseedError> {
+    ) -> Result<(), ReseedFromRngError<R::Error>> {
         let mut entropy = [0u8; OUTLEN];
-        rng.fill_bytes(&mut entropy);
+        rng.try_fill_bytes(&mut entropy)
+            .map_err(ReseedFromRngError::RngError)?;
         self.reseed(&entropy, additional_input)
+            .map_err(ReseedFromRngError::from)
     }
 }

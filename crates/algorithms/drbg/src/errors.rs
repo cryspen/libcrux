@@ -45,9 +45,26 @@ pub enum InstantiateFromRngError {
     InputTooLarge,
 
     /// The Rng used for seeding failed.
-    ///
-    /// Note that this error can only occur when `feature = "rand"` is enabled.
     RngError,
+
+    /// A continuous health test detected a catastrophic internal failure
+    /// (feature `health-tests`). The DRBG is permanently poisoned; discard
+    /// the instance. This should never occur in correct operation.
+    ///
+    /// Note that this error can only occur when enabling the feature.
+    #[cfg(feature = "health-tests")]
+    HealthCheckFailed,
+}
+
+/// The Error returned by the Reseed operation of HMAC-DRBG.ha, when used with an Rng
+#[cfg(feature = "rand")]
+#[derive(Debug, PartialEq)]
+pub enum ReseedFromRngError<RngError> {
+    /// The combined seed material exceeds the internal limit.
+    InputTooLarge,
+
+    /// The Rng used for seeding failed.
+    RngError(RngError),
 
     /// A continuous health test detected a catastrophic internal failure
     /// (feature `health-tests`). The DRBG is permanently poisoned; discard
@@ -208,6 +225,18 @@ impl From<InstantiateError> for InstantiateFromRngError {
 
             #[cfg(feature = "health-tests")]
             InstantiateError::HealthCheckFailed => InstantiateFromRngError::HealthCheckFailed,
+        }
+    }
+}
+
+#[cfg(feature = "rand")]
+impl<T> From<ReseedError> for ReseedFromRngError<T> {
+    fn from(value: ReseedError) -> Self {
+        match value {
+            ReseedError::InputTooLarge => ReseedFromRngError::InputTooLarge,
+
+            #[cfg(feature = "health-tests")]
+            ReseedError::HealthCheckFailed => ReseedFromRngError::HealthCheckFailed,
         }
     }
 }

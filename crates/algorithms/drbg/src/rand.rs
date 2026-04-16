@@ -1,6 +1,9 @@
 use core::marker::PhantomData;
 
-pub(crate) use ::rand::{rngs, CryptoRng, TryCryptoRng};
+pub(crate) use ::rand::{rngs, TryCryptoRng};
+
+#[cfg(not(feature = "health-tests"))]
+pub use ::rand::CryptoRng;
 
 use crate::{GenerateError, HmacAlgorithm, HmacDrbg, ReseedError, MAX_GENERATE_BYTES};
 
@@ -255,15 +258,14 @@ pub type HmacSha512DrbgRng<ReseedRng> = HmacDrbgRng<64, crate::hmac::HmacSha512,
 /// [`HmacSha512DrbgRng`] for convenience.
 #[cfg(not(feature = "health-tests"))]
 #[allow(private_bounds)]
-pub struct HmacDrbgRng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
-{
+pub struct HmacDrbgRng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> {
     drbg: HmacDrbg<OUTLEN, Hmac>,
     rng: ReseedRng,
 }
 
 #[cfg(not(feature = "health-tests"))]
 #[allow(private_bounds)]
-impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
     HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
     /// Instantiate a new `HmacDrbgRng`, sampling entropy and nonce from the `ReseedRng`.
@@ -314,7 +316,10 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRn
             match self.drbg.reseed_from_rng(&mut self.rng, &[]) {
                 Ok(()) => (),
                 // we know how much data we put in and it's fine
-                Err(crate::ReseedError::InputTooLarge) => unreachable!(),
+                Err(crate::ReseedFromRngError::InputTooLarge) => unreachable!(),
+
+                // this Rng is infallible, so this can't happen
+                Err(crate::ReseedFromRngError::RngError(error)) => match error {},
             }
         }
 
@@ -331,7 +336,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRn
 }
 
 #[cfg(not(feature = "health-tests"))]
-impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng> rand::TryRng
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> rand::TryRng
     for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
     type Error = core::convert::Infallible;
@@ -362,18 +367,14 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRn
 }
 
 #[cfg(not(feature = "health-tests"))]
-impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: rand::CryptoRng>
-    rand::TryCryptoRng for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
+impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> rand::TryCryptoRng
+    for HmacDrbgRng<OUTLEN, Hmac, ReseedRng>
 {
 }
 
 /// Ensure that HmacDrbgRng implements CryptoRng
 #[cfg(not(feature = "health-tests"))]
-fn _assert_crypto_rng<
-    const OUTLEN: usize,
-    Hmac: HmacAlgorithm<OUTLEN>,
-    ReseedRng: rand::CryptoRng,
->() {
+fn _assert_crypto_rng<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>() {
     fn must_impl<T: CryptoRng>() {}
     must_impl::<HmacDrbgRng<OUTLEN, Hmac, ReseedRng>>();
 }
