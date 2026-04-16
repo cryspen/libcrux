@@ -56,11 +56,11 @@ mod utils;
 mod hmac;
 use hmac::{HmacAlgorithm, HmacSha256, HmacSha384, HmacSha512};
 
-/// Maximum number of generate calls before a reseed is required (SP 800-90A §10.1 Table 2).
+/// Maximum number of generate calls before a reseed is required (SP 800-90A §8.4 Table 1, §10.1 Table 2).
 ///
 /// After this many calls to [`HmacDrbg::generate`], the next call returns
 /// [`GenerateError::ReseedRequired`]. Use [`HmacDrbg::needs_reseed`] to check proactively.
-pub const RESEED_INTERVAL: u64 = 10_000;
+pub const RESEED_INTERVAL: u64 = 1 << 48;
 
 /// Maximum number of bytes that can be requested in a single [`HmacDrbg::generate`] call
 /// (SP 800-90A §10.1 Table 2).
