@@ -246,7 +246,7 @@ fn reseed_required_error() {
     let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
     drbg.set_reseed_counter(RESEED_INTERVAL + 1);
     let mut out = [0u8; 32];
-    let err = drbg.generate(&mut out, None).unwrap_err();
+    let err = drbg.generate(&mut out, &[]).unwrap_err();
     assert_eq!(err, GenerateError::ReseedRequired);
 }
 

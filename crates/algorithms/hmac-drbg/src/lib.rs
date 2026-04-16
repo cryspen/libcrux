@@ -287,7 +287,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     pub fn generate(
         &mut self,
         output: &mut [u8],
-        additional_input: Option<&[u8]>,
+        additional_input: &[u8],
     ) -> Result<(), GenerateError> {
         #[cfg(feature = "health-tests")]
         if self.health.poisoned() {
@@ -304,11 +304,9 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             return Err(GenerateError::RequestTooLarge);
         }
 
-        let ai = additional_input.filter(|d| !d.is_empty());
-
-        // If additional_input is provided, update state with it first.
-        if let Some(d) = ai {
-            self.update(&[d])?;
+        // Update state with additional_input (might be empty).
+        if !additional_input.is_empty() {
+            self.update(&[additional_input])?;
         }
 
         // Generate output: repeatedly compute V = HMAC(K, V) and copy into output.
@@ -337,11 +335,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         }
 
         // Final update (with or without additional_input).
-        if let Some(d) = ai {
-            self.update(&[d])?;
-        } else {
-            self.update(&[])?;
-        }
+        self.update(&[additional_input])?;
         self.reseed_counter += 1;
         Ok(())
     }
