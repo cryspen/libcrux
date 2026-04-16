@@ -6,21 +6,7 @@
 // positive rate at or below 2^{-20} per test.
 // ---------------------------------------------------------------------------
 
-use crate::{HmacAlgorithm, HmacDrbg};
-
-/// Repetition Count Test cutoff (SP 800-90B §4.4.1, H_min=1, α=2^{-20}).
-/// C = ⌈20 / H_min⌉ + 1 = 21.  A run of ≥ 21 identical bytes signals failure.
-pub const RCT_C: u8 = 21;
-
-/// Minimum entropy length in bytes for the startup monobit test to be applied.
-pub const STARTUP_MONOBIT_MIN_BYTES: usize = 8;
-
-/// Adaptive Proportion Test window size (SP 800-90B §4.4.2).
-pub const APT_W: u16 = 512;
-
-/// Adaptive Proportion Test cut off (SP 800-90B §4.4.2, Table 4, H_min=1, α=2^{-20}).
-/// At most 325 recurrences of the first byte are allowed within a 512-byte window.
-pub const APT_C: u16 = 325;
+use crate::{HmacAlgorithm, HmacDrbg, APT_C, APT_W, RCT_C, STARTUP_MONOBIT_MIN_BYTES};
 
 /// AIS 31 startup/online tests applied to entropy input at instantiation and reseed.
 ///

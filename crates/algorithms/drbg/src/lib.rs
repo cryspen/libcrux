@@ -13,9 +13,13 @@
 //!     e
 //! };
 //! let nonce = [0u8; 16];
-//! let mut drbg = HmacDrbgSha256::new(&entropy, &nonce, &[]).unwrap();
+//! // global domain separation, e.g. app/protocol
+//! let personalization = b"myapp.v0";
+//! let mut drbg = HmacDrbgSha256::new(&entropy, &nonce, personalization).unwrap();
 //! let mut output = [0u8; 32];
-//! drbg.generate(&mut output, None).unwrap();
+//! // per-generate domain separation, e.g. usage of generated entropy inside protocol
+//! let additional_input = b"gen-ephemeral";
+//! drbg.generate(&mut output, Some(additional_input)).unwrap();
 //! ```
 #![no_std]
 #![deny(unsafe_code)]
@@ -72,6 +76,24 @@ pub const MAX_GENERATE_BYTES: usize = 65_536;
 ///
 /// For all supported variants this is 32 bytes (256 bits), regardless of the hash length.
 pub const MIN_ENTROPY_BYTES: usize = 32;
+
+// == Constants for health checks ==
+// We want these to always be defined, not just when the feature is set.
+// That is why we define them here instead of in the module.
+
+/// Repetition Count Test cutoff (SP 800-90B §4.4.1, H_min=1, α=2^{-20}).
+/// C = ⌈20 / H_min⌉ + 1 = 21.  A run of ≥ 21 identical bytes signals failure.
+pub const RCT_C: u8 = 21;
+
+/// Minimum entropy length in bytes for the startup monobit test to be applied.
+pub const STARTUP_MONOBIT_MIN_BYTES: usize = 8;
+
+/// Adaptive Proportion Test window size (SP 800-90B §4.4.2).
+pub const APT_W: u16 = 512;
+
+/// Adaptive Proportion Test cut off (SP 800-90B §4.4.2, Table 4, H_min=1, α=2^{-20}).
+/// At most 325 recurrences of the first byte are allowed within a 512-byte window.
+pub const APT_C: u16 = 325;
 
 // ---------------------------------------------------------------------------
 // HMAC_DRBG state
@@ -380,7 +402,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         Self::new(&entropy, &nonce, personalization_string).map_err(InstantiateFromRngError::from)
     }
 
-    /// Instantiate from the system RNG ([`rand::rngs::OsRng`]).
+    /// Instantiate from the system RNG ([`rand::rngs::SysRng`]).
     //
     // #hax: requires personalization_string.len() <= MAX_SEED_BYTES - 2 * OUTLEN
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
@@ -390,7 +412,9 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         Self::new_from_rng(&mut rand::rngs::SysRng, personalization_string)
     }
 
-    /// Reseed from a [`rand::CryptoRng`] (generates entropy internally).
+    /// Reseed from a [`CryptoRng`] (generates entropy internally).
+    ///
+    /// [`CryptoRng`]: ::rand::CryptoRng
     //
     // #hax: requires additional_input.len() <= MAX_SEED_BYTES - OUTLEN
     // #hax: ensures result.is_ok() ==> self.reseed_counter == 1

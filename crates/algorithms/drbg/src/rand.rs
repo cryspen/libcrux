@@ -1,5 +1,6 @@
 use core::marker::PhantomData;
 
+use ::rand::SeedableRng;
 pub(crate) use ::rand::{rngs, TryCryptoRng};
 
 #[cfg(not(feature = "health-tests"))]
@@ -14,7 +15,7 @@ use super::health_tests::HealthState;
 // Seed type
 // ---------------------------------------------------------------------------
 
-/// Seed buffer for [`rand::SeedableRng`] on [`HmacDrbg`].
+/// Seed buffer for [`SeedableRng`] on [`HmacDrbg`].
 ///
 /// A newtype over `[u8; N]` with a manual [`Default`] impl, since
 /// `[u8; N]: Default` is only available for N ≤ 32 in the current toolchain.
@@ -74,7 +75,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
 
 impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for HmacDrbg<OUTLEN, Alg> {}
 
-/// [`rand::SeedableRng`] implementation for [`HmacDrbg`].
+/// [`SeedableRng`] implementation for [`HmacDrbg`].
 ///
 /// The seed type is [`HmacDrbgSeed<OUTLEN>`] — 32 bytes for SHA-256,
 /// 48 for SHA-384, 64 for SHA-512.
@@ -87,9 +88,9 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for Hma
 /// | [`from_rng`] | `OUTLEN` B from `rng` | `OUTLEN` B from `rng` | applied |
 /// | [`try_from_rng`] | `OUTLEN` B from `rng` | `OUTLEN` B from `rng` | applied |
 ///
-/// [`from_seed`]: rand::SeedableRng::from_seed
-/// [`from_rng`]: rand::SeedableRng::from_rng
-/// [`try_from_rng`]: rand::SeedableRng::try_from_rng
+/// [`from_seed`]: SeedableRng::from_seed
+/// [`from_rng`]: SeedableRng::from_rng
+/// [`try_from_rng`]: SeedableRng::try_from_rng
 ///
 /// ## `from_seed` and startup health tests
 ///
@@ -101,13 +102,15 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryCryptoRng for Hma
 ///
 /// ## `from_rng` / `try_from_rng` and startup health tests
 ///
-/// Both overrides draw `OUTLEN` bytes of entropy **and** `OUTLEN` bytes of
-/// nonce from the supplied RNG and pass them through [`HmacDrbg::new`], so
-/// the AIS 31 startup health tests are applied when the `health-tests` feature
-/// is enabled.  Panics if `new()` fails (a catastrophic event indicating a
-/// broken entropy source).
+/// [`SeedableRng::from_rng`] and [`SeedableRng::try_from_rng`] draw `OUTLEN`
+/// bytes of entropy **and** `OUTLEN` bytes of nonce from the supplied RNG and
+/// pass them through [`HmacDrbg::new`], so the AIS 31 startup health tests are
+/// applied when the `health-tests` feature is enabled.
+///
+/// Panics if `new()` fails (a catastrophic event indicating a broken entropy
+/// source).
 #[allow(private_bounds)]
-impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for HmacDrbg<OUTLEN, Alg> {
+impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> SeedableRng for HmacDrbg<OUTLEN, Alg> {
     type Seed = HmacDrbgSeed<OUTLEN>;
 
     // #hax: requires true   // seed is always [u8; OUTLEN]; update() cannot fail for inputs of this size
@@ -137,7 +140,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
     /// Panics if [`HmacDrbg::new`] fails (catastrophic entropy-source
     /// failure; should never occur with a correctly operating RNG).
     ///
-    /// [`from_seed`]: rand::SeedableRng::from_seed
+    /// [`from_seed`]: SeedableRng::from_seed
     // #hax: requires true   // entropy=[u8;OUTLEN], nonce=[u8;OUTLEN]: 2*OUTLEN <= MAX_SEED_BYTES always holds
     // #hax: ensures result.reseed_counter == 1
     fn from_rng<R: rand::Rng + ?Sized>(rng: &mut R) -> Self {
@@ -162,8 +165,17 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
     ///
     /// The [`SeedableRng`] trait fixes the error type of this method to
     /// `R::Error` (the RNG's own error type).  It is therefore **impossible**
-    /// to forward [`Error::HealthCheckFailed`] — or any other
-    /// [`Error`] variant — through this return type without an
+    /// to forward
+    #[cfg_attr(
+        feature = "health-tests",
+        doc = "[`InstantiateError::HealthCheckFailed`]"
+    )]
+    #[cfg_attr(
+        not(feature = "health-tests"),
+        doc = "`InstantiateError::HealthCheckFailed`"
+    )]
+    /// — or any other
+    /// [`InstantiateError`] variant — through this return type without an
     /// `R::Error: From<Error>` bound, which cannot be added to a trait method
     /// override.
     ///
@@ -174,8 +186,12 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
     /// directly; it returns `Result<Self, Error>` and propagates all failure
     /// modes.
     ///
-    /// [`SeedableRng`]: rand::SeedableRng
-    /// [`from_seed`]: rand::SeedableRng::from_seed
+    /// [`from_seed`]: SeedableRng::from_seed
+    /// [`InstantiateError`]: crate::errors::InstantiateError
+    #[cfg_attr(
+        feature = "health-tests",
+        doc = "[`InstantiateError::HealthCheckFailed`]: crate::errors::InstantiateError::HealthCheckFailed"
+    )]
     // #hax: requires true   // entropy=[u8;OUTLEN], nonce=[u8;OUTLEN]: 2*OUTLEN <= MAX_SEED_BYTES always holds
     // #hax: ensures result.is_ok() ==> result.unwrap().reseed_counter == 1
     fn try_from_rng<R: rand::TryRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
@@ -195,7 +211,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::SeedableRng for Hmac
 
 /// Extension trait for an RNG that supports explicit reseeding with caller-supplied entropy.
 ///
-/// This is separate from [`rand::SeedableRng`] because reseeding an already-running
+/// This is separate from [`SeedableRng`] because reseeding an already-running
 /// DRBG takes entropy + additional input, whereas `SeedableRng` only covers initial
 /// construction.
 pub trait TryReseedableRng: rand::TryRng {
@@ -302,11 +318,11 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
         Self { drbg, rng }
     }
 
-    /// Somewhat safely generates a bit or randomness:
+    /// Somewhat safely generates a bit of randomness:
     ///  - ensures we don't pass in too much additional_input (none, in fact)
     ///  - reseeds if needed
     ///
-    /// The caller MUST ensure that they don't ask fo too much data. Ideally enforce this using
+    /// The caller MUST ensure that they don't ask for too much data. Ideally enforce this using
     /// hax.
     ///
     ///

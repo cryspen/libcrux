@@ -1,5 +1,8 @@
 use core::{error::Error, fmt};
 
+#[cfg(doc)]
+use crate::{MAX_GENERATE_BYTES, RESEED_INTERVAL};
+
 /// The Error returned by the Update operation of HMAC-DRBG.
 #[derive(Debug, PartialEq)]
 pub enum UpdateError {

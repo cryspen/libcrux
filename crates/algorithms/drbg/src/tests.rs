@@ -25,7 +25,7 @@ const E32: [u8; 32] = alt(0x55, 0xaa);
 #[cfg(feature = "health-tests")]
 mod startup_tests {
     use super::*;
-    use crate::health_tests::{startup_test, RCT_C, STARTUP_MONOBIT_MIN_BYTES};
+    use crate::{startup_test, RCT_C, STARTUP_MONOBIT_MIN_BYTES};
 
     // Primary entropy (0x55 / 0xaa alternating, 50 % bits set)
     pub const E48: [u8; 48] = alt(0x55, 0xaa);
