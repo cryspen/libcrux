@@ -116,7 +116,6 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     /// in the spec).
     fn update(&mut self, provided_parts: &[&[u8]]) -> Result<(), UpdateError> {
         let has_data = provided_parts.iter().any(|s| !s.is_empty());
-        let mut new_key = [0u8; OUTLEN];
         let mut new_v = [0u8; OUTLEN];
 
         // K = HMAC(K, V || 0x00 [|| provided_data])
@@ -129,9 +128,8 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
                     h.update(part)?;
                 }
             }
-            h.finalize(&mut new_key);
+            h.finalize(&mut self.key);
         }
-        self.key = new_key;
 
         // V = HMAC(K, V)
         Alg::hmac(&mut new_v, &self.key, &self.v)?;
@@ -145,8 +143,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             for &part in provided_parts {
                 h.update(part)?;
             }
-            h.finalize(&mut new_key);
-            self.key = new_key;
+            h.finalize(&mut self.key);
 
             // V = HMAC(K, V)
             Alg::hmac(&mut new_v, &self.key, &self.v)?;
