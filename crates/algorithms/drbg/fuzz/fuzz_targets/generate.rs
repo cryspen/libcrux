@@ -29,7 +29,7 @@ fuzz_target!(|data: &[u8]| {
     let output_len = u16::from_le_bytes([data[1], data[2]]) as usize;
     let has_ai = data[3] != 0;
     let ai_bytes = &data[4..];
-    let additional_input = if has_ai { Some(ai_bytes) } else { None };
+    let additional_input = if has_ai { ai_bytes } else { &[] };
 
     let mut out = vec![0u8; output_len];
 

@@ -113,7 +113,7 @@ macro_rules! run_lifecycle {
                     let output_len = cur.u16_le().unwrap_or(0) as usize;
                     let ai_len = (cur.byte().unwrap_or(0) as usize) & 0x7f;
                     let ai = cur.take(ai_len);
-                    let additional_input = if ai.is_empty() { None } else { Some(ai) };
+                    let additional_input = if ai.is_empty() { &[] } else { ai };
 
                     let needs_reseed_before = drbg.needs_reseed();
                     let counter_before = drbg.reseed_counter();
