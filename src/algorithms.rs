@@ -44,3 +44,6 @@ pub mod rsapss;
 
 #[cfg(feature = "poly1305")]
 pub mod poly1305;
+
+#[cfg(feature  = "drgb")]
+mog mod drbg;
