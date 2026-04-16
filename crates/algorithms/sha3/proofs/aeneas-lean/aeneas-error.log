@@ -1,0 +1,77 @@
+[[92mInfo[39m ] Imported: /home/alex/Projects/libcrux/sha3-aeneas/crates/algorithms/sha3/proofs/aeneas-lean/llbc/libcrux_sha3.llbc
+[[91mError[39m] Unimplemented
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:8-296:9
+[[91mError[39m] Unimplemented
+Source: 'crates/algorithms/sha3/src/simd/avx2.rs', lines 117:4-121:5
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES, RATE>[TraitClause@0]}::absorb_full because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<@STATE, @PARALLEL_LANES, @RATE>}::absorb_full'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 157:4-215:5
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:8-296:9
+Compiler source: interp/Interp.ml, line 555
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::simd::avx2::load_last because of previous error
+Name pattern: 'libcrux_sha3::simd::avx2::load_last'
+Definition span: 'crates/algorithms/sha3/src/simd/avx2.rs', lines 110:0-133:1
+Source: 'crates/algorithms/sha3/src/simd/avx2.rs', lines 117:4-121:5
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::simd::avx2::load_block because of previous error
+Name pattern: 'libcrux_sha3::simd::avx2::load_block'
+Definition span: 'crates/algorithms/sha3/src/simd/avx2.rs', lines 46:0-107:1
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::simd256::keccak4 because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::simd256::keccak4'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak/simd256.rs', lines 6:0-47:1
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 239:8-263:9
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES, RATE>[TraitClause@0]}::absorb because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<@STATE, @PARALLEL_LANES, @RATE>}::absorb'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 232:4-264:5
+Source: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 239:8-263:9
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 128:8-145:9
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, PARALLEL_LANES, RATE>[TraitClause@0]}::fill_buffer because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::xof::{libcrux_sha3::generic_keccak::xof::KeccakXofState<@STATE, @PARALLEL_LANES, @RATE>}::fill_buffer'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 123:4-146:5
+Source: 'crates/algorithms/sha3/src/generic_keccak/xof.rs', lines 128:8-145:9
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_final because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_final'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 282:4-298:5
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Unimplemented
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_block because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_block'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 260:4-269:5
+Source: '/rustc/library/core/src/macros/mod.rs', lines 294:11-295:37
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Internal error, please file an issue
+Source: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 265:39-265:72
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_block::{core::ops::function::FnMut<(&'_ (&'_ ([u8]))), bool> for libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_block::closure<0, 1, T, N, RATE>[TraitClause@0, TraitClause@1]}::call_mut because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_block::{core::ops::function::FnMut<libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_block::closure<'0, '1, @T, @N, @RATE>, (&'_ &'_ [u8]), bool>}::call_mut'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 265:39-265:72
+Source: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 265:39-265:72
+Compiler source: interp/Interp.ml, line 555
+[[91mError[39m] Internal error, please file an issue
+Source: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 294:39-294:72
+[[93mWarn[39m ] Could not translate the body of function 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_final::{core::ops::function::FnMut<(&'_ (&'_ ([u8]))), bool> for libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0]}::absorb_final::closure<0, 1, T, N, RATE, DELIM>[TraitClause@0, TraitClause@1]}::call_mut because of previous error
+Name pattern: 'libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_final::{core::ops::function::FnMut<libcrux_sha3::generic_keccak::{libcrux_sha3::generic_keccak::KeccakState<@T, @N>}::absorb_final::closure<'0, '1, @T, @N, @RATE, @DELIM>, (&'_ &'_ [u8]), bool>}::call_mut'
+Definition span: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 294:39-294:72
+Source: 'crates/algorithms/sha3/src/generic_keccak.rs', lines 294:39-294:72
+Compiler source: interp/Interp.ml, line 555
+[[93mWarn[39m ] When retrieving the builtin information for trait decl 'core::iter::traits::iterator::Iterator', could not find the information for item 'all'. The model defined in the Lean library seems to be missing the corresponding field.
+Source: '/rustc/library/core/src/iter/traits/iterator.rs', lines 41:0-41:24
+Compiler source: extract/Extract.ml, line 2848
+[[92mInfo[39m ] Generated the partial file (because of 10 errors, including 2 unique errors): /home/alex/Projects/libcrux/sha3-aeneas/crates/algorithms/sha3/proofs/aeneas-lean/LibcruxSha3/Extraction/LibcruxSha3.lean
+[[93mWarn[39m ] The crate contains extracted external, unknown definitions: we advise using the option -split-files to allow manually providing these definitions in separate files.
+[[92mInfo[39m ] Total execution time: 5.955837 seconds

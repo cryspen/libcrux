@@ -1,0 +1,11 @@
+name = "LibcruxSha3"
+version = "0.1.0"
+defaultTargets = ["LibcruxSha3"]
+
+[[lean_lib]]
+name = "LibcruxSha3"
+roots = ["LibcruxSha3.Extraction.Funs"]
+
+[[require]]
+name = "aeneas"
+path = "/home/alex/Projects/hax-evit/aeneas/hax-lib/core-models/lean"
