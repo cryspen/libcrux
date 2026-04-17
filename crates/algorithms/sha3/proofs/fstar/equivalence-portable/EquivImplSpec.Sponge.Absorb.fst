@@ -1,10 +1,10 @@
-module Impl_Spec_Sponge.Absorb
+module EquivImplSpec.Sponge.Absorb
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 
 open FStar.Mul
 open Core_models
-open Impl_Spec_Sponge.Core
+open EquivImplSpec.Sponge.Core
 
 
 (* Decode one 8-byte little-endian lane from [data] at byte [offset]. *)
@@ -244,7 +244,7 @@ let rec lemma_load_block_read_fold_is_loop
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         st j (load_block_lane_val data offset)
     in
-    Impl_Spec_Keccakf.lemma_fold_range_step i n inv flat f;
+    EquivImplSpec.Keccakf.lemma_fold_range_step i n inv flat f;
     lemma_load_block_read_fold_is_loop (f flat i) data start (i +! mk_usize 1) n
 
 let rec lemma_load_block_xor_flat_fold_is_loop
@@ -272,7 +272,7 @@ let rec lemma_load_block_xor_flat_fold_is_loop
             (j %! mk_usize 5)) ^.
          (flat.[j]))
     in
-    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    EquivImplSpec.Keccakf.lemma_fold_range_step i n inv state f;
     lemma_load_block_xor_flat_fold_is_loop (f state i) flat (i +! mk_usize 1) n
 #pop-options
 
@@ -390,7 +390,7 @@ let rec lemma_xor_block_into_state_fold_is_loop
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         st idx ((st.[idx]) ^. lane)
     in
-    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    EquivImplSpec.Keccakf.lemma_fold_range_step i n inv state f;
     lemma_xor_block_into_state_fold_is_loop (f state i) block (i +! mk_usize 1) n
 
 let lemma_setget_xor_is_update_lane
@@ -415,7 +415,7 @@ let lemma_setget_xor_is_update_lane
   =
   assert (i /! mk_usize 5 <. mk_usize 5);
   assert (i %! mk_usize 5 <. mk_usize 5);
-  Impl_Spec_Keccakf.lemma_set_ij_unfold st (i /! mk_usize 5) (i %! mk_usize 5)
+  EquivImplSpec.Keccakf.lemma_set_ij_unfold st (i /! mk_usize 5) (i %! mk_usize 5)
     ((Libcrux_sha3.Traits.get_ij (mk_usize 1) #u64 st
         (i /! mk_usize 5)
         (i %! mk_usize 5)) ^.
@@ -504,7 +504,7 @@ let rec lemma_xor_block_loop_slice_is_direct
    pointwise equality for non-restricted arrows, and the spec's
    inlined lambda cannot be replaced without modifying the spec file.
    Matches the treatment of the analogous issue in
-   [Impl_Spec_Keccakf.lemma_keccak_f_is_rounds]
+   [EquivImplSpec.Keccakf.lemma_keccak_f_is_rounds]
    and [lemma_keccakf1600_is_rounds], which are admitted for the same
    structural reason.
    ================================================================= *)
@@ -531,7 +531,7 @@ assume val lemma_xor_block_into_state_unfold_fold
    lambdas after definitional unfolding, but F* does not grant
    propositional closure equality for non-restricted arrows.
    Same structural reason as [lemma_xor_block_into_state_unfold_fold]
-   and the admits in [Impl_Spec_Keccakf].
+   and the admits in [EquivImplSpec.Keccakf].
    ================================================================= *)
 assume val lemma_load_block_unfold_folds
       (rate: usize)
@@ -1087,7 +1087,7 @@ let lemma_load_last_as_absorb
    Both are named functions with the same structure.
 
    Proof: compose Phase 11 (load_block == xor_block_into_state) with
-   Impl_Spec_Keccakf.lemma_keccakf1600_equiv.
+   EquivImplSpec.Keccakf.lemma_keccakf1600_equiv.
    ================================================================ *)
 
 let lemma_absorb_block_equiv
@@ -1123,13 +1123,13 @@ let lemma_absorb_block_equiv
     { ks with Libcrux_sha3.Generic_keccak.f_st = loaded }
   in
   lemma_load_block_equiv rate state data start;
-  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
+  EquivImplSpec.Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
   (* Proof:
      1. Unfold impl absorb_block: f_load_block then keccakf1600
      2. f_load_block resolves to load_block on ks.f_st
      3. lemma_load_block_equiv: load_block(rate, state, data, start)
                               == xor_block_into_state(state, data[start..start+rate], rate)
-     4. Impl_Spec_Keccakf.lemma_keccakf1600_equiv:
+     4. EquivImplSpec.Keccakf.lemma_keccakf1600_equiv:
         keccakf1600({f_st = loaded}).f_st == keccak_f(loaded)
      5. spec absorb_block(state, block, rate)
         = keccak_f(xor_block_into_state(state, block, rate))
@@ -1172,12 +1172,12 @@ let lemma_absorb_final_equiv
     { ks with Libcrux_sha3.Generic_keccak.f_st = loaded }
   in
   lemma_load_last_equiv rate delim state data start remaining;
-  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
+  EquivImplSpec.Keccakf.lemma_keccakf1600_equiv ks_loaded loaded
   (* Proof:
      1. Unfold impl absorb_final: f_load_last then keccakf1600
      2. lemma_load_last_equiv: load_last produces same state as
         xor_block_into_state(state, pad_last_block(...), rate)
-     3. Impl_Spec_Keccakf.lemma_keccakf1600_equiv for the keccakf step
+     3. EquivImplSpec.Keccakf.lemma_keccakf1600_equiv for the keccakf step
      4. Spec absorb_final(state, msg, off, rem, rate, delim)
         = absorb_block(state, pad_last_block(msg, off, rem, rate, delim), rate)
         = keccak_f(xor_block_into_state(state, padded, rate))
@@ -1192,7 +1192,7 @@ let lemma_absorb_final_equiv
    high fuel, then prove equivalence by induction at fuel 1.
 
    This follows the same pattern as impl_rounds/spec_rounds in
-   Impl_Spec_Keccakf.fst (Phase 8).
+   EquivImplSpec.Keccakf.fst (Phase 8).
    ================================================================ *)
 
 (* Recursive helper mirroring the impl's absorb loop *)
@@ -1320,7 +1320,7 @@ let rec lemma_impl_absorb_fold_is_loop
          Rust_primitives.Hax.array_of_list 1 list)
         (j *! rate)
     in
-    Impl_Spec_Keccakf.lemma_fold_range_step i n inv ks f;
+    EquivImplSpec.Keccakf.lemma_fold_range_step i n inv ks f;
     lemma_impl_absorb_fold_is_loop (f ks i) data rate (i +! mk_usize 1) n
 
 (** Bridge helper: spec_absorb_fold == spec_absorb_loop from arbitrary i. *)
@@ -1350,7 +1350,7 @@ let rec lemma_spec_absorb_fold_is_loop
                             Core_models.Ops.Range.t_Range usize ] in
       Hacspec_sha3.Sponge.absorb_block s block rate
     in
-    Impl_Spec_Keccakf.lemma_fold_range_step i n inv state f;
+    EquivImplSpec.Keccakf.lemma_fold_range_step i n inv state f;
     lemma_spec_absorb_fold_is_loop (f state i) message rate (i +! mk_usize 1) n
 #pop-options
 
@@ -1394,7 +1394,7 @@ let lemma_spec_absorb_is_loop
   = lemma_spec_absorb_fold_is_loop state message rate (mk_usize 0) n
 
 (** Inductive equivalence: impl_absorb_loop.f_st == spec_absorb_loop.
-    Analogous to lemma_rounds_equiv in Impl_Spec_Keccakf. *)
+    Analogous to lemma_rounds_equiv in EquivImplSpec.Keccakf. *)
 #push-options "--fuel 1 --z3rlimit 200"
 let rec lemma_absorb_loop_equiv
       (ks: impl_state)

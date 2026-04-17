@@ -1,10 +1,10 @@
-module Impl_Spec_Sponge.Squeeze
+module EquivImplSpec.Sponge.Squeeze
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 
 open FStar.Mul
 open Core_models
-open Impl_Spec_Sponge.Core
+open EquivImplSpec.Sponge.Core
 
 
 (* ================================================================
@@ -669,7 +669,7 @@ let rec lemma_squeeze_loop_equiv
         rate
     in
     let output_spec = Hacspec_sha3.Sponge.squeeze_state state' output (i *! rate) rate in
-    Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks state;
+    EquivImplSpec.Keccakf.lemma_keccakf1600_equiv ks state;
     lemma_impl_squeeze_once_store_block rate ks' output (i *! rate) rate;
     lemma_store_block_equiv rate state' output (i *! rate) rate;
     assert (output_impl == output_spec);
@@ -749,7 +749,7 @@ let lemma_squeeze_remainder_equiv
     Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks
   in
   let state_tail = Hacspec_sha3.Keccak_f.keccak_f state in
-  Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks state;
+  EquivImplSpec.Keccakf.lemma_keccakf1600_equiv ks state;
   assert (ks_tail.Libcrux_sha3.Generic_keccak.f_st == state_tail);
   assert (v output_rem <= v output_len);
   assert (v (output_len -! output_rem) + v output_rem == v output_len);
@@ -886,7 +886,7 @@ let lemma_squeeze_general_equiv
            (the Portable backend's f_squeeze IS Simd.Portable.store_block,
            which equals Hacspec_sha3.Sponge.squeeze_state).
      (b) impl_2__keccakf1600  vs  Hacspec_sha3.Keccak_f.keccak_f
-         — connected by [Impl_Spec_Keccakf.lemma_keccakf1600_equiv].
+         — connected by [EquivImplSpec.Keccakf.lemma_keccakf1600_equiv].
      (c) Impl-side prepended unit-returning lemma_mul_succ_le —
          no effect on state; absorbed into the fold-bridge axiom.
 
@@ -1024,7 +1024,7 @@ let lemma_squeeze_general_equiv
    ----------------------------------------------------------------
    AXIOM ACCOUNTING when Phase B lands:
    ----------------------------------------------------------------
-   Net change to `grep -c '^assume val' Impl_Spec_Sponge.fst`: +1
+   Net change to `grep -c '^assume val' EquivImplSpec.Sponge.fst`: +1
      - removed: 1 monolithic axiom (this lemma_keccak1_bridge)
      - added:   2 small fold-range axioms (items 7 and 8)
 *)

@@ -639,8 +639,10 @@ let spec_d (state: spec_state) (x: usize{x <. mk_usize 5}) : u64 =
    ================================================================ *)
 
 (** Spec-side: RHO_OFFSETS values (FIPS-native layout, indexed as
-    RHO_OFFSETS[5*y + x]). *)
-#push-options "--z3rlimit 200 --fuel 2 --ifuel 2 --split_queries always"
+    RHO_OFFSETS[5*y + x]). Proved by reducing [v_RHO_OFFSETS] to the
+    concrete literal array, then reading off each index via a single
+    [assert_norm] on the concrete Seq-of-list. *)
+#push-options "--z3rlimit 100"
 let lemma_rho_offsets_values (_: unit)
   : Lemma (
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 0]  == mk_u32 0  /\
@@ -668,7 +670,41 @@ let lemma_rho_offsets_values (_: unit)
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 22] == mk_u32 61 /\
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 23] == mk_u32 56 /\
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 24] == mk_u32 14)
-  = admit()
+  = let rho_list : list u32 = [
+        mk_u32 0;  mk_u32 1;  mk_u32 62; mk_u32 28; mk_u32 27;
+        mk_u32 36; mk_u32 44; mk_u32 6;  mk_u32 55; mk_u32 20;
+        mk_u32 3;  mk_u32 10; mk_u32 43; mk_u32 25; mk_u32 39;
+        mk_u32 41; mk_u32 45; mk_u32 15; mk_u32 21; mk_u32 8;
+        mk_u32 18; mk_u32 2;  mk_u32 61; mk_u32 56; mk_u32 14 ]
+    in
+    assert_norm(List.Tot.length rho_list == 25);
+    assert (forall i. Seq.index (Hacspec_sha3.Keccak_f.v_RHO_OFFSETS) i ==
+            List.Tot.index rho_list i);
+    assert_norm (  List.Tot.index rho_list 0 == mk_u32 0  /\
+  List.Tot.index rho_list  1 == mk_u32 1  /\
+  List.Tot.index rho_list  2 == mk_u32 62 /\
+  List.Tot.index rho_list  3 == mk_u32 28 /\
+  List.Tot.index rho_list  4 == mk_u32 27 /\
+  List.Tot.index rho_list  5 == mk_u32 36 /\
+  List.Tot.index rho_list  6 == mk_u32 44 /\
+  List.Tot.index rho_list  7 == mk_u32 6  /\
+  List.Tot.index rho_list  8 == mk_u32 55 /\
+  List.Tot.index rho_list  9 == mk_u32 20 /\
+  List.Tot.index rho_list  10 == mk_u32 3  /\
+  List.Tot.index rho_list  11 == mk_u32 10 /\
+  List.Tot.index rho_list  12 == mk_u32 43 /\
+  List.Tot.index rho_list  13 == mk_u32 25 /\
+  List.Tot.index rho_list  14 == mk_u32 39 /\
+  List.Tot.index rho_list  15 == mk_u32 41 /\
+  List.Tot.index rho_list  16 == mk_u32 45 /\
+  List.Tot.index rho_list  17 == mk_u32 15 /\
+  List.Tot.index rho_list  18 == mk_u32 21 /\
+  List.Tot.index rho_list  19 == mk_u32 8  /\
+  List.Tot.index rho_list  20 == mk_u32 18 /\
+  List.Tot.index rho_list  21 == mk_u32 2  /\
+  List.Tot.index rho_list  22 == mk_u32 61 /\
+  List.Tot.index rho_list  23 == mk_u32 56 /\
+  List.Tot.index rho_list  24 == mk_u32 14)
 #pop-options
 
 (** Round constants equivalence. *)

@@ -1,9 +1,9 @@
-module Impl_Spec_Sponge.Core
+module EquivImplSpec.Sponge.Core
 (* ================================================================
    Sponge-layer equivalence between the libcrux SHA-3 implementation
    and the hacspec specification.
 
-   Builds on Impl_Spec_Keccakf.lemma_keccakf1600_equiv:
+   Builds on EquivImplSpec.Keccakf.lemma_keccakf1600_equiv:
      keccakf1600(ks).f_st == keccak_f(ks.f_st)
 
    This file extends the proof to the full sponge construction

@@ -1,12 +1,12 @@
-module Impl_Spec_Sponge.Keccak
+module EquivImplSpec.Sponge.Keccak
 
 #set-options "--fuel 1 --ifuel 1 --z3rlimit 100"
 
 open FStar.Mul
 open Core_models
-open Impl_Spec_Sponge.Core
-open Impl_Spec_Sponge.Absorb
-open Impl_Spec_Sponge.Squeeze
+open EquivImplSpec.Sponge.Core
+open EquivImplSpec.Sponge.Absorb
+open EquivImplSpec.Sponge.Squeeze
 
 (* ================================================================
    Phase 16 refactored: keccak1 / keccak split into absorb + squeeze.
@@ -247,7 +247,7 @@ let lemma_absorb_equiv
      - lemma_squeeze_loop_equiv          (middle blocks)
      - lemma_impl_squeeze_once_store_block + lemma_store_block_equiv
        (tail block)
-     - Impl_Spec_Keccakf.lemma_keccakf1600_equiv (each keccak-f call)
+     - EquivImplSpec.Keccakf.lemma_keccakf1600_equiv (each keccak-f call)
    ---------------------------------------------------------------- *)
 #push-options "--z3rlimit 300 --split_queries always"
 let lemma_squeeze_equiv
@@ -315,7 +315,7 @@ let lemma_squeeze_equiv
         Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks_after_loop
       in
       let state_tail = Hacspec_sha3.Keccak_f.keccak_f spec_after_loop in
-      Impl_Spec_Keccakf.lemma_keccakf1600_equiv ks_after_loop spec_after_loop;
+      EquivImplSpec.Keccakf.lemma_keccakf1600_equiv ks_after_loop spec_after_loop;
       assert (ks_tail.Libcrux_sha3.Generic_keccak.f_st == state_tail);
       let tail_start = output_len -! output_rem in
       assert (v tail_start + v output_rem == v output_len);

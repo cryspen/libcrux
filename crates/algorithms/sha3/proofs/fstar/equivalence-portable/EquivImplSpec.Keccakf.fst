@@ -1,19 +1,19 @@
-module Impl_Spec_Keccakf
+module EquivImplSpec.Keccakf
 
 (* ================================================================
    Thin shim forwarding the Keccak-f[1600] equivalence theorem to
-   [Impl_Spec_Keccakf.Portable].
+   [EquivImplSpec.Keccakf.Portable].
 
    Historically this module contained a bespoke portable-only proof
    of [keccakf1600 ≡ keccak_f]. After the SHA-3 state-layout flip to
    FIPS-native [state[5*y + x]], that proof required invasive
-   re-engineering; meanwhile [Impl_Spec_Keccakf.Generic] +
-   [Impl_Spec_Keccakf.Portable] already establish the same theorem
+   re-engineering; meanwhile [EquivImplSpec.Keccakf.Generic] +
+   [EquivImplSpec.Keccakf.Portable] already establish the same theorem
    via the generic lane-wise path. To avoid duplicated maintenance,
    the concrete portable proof has been replaced with a one-liner
    call into [Portable.lemma_keccakf1600_portable].
 
-   Public surface kept stable for [Impl_Spec_Sponge.*] consumers:
+   Public surface kept stable for [EquivImplSpec.Sponge.*] consumers:
      - [impl_state], [spec_state]    — shorthands
      - [lemma_fold_range_step]       — re-exported from
                                        [Proof_Utils.FoldRange]
@@ -27,7 +27,7 @@ open FStar.Mul
 open Core_models
 open Rust_primitives.Integers
 
-module P = Impl_Spec_Keccakf.Portable
+module P = EquivImplSpec.Keccakf.Portable
 module FR = Proof_Utils.FoldRange
 
 (* Bring typeclass instances into scope so that
@@ -44,7 +44,7 @@ let impl_state = Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64
 let spec_state = t_Array u64 (mk_usize 25)
 
 (** Re-export of [Proof_Utils.FoldRange.lemma_fold_range_step] so
-    consumers that still say [Impl_Spec_Keccakf.lemma_fold_range_step]
+    consumers that still say [EquivImplSpec.Keccakf.lemma_fold_range_step]
     keep compiling without churn. *)
 let lemma_fold_range_step
       (#acc_t: Type0)
@@ -72,7 +72,7 @@ let lemma_set_ij_unfold (s: spec_state) (i j: usize) (v: u64)
 
 (** MAIN THEOREM: the impl's [keccakf1600] at N=1 equals the spec's
     [keccak_f] pointwise on the underlying state. Discharged by
-    [Impl_Spec_Keccakf.Portable.lemma_keccakf1600_portable]. *)
+    [EquivImplSpec.Keccakf.Portable.lemma_keccakf1600_portable]. *)
 let lemma_keccakf1600_equiv
       (ks: impl_state)
       (state: spec_state)
