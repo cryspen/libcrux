@@ -1,4 +1,4 @@
-module Impl_Spec_Sponge.Generic.Squeeze
+module EquivImplSpec.Sponge.Generic.Squeeze
 
 (* ================================================================
    Generic squeeze-phase proof for any KeccakItem backend.
@@ -17,8 +17,8 @@ open FStar.Mul
 open Core_models
 open FStar.Tactics.Typeclasses
 
-module G = Impl_Spec_Keccakf.Generic
-module SC = Impl_Spec_Sponge.Generic.Core
+module G = EquivImplSpec.Keccakf.Generic
+module SC = EquivImplSpec.Sponge.Generic.Core
 
 (* Bring typeclass instances into scope *)
 let _ =

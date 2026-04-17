@@ -1,4 +1,4 @@
-module Impl_Spec_Keccakf.Arm64
+module EquivImplSpec.Keccakf.Arm64
 
 (* ================================================================
    NEON (Arm64, N=2, v_T=t_e_uint64x2_t) instantiation of the generic
@@ -22,7 +22,7 @@ module Impl_Spec_Keccakf.Arm64
 open FStar.Mul
 open Core_models
 
-module G = Impl_Spec_Keccakf.Generic
+module G = EquivImplSpec.Keccakf.Generic
 module I = Libcrux_intrinsics.Arm64_extract
 
 (* Bring the Arm64 typeclass instance into scope so

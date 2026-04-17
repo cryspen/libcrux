@@ -1,4 +1,4 @@
-module Impl_Spec_Keccakf.Generic
+module EquivImplSpec.Keccakf.Generic
 
 (* ================================================================
    Generic keccak_f equivalence via lane-wise `to_spec` commutativity.
@@ -72,8 +72,8 @@ module Impl_Spec_Keccakf.Generic
 open FStar.Mul
 open Core_models
 open Proof_Utils.NatFold   (* fold_range_nat, lemma_fold_range_is_range_nat *)
-module ChiFold = Impl_Spec_Keccakf.ChiFold
-module SpecRounds = Impl_Spec_Keccakf.SpecRounds
+module ChiFold = EquivImplSpec.Keccakf.ChiFold
+module SpecRounds = EquivImplSpec.Keccakf.SpecRounds
 
 let _ =
   let open Libcrux_sha3.Traits in
@@ -1802,7 +1802,7 @@ let lemma_keccakf1600_is_rounds
 #pop-options
 
 (** Bridge: spec's [keccak_f] equals [spec_rounds]. Re-exported from
-    [Impl_Spec_Keccakf.SpecRounds] which isolates the fragile [fuel 25]
+    [EquivImplSpec.Keccakf.SpecRounds] which isolates the fragile [fuel 25]
     setting from the surrounding SMT context here. *)
 let lemma_keccak_f_is_rounds = SpecRounds.lemma_keccak_f_is_rounds
 

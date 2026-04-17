@@ -1,4 +1,4 @@
-module Impl_Spec_Keccakf.ChiFold
+module EquivImplSpec.Keccakf.ChiFold
 
 (** Chi-step fold-unfolding utilities for the generic keccak_f
     equivalence proof.
@@ -20,7 +20,7 @@ module Impl_Spec_Keccakf.ChiFold
     [fold_range] unroll.
 
     The single export [lemma_chi_val_i] is consumed by
-    [Impl_Spec_Keccakf.Generic.lemma_chi_extract_lane] together with a
+    [EquivImplSpec.Keccakf.Generic.lemma_chi_extract_lane] together with a
     lane-correctness wrapper around [chi_inner_val]. *)
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"

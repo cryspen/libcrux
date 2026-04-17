@@ -1,4 +1,4 @@
-module Impl_Spec_Keccakf.Portable
+module EquivImplSpec.Keccakf.Portable
 
 (* ================================================================
    Portable (N=1, v_T=u64) instantiation of the generic keccak_f
@@ -9,7 +9,7 @@ module Impl_Spec_Keccakf.Portable
 
      (keccakf1600 ks).f_st == keccak_f ks.f_st
 
-   directly from [Impl_Spec_Keccakf.Generic.lemma_keccakf1600_to_spec]
+   directly from [EquivImplSpec.Keccakf.Generic.lemma_keccakf1600_to_spec]
    by exploiting that [extract_lane] is the identity when v_N = 1.
 
    All 7 [lc_*] lemmas are trivial (= ()) because the portable
@@ -22,7 +22,7 @@ module Impl_Spec_Keccakf.Portable
 open FStar.Mul
 open Core_models
 
-module G = Impl_Spec_Keccakf.Generic
+module G = EquivImplSpec.Keccakf.Generic
 
 (* Bring the Portable typeclass instance into scope so
    t_KeccakItem u64 (mk_usize 1) resolves to Libcrux_sha3.Simd.Portable.impl. *)

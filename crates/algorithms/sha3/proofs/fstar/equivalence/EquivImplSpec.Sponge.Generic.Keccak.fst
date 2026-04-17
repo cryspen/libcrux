@@ -1,4 +1,4 @@
-module Impl_Spec_Sponge.Generic.Keccak
+module EquivImplSpec.Sponge.Generic.Keccak
 
 (* ================================================================
    Spec-side bridges for the Keccak sponge composition.
@@ -22,9 +22,9 @@ module Impl_Spec_Sponge.Generic.Keccak
 open FStar.Mul
 open Core_models
 
-module A = Impl_Spec_Sponge.Generic.Absorb
-module S = Impl_Spec_Sponge.Generic.Squeeze
-module SC = Impl_Spec_Sponge.Generic.Core
+module A = EquivImplSpec.Sponge.Generic.Absorb
+module S = EquivImplSpec.Sponge.Generic.Squeeze
+module SC = EquivImplSpec.Sponge.Generic.Core
 
 open Proof_Utils.NatFold
 
@@ -146,7 +146,7 @@ let rec lemma_spec_absorb_fold_eq
    This is an assume val due to the fold_range closure-equality limitation:
    F* SMT cannot equate the inline lambda inside Hacspec_sha3.Sponge.absorb
    with our named absorb_fold_body, even though they are α/δ-equivalent.
-   See Impl_Spec_Sponge.Keccak.fst (lemma_sponge_absorb_decomposes) for
+   See EquivImplSpec.Sponge.Keccak.fst (lemma_sponge_absorb_decomposes) for
    the identical axiom in the portable proof.
 
    The helper lemmas above (lemma_absorb_fold_is_loop, lemma_spec_absorb_fold_eq)

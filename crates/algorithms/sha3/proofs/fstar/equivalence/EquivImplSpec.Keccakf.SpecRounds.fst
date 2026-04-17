@@ -1,4 +1,4 @@
-module Impl_Spec_Keccakf.SpecRounds
+module EquivImplSpec.Keccakf.SpecRounds
 
 (** Spec-side recursive round iteration and the [keccak_f == spec_rounds]
     bridge.
@@ -55,8 +55,8 @@ let rec spec_rounds (state: spec_state) (r: usize)
 
     This admit is compensated elsewhere: [lemma_keccakf1600_equiv] — the
     only externally-observable theorem about this pair — is discharged
-    directly by [Impl_Spec_Keccakf.Portable.lemma_keccakf1600_portable]
-    (via [Impl_Spec_Keccakf.Generic]), which is fully proven and does not
+    directly by [EquivImplSpec.Keccakf.Portable.lemma_keccakf1600_portable]
+    (via [EquivImplSpec.Keccakf.Generic]), which is fully proven and does not
     go through [spec_rounds] at all. [lemma_keccak_f_is_rounds] remains
     here only as a convenience for any future direct consumer. *)
 let lemma_keccak_f_is_rounds (state: spec_state)

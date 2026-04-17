@@ -1,4 +1,4 @@
-module Impl_Spec_Sponge.Generic.Absorb
+module EquivImplSpec.Sponge.Generic.Absorb
 
 (* ================================================================
    Generic absorb-phase proof for any KeccakItem backend.
@@ -18,8 +18,8 @@ open FStar.Mul
 open Core_models
 open FStar.Tactics.Typeclasses
 
-module G = Impl_Spec_Keccakf.Generic
-module SC = Impl_Spec_Sponge.Generic.Core
+module G = EquivImplSpec.Keccakf.Generic
+module SC = EquivImplSpec.Sponge.Generic.Core
 
 (* Bring typeclass instances into scope *)
 let _ =
@@ -192,7 +192,7 @@ let lemma_absorb_final_generic
    spec_absorb_loop via extract_lane.
 
    At each step: apply lemma_absorb_block_generic, then recurse.
-   Follows the lockstep induction pattern from Impl_Spec_Keccakf.Generic.
+   Follows the lockstep induction pattern from EquivImplSpec.Keccakf.Generic.
    ================================================================ *)
 
 #push-options "--fuel 1 --z3rlimit 200"

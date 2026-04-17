@@ -1,10 +1,10 @@
-module Impl_Spec_Sponge.Generic.Core
+module EquivImplSpec.Sponge.Generic.Core
 
 (* ================================================================
    Generic sponge-layer equivalence for any KeccakItem backend.
 
    Builds on:
-   - Impl_Spec_Keccakf.Generic.lemma_keccakf1600_to_spec:
+   - EquivImplSpec.Keccakf.Generic.lemma_keccakf1600_to_spec:
        extract_lane(keccakf1600(ks).f_st, l) == keccak_f(extract_lane(ks.f_st, l))
    - Hacspec_sha3.Sponge spec functions (scalar, on t_Array u64 25)
 
@@ -35,7 +35,7 @@ open FStar.Mul
 open Core_models
 open FStar.Tactics.Typeclasses
 
-module G = Impl_Spec_Keccakf.Generic
+module G = EquivImplSpec.Keccakf.Generic
 
 (* Bring typeclass instances into scope for resolution *)
 let _ =
@@ -52,7 +52,7 @@ let spec_state = t_Array u64 (mk_usize 25)
 
 
 (* ================================================================
-   Lane index equivalence (reused from Impl_Spec_Sponge.Core, N-independent)
+   Lane index equivalence (reused from EquivImplSpec.Sponge.Core, N-independent)
 
    After the FIPS-native layout flip, [lane_index] was removed from the
    Rust spec (it collapsed to the identity and was inlined). The impl
