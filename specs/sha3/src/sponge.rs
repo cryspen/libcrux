@@ -1,17 +1,10 @@
 /// Sponge construction — FIPS 202, Algorithm 8 (KECCAK[c])
 /// with pad10*1 padding — FIPS 202, Algorithm 9.
-use crate::keccak_f::{keccak_f, State};
-
-/// Map byte-lane index `l` to the flat state array index.
 ///
-/// FIPS 202 Section 3.1.2 defines how a bit string maps onto the state array.
-/// In the byte-oriented convention used by the reference implementation,
-/// byte-lane `l` maps to `A[l % 5, l / 5]` = `state[5*(l%5) + l/5]`.
-#[inline]
-#[hax_lib::requires(l < 25)]
-pub fn lane_index(l: usize) -> usize {
-    5 * (l % 5) + l / 5
-}
+/// With the state stored as `state[5·y + x]` (FIPS 202 §3.1.2), byte-lane
+/// `l` lives directly at `state[l]`, so no lane-index permutation is
+/// needed here.
+use crate::keccak_f::{keccak_f, State};
 
 /// XOR a block of message bytes into the state (little-endian, lane-interleaved).
 ///
@@ -21,8 +14,7 @@ pub fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> Stat
     for i in 0..(rate / 8) {
         let offset = 8 * i;
         let lane_val = u64::from_le_bytes(block[offset..offset + 8].try_into().unwrap());
-        let idx = lane_index(i);
-        state[idx] ^= lane_val;
+        state[i] ^= lane_val;
     }
     state
 }
@@ -38,14 +30,12 @@ pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: u
     let full_lanes = len / 8;
     for i in 0..full_lanes {
         hax_lib::loop_invariant!(|i: usize| output.len() == _orig_len);
-        let idx = lane_index(i);
-        let bytes = state[idx].to_le_bytes();
+        let bytes = state[i].to_le_bytes();
         output[out_offset + 8 * i..out_offset + 8 * (i + 1)].copy_from_slice(&bytes);
     }
     let remaining = len % 8;
     if remaining > 0 {
-        let idx = lane_index(full_lanes);
-        let bytes = state[idx].to_le_bytes();
+        let bytes = state[full_lanes].to_le_bytes();
         let pos = out_offset + 8 * full_lanes;
         output[pos..pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
@@ -181,15 +171,6 @@ pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn lane_index_mapping() {
-        // Byte-lane l maps to A[l%5, l/5] = state[5*(l%5) + l/5]
-        assert_eq!(lane_index(0), 0); // A[0,0] → 0
-        assert_eq!(lane_index(1), 5); // A[1,0] → 5
-        assert_eq!(lane_index(5), 1); // A[0,1] → 1
-        assert_eq!(lane_index(6), 6); // A[1,1] → 6
-    }
 
     /// Every SHA-3 variant must satisfy `keccak == squeeze ∘ absorb`.
     /// This pins down the refactor that split `keccak` into its two
