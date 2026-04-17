@@ -1,21 +1,15 @@
 FSTAR_INCLUDE_DIRS_EXTRA += \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
 	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction \
-	      $(shell pwd)/../extraction
+	      $(shell pwd)/../extraction \
+	      $(shell pwd)/../equivalence
 
 ROOTS = \
-	Proof_Utils.Lemmas.fst \
-	Proof_Utils.NatFold.fst \
-	Proof_Utils.FoldRange.fst \
-	EquivImplSpec.Keccakf.ChiFold.fst \
-	EquivImplSpec.Keccakf.Generic.fst \
-	EquivImplSpec.Keccakf.Portable.fst \
-	EquivImplSpec.Keccakf.Arm64.fst \
-	EquivImplSpec.Sponge.Generic.Core.fst \
-	EquivImplSpec.Sponge.Generic.Absorb.fst \
-	EquivImplSpec.Sponge.Generic.Squeeze.fst \
-	EquivImplSpec.Sponge.Generic.Keccak.fst \
-	EquivImplSpec.Keccakf.SpecRounds.fst
+	EquivImplSpec.Keccakf.fst \
+	EquivImplSpec.Sponge.Core.fst \
+	EquivImplSpec.Sponge.Absorb.fst \
+	EquivImplSpec.Sponge.Squeeze.fst \
+	EquivImplSpec.Sponge.Keccak.fst
 
 # Disable context_pruning for proof modules — it strips definitions
 # the normalizer needs for assert_norm and fold_range reduction.

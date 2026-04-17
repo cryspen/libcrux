@@ -61,7 +61,7 @@ module Proof_Utils.NatFold
            induction.
 
     See [Test_Norm_Plain] and [Test_Keccakf_NatFold] for worked examples.
-    See also [Impl_Spec_Keccakf.Generic.lemma_keccakf1600_is_rounds] for
+    See also [EquivImplSpec.Keccakf.Generic.lemma_keccakf1600_is_rounds] for
     a real-world application. *)
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"

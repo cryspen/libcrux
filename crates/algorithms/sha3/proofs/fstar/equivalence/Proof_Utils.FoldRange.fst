@@ -2,8 +2,8 @@ module Proof_Utils.FoldRange
 
 (** One-step unfolding of [Rust_primitives.Hax.Folds.fold_range]: peel off
     the first iteration. Layout-independent utility lemma, extracted here
-    so it can be shared between [Impl_Spec_Keccakf.Generic] and the
-    [Impl_Spec_Keccakf] top-level module without creating a dependency
+    so it can be shared between [EquivImplSpec.Keccakf.Generic] and the
+    [EquivImplSpec.Keccakf] top-level module without creating a dependency
     cycle. *)
 
 #set-options "--fuel 1 --ifuel 1 --z3rlimit 50"
