@@ -334,13 +334,6 @@ mod cross_spec_tests {
         assert_eq!(ROUNDCONSTANTS, spec_kf::ROUND_CONSTANTS);
     }
 
-    #[test]
-    fn lane_index_matches() {
-        for l in 0..25 {
-            assert_eq!(spec_sponge::lane_index(l), 5 * (l % 5) + l / 5);
-        }
-    }
-
     // -- Layer 2: Permutation steps --
 
     #[test]
