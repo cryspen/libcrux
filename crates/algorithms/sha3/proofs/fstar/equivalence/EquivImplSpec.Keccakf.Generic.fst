@@ -41,8 +41,8 @@ module EquivImplSpec.Keccakf.Generic
    - One-round and multi-round composition (assuming per-step lemmas)
 
    Admitted (library-level, same as portable proof):
-   - lemma_rotate_left_zero: rotate_left(x, 0) == x
-   - logand_commutative: (a &. b) == (b &. a)
+   - [Proof_Utils.Lemmas.lemma_rotate_left_zero]: rotate_left(x, 0) == x
+   - [Proof_Utils.Lemmas.logand_commutative]: (a &. b) == (b &. a)
    - lemma_rho_offsets_values: RHO_OFFSETS array element values
    - lemma_keccakf1600_is_rounds: fold_range bridge (impl side)
    - lemma_keccak_f_is_rounds: fold_range bridge (spec side)
@@ -72,6 +72,7 @@ module EquivImplSpec.Keccakf.Generic
 open FStar.Mul
 open Core_models
 open Proof_Utils.NatFold   (* fold_range_nat, lemma_fold_range_is_range_nat *)
+module Lemmas = Proof_Utils.Lemmas
 module ChiFold = EquivImplSpec.Keccakf.ChiFold
 module SpecRounds = EquivImplSpec.Keccakf.SpecRounds
 
@@ -624,14 +625,6 @@ let spec_d (state: spec_state) (x: usize{x <. mk_usize 5}) : u64 =
   (Core_models.Num.impl_u64__rotate_left
     (spec_c state ((x +! mk_usize 1) %! mk_usize 5))
     (mk_u32 1))
-
-let lemma_rotate_left_zero (x: u64)
-  : Lemma (Core_models.Num.impl_u64__rotate_left x (mk_u32 0) == x)
-  = admit ()
-
-let logand_commutative (#t: Rust_primitives.Integers.inttype) (a b: Rust_primitives.Integers.int_t t)
-  : Lemma ((a &. b) == (b &. a))
-  = admit ()
 
 (* ================================================================
    Phase 3: to_spec commutativity — theta+rho
@@ -1275,7 +1268,7 @@ let lemma_theta_rho_to_spec
     (* ks'.f_st == s, so extract_lane ks'.f_st l == state. *)
     lemma_rho_thru_4_extract_lane v_N lc ks' d l;
     lemma_rho_theta_spec state;
-    lemma_rotate_left_zero (state.[mk_usize 0] ^. spec_d state (mk_usize 0));
+    Lemmas.lemma_rotate_left_zero (state.[mk_usize 0] ^. spec_d state (mk_usize 0));
     let lhs = extract_lane v_N lc (impl_2__rho v_N #v_T ks' d).f_st l in
     let rhs = Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state) in
     Rust_primitives.Arrays.eq_intro lhs rhs
@@ -1406,7 +1399,7 @@ let lemma_chi_extract_lane_aux
       (ks.[ i, ((j +! mk_usize 2) %! mk_usize 5) <: (usize & usize) ] <: v_T)
       (ks.[ i, ((j +! mk_usize 1) %! mk_usize 5) <: (usize & usize) ] <: v_T)
       l;
-    logand_commutative
+    Lemmas.logand_commutative
       (lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 2) %! mk_usize 5) ] l)
       (~. (lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 1) %! mk_usize 5) ] l))
 #pop-options
