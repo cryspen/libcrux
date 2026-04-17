@@ -40,12 +40,6 @@ module Impl_Spec_Keccakf.Generic
      (trivial wrappers around lane_correctness fields)
    - One-round and multi-round composition (assuming per-step lemmas)
 
-   Admitted (need proof):
-   - lemma_theta_rho_to_spec: theta+rho commutativity with extract_lane
-   - lemma_pi_to_spec: pi commutativity (pure permutation, should be easy)
-   - lemma_chi_to_spec: chi commutativity (needs logand_commutative)
-   - lemma_iota_to_spec: iota commutativity (needs lc_xor_constant + eq_intro)
-
    Admitted (library-level, same as portable proof):
    - lemma_rotate_left_zero: rotate_left(x, 0) == x
    - logand_commutative: (a &. b) == (b &. a)
@@ -251,7 +245,10 @@ let lane_xor
 let rotl (x: u64) (n: i32) : u64 =
   Core_models.Num.impl_u64__rotate_left x (cast (n <: i32) <: u32)
 
-(** Theta: state is unchanged, d matches column parities. *)
+(** Theta: state is unchanged, d matches column parities.
+    Under the FIPS-native layout [get_ij(arr, i, j) = arr[5*i + j]] with
+    impl [(i, j) = (y, x)], column [x] corresponds to flat indices
+    [x, x+5, x+10, x+15, x+20] (stride 5). *)
 #push-options "--z3rlimit 100"
 let lemma_theta_generic
       (v_N: usize) (#v_T: Type0)
@@ -262,25 +259,26 @@ let lemma_theta_generic
        let ks', d = Libcrux_sha3.Generic_keccak.impl_2__theta v_N #v_T ks in
        ks'.Libcrux_sha3.Generic_keccak.f_st == s /\
        d.[mk_usize 0] == Libcrux_sha3.Traits.f_rotate_left1_and_xor #v_T #v_N #inst
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 20] s.[mk_usize 21] s.[mk_usize 22] s.[mk_usize 23] s.[mk_usize 24])
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 5] s.[mk_usize 6] s.[mk_usize 7] s.[mk_usize 8] s.[mk_usize 9]) /\
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 4] s.[mk_usize 9] s.[mk_usize 14] s.[mk_usize 19] s.[mk_usize 24])
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 1] s.[mk_usize 6] s.[mk_usize 11] s.[mk_usize 16] s.[mk_usize 21]) /\
        d.[mk_usize 1] == Libcrux_sha3.Traits.f_rotate_left1_and_xor #v_T #v_N #inst
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 0] s.[mk_usize 1] s.[mk_usize 2] s.[mk_usize 3] s.[mk_usize 4])
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 10] s.[mk_usize 11] s.[mk_usize 12] s.[mk_usize 13] s.[mk_usize 14]) /\
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 0] s.[mk_usize 5] s.[mk_usize 10] s.[mk_usize 15] s.[mk_usize 20])
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 2] s.[mk_usize 7] s.[mk_usize 12] s.[mk_usize 17] s.[mk_usize 22]) /\
        d.[mk_usize 2] == Libcrux_sha3.Traits.f_rotate_left1_and_xor #v_T #v_N #inst
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 5] s.[mk_usize 6] s.[mk_usize 7] s.[mk_usize 8] s.[mk_usize 9])
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 15] s.[mk_usize 16] s.[mk_usize 17] s.[mk_usize 18] s.[mk_usize 19]) /\
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 1] s.[mk_usize 6] s.[mk_usize 11] s.[mk_usize 16] s.[mk_usize 21])
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 3] s.[mk_usize 8] s.[mk_usize 13] s.[mk_usize 18] s.[mk_usize 23]) /\
        d.[mk_usize 3] == Libcrux_sha3.Traits.f_rotate_left1_and_xor #v_T #v_N #inst
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 10] s.[mk_usize 11] s.[mk_usize 12] s.[mk_usize 13] s.[mk_usize 14])
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 20] s.[mk_usize 21] s.[mk_usize 22] s.[mk_usize 23] s.[mk_usize 24]) /\
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 2] s.[mk_usize 7] s.[mk_usize 12] s.[mk_usize 17] s.[mk_usize 22])
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 4] s.[mk_usize 9] s.[mk_usize 14] s.[mk_usize 19] s.[mk_usize 24]) /\
        d.[mk_usize 4] == Libcrux_sha3.Traits.f_rotate_left1_and_xor #v_T #v_N #inst
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 15] s.[mk_usize 16] s.[mk_usize 17] s.[mk_usize 18] s.[mk_usize 19])
-         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 0] s.[mk_usize 1] s.[mk_usize 2] s.[mk_usize 3] s.[mk_usize 4]))
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 3] s.[mk_usize 8] s.[mk_usize 13] s.[mk_usize 18] s.[mk_usize 23])
+         (Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst s.[mk_usize 0] s.[mk_usize 5] s.[mk_usize 10] s.[mk_usize 15] s.[mk_usize 20]))
   = ()
 #pop-options
 
-(** rho_0_: sets column 0, preserves columns 1-4.
-    Column 0 uses f_xor at index 0, f_xor_and_rotate at indices 1-4. *)
+(** rho_0_: under FIPS-native layout, updates cells where [x=0]
+    (flat indices [0, 5, 10, 15, 20]); preserves the rest.
+    The [y=0, x=0] cell uses f_xor; the other four use f_xor_and_rotate. *)
 #push-options "--z3rlimit 200"
 let lemma_rho_0_generic
       (v_N: usize) (#v_T: Type0)
@@ -292,23 +290,24 @@ let lemma_rho_0_generic
        let r = (Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d)
                 .Libcrux_sha3.Generic_keccak.f_st in
        r.[mk_usize 0] == Libcrux_sha3.Traits.f_xor #v_T #v_N #inst s.[mk_usize 0] d.[mk_usize 0] /\
-       r.[mk_usize 1] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 36) (mk_i32 28) s.[mk_usize 1] d.[mk_usize 0] /\
-       r.[mk_usize 2] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 3) (mk_i32 61) s.[mk_usize 2] d.[mk_usize 0] /\
-       r.[mk_usize 3] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 41) (mk_i32 23) s.[mk_usize 3] d.[mk_usize 0] /\
-       r.[mk_usize 4] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 18) (mk_i32 46) s.[mk_usize 4] d.[mk_usize 0] /\
-       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
-       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
-       r.[mk_usize 9] == s.[mk_usize 9] /\ r.[mk_usize 10] == s.[mk_usize 10] /\
+       r.[mk_usize 5] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 36) (mk_i32 28) s.[mk_usize 5] d.[mk_usize 0] /\
+       r.[mk_usize 10] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 3) (mk_i32 61) s.[mk_usize 10] d.[mk_usize 0] /\
+       r.[mk_usize 15] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 41) (mk_i32 23) s.[mk_usize 15] d.[mk_usize 0] /\
+       r.[mk_usize 20] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 18) (mk_i32 46) s.[mk_usize 20] d.[mk_usize 0] /\
+       r.[mk_usize 1] == s.[mk_usize 1] /\ r.[mk_usize 2] == s.[mk_usize 2] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
        r.[mk_usize 11] == s.[mk_usize 11] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
        r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
-       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
+       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
        r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
        r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** rho_1_: updates cells where [x=1] (flat [1, 6, 11, 16, 21]). *)
 #push-options "--z3rlimit 200"
 let lemma_rho_1_generic
       (v_N: usize) (#v_T: Type0)
@@ -319,25 +318,25 @@ let lemma_rho_1_generic
       (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks d)
                 .Libcrux_sha3.Generic_keccak.f_st in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\
-       r.[mk_usize 5] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 1) (mk_i32 63) s.[mk_usize 5] d.[mk_usize 1] /\
+       r.[mk_usize 1] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 1) (mk_i32 63) s.[mk_usize 1] d.[mk_usize 1] /\
        r.[mk_usize 6] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 44) (mk_i32 20) s.[mk_usize 6] d.[mk_usize 1] /\
-       r.[mk_usize 7] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 10) (mk_i32 54) s.[mk_usize 7] d.[mk_usize 1] /\
-       r.[mk_usize 8] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 45) (mk_i32 19) s.[mk_usize 8] d.[mk_usize 1] /\
-       r.[mk_usize 9] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 2) (mk_i32 62) s.[mk_usize 9] d.[mk_usize 1] /\
-       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 11] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 10) (mk_i32 54) s.[mk_usize 11] d.[mk_usize 1] /\
+       r.[mk_usize 16] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 45) (mk_i32 19) s.[mk_usize 16] d.[mk_usize 1] /\
+       r.[mk_usize 21] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 2) (mk_i32 62) s.[mk_usize 21] d.[mk_usize 1] /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 2] == s.[mk_usize 2] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
        r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** rho_2_: updates cells where [x=2] (flat [2, 7, 12, 17, 22]). *)
 #push-options "--z3rlimit 200"
 let lemma_rho_2_generic
       (v_N: usize) (#v_T: Type0)
@@ -348,24 +347,25 @@ let lemma_rho_2_generic
       (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks d)
                 .Libcrux_sha3.Generic_keccak.f_st in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
-       r.[mk_usize 10] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 62) (mk_i32 2) s.[mk_usize 10] d.[mk_usize 2] /\
-       r.[mk_usize 11] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 6) (mk_i32 58) s.[mk_usize 11] d.[mk_usize 2] /\
+       r.[mk_usize 2] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 62) (mk_i32 2) s.[mk_usize 2] d.[mk_usize 2] /\
+       r.[mk_usize 7] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 6) (mk_i32 58) s.[mk_usize 7] d.[mk_usize 2] /\
        r.[mk_usize 12] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 43) (mk_i32 21) s.[mk_usize 12] d.[mk_usize 2] /\
-       r.[mk_usize 13] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 15) (mk_i32 49) s.[mk_usize 13] d.[mk_usize 2] /\
-       r.[mk_usize 14] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 61) (mk_i32 3) s.[mk_usize 14] d.[mk_usize 2] /\
+       r.[mk_usize 17] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 15) (mk_i32 49) s.[mk_usize 17] d.[mk_usize 2] /\
+       r.[mk_usize 22] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 61) (mk_i32 3) s.[mk_usize 22] d.[mk_usize 2] /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
        r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
-       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
-       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
        r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** rho_3_: updates cells where [x=3] (flat [3, 8, 13, 18, 23]). *)
 #push-options "--z3rlimit 200"
 let lemma_rho_3_generic
       (v_N: usize) (#v_T: Type0)
@@ -376,25 +376,25 @@ let lemma_rho_3_generic
       (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__rho_3_ v_N #v_T ks d)
                 .Libcrux_sha3.Generic_keccak.f_st in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
-       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 28) (mk_i32 36) s.[mk_usize 15] d.[mk_usize 3] /\
-       r.[mk_usize 16] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 55) (mk_i32 9) s.[mk_usize 16] d.[mk_usize 3] /\
-       r.[mk_usize 17] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 25) (mk_i32 39) s.[mk_usize 17] d.[mk_usize 3] /\
+       r.[mk_usize 3] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 28) (mk_i32 36) s.[mk_usize 3] d.[mk_usize 3] /\
+       r.[mk_usize 8] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 55) (mk_i32 9) s.[mk_usize 8] d.[mk_usize 3] /\
+       r.[mk_usize 13] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 25) (mk_i32 39) s.[mk_usize 13] d.[mk_usize 3] /\
        r.[mk_usize 18] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 21) (mk_i32 43) s.[mk_usize 18] d.[mk_usize 3] /\
-       r.[mk_usize 19] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 56) (mk_i32 8) s.[mk_usize 19] d.[mk_usize 3] /\
+       r.[mk_usize 23] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 56) (mk_i32 8) s.[mk_usize 23] d.[mk_usize 3] /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
        r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** rho_4_: updates cells where [x=4] (flat [4, 9, 14, 19, 24]). *)
 #push-options "--z3rlimit 200"
 let lemma_rho_4_generic
       (v_N: usize) (#v_T: Type0)
@@ -405,21 +405,21 @@ let lemma_rho_4_generic
       (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__rho_4_ v_N #v_T ks d)
                 .Libcrux_sha3.Generic_keccak.f_st in
+       r.[mk_usize 4] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 27) (mk_i32 37) s.[mk_usize 4] d.[mk_usize 4] /\
+       r.[mk_usize 9] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 20) (mk_i32 44) s.[mk_usize 9] d.[mk_usize 4] /\
+       r.[mk_usize 14] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 39) (mk_i32 25) s.[mk_usize 14] d.[mk_usize 4] /\
+       r.[mk_usize 19] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 8) (mk_i32 56) s.[mk_usize 19] d.[mk_usize 4] /\
+       r.[mk_usize 24] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 14) (mk_i32 50) s.[mk_usize 24] d.[mk_usize 4] /\
        r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
        r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
        r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
        r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
-       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 27) (mk_i32 37) s.[mk_usize 20] d.[mk_usize 4] /\
-       r.[mk_usize 21] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 20) (mk_i32 44) s.[mk_usize 21] d.[mk_usize 4] /\
-       r.[mk_usize 22] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 39) (mk_i32 25) s.[mk_usize 22] d.[mk_usize 4] /\
-       r.[mk_usize 23] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 8) (mk_i32 56) s.[mk_usize 23] d.[mk_usize 4] /\
-       r.[mk_usize 24] == Libcrux_sha3.Traits.f_xor_and_rotate #v_T #v_N #inst (mk_i32 14) (mk_i32 50) s.[mk_usize 24] d.[mk_usize 4])
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23])
   = ()
 #pop-options
 
@@ -445,6 +445,7 @@ let lemma_rho_unfold_generic
    Phase 1b: Generic impl-side pi lemmas (abstract v_T)
    ================================================================ *)
 
+(** pi_0_: updates cells where [x=0] except [(0,0)] (flat [5, 10, 15, 20]). *)
 #push-options "--z3rlimit 200"
 let lemma_pi_0_generic
       (v_N: usize) (#v_T: Type0)
@@ -455,24 +456,25 @@ let lemma_pi_0_generic
        let o = old.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_0_ v_N #v_T ks old)
                 .Libcrux_sha3.Generic_keccak.f_st in
-       r.[mk_usize 0] == s.[mk_usize 0] /\
-       r.[mk_usize 1] == o.[mk_usize 15] /\
-       r.[mk_usize 2] == o.[mk_usize 5] /\
-       r.[mk_usize 3] == o.[mk_usize 20] /\
-       r.[mk_usize 4] == o.[mk_usize 10] /\
-       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 5] == o.[mk_usize 3] /\
+       r.[mk_usize 10] == o.[mk_usize 1] /\
+       r.[mk_usize 15] == o.[mk_usize 4] /\
+       r.[mk_usize 20] == o.[mk_usize 2] /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
+       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
        r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
-       r.[mk_usize 9] == s.[mk_usize 9] /\ r.[mk_usize 10] == s.[mk_usize 10] /\
-       r.[mk_usize 11] == s.[mk_usize 11] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
-       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 9] == s.[mk_usize 9] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
        r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
-       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
-       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
+       r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** pi_1_: updates cells where [x=1] (flat [1, 6, 11, 16, 21]). *)
 #push-options "--z3rlimit 200"
 let lemma_pi_1_generic
       (v_N: usize) (#v_T: Type0)
@@ -483,25 +485,25 @@ let lemma_pi_1_generic
        let o = old.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_1_ v_N #v_T ks old)
                 .Libcrux_sha3.Generic_keccak.f_st in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\
-       r.[mk_usize 5] == o.[mk_usize 6] /\
-       r.[mk_usize 6] == o.[mk_usize 21] /\
-       r.[mk_usize 7] == o.[mk_usize 11] /\
-       r.[mk_usize 8] == o.[mk_usize 1] /\
-       r.[mk_usize 9] == o.[mk_usize 16] /\
-       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 1] == o.[mk_usize 6] /\
+       r.[mk_usize 6] == o.[mk_usize 9] /\
+       r.[mk_usize 11] == o.[mk_usize 7] /\
+       r.[mk_usize 16] == o.[mk_usize 5] /\
+       r.[mk_usize 21] == o.[mk_usize 8] /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 2] == s.[mk_usize 2] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
        r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** pi_2_: updates cells where [x=2] (flat [2, 7, 12, 17, 22]). *)
 #push-options "--z3rlimit 200"
 let lemma_pi_2_generic
       (v_N: usize) (#v_T: Type0)
@@ -512,24 +514,25 @@ let lemma_pi_2_generic
        let o = old.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_2_ v_N #v_T ks old)
                 .Libcrux_sha3.Generic_keccak.f_st in
+       r.[mk_usize 2] == o.[mk_usize 12] /\
+       r.[mk_usize 7] == o.[mk_usize 10] /\
+       r.[mk_usize 12] == o.[mk_usize 13] /\
+       r.[mk_usize 17] == o.[mk_usize 11] /\
+       r.[mk_usize 22] == o.[mk_usize 14] /\
        r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
        r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
-       r.[mk_usize 10] == o.[mk_usize 12] /\
-       r.[mk_usize 11] == o.[mk_usize 2] /\
-       r.[mk_usize 12] == o.[mk_usize 17] /\
-       r.[mk_usize 13] == o.[mk_usize 7] /\
-       r.[mk_usize 14] == o.[mk_usize 22] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
        r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
-       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
-       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
        r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** pi_3_: updates cells where [x=3] (flat [3, 8, 13, 18, 23]). *)
 #push-options "--z3rlimit 200"
 let lemma_pi_3_generic
       (v_N: usize) (#v_T: Type0)
@@ -540,25 +543,25 @@ let lemma_pi_3_generic
        let o = old.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_3_ v_N #v_T ks old)
                 .Libcrux_sha3.Generic_keccak.f_st in
+       r.[mk_usize 3] == o.[mk_usize 18] /\
+       r.[mk_usize 8] == o.[mk_usize 16] /\
+       r.[mk_usize 13] == o.[mk_usize 19] /\
+       r.[mk_usize 18] == o.[mk_usize 17] /\
+       r.[mk_usize 23] == o.[mk_usize 15] /\
        r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
        r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == o.[mk_usize 18] /\
-       r.[mk_usize 16] == o.[mk_usize 8] /\
-       r.[mk_usize 17] == o.[mk_usize 23] /\
-       r.[mk_usize 18] == o.[mk_usize 13] /\
-       r.[mk_usize 19] == o.[mk_usize 3] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
        r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = ()
 #pop-options
 
+(** pi_4_: updates cells where [x=4] (flat [4, 9, 14, 19, 24]). *)
 #push-options "--z3rlimit 200"
 let lemma_pi_4_generic
       (v_N: usize) (#v_T: Type0)
@@ -569,21 +572,21 @@ let lemma_pi_4_generic
        let o = old.Libcrux_sha3.Generic_keccak.f_st in
        let r = (Libcrux_sha3.Generic_keccak.impl_2__pi_4_ v_N #v_T ks old)
                 .Libcrux_sha3.Generic_keccak.f_st in
+       r.[mk_usize 4] == o.[mk_usize 24] /\
+       r.[mk_usize 9] == o.[mk_usize 22] /\
+       r.[mk_usize 14] == o.[mk_usize 20] /\
+       r.[mk_usize 19] == o.[mk_usize 23] /\
+       r.[mk_usize 24] == o.[mk_usize 21] /\
        r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
        r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
        r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
        r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
-       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == o.[mk_usize 24] /\
-       r.[mk_usize 21] == o.[mk_usize 14] /\
-       r.[mk_usize 22] == o.[mk_usize 4] /\
-       r.[mk_usize 23] == o.[mk_usize 19] /\
-       r.[mk_usize 24] == o.[mk_usize 9])
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23])
   = ()
 #pop-options
 
@@ -642,34 +645,35 @@ let logand_commutative (#t: Rust_primitives.Integers.inttype) (a b: Rust_primiti
    3. Match against spec rho(theta(...))
    ================================================================ *)
 
-(** Spec-side: RHO_OFFSETS values. *)
+(** Spec-side: RHO_OFFSETS values (FIPS-native layout, indexed as
+    RHO_OFFSETS[5*y + x]). *)
 #push-options "--z3rlimit 200 --fuel 2 --ifuel 2 --split_queries always"
 let lemma_rho_offsets_values (_: unit)
   : Lemma (
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 0] == mk_u32 0 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 1] == mk_u32 36 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 2] == mk_u32 3 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 3] == mk_u32 41 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 4] == mk_u32 18 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 5] == mk_u32 1 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 6] == mk_u32 44 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 7] == mk_u32 10 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 8] == mk_u32 45 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 9] == mk_u32 2 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 10] == mk_u32 62 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 11] == mk_u32 6 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 0]  == mk_u32 0  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 1]  == mk_u32 1  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 2]  == mk_u32 62 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 3]  == mk_u32 28 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 4]  == mk_u32 27 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 5]  == mk_u32 36 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 6]  == mk_u32 44 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 7]  == mk_u32 6  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 8]  == mk_u32 55 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 9]  == mk_u32 20 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 10] == mk_u32 3  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 11] == mk_u32 10 /\
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 12] == mk_u32 43 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 13] == mk_u32 15 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 14] == mk_u32 61 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 15] == mk_u32 28 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 16] == mk_u32 55 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 17] == mk_u32 25 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 13] == mk_u32 25 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 14] == mk_u32 39 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 15] == mk_u32 41 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 16] == mk_u32 45 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 17] == mk_u32 15 /\
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 18] == mk_u32 21 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 19] == mk_u32 56 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 20] == mk_u32 27 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 21] == mk_u32 20 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 22] == mk_u32 39 /\
-  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 23] == mk_u32 8 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 19] == mk_u32 8  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 20] == mk_u32 18 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 21] == mk_u32 2  /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 22] == mk_u32 61 /\
+  Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 23] == mk_u32 56 /\
   Hacspec_sha3.Keccak_f.v_RHO_OFFSETS.[mk_usize 24] == mk_u32 14)
   = admit()
 #pop-options
@@ -687,61 +691,63 @@ let lemma_round_constants_equal (i: usize)
 let rotl_spec (x: u64) (n: u32) : u64 =
   Core_models.Num.impl_u64__rotate_left x n
 
+(** Under the FIPS-native layout, theta XORs [state.[k]] with [d[k % 5]]
+    (column index is [k % 5], not [k / 5] as in the old transposed layout). *)
 #push-options "--z3rlimit 400"
 let lemma_rho_theta_spec (state: spec_state)
   : Lemma
       (let r = Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state) in
-       r.[mk_usize 0] == rotl_spec (state.[mk_usize 0] ^. spec_d state (mk_usize 0)) (mk_u32 0) /\
-       r.[mk_usize 1] == rotl_spec (state.[mk_usize 1] ^. spec_d state (mk_usize 0)) (mk_u32 36) /\
-       r.[mk_usize 2] == rotl_spec (state.[mk_usize 2] ^. spec_d state (mk_usize 0)) (mk_u32 3) /\
-       r.[mk_usize 3] == rotl_spec (state.[mk_usize 3] ^. spec_d state (mk_usize 0)) (mk_u32 41) /\
-       r.[mk_usize 4] == rotl_spec (state.[mk_usize 4] ^. spec_d state (mk_usize 0)) (mk_u32 18) /\
-       r.[mk_usize 5] == rotl_spec (state.[mk_usize 5] ^. spec_d state (mk_usize 1)) (mk_u32 1) /\
-       r.[mk_usize 6] == rotl_spec (state.[mk_usize 6] ^. spec_d state (mk_usize 1)) (mk_u32 44) /\
-       r.[mk_usize 7] == rotl_spec (state.[mk_usize 7] ^. spec_d state (mk_usize 1)) (mk_u32 10) /\
-       r.[mk_usize 8] == rotl_spec (state.[mk_usize 8] ^. spec_d state (mk_usize 1)) (mk_u32 45) /\
-       r.[mk_usize 9] == rotl_spec (state.[mk_usize 9] ^. spec_d state (mk_usize 1)) (mk_u32 2) /\
-       r.[mk_usize 10] == rotl_spec (state.[mk_usize 10] ^. spec_d state (mk_usize 2)) (mk_u32 62) /\
-       r.[mk_usize 11] == rotl_spec (state.[mk_usize 11] ^. spec_d state (mk_usize 2)) (mk_u32 6) /\
+       r.[mk_usize 0]  == rotl_spec (state.[mk_usize 0]  ^. spec_d state (mk_usize 0)) (mk_u32 0)  /\
+       r.[mk_usize 1]  == rotl_spec (state.[mk_usize 1]  ^. spec_d state (mk_usize 1)) (mk_u32 1)  /\
+       r.[mk_usize 2]  == rotl_spec (state.[mk_usize 2]  ^. spec_d state (mk_usize 2)) (mk_u32 62) /\
+       r.[mk_usize 3]  == rotl_spec (state.[mk_usize 3]  ^. spec_d state (mk_usize 3)) (mk_u32 28) /\
+       r.[mk_usize 4]  == rotl_spec (state.[mk_usize 4]  ^. spec_d state (mk_usize 4)) (mk_u32 27) /\
+       r.[mk_usize 5]  == rotl_spec (state.[mk_usize 5]  ^. spec_d state (mk_usize 0)) (mk_u32 36) /\
+       r.[mk_usize 6]  == rotl_spec (state.[mk_usize 6]  ^. spec_d state (mk_usize 1)) (mk_u32 44) /\
+       r.[mk_usize 7]  == rotl_spec (state.[mk_usize 7]  ^. spec_d state (mk_usize 2)) (mk_u32 6)  /\
+       r.[mk_usize 8]  == rotl_spec (state.[mk_usize 8]  ^. spec_d state (mk_usize 3)) (mk_u32 55) /\
+       r.[mk_usize 9]  == rotl_spec (state.[mk_usize 9]  ^. spec_d state (mk_usize 4)) (mk_u32 20) /\
+       r.[mk_usize 10] == rotl_spec (state.[mk_usize 10] ^. spec_d state (mk_usize 0)) (mk_u32 3)  /\
+       r.[mk_usize 11] == rotl_spec (state.[mk_usize 11] ^. spec_d state (mk_usize 1)) (mk_u32 10) /\
        r.[mk_usize 12] == rotl_spec (state.[mk_usize 12] ^. spec_d state (mk_usize 2)) (mk_u32 43) /\
-       r.[mk_usize 13] == rotl_spec (state.[mk_usize 13] ^. spec_d state (mk_usize 2)) (mk_u32 15) /\
-       r.[mk_usize 14] == rotl_spec (state.[mk_usize 14] ^. spec_d state (mk_usize 2)) (mk_u32 61) /\
-       r.[mk_usize 15] == rotl_spec (state.[mk_usize 15] ^. spec_d state (mk_usize 3)) (mk_u32 28) /\
-       r.[mk_usize 16] == rotl_spec (state.[mk_usize 16] ^. spec_d state (mk_usize 3)) (mk_u32 55) /\
-       r.[mk_usize 17] == rotl_spec (state.[mk_usize 17] ^. spec_d state (mk_usize 3)) (mk_u32 25) /\
+       r.[mk_usize 13] == rotl_spec (state.[mk_usize 13] ^. spec_d state (mk_usize 3)) (mk_u32 25) /\
+       r.[mk_usize 14] == rotl_spec (state.[mk_usize 14] ^. spec_d state (mk_usize 4)) (mk_u32 39) /\
+       r.[mk_usize 15] == rotl_spec (state.[mk_usize 15] ^. spec_d state (mk_usize 0)) (mk_u32 41) /\
+       r.[mk_usize 16] == rotl_spec (state.[mk_usize 16] ^. spec_d state (mk_usize 1)) (mk_u32 45) /\
+       r.[mk_usize 17] == rotl_spec (state.[mk_usize 17] ^. spec_d state (mk_usize 2)) (mk_u32 15) /\
        r.[mk_usize 18] == rotl_spec (state.[mk_usize 18] ^. spec_d state (mk_usize 3)) (mk_u32 21) /\
-       r.[mk_usize 19] == rotl_spec (state.[mk_usize 19] ^. spec_d state (mk_usize 3)) (mk_u32 56) /\
-       r.[mk_usize 20] == rotl_spec (state.[mk_usize 20] ^. spec_d state (mk_usize 4)) (mk_u32 27) /\
-       r.[mk_usize 21] == rotl_spec (state.[mk_usize 21] ^. spec_d state (mk_usize 4)) (mk_u32 20) /\
-       r.[mk_usize 22] == rotl_spec (state.[mk_usize 22] ^. spec_d state (mk_usize 4)) (mk_u32 39) /\
-       r.[mk_usize 23] == rotl_spec (state.[mk_usize 23] ^. spec_d state (mk_usize 4)) (mk_u32 8) /\
+       r.[mk_usize 19] == rotl_spec (state.[mk_usize 19] ^. spec_d state (mk_usize 4)) (mk_u32 8)  /\
+       r.[mk_usize 20] == rotl_spec (state.[mk_usize 20] ^. spec_d state (mk_usize 0)) (mk_u32 18) /\
+       r.[mk_usize 21] == rotl_spec (state.[mk_usize 21] ^. spec_d state (mk_usize 1)) (mk_u32 2)  /\
+       r.[mk_usize 22] == rotl_spec (state.[mk_usize 22] ^. spec_d state (mk_usize 2)) (mk_u32 61) /\
+       r.[mk_usize 23] == rotl_spec (state.[mk_usize 23] ^. spec_d state (mk_usize 3)) (mk_u32 56) /\
        r.[mk_usize 24] == rotl_spec (state.[mk_usize 24] ^. spec_d state (mk_usize 4)) (mk_u32 14))
   = lemma_rho_offsets_values ();
     let ts = Hacspec_sha3.Keccak_f.theta state in
     assert (ts.[mk_usize 0] == state.[mk_usize 0] ^. spec_d state (mk_usize 0));
-    assert (ts.[mk_usize 1] == state.[mk_usize 1] ^. spec_d state (mk_usize 0));
-    assert (ts.[mk_usize 2] == state.[mk_usize 2] ^. spec_d state (mk_usize 0));
-    assert (ts.[mk_usize 3] == state.[mk_usize 3] ^. spec_d state (mk_usize 0));
-    assert (ts.[mk_usize 4] == state.[mk_usize 4] ^. spec_d state (mk_usize 0));
-    assert (ts.[mk_usize 5] == state.[mk_usize 5] ^. spec_d state (mk_usize 1));
+    assert (ts.[mk_usize 1] == state.[mk_usize 1] ^. spec_d state (mk_usize 1));
+    assert (ts.[mk_usize 2] == state.[mk_usize 2] ^. spec_d state (mk_usize 2));
+    assert (ts.[mk_usize 3] == state.[mk_usize 3] ^. spec_d state (mk_usize 3));
+    assert (ts.[mk_usize 4] == state.[mk_usize 4] ^. spec_d state (mk_usize 4));
+    assert (ts.[mk_usize 5] == state.[mk_usize 5] ^. spec_d state (mk_usize 0));
     assert (ts.[mk_usize 6] == state.[mk_usize 6] ^. spec_d state (mk_usize 1));
-    assert (ts.[mk_usize 7] == state.[mk_usize 7] ^. spec_d state (mk_usize 1));
-    assert (ts.[mk_usize 8] == state.[mk_usize 8] ^. spec_d state (mk_usize 1));
-    assert (ts.[mk_usize 9] == state.[mk_usize 9] ^. spec_d state (mk_usize 1));
-    assert (ts.[mk_usize 10] == state.[mk_usize 10] ^. spec_d state (mk_usize 2));
-    assert (ts.[mk_usize 11] == state.[mk_usize 11] ^. spec_d state (mk_usize 2));
+    assert (ts.[mk_usize 7] == state.[mk_usize 7] ^. spec_d state (mk_usize 2));
+    assert (ts.[mk_usize 8] == state.[mk_usize 8] ^. spec_d state (mk_usize 3));
+    assert (ts.[mk_usize 9] == state.[mk_usize 9] ^. spec_d state (mk_usize 4));
+    assert (ts.[mk_usize 10] == state.[mk_usize 10] ^. spec_d state (mk_usize 0));
+    assert (ts.[mk_usize 11] == state.[mk_usize 11] ^. spec_d state (mk_usize 1));
     assert (ts.[mk_usize 12] == state.[mk_usize 12] ^. spec_d state (mk_usize 2));
-    assert (ts.[mk_usize 13] == state.[mk_usize 13] ^. spec_d state (mk_usize 2));
-    assert (ts.[mk_usize 14] == state.[mk_usize 14] ^. spec_d state (mk_usize 2));
-    assert (ts.[mk_usize 15] == state.[mk_usize 15] ^. spec_d state (mk_usize 3));
-    assert (ts.[mk_usize 16] == state.[mk_usize 16] ^. spec_d state (mk_usize 3));
-    assert (ts.[mk_usize 17] == state.[mk_usize 17] ^. spec_d state (mk_usize 3));
+    assert (ts.[mk_usize 13] == state.[mk_usize 13] ^. spec_d state (mk_usize 3));
+    assert (ts.[mk_usize 14] == state.[mk_usize 14] ^. spec_d state (mk_usize 4));
+    assert (ts.[mk_usize 15] == state.[mk_usize 15] ^. spec_d state (mk_usize 0));
+    assert (ts.[mk_usize 16] == state.[mk_usize 16] ^. spec_d state (mk_usize 1));
+    assert (ts.[mk_usize 17] == state.[mk_usize 17] ^. spec_d state (mk_usize 2));
     assert (ts.[mk_usize 18] == state.[mk_usize 18] ^. spec_d state (mk_usize 3));
-    assert (ts.[mk_usize 19] == state.[mk_usize 19] ^. spec_d state (mk_usize 3));
-    assert (ts.[mk_usize 20] == state.[mk_usize 20] ^. spec_d state (mk_usize 4));
-    assert (ts.[mk_usize 21] == state.[mk_usize 21] ^. spec_d state (mk_usize 4));
-    assert (ts.[mk_usize 22] == state.[mk_usize 22] ^. spec_d state (mk_usize 4));
-    assert (ts.[mk_usize 23] == state.[mk_usize 23] ^. spec_d state (mk_usize 4));
+    assert (ts.[mk_usize 19] == state.[mk_usize 19] ^. spec_d state (mk_usize 4));
+    assert (ts.[mk_usize 20] == state.[mk_usize 20] ^. spec_d state (mk_usize 0));
+    assert (ts.[mk_usize 21] == state.[mk_usize 21] ^. spec_d state (mk_usize 1));
+    assert (ts.[mk_usize 22] == state.[mk_usize 22] ^. spec_d state (mk_usize 2));
+    assert (ts.[mk_usize 23] == state.[mk_usize 23] ^. spec_d state (mk_usize 3));
     assert (ts.[mk_usize 24] == state.[mk_usize 24] ^. spec_d state (mk_usize 4))
 #pop-options
 
@@ -750,56 +756,56 @@ let lemma_pi_spec (state: spec_state)
   : Lemma
       (let p = Hacspec_sha3.Keccak_f.pi state in
        p.[mk_usize 0] == state.[mk_usize 0] /\
-       p.[mk_usize 1] == state.[mk_usize 15] /\
-       p.[mk_usize 2] == state.[mk_usize 5] /\
-       p.[mk_usize 3] == state.[mk_usize 20] /\
-       p.[mk_usize 4] == state.[mk_usize 10] /\
-       p.[mk_usize 5] == state.[mk_usize 6] /\
-       p.[mk_usize 6] == state.[mk_usize 21] /\
-       p.[mk_usize 7] == state.[mk_usize 11] /\
-       p.[mk_usize 8] == state.[mk_usize 1] /\
-       p.[mk_usize 9] == state.[mk_usize 16] /\
-       p.[mk_usize 10] == state.[mk_usize 12] /\
-       p.[mk_usize 11] == state.[mk_usize 2] /\
-       p.[mk_usize 12] == state.[mk_usize 17] /\
-       p.[mk_usize 13] == state.[mk_usize 7] /\
-       p.[mk_usize 14] == state.[mk_usize 22] /\
-       p.[mk_usize 15] == state.[mk_usize 18] /\
-       p.[mk_usize 16] == state.[mk_usize 8] /\
-       p.[mk_usize 17] == state.[mk_usize 23] /\
-       p.[mk_usize 18] == state.[mk_usize 13] /\
-       p.[mk_usize 19] == state.[mk_usize 3] /\
-       p.[mk_usize 20] == state.[mk_usize 24] /\
-       p.[mk_usize 21] == state.[mk_usize 14] /\
-       p.[mk_usize 22] == state.[mk_usize 4] /\
-       p.[mk_usize 23] == state.[mk_usize 19] /\
-       p.[mk_usize 24] == state.[mk_usize 9])
+       p.[mk_usize 1] == state.[mk_usize 6] /\
+       p.[mk_usize 2] == state.[mk_usize 12] /\
+       p.[mk_usize 3] == state.[mk_usize 18] /\
+       p.[mk_usize 4] == state.[mk_usize 24] /\
+       p.[mk_usize 5] == state.[mk_usize 3] /\
+       p.[mk_usize 6] == state.[mk_usize 9] /\
+       p.[mk_usize 7] == state.[mk_usize 10] /\
+       p.[mk_usize 8] == state.[mk_usize 16] /\
+       p.[mk_usize 9] == state.[mk_usize 22] /\
+       p.[mk_usize 10] == state.[mk_usize 1] /\
+       p.[mk_usize 11] == state.[mk_usize 7] /\
+       p.[mk_usize 12] == state.[mk_usize 13] /\
+       p.[mk_usize 13] == state.[mk_usize 19] /\
+       p.[mk_usize 14] == state.[mk_usize 20] /\
+       p.[mk_usize 15] == state.[mk_usize 4] /\
+       p.[mk_usize 16] == state.[mk_usize 5] /\
+       p.[mk_usize 17] == state.[mk_usize 11] /\
+       p.[mk_usize 18] == state.[mk_usize 17] /\
+       p.[mk_usize 19] == state.[mk_usize 23] /\
+       p.[mk_usize 20] == state.[mk_usize 2] /\
+       p.[mk_usize 21] == state.[mk_usize 8] /\
+       p.[mk_usize 22] == state.[mk_usize 14] /\
+       p.[mk_usize 23] == state.[mk_usize 15] /\
+       p.[mk_usize 24] == state.[mk_usize 21])
   = let p = Hacspec_sha3.Keccak_f.pi state in
     assert (p.[mk_usize 0] == state.[mk_usize 0]);
-    assert (p.[mk_usize 1] == state.[mk_usize 15]);
-    assert (p.[mk_usize 2] == state.[mk_usize 5]);
-    assert (p.[mk_usize 3] == state.[mk_usize 20]);
-    assert (p.[mk_usize 4] == state.[mk_usize 10]);
-    assert (p.[mk_usize 5] == state.[mk_usize 6]);
-    assert (p.[mk_usize 6] == state.[mk_usize 21]);
-    assert (p.[mk_usize 7] == state.[mk_usize 11]);
-    assert (p.[mk_usize 8] == state.[mk_usize 1]);
-    assert (p.[mk_usize 9] == state.[mk_usize 16]);
-    assert (p.[mk_usize 10] == state.[mk_usize 12]);
-    assert (p.[mk_usize 11] == state.[mk_usize 2]);
-    assert (p.[mk_usize 12] == state.[mk_usize 17]);
-    assert (p.[mk_usize 13] == state.[mk_usize 7]);
-    assert (p.[mk_usize 14] == state.[mk_usize 22]);
-    assert (p.[mk_usize 15] == state.[mk_usize 18]);
-    assert (p.[mk_usize 16] == state.[mk_usize 8]);
-    assert (p.[mk_usize 17] == state.[mk_usize 23]);
-    assert (p.[mk_usize 18] == state.[mk_usize 13]);
-    assert (p.[mk_usize 19] == state.[mk_usize 3]);
-    assert (p.[mk_usize 20] == state.[mk_usize 24]);
-    assert (p.[mk_usize 21] == state.[mk_usize 14]);
-    assert (p.[mk_usize 22] == state.[mk_usize 4]);
-    assert (p.[mk_usize 23] == state.[mk_usize 19]);
-    assert (p.[mk_usize 24] == state.[mk_usize 9])
+    assert (p.[mk_usize 1] == state.[mk_usize 6]);
+    assert (p.[mk_usize 2] == state.[mk_usize 12]);
+    assert (p.[mk_usize 3] == state.[mk_usize 18]);
+    assert (p.[mk_usize 4] == state.[mk_usize 24]);
+    assert (p.[mk_usize 5] == state.[mk_usize 3]);
+    assert (p.[mk_usize 6] == state.[mk_usize 9]);
+    assert (p.[mk_usize 7] == state.[mk_usize 10]);
+    assert (p.[mk_usize 8] == state.[mk_usize 16]);
+    assert (p.[mk_usize 9] == state.[mk_usize 22]);
+    assert (p.[mk_usize 10] == state.[mk_usize 1]);
+    assert (p.[mk_usize 11] == state.[mk_usize 7]);
+    assert (p.[mk_usize 12] == state.[mk_usize 13]);
+    assert (p.[mk_usize 13] == state.[mk_usize 19]);
+    assert (p.[mk_usize 14] == state.[mk_usize 20]);
+    assert (p.[mk_usize 15] == state.[mk_usize 4]);
+    assert (p.[mk_usize 16] == state.[mk_usize 5]);
+    assert (p.[mk_usize 17] == state.[mk_usize 11]);
+    assert (p.[mk_usize 18] == state.[mk_usize 17]);
+    assert (p.[mk_usize 19] == state.[mk_usize 23]);
+    assert (p.[mk_usize 20] == state.[mk_usize 2]);
+    assert (p.[mk_usize 21] == state.[mk_usize 8]);
+    assert (p.[mk_usize 22] == state.[mk_usize 14]);
+    assert (p.[mk_usize 23] == state.[mk_usize 15]);
+    assert (p.[mk_usize 24] == state.[mk_usize 21])
 #pop-options
 
 (* ================================================================
@@ -840,20 +846,20 @@ let lemma_theta_extract_lane
     let ks', d = impl_2__theta v_N #v_T ks in
     lemma_theta_generic v_N ks;
     let c0 = Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst
-      s.[mk_usize 0] s.[mk_usize 1] s.[mk_usize 2] s.[mk_usize 3] s.[mk_usize 4] in
+      s.[mk_usize 0] s.[mk_usize 5] s.[mk_usize 10] s.[mk_usize 15] s.[mk_usize 20] in
     let c1 = Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst
-      s.[mk_usize 5] s.[mk_usize 6] s.[mk_usize 7] s.[mk_usize 8] s.[mk_usize 9] in
+      s.[mk_usize 1] s.[mk_usize 6] s.[mk_usize 11] s.[mk_usize 16] s.[mk_usize 21] in
     let c2 = Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst
-      s.[mk_usize 10] s.[mk_usize 11] s.[mk_usize 12] s.[mk_usize 13] s.[mk_usize 14] in
+      s.[mk_usize 2] s.[mk_usize 7] s.[mk_usize 12] s.[mk_usize 17] s.[mk_usize 22] in
     let c3 = Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst
-      s.[mk_usize 15] s.[mk_usize 16] s.[mk_usize 17] s.[mk_usize 18] s.[mk_usize 19] in
+      s.[mk_usize 3] s.[mk_usize 8] s.[mk_usize 13] s.[mk_usize 18] s.[mk_usize 23] in
     let c4 = Libcrux_sha3.Traits.f_xor5 #v_T #v_N #inst
-      s.[mk_usize 20] s.[mk_usize 21] s.[mk_usize 22] s.[mk_usize 23] s.[mk_usize 24] in
-    lane_xor5 v_N lc s.[mk_usize 0] s.[mk_usize 1] s.[mk_usize 2] s.[mk_usize 3] s.[mk_usize 4] l;
-    lane_xor5 v_N lc s.[mk_usize 5] s.[mk_usize 6] s.[mk_usize 7] s.[mk_usize 8] s.[mk_usize 9] l;
-    lane_xor5 v_N lc s.[mk_usize 10] s.[mk_usize 11] s.[mk_usize 12] s.[mk_usize 13] s.[mk_usize 14] l;
-    lane_xor5 v_N lc s.[mk_usize 15] s.[mk_usize 16] s.[mk_usize 17] s.[mk_usize 18] s.[mk_usize 19] l;
-    lane_xor5 v_N lc s.[mk_usize 20] s.[mk_usize 21] s.[mk_usize 22] s.[mk_usize 23] s.[mk_usize 24] l;
+      s.[mk_usize 4] s.[mk_usize 9] s.[mk_usize 14] s.[mk_usize 19] s.[mk_usize 24] in
+    lane_xor5 v_N lc s.[mk_usize 0] s.[mk_usize 5] s.[mk_usize 10] s.[mk_usize 15] s.[mk_usize 20] l;
+    lane_xor5 v_N lc s.[mk_usize 1] s.[mk_usize 6] s.[mk_usize 11] s.[mk_usize 16] s.[mk_usize 21] l;
+    lane_xor5 v_N lc s.[mk_usize 2] s.[mk_usize 7] s.[mk_usize 12] s.[mk_usize 17] s.[mk_usize 22] l;
+    lane_xor5 v_N lc s.[mk_usize 3] s.[mk_usize 8] s.[mk_usize 13] s.[mk_usize 18] s.[mk_usize 23] l;
+    lane_xor5 v_N lc s.[mk_usize 4] s.[mk_usize 9] s.[mk_usize 14] s.[mk_usize 19] s.[mk_usize 24] l;
     let state = extract_lane v_N lc s l in
     assert (lc.lane c0 l == spec_c state (mk_usize 0));
     assert (lc.lane c1 l == spec_c state (mk_usize 1));
@@ -885,27 +891,27 @@ let lemma_rho_0_extract_lane
        let r = extract_lane v_N lc
           (Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d).Libcrux_sha3.Generic_keccak.f_st l in
        r.[mk_usize 0] == s.[mk_usize 0] ^. lc.lane d.[mk_usize 0] l /\
-       r.[mk_usize 1] == rotl_spec (s.[mk_usize 1] ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
-       r.[mk_usize 2] == rotl_spec (s.[mk_usize 2] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3) /\
-       r.[mk_usize 3] == rotl_spec (s.[mk_usize 3] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
-       r.[mk_usize 4] == rotl_spec (s.[mk_usize 4] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
-       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
-       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
-       r.[mk_usize 9] == s.[mk_usize 9] /\ r.[mk_usize 10] == s.[mk_usize 10] /\
+       r.[mk_usize 5] == rotl_spec (s.[mk_usize 5] ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
+       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3) /\
+       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
+       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
+       r.[mk_usize 1] == s.[mk_usize 1] /\ r.[mk_usize 2] == s.[mk_usize 2] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
        r.[mk_usize 11] == s.[mk_usize 11] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
        r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
-       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
+       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
        r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
        r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = let open Libcrux_sha3.Generic_keccak in
     lemma_rho_0_generic v_N ks d;
     lane_xor v_N lc ks.f_st.[mk_usize 0] d.[mk_usize 0] l;
-    lane_xor_and_rotate v_N lc (mk_i32 36) (mk_i32 28) ks.f_st.[mk_usize 1] d.[mk_usize 0] l;
-    lane_xor_and_rotate v_N lc (mk_i32 3) (mk_i32 61) ks.f_st.[mk_usize 2] d.[mk_usize 0] l;
-    lane_xor_and_rotate v_N lc (mk_i32 41) (mk_i32 23) ks.f_st.[mk_usize 3] d.[mk_usize 0] l;
-    lane_xor_and_rotate v_N lc (mk_i32 18) (mk_i32 46) ks.f_st.[mk_usize 4] d.[mk_usize 0] l
+    lane_xor_and_rotate v_N lc (mk_i32 36) (mk_i32 28) ks.f_st.[mk_usize 5] d.[mk_usize 0] l;
+    lane_xor_and_rotate v_N lc (mk_i32 3) (mk_i32 61) ks.f_st.[mk_usize 10] d.[mk_usize 0] l;
+    lane_xor_and_rotate v_N lc (mk_i32 41) (mk_i32 23) ks.f_st.[mk_usize 15] d.[mk_usize 0] l;
+    lane_xor_and_rotate v_N lc (mk_i32 18) (mk_i32 46) ks.f_st.[mk_usize 20] d.[mk_usize 0] l
 #pop-options
 
 #push-options "--z3rlimit 800"
@@ -920,29 +926,28 @@ let lemma_rho_1_extract_lane
       (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
        let r = extract_lane v_N lc
           (Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks d).Libcrux_sha3.Generic_keccak.f_st l in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\
-       r.[mk_usize 5] == rotl_spec (s.[mk_usize 5] ^. lc.lane d.[mk_usize 1] l) (mk_u32 1) /\
+       r.[mk_usize 1] == rotl_spec (s.[mk_usize 1] ^. lc.lane d.[mk_usize 1] l) (mk_u32 1) /\
        r.[mk_usize 6] == rotl_spec (s.[mk_usize 6] ^. lc.lane d.[mk_usize 1] l) (mk_u32 44) /\
-       r.[mk_usize 7] == rotl_spec (s.[mk_usize 7] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
-       r.[mk_usize 8] == rotl_spec (s.[mk_usize 8] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
-       r.[mk_usize 9] == rotl_spec (s.[mk_usize 9] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2) /\
-       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
+       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
+       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2) /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 2] == s.[mk_usize 2] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 12] == s.[mk_usize 12] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
        r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = let open Libcrux_sha3.Generic_keccak in
     lemma_rho_1_generic v_N ks d;
-    lane_xor_and_rotate v_N lc (mk_i32 1) (mk_i32 63) ks.f_st.[mk_usize 5] d.[mk_usize 1] l;
+    lane_xor_and_rotate v_N lc (mk_i32 1) (mk_i32 63) ks.f_st.[mk_usize 1] d.[mk_usize 1] l;
     lane_xor_and_rotate v_N lc (mk_i32 44) (mk_i32 20) ks.f_st.[mk_usize 6] d.[mk_usize 1] l;
-    lane_xor_and_rotate v_N lc (mk_i32 10) (mk_i32 54) ks.f_st.[mk_usize 7] d.[mk_usize 1] l;
-    lane_xor_and_rotate v_N lc (mk_i32 45) (mk_i32 19) ks.f_st.[mk_usize 8] d.[mk_usize 1] l;
-    lane_xor_and_rotate v_N lc (mk_i32 2) (mk_i32 62) ks.f_st.[mk_usize 9] d.[mk_usize 1] l
+    lane_xor_and_rotate v_N lc (mk_i32 10) (mk_i32 54) ks.f_st.[mk_usize 11] d.[mk_usize 1] l;
+    lane_xor_and_rotate v_N lc (mk_i32 45) (mk_i32 19) ks.f_st.[mk_usize 16] d.[mk_usize 1] l;
+    lane_xor_and_rotate v_N lc (mk_i32 2) (mk_i32 62) ks.f_st.[mk_usize 21] d.[mk_usize 1] l
 #pop-options
 
 #push-options "--z3rlimit 800"
@@ -957,28 +962,28 @@ let lemma_rho_2_extract_lane
       (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
        let r = extract_lane v_N lc
           (Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks d).Libcrux_sha3.Generic_keccak.f_st l in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
-       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 2] l) (mk_u32 62) /\
-       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 2] l) (mk_u32 6) /\
+       r.[mk_usize 2] == rotl_spec (s.[mk_usize 2] ^. lc.lane d.[mk_usize 2] l) (mk_u32 62) /\
+       r.[mk_usize 7] == rotl_spec (s.[mk_usize 7] ^. lc.lane d.[mk_usize 2] l) (mk_u32 6) /\
        r.[mk_usize 12] == rotl_spec (s.[mk_usize 12] ^. lc.lane d.[mk_usize 2] l) (mk_u32 43) /\
-       r.[mk_usize 13] == rotl_spec (s.[mk_usize 13] ^. lc.lane d.[mk_usize 2] l) (mk_u32 15) /\
-       r.[mk_usize 14] == rotl_spec (s.[mk_usize 14] ^. lc.lane d.[mk_usize 2] l) (mk_u32 61) /\
+       r.[mk_usize 17] == rotl_spec (s.[mk_usize 17] ^. lc.lane d.[mk_usize 2] l) (mk_u32 15) /\
+       r.[mk_usize 22] == rotl_spec (s.[mk_usize 22] ^. lc.lane d.[mk_usize 2] l) (mk_u32 61) /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 3] == s.[mk_usize 3] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
        r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
-       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
-       r.[mk_usize 19] == s.[mk_usize 19] /\ r.[mk_usize 20] == s.[mk_usize 20] /\
-       r.[mk_usize 21] == s.[mk_usize 21] /\ r.[mk_usize 22] == s.[mk_usize 22] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
        r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = let open Libcrux_sha3.Generic_keccak in
     lemma_rho_2_generic v_N ks d;
-    lane_xor_and_rotate v_N lc (mk_i32 62) (mk_i32 2) ks.f_st.[mk_usize 10] d.[mk_usize 2] l;
-    lane_xor_and_rotate v_N lc (mk_i32 6) (mk_i32 58) ks.f_st.[mk_usize 11] d.[mk_usize 2] l;
+    lane_xor_and_rotate v_N lc (mk_i32 62) (mk_i32 2) ks.f_st.[mk_usize 2] d.[mk_usize 2] l;
+    lane_xor_and_rotate v_N lc (mk_i32 6) (mk_i32 58) ks.f_st.[mk_usize 7] d.[mk_usize 2] l;
     lane_xor_and_rotate v_N lc (mk_i32 43) (mk_i32 21) ks.f_st.[mk_usize 12] d.[mk_usize 2] l;
-    lane_xor_and_rotate v_N lc (mk_i32 15) (mk_i32 49) ks.f_st.[mk_usize 13] d.[mk_usize 2] l;
-    lane_xor_and_rotate v_N lc (mk_i32 61) (mk_i32 3) ks.f_st.[mk_usize 14] d.[mk_usize 2] l
+    lane_xor_and_rotate v_N lc (mk_i32 15) (mk_i32 49) ks.f_st.[mk_usize 17] d.[mk_usize 2] l;
+    lane_xor_and_rotate v_N lc (mk_i32 61) (mk_i32 3) ks.f_st.[mk_usize 22] d.[mk_usize 2] l
 #pop-options
 
 #push-options "--z3rlimit 800"
@@ -993,29 +998,28 @@ let lemma_rho_3_extract_lane
       (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
        let r = extract_lane v_N lc
           (Libcrux_sha3.Generic_keccak.impl_2__rho_3_ v_N #v_T ks d).Libcrux_sha3.Generic_keccak.f_st l in
-       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
-       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
-       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
-       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\
-       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 3] l) (mk_u32 28) /\
-       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 3] l) (mk_u32 55) /\
-       r.[mk_usize 17] == rotl_spec (s.[mk_usize 17] ^. lc.lane d.[mk_usize 3] l) (mk_u32 25) /\
+       r.[mk_usize 3] == rotl_spec (s.[mk_usize 3] ^. lc.lane d.[mk_usize 3] l) (mk_u32 28) /\
+       r.[mk_usize 8] == rotl_spec (s.[mk_usize 8] ^. lc.lane d.[mk_usize 3] l) (mk_u32 55) /\
+       r.[mk_usize 13] == rotl_spec (s.[mk_usize 13] ^. lc.lane d.[mk_usize 3] l) (mk_u32 25) /\
        r.[mk_usize 18] == rotl_spec (s.[mk_usize 18] ^. lc.lane d.[mk_usize 3] l) (mk_u32 21) /\
-       r.[mk_usize 19] == rotl_spec (s.[mk_usize 19] ^. lc.lane d.[mk_usize 3] l) (mk_u32 56) /\
+       r.[mk_usize 23] == rotl_spec (s.[mk_usize 23] ^. lc.lane d.[mk_usize 3] l) (mk_u32 56) /\
+       r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
+       r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 4] == s.[mk_usize 4] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
        r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
-       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
-       r.[mk_usize 24] == s.[mk_usize 24])
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 24] == s.[mk_usize 24])
   = let open Libcrux_sha3.Generic_keccak in
     lemma_rho_3_generic v_N ks d;
-    lane_xor_and_rotate v_N lc (mk_i32 28) (mk_i32 36) ks.f_st.[mk_usize 15] d.[mk_usize 3] l;
-    lane_xor_and_rotate v_N lc (mk_i32 55) (mk_i32 9) ks.f_st.[mk_usize 16] d.[mk_usize 3] l;
-    lane_xor_and_rotate v_N lc (mk_i32 25) (mk_i32 39) ks.f_st.[mk_usize 17] d.[mk_usize 3] l;
+    lane_xor_and_rotate v_N lc (mk_i32 28) (mk_i32 36) ks.f_st.[mk_usize 3] d.[mk_usize 3] l;
+    lane_xor_and_rotate v_N lc (mk_i32 55) (mk_i32 9) ks.f_st.[mk_usize 8] d.[mk_usize 3] l;
+    lane_xor_and_rotate v_N lc (mk_i32 25) (mk_i32 39) ks.f_st.[mk_usize 13] d.[mk_usize 3] l;
     lane_xor_and_rotate v_N lc (mk_i32 21) (mk_i32 43) ks.f_st.[mk_usize 18] d.[mk_usize 3] l;
-    lane_xor_and_rotate v_N lc (mk_i32 56) (mk_i32 8) ks.f_st.[mk_usize 19] d.[mk_usize 3] l
+    lane_xor_and_rotate v_N lc (mk_i32 56) (mk_i32 8) ks.f_st.[mk_usize 23] d.[mk_usize 3] l
 #pop-options
 
 #push-options "--z3rlimit 800"
@@ -1030,37 +1034,227 @@ let lemma_rho_4_extract_lane
       (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
        let r = extract_lane v_N lc
           (Libcrux_sha3.Generic_keccak.impl_2__rho_4_ v_N #v_T ks d).Libcrux_sha3.Generic_keccak.f_st l in
+       r.[mk_usize 4] == rotl_spec (s.[mk_usize 4] ^. lc.lane d.[mk_usize 4] l) (mk_u32 27) /\
+       r.[mk_usize 9] == rotl_spec (s.[mk_usize 9] ^. lc.lane d.[mk_usize 4] l) (mk_u32 20) /\
+       r.[mk_usize 14] == rotl_spec (s.[mk_usize 14] ^. lc.lane d.[mk_usize 4] l) (mk_u32 39) /\
+       r.[mk_usize 19] == rotl_spec (s.[mk_usize 19] ^. lc.lane d.[mk_usize 4] l) (mk_u32 8) /\
+       r.[mk_usize 24] == rotl_spec (s.[mk_usize 24] ^. lc.lane d.[mk_usize 4] l) (mk_u32 14) /\
        r.[mk_usize 0] == s.[mk_usize 0] /\ r.[mk_usize 1] == s.[mk_usize 1] /\
        r.[mk_usize 2] == s.[mk_usize 2] /\ r.[mk_usize 3] == s.[mk_usize 3] /\
-       r.[mk_usize 4] == s.[mk_usize 4] /\ r.[mk_usize 5] == s.[mk_usize 5] /\
-       r.[mk_usize 6] == s.[mk_usize 6] /\ r.[mk_usize 7] == s.[mk_usize 7] /\
-       r.[mk_usize 8] == s.[mk_usize 8] /\ r.[mk_usize 9] == s.[mk_usize 9] /\
+       r.[mk_usize 5] == s.[mk_usize 5] /\ r.[mk_usize 6] == s.[mk_usize 6] /\
+       r.[mk_usize 7] == s.[mk_usize 7] /\ r.[mk_usize 8] == s.[mk_usize 8] /\
        r.[mk_usize 10] == s.[mk_usize 10] /\ r.[mk_usize 11] == s.[mk_usize 11] /\
        r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
-       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 15] == s.[mk_usize 15] /\
-       r.[mk_usize 16] == s.[mk_usize 16] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
-       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
-       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 4] l) (mk_u32 27) /\
-       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 4] l) (mk_u32 20) /\
-       r.[mk_usize 22] == rotl_spec (s.[mk_usize 22] ^. lc.lane d.[mk_usize 4] l) (mk_u32 39) /\
-       r.[mk_usize 23] == rotl_spec (s.[mk_usize 23] ^. lc.lane d.[mk_usize 4] l) (mk_u32 8) /\
-       r.[mk_usize 24] == rotl_spec (s.[mk_usize 24] ^. lc.lane d.[mk_usize 4] l) (mk_u32 14))
+       r.[mk_usize 15] == s.[mk_usize 15] /\ r.[mk_usize 16] == s.[mk_usize 16] /\
+       r.[mk_usize 17] == s.[mk_usize 17] /\ r.[mk_usize 18] == s.[mk_usize 18] /\
+       r.[mk_usize 20] == s.[mk_usize 20] /\ r.[mk_usize 21] == s.[mk_usize 21] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23])
   = let open Libcrux_sha3.Generic_keccak in
     lemma_rho_4_generic v_N ks d;
-    lane_xor_and_rotate v_N lc (mk_i32 27) (mk_i32 37) ks.f_st.[mk_usize 20] d.[mk_usize 4] l;
-    lane_xor_and_rotate v_N lc (mk_i32 20) (mk_i32 44) ks.f_st.[mk_usize 21] d.[mk_usize 4] l;
-    lane_xor_and_rotate v_N lc (mk_i32 39) (mk_i32 25) ks.f_st.[mk_usize 22] d.[mk_usize 4] l;
-    lane_xor_and_rotate v_N lc (mk_i32 8) (mk_i32 56) ks.f_st.[mk_usize 23] d.[mk_usize 4] l;
+    lane_xor_and_rotate v_N lc (mk_i32 27) (mk_i32 37) ks.f_st.[mk_usize 4] d.[mk_usize 4] l;
+    lane_xor_and_rotate v_N lc (mk_i32 20) (mk_i32 44) ks.f_st.[mk_usize 9] d.[mk_usize 4] l;
+    lane_xor_and_rotate v_N lc (mk_i32 39) (mk_i32 25) ks.f_st.[mk_usize 14] d.[mk_usize 4] l;
+    lane_xor_and_rotate v_N lc (mk_i32 8) (mk_i32 56) ks.f_st.[mk_usize 19] d.[mk_usize 4] l;
     lane_xor_and_rotate v_N lc (mk_i32 14) (mk_i32 50) ks.f_st.[mk_usize 24] d.[mk_usize 4] l
+#pop-options
+
+(** Cumulative rho lemmas: each [lemma_rho_thru_N_extract_lane] describes
+    the state after composing [rho_0_; rho_1_; ...; rho_N_] on the same
+    input [ks] and [d]. The final [lemma_rho_thru_4_extract_lane] gives
+    all 25 positions of [impl_2__rho ks d] in closed form, which lets
+    [lemma_theta_rho_to_spec] finish via a single [eq_intro]. *)
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 1200"
+let lemma_rho_thru_1_extract_lane
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (lc: lane_correctness v_N #v_T)
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (d: t_Array v_T (mk_usize 5))
+      (l: nat{l < v v_N})
+  : Lemma
+      (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
+       let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+       let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+       let r = extract_lane v_N lc ks1.Libcrux_sha3.Generic_keccak.f_st l in
+       (* Column 0 final *)
+       r.[mk_usize 0]  == s.[mk_usize 0]  ^. lc.lane d.[mk_usize 0] l /\
+       r.[mk_usize 5]  == rotl_spec (s.[mk_usize 5]  ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
+       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3)  /\
+       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
+       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
+       (* Column 1 final *)
+       r.[mk_usize 1]  == rotl_spec (s.[mk_usize 1]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 1)  /\
+       r.[mk_usize 6]  == rotl_spec (s.[mk_usize 6]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 44) /\
+       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
+       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
+       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2)  /\
+       (* Columns 2, 3, 4 unchanged *)
+       r.[mk_usize 2]  == s.[mk_usize 2]  /\ r.[mk_usize 3]  == s.[mk_usize 3]  /\
+       r.[mk_usize 4]  == s.[mk_usize 4]  /\ r.[mk_usize 7]  == s.[mk_usize 7]  /\
+       r.[mk_usize 8]  == s.[mk_usize 8]  /\ r.[mk_usize 9]  == s.[mk_usize 9]  /\
+       r.[mk_usize 12] == s.[mk_usize 12] /\ r.[mk_usize 13] == s.[mk_usize 13] /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 17] == s.[mk_usize 17] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 22] == s.[mk_usize 22] /\ r.[mk_usize 23] == s.[mk_usize 23] /\
+       r.[mk_usize 24] == s.[mk_usize 24])
+  = let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+    lemma_rho_0_extract_lane v_N lc ks d l;
+    lemma_rho_1_extract_lane v_N lc ks0 d l
+#pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 1200"
+let lemma_rho_thru_2_extract_lane
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (lc: lane_correctness v_N #v_T)
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (d: t_Array v_T (mk_usize 5))
+      (l: nat{l < v v_N})
+  : Lemma
+      (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
+       let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+       let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+       let ks2 = Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks1 d in
+       let r = extract_lane v_N lc ks2.Libcrux_sha3.Generic_keccak.f_st l in
+       (* Column 0 final *)
+       r.[mk_usize 0]  == s.[mk_usize 0]  ^. lc.lane d.[mk_usize 0] l /\
+       r.[mk_usize 5]  == rotl_spec (s.[mk_usize 5]  ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
+       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3)  /\
+       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
+       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
+       (* Column 1 final *)
+       r.[mk_usize 1]  == rotl_spec (s.[mk_usize 1]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 1)  /\
+       r.[mk_usize 6]  == rotl_spec (s.[mk_usize 6]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 44) /\
+       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
+       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
+       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2)  /\
+       (* Column 2 final *)
+       r.[mk_usize 2]  == rotl_spec (s.[mk_usize 2]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 62) /\
+       r.[mk_usize 7]  == rotl_spec (s.[mk_usize 7]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 6)  /\
+       r.[mk_usize 12] == rotl_spec (s.[mk_usize 12] ^. lc.lane d.[mk_usize 2] l) (mk_u32 43) /\
+       r.[mk_usize 17] == rotl_spec (s.[mk_usize 17] ^. lc.lane d.[mk_usize 2] l) (mk_u32 15) /\
+       r.[mk_usize 22] == rotl_spec (s.[mk_usize 22] ^. lc.lane d.[mk_usize 2] l) (mk_u32 61) /\
+       (* Columns 3, 4 unchanged *)
+       r.[mk_usize 3]  == s.[mk_usize 3]  /\ r.[mk_usize 4]  == s.[mk_usize 4]  /\
+       r.[mk_usize 8]  == s.[mk_usize 8]  /\ r.[mk_usize 9]  == s.[mk_usize 9]  /\
+       r.[mk_usize 13] == s.[mk_usize 13] /\ r.[mk_usize 14] == s.[mk_usize 14] /\
+       r.[mk_usize 18] == s.[mk_usize 18] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 23] == s.[mk_usize 23] /\ r.[mk_usize 24] == s.[mk_usize 24])
+  = let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+    let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+    lemma_rho_thru_1_extract_lane v_N lc ks d l;
+    lemma_rho_2_extract_lane v_N lc ks1 d l
+#pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 1600"
+let lemma_rho_thru_3_extract_lane
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (lc: lane_correctness v_N #v_T)
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (d: t_Array v_T (mk_usize 5))
+      (l: nat{l < v v_N})
+  : Lemma
+      (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
+       let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+       let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+       let ks2 = Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks1 d in
+       let ks3 = Libcrux_sha3.Generic_keccak.impl_2__rho_3_ v_N #v_T ks2 d in
+       let r = extract_lane v_N lc ks3.Libcrux_sha3.Generic_keccak.f_st l in
+       (* Column 0 final *)
+       r.[mk_usize 0]  == s.[mk_usize 0]  ^. lc.lane d.[mk_usize 0] l /\
+       r.[mk_usize 5]  == rotl_spec (s.[mk_usize 5]  ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
+       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3)  /\
+       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
+       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
+       (* Column 1 final *)
+       r.[mk_usize 1]  == rotl_spec (s.[mk_usize 1]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 1)  /\
+       r.[mk_usize 6]  == rotl_spec (s.[mk_usize 6]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 44) /\
+       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
+       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
+       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2)  /\
+       (* Column 2 final *)
+       r.[mk_usize 2]  == rotl_spec (s.[mk_usize 2]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 62) /\
+       r.[mk_usize 7]  == rotl_spec (s.[mk_usize 7]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 6)  /\
+       r.[mk_usize 12] == rotl_spec (s.[mk_usize 12] ^. lc.lane d.[mk_usize 2] l) (mk_u32 43) /\
+       r.[mk_usize 17] == rotl_spec (s.[mk_usize 17] ^. lc.lane d.[mk_usize 2] l) (mk_u32 15) /\
+       r.[mk_usize 22] == rotl_spec (s.[mk_usize 22] ^. lc.lane d.[mk_usize 2] l) (mk_u32 61) /\
+       (* Column 3 final *)
+       r.[mk_usize 3]  == rotl_spec (s.[mk_usize 3]  ^. lc.lane d.[mk_usize 3] l) (mk_u32 28) /\
+       r.[mk_usize 8]  == rotl_spec (s.[mk_usize 8]  ^. lc.lane d.[mk_usize 3] l) (mk_u32 55) /\
+       r.[mk_usize 13] == rotl_spec (s.[mk_usize 13] ^. lc.lane d.[mk_usize 3] l) (mk_u32 25) /\
+       r.[mk_usize 18] == rotl_spec (s.[mk_usize 18] ^. lc.lane d.[mk_usize 3] l) (mk_u32 21) /\
+       r.[mk_usize 23] == rotl_spec (s.[mk_usize 23] ^. lc.lane d.[mk_usize 3] l) (mk_u32 56) /\
+       (* Column 4 unchanged *)
+       r.[mk_usize 4]  == s.[mk_usize 4]  /\ r.[mk_usize 9]  == s.[mk_usize 9]  /\
+       r.[mk_usize 14] == s.[mk_usize 14] /\ r.[mk_usize 19] == s.[mk_usize 19] /\
+       r.[mk_usize 24] == s.[mk_usize 24])
+  = let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+    let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+    let ks2 = Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks1 d in
+    lemma_rho_thru_2_extract_lane v_N lc ks d l;
+    lemma_rho_3_extract_lane v_N lc ks2 d l
+#pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 1600"
+let lemma_rho_thru_4_extract_lane
+      (v_N: usize) (#v_T: Type0)
+      {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
+      (lc: lane_correctness v_N #v_T)
+      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T)
+      (d: t_Array v_T (mk_usize 5))
+      (l: nat{l < v v_N})
+  : Lemma
+      (let s = extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l in
+       let r = extract_lane v_N lc
+         (Libcrux_sha3.Generic_keccak.impl_2__rho v_N #v_T ks d)
+           .Libcrux_sha3.Generic_keccak.f_st l in
+       (* All 25 positions final: rotl_spec(s.[k] ^. d.[k % 5]_l, RHO_OFFSETS[k]) *)
+       r.[mk_usize 0]  == s.[mk_usize 0]  ^. lc.lane d.[mk_usize 0] l /\
+       r.[mk_usize 1]  == rotl_spec (s.[mk_usize 1]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 1)  /\
+       r.[mk_usize 2]  == rotl_spec (s.[mk_usize 2]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 62) /\
+       r.[mk_usize 3]  == rotl_spec (s.[mk_usize 3]  ^. lc.lane d.[mk_usize 3] l) (mk_u32 28) /\
+       r.[mk_usize 4]  == rotl_spec (s.[mk_usize 4]  ^. lc.lane d.[mk_usize 4] l) (mk_u32 27) /\
+       r.[mk_usize 5]  == rotl_spec (s.[mk_usize 5]  ^. lc.lane d.[mk_usize 0] l) (mk_u32 36) /\
+       r.[mk_usize 6]  == rotl_spec (s.[mk_usize 6]  ^. lc.lane d.[mk_usize 1] l) (mk_u32 44) /\
+       r.[mk_usize 7]  == rotl_spec (s.[mk_usize 7]  ^. lc.lane d.[mk_usize 2] l) (mk_u32 6)  /\
+       r.[mk_usize 8]  == rotl_spec (s.[mk_usize 8]  ^. lc.lane d.[mk_usize 3] l) (mk_u32 55) /\
+       r.[mk_usize 9]  == rotl_spec (s.[mk_usize 9]  ^. lc.lane d.[mk_usize 4] l) (mk_u32 20) /\
+       r.[mk_usize 10] == rotl_spec (s.[mk_usize 10] ^. lc.lane d.[mk_usize 0] l) (mk_u32 3)  /\
+       r.[mk_usize 11] == rotl_spec (s.[mk_usize 11] ^. lc.lane d.[mk_usize 1] l) (mk_u32 10) /\
+       r.[mk_usize 12] == rotl_spec (s.[mk_usize 12] ^. lc.lane d.[mk_usize 2] l) (mk_u32 43) /\
+       r.[mk_usize 13] == rotl_spec (s.[mk_usize 13] ^. lc.lane d.[mk_usize 3] l) (mk_u32 25) /\
+       r.[mk_usize 14] == rotl_spec (s.[mk_usize 14] ^. lc.lane d.[mk_usize 4] l) (mk_u32 39) /\
+       r.[mk_usize 15] == rotl_spec (s.[mk_usize 15] ^. lc.lane d.[mk_usize 0] l) (mk_u32 41) /\
+       r.[mk_usize 16] == rotl_spec (s.[mk_usize 16] ^. lc.lane d.[mk_usize 1] l) (mk_u32 45) /\
+       r.[mk_usize 17] == rotl_spec (s.[mk_usize 17] ^. lc.lane d.[mk_usize 2] l) (mk_u32 15) /\
+       r.[mk_usize 18] == rotl_spec (s.[mk_usize 18] ^. lc.lane d.[mk_usize 3] l) (mk_u32 21) /\
+       r.[mk_usize 19] == rotl_spec (s.[mk_usize 19] ^. lc.lane d.[mk_usize 4] l) (mk_u32 8)  /\
+       r.[mk_usize 20] == rotl_spec (s.[mk_usize 20] ^. lc.lane d.[mk_usize 0] l) (mk_u32 18) /\
+       r.[mk_usize 21] == rotl_spec (s.[mk_usize 21] ^. lc.lane d.[mk_usize 1] l) (mk_u32 2)  /\
+       r.[mk_usize 22] == rotl_spec (s.[mk_usize 22] ^. lc.lane d.[mk_usize 2] l) (mk_u32 61) /\
+       r.[mk_usize 23] == rotl_spec (s.[mk_usize 23] ^. lc.lane d.[mk_usize 3] l) (mk_u32 56) /\
+       r.[mk_usize 24] == rotl_spec (s.[mk_usize 24] ^. lc.lane d.[mk_usize 4] l) (mk_u32 14))
+  = let ks0 = Libcrux_sha3.Generic_keccak.impl_2__rho_0_ v_N #v_T ks d in
+    let ks1 = Libcrux_sha3.Generic_keccak.impl_2__rho_1_ v_N #v_T ks0 d in
+    let ks2 = Libcrux_sha3.Generic_keccak.impl_2__rho_2_ v_N #v_T ks1 d in
+    let ks3 = Libcrux_sha3.Generic_keccak.impl_2__rho_3_ v_N #v_T ks2 d in
+    lemma_rho_unfold_generic v_N ks d;
+    lemma_rho_thru_3_extract_lane v_N lc ks d l;
+    lemma_rho_4_extract_lane v_N lc ks3 d l
 #pop-options
 
 (** Theta+Rho commutativity:
     extract_lane lc (rho(theta(ks))).f_st l == rho(theta(extract_lane lc ks.f_st l))
 
-    TODO: This is the most complex step — needs all 25 indices.
-    Start with sorry and fill in. *)
+    The cumulative [lemma_rho_thru_4_extract_lane] carries all 25 positions
+    of [impl_2__rho ks' d] in closed form. Combined with [lemma_theta_extract_lane]
+    (which shows [ks'.f_st == s] and [d_matches_spec]) and [lemma_rho_theta_spec]
+    (spec-side 25-position result with matching offsets), the goal reduces to
+    pointwise equality + [eq_intro]. *)
 
-#push-options "--z3rlimit 800"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 1600"
 let lemma_theta_rho_to_spec
       (v_N: usize) (#v_T: Type0)
       {| inst: Libcrux_sha3.Traits.t_KeccakItem v_T v_N |}
@@ -1077,29 +1271,14 @@ let lemma_theta_rho_to_spec
     let s = ks.f_st in
     let ks', d = impl_2__theta v_N #v_T ks in
     let state = extract_lane v_N lc s l in
-
-    (* Theta: ks' unchanged, d matches spec_d *)
     lemma_theta_extract_lane v_N lc ks l;
-
-    (* Rho: unfold chain, apply per-column extract_lane lemmas *)
-    lemma_rho_unfold_generic v_N ks' d;
-    let ks0 = impl_2__rho_0_ v_N #v_T ks' d in
-    lemma_rho_0_extract_lane v_N lc ks' d l;
-    let ks1 = impl_2__rho_1_ v_N #v_T ks0 d in
-    lemma_rho_1_extract_lane v_N lc ks0 d l;
-    let ks2 = impl_2__rho_2_ v_N #v_T ks1 d in
-    lemma_rho_2_extract_lane v_N lc ks1 d l;
-    let ks3 = impl_2__rho_3_ v_N #v_T ks2 d in
-    lemma_rho_3_extract_lane v_N lc ks2 d l;
-    let ks4 = impl_2__rho_4_ v_N #v_T ks3 d in
-    lemma_rho_4_extract_lane v_N lc ks3 d l;
-
-    (* Spec side + conclude *)
+    (* ks'.f_st == s, so extract_lane ks'.f_st l == state. *)
+    lemma_rho_thru_4_extract_lane v_N lc ks' d l;
     lemma_rho_theta_spec state;
     lemma_rotate_left_zero (state.[mk_usize 0] ^. spec_d state (mk_usize 0));
-    Rust_primitives.Arrays.eq_intro
-      (extract_lane v_N lc ks4.f_st l)
-      (Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state))
+    let lhs = extract_lane v_N lc (impl_2__rho v_N #v_T ks' d).f_st l in
+    let rhs = Hacspec_sha3.Keccak_f.rho (Hacspec_sha3.Keccak_f.theta state) in
+    Rust_primitives.Arrays.eq_intro lhs rhs
 #pop-options
 
 (** Pi extract_lane: states all 25 indices of pi result at u64 level.
@@ -1119,30 +1298,30 @@ let lemma_pi_extract_lane
                 (Libcrux_sha3.Generic_keccak.impl_2__pi v_N #v_T ks)
                   .Libcrux_sha3.Generic_keccak.f_st l in
        r.[mk_usize 0] == state.[mk_usize 0] /\
-       r.[mk_usize 1] == state.[mk_usize 15] /\
-       r.[mk_usize 2] == state.[mk_usize 5] /\
-       r.[mk_usize 3] == state.[mk_usize 20] /\
-       r.[mk_usize 4] == state.[mk_usize 10] /\
-       r.[mk_usize 5] == state.[mk_usize 6] /\
-       r.[mk_usize 6] == state.[mk_usize 21] /\
-       r.[mk_usize 7] == state.[mk_usize 11] /\
-       r.[mk_usize 8] == state.[mk_usize 1] /\
-       r.[mk_usize 9] == state.[mk_usize 16] /\
-       r.[mk_usize 10] == state.[mk_usize 12] /\
-       r.[mk_usize 11] == state.[mk_usize 2] /\
-       r.[mk_usize 12] == state.[mk_usize 17] /\
-       r.[mk_usize 13] == state.[mk_usize 7] /\
-       r.[mk_usize 14] == state.[mk_usize 22] /\
-       r.[mk_usize 15] == state.[mk_usize 18] /\
-       r.[mk_usize 16] == state.[mk_usize 8] /\
-       r.[mk_usize 17] == state.[mk_usize 23] /\
-       r.[mk_usize 18] == state.[mk_usize 13] /\
-       r.[mk_usize 19] == state.[mk_usize 3] /\
-       r.[mk_usize 20] == state.[mk_usize 24] /\
-       r.[mk_usize 21] == state.[mk_usize 14] /\
-       r.[mk_usize 22] == state.[mk_usize 4] /\
-       r.[mk_usize 23] == state.[mk_usize 19] /\
-       r.[mk_usize 24] == state.[mk_usize 9])
+       r.[mk_usize 1] == state.[mk_usize 6] /\
+       r.[mk_usize 2] == state.[mk_usize 12] /\
+       r.[mk_usize 3] == state.[mk_usize 18] /\
+       r.[mk_usize 4] == state.[mk_usize 24] /\
+       r.[mk_usize 5] == state.[mk_usize 3] /\
+       r.[mk_usize 6] == state.[mk_usize 9] /\
+       r.[mk_usize 7] == state.[mk_usize 10] /\
+       r.[mk_usize 8] == state.[mk_usize 16] /\
+       r.[mk_usize 9] == state.[mk_usize 22] /\
+       r.[mk_usize 10] == state.[mk_usize 1] /\
+       r.[mk_usize 11] == state.[mk_usize 7] /\
+       r.[mk_usize 12] == state.[mk_usize 13] /\
+       r.[mk_usize 13] == state.[mk_usize 19] /\
+       r.[mk_usize 14] == state.[mk_usize 20] /\
+       r.[mk_usize 15] == state.[mk_usize 4] /\
+       r.[mk_usize 16] == state.[mk_usize 5] /\
+       r.[mk_usize 17] == state.[mk_usize 11] /\
+       r.[mk_usize 18] == state.[mk_usize 17] /\
+       r.[mk_usize 19] == state.[mk_usize 23] /\
+       r.[mk_usize 20] == state.[mk_usize 2] /\
+       r.[mk_usize 21] == state.[mk_usize 8] /\
+       r.[mk_usize 22] == state.[mk_usize 14] /\
+       r.[mk_usize 23] == state.[mk_usize 15] /\
+       r.[mk_usize 24] == state.[mk_usize 21])
   = let open Libcrux_sha3.Generic_keccak in
     let old = ks in
     let ks0 = impl_2__pi_0_ v_N #v_T ks old in
@@ -1189,9 +1368,12 @@ let lemma_pi_to_spec
 
     Strategy:
       1. [ChiFold.lemma_chi_val_i] gives, for any flat index [k < 25]:
-           (impl_2__chi v_N #v_T ks).f_st.[k] == chi_inner_val ks (k%5) (k/5)
-         and [chi_inner_val] is a transparent [let] that unfolds to
-         [f_and_not_xor] of three indices.
+           (impl_2__chi v_N #v_T ks).f_st.[k] == chi_inner_val ks (k/5) (k%5)
+         Under the FIPS-native layout [get_ij(arr, i, j) = arr[5*i + j]],
+         flat index [k] corresponds to impl-[(i, j) = (k/5, k%5)] which
+         is FIPS [(y, x) = (k/5, k%5)], i.e. [x = k%5, y = k/5].
+         [chi_inner_val] is a transparent [let] that unfolds to
+         [f_and_not_xor] of three indices along the [x] axis at fixed [y].
       2. [lane_and_not_xor] (operation-level commutativity above) lifts
          that equality through [lc.lane].
       3. [logand_commutative] swaps `(b &. ~.c)` to `(~.c &. b)` to
@@ -1207,17 +1389,17 @@ let lemma_chi_extract_lane_aux
       (k: usize{v k < 25})
   : Lemma
       (let s = ks.Libcrux_sha3.Generic_keccak.f_st in
-       let i = k %! sz 5 in
-       let j = k /! sz 5 in
+       let i = k /! sz 5 in
+       let j = k %! sz 5 in
        lc.lane (Libcrux_sha3.Generic_keccak.impl_2__chi v_N #v_T ks)
                  .Libcrux_sha3.Generic_keccak.f_st.[k] l ==
          lc.lane s.[k] l ^.
-           ((~. (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 1) %! mk_usize 5)) +! i ] l)) &.
-             lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 2) %! mk_usize 5)) +! i ] l))
-  = let i = k %! sz 5 in
-    let j = k /! sz 5 in
+           ((~. (lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 1) %! mk_usize 5) ] l)) &.
+             lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 2) %! mk_usize 5) ] l))
+  = let i = k /! sz 5 in
+    let j = k %! sz 5 in
     let s = ks.Libcrux_sha3.Generic_keccak.f_st in
-    assert (k == sz 5 *! j +! i);
+    assert (k == sz 5 *! i +! j);
     ChiFold.lemma_chi_val_i v_N #v_T ks k;
     lane_and_not_xor v_N lc
       (ks.[ i, j <: (usize & usize) ] <: v_T)
@@ -1225,8 +1407,8 @@ let lemma_chi_extract_lane_aux
       (ks.[ i, ((j +! mk_usize 1) %! mk_usize 5) <: (usize & usize) ] <: v_T)
       l;
     logand_commutative
-      (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 2) %! mk_usize 5)) +! i ] l)
-      (~. (lc.lane s.[ (mk_usize 5 *! ((j +! mk_usize 1) %! mk_usize 5)) +! i ] l))
+      (lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 2) %! mk_usize 5) ] l)
+      (~. (lc.lane s.[ (mk_usize 5 *! i) +! ((j +! mk_usize 1) %! mk_usize 5) ] l))
 #pop-options
 
 (** Chi commutativity:
@@ -1521,7 +1703,7 @@ let rec lemma_keccakf_fold_local_is_rounds
             (j: usize{v j < 24}) : Libcrux_sha3.Generic_keccak.t_KeccakState v_N v_T =
         keccakf_body v_N self j
       in
-      Impl_Spec_Keccakf.lemma_fold_range_step i (mk_usize 24) inv ks f;
+      Proof_Utils.FoldRange.lemma_fold_range_step i (mk_usize 24) inv ks f;
       lemma_keccakf_fold_local_is_rounds v_N (f ks i) (i +! mk_usize 1)
     end
 #pop-options

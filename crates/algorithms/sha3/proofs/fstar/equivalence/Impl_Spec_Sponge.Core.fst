@@ -79,26 +79,18 @@ let lemma_shake_delim    (_:unit) : Lemma (mk_u8 31 == Hacspec_sha3.Sha3.v_SHAKE
 
 
 (* ================================================================
-   Phase 10: Lane Index Equivalence
+   Phase 10: Lane Index Equivalence (post FIPS-native layout flip)
 
-   The spec uses:
-     lane_index(l) = 5*(l%5) + l/5
-
-   The impl's load_block/store_block use:
-     set_ij(1, state, i/5, i%5)  which writes to  state[5*(i%5) + i/5]
-     get_ij(1, state, i/5, i%5)  which reads       state[5*(i%5) + i/5]
-
-   Both map lane l to flat index 5*(l%5) + l/5.  This is the same
-   (x,y) transposition from Phase 2 of Impl_Spec_Keccakf, just
-   expressed in terms of lane number: lane l has (y,x) = (l/5, l%5).
-
-   Proof: definitional — lane_index is defined as 5*(l%5) + l/5.
+   After the FIPS-native layout flip, [lane_index] was removed from
+   the spec (it collapsed to the identity). The impl writes lane [i]
+   at flat index [5*(i/5) + i%5 = i] under
+   [get_ij(N, state, i/5, i%5) = state[5*(i/5) + i%5]].
    ================================================================ *)
 
 let lemma_lane_index_is_impl_index (i: usize)
   : Lemma (requires v i < 25)
-          (ensures  Hacspec_sha3.Sponge.lane_index i ==
-                    (mk_usize 5 *! (i %! mk_usize 5 <: usize) <: usize) +!
-                    (i /! mk_usize 5 <: usize))
+          (ensures  i ==
+                    (mk_usize 5 *! (i /! mk_usize 5 <: usize) <: usize) +!
+                    (i %! mk_usize 5 <: usize))
   = ()
 

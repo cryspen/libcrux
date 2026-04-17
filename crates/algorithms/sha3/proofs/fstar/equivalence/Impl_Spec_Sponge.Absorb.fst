@@ -340,7 +340,7 @@ let rec xor_block_into_state_loop
   if i =. n then state
   else
     let lane = load_block_lane_val block (mk_usize 8 *! i) in
-    let idx = Hacspec_sha3.Sponge.lane_index i in
+    let idx = i in
     let state =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         state idx ((state.[idx]) ^. lane)
@@ -361,7 +361,7 @@ let xor_block_into_state_fold
   let inv (_: spec_state) (_: usize) : Type0 = True in
   let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
     let lane = load_block_lane_val block (mk_usize 8 *! j) in
-    let idx = Hacspec_sha3.Sponge.lane_index j in
+    let idx = j in
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
       st idx ((st.[idx]) ^. lane)
   in
@@ -386,7 +386,7 @@ let rec lemma_xor_block_into_state_fold_is_loop
     let inv (_: spec_state) (_: usize) : Type0 = True in
     let f (st: spec_state) (j: usize { v j < v n }) : spec_state =
       let lane = load_block_lane_val block (mk_usize 8 *! j) in
-      let idx = Hacspec_sha3.Sponge.lane_index j in
+      let idx = j in
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         st idx ((st.[idx]) ^. lane)
     in
@@ -410,8 +410,8 @@ let lemma_setget_xor_is_update_lane
         ==
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
           st
-          (Hacspec_sha3.Sponge.lane_index i)
-          ((st.[Hacspec_sha3.Sponge.lane_index i]) ^. lane))
+          (i)
+          ((st.[i]) ^. lane))
   =
   assert (i /! mk_usize 5 <. mk_usize 5);
   assert (i %! mk_usize 5 <. mk_usize 5);
@@ -426,7 +426,7 @@ let lemma_setget_xor_is_update_lane
       (i /! mk_usize 5)
       (i %! mk_usize 5)
     ==
-    st.[Hacspec_sha3.Sponge.lane_index i]
+    st.[i]
   )
 
 let lemma_load_block_lane_val_slice
@@ -484,8 +484,8 @@ let rec lemma_xor_block_loop_slice_is_direct
     let state' =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         state
-        (Hacspec_sha3.Sponge.lane_index i)
-        ((state.[Hacspec_sha3.Sponge.lane_index i]) ^.
+        (i)
+        ((state.[i]) ^.
          (load_block_lane_val block (mk_usize 8 *! i)))
     in
     lemma_xor_block_loop_slice_is_direct state' data start (i +! mk_usize 1) n
@@ -583,7 +583,7 @@ let rec lemma_xor_block_into_state_loop_prefix
     in
     lemma_load_block_lane_val_slice data (mk_usize 0) i n;
     let lane = load_block_lane_val data (mk_usize 8 *! i) in
-    let idx = Hacspec_sha3.Sponge.lane_index i in
+    let idx = i in
     let state' =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
         state

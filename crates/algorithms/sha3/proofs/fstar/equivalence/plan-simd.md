@@ -2,192 +2,168 @@
 
 ## Context
 
-`Impl_Spec_Keccakf.fst` (1262 lines) proves keccak_f equivalence for the portable backend (N=1, u64). We want to generalize it so that **any** KeccakItem implementation (NEON N=2, AVX2 N=4, future backends) gets the keccak_f proof for free, given ~7 lane-correctness hypotheses about its operations.
+`Impl_Spec_Keccakf.Generic.fst` proves keccak_f equivalence for **any** KeccakItem backend, given a 7-field `lane_correctness` record. The generic proof is complete and verified. Backend instantiations for Portable (N=1) and Arm64/NEON (N=2) are done. AVX2 (N=4) is deferred until extraction is available on an x86_64 host.
 
-The critical structural insight: the Generic_keccak step functions (`impl_2__theta`, `impl_2__rho_0_`-`rho_4_`, `impl_2__pi_0_`-`pi_4_`, `impl_2__chi`, `impl_2__iota`) are fully polymorphic -- they have the **same body** for all N/T, just dispatching through typeclass methods. The current `= ()` proofs for rho/pi lemmas work because of **array update semantics** (not u64-specific unfolding), so they should generalize to abstract `v_T`.
+## Status Summary
 
-## Architecture: `to_spec` Commutativity
+| Step | Status | Notes |
+|------|--------|-------|
+| Step 0: Rust cross-spec tests | **DONE** | 9 tests in `generic_keccak.rs::neon_to_spec_tests` |
+| Step 0.5: `arm64_extract.rs` lane specs | **DONE** | 9 types with `vec<W>_as_<T>x<N>` + `get_lane_<T>x<N>`, ~40 intrinsics with ensures |
+| Step 1: `lane_correctness` record | **DONE** | `Impl_Spec_Keccakf.Generic.fst:93-134` |
+| Step 2: `extract_lane` | **DONE** | `Impl_Spec_Keccakf.Generic.fst:140-148` |
+| Step 3: Generic impl-side lemmas | **DONE** | All `= ()` with abstract v_T |
+| Step 4: Per-step `to_spec` commutativity | **DONE** | theta, rho, pi, chi, iota — all verified |
+| Step 5: Full keccakf1600 composition | **DONE** | `lemma_keccakf1600_to_spec` at `Generic.fst:1635-1649` |
+| Step 6a: Portable instantiation | **DONE** | `Impl_Spec_Keccakf.Portable.fst` |
+| Step 6b: Arm64/NEON instantiation | **DONE** | `Impl_Spec_Keccakf.Arm64.fst` |
+| Step 6c: AVX2 instantiation | Deferred | No extraction on this host |
 
-The central idea is an explicit **`to_spec`** function that maps SIMD implementation state to N copies of scalar spec state:
+## Architecture: `extract_lane` Commutativity
+
+The central theorem in `Impl_Spec_Keccakf.Generic.fst`:
 
 ```fstar
-let to_spec (#v_T: Type0) (v_N: usize) {| inst: t_KeccakItem v_T v_N |}
+val lemma_keccakf1600_to_spec
+    (v_N: usize) (#v_T: Type0) {| inst: t_KeccakItem v_T v_N |}
     (lc: lane_correctness v_N #v_T)
-    (state: t_Array v_T (mk_usize 25))
-  : t_Array (t_Array u64 (mk_usize 25)) v_N =
-  Rust_primitives.Arrays.createi v_N (fun l ->
-    Rust_primitives.Arrays.createi (mk_usize 25) (fun i -> lc.lane state.[i] l))
+    (ks: t_KeccakState v_N v_T)
+    (l: nat{l < v v_N})
+  : Lemma (extract_lane v_N lc
+             (impl_2__keccakf1600 v_N #v_T ks).f_st l
+           == keccak_f (extract_lane v_N lc ks.f_st l))
 ```
-
-Then prove **commutativity** of `to_spec` with each step function:
-
-```fstar
-(to_spec lc (impl_step state)).[l] == spec_step ((to_spec lc state).[l])
-```
-
-**End-to-end**: By composing step-wise commutativity:
-```fstar
-to_spec lc (keccakf1600 v_N #v_T ks).f_st ==
-  map_array keccak_f (to_spec lc ks.f_st)
-```
-
-i.e., running impl keccakf1600 then extracting lanes = extracting lanes then running spec keccak_f on each.
 
 ## Step 0: Rust cross-spec tests (DONE)
 
 9 tests in `generic_keccak.rs::neon_to_spec_tests` empirically validate lane-wise commutativity for every step function and full keccakf1600 on NEON. All pass.
 
-## Step 0.5: Add u64x2 lane specs to `arm64_extract.rs`
+## Step 0.5: `arm64_extract.rs` comprehensive spec pass (DONE)
 
-**Pattern**: Follow `avx2_extract.rs` which uses `#[hax_lib::fstar::replace(interface, ...)]` on the `Vec256` struct to emit `vec256_as_i16x16` and `get_lane`, then uses `#[hax_lib::ensures(...)]` on intrinsic functions to add F* postconditions referencing the lane interpretation.
+### Type-level lane views (9 types)
 
-**File**: `crates/utils/intrinsics/src/arm64_extract.rs` (generates `Libcrux_intrinsics.Arm64_extract.fsti`)
+Each NEON type now has `vec<W>_as_<T>x<N>` (abstract `val`) and `get_lane_<T>x<N>` (concrete `let`) in its F* interface block:
 
-### 1. Extend `_uint64x2_t` struct annotation to emit lane interpretation
+| Rust type | Width | View | Lane getter |
+|-----------|-------|------|-------------|
+| `_uint16x4_t` | 64 | `vec64_as_u16x4` | `get_lane_u16x4` |
+| `_int16x4_t` | 64 | `vec64_as_i16x4` | `get_lane_i16x4` |
+| `_int16x8_t` | 128 | `vec128_as_i16x8` | `get_lane_i16x8` |
+| `_uint8x16_t` | 128 | `vec128_as_u8x16` | `get_lane_u8x16` |
+| `_uint16x8_t` | 128 | `vec128_as_u16x8` | `get_lane_u16x8` |
+| `_uint32x4_t` | 128 | `vec128_as_u32x4` | `get_lane_u32x4` |
+| `_int32x4_t` | 128 | `vec128_as_i32x4` | `get_lane_i32x4` |
+| `_uint64x2_t` | 128 | `vec128_as_u64x2` | `get_lane_u64x2` |
+| `_int64x2_t` | 128 | `vec128_as_i64x2` | `get_lane_i64x2` |
 
-Currently (line 44-47):
-```rust
-#[derive(Clone, Copy)]
-#[hax_lib::lean::replace("abbrev _uint64x2_t := BitVec 128")]
-#[hax_lib::fstar::replace(interface, "unfold type $:{_uint64x2_t} = bit_vec 128")]
-pub struct _uint64x2_t(u8);
-```
+### Intrinsic specs by category
 
-Change to:
-```rust
-#[derive(Clone, Copy)]
-#[hax_lib::lean::replace("abbrev _uint64x2_t := BitVec 128")]
-#[hax_lib::fstar::replace(interface, r#"
-unfold type $:{_uint64x2_t} = bit_vec 128
-val vec128_as_u64x2 (x: $:{_uint64x2_t}) : t_Array u64 (mk_usize 2)
-let get_lane64 (v: $:{_uint64x2_t}) (i:nat{i < 2}) = Seq.index (vec128_as_u64x2 v) i
-"#)]
-pub struct _uint64x2_t(u8);
-```
+All ensures use `forall`-over-lane form (no `Spec.Utils` dependency — the intrinsics .fsti is self-contained).
 
-### 2. Add `#[hax_lib::ensures]` on keccak-relevant intrinsics
+| Category | Count | Status | Examples |
+|----------|-------|--------|----------|
+| Broadcasts | 4 | **Done** | `_vdupq_n_u64`, `_vdupq_n_s16`, `_vdupq_n_u32`, `_vdupq_n_u16`, `_vdupq_n_u8` |
+| Element-wise arith | 3 | **Done** | `_vaddq_s16`, `_vsubq_s16`, `_vaddq_u32` |
+| Scalar-broadcast arith | 3 | **Done** | `_vmulq_n_s16`, `_vmulq_n_u16`, `_vmulq_n_u32` |
+| Element-wise multiply | 1 | **Done** | `_vmulq_s16` |
+| Bitwise logic | 5 | **Done** | `_vandq_s16`, `_vandq_u32`, `_vandq_u16`, `_vbicq_u64`, `_veorq_s16`, `_veorq_u64`, `_veorq_u8`, `_veorq_u32` |
+| Fused bitwise (Keccak) | 3 | **Done** | `_veor3q_u64`, `_vbcaxq_u64`, `_vrax1q_u64` |
+| Keccak XOR-rotate | 1 | **Done** | `_vxarq_u64` |
+| Comparisons | 2 | **Done** | `_vcgeq_s16`, `_vcleq_s16` |
+| Loads | 4 | **Done** | `_vld1q_u64` (requires+ensures), `_vld1q_s16`, `_vld1q_u8`, `_vld1q_u16`, `_vld1q_u32`; `_vld1q_bytes`/`_vld1q_bytes_u64` (requires-only or l_True) |
+| Stores | 4 | **Done** | `_vst1q_s16`, `_vst1q_u64`, `_vst1q_bytes_u64`, `_vst1q_u8`, `_vst1q_bytes` (length-only) |
+| Reinterprets (identity) | 16 | **Done** | `$result == $a` for all 128-bit type casts |
+| Permutations (TRN) | 8 | **Done** | `_vtrn1q_s16/s32/s64/u64`, `_vtrn2q_s16/s32/s64/u64` |
+| Lane slicing | 3 | **Done** | `_vget_low_s16`, `_vget_low_u16`, `_vget_high_u16` |
+| Widening multiplies | 4 | **Done** | `_vmull_s16`, `_vmull_high_s16`, `_vmlal_s16`, `_vmlal_high_s16` |
+| Table lookup | 1 | **Done** | `_vqtbl1q_u8` |
+| Horizontal reductions | 3 | **Done** | `_vaddv_u16`, `_vaddvq_s16`, `_vaddvq_u16` (explicit sums) |
+| Constant shifts | 7 | **Deferred** | Need `requires` for `>>!`/`<<!` subtyping |
+| Parameterized-index | 2 | **Deferred** | `_vdupq_laneq_u32`, `_vextq_u32` — need `requires` for index |
+| Saturating multiply-high | 3 | **Deferred** | `_vqdmulhq_n_s16`, `_vqdmulhq_s16`, `_vqdmulhq_n_s32` |
+| Variable shifts | 2 | **Deferred** | `_vshlq_s16`, `_vshlq_u16` |
+| Shift-left-and-insert | 2 | **Deferred** | `_vsliq_n_s32`, `_vsliq_n_s64` |
+| AES | 2 | **Out of scope** | `_vaesmcq_u8`, `_vaeseq_u8` |
+| Carryless multiply | 1 | **Out of scope** | `_vmull_p64` |
 
-**`_vdupq_n_u64`** (broadcast scalar to both lanes):
-```rust
-#[hax_lib::ensures(|result| fstar!("vec128_as_u64x2 $result == Seq.create 2 $i"))]
-pub fn _vdupq_n_u64(i: u64) -> _uint64x2_t { ... }
-```
+### Deferred items: what's needed
 
-**`_veorq_u64`** (lane-wise XOR):
-```rust
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == (get_lane64 $mask i ^. get_lane64 $shifted i)"))]
-pub fn _veorq_u64(mask: _uint64x2_t, shifted: _uint64x2_t) -> _uint64x2_t { ... }
-```
+The constant-shift and parameterized-index intrinsics need `requires` clauses constraining the const generic parameter (e.g., `SHIFT_BY >= 0 /\ SHIFT_BY < 16` for `_vshrq_n_s16`). Without this, F*'s `>>!` operator fails a subtyping check. These intrinsics are not used by SHA-3 (only by ml-kem NEON, which is excluded from extraction).
 
-**`_veor3q_u64`** (lane-wise triple XOR):
-```rust
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == ((get_lane64 $a i ^. get_lane64 $b i) ^. get_lane64 $c i)"))]
-pub fn _veor3q_u64(a: _uint64x2_t, b: _uint64x2_t, c: _uint64x2_t) -> _uint64x2_t { ... }
-```
+## Step 1: `lane_correctness` record (DONE)
 
-**`_vrax1q_u64`** (lane-wise: a[i] XOR rotate_left(b[i], 1)):
-```rust
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == (get_lane64 $a i ^. Core_models.Num.impl_u64__rotate_left (get_lane64 $b i) (mk_u32 1))"))]
-pub fn _vrax1q_u64(a: _uint64x2_t, b: _uint64x2_t) -> _uint64x2_t { ... }
-```
-
-**`_vxarq_u64`** (lane-wise: rotate_left(a[i] XOR b[i], LEFT)):
-```rust
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == Core_models.Num.impl_u64__rotate_left (get_lane64 $a i ^. get_lane64 $b i) (cast ${LEFT} <: u32)"))]
-pub fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: _uint64x2_t, b: _uint64x2_t) -> _uint64x2_t { ... }
-```
-
-**`_vbcaxq_u64`** (lane-wise: a[i] XOR (b[i] AND NOT c[i])):
-```rust
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == (get_lane64 $a i ^. (get_lane64 $b i &. (~. (get_lane64 $c i))))"))]
-pub fn _vbcaxq_u64(a: _uint64x2_t, b: _uint64x2_t, c: _uint64x2_t) -> _uint64x2_t { ... }
-```
-
-**`_vld1q_u64`** (load 2 u64s into lanes):
-```rust
-#[hax_lib::requires(array.len() >= 2)]
-#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane64 $result i == Seq.index $array i"))]
-pub fn _vld1q_u64(array: &[u64]) -> _uint64x2_t { ... }
-```
-
-**`_vst1q_u64`** (store lanes to u64 slice) — already has length postcondition, extend:
-```rust
-#[hax_lib::ensures(|()| fstar!("future($out).len() == $out.len() /\\ (forall (i:nat{i < 2}). i < Seq.length (future $out) ==> Seq.index (future $out) i == get_lane64 $v i)"))]
-pub fn _vst1q_u64(out: &mut [u64], v: _uint64x2_t) { ... }
-```
-
-### Connection to Step 6 (NEON instantiation)
-
-The `Impl_Spec_Keccakf_Neon.fst` instantiation file will:
-- Define `neon_lane (v: t_e_uint64x2_t) (l: nat{l < 2}) : u64 = get_lane64 v l`
-- Prove each `lc_*` hypothesis from the postconditions emitted by hax from the annotations above
-- These proofs should be short (1-3 lines each), just unfolding the KeccakItem methods and applying the intrinsic specs
-
-**No additional assume vals needed in the proof files** -- all assumptions are localized in `arm64_extract.rs` → `Arm64_extract.fsti`.
-
-## Step 1: Define lane-correctness specification
+Defined at `Impl_Spec_Keccakf.Generic.fst:93-134`:
 
 ```fstar
-noeq type lane_correctness (v_N: usize) (#v_T: Type0) 
+noeq type lane_correctness (v_N: usize) (#v_T: Type0)
     {| inst: t_KeccakItem v_T v_N |} = {
   lane: v_T -> l:nat{l < v v_N} -> u64;
-  lc_zero:                 ... lane (f_zero ()) l == mk_u64 0
-  lc_xor5:                 ... lane (f_xor5 a b c d e) l == (((lane a l ^. lane b l) ^. lane c l) ^. lane d l) ^. lane e l
-  lc_rotate_left1_and_xor: ... lane (f_rotate_left1_and_xor a b) l == lane a l ^. rotate_left (lane b l) 1
-  lc_xor_and_rotate:       ... lane (f_xor_and_rotate L R a b) l == rotate_left (lane a l ^. lane b l) L
-  lc_and_not_xor:          ... lane (f_and_not_xor a b c) l == lane a l ^. ((~.(lane b l)) &. lane c l)
-  lc_xor_constant:         ... lane (f_xor_constant a c) l == lane a l ^. c
-  lc_xor:                  ... lane (f_xor a b) l == lane a l ^. lane b l
+  lc_zero: ...;
+  lc_xor5: ...;
+  lc_rotate_left1_and_xor: ...;
+  lc_xor_and_rotate: ...;
+  lc_and_not_xor: ...;
+  lc_xor_constant: ...;
+  lc_xor: ...;
 }
 ```
 
-## Step 2: Define `to_spec` / `extract_lane`
+Note: `lc_and_not_xor` uses argument order `a ^. (b &. (~. c))` matching the NEON `vbcaxq` instruction directly.
+
+## Step 2: `extract_lane` (DONE)
 
 ```fstar
-let extract_lane v_N lc (state: t_Array v_T 25) (l: nat{l < v v_N}) : t_Array u64 25 =
-  Rust_primitives.Arrays.createi 25 (fun i -> lc.lane state.[i] l)
+[@"opaque_to_smt"]
+let extract_lane (v_N: usize) (#v_T: Type0) {| inst: t_KeccakItem v_T v_N |}
+    (lc: lane_correctness v_N #v_T)
+    (state: t_Array v_T (mk_usize 25))
+    (l: nat{l < v v_N})
+  : t_Array u64 (mk_usize 25) =
+  Rust_primitives.Arrays.createi (mk_usize 25) (fun i -> lc.lane state.[i] l)
 ```
 
-## Step 3: Generic impl-side lemmas (abstract v_T)
+## Steps 3-5: Generic proof (DONE)
 
-Generalize existing `lemma_rho_0_` etc. to state results in terms of abstract KeccakItem operations (not concrete u64). Should still be `= ()` since they depend only on array update semantics.
+The full generic proof is 1649 lines in `Impl_Spec_Keccakf.Generic.fst`. Key architectural decisions:
+- `opaque_to_smt` on `extract_lane` with explicit `reveal_opaque` + `lemma_extract_lane_index` for controlled unfolding
+- Per-step extract_lane lemmas for theta, rho, pi, chi, iota
+- Chi uses `ChiFold` module for the fold_range reduction
+- `SpecRounds` module bridges fuel-25 spec evaluation
+- 24-round composition via `fold_range` induction
 
-## Step 4: Per-step `to_spec` commutativity
+## Step 6a: Portable instantiation (DONE)
 
-For each step, prove: `extract_lane lc (impl_step state) l == spec_step (extract_lane lc state l)`
+`Impl_Spec_Keccakf.Portable.fst` (156 lines):
+- `portable_lane (x: u64) (l: nat{l < 1}) : u64 = x`
+- All 7 `lc_*` fields are `= ()`
+- `lemma_extract_lane_portable_identity`: proves `extract_lane` is the identity at N=1
+- Main theorem collapses to: `keccakf1600 ks == keccak_f ks` (no extract_lane wrapper)
 
-- **Theta+Rho**: Uses lc_xor5, lc_rotate_left1_and_xor, lc_xor_and_rotate, lc_xor
-- **Pi**: Pure permutation, no lane-correctness needed
-- **Chi**: Uses lc_and_not_xor (+ logand_commutative for spec comparison)
-- **Iota**: Uses lc_xor_constant
+## Step 6b: Arm64/NEON instantiation (DONE)
 
-## Step 5: Compose into full keccakf1600 commutativity
-
-Chain per-step commutativity into one-round, then induction over 24 rounds.
-
-## Step 6: Instantiate for each backend
-
-- **Portable (N=1, u64)**: lane(x, 0) = x. All lc_* are `= ()`.
-- **NEON (N=2, uint64x2_t)**: lane = neon_lane (assume val). lc_* proved from ~7 NEON intrinsic assumptions.
-- **AVX2 (N=4, Vec256)**: lane = avx2_lane (assume val). Extra: rotate_left decomposition lemma.
+`Impl_Spec_Keccakf.Arm64.fst` (151 lines):
+- `arm64_lane (v: t_e_uint64x2_t) (l: nat{l < 2}) : u64 = get_lane_u64x2 v l`
+- All 7 `lc_*` fields are `= ()` — the `forall`-over-lane ensures clauses on the intrinsics supply the proof obligations directly
+- Main theorem: per-lane commutativity for N=2
 
 ## Files
 
-| File | Action |
+| File | Status |
 |------|--------|
-| `generic_keccak.rs` | Tests added (Step 0 -- DONE) |
-| `intrinsics/src/arm64_extract.rs` | Add `vec128_as_u64x2`/`get_lane64` to struct, `#[hax_lib::ensures]` on 7 intrinsics → generates `Arm64_extract.fsti` |
-| `Impl_Spec_Keccakf.fst` | Generalize to parametric v_N/v_T |
-| `Impl_Spec_Keccakf_Portable.fst` | New: portable instantiation |
-| `Impl_Spec_Keccakf_Neon.fst` | New: NEON instantiation (uses Arm64_extract specs) |
-| `Impl_Spec_Keccakf_Avx2.fst` | New (when extraction available) |
-| `Makefile` | Add new roots |
+| `generic_keccak.rs` | Tests added (Step 0 — DONE) |
+| `intrinsics/src/arm64_extract.rs` | 9 type views + ~40 ensures (DONE) |
+| `intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Arm64_extract.fsti` | Regenerated (DONE) |
+| `equivalence/Impl_Spec_Keccakf.Generic.fst` | Generic proof (DONE) |
+| `equivalence/Impl_Spec_Keccakf.ChiFold.fst` | Chi fold helper (DONE) |
+| `equivalence/Impl_Spec_Keccakf.SpecRounds.fst` | Spec bridge (DONE) |
+| `equivalence/Impl_Spec_Keccakf.Portable.fst` | Portable instantiation (DONE) |
+| `equivalence/Impl_Spec_Keccakf.Arm64.fst` | Arm64 instantiation (DONE) |
+| `equivalence/Makefile` | All roots added (DONE) |
+| `equivalence/Impl_Spec_Keccakf.fst` | Old monolithic proof — kept for sponge compat |
 
-## Scalability: `opaque_to_smt`
+## Follow-ups (not in scope of this plan)
 
-After proving a lemma for a function, mark it `@["opaque_to_smt"]`. In lemmas that need to see inside, use `reveal_opaque`. Apply bottom-up as layers are proved.
-
-## Risks
-
-- **Will `= ()` work with abstract v_T?** Array update semantics are type-independent, so it should. Fallback: explicit `assert` hints.
-- **Typeclass resolution**: Should work with explicit `{| inst |}` parameter.
+- **Sponge generalization**: Generalize `Impl_Spec_Sponge.*` (Core/Absorb/Squeeze/Keccak) to arbitrary `v_N` on top of `Impl_Spec_Keccakf.Generic`. Once done, the old monolithic `Impl_Spec_Keccakf.fst` can be deleted.
+- **AVX2 instantiation**: `Impl_Spec_Keccakf.Avx2.fst` when extraction lands on x86_64.
+- **Constant-shift specs**: Add `requires` constraints and re-enable ensures for `_vshrq_n_*`, `_vshlq_n_*`.
+- **AES / poly-mul specs**: Pair with F* reference implementations.

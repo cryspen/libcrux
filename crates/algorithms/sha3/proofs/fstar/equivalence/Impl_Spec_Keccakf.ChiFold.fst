@@ -9,10 +9,15 @@ module Impl_Spec_Keccakf.ChiFold
 
     This module establishes the per-position equality
 
-      (impl_2__chi v_N #v_T ks).f_st.[k] == chi_inner_val ks (k%5) (k/5)
+      (impl_2__chi v_N #v_T ks).f_st.[k] == chi_inner_val ks (k/5) (k%5)
 
-    via a loop-invariant proof on a named [chi_unrolled] form, and
-    bridges the two via a fuel-6 [fold_range] unroll.
+    Under the FIPS-native layout [get_ij(arr, i, j) = arr[5*i + j]],
+    flat index [k] corresponds to [(i, j) = (k/5, k%5)] (impl-side
+    [(i, j)] is FIPS [(y, x)]).
+
+    The equality is proved via a loop-invariant argument on a named
+    [chi_unrolled] form, bridged to [impl_2__chi] by a fuel-6
+    [fold_range] unroll.
 
     The single export [lemma_chi_val_i] is consumed by
     [Impl_Spec_Keccakf.Generic.lemma_chi_extract_lane] together with a
@@ -166,15 +171,15 @@ let lemma_chi_val_i
       (ks: t_KeccakState v_N v_T)
       (k: usize{v k < 25})
   : Lemma ((impl_2__chi v_N #v_T ks).f_st.[ k <: usize ] ==
-           chi_inner_val ks (k %! sz 5) (k /! sz 5))
-  = let i = k %! sz 5 in
-    let j = k /! sz 5 in
-    assert (v i = v k % 5);
-    assert (v j = v k / 5);
+           chi_inner_val ks (k /! sz 5) (k %! sz 5))
+  = let i = k /! sz 5 in
+    let j = k %! sz 5 in
+    assert (v i = v k / 5);
+    assert (v j = v k % 5);
     assert (v i < 5);
     assert (v j < 5);
-    assert (v k == 5 * v j + v i);
-    assert (k == sz 5 *! j +! i);
+    assert (v k == 5 * v i + v j);
+    assert (k == sz 5 *! i +! j);
     let s = chi_unrolled #v_N #v_T ks in
     lemma_chi_outer_unfolds_generic v_N ks;
     assert (chi_outer_inv ks s (sz 5));

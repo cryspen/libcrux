@@ -6,21 +6,15 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 ROOTS = \
 	Proof_Utils.Lemmas.fst \
 	Proof_Utils.NatFold.fst \
+	Proof_Utils.FoldRange.fst \
+	Impl_Spec_Keccakf.ChiFold.fst \
 	Impl_Spec_Keccakf.Generic.fst \
 	Impl_Spec_Keccakf.Portable.fst \
 	Impl_Spec_Keccakf.Arm64.fst \
 	Impl_Spec_Sponge.Generic.Core.fst \
 	Impl_Spec_Sponge.Generic.Absorb.fst \
 	Impl_Spec_Sponge.Generic.Squeeze.fst \
-	Impl_Spec_Sponge.Generic.Keccak.fst
-
-# Equivalence proofs that were written against the old
-# `state[5*x + y]` layout and are invalidated by the switch to the
-# FIPS-native `state[5*y + x]` layout (see `get_ij` in `traits.rs`).
-# They need to be re-proved against the new layout before being moved
-# back into ROOTS.
-PORTABLE_ROOTS = \
-	Impl_Spec_Keccakf.ChiFold.fst \
+	Impl_Spec_Sponge.Generic.Keccak.fst \
 	Impl_Spec_Keccakf.SpecRounds.fst \
 	Impl_Spec_Keccakf.fst \
 	Impl_Spec_Sponge.Core.fst \

@@ -121,7 +121,7 @@ let rec squeeze_state_spec_loop
   =
   if i =. n then out
   else
-    let idx: usize = Hacspec_sha3.Sponge.lane_index i in
+    let idx: usize = i in
     let bytes: t_Array u8 (mk_usize 8) =
       Core_models.Num.impl_u64__to_le_bytes (s.[ idx ] <: u64)
     in
@@ -166,7 +166,7 @@ let rec lemma_store_loop_equiv
     (* By definition of get_ij (arr.[5*j + i]),
        get_ij 1 s (i/5) (i%5) = s.[5*(i%5) + i/5] = s.[lane_index i]. *)
     let bytes: t_Array u8 (mk_usize 8) =
-      Core_models.Num.impl_u64__to_le_bytes (s.[ Hacspec_sha3.Sponge.lane_index i ] <: u64)
+      Core_models.Num.impl_u64__to_le_bytes (s.[ i ] <: u64)
     in
     let out_pos: usize = start +! (mk_usize 8 *! i) in
     let end_ : usize = out_pos +! mk_usize 8 in
@@ -237,7 +237,7 @@ let squeeze_state_spec_remainder
   =
   let octets: usize = len /! mk_usize 8 in
   let remaining: usize = len %! mk_usize 8 in
-  let idx: usize = Hacspec_sha3.Sponge.lane_index octets in
+  let idx: usize = octets in
   let bytes: t_Array u8 (mk_usize 8) =
     Core_models.Num.impl_u64__to_le_bytes (s.[ idx ] <: u64)
   in
@@ -277,9 +277,10 @@ let lemma_remainder_fns_equiv
   let remaining: usize = len %! mk_usize 8 in
   assert (v octets < 25);
   lemma_lane_index_is_impl_index octets;
-  (* Byte equality: get_ij 1 s (octets/5) (octets%5) = s.[lane_index octets]. *)
-  assert (v (Hacspec_sha3.Sponge.lane_index octets) ==
-          5 * v (octets %! mk_usize 5) + v (octets /! mk_usize 5));
+  (* Byte equality: under FIPS-native layout,
+     get_ij 1 s (octets/5) (octets%5) = s.[5*(octets/5) + octets%5] = s.[octets]. *)
+  assert (v octets ==
+          5 * v (octets /! mk_usize 5) + v (octets %! mk_usize 5));
   (* Position equality: (start+len)-remaining = start + 8*octets. *)
   let pos_impl: usize = (start +! len) -! remaining in
   let pos_spec: usize = start +! (mk_usize 8 *! octets) in
