@@ -170,6 +170,16 @@ pub fn _vld1q_s16(array: &[i16]) -> _int16x8_t {
 
 #[inline(always)]
 #[hax_lib::lean::replace_body("sorry")]
+#[hax_lib::requires(array.len() >= 16)]
+#[hax_lib::ensures(|result| fstar!(
+    "forall (i:nat{i < 2}). get_lane_u64x2 $result i == \
+     Core_models.Num.impl_u64__from_le_bytes \
+       (Core_models.Result.impl__unwrap #(t_Array u8 (mk_usize 8)) \
+                                        #Core_models.Array.t_TryFromSliceError \
+          (Core_models.Convert.f_try_into #(t_Slice u8) \
+                                          #(t_Array u8 (mk_usize 8)) \
+                                          #FStar.Tactics.Typeclasses.solve \
+             (Seq.slice $array (8*i) (8*i + 8))))"))]
 pub fn _vld1q_bytes_u64(array: &[u8]) -> _uint64x2_t {
     unimplemented!()
 }

@@ -24,23 +24,11 @@ pub fn xor_block_into_state(state: State, block: &[u8], rate: usize) -> State {
 /// Extract `len` bytes from the rate portion of the state (little-endian, lane-interleaved).
 ///
 /// Corresponds to `Trunc_r(S)` in Algorithm 8.
-#[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(len <= 200 && output.len() >= len && out_offset <= output.len() - len)]
 #[hax_lib::ensures(|_| future(output).len() == output.len())]
 pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize) {
-    let _orig_len = output.len();
-    let full_lanes = len / 8;
-    for i in 0..full_lanes {
-        hax_lib::loop_invariant!(|i: usize| output.len() == _orig_len);
-        let bytes = state[i].to_le_bytes();
-        output[out_offset + 8 * i..out_offset + 8 * (i + 1)].copy_from_slice(&bytes);
-    }
-    let remaining = len % 8;
-    if remaining > 0 {
-        let bytes = state[full_lanes].to_le_bytes();
-        let pos = out_offset + 8 * full_lanes;
-        output[pos..pos + remaining].copy_from_slice(&bytes[..remaining]);
-    }
+    let bytes: [u8; 200] = createi(|i| state[i / 8].to_le_bytes()[i % 8]);
+    output[out_offset..out_offset + len].copy_from_slice(&bytes[..len]);
 }
 
 /// Absorb one full block: XOR it into the state, then apply Keccak-f.

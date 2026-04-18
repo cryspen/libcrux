@@ -20,9 +20,9 @@ function extract_all() {
     extract crates/algorithms/sha3 \
         into -i "+**" \
         -i "-**::avx2::**" \
+        -i "-**::simd256::**" \
         -i "-**::neon::**" \
         -i "-**::simd128::**" \
-        -i "-**::simd256::**" \
         fstar --z3rlimit 80
 
     patch_fstar_extractions
