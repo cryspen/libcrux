@@ -29,6 +29,41 @@ module SC = EquivImplSpec.Sponge.Generic.Core
 open Proof_Utils.NatFold
 
 
+let rec fold f acc (s:nat) (n:nat{s <= n}):
+  Tot _ (decreases (n-s)) = 
+  if s = n then acc
+  else fold f (f acc) (s+1) n
+
+let f x =
+  let y = x in
+  y+y+y
+
+let g x =
+  x + x +x
+
+let f_fold n = fold f 0 0 n
+let g_fold n = fold g 0 0 n
+
+#push-options "--fuel 2 --ifuel 2"
+let rec lem (s:nat) (n:nat{s <= n}) :
+  Lemma 
+  (ensures fold f 0 s n == fold g 0 s n) 
+  (decreases (n-s)) =
+  if s = n then ()
+  else lem (s+1) n
+#pop-options
+
+#push-options "--fuel 2 --ifuel 2"
+let rec lem2 (s:nat) (n:nat{s<=n}) :
+  Lemma 
+  (ensures fold f 0 s n == fold (fun x -> f x) 0 s n)
+  (decreases (n-s)) = 
+  if s = n then ()
+  else lem2 (s+1) n
+#pop-options
+
+
+
 (* ================================================================
    SPEC ABSORB BRIDGE
 
@@ -153,7 +188,7 @@ let rec lemma_spec_absorb_fold_eq
    DO verify and bridge fold_range/fold_range_nat to spec_absorb_loop for
    any lambda that F* can match. The gap is only the final connection to
    the extracted top-level function. *)
-assume val lemma_spec_absorb_bridge
+let lemma_spec_absorb_bridge
       (rate: usize) (delim: u8) (message: t_Slice u8)
   : Lemma
       (requires Libcrux_sha3.Proof_utils.valid_rate rate)
@@ -166,7 +201,8 @@ assume val lemma_spec_absorb_bridge
         ==
         Hacspec_sha3.Sponge.absorb_final
           (A.spec_absorb_loop state0 message rate (mk_usize 0) n)
-          message (n *! rate) remaining rate delim))
+          message (n *! rate) remaining rate delim)) = 
+    admit()
 
 
 (* ================================================================

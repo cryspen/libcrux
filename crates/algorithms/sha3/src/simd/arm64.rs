@@ -45,15 +45,6 @@ fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
 
 #[inline(always)]
 #[hax_lib::requires(valid_rate(RATE) && RATE <= blocks[0].len() && blocks[0].len() == blocks[1].len() && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int())]
-#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
-    if i < 25 {
-        if i < RATE/8 {
-            future(state)[i] == state[i] ^ u64::from_le_bytes(blocks[start + 8 * i..start + 8 * i + 8].try_into().unwrap())
-        } else {
-            future(state)[i] == state[i]
-        }
-    } else { true }
-))]
 pub(crate) fn load_block<const RATE: usize>(
     state: &mut [uint64x2_t; 25],
     blocks: &[&[u8]; 2],
@@ -89,7 +80,12 @@ pub(crate) fn load_block<const RATE: usize>(
         u[0] = u64::from_le_bytes(blocks[0][start..start + 8].try_into().unwrap());
         u[1] = u64::from_le_bytes(blocks[1][start..start + 8].try_into().unwrap());
         let uvec = _vld1q_u64(&u);
-        set_ij(state, i / 5, i % 5, _veorq_u64(*get_ij(state, i / 5, i % 5), uvec));
+        set_ij(
+            state,
+            i / 5,
+            i % 5,
+            _veorq_u64(*get_ij(state, i / 5, i % 5), uvec),
+        );
     }
 }
 

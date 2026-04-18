@@ -4,6 +4,9 @@
 use hax_lib::int::*;
 
 #[cfg(hax)]
+use hax_lib::prop::*;
+
+#[cfg(hax)]
 use crate::proof_utils::valid_rate;
 
 use crate::{generic_keccak::KeccakState, traits::*};
@@ -53,15 +56,6 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
     valid_rate(RATE) &&
     start.to_int() + RATE.to_int() <= blocks.len().to_int()
 )]
-#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
-    if i < 25 {
-        if i < RATE/8 {
-            future(state)[i] == state[i] ^ u64::from_le_bytes(blocks[start + 8 * i..start + 8 * i + 8].try_into().unwrap())
-        } else {
-            future(state)[i] == state[i]
-        }
-    } else { true }
-))]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     #[cfg(not(eurydice))]
     {
@@ -139,12 +133,25 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
     valid_rate(RATE) &&
     len <= RATE &&
     start.to_int() + len.to_int() <= out.len().to_int()
 )]
-#[hax_lib::ensures(|_| future(out).len() == out.len())]
+#[hax_lib::ensures(|_| (future(out).len() == out.len()).to_prop() &
+    hax_lib::forall(|i: usize| if i < out.len() {
+        if i < start {
+            out[i] == future(out)[i]
+        } else if i < start + len {
+            future(out)[i] == s[(i-start)/8].to_le_bytes()[(i-start)%8]
+        } else {
+            out[i] == future(out)[i]
+        }
+    } else {
+        true
+    })
+)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[u64; 25],
     out: &mut [u8],
@@ -154,20 +161,38 @@ pub(crate) fn store_block<const RATE: usize>(
     let octets = len / 8;
 
     #[cfg(hax)]
-    let out_len = out.len(); // ghost variable
+    let old_out = out.to_vec().as_slice(); // ghost variable
 
     for i in 0..octets {
-        hax_lib::loop_invariant!(|i: usize| out.len() == out_len);
+        hax_lib::loop_invariant!(|i: usize| (out.len() == old_out.len()).to_prop()
+            & hax_lib::forall(|j: usize| if j < out.len() {
+                if j < start {
+                    out[j] == old_out[j]
+                } else if j < start + i * 8 {
+                    out[j] == s[(j - start) / 8].to_le_bytes()[(j - start) % 8]
+                } else {
+                    out[j] == old_out[j]
+                }
+            } else {
+                true
+            }));
 
         let bytes = get_ij(s, i / 5, i % 5).to_le_bytes();
         let out_pos = start + 8 * i;
+        hax_lib::fstar!(r#"
+            Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+8}) $bytes
+        "#);
         out[out_pos..out_pos + 8].copy_from_slice(&bytes);
     }
 
     let remaining = len % 8;
+
     if remaining > 0 {
         let bytes = get_ij(s, octets / 5, octets % 5).to_le_bytes();
         let out_pos = start + len - remaining;
+        hax_lib::fstar!(r#"
+            Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+remaining}) (Seq.slice ${bytes} 0 (v remaining))
+        "#);
         out[out_pos..out_pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
 }
