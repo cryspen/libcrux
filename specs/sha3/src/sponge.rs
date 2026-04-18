@@ -4,19 +4,21 @@
 /// With the state stored as `state[5·y + x]` (FIPS 202 §3.1.2), byte-lane
 /// `l` lives directly at `state[l]`, so no lane-index permutation is
 /// needed here.
+use crate::createi;
 use crate::keccak_f::{keccak_f, State};
 
 /// XOR a block of message bytes into the state (little-endian, lane-interleaved).
 ///
 /// Corresponds to the `S ⊕ (Pi || 0^c)` step of Algorithm 8.
 #[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() >= rate)]
-pub fn xor_block_into_state(mut state: State, block: &[u8], rate: usize) -> State {
-    for i in 0..(rate / 8) {
-        let offset = 8 * i;
-        let lane_val = u64::from_le_bytes(block[offset..offset + 8].try_into().unwrap());
-        state[i] ^= lane_val;
-    }
-    state
+pub fn xor_block_into_state(state: State, block: &[u8], rate: usize) -> State {
+    createi(|i| {
+        if i < rate / 8 {
+            state[i] ^ u64::from_le_bytes(block[8 * i..8 * i + 8].try_into().unwrap())
+        } else {
+            state[i]
+        }
+    })
 }
 
 /// Extract `len` bytes from the rate portion of the state (little-endian, lane-interleaved).

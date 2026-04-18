@@ -53,6 +53,15 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
     valid_rate(RATE) &&
     start.to_int() + RATE.to_int() <= blocks.len().to_int()
 )]
+#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
+    if i < 25 {
+        if i < RATE/8 {
+            future(state)[i] == state[i] ^ u64::from_le_bytes(blocks[start + 8 * i..start + 8 * i + 8].try_into().unwrap())
+        } else {
+            future(state)[i] == state[i]
+        }
+    } else { true }
+))]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     #[cfg(not(eurydice))]
     {
@@ -67,12 +76,36 @@ pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8]
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..RATE / 8 {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| if j < RATE / 8 {
+            if j < i {
+                state_flat[j]
+                    == u64::from_le_bytes(
+                        blocks[start + 8 * j..start + 8 * j + 8].try_into().unwrap(),
+                    )
+            } else {
+                state_flat[j] == 0
+            }
+        } else {
+            true
+        }));
         let offset = start + 8 * i;
         state_flat[i] = u64::from_le_bytes(blocks[offset..offset + 8].try_into().unwrap());
     }
 
+    #[cfg(hax)]
+    let _old_state = *state; // ghost variable
+
     #[allow(clippy::needless_range_loop)]
     for i in 0..RATE / 8 {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| if j < 25 {
+            if j < i {
+                state[j] == _old_state[j] ^ state_flat[j]
+            } else {
+                state[j] == _old_state[j]
+            }
+        } else {
+            true
+        }));
         set_ij(
             state,
             i / 5,
