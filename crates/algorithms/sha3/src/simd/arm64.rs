@@ -2,6 +2,9 @@
 use hax_lib::int::ToInt;
 
 #[cfg(hax)]
+use hax_lib::prop::*;
+
+#[cfg(hax)]
 use crate::proof_utils::valid_rate;
 
 use libcrux_intrinsics::arm64::*;
@@ -44,15 +47,59 @@ fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
 }
 
 #[inline(always)]
-#[hax_lib::requires(valid_rate(RATE) && RATE <= blocks[0].len() && blocks[0].len() == blocks[1].len() && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int())]
+#[hax_lib::fstar::options("--z3rlimit 1000 --split_queries no")]
+#[hax_lib::requires(valid_rate(RATE)
+            && blocks[0].len() == blocks[1].len()
+            && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int()
+)]
+#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
+    if i < 25 {
+        if i < RATE / 8 {
+            get_lane_u64(future(state)[i], 0)
+                == get_lane_u64(state[i], 0)
+                   ^ u64::from_le_bytes(blocks[0][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+            && get_lane_u64(future(state)[i], 1)
+                == get_lane_u64(state[i], 1)
+                   ^ u64::from_le_bytes(blocks[1][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+        } else {
+            get_lane_u64(future(state)[i], 0) == get_lane_u64(state[i], 0)
+            && get_lane_u64(future(state)[i], 1) == get_lane_u64(state[i], 1)
+        }
+    } else { true }
+))]
 pub(crate) fn load_block<const RATE: usize>(
     state: &mut [uint64x2_t; 25],
     blocks: &[&[u8]; 2],
     offset: usize,
 ) {
-    #[cfg(not(eurydice))]
-    debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && blocks[0].len() == blocks[1].len());
+    #[cfg(hax)]
+    let old_state = *state; // ghost variable
+
     for i in 0..RATE / 16 {
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| if j < RATE / 16 {
+            if j < 2 * i {
+                get_lane_u64(state[j], 0)
+                    == get_lane_u64(old_state[j], 0)
+                        ^ u64::from_le_bytes(
+                            blocks[0][offset + 8 * j..offset + 8 * j + 8]
+                                .try_into()
+                                .unwrap(),
+                        )
+                    && get_lane_u64(state[j], 1)
+                        == get_lane_u64(old_state[j], 1)
+                            ^ u64::from_le_bytes(
+                                blocks[1][offset + 8 * j..offset + 8 * j + 8]
+                                    .try_into()
+                                    .unwrap(),
+                            )
+            } else {
+                get_lane_u64(state[j], 0) == get_lane_u64(old_state[j], 0)
+                    && get_lane_u64(state[j], 1) == get_lane_u64(old_state[j], 1)
+            }
+        } else {
+            true
+        }));
+        hax_lib::assert!(RATE <= 200 && i < RATE / 16);
         let start = offset + 16 * i;
         let v0 = _vld1q_bytes_u64(&blocks[0][start..start + 16]);
         let v1 = _vld1q_bytes_u64(&blocks[1][start..start + 16]);
@@ -73,7 +120,9 @@ pub(crate) fn load_block<const RATE: usize>(
             _veorq_u64(*get_ij(state, i1, j1), _vtrn2q_u64(v0, v1)),
         );
     }
-    if RATE % 16 != 0 {
+    hax_lib::fstar!("admit()");
+    let remaining = RATE % 16;
+    if remaining > 0 {
         let i = RATE / 8 - 1;
         let mut u = [0u64; 2];
         let start = offset + RATE - 8;
@@ -114,8 +163,33 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(valid_rate(RATE) && len <= RATE && start.to_int() + len.to_int() <= out0.len().to_int() && out0.len() == out1.len())]
-#[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
+#[hax_lib::ensures(|_| (future(out0).len() == out0.len()).to_prop()
+    & (future(out1).len() == out1.len()).to_prop()
+    & hax_lib::forall(|i: usize| if i < out0.len() {
+        if i < start {
+            out0[i] == future(out0)[i]
+        } else if i < start + len {
+            future(out0)[i] == get_lane_u64(s[(i - start) / 8], 0).to_le_bytes()[(i - start) % 8]
+        } else {
+            out0[i] == future(out0)[i]
+        }
+    } else {
+        true
+    })
+    & hax_lib::forall(|i: usize| if i < out1.len() {
+        if i < start {
+            out1[i] == future(out1)[i]
+        } else if i < start + len {
+            future(out1)[i] == get_lane_u64(s[(i - start) / 8], 1).to_le_bytes()[(i - start) % 8]
+        } else {
+            out1[i] == future(out1)[i]
+        }
+    } else {
+        true
+    })
+)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[uint64x2_t; 25],
     out0: &mut [u8],
@@ -127,12 +201,36 @@ pub(crate) fn store_block<const RATE: usize>(
     debug_assert!(len <= RATE && start + len <= out0.len() && out0.len() == out1.len());
 
     #[cfg(hax)]
-    let out0_len = out0.len();
+    let old_out0 = out0.to_vec().as_slice(); // ghost variable
     #[cfg(hax)]
-    let out1_len = out1.len();
+    let old_out1 = out1.to_vec().as_slice(); // ghost variable
+    hax_lib::fstar!("admit()");
 
     for i in 0..len / 16 {
-        hax_lib::loop_invariant!(|i: usize| out0.len() == out0_len && out1.len() == out1_len);
+        hax_lib::loop_invariant!(|i: usize| (out0.len() == old_out0.len()).to_prop()
+            & (out1.len() == old_out1.len()).to_prop()
+            & hax_lib::forall(|j: usize| if j < out0.len() {
+                if j < start {
+                    out0[j] == old_out0[j]
+                } else if j < start + i * 16 {
+                    out0[j] == get_lane_u64(s[(j - start) / 8], 0).to_le_bytes()[(j - start) % 8]
+                } else {
+                    out0[j] == old_out0[j]
+                }
+            } else {
+                true
+            })
+            & hax_lib::forall(|j: usize| if j < out1.len() {
+                if j < start {
+                    out1[j] == old_out1[j]
+                } else if j < start + i * 16 {
+                    out1[j] == get_lane_u64(s[(j - start) / 8], 1).to_le_bytes()[(j - start) % 8]
+                } else {
+                    out1[j] == old_out1[j]
+                }
+            } else {
+                true
+            }));
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;
         let i1 = (2 * i + 1) / 5;

@@ -200,6 +200,14 @@ pub fn _vst1q_u64(out: &mut [u64], v: _uint64x2_t) {
 }
 
 #[inline(always)]
+#[hax_lib::lean::replace_body("sorry")]
+#[hax_lib::requires(lane < 2)]
+#[hax_lib::ensures(|result| fstar!("$result == get_lane_u64x2 $vec (v $lane)"))]
+pub fn get_lane_u64(vec: _uint64x2_t, lane: usize) -> u64 {
+    unimplemented!()
+}
+
+#[inline(always)]
 #[hax_lib::ensures(|()| future(out).len() == out.len())]
 #[hax_lib::lean::replace_body("()")]
 pub fn _vst1q_bytes_u64(out: &mut [u8], v: _uint64x2_t) {

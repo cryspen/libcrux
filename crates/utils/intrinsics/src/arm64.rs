@@ -52,6 +52,13 @@ pub fn _vst1q_u64(out: &mut [u64], v: uint64x2_t) {
 }
 
 #[inline(always)]
+pub fn get_lane_u64(vec: uint64x2_t, lane: usize) -> u64 {
+    let mut tmp = [0u64; 2];
+    _vst1q_u64(&mut tmp, vec);
+    tmp[lane]
+}
+
+#[inline(always)]
 pub fn _vst1q_bytes_u64(out: &mut [u8], v: uint64x2_t) {
     unsafe { vst1q_u64(out.as_mut_ptr() as *mut u64, v) }
 }

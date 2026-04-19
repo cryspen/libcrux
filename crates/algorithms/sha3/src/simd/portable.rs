@@ -56,6 +56,15 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
     valid_rate(RATE) &&
     start.to_int() + RATE.to_int() <= blocks.len().to_int()
 )]
+#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
+      if i < 25 {
+          if i < RATE/8 {
+              future(state)[i] == state[i] ^ u64::from_le_bytes(blocks[start + 8 * i..start + 8 * i + 8].try_into().unwrap())
+          } else {
+              future(state)[i] == state[i]
+          }
+      } else { true }
+  ))]
 pub(crate) fn load_block<const RATE: usize>(state: &mut [u64; 25], blocks: &[u8], start: usize) {
     #[cfg(not(eurydice))]
     {
