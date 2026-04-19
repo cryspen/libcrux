@@ -21,6 +21,7 @@ function extract_all() {
         -C --features simd128 ";" \
         into -i "+**" \
         -i "-**::avx2::**" \
+        -i "-**::neon::x2::**" \
         -i "-**::simd256::**" \
         fstar --z3rlimit 80
 

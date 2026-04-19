@@ -81,6 +81,43 @@ let lemma_absorb_tail_split_seq
 #pop-options
 
 
+(** One spec-level step of [absorb_rec]: given that [ks_st']
+    is the block-absorption of [ks_st] on [input.[k*rate..(k+1)*rate]],
+    conclude that [absorb_rec] applied to the two tails commute.
+
+    This is extracted into a standalone helper so the slice-identity
+    reasoning runs in a clean context, separate from the aux helper's
+    heavy [fold_range] state. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_absorb_rec_step
+      (ks_st ks_st': t_Array u64 (mk_usize 25))
+      (rate: usize) (delim: u8)
+      (input: t_Slice u8)
+      (k: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v k * v rate + v rate <= Seq.length #u8 input /\
+        ks_st' == Hacspec_sha3.Sponge.absorb_block ks_st
+                    (input.[ { Core_models.Ops.Range.f_start = k *! rate;
+                               Core_models.Ops.Range.f_end   = (k +! mk_usize 1) *! rate } <:
+                             Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
+                    rate)
+      (ensures (
+        let tail_k  : t_Slice u8 =
+          input.[ { Core_models.Ops.Range.f_start = k *! rate } <:
+                  Core_models.Ops.Range.t_RangeFrom usize ] in
+        let tail_k1 : t_Slice u8 =
+          input.[ { Core_models.Ops.Range.f_start = (k +! mk_usize 1) *! rate } <:
+                  Core_models.Ops.Range.t_RangeFrom usize ] in
+        Hacspec_sha3.Sponge.absorb_rec ks_st  rate delim tail_k ==
+        Hacspec_sha3.Sponge.absorb_rec ks_st' rate delim tail_k1))
+  = let kr   = v (k *! rate) in
+    let slen = Seq.length #u8 input in
+    lemma_absorb_tail_split_seq input kr slen (v rate)
+#pop-options
+
+
 (** Recursive induction helper for [lemma_absorb_portable].
 
     For any partial state [ks] and index [k] in [0..input_blocks], the
@@ -201,10 +238,14 @@ let rec lemma_absorb_portable_aux
     let k1 : usize = k +! mk_usize 1 in
     assert (v k1 <= v input_blocks);
     lemma_absorb_portable_aux rate delim input input_blocks input_rem k1 ks';
-    (* TODO: close the slice-identity bridge.  [lemma_absorb_tail_split]
-       packages the two [Seq.equal] facts but Z3 times out discharging
-       either call order in this heavy context (and placing it before
-       the fold_range_step triggers a Z3 internal assertion bug). *)
+    (* Slice-identity bridge: absorb_rec on the suffix from [k*rate]
+       unfolds one step to absorb_rec on the suffix from [(k+1)*rate]
+       after an absorb_block.  The helper [lemma_absorb_rec_step]
+       encodes this, but invoking it in the aux's heavy fold_range
+       context triggers a Z3 LP-solver internal-assertion bug
+       (lar_solver.cpp:1066) on fresh hint generation.  Setting
+       [--z3refresh] works around the bug per-query but is too slow
+       to complete the recursive proof within make's timeout. *)
     admit ()
   end
 #pop-options
