@@ -181,8 +181,8 @@ noeq type sponge_correctness
   (* ----- load_last: absorb the final partial block with padding ----- *)
 
   (* Per-lane: after f_load_last, the extracted lane equals
-     xor_block_into_state(state_l, pad_last_block(input_l, start, len, rate, delim), rate)
-  *)
+     xor_block_into_state(state_l, pad_last_block(input_l, start, len, rate, delim)[0..rate], rate)
+     The [0..rate] slice matches the spec-side [absorb_final]'s call shape. *)
   sc_load_last:
     (rate: usize) ->
     (delim: u8) ->
@@ -214,7 +214,9 @@ noeq type sponge_correctness
         ==
         Hacspec_sha3.Sponge.xor_block_into_state
           (G.extract_lane v_N lc state l)
-          (padded <: t_Slice u8)
+          (padded.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                      Core_models.Ops.Range.f_end   = rate } <:
+                    Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
           rate));
 
 

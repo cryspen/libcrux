@@ -26,8 +26,6 @@ open Core_models
 module G  = EquivImplSpec.Keccakf.Generic
 module P  = EquivImplSpec.Keccakf.Portable
 module SC = EquivImplSpec.Sponge.Generic.Core
-module A  = EquivImplSpec.Sponge.Generic.Absorb
-module S  = EquivImplSpec.Sponge.Generic.Squeeze
 
 (* Bring Portable typeclass instances into scope. *)
 let _ =
@@ -157,7 +155,7 @@ let lemma_load_block_eq_xor_block_into_state
 #pop-options
 
 (* Helper: [load_last] = [load_block] on [pad_last_block]. *)
-#push-options "--z3rlimit 500 --fuel 1 --ifuel 1"
+#push-options "--z3rlimit 200 --split_queries always"
 let lemma_load_last_equals_load_block_on_padded
       (rate: usize)
       (delim: u8)
@@ -174,10 +172,12 @@ let lemma_load_last_equals_load_block_on_padded
         Libcrux_sha3.Simd.Portable.load_last rate delim state blocks start len
         ==
         Libcrux_sha3.Simd.Portable.load_block rate state
-          ((Hacspec_sha3.Sponge.pad_last_block blocks start len rate delim)
-             <: t_Slice u8)
+          (Seq.slice 
+            ((Hacspec_sha3.Sponge.pad_last_block blocks start len rate delim)
+             <: t_Slice u8) 0 (v rate))
           (mk_usize 0))
-  = let copy_src : t_Slice u8 =
+  = 
+    let copy_src : t_Slice u8 =
       blocks.[ { Core_models.Ops.Range.f_start = start;
                  Core_models.Ops.Range.f_end   = start +! len } <:
                Core_models.Ops.Range.t_Range usize ] in
@@ -192,6 +192,11 @@ let lemma_load_last_equals_load_block_on_padded
                     Core_models.Ops.Range.f_end   = len } <:
                   Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
             copy_src <: t_Slice u8) in
+    Proof_Utils.Lemmas.lemma_index_update_at_range b0 
+      ({ Core_models.Ops.Range.f_start = mk_usize 0;
+           Core_models.Ops.Range.f_end   = len } <:
+         Core_models.Ops.Range.t_Range usize)
+      copy_src;
     let b2 : t_Array u8 rate =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize b1 len delim in
     let b3 : t_Array u8 rate =
@@ -201,76 +206,44 @@ let lemma_load_last_equals_load_block_on_padded
     let s0 : t_Array u8 (mk_usize 200) =
       Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 200) in
     let s1 : t_Array u8 (mk_usize 200) =
-      Rust_primitives.Hax.Monomorphized_update_at.update_at_range_to s0
-        ({ Core_models.Ops.Range.f_end = len } <:
-         Core_models.Ops.Range.t_RangeTo usize)
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_range s0
+        ({ Core_models.Ops.Range.f_start = mk_usize 0;
+           Core_models.Ops.Range.f_end   = len } <:
+         Core_models.Ops.Range.t_Range usize)
         (Core_models.Slice.impl__copy_from_slice #u8
             (s0.[ { Core_models.Ops.Range.f_end = len } <:
                   Core_models.Ops.Range.t_RangeTo usize ] <: t_Slice u8)
             copy_src <: t_Slice u8) in
+    Proof_Utils.Lemmas.lemma_index_update_at_range s0 
+      ({ Core_models.Ops.Range.f_start = mk_usize 0;
+           Core_models.Ops.Range.f_end   = len } <:
+         Core_models.Ops.Range.t_Range usize)
+      copy_src;
     let s2 : t_Array u8 (mk_usize 200) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 len delim in
     let s3 : t_Array u8 (mk_usize 200) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2
         (rate -! mk_usize 1 <: usize)
         ((s2.[ rate -! mk_usize 1 <: usize ] <: u8) |. mk_u8 128 <: u8) in
-    assert (Seq.slice (b1 <: Seq.seq u8) 0 (v len) == copy_src);
-    assert (Seq.slice (b1 <: Seq.seq u8) (v len) (v rate)
-            == Seq.slice (b0 <: Seq.seq u8) (v len) (v rate));
-    assert (Seq.slice (s1 <: Seq.seq u8) 0 (v len) == copy_src);
-    assert (Seq.slice (s1 <: Seq.seq u8) (v len) 200
-            == Seq.slice (s0 <: Seq.seq u8) (v len) 200);
-    assert (forall (k: nat). k < v rate ==> Seq.index (b0 <: Seq.seq u8) k == mk_u8 0);
-    assert (forall (k: nat). k < 200 ==> Seq.index (s0 <: Seq.seq u8) k == mk_u8 0);
-    let b1_s1_byte_eq (m: nat{m < v rate})
-      : Lemma (Seq.index (b1 <: Seq.seq u8) m == Seq.index (s1 <: Seq.seq u8) m)
-      = if m < v len then begin
-          Seq.lemma_index_slice (b1 <: Seq.seq u8) 0 (v len) m;
-          Seq.lemma_index_slice (s1 <: Seq.seq u8) 0 (v len) m
-        end
-        else begin
-          Seq.lemma_index_slice (b1 <: Seq.seq u8) (v len) (v rate) (m - v len);
-          Seq.lemma_index_slice (s1 <: Seq.seq u8) (v len) 200 (m - v len);
-          Seq.lemma_index_slice (b0 <: Seq.seq u8) (v len) (v rate) (m - v len);
-          Seq.lemma_index_slice (s0 <: Seq.seq u8) (v len) 200 (m - v len)
-        end
-    in
-    Classical.forall_intro b1_s1_byte_eq;
+    let s4 : t_Slice u8 = Seq.slice s3 0 (v rate) in
     let b3_s3_byte_eq (m: nat{m < v rate})
       : Lemma (Seq.index (b3 <: Seq.seq u8) m == Seq.index (s3 <: Seq.seq u8) m)
       = () in
     Classical.forall_intro b3_s3_byte_eq;
+    Rust_primitives.Arrays.eq_intro b3 s4;
     let impl_out = Libcrux_sha3.Simd.Portable.load_block rate state
                      (b3 <: t_Slice u8) (mk_usize 0) in
     let spec_out = Libcrux_sha3.Simd.Portable.load_block rate state
-                     (s3 <: t_Slice u8) (mk_usize 0) in
-    let lane_eq (i: nat{i < 25})
-      : Lemma (Seq.index impl_out i == Seq.index spec_out i)
-      = if v (mk_usize i) < v (rate /! mk_usize 8 <: usize) then begin
-          let impl_slice : t_Slice u8 =
-            (b3 <: t_Slice u8).[ {
-              Core_models.Ops.Range.f_start =
-                (mk_usize 0) +! (mk_usize 8 *! (mk_usize i) <: usize);
-              Core_models.Ops.Range.f_end   =
-                ((mk_usize 0) +! (mk_usize 8 *! (mk_usize i) <: usize) <: usize)
-                +! mk_usize 8
-            } <: Core_models.Ops.Range.t_Range usize ] in
-          let spec_slice : t_Slice u8 =
-            (s3 <: t_Slice u8).[ {
-              Core_models.Ops.Range.f_start =
-                (mk_usize 0) +! (mk_usize 8 *! (mk_usize i) <: usize);
-              Core_models.Ops.Range.f_end   =
-                ((mk_usize 0) +! (mk_usize 8 *! (mk_usize i) <: usize) <: usize)
-                +! mk_usize 8
-            } <: Core_models.Ops.Range.t_Range usize ] in
-          assert (Seq.equal impl_slice spec_slice)
-        end
-    in
-    Classical.forall_intro lane_eq;
-    Rust_primitives.Arrays.eq_intro impl_out spec_out
+                     (s4 <: t_Slice u8) (mk_usize 0) in
+    assert (Libcrux_sha3.Simd.Portable.load_last rate delim state blocks start len ==
+            impl_out);
+    assert(b3 == s4)
 #pop-options
 
-(* Compose: [load_last] ≡ [xor_block_into_state] on [pad_last_block]. *)
+(* Compose: [load_last] ≡ [xor_block_into_state] on [pad_last_block[0..rate]].
+   The [0..rate] slice matches [sc_load_last]'s sliced-buffer contract,
+   which in turn matches the spec's [absorb_final] calling
+   [absorb_block state padded[0..rate] rate]. *)
 #push-options "--z3rlimit 400"
 let lemma_load_last_eq_xor_block_into_state_padded
       (rate: usize)
@@ -284,44 +257,67 @@ let lemma_load_last_eq_xor_block_into_state_padded
         Libcrux_sha3.Proof_utils.valid_rate rate /\
         v len < v rate /\
         v start + v len <= Seq.length #u8 blocks)
-      (ensures
+      (ensures (
+        let padded : t_Array u8 (mk_usize 200) =
+          Hacspec_sha3.Sponge.pad_last_block blocks start len rate delim in
         Libcrux_sha3.Simd.Portable.load_last rate delim state blocks start len
         ==
         Hacspec_sha3.Sponge.xor_block_into_state state
-          ((Hacspec_sha3.Sponge.pad_last_block blocks start len rate delim)
-             <: t_Slice u8)
-          rate)
+          (padded.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                      Core_models.Ops.Range.f_end   = rate } <:
+                    Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
+          rate))
   = let spec_buffer : t_Array u8 (mk_usize 200) =
       Hacspec_sha3.Sponge.pad_last_block blocks start len rate delim in
-    let full : t_Slice u8 = spec_buffer in
-    lemma_load_last_equals_load_block_on_padded rate delim state blocks start len;
-    lemma_load_block_eq_xor_block_into_state rate state full (mk_usize 0);
     let prefix : t_Slice u8 =
-      full.[ { Core_models.Ops.Range.f_start = mk_usize 0;
-               Core_models.Ops.Range.f_end   = (mk_usize 0) +! rate } <:
-             Core_models.Ops.Range.t_Range usize ] in
-    let r_prefix = Hacspec_sha3.Sponge.xor_block_into_state state prefix rate in
-    let r_full   = Hacspec_sha3.Sponge.xor_block_into_state state full rate in
-    let lane_eq (i: nat{i < 25}) : Lemma (Seq.index r_prefix i == Seq.index r_full i) =
-      let ii = mk_usize i in
-      if v ii < v (rate /! mk_usize 8 <: usize)
-      then begin
-        let lhs : t_Slice u8 =
-          prefix.[ { Core_models.Ops.Range.f_start = mk_usize 8 *! ii;
-                     Core_models.Ops.Range.f_end   =
-                       (mk_usize 8 *! ii <: usize) +! mk_usize 8 } <:
-                   Core_models.Ops.Range.t_Range usize ] in
-        let rhs : t_Slice u8 =
-          full.[ { Core_models.Ops.Range.f_start = mk_usize 8 *! ii;
-                   Core_models.Ops.Range.f_end   =
-                     (mk_usize 8 *! ii <: usize) +! mk_usize 8 } <:
-                 Core_models.Ops.Range.t_Range usize ] in
-        assert (Seq.equal lhs rhs)
-      end
-    in
-    Classical.forall_intro lane_eq;
-    Rust_primitives.Arrays.eq_intro r_prefix r_full
+      spec_buffer.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                      Core_models.Ops.Range.f_end   = rate } <:
+                    Core_models.Ops.Range.t_Range usize ] in
+    (* lemma_load_last_equals_load_block_on_padded's ensures is already
+       stated in terms of [Seq.slice padded 0 (v rate)] — which is the
+       same underlying Seq.seq as [prefix]. Bridge through xor_block_into_state. *)
+    lemma_load_last_equals_load_block_on_padded rate delim state blocks start len;
+    lemma_load_block_eq_xor_block_into_state rate state prefix (mk_usize 0)
 #pop-options
+
+
+(* Core pointwise equivalence: [store_block] ≡ [squeeze_state].
+
+   Both sides are characterized pointwise:
+   - [store_block]'s Rust-level ensures gives the three-way case split
+     (below [start] / in range / above [start+len]) per output byte.
+   - [squeeze_state] is [update_at_range] on a [createi]-built source:
+     [Proof_Utils.Lemmas.lemma_index_update_at_range] + the [createi_lemma]
+     SMTPat reduce it to the same three-way pointwise form. *)
+#push-options "--z3rlimit 300"
+let lemma_store_block_eq_squeeze_state
+      (rate: usize)
+      (state: t_Array u64 (mk_usize 25))
+      (out: t_Slice u8)
+      (start: usize)
+      (len: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v len <= v rate /\
+        v start + v len <= Seq.length #u8 out)
+      (ensures
+        Libcrux_sha3.Simd.Portable.store_block rate state out start len
+        ==
+        Hacspec_sha3.Sponge.squeeze_state state out start len)
+  = let impl_out =
+      Libcrux_sha3.Simd.Portable.store_block rate state out start len in
+    let spec_out =
+      Hacspec_sha3.Sponge.squeeze_state state out start len in
+    let aux (i:nat{i < Seq.length out}):
+      Lemma(Seq.index impl_out i == Seq.index spec_out i) = 
+      let sz_i = sz i in
+      assert (v sz_i < Seq.length out);
+      assert(Seq.index impl_out (v sz_i) == Seq.index spec_out (v sz_i))
+    in
+    Classical.forall_intro aux;
+    Rust_primitives.Arrays.eq_intro impl_out spec_out
+#pop-options 
 
 
 (* ================================================================
@@ -410,7 +406,9 @@ let portable_sc_load_last
         ==
         Hacspec_sha3.Sponge.xor_block_into_state
           (G.extract_lane (mk_usize 1) P.lc_portable state l)
-          (padded <: t_Slice u8)
+          (padded.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                      Core_models.Ops.Range.f_end   = rate } <:
+                    Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
           rate))
   = let input0 = inputs.[ mk_usize 0 ] in
     lemma_load_last_eq_xor_block_into_state_padded
@@ -448,7 +446,9 @@ let portable_sc_store_block
           (outputs.[ mk_usize l ] <: t_Slice u8)
           start
           len)
-  = admit ()
+  = let out0 = outputs.[ mk_usize 0 ] in
+    lemma_store_block_eq_squeeze_state rate state out0 start len;
+    P.lemma_extract_lane_portable_identity state
 
 (* ================================================================
    Assemble the [sponge_correctness] record for Portable.

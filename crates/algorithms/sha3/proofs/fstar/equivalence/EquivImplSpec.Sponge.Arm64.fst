@@ -25,8 +25,6 @@ open Core_models
 module G  = EquivImplSpec.Keccakf.Generic
 module KA = EquivImplSpec.Keccakf.Arm64
 module SC = EquivImplSpec.Sponge.Generic.Core
-module A  = EquivImplSpec.Sponge.Generic.Absorb
-module S  = EquivImplSpec.Sponge.Generic.Squeeze
 module I  = Libcrux_intrinsics.Arm64_extract
 
 (* Bring Arm64 typeclass instances into scope. *)
@@ -147,7 +145,9 @@ let arm64_sc_load_last
         ==
         Hacspec_sha3.Sponge.xor_block_into_state
           (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
-          (padded <: t_Slice u8)
+          (padded.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                      Core_models.Ops.Range.f_end   = rate } <:
+                    Core_models.Ops.Range.t_Range usize ] <: t_Slice u8)
           rate))
   = admit ()
 

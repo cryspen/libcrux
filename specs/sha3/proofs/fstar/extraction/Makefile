@@ -1,4 +1,4 @@
-FSTAR_INCLUDE_DIRS_EXTRA += 
+FSTAR_INCLUDE_DIRS_EXTRA += ../../../../../crates/algorithms/sha3/proofs/fstar/equivalence
 
 # Only verify spec + equivalence files in this directory.
 # Implementation files (Libcrux_sha3.*) are verified from crates/algorithms/sha3.

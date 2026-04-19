@@ -7,6 +7,11 @@
 use crate::createi;
 use crate::keccak_f::{keccak_f, State};
 
+#[cfg(hax)]
+use hax_lib::prop::*;
+#[cfg(hax)]
+use hax_lib::int::*;
+
 /// XOR a block of message bytes into the state (little-endian, lane-interleaved).
 ///
 /// Corresponds to the `S ⊕ (Pi || 0^c)` step of Algorithm 8.
@@ -25,16 +30,30 @@ pub fn xor_block_into_state(state: State, block: &[u8], rate: usize) -> State {
 ///
 /// Corresponds to `Trunc_r(S)` in Algorithm 8.
 #[hax_lib::requires(len <= 200 && output.len() >= len && out_offset <= output.len() - len)]
-#[hax_lib::ensures(|_| future(output).len() == output.len())]
+#[hax_lib::ensures(|_| (future(output).len() == output.len()).to_prop() &
+	hax_lib::forall(|i:usize| 
+		if i < output.len() {
+		   if i < out_offset {
+ 			future(output)[i] == output[i]
+		   } else if i < out_offset + len {
+			future(output)[i] == state[(i - out_offset) / 8].to_le_bytes()[(i - out_offset) % 8]
+		   } else {
+			future(output)[i] == output[i]
+		   }
+		} else {true}))]
 pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize) {
     let bytes: [u8; 200] = createi(|i| state[i / 8].to_le_bytes()[i % 8]);
-    output[out_offset..out_offset + len].copy_from_slice(&bytes[..len]);
+    hax_lib::fstar!(r#"
+	 Proof_Utils.Lemmas.lemma_index_update_at_range output
+	 	(${out_offset..out_offset+len}) (Seq.slice bytes 0 (v len))
+    "#);
+    output[out_offset..out_offset + len].copy_from_slice(&bytes[0..len]);
 }
 
 /// Absorb one full block: XOR it into the state, then apply Keccak-f.
 ///
 /// Corresponds to one iteration of the absorb loop in Algorithm 8 (step 6).
-#[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() >= rate)]
+#[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() == rate)]
 pub fn absorb_block(state: State, block: &[u8], rate: usize) -> State {
     let state = xor_block_into_state(state, block, rate);
     keccak_f(state)
@@ -55,7 +74,7 @@ pub fn pad_last_block(
     delim: u8,
 ) -> [u8; 200] {
     let mut buffer = [0u8; 200];
-    buffer[..remaining].copy_from_slice(&message[msg_offset..msg_offset + remaining]);
+    buffer[0..remaining].copy_from_slice(&message[msg_offset..msg_offset + remaining]);
     buffer[remaining] = delim;
     buffer[rate - 1] = buffer[rate - 1] | 0x80;
     buffer
@@ -77,7 +96,25 @@ pub fn absorb_final(
     delim: u8,
 ) -> State {
     let block = pad_last_block(message, msg_offset, remaining, rate, delim);
-    absorb_block(state, &block, rate)
+    absorb_block(state, &block[0..rate], rate)
+}
+
+/// Recursively absorb the remaining bytes of `message`: peel off one full
+/// `rate`-byte block, XOR it into the state, apply Keccak-f, then recurse on
+/// the tail slice. Once fewer than `rate` bytes remain, pad and absorb the
+/// partial final block.
+///
+/// This recursive form is chosen so the extracted F* definition lines up
+/// block-for-block with the libcrux impl's absorb loop.
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0)]
+#[hax_lib::decreases(message.len().to_int())]
+pub fn absorb_rec(state: State, rate: usize, delim: u8, message: &[u8]) -> State {
+    if message.len() < rate {
+        absorb_final(state, message, 0, message.len(), rate, delim)
+    } else {
+        let state = absorb_block(state, &message[0..rate], rate);
+        absorb_rec(state, rate, delim, &message[rate..])
+    }
 }
 
 /// Absorb phase of the Keccak sponge (FIPS 202, Algorithm 8, step 6 combined
@@ -90,25 +127,7 @@ pub fn absorb_final(
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0)]
 pub fn absorb(rate: usize, delim: u8, message: &[u8]) -> State {
-    let mut state: State = [0u64; 25];
-
-    // --- Absorb full blocks (Algorithm 8, step 6) ---
-    let num_full_blocks = message.len() / rate;
-    for _block_idx in 0..num_full_blocks {
-        let offset = _block_idx * rate;
-        state = absorb_block(state, &message[offset..offset + rate], rate);
-    }
-
-    // --- Pad and absorb final block (Algorithm 9: pad10*1) ---
-    let remaining = message.len() - num_full_blocks * rate;
-    absorb_final(
-        state,
-        message,
-        num_full_blocks * rate,
-        remaining,
-        rate,
-        delim,
-    )
+    absorb_rec([0u64; 25], rate, delim, message)
 }
 
 /// Squeeze phase of the Keccak sponge (FIPS 202, Algorithm 8, steps 8–9).

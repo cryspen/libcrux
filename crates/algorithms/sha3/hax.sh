@@ -18,11 +18,10 @@ function extract_all() {
         fstar --z3rlimit 80
     
     extract crates/algorithms/sha3 \
+        -C --features simd128 ";" \
         into -i "+**" \
         -i "-**::avx2::**" \
         -i "-**::simd256::**" \
-        -i "-**::neon::**" \
-        -i "-**::simd128::**" \
         fstar --z3rlimit 80
 
     patch_fstar_extractions

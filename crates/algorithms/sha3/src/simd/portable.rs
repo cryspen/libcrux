@@ -179,9 +179,11 @@ pub(crate) fn store_block<const RATE: usize>(
 
         let bytes = get_ij(s, i / 5, i % 5).to_le_bytes();
         let out_pos = start + 8 * i;
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+8}) $bytes
-        "#);
+        "#
+        );
         out[out_pos..out_pos + 8].copy_from_slice(&bytes);
     }
 
@@ -190,9 +192,11 @@ pub(crate) fn store_block<const RATE: usize>(
     if remaining > 0 {
         let bytes = get_ij(s, octets / 5, octets % 5).to_le_bytes();
         let out_pos = start + len - remaining;
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+remaining}) (Seq.slice ${bytes} 0 (v remaining))
-        "#);
+        "#
+        );
         out[out_pos..out_pos + remaining].copy_from_slice(&bytes[..remaining]);
     }
 }

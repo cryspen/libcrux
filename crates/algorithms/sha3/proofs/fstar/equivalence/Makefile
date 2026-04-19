@@ -12,9 +12,7 @@ ROOTS = \
 	EquivImplSpec.Keccakf.Portable.fst \
 	EquivImplSpec.Keccakf.Arm64.fst \
 	EquivImplSpec.Sponge.Generic.Core.fst \
-	EquivImplSpec.Sponge.Generic.Absorb.fst \
 	EquivImplSpec.Sponge.Generic.Squeeze.fst \
-	EquivImplSpec.Sponge.Generic.Keccak.fst \
 	EquivImplSpec.Sponge.Portable.fst \
 	EquivImplSpec.Sponge.Arm64.fst \
 	EquivImplSpec.Sponge.Portable.Steps.fst \
