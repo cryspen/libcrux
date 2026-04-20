@@ -37,7 +37,8 @@ codec = ["dep:tls_codec", "libcrux-ml-kem/codec", "libcrux-ecdh/codec"]
 
 [dev-dependencies]
 libcrux-kem = { path = "./", features = ["tests"] }
-rand = { version = "0.10", features = ["os_rng"] }
+rand = { version = "0.10", features = ["sys_rng"] }
+rand_core = { version = "0.10" }
 hex = { version = "0.4.3", features = ["serde"] }
 libcrux-traits = { workspace = true, features = [
     "generic-tests",
