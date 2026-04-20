@@ -44,6 +44,7 @@ libcrux-aesgcm.workspace = true
 
 [dev-dependencies]
 libcrux-psq = { path = ".", features = ["test-utils"] }
+rand_core = { version = "0.10" }
 clap = { version = "4.5.30", features = ["derive"] }
 criterion = "0.8"
 log = "0.4.26"
