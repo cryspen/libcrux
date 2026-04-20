@@ -19,11 +19,8 @@ libcrux-platform.workspace = true
 libcrux-traits.workspace = true
 libcrux-secrets.workspace = true
 
-rand = { version = "0.10", optional = true }
-
 [features]
 default = []
-rand = ["dep:rand"]
 std = []
 
 # Hardware features can be force enabled.
