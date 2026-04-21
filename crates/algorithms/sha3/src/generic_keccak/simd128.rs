@@ -5,29 +5,16 @@ use crate::proof_utils::{lemma_mul_succ_le, valid_rate};
 
 use libcrux_intrinsics::arm64::_uint64x2_t;
 
+/// Absorb phase of `keccak2`: initialise a two-lane Keccak state,
+/// absorb all full rate-byte blocks of `data[0]` and `data[1]` in
+/// parallel, then pad and absorb each lane's final partial block
+/// with domain-separation byte `DELIM` and the pad10*1 terminator.
 #[inline]
-#[hax_lib::requires(
-    valid_rate(RATE) &&
-    out0.len() == out1.len() &&
-    data[0].len() == data[1].len()
-)]
-#[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
+#[hax_lib::requires(valid_rate(RATE) && data[0].len() == data[1].len())]
 #[hax_lib::fstar::options("--z3rlimit 300")]
-pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
+pub(crate) fn absorb2<const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; 2],
-    out0: &mut [u8],
-    out1: &mut [u8],
-) {
-    #[cfg(not(eurydice))]
-    debug_assert!(out0.len() == out1.len());
-    #[cfg(not(eurydice))]
-    debug_assert!(data[0].len() == data[1].len());
-
-    #[cfg(hax)]
-    let out0_len = out0.len();
-    #[cfg(hax)]
-    let out1_len = out1.len();
-
+) -> KeccakState<2, _uint64x2_t> {
     let mut s = KeccakState::<2, _uint64x2_t>::new();
     let data_len = data[0].len();
     let data_blocks = data_len / RATE;
@@ -39,6 +26,25 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
     }
     let rem = data_len % RATE;
     s.absorb_final::<RATE, DELIM>(data, data_len - rem, rem);
+    s
+}
+
+/// Squeeze phase of `keccak2`: extract `out0.len()` bytes from each
+/// lane of `s` into `out0` and `out1`, applying Keccak-f between
+/// each full rate-byte block of output.
+#[inline]
+#[hax_lib::requires(valid_rate(RATE) && out0.len() == out1.len())]
+#[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
+#[hax_lib::fstar::options("--z3rlimit 300")]
+pub(crate) fn squeeze2<const RATE: usize>(
+    mut s: KeccakState<2, _uint64x2_t>,
+    out0: &mut [u8],
+    out1: &mut [u8],
+) {
+    #[cfg(hax)]
+    let out0_len = out0.len();
+    #[cfg(hax)]
+    let out1_len = out1.len();
 
     let outlen = out0.len();
     let blocks = outlen / RATE;
@@ -61,6 +67,27 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
             s.squeeze2::<RATE>(out0, out1, last, outlen - last);
         }
     }
+}
+
+#[inline]
+#[hax_lib::requires(
+    valid_rate(RATE) &&
+    out0.len() == out1.len() &&
+    data[0].len() == data[1].len()
+)]
+#[hax_lib::ensures(|_| future(out0).len() == out0.len() && future(out1).len() == out1.len())]
+pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
+    data: &[&[u8]; 2],
+    out0: &mut [u8],
+    out1: &mut [u8],
+) {
+    #[cfg(not(eurydice))]
+    debug_assert!(out0.len() == out1.len());
+    #[cfg(not(eurydice))]
+    debug_assert!(data[0].len() == data[1].len());
+
+    let s = absorb2::<RATE, DELIM>(data);
+    squeeze2::<RATE>(s, out0, out1);
 }
 
 #[hax_lib::attributes]

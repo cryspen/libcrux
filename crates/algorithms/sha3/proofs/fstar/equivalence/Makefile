@@ -17,6 +17,7 @@ ROOTS = \
 	EquivImplSpec.Sponge.Arm64.fst \
 	EquivImplSpec.Sponge.Portable.Steps.fst \
 	EquivImplSpec.Sponge.Arm64.Steps.fst \
+	EquivImplSpec.Sponge.Portable.SqueezeAPI.fst \
 	EquivImplSpec.Sponge.Portable.API.fst \
 	EquivImplSpec.Sponge.Arm64.API.fst \
 	EquivImplSpec.Keccakf.SpecRounds.fst

@@ -40,20 +40,77 @@ open FStar.Mul
 open Core_models
 
 module I = Libcrux_intrinsics.Arm64_extract
+module KA = EquivImplSpec.Keccakf.Arm64
 
 
 (* ================================================================
-   LAYER ASSUMPTION: per-lane keccak2 equivalence.
+   LAYER ASSUMPTIONS: two driver-level lemmas (absorb, squeeze2) at
+   N=2, analogous to [lemma_absorb_portable] + [lemma_squeeze_portable]
+   on the Portable side.  [lemma_keccak2_arm64] is derived by
+   composition, mirroring how [lemma_keccak1_portable] is proven in
+   [EquivImplSpec.Sponge.Portable.API].
 
-   The two-lane Neon driver [keccak2], at lane l, produces the same
-   byte stream as the scalar [Hacspec_sha3.Sponge.keccak] applied to
-   input[l].  The proof would compose:
-     - per-lane absorb equivalence (via EquivImplSpec.Sponge.Arm64.sc_arm64)
-     - per-lane squeeze2 equivalence (ditto)
-     - lemma_keccakf1600_arm64 between them.
+   Both assumptions are per-lane and will be discharged once the
+   Arm64 lockstep inductions (analogous to Gap 2 on the Portable
+   side) are closed.  Splitting keccak2 into absorb+squeeze factors
+   matches the Portable layout and isolates the two independent
+   sub-problems.
    ================================================================ *)
 
-assume val lemma_keccak2_arm64
+(** Driver-level absorb at N=2.  Running [absorb2] yields a state
+    whose lane-[l] extraction equals the scalar
+    [Hacspec_sha3.Sponge.absorb] applied to [data[l]]. *)
+assume val lemma_absorb2_arm64
+      (rate: usize) (delim: u8)
+      (data: t_Array (t_Slice u8) (mk_usize 2))
+      (l: nat{l < 2})
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        Libcrux_sha3.Proof_utils.slices_same_len (mk_usize 2) data)
+      (ensures (
+        let s2 = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim data in
+        EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2) KA.lc_arm64
+          s2.Libcrux_sha3.Generic_keccak.f_st l
+        ==
+        Hacspec_sha3.Sponge.absorb rate delim (data.[ mk_usize l ])))
+
+(** Driver-level squeeze2 at N=2.  For an arbitrary two-lane state
+    [s], running [squeeze2] yields output slices whose lane-[l]
+    component equals [Hacspec_sha3.Sponge.squeeze] applied to
+    [extract_lane s l]. *)
+assume val lemma_squeeze2_arm64
+      (rate: usize)
+      (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) I.t_e_uint64x2_t)
+      (out0 out1: t_Slice u8)
+      (l: nat{l < 2})
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        Seq.length #u8 out0 < v Core_models.Num.impl_usize__MAX - 200 /\
+        Seq.length #u8 out0 == Seq.length #u8 out1)
+      (ensures (
+        let outlen : usize = Core_models.Slice.impl__len #u8 out0 in
+        let (out0', out1') =
+          Libcrux_sha3.Generic_keccak.Simd128.squeeze2 rate s out0 out1 in
+        let r_l = if l = 0 then out0' else out1' in
+        r_l
+        ==
+        (Hacspec_sha3.Sponge.squeeze outlen
+           (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2) KA.lc_arm64
+              s.Libcrux_sha3.Generic_keccak.f_st l)
+           rate
+         <: t_Slice u8)))
+
+(* ================================================================
+   lemma_keccak2_arm64 = lemma_absorb2_arm64 ; lemma_squeeze2_arm64.
+
+   Structurally identical to how lemma_keccak1_portable composes
+   lemma_absorb_portable + lemma_squeeze_portable on the Portable
+   side.
+   ================================================================ *)
+
+let lemma_keccak2_arm64
       (rate: usize) (delim: u8)
       (input: t_Array (t_Slice u8) (mk_usize 2))
       (out0 out1: t_Slice u8)
@@ -70,6 +127,11 @@ assume val lemma_keccak2_arm64
         let n : usize = Core_models.Slice.impl__len #u8 out0 in
         r0 == (Hacspec_sha3.Sponge.keccak n rate delim (input.[ mk_usize 0 ]) <: t_Slice u8) /\
         r1 == (Hacspec_sha3.Sponge.keccak n rate delim (input.[ mk_usize 1 ]) <: t_Slice u8)))
+  = let s = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim input in
+    lemma_absorb2_arm64 rate delim input 0;
+    lemma_absorb2_arm64 rate delim input 1;
+    lemma_squeeze2_arm64 rate s out0 out1 0;
+    lemma_squeeze2_arm64 rate s out0 out1 1
 
 
 (* ================================================================

@@ -286,8 +286,11 @@ let lemma_absorb_portable
     with [Hacspec_sha3.Sponge.squeeze] taken as a slice.
 
     The output slice's length plays the role of the spec's
-    [v_OUTPUT_LEN] type-level parameter. *)
-assume val lemma_squeeze_portable
+    [v_OUTPUT_LEN] type-level parameter.
+
+    Re-exports [EquivImplSpec.Sponge.Portable.SqueezeAPI.lemma_squeeze_portable]
+    so downstream hashers do not need to open SqueezeAPI directly. *)
+let lemma_squeeze_portable
       (rate: usize)
       (state: t_Array u64 (mk_usize 25))
       (output: t_Slice u8)
@@ -302,6 +305,8 @@ assume val lemma_squeeze_portable
         Libcrux_sha3.Generic_keccak.Portable.squeeze rate ks output
         ==
         (Hacspec_sha3.Sponge.squeeze output_len state rate <: t_Slice u8)))
+  = EquivImplSpec.Sponge.Portable.SqueezeAPI.lemma_squeeze_portable
+      rate state output
 
 
 (* ================================================================
