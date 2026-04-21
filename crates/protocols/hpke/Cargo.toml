@@ -37,6 +37,7 @@ serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 rustcrypto = ["dep:hpke-rs-rust-crypto"]
 libcrux = ["dep:hpke-rs-libcrux"]
+libcrux-rustcrypto-p-curves = ["hpke-rs-libcrux?/rustcrypto-p-curves"]
 experimental = ["hpke-rs-rust-crypto?/experimental"]
 draft-connolly-cfrg-hpke-mlkem = ["hpke-rs-libcrux?/draft-connolly-cfrg-hpke-mlkem"]
 
