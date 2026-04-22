@@ -182,7 +182,7 @@ hpke = []
 psq = []
 
 [dependencies]
-getrandom = { version = "0.3", optional = true }
+getrandom = { version = "0.4", optional = true }
 
 # Proofs
 hax-lib.workspace = true
@@ -227,11 +227,11 @@ clap = { version = "4.5", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"
-rand = { version = "0.9" }
-rand_chacha = { version = "0.9.0", features = ["os_rng"] }
+rand = { version = "0.10" }
+rand_chacha = { version = "0.10.0" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-getrandom = { version = "0.3" }
+getrandom = { version = "0.4" }
 wasm-bindgen-test = "0.3"
 
 [profile.release]
