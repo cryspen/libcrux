@@ -10,7 +10,6 @@ fn derive(c: &mut Criterion) {
                 use rand::rngs::SysRng;
                 use rand_core::UnwrapErr;
                 let mut rng = UnwrapErr(SysRng);
-                // let mut rng = os_rng.unwrap_mut();
                 let (_, pk1) =
                     libcrux_ecdh::key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();
                 let (sk2, _) =
