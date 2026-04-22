@@ -94,6 +94,23 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        # Extract ml-kem reference spec (hacspec_ml_kem)
+        include_str = "+**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../specs/ml-kem",
+            env=hax_env,
+        )
+
         # Extract ml-kem
         includes = [
             "+**",

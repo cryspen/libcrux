@@ -26,10 +26,21 @@ pub trait Repr {}
 #[allow(dead_code, unused_variables)]
 pub(crate) mod spec {
 
-    // Re-home the generic integer-bound predicates locally so the trait's
-    // surface does not leak Spec.Utils names. Bodies are copied verbatim
-    // from proofs/fstar/spec/fsti so that, with opaque_to_smt
-    // unfolded, the predicate content is identical.
+    // Spec-side infrastructure injected into the generated F* module
+    // `Libcrux_ml_kem.Vector.Traits.Spec`:
+    //
+    //   * Generic integer-bound predicates (is_intb / is_i16b /
+    //     is_i16b_array / is_i16b_array_opaque / map_array), copied
+    //     verbatim from proofs/fstar/spec/Spec.Utils.fsti so that, with
+    //     opaque_to_smt unfolded, the predicate content is identical.
+    //   * `to_spec_fe` : i16 -> Hacspec_ml_kem.Parameters.t_FieldElement,
+    //     total reduction to the canonical field representative in
+    //     [0, 3328].  Agrees with `to_unsigned_representative` on its
+    //     domain [-3328, 3328].  Used by chunk/polynomial predicates
+    //     to state hacspec equations over raw i16 arrays.
+    //   * `to_spec_array` : lifts `to_spec_fe` elementwise; the
+    //     polynomial-layer wrapper `to_spec_poly_t` uses N=256, the
+    //     trait uses N=16.
     #[cfg_attr(
         hax,
         hax_lib::fstar::before(
@@ -46,6 +57,41 @@ let map_array (#a #b:Type) (#len:usize)
     (s: t_Array a len)
     : t_Array b len
     = createi (length s) (fun i -> f (Seq.index s (v i)))
+
+let to_spec_fe (x: i16)
+    : Hacspec_ml_kem.Parameters.t_FieldElement =
+  let m : int = v x % 3329 in
+  let m_nat : nat = if m < 0 then m + 3329 else m in
+  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m_nat }
+
+let to_spec_array (#n: usize)
+    (x: t_Array i16 n)
+    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
+  createi n (fun i -> to_spec_fe (Seq.index x (v i)))
+
+(* Hacspec equations stated elementwise over arrays of any length n.
+   The trait instantiates them with n=16; the polynomial layer uses
+   n=256.  Each predicate bakes in whatever pre-conditions hacspec's
+   underlying primitive demands (e.g. compress_d requires d < 12). *)
+
+let compress_post_N (#n: usize) (d: usize{v d < 12})
+    (input result: t_Array i16 n) : prop =
+  forall (i: nat). i < v n ==>
+    to_spec_fe (Seq.index result i) ==
+    Hacspec_ml_kem.Compress.compress_d (to_spec_fe (Seq.index input i)) d
+
+(* decompress_d (hacspec) has precondition
+     to_bit_size < 12 /\ fe.f_val < 1 << to_bit_size.
+   The trait caller meets the second part by holding each i16 coeff
+   in [0, 2^d).  The predicate therefore requires the input refinement
+   inline so the call to decompress_d is well-typed. *)
+let decompress_post_N (#n: usize) (d: usize{v d < 12})
+    (input: t_Array i16 n {forall (i: nat). i < v n ==>
+       v (Seq.index input i) >= 0 /\ v (Seq.index input i) < pow2 (v d)})
+    (result: t_Array i16 n) : prop =
+  forall (i: nat). i < v n ==>
+    to_spec_fe (Seq.index result i) ==
+    Hacspec_ml_kem.Compress.decompress_d (to_spec_fe (Seq.index input i)) d
 "#
         )
     )]
