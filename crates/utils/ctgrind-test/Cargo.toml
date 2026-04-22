@@ -1,0 +1,27 @@
+[package]
+name = "ctgrind-test"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+crabgrind = "0.2"
+libcrux-sha3 = { workspace = true }
+libcrux-ml-kem = { workspace = true, features = ["mlkem512"] }
+libcrux-ml-dsa = { workspace = true }
+
+[[bin]]
+name = "sha3"
+path = "src/bin/sha3.rs"
+
+[[bin]]
+name = "mlkem"
+path = "src/bin/mlkem.rs"
+
+[[bin]]
+name = "mldsa"
+path = "src/bin/mldsa.rs"

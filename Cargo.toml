@@ -58,6 +58,7 @@ members = [
     "crates/sys/pqclean",
     "crates/testing/kats",
     "crates/utils/core-models",
+    "crates/utils/ctgrind-test",
     "crates/utils/hacl-rs",
     "crates/utils/intrinsics",
     "crates/utils/macros",
