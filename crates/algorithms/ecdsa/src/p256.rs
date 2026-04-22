@@ -194,7 +194,7 @@ fn validate_private_key_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
 /// Prepare the nonce for EcDSA and validate the key
 #[cfg(feature = "rand")]
 pub mod rand {
-    use ::rand::{CryptoRng, Rng};
+    use ::rand::CryptoRng;
 
     use super::*;
     use crate::RAND_LIMIT;
@@ -205,7 +205,7 @@ pub mod rand {
     ///
     /// Use [`Nonce::random`] or [`PrivateKey::random`] to generate a nonce or
     /// a private key instead.
-    pub fn random_scalar(rng: &mut (impl CryptoRng + Rng)) -> Result<[u8; 32], Error> {
+    pub fn random_scalar(rng: &mut impl CryptoRng) -> Result<[u8; 32], Error> {
         let mut value = [0u8; 32];
         for _ in 0..RAND_LIMIT {
             rng.try_fill_bytes(&mut value)
@@ -221,14 +221,14 @@ pub mod rand {
 
     impl Nonce {
         /// Generate a random nonce for ECDSA.
-        pub fn random(rng: &mut (impl CryptoRng + Rng)) -> Result<Self, Error> {
+        pub fn random(rng: &mut impl CryptoRng) -> Result<Self, Error> {
             random_scalar(rng).map(|s| Self(s))
         }
     }
 
     impl PrivateKey {
         /// Generate a random [`PrivateKey`] for ECDSA.
-        pub fn random(rng: &mut (impl CryptoRng + Rng)) -> Result<Self, Error> {
+        pub fn random(rng: &mut impl CryptoRng) -> Result<Self, Error> {
             random_scalar(rng).map(|s| Self(s))
         }
     }
@@ -238,7 +238,7 @@ pub mod rand {
         hash: DigestAlgorithm,
         payload: &[u8],
         private_key: &PrivateKey,
-        rng: &mut (impl CryptoRng + Rng),
+        rng: &mut impl CryptoRng,
     ) -> Result<Signature, Error> {
         let nonce = Nonce(random_scalar(rng)?);
 
