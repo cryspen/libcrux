@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "libcrux_mldsa65_portable.h"
 #include "libcrux_core.h"
@@ -336,9 +339,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_600
 libcrux_ml_kem_utils_into_padded_array_9e(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_600 out = { { 0U } };
+  Eurydice_arr_600 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_364(&out,
-      (core_ops_range_Range_08{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -354,7 +357,7 @@ with const generics
 */
 static inline Eurydice_arr_ea libcrux_ml_kem_types_default_d3_28(void)
 {
-  return (Eurydice_arr_ea{ { 0U } });
+  return (KRML_CLITERAL(Eurydice_arr_ea){ .data = { 0U } });
 }
 
 /**
@@ -389,7 +392,7 @@ with const generics
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types_from_17_74(Eurydice_arr_ea sk, Eurydice_arr_74 pk)
 {
-  return (libcrux_ml_kem_mlkem768_MlKem768KeyPair{ sk, pk });
+  return (KRML_CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){ .sk = sk, .pk = pk });
 }
 
 /**
@@ -488,9 +491,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_3e0
 libcrux_ml_kem_utils_into_padded_array_c8(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_3e0 out = { { 0U } };
+  Eurydice_arr_3e0 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_3612(&out,
-      (core_ops_range_Range_08{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -507,9 +510,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_48
 libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_48 out = { { 0U } };
+  Eurydice_arr_48 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_366(&out,
-      (core_ops_range_Range_08{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -540,9 +543,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_480
 libcrux_ml_kem_utils_into_padded_array_15(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_480 out = { { 0U } };
+  Eurydice_arr_480 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_3611(&out,
-      (core_ops_range_Range_08{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -559,9 +562,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_060
 libcrux_ml_kem_utils_into_padded_array_24(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_060 out = { { 0U } };
+  Eurydice_arr_060 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_3610(&out,
-      (core_ops_range_Range_08{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -616,11 +619,11 @@ libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_borrow_slice_u8 private_key)
   Eurydice_borrow_slice_u8 implicit_rejection_value = uu____2.snd;
   return
     (
-      Eurydice_borrow_slice_u8_x4{
-        ind_cpa_secret_key,
-        ind_cpa_public_key,
-        ind_cpa_public_key_hash,
-        implicit_rejection_value
+      KRML_CLITERAL(Eurydice_borrow_slice_u8_x4){
+        .fst = ind_cpa_secret_key,
+        .snd = ind_cpa_public_key,
+        .thd = ind_cpa_public_key_hash,
+        .f3 = implicit_rejection_value
       }
     );
 }
@@ -723,6 +726,9 @@ libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_borrow_slice_i16
   return self;
 }
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_mlkem_core_H_DEFINED
 #endif /* libcrux_mlkem_core_H */

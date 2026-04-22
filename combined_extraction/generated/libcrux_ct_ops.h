@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "libcrux_mlkem_core.h"
 #include "libcrux_core.h"
@@ -79,7 +82,7 @@ libcrux_ml_kem_constant_time_ops_select_ct(
 {
   uint8_t
   mask = core_num__u8__wrapping_sub(libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  Eurydice_arr_600 out = { { 0U } };
+  Eurydice_arr_600 out = { .data = { 0U } };
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE; i++)
   {
     size_t i0 = i;
@@ -116,6 +119,9 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
       selector);
 }
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_ct_ops_H_DEFINED
 #endif /* libcrux_ct_ops_H */

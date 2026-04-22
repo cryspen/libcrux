@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "libcrux_core.h"
 
@@ -37,6 +40,9 @@ with const generics
 */
 typedef struct Eurydice_arr_05_s { __m256i data[25U]; } Eurydice_arr_05;
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_intrinsics_avx2_H_DEFINED
 #endif /* libcrux_intrinsics_avx2_H */

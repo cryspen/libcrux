@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "libcrux_core.h"
 
@@ -114,12 +117,11 @@ with types libcrux_ml_dsa_types_MLDSASignature_8f, libcrux_ml_dsa_types_SigningE
 typedef struct Result_97_s
 {
   Result_80_tags tag;
-  union U {
+  union {
     Eurydice_arr_96 case_Ok;
     libcrux_ml_dsa_types_SigningError case_Err;
   }
   val;
-  KRML_UNION_CONSTRUCTOR(Result_97_s)
 }
 Result_97;
 
@@ -148,7 +150,7 @@ with const generics
 */
 static inline Eurydice_arr_96 libcrux_ml_dsa_types_zero_c5_fa(void)
 {
-  return (Eurydice_arr_96{ { 0U } });
+  return (KRML_CLITERAL(Eurydice_arr_96){ .data = { 0U } });
 }
 
 /**
@@ -196,6 +198,9 @@ static inline Eurydice_arr_d10 libcrux_ml_dsa_types_new_9b_09(Eurydice_arr_d10 v
   return value;
 }
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_mldsa_core_H_DEFINED
 #endif /* libcrux_mldsa_core_H */
