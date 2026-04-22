@@ -114,6 +114,19 @@ let deserialize_post_N (#n: usize) (#n8: usize)
     (output: t_Array i16 n) : prop =
   BitVecEq.int_t_array_bitwise_eq input 8 output d /\
   (forall (i: nat). i < v n ==> Rust_primitives.BitVectors.bounded (Seq.index output i) d)
+
+(* Raw 16-bit LE byte load / store.  At n=16 lanes / 32 bytes, these
+   are the trait's from_bytes / to_bytes.  Same BitVecEq path again,
+   d=16 on the i16 side, d=8 on the u8 side. *)
+let from_le_bytes_post_N (#n: usize) (#n2: usize)
+    (input: t_Array u8 n2)
+    (output: t_Array i16 n {v n * 16 == v n2 * 8}) : prop =
+  BitVecEq.int_t_array_bitwise_eq input 8 output 16
+
+let to_le_bytes_post_N (#n: usize) (#n2: usize)
+    (input: t_Array i16 n {v n * 16 == v n2 * 8})
+    (output: t_Array u8 n2) : prop =
+  BitVecEq.int_t_array_bitwise_eq input 16 output 8
 "#
         )
     )]
