@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- [#147](https://github.com/cryspen/hpke-rs/pull/147): Add P384 and P521 DHKEM support for the libcrux provider via RustCrypto crates guarded behind the `libcrux-rustcrypto-p-curves` feature flag.
+
 ## [0.6.1] - 2026-02-20
 
 ### Changed

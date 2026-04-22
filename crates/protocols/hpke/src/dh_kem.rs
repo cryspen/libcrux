@@ -66,10 +66,18 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
             &[],
             alg.private_key_len(),
         )?),
-        KemAlgorithm::DhKemP256 | KemAlgorithm::DhKemK256 => {
+        KemAlgorithm::DhKemP256
+        | KemAlgorithm::DhKemP384
+        | KemAlgorithm::DhKemP521
+        | KemAlgorithm::DhKemK256 => {
+            // RFC 9180 §7.1.3: bitmask is 0x01 for P-521, 0xFF otherwise
+            let bitmask: u8 = match alg {
+                KemAlgorithm::DhKemP521 => 0x01,
+                _ => 0xFF,
+            };
             let mut ctr = 0u8;
             // Do rejection sampling trying to find a valid key.
-            // It is expected that there aren't too many iteration and that
+            // It is expected that there aren't too many iterations and that
             // the loop will always terminate.
             loop {
                 let candidate = labeled_expand::<Crypto>(
@@ -80,8 +88,9 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
                     &ctr.to_be_bytes(),
                     alg.private_key_len(),
                 );
-                if let Ok(sk) = &candidate {
-                    if let Ok(sk) = Crypto::dh_validate_sk(alg, sk) {
+                if let Ok(mut sk) = candidate {
+                    sk[0] &= bitmask;
+                    if let Ok(sk) = Crypto::dh_validate_sk(alg, &sk) {
                         break PrivateKey(sk);
                     }
                 }

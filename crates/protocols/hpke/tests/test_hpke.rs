@@ -526,6 +526,154 @@ generate_test_case!(
     HpkeLibcrux
 );
 
+// P384/P521 via RustCrypto in the libcrux provider
+#[cfg(feature = "libcrux-rustcrypto-p-curves")]
+mod libcrux_p_curves {
+    use super::*;
+
+    #[test]
+    fn kem_trait_roundtrip_p384_libcrux() {
+        let mut prng = HpkeLibcrux::prng();
+        let (pk_r, sk_r) = HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP384, &mut prng).unwrap();
+        let (ss_enc, enc) =
+            HpkeLibcrux::kem_encaps(KemAlgorithm::DhKemP384, &pk_r, &mut prng).unwrap();
+        let ss_dec = HpkeLibcrux::kem_decaps(KemAlgorithm::DhKemP384, &enc, &sk_r).unwrap();
+        assert_eq!(ss_enc, ss_dec);
+    }
+
+    #[test]
+    fn kem_trait_roundtrip_p521_libcrux() {
+        let mut prng = HpkeLibcrux::prng();
+        let (pk_r, sk_r) = HpkeLibcrux::kem_key_gen(KemAlgorithm::DhKemP521, &mut prng).unwrap();
+        let (ss_enc, enc) =
+            HpkeLibcrux::kem_encaps(KemAlgorithm::DhKemP521, &pk_r, &mut prng).unwrap();
+        let ss_dec = HpkeLibcrux::kem_decaps(KemAlgorithm::DhKemP521, &enc, &sk_r).unwrap();
+        assert_eq!(ss_enc, ss_dec);
+    }
+
+    #[test]
+    fn kem_key_gen_derand_p384_uses_hpke_sized_seed_libcrux() {
+        let alg = KemAlgorithm::DhKemP384;
+        let seed = [0x42; 48];
+
+        let (pk, sk) = HpkeLibcrux::kem_key_gen_derand(alg, &seed).unwrap();
+        let (pk_repeat, sk_repeat) = HpkeLibcrux::kem_key_gen_derand(alg, &seed).unwrap();
+
+        assert_eq!(pk, pk_repeat);
+        assert_eq!(sk, sk_repeat);
+        assert_eq!(pk, HpkeLibcrux::secret_to_public(alg, &sk).unwrap());
+    }
+
+    #[test]
+    fn kem_key_gen_derand_p521_uses_hpke_sized_seed_libcrux() {
+        let alg = KemAlgorithm::DhKemP521;
+        let seed = [0x24; 66];
+
+        let (pk, sk) = HpkeLibcrux::kem_key_gen_derand(alg, &seed).unwrap();
+        let (pk_repeat, sk_repeat) = HpkeLibcrux::kem_key_gen_derand(alg, &seed).unwrap();
+
+        assert_eq!(pk, pk_repeat);
+        assert_eq!(sk, sk_repeat);
+        assert_eq!(pk, HpkeLibcrux::secret_to_public(alg, &sk).unwrap());
+    }
+
+    generate_test_case!(
+        base_dhkemp384_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        base_dhkemp384_hkdfsha384_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        base_dhkemp384_hkdfsha384_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        base_dhkemp521_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        base_dhkemp521_hkdfsha512_Aes128Gcm_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes128Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        base_dhkemp521_hkdfsha512_chacha20poly1305_libcrux,
+        HpkeMode::Base,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::ChaCha20Poly1305,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        psk_dhkemp384_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::Psk,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        psk_dhkemp521_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::Psk,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        auth_dhkemp384_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::Auth,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        auth_dhkemp521_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::Auth,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        authpsk_dhkemp384_hkdfsha384_Aes256Gcm_libcrux,
+        HpkeMode::AuthPsk,
+        KemAlgorithm::DhKemP384,
+        KdfAlgorithm::HkdfSha384,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+    generate_test_case!(
+        authpsk_dhkemp521_hkdfsha512_Aes256Gcm_libcrux,
+        HpkeMode::AuthPsk,
+        KemAlgorithm::DhKemP521,
+        KdfAlgorithm::HkdfSha512,
+        AeadAlgorithm::Aes256Gcm,
+        HpkeLibcrux
+    );
+}
 #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
 mod mlkem_libcrux {
     use super::*;
