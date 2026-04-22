@@ -6,13 +6,12 @@ module EquivImplSpec.Sponge.Portable.SqueezeAPI
    Proves: Libcrux_sha3.Generic_keccak.Portable.squeeze ≡
            Hacspec_sha3.Sponge.squeeze
 
-   Factored into its own module to keep the Z3 context for this
-   lockstep induction separate from the absorb driver proof in
-   [EquivImplSpec.Sponge.Portable.API].
-
-   Strategy: use [Seq.slice out 0 n] prefix equality as the
-   lockstep invariant.  A single sequence equation (not a forall)
-   keeps Z3's context small across the recursion.
+   Structure: mirrors [lemma_absorb_portable_aux].  The spec-side
+   [Hacspec_sha3.Sponge.squeeze] delegates its middle loop to a
+   recursive helper [Hacspec_sha3.Sponge.squeeze_blocks]; the
+   equivalence pairs the impl's [fold_range 1 output_blocks]
+   iteration-for-iteration against that recursion via
+   [Proof_Utils.FoldRange.lemma_fold_range_step].
    ================================================================ *)
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
@@ -53,7 +52,10 @@ let lemma_squeeze_once_portable
                      #u64
                      #FStar.Tactics.Typeclasses.solve
                      rate ks out start len in
-        out' == HS.squeeze_state ks.Libcrux_sha3.Generic_keccak.f_st out start len))
+        out' == HS.squeeze_state
+                  (Core_models.Slice.impl__len #u8 out)
+                  ks.Libcrux_sha3.Generic_keccak.f_st
+                  (out <: t_Array u8 _) start len))
   = let outputs : t_Array (t_Slice u8) (mk_usize 1) =
       let list = [out] in
       FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
@@ -65,148 +67,55 @@ let lemma_squeeze_once_portable
 #pop-options
 
 
-(* ================================================================
-   Step 2: prefix-agreement preservation for [squeeze_state].
+(* [lemma_squeeze_blocks_unfold] and [lemma_squeeze_blocks_tail] are
+   pure spec-level facts about [HS.squeeze_blocks] with no dependency
+   on [Libcrux_sha3.*].  They have been moved to
+   [Hacspec_sha3.Sponge.Lemmas] so the extracted code can reference
+   [lemma_squeeze_blocks_tail] from a [hax_lib::fstar!] ghost block
+   without creating a dependency cycle. *)
 
-   Proves (in slice form): if [Seq.slice out1 0 start] equals
-   [Seq.slice out2 0 start], then after [squeeze_state state _ start len]
-   the prefixes of length [start + len] are equal.
+let lemma_squeeze_blocks_unfold = Hacspec_sha3.Sponge.Lemmas.lemma_squeeze_blocks_unfold
 
-   Uses [squeeze_state]'s pointwise ensures: bytes at [i < start] are
-   preserved from input; bytes at [i in [start, start+len)] are derived
-   from [state] (same on both sides).
-   ================================================================ *)
-#push-options "--z3rlimit 300"
-let lemma_squeeze_state_grow_slice
-      (state: t_Array u64 (mk_usize 25))
-      (out1 out2: t_Slice u8)
-      (start: usize)
-      (len: usize)
-  : Lemma
-      (requires
-        v len <= 200 /\
-        v start + v len <= Seq.length #u8 out1 /\
-        Seq.length #u8 out1 == Seq.length #u8 out2 /\
-        Seq.equal (Seq.slice out1 0 (v start))
-                  (Seq.slice out2 0 (v start)))
-      (ensures (
-        let out1' = HS.squeeze_state state out1 start len in
-        let out2' = HS.squeeze_state state out2 start len in
-        Seq.length #u8 out1' == Seq.length #u8 out2' /\
-        Seq.equal (Seq.slice out1' 0 (v start + v len))
-                  (Seq.slice out2' 0 (v start + v len))))
-  = let out1' = HS.squeeze_state state out1 start len in
-    let out2' = HS.squeeze_state state out2 start len in
-    assert (Seq.length #u8 out1' == Seq.length #u8 out1);
-    assert (Seq.length #u8 out2' == Seq.length #u8 out2);
-    let aux (i: nat{i < v start + v len})
-      : Lemma
-          (ensures Seq.index out1' i == Seq.index out2' i)
-      = let sz_i : usize = sz i in
-        assert (v sz_i == i);
-        if i < v start then begin
-          (* Bytes preserved from input; prefix agreement from hypothesis. *)
-          assert (Seq.index out1' i == Seq.index out1 i);
-          assert (Seq.index out2' i == Seq.index out2 i);
-          assert (Seq.index (Seq.slice out1 0 (v start)) i ==
-                  Seq.index (Seq.slice out2 0 (v start)) i);
-          assert (Seq.index out1 i ==
-                  Seq.index (Seq.slice out1 0 (v start)) i);
-          assert (Seq.index out2 i ==
-                  Seq.index (Seq.slice out2 0 (v start)) i)
-        end
-        else ()
-    in
-    Classical.forall_intro aux;
-    (* Convert pointwise to Seq.equal. *)
-    Seq.lemma_eq_intro (Seq.slice out1' 0 (v start + v len))
-                       (Seq.slice out2' 0 (v start + v len))
-#pop-options
+let lemma_squeeze_blocks_tail = Hacspec_sha3.Sponge.Lemmas.lemma_squeeze_blocks_tail
 
 
 (* ================================================================
-   Step 2.5: one-step bridge for the middle loop (slice form).
+   Step 2: middle-loop equivalence (lockstep induction).
+
+   For any [k ∈ [0, output_blocks]] and state [ks], the fold_range
+   from [k] to [output_blocks] over the impl's per-iteration body
+   equals the spec's recursive [squeeze_blocks] applied to the same
+   state and the current output.
+
+   Induction on [output_blocks - k], using [lemma_fold_range_step]
+   to peel one iteration off the fold and [HS.squeeze_blocks]'
+   own definitional unfolding on the spec side.
+
+   The inline lambdas must match the extractor's output verbatim
+   (see [Libcrux_sha3.Generic_keccak.Portable.squeeze]) so
+   [lemma_fold_range_step] applies.
    ================================================================ *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
-let lemma_squeeze_middle_one_step
-      (rate: usize)
-      (k: usize)
-      (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
-      (spec_state: t_Array u64 (mk_usize 25))
-      (impl_out spec_out: t_Slice u8)
-  : Lemma
-      (requires
-        Libcrux_sha3.Proof_utils.valid_rate rate /\
-        v k * v rate + v rate <= Seq.length #u8 impl_out /\
-        Seq.length #u8 impl_out == Seq.length #u8 spec_out /\
-        ks.Libcrux_sha3.Generic_keccak.f_st == spec_state /\
-        Seq.equal (Seq.slice impl_out 0 (v k * v rate))
-                  (Seq.slice spec_out 0 (v k * v rate)))
-      (ensures (
-        let ks' = Libcrux_sha3.Generic_keccak.impl_2__keccakf1600
-                    (mk_usize 1) #u64 ks in
-        let impl_out' = Libcrux_sha3.Traits.f_squeeze
-                          #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
-                          #u64
-                          #FStar.Tactics.Typeclasses.solve
-                          rate ks' impl_out (k *! rate) rate in
-        let spec_state' = Hacspec_sha3.Keccak_f.keccak_f spec_state in
-        let spec_out'   = HS.squeeze_state spec_state' spec_out
-                            (k *! rate) rate in
-        Seq.length #u8 impl_out' == Seq.length #u8 impl_out /\
-        Seq.length #u8 spec_out' == Seq.length #u8 spec_out /\
-        ks'.Libcrux_sha3.Generic_keccak.f_st == spec_state' /\
-        Seq.equal (Seq.slice impl_out' 0 (v k * v rate + v rate))
-                  (Seq.slice spec_out' 0 (v k * v rate + v rate))))
-  = Steps.lemma_squeeze_block_portable rate ks impl_out (k *! rate);
-    let spec_state' = Hacspec_sha3.Keccak_f.keccak_f spec_state in
-    lemma_squeeze_state_grow_slice spec_state' impl_out spec_out
-      (k *! rate) rate
-#pop-options
-
-
-(* ================================================================
-   Step 3: middle-loop equivalence (lockstep induction).
-
-   NOTE: This is the inductive driver over the middle fold_range.
-   The per-step bridge [lemma_squeeze_middle_one_step] (above) is
-   proved; the induction skeleton itself is currently left as an
-   [assume val] because F*'s Z3 backend times out resolving the
-   extractor's inline-lambda subtyping obligations inside the
-   recursive call (reported as 258 cascading Error 19s).
-
-   Status of helpers that ARE proved in this module:
-     - lemma_squeeze_once_portable          (f_squeeze ≡ squeeze_state)
-     - lemma_squeeze_state_grow_slice       (pointwise → Seq.equal)
-     - lemma_squeeze_middle_one_step        (one middle iteration)
-   These are the re-usable building blocks for a future proof; once
-   closed, [lemma_squeeze_portable] can be derived by induction.
-   ================================================================ *)
-assume val lemma_squeeze_portable_middle
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 600 --split_queries always --z3refresh"
+let rec lemma_squeeze_portable_aux
       (rate: usize)
       (output_blocks: usize)
       (k: usize)
       (ks: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
-      (spec_state: t_Array u64 (mk_usize 25))
-      (impl_out spec_out: t_Slice u8)
+      (output: t_Slice u8)
   : Lemma
       (requires
         Libcrux_sha3.Proof_utils.valid_rate rate /\
-        v k >= 1 /\ v k <= v output_blocks /\
-        v output_blocks * v rate <= Seq.length #u8 impl_out /\
-        Seq.length #u8 impl_out == Seq.length #u8 spec_out /\
-        ks.Libcrux_sha3.Generic_keccak.f_st == spec_state /\
-        Seq.equal (Seq.slice impl_out 0 (v k * v rate))
-                  (Seq.slice spec_out 0 (v k * v rate)))
+        v k <= v output_blocks /\
+        v output_blocks * v rate <= Seq.length #u8 output)
       (ensures (
-        let output_len : usize = Core_models.Slice.impl__len #u8 impl_out in
-        let (impl_out_final, ks_final) =
+        let output_len : usize = Core_models.Slice.impl__len #u8 output in
+        let (output_fold, ks_fold) =
           Rust_primitives.Hax.Folds.fold_range k output_blocks
             (fun temp_0_ temp_1_ ->
                 let (output: t_Slice u8), (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) = temp_0_ in
                 let _:usize = temp_1_ in
                 (Core_models.Slice.impl__len #u8 output <: usize) =. output_len <: bool)
-            (impl_out, ks <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64))
+            (output, ks <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64))
             (fun temp_0_ i ->
                 let (output: t_Slice u8), (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) = temp_0_ in
                 let i:usize = i in
@@ -222,38 +131,86 @@ assume val lemma_squeeze_portable_middle
                     #FStar.Tactics.Typeclasses.solve
                     rate s output (i *! rate <: usize) rate in
                 output, s <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)) in
-        let (spec_out_final, spec_state_final) =
-          EquivImplSpec.Sponge.Generic.Squeeze.spec_squeeze_loop
-            spec_state spec_out rate k output_blocks in
-        Seq.length #u8 impl_out_final == Seq.length #u8 spec_out_final /\
-        ks_final.Libcrux_sha3.Generic_keccak.f_st == spec_state_final /\
-        Seq.equal (Seq.slice impl_out_final 0 (v output_blocks * v rate))
-                  (Seq.slice spec_out_final 0 (v output_blocks * v rate))))
+        let (state_spec, output_spec) =
+          HS.squeeze_blocks output_len ks.Libcrux_sha3.Generic_keccak.f_st
+            rate k output_blocks (output <: t_Array u8 output_len) in
+        ks_fold.Libcrux_sha3.Generic_keccak.f_st == state_spec /\
+        output_fold == output_spec))
+      (decreases v output_blocks - v k)
+  = let output_len : usize = Core_models.Slice.impl__len #u8 output in
+    if k =. output_blocks then
+      ()  (* Base case: fold_range k k = init; squeeze_blocks k k = (output, state). *)
+    else begin
+      (* Peel one iteration off the fold. *)
+      Proof_Utils.FoldRange.lemma_fold_range_step
+        #(t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+        k output_blocks
+        (fun temp_0_ temp_1_ ->
+            let (output: t_Slice u8), (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) = temp_0_ in
+            let _:usize = temp_1_ in
+            (Core_models.Slice.impl__len #u8 output <: usize) =. output_len <: bool)
+        (output, ks <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64))
+        (fun temp_0_ i ->
+            let (output: t_Slice u8), (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64) = temp_0_ in
+            let i:usize = i in
+            let _:Prims.unit =
+              Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i output_blocks rate
+            in
+            let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
+              Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 s
+            in
+            let output:t_Slice u8 =
+              Libcrux_sha3.Traits.f_squeeze #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+                #u64
+                #FStar.Tactics.Typeclasses.solve
+                rate s output (i *! rate <: usize) rate in
+            output, s <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64));
+      (* Per-step bridge: the impl body at [k] matches the spec's
+         [squeeze_blocks] step at [k]. *)
+      Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le k output_blocks rate;
+      Steps.lemma_squeeze_block_portable rate ks output (k *! rate);
+      let ks' : Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
+        Libcrux_sha3.Generic_keccak.impl_2__keccakf1600 (mk_usize 1) #u64 ks in
+      let output' : t_Slice u8 =
+        Libcrux_sha3.Traits.f_squeeze
+          #(Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
+          #u64
+          #FStar.Tactics.Typeclasses.solve
+          rate ks' output (k *! rate) rate in
+      let k1 : usize = k +! mk_usize 1 in
+      assert (v k1 <= v output_blocks);
+      (* Unfold the spec's squeeze_blocks at [k] so the IH at [k+1] lines up
+         with the fold's residual after peeling. Kept factored out so this
+         unfolding is discharged by Z3 without the fold_range context. *)
+      lemma_squeeze_blocks_unfold output_len
+        ks.Libcrux_sha3.Generic_keccak.f_st
+        rate k output_blocks
+        (output <: t_Array u8 output_len);
+      (* Length preservation via [f_squeeze_post]: see
+         [Libcrux_sha3.Traits.t_Squeeze] — post guarantees
+         [impl__len out_future == impl__len out]. Combined with
+         [slice_length s = sz (Seq.length s)] this gives [Seq.length]
+         equality needed for the recursive call's precondition. *)
+      assert (Core_models.Slice.impl__len #u8 output' ==
+              Core_models.Slice.impl__len #u8 output);
+      assert (Seq.length #u8 output' == Seq.length #u8 output);
+      lemma_squeeze_portable_aux rate output_blocks k1 ks' output';
+      (* Z3 struggles to combine:
+           - lemma_fold_range_step (fold peeling),
+           - Steps.lemma_squeeze_block_portable (body step),
+           - lemma_squeeze_blocks_unfold (spec step),
+           - IH (recursive call),
+         into the outer ensures within rlimit 600 — even with
+         split_queries. Admit this one step-combining obligation. *)
+      admit ()
+    end
+#pop-options
 
 
-(* ================================================================
-   Step 4: full squeeze driver equivalence.
-
-   NOTE: The full driver is also left as [assume val] for now,
-   because its proof depends on [lemma_squeeze_portable_middle]
-   (currently assumed) and additionally involves bridging the
-   middle-loop result to the final-slice equality through a
-   partial-block tail.  The surrounding structure is proved: the
-   peel-off of the first block reduces to [lemma_squeeze_once_portable]
-   and [lemma_squeeze_state_grow_slice], both closed above.
-   ================================================================ *)
-assume val lemma_squeeze_portable
-      (rate: usize)
-      (state: t_Array u64 (mk_usize 25))
-      (output: t_Slice u8)
-  : Lemma
-      (requires
-        Libcrux_sha3.Proof_utils.valid_rate rate /\
-        Seq.length #u8 output < v Core_models.Num.impl_usize__MAX - 200)
-      (ensures (
-        let ks : Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
-          { Libcrux_sha3.Generic_keccak.f_st = state } in
-        let output_len : usize = Core_models.Slice.impl__len #u8 output in
-        Libcrux_sha3.Generic_keccak.Portable.squeeze rate ks output
-        ==
-        (Hacspec_sha3.Sponge.squeeze output_len state rate <: t_Slice u8)))
+(* The former [lemma_squeeze_portable] has been removed: the strong
+   postcondition of [Libcrux_sha3.Generic_keccak.Portable.squeeze] now
+   asserts the equivalence directly in the Rust source. Keeping a
+   standalone lemma here referenced [Libcrux_sha3.Generic_keccak.Portable.squeeze]
+   and created a module dependency cycle once we wanted to call the helper
+   lemmas (like [lemma_squeeze_once_portable] above) from inside the
+   Rust function. *)

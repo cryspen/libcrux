@@ -8,9 +8,9 @@ use crate::createi;
 use crate::keccak_f::{keccak_f, State};
 
 #[cfg(hax)]
-use hax_lib::prop::*;
-#[cfg(hax)]
 use hax_lib::int::*;
+#[cfg(hax)]
+use hax_lib::prop::*;
 
 /// XOR a block of message bytes into the state (little-endian, lane-interleaved).
 ///
@@ -30,24 +30,32 @@ pub fn xor_block_into_state(state: State, block: &[u8], rate: usize) -> State {
 ///
 /// Corresponds to `Trunc_r(S)` in Algorithm 8.
 #[hax_lib::requires(len <= 200 && output.len() >= len && out_offset <= output.len() - len)]
-#[hax_lib::ensures(|_| (future(output).len() == output.len()).to_prop() &
-	hax_lib::forall(|i:usize| 
+#[hax_lib::ensures(|result| (result.len() == output.len()).to_prop() &
+	hax_lib::forall(|i:usize|
 		if i < output.len() {
 		   if i < out_offset {
- 			future(output)[i] == output[i]
+ 			result[i] == output[i]
 		   } else if i < out_offset + len {
-			future(output)[i] == state[(i - out_offset) / 8].to_le_bytes()[(i - out_offset) % 8]
+			result[i] == state[(i - out_offset) / 8].to_le_bytes()[(i - out_offset) % 8]
 		   } else {
-			future(output)[i] == output[i]
+			result[i] == output[i]
 		   }
 		} else {true}))]
-pub fn squeeze_state(state: &State, output: &mut [u8], out_offset: usize, len: usize) {
+pub fn squeeze_state<const OUTPUT_LEN: usize>(
+    state: &State,
+    mut output: [u8; OUTPUT_LEN],
+    out_offset: usize,
+    len: usize,
+) -> [u8; OUTPUT_LEN] {
     let bytes: [u8; 200] = createi(|i| state[i / 8].to_le_bytes()[i % 8]);
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 	 Proof_Utils.Lemmas.lemma_index_update_at_range output
 	 	(${out_offset..out_offset+len}) (Seq.slice bytes 0 (v len))
-    "#);
+    "#
+    );
     output[out_offset..out_offset + len].copy_from_slice(&bytes[0..len]);
+    output
 }
 
 /// Absorb one full block: XOR it into the state, then apply Keccak-f.
@@ -130,6 +138,34 @@ pub fn absorb(rate: usize, delim: u8, message: &[u8]) -> State {
     absorb_rec([0u64; 25], rate, delim, message)
 }
 
+/// Recursive middle-loop of [squeeze]: for each block index `i ∈ [i, output_blocks)`,
+/// apply `keccak_f` and then extract `rate` bytes at `i * rate`. Returns the state
+/// after the final `keccak_f`.
+///
+/// Shape chosen to mirror `absorb_rec`, so the F* equivalence proof can line up
+/// the libcrux impl's `fold_range 1 output_blocks` step-by-step against this
+/// recursion via `lemma_fold_range_step`, the same pattern used for absorb.
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0
+                     && i <= output_blocks
+                     && output_blocks <= output.len() / rate)]
+#[hax_lib::decreases(output_blocks.to_int() - i.to_int())]
+pub fn squeeze_blocks<const OUTPUT_LEN: usize>(
+    state: State,
+    rate: usize,
+    i: usize,
+    output_blocks: usize,
+    mut output: [u8; OUTPUT_LEN],
+) -> (State, [u8; OUTPUT_LEN]) {
+    if i < output_blocks {
+        let state = keccak_f(state);
+        output = squeeze_state(&state, output, i * rate, rate);
+        squeeze_blocks(state, rate, i + 1, output_blocks, output)
+    } else {
+        (state, output)
+    }
+}
+
 /// Squeeze phase of the Keccak sponge (FIPS 202, Algorithm 8, steps 8–9).
 ///
 /// Extracts `OUTPUT_LEN` bytes from `state`, applying Keccak-f between each
@@ -140,24 +176,21 @@ pub fn absorb(rate: usize, delim: u8, message: &[u8]) -> State {
 /// equivalence proof can line the two sides up iteration-for-iteration.
 #[hax_lib::fstar::options("--z3rlimit 500")]
 #[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
-pub fn squeeze<const OUTPUT_LEN: usize>(mut state: State, rate: usize) -> [u8; OUTPUT_LEN] {
+pub fn squeeze<const OUTPUT_LEN: usize>(state: State, rate: usize) -> [u8; OUTPUT_LEN] {
     let mut output = [0u8; OUTPUT_LEN];
     let output_blocks = OUTPUT_LEN / rate;
     let output_rem = OUTPUT_LEN % rate;
     if output_blocks == 0 {
-        squeeze_state(&state, &mut output, 0, OUTPUT_LEN);
+        output = squeeze_state(&state, output, 0, OUTPUT_LEN);
     } else {
-        squeeze_state(&state, &mut output, 0, rate);
-        for i in 1..output_blocks {
-            state = keccak_f(state);
-            squeeze_state(&state, &mut output, i * rate, rate);
-        }
+        output = squeeze_state(&state, output, 0, rate);
+        let (state, out) = squeeze_blocks(state, rate, 1, output_blocks, output);
+        output = out;
         if output_rem != 0 {
-            state = keccak_f(state);
-            squeeze_state(&state, &mut output, OUTPUT_LEN - output_rem, output_rem);
+            let state = keccak_f(state);
+            output = squeeze_state(&state, output, OUTPUT_LEN - output_rem, output_rem);
         }
     }
-
     output
 }
 
@@ -174,7 +207,7 @@ pub fn squeeze<const OUTPUT_LEN: usize>(mut state: State, rate: usize) -> [u8; O
 /// on the output length.
 #[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0 && OUTPUT_LEN < usize::MAX - 200)]
 pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -> [u8; OUTPUT_LEN] {
-    squeeze::<OUTPUT_LEN>(absorb(rate, delim, message), rate)
+    squeeze(absorb(rate, delim, message), rate)
 }
 
 #[cfg(test)]
@@ -187,8 +220,8 @@ mod tests {
     #[test]
     fn keccak_equals_squeeze_of_absorb() {
         fn check<const OUT: usize>(rate: usize, delim: u8, msg: &[u8]) {
-            let via_keccak: [u8; OUT] = keccak::<OUT>(rate, delim, msg);
-            let via_split: [u8; OUT] = squeeze::<OUT>(absorb(rate, delim, msg), rate);
+            let via_keccak = keccak::<OUT>(rate, delim, msg);
+            let via_split = squeeze(absorb(rate, delim, msg), rate);
             assert_eq!(
                 via_keccak,
                 via_split,

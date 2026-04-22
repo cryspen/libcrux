@@ -449,15 +449,18 @@ let lemma_sq_lane_arm64_eq_squeeze_state
         sq_lane_arm64 rate state outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len)
   = let out_l : t_Slice u8 = outputs.[ mk_usize l ] in
+    let out_l_len = Core_models.Slice.impl__len #u8 out_l in
     let lhs = sq_lane_arm64 rate state outputs start len l in
     let rhs = Hacspec_sha3.Sponge.squeeze_state
+                out_l_len
                 (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
-                out_l start len in
+                (out_l <: t_Array u8 out_l_len) start len in
     assert (v (mk_usize l) = l);
     let byte_eq (i: nat{i < Seq.length out_l})
       : Lemma (Seq.index lhs i == Seq.index rhs i) =
@@ -498,8 +501,9 @@ let arm64_sc_store_block
         sq_lane_arm64 rate state outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len)
   = lemma_sq_lane_arm64_eq_squeeze_state rate state outputs start len l

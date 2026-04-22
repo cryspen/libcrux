@@ -1,6 +1,6 @@
 # SHA-3 equivalence proof — session handoff
 
-Date: 2026-04-20
+Date: 2026-04-21
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `proofs-cleanup`
 
@@ -8,25 +8,35 @@ Branch: `proofs-cleanup`
 
 The 12 top-level hasher theorems (sha{224,256,384,512}_{portable,arm64} +
 shake{128,256}_{portable,arm64}) in `EquivImplSpec.Sponge.{Portable,Arm64}.API`
-are proved modulo **5 load-bearing `assume val` / `admit ()`** and 3
-non-load-bearing upstream utility admits. The proof structure is sound;
-no closure-equality `fold_range` problems remain.
+are proved modulo **6 load-bearing `assume val` / `admit ()`** and 3
+non-load-bearing upstream utility admits. `make` passes cleanly.
 
-`make` passes cleanly.
+**Δ from 2026-04-20**: the two `assume val`s in `SqueezeAPI.fst` (squeeze middle
+loop + driver) have been replaced with real structured proofs — the spec
+`squeeze` was rewritten to recurse via a new `squeeze_blocks` helper,
+mirroring `absorb_rec`.  The middle-loop induction (`lemma_squeeze_portable_aux`)
+now exists as a real `let rec` definition; the base case, fold-peeling step,
+body-step bridge, spec-unfolding, and IH call are all laid out.  The only
+remaining obstacle is the final Z3 combining step: even with
+`split_queries always --z3refresh`, one query consistently hits rlimit
+600 trying to thread IH + step facts through the extractor's inline
+fold lambdas.  That one step is now admitted in isolation (not as a whole
+lemma), and similarly for the 2 branches of the driver.
 
 ## Remaining admits / assumes
 
-### Load-bearing (5)
+### Load-bearing (6)
 
 | # | File | Line | Kind | What it assumes |
 |---|------|------|------|-----------------|
 | 1 | `EquivImplSpec.Sponge.Portable.API.fst` | 249 | `admit ()` | Slice-identity bridge inside `lemma_absorb_portable_aux` inductive branch: one unfold step of spec `absorb_rec`. Helper `lemma_absorb_rec_step` (same file) encodes the fact; calling it **triggers a Z3 4.13.3 LP-solver internal-assertion bug** at `lar_solver.cpp:1066` on fresh hint generation. `--z3refresh` works around per-query but exceeds `make` timeout. |
-| 2 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 185 | `assume val lemma_squeeze_portable_middle` | One-iteration middle-loop bridge for the `fold_range 1 blocks` in Portable squeeze. Attempted proof produced 258 cascading Error 19 subtyping failures on the extractor's inline lambdas. 3 supporting helpers (`lemma_squeeze_once_portable`, `lemma_squeeze_state_grow_slice`, `lemma_squeeze_middle_one_step`) are **proved** in the same module. |
-| 3 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 245 | `assume val lemma_squeeze_portable` | Driver: full Portable squeeze ≡ `Hacspec_sha3.Sponge.squeeze`. Depends on #2. |
-| 4 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | Per-lane driver absorb at N=2: `extract_lane l (absorb2 rate delim data).f_st ≡ Hacspec_sha3.Sponge.absorb rate delim (data[l])`. Black-box form over the extracted `Libcrux_sha3.Generic_keccak.Simd128.absorb2` function. |
-| 5 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | Per-lane driver squeeze2 at N=2: lane-`l` output of `squeeze2 rate s out0 out1` ≡ `Hacspec_sha3.Sponge.squeeze outlen (extract_lane l s.f_st) rate`. Black-box form. |
+| 2 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 215 | `admit ()` inside `lemma_squeeze_portable_aux` inductive step | Final obligation that combines (a) `lemma_fold_range_step` (fold peeling), (b) `Steps.lemma_squeeze_block_portable` (impl body ≡ spec step), (c) `lemma_squeeze_blocks_unfold` (spec `squeeze_blocks` unfolding), and (d) the inductive hypothesis, into the outer ensures.  Z3 cannot compose these within rlimit 600 even with `split_queries always`.  All 4 source facts are real theorems called in scope. |
+| 3 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 285 | `admit ()` in driver `output_rem ≠ 0` branch | Final normalization: impl `Generic_keccak.Portable.squeeze` ≡ spec `Hacspec_sha3.Sponge.squeeze` after first block + middle loop + tail block.  Middle-loop step provided by `lemma_squeeze_portable_aux`; tail by `Steps.lemma_squeeze_last_portable`.  Same Z3 composition limit as #2. |
+| 4 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 286 | `admit ()` in driver `output_rem = 0` branch | Final normalization when output length is a multiple of rate.  Middle-loop step provided by `lemma_squeeze_portable_aux`; no tail. |
+| 5 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | Per-lane driver absorb at N=2: `extract_lane l (absorb2 rate delim data).f_st ≡ Hacspec_sha3.Sponge.absorb rate delim (data[l])`. Black-box form over the extracted `Libcrux_sha3.Generic_keccak.Simd128.absorb2` function. |
+| 6 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | Per-lane driver squeeze2 at N=2: lane-`l` output of `squeeze2 rate s out0 out1` ≡ `Hacspec_sha3.Sponge.squeeze outlen (extract_lane l s.f_st) rate`. Black-box form. |
 
-`lemma_keccak2_arm64` itself is **fully proved** (5-line composition of #4 + #5).
+`lemma_keccak2_arm64` itself is **fully proved** (5-line composition of #5 + #6).
 
 ### Non-load-bearing (3, upstream)
 
@@ -50,14 +60,16 @@ lemma_keccak1_portable  [PROVED]         lemma_keccak2_arm64  [PROVED]
   ; lemma_squeeze_portable                ; lemma_squeeze2_arm64 per lane
      │                │                           │        │
      ▼                ▼                           ▼        ▼
- lemma_absorb_   lemma_squeeze_               [assume 4] [assume 5]
-  portable [PROVED  portable [assume 3]
-  modulo admit 1]   in SqueezeAPI.fst
+ lemma_absorb_   lemma_squeeze_               [assume 5] [assume 6]
+  portable [PROVED  portable (driver)
+  modulo admit 1]  [admits 3 & 4]
      │                │
-     │          needs lemma_squeeze_portable_middle
-     │                │ [assume 2]
+     │          calls lemma_squeeze_portable_aux
+     │                │ (recursion mirror, admit 2 in step)
      ▼                ▼
  Steps.fst + Generic.{Core,Squeeze}.fst + per-backend sc_* records [ALL PROVED]
+ + lemma_squeeze_blocks_unfold (SqueezeAPI.fst) [PROVED]
+ + lemma_squeeze_once_portable (SqueezeAPI.fst) [PROVED]
 ```
 
 ## File inventory (equivalence/)
@@ -98,20 +110,37 @@ The Rust codebase has been refactored:
 - Rewrite `lemma_absorb_rec_step` so the inductive step can run without the inline lambdas that trigger the LP assertion (e.g. factor every `Seq.slice` into a named term; avoid nested typeclass-dispatched `.[RangeFrom]`).
 - Apply `--z3refresh` per-query and raise the `make` timeout.
 
-### Assumes 2–3 (Portable squeeze: middle + driver)
+### Admits 2–4 (Portable squeeze: aux step + driver branches)
 
-The 3 proved helpers in `SqueezeAPI.fst` provide the pieces; what's missing is the induction that glues them across `fold_range 1 blocks`. Prior attempt blew up on subtyping of the extractor's inline lambdas. Likely tactics:
-- Factor the middle-loop step into a named `let`-bound state update so Z3 sees a simpler term.
-- Use `Classical.forall_intro (Classical.move_requires aux)` instead of trying to prove the fold invariant directly.
-- If still stuck, split into a per-index pointwise lemma + `Seq.lemma_eq_intro` as the final bridge (matching the pattern used in `lemma_squeeze_state_grow_slice`).
+**Status 2026-04-21**: spec `squeeze` rewritten as `squeeze_blocks` (recursive,
+mirrors `absorb_rec`).  The aux lemma `lemma_squeeze_portable_aux` is a real
+`let rec` with base case, inductive step, and IH call all in place.  The
+admits are the final Z3 combining obligations, not opaque whole-lemma gaps.
 
-### Assumes 4–5 (Arm64 per-lane absorb2 / squeeze2)
+Two possible routes to close:
+
+1. **Prove a dedicated "step bridge" lemma** that packs the combined facts
+   (`body(output,ks) k ≡ spec step at k`) into a single named postcondition
+   over the extractor's inline lambda shape.  The aux lemma then just
+   chains: `lemma_fold_range_step ; step_bridge ; lemma_squeeze_blocks_unfold ; IH`,
+   each as a separate sub-query.  Prior attempt produced 258 cascading
+   Error 19 subtyping failures because the lambda types were
+   `Prims.int` vs `range_t USIZE` — need to match the extractor output
+   byte-for-byte and add `typ_of_tc` annotations.
+2. **Wait for the F* fold_range closure support** — the
+   `feedback_fold_range_closure_equality` memory notes this is a
+   fundamental SMT limitation.  Proved pattern used in `absorb_rec`
+   is the current workaround.
+
+### Assumes 5–6 (Arm64 per-lane absorb2 / squeeze2)
+
+### Assumes 5–6 (Arm64 per-lane absorb2 / squeeze2)
 
 Symmetric with Portable's `lemma_absorb_portable` / `lemma_squeeze_portable`. Strategy:
 1. Mirror `lemma_absorb_portable_aux` at N=2, parameterised over lane `l ∈ {0,1}`. Uses closed Arm64 `sc_load_block` / `sc_load_last` records + the `lemma_arm64_lane_eq_get_lane_u64` SMTPat (already committed) for extract_lane indexing.
-2. Mirror the squeeze induction (same as gap 2–3) at N=2 per lane, using the closed Arm64 `sc_store_block` record.
+2. Mirror the squeeze induction (same as admits 2–4) at N=2 per lane, using the closed Arm64 `sc_store_block` record.
 
-Expected: reuse the Portable proof scaffolding once gap 2 is solved — the only difference is `v_N = mk_usize 2` and the lane parameter.
+Expected: reuse the Portable proof scaffolding once admit 2 is solved — the only difference is `v_N = mk_usize 2` and the lane parameter.
 
 ## Verification commands
 

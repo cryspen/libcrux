@@ -304,11 +304,15 @@ let lemma_store_block_eq_squeeze_state
       (ensures
         Libcrux_sha3.Simd.Portable.store_block rate state out start len
         ==
-        Hacspec_sha3.Sponge.squeeze_state state out start len)
+        Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 out) state
+          (out <: t_Array u8 _) start len)
   = let impl_out =
       Libcrux_sha3.Simd.Portable.store_block rate state out start len in
+    let out_len = Core_models.Slice.impl__len #u8 out in
     let spec_out =
-      Hacspec_sha3.Sponge.squeeze_state state out start len in
+      Hacspec_sha3.Sponge.squeeze_state out_len state
+        (out <: t_Array u8 out_len) start len in
     let aux (i:nat{i < Seq.length out}):
       Lemma(Seq.index impl_out i == Seq.index spec_out i) = 
       let sz_i = sz i in
@@ -442,8 +446,9 @@ let portable_sc_store_block
         sq_lane_portable rate state outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (G.extract_lane (mk_usize 1) P.lc_portable state l)
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len)
   = let out0 = outputs.[ mk_usize 0 ] in

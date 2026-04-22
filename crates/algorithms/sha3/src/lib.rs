@@ -87,7 +87,10 @@ pub const fn digest_size(mode: Algorithm) -> usize {
 
 /// SHA3
 #[hax_lib::fstar::options("--split_queries always")]
-#[hax_lib::requires(payload.len().to_int() <= u32::MAX.to_int())]
+#[hax_lib::requires(
+    payload.len().to_int() <= u32::MAX.to_int() &&
+    LEN < usize::MAX - 200
+)]
 pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN] {
     #[cfg(not(eurydice))]
     debug_assert!(payload.len() <= u32::MAX as usize);
@@ -209,6 +212,7 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
 #[cfg_attr(not(eurydice), inline(always))]
+#[hax_lib::requires(BYTES < usize::MAX - 200)]
 pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake128(&mut out, data);
@@ -219,6 +223,7 @@ pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 ///
 /// Writes `out.len()` bytes.
 #[cfg_attr(not(eurydice), inline(always))]
+#[hax_lib::requires(out.len() < usize::MAX - 200)]
 pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
     portable::shake128(out, data);
 }
@@ -228,6 +233,7 @@ pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
 /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
 /// the output will only return `u32::MAX` bytes.
 #[cfg_attr(not(eurydice), inline(always))]
+#[hax_lib::requires(BYTES < usize::MAX - 200)]
 pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake256(&mut out, data);
@@ -238,6 +244,7 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 ///
 /// Writes `out.len()` bytes.
 #[cfg_attr(not(eurydice), inline(always))]
+#[hax_lib::requires(out.len() < usize::MAX - 200)]
 pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
     portable::shake256(out, data);
 }

@@ -52,6 +52,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
     valid_rate(RATE) &&
     start.to_int() + RATE.to_int() <= blocks.len().to_int()
@@ -190,7 +191,7 @@ pub(crate) fn store_block<const RATE: usize>(
         let out_pos = start + 8 * i;
         hax_lib::fstar!(
             r#"
-            Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+8}) $bytes
+            Proof_Utils.Lemmas.lemma_index_update_at_range out (${out_pos..out_pos+8}) bytes
         "#
         );
         out[out_pos..out_pos + 8].copy_from_slice(&bytes);
@@ -203,7 +204,7 @@ pub(crate) fn store_block<const RATE: usize>(
         let out_pos = start + len - remaining;
         hax_lib::fstar!(
             r#"
-            Proof_Utils.Lemmas.lemma_index_update_at_range $out (${out_pos..out_pos+remaining}) (Seq.slice ${bytes} 0 (v remaining))
+            Proof_Utils.Lemmas.lemma_index_update_at_range out (${out_pos..out_pos+remaining}) (Seq.slice bytes 0 (v remaining))
         "#
         );
         out[out_pos..out_pos + remaining].copy_from_slice(&bytes[..remaining]);
@@ -271,6 +272,14 @@ impl Absorb<1> for KeccakState<1, u64> {
     }
 }
 
+// Workaround for hax#1698: `fstar::before`/`after` on impl blocks is silently
+// dropped by the extractor.  Attach the push-options to a hax-only dummy
+// function — which does extract properly.  No `#pop-options` is needed since
+// the Squeeze impl is the last item in the module.
+#[cfg(hax)]
+#[hax_lib::fstar::before(r#"#push-options "--split_queries always --z3rlimit 300""#)]
+fn _squeeze_impl_opts() {}
+
 #[hax_lib::attributes]
 impl Squeeze<u64> for KeccakState<1, u64> {
     #[hax_lib::requires(
@@ -278,7 +287,32 @@ impl Squeeze<u64> for KeccakState<1, u64> {
         len <= RATE &&
         start.to_int() + len.to_int() <= out.len().to_int()
     )]
-    #[hax_lib::ensures(|_| future(out).len() == out.len())]
+    // Postcondition well-formedness notes:
+    //   - `start + len` is compared at `.to_int()` level to avoid a usize-overflow
+    //     subtyping obligation (the trait-field elaboration has no access to
+    //     `f_squeeze_pre`, so the overflow bound can't be discharged).
+    //   - The indexed `self.st[(i - start)/8]` access is wrapped in a bounds guard
+    //     `(i - start)/8 < 25` for the same reason.  When the preconditions hold
+    //     (`valid_rate(RATE)` && `len <= RATE`) we have `len <= 168 < 200 = 8*25`,
+    //     so the guard is always true at actual use sites — the wrapping only
+    //     affects the type-elaboration obligation, not the proof.
+    #[hax_lib::ensures(|_| (future(out).len() == out.len()).to_prop() &
+        hax_lib::forall(|i: usize| if i < out.len() {
+            if i < start {
+                out[i] == future(out)[i]
+            } else if i.to_int() < start.to_int() + len.to_int() {
+                if (i - start)/8 < 25 {
+                    future(out)[i] == self.st[(i - start)/8].to_le_bytes()[(i - start)%8]
+                } else {
+                    true
+                }
+            } else {
+                out[i] == future(out)[i]
+            }
+        } else {
+            true
+        })
+    )]
     fn squeeze<const RATE: usize>(&self, out: &mut [u8], start: usize, len: usize) {
         store_block::<RATE>(&self.st, out, start, len);
     }

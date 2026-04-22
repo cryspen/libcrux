@@ -16,22 +16,30 @@ const SHAKE_DELIM: u8 = 0x1F;
 
 /// SHA3-224 — FIPS 202, Section 6.1.
 pub fn sha3_224(message: &[u8]) -> [u8; 28] {
-    keccak(SHA3_224_RATE, SHA3_DELIM, message)
+    keccak::<28>(SHA3_224_RATE, SHA3_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 /// SHA3-256 — FIPS 202, Section 6.1.
 pub fn sha3_256(message: &[u8]) -> [u8; 32] {
-    keccak(SHA3_256_RATE, SHA3_DELIM, message)
+    keccak::<32>(SHA3_256_RATE, SHA3_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 /// SHA3-384 — FIPS 202, Section 6.1.
 pub fn sha3_384(message: &[u8]) -> [u8; 48] {
-    keccak(SHA3_384_RATE, SHA3_DELIM, message)
+    keccak::<48>(SHA3_384_RATE, SHA3_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 /// SHA3-512 — FIPS 202, Section 6.1.
 pub fn sha3_512(message: &[u8]) -> [u8; 64] {
-    keccak(SHA3_512_RATE, SHA3_DELIM, message)
+    keccak::<64>(SHA3_512_RATE, SHA3_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 /// SHAKE128 — FIPS 202, Section 6.2.
@@ -41,7 +49,9 @@ pub fn sha3_512(message: &[u8]) -> [u8; 64] {
 /// to prevent arithmetic overflow during squeeze-loop bound computation.
 #[hax_lib::requires(N < usize::MAX - 200)]
 pub fn shake128<const N: usize>(message: &[u8]) -> [u8; N] {
-    keccak(SHAKE128_RATE, SHAKE_DELIM, message)
+    keccak::<N>(SHAKE128_RATE, SHAKE_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 /// SHAKE256 — FIPS 202, Section 6.2.
@@ -51,7 +61,9 @@ pub fn shake128<const N: usize>(message: &[u8]) -> [u8; N] {
 /// to prevent arithmetic overflow during squeeze-loop bound computation.
 #[hax_lib::requires(N < usize::MAX - 200)]
 pub fn shake256<const N: usize>(message: &[u8]) -> [u8; N] {
-    keccak(SHAKE256_RATE, SHAKE_DELIM, message)
+    keccak::<N>(SHAKE256_RATE, SHAKE_DELIM, message)
+        .try_into()
+        .unwrap()
 }
 
 #[cfg(test)]

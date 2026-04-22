@@ -53,7 +53,11 @@ let rec spec_squeeze_loop
         Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i output_blocks rate
       in
       let state' = Hacspec_sha3.Keccak_f.keccak_f state in
-      let output' = Hacspec_sha3.Sponge.squeeze_state state' output (i *! rate) rate in
+      let output_len = Core_models.Slice.impl__len #u8 output in
+      let output' =
+        Hacspec_sha3.Sponge.squeeze_state output_len state'
+          (output <: t_Array u8 output_len) (i *! rate) rate
+      in
       spec_squeeze_loop state' output' rate (i +! mk_usize 1) output_blocks
 
 
@@ -89,8 +93,9 @@ let lemma_squeeze_once_generic
         sc.sq_lane rate state outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (G.extract_lane v_N lc state l)
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len)
   = sc.sc_store_block rate state outputs start len l
@@ -137,9 +142,10 @@ let lemma_squeeze_kf_step_generic
         sc.sq_lane rate ks'.Libcrux_sha3.Generic_keccak.f_st outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (Hacspec_sha3.Keccak_f.keccak_f
             (G.extract_lane v_N lc ks.Libcrux_sha3.Generic_keccak.f_st l))
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len))
   =

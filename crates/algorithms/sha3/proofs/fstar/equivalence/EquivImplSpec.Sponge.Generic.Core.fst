@@ -242,8 +242,9 @@ noeq type sponge_correctness
         sq_lane rate state outputs start len l
         ==
         Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
           (G.extract_lane v_N lc state l)
-          (outputs.[ mk_usize l ] <: t_Slice u8)
+          (outputs.[ mk_usize l ] <: t_Array u8 _)
           start
           len);
 }

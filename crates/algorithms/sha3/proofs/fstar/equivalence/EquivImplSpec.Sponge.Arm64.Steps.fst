@@ -159,8 +159,10 @@ let lemma_squeeze_block_arm64
         SA.sq_lane_arm64 rate ks'.Libcrux_sha3.Generic_keccak.f_st
           outputs start rate l
         ==
-        Hacspec_sha3.Sponge.squeeze_state state_l'
-          (outputs.[ mk_usize l ] <: t_Slice u8) start rate))
+        Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
+          state_l'
+          (outputs.[ mk_usize l ] <: t_Array u8 _) start rate))
   = KA.lemma_keccakf1600_arm64 ks l;
     let ks' =
       Libcrux_sha3.Generic_keccak.impl_2__keccakf1600
@@ -201,8 +203,10 @@ let lemma_squeeze_last_arm64
         SA.sq_lane_arm64 rate ks'.Libcrux_sha3.Generic_keccak.f_st
           outputs start len l
         ==
-        Hacspec_sha3.Sponge.squeeze_state state_l'
-          (outputs.[ mk_usize l ] <: t_Slice u8) start len))
+        Hacspec_sha3.Sponge.squeeze_state
+          (Core_models.Slice.impl__len #u8 (outputs.[ mk_usize l ]))
+          state_l'
+          (outputs.[ mk_usize l ] <: t_Array u8 _) start len))
   = KA.lemma_keccakf1600_arm64 ks l;
     let ks' =
       Libcrux_sha3.Generic_keccak.impl_2__keccakf1600
