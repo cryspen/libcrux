@@ -168,57 +168,57 @@ impl Operations for PortableVector {
             v (Seq.index ${vec}.f_elements i) * v c))"#))]
     fn multiply_by_constant(vec: Self, c: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
         multiply_by_constant(vec, c)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque (pow2 12 - 1) (impl.f_repr $v)"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (pow2 12 - 1) (impl.f_repr $v)"#))]
     #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
     fn cond_subtract_3329(v: Self) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
         cond_subtract_3329(v)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) == 
                            (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
     fn barrett_reduce(vector: Self) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 28296)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296)"#
         );
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         barrett_reduce(vector)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
-    #[ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
+    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
                 (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
                                        (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         montgomery_multiply_by_constant(vector, constant.classify())
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
     #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                                 (let x = Seq.index (impl.f_repr ${a}) i in
                                  let y = Seq.index (impl.f_repr ${result}) i in
                                  (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
     fn to_unsigned_representative(a: Self) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         to_unsigned_representative(a)
     }
@@ -264,93 +264,93 @@ impl Operations for PortableVector {
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3  /\
-                       Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (8*3328) (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (8*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
         );
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (8*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (8*3328))"#
         );
         ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (7*3328) (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328))"#
         );
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (7*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
         );
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array_opaque (5*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque (6*3328) (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328) (impl.f_repr $out)"#))]
     fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (5*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328))"#
         );
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (6*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328))"#
         );
         ntt_layer_3_step(a, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\ 
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array_opaque (4*3328) (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328) (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4*3328))"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
         );
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         inv_ntt_layer_2_step(a, zeta0, zeta1)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${a})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         inv_ntt_layer_3_step(a, zeta)
     }
 
     #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                        Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
-                       Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
-    #[ensures(|out| fstar!(r#"Spec.Utils.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${lhs}) /\
+                       Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${rhs})"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $out)"#))]
     fn ntt_multiply(
         lhs: &Self,
         rhs: &Self,
@@ -360,8 +360,8 @@ impl Operations for PortableVector {
         zeta3: i16,
     ) -> Self {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque 3328)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
         );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }

@@ -38,7 +38,7 @@ pub(crate) mod spec {
 
     pub(crate) fn is_bounded_vector<Vector: Operations>(b: usize, vec: &Vector) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"Spec.Utils.is_i16b_array_opaque (v b) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
+            r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (v b) (Libcrux_ml_kem.Vector.Traits.f_to_i16_array vec)"#
         )
     }
 
@@ -56,7 +56,7 @@ pub(crate) mod spec {
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
     }
 
@@ -68,7 +68,7 @@ pub(crate) mod spec {
         b2: usize,
     ) {
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
     }
 }
@@ -83,7 +83,7 @@ pub(crate) fn add_bounded<Vector: Operations>(
     _b2: usize,
 ) -> Vector {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     Vector::add(vec1, vec2)
 }
@@ -98,7 +98,7 @@ pub(crate) fn sub_bounded<Vector: Operations>(
     _b2: usize,
 ) -> Vector {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     Vector::sub(vec1, vec2)
 }
@@ -117,7 +117,7 @@ pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
     c: i16,
 ) -> Vector {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque)"#
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     // TODO: the following assume should be removed once hax_lib is updated to latest version
     hax_lib::fstar!(
@@ -130,7 +130,7 @@ pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
 #[hax_lib::ensures(|result| spec::is_bounded_poly(0, &result))]
 fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 0)"#
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 0)"#
     );
     PolynomialRingElement {
         coefficients: [Vector::ZERO(); 16],

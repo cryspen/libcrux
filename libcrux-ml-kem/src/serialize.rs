@@ -129,7 +129,7 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
         for (i, bytes) in serialized.chunks_exact(24).enumerate() {
             let coefficient = Vector::deserialize_12(bytes);
             hax_lib::fstar!(
-                r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) (Spec.Utils.is_i16b_array_opaque 4095)"#
+                r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 4095)"#
         )   ;
             re.coefficients[i] = Vector::cond_subtract_3329(coefficient);
         }

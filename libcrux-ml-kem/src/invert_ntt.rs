@@ -39,8 +39,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 
         *zeta_i -= 1;
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Spec.Utils.is_i16b_array_opaque) 
-                        (Spec.Utils.is_i16b_array_opaque (4*3328) 
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328) 
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
         );
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
