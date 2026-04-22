@@ -92,6 +92,28 @@ let decompress_post_N (#n: usize) (d: usize{v d < 12})
   forall (i: nat). i < v n ==>
     to_spec_fe (Seq.index result i) ==
     Hacspec_ml_kem.Compress.decompress_d (to_spec_fe (Seq.index input i)) d
+
+(* Bit-packing pre/post.  An i16 array of n elements where each
+   element's low d bits participate is packed into n8 bytes iff
+   n * d == n8 * 8.  Stated via the BitVecEq helper — same path
+   Spec.MLKEM.serialize_post used at n=16, now generic. *)
+let serialize_pre_N (#n: usize)
+    (d: nat{d > 0 /\ d <= 12})
+    (input: t_Array i16 n) : prop =
+  forall (i: nat). i < v n ==> Rust_primitives.BitVectors.bounded (Seq.index input i) d
+
+let serialize_post_N (#n: usize) (#n8: usize)
+    (d: nat{d > 0 /\ d <= 12 /\ v n * d == v n8 * 8})
+    (input: t_Array i16 n {serialize_pre_N d input})
+    (output: t_Array u8 n8) : prop =
+  BitVecEq.int_t_array_bitwise_eq input d output 8
+
+let deserialize_post_N (#n: usize) (#n8: usize)
+    (d: nat{d > 0 /\ d <= 12 /\ v n * d == v n8 * 8})
+    (input: t_Array u8 n8)
+    (output: t_Array i16 n) : prop =
+  BitVecEq.int_t_array_bitwise_eq input 8 output d /\
+  (forall (i: nat). i < v n ==> Rust_primitives.BitVectors.bounded (Seq.index output i) d)
 "#
         )
     )]
