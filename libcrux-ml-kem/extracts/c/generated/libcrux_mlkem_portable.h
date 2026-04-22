@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
+ * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
+ * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 4faeb5fdd7bdf29c1f30136c8f32fe24c06cfab0
+ * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -23,7 +23,7 @@ extern "C" {
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
 
-Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G(
+Eurydice_arr_060 libcrux_ml_kem_hash_functions_portable_G(
     Eurydice_borrow_slice_u8 input);
 
 Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(
@@ -33,6 +33,9 @@ Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS \
   ((int16_t)1353)
+
+typedef Eurydice_arr_e2
+    libcrux_ml_kem_vector_portable_vector_type_PortableVector;
 
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_zero(void);
 
@@ -631,6 +634,14 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 size_t libcrux_ml_kem_vector_portable_rej_sample_b8(
     Eurydice_borrow_slice_u8 a, Eurydice_mut_borrow_slice_i16 out);
+
+typedef int16_t
+    libcrux_ml_kem_vector_portable_arithmetic_FieldElementTimesMontgomeryR;
+
+typedef int16_t
+    libcrux_ml_kem_vector_portable_arithmetic_MontgomeryFieldElement;
+
+typedef int16_t libcrux_ml_kem_vector_portable_vector_type_FieldElement;
 
 /**
 This function found in impl {core::clone::Clone for
