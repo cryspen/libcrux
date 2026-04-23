@@ -187,8 +187,8 @@ fn ntt_multiply(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (repr $vector) ==> Spec.MLKEM.serialize_post 1 (repr $vector) $out"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (repr $vector)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 1 (repr $vector) $out"#))]
 fn serialize_1(vector: SIMD256Vector) -> [u8; 2] {
     serialize::serialize_1(vector.elements)
 }
@@ -196,7 +196,7 @@ fn serialize_1(vector: SIMD256Vector) -> [u8; 2] {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 2)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (repr $out)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 1 $bytes (repr $out)"#))]
 fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
     SIMD256Vector {
         elements: serialize::deserialize_1(bytes),
@@ -205,8 +205,8 @@ fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (repr $vector) ==> Spec.MLKEM.serialize_post 4 (repr $vector) $out"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (repr $vector)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 4 (repr $vector) $out"#))]
 fn serialize_4(vector: SIMD256Vector) -> [u8; 8] {
     serialize::serialize_4(vector.elements)
 }
@@ -214,7 +214,7 @@ fn serialize_4(vector: SIMD256Vector) -> [u8; 8] {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 8)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (repr $out)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 4 $bytes (repr $out)"#))]
 fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
     SIMD256Vector {
         elements: serialize::deserialize_4(bytes),
@@ -223,8 +223,8 @@ fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (repr $vector) ==> Spec.MLKEM.serialize_post 10 (repr $vector) $out"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (repr $vector)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10 (repr $vector) $out"#))]
 fn serialize_10(vector: SIMD256Vector) -> [u8; 20] {
     serialize::serialize_10(vector.elements)
 }
@@ -232,7 +232,7 @@ fn serialize_10(vector: SIMD256Vector) -> [u8; 20] {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 20)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (repr $out)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 10 $bytes (repr $out)"#))]
 fn deserialize_10(bytes: &[u8]) -> SIMD256Vector {
     SIMD256Vector {
         elements: serialize::deserialize_10(bytes),
@@ -241,8 +241,8 @@ fn deserialize_10(bytes: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector)"#))]
-#[hax_lib::ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (repr $vector) ==> Spec.MLKEM.serialize_post 12 (repr $vector) $out"#))]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (repr $vector)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12 (repr $vector) $out"#))]
 fn serialize_12(vector: SIMD256Vector) -> [u8; 24] {
     serialize::serialize_12(vector.elements)
 }
@@ -250,7 +250,7 @@ fn serialize_12(vector: SIMD256Vector) -> [u8; 24] {
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(bytes.len() == 24)]
-#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (repr $out)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 12 $bytes (repr $out)"#))]
 fn deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     SIMD256Vector {
         elements: serialize::deserialize_12(bytes),
@@ -561,29 +561,29 @@ impl Operations for SIMD256Vector {
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 1 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 1 (impl.f_repr $vector) $out"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (impl.f_repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 1 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
     fn serialize_1(vector: Self) -> [u8; 2] {
         serialize_1(vector)
     }
 
     #[requires(bytes.len() == 2)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Spec.MLKEM.deserialize_post 1 $bytes (impl.f_repr $out)"#))]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 1 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
     fn deserialize_1(bytes: &[u8]) -> Self {
         deserialize_1(bytes)
     }
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 4 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 4 (impl.f_repr $vector) $out"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 4 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
     fn serialize_4(vector: Self) -> [u8; 8] {
         serialize_4(vector)
     }
 
     #[requires(bytes.len() == 8)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Spec.MLKEM.deserialize_post 4 $bytes (impl.f_repr $out)"#))]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 4 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
     fn deserialize_4(bytes: &[u8]) -> Self {
         deserialize_4(bytes)
@@ -603,15 +603,15 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 10 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 10 (impl.f_repr $vector) $out"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
     fn serialize_10(vector: Self) -> [u8; 20] {
         serialize_10(vector)
     }
 
     #[requires(bytes.len() == 20)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Spec.MLKEM.deserialize_post 10 $bytes (impl.f_repr $out)"#))]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 10 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
     fn deserialize_10(bytes: &[u8]) -> Self {
         deserialize_10(bytes)
@@ -630,15 +630,15 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector)"#))]
-    #[ensures(|out| fstar!(r#"Spec.MLKEM.serialize_pre 12 (impl.f_repr $vector) ==> Spec.MLKEM.serialize_post 12 (impl.f_repr $vector) $out"#))]
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
     fn serialize_12(vector: Self) -> [u8; 24] {
         serialize_12(vector)
     }
 
     #[requires(bytes.len() == 24)]
-    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Spec.MLKEM.deserialize_post 12 $bytes (impl.f_repr $out)"#))]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 12 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
     fn deserialize_12(bytes: &[u8]) -> Self {
         deserialize_12(bytes)

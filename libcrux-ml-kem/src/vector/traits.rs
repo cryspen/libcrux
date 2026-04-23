@@ -96,23 +96,27 @@ let decompress_post_N (#n: usize) (d: usize{v d < 12})
 (* Bit-packing pre/post.  An i16 array of n elements where each
    element's low d bits participate is packed into n8 bytes iff
    n * d == n8 * 8.  Stated via the BitVecEq helper — same path
-   Spec.MLKEM.serialize_post used at n=16, now generic. *)
+   serialize_post_N used at n=16, now generic. *)
 let serialize_pre_N (#n: usize)
     (d: nat{d > 0 /\ d <= 12})
     (input: t_Array i16 n) : prop =
   forall (i: nat). i < v n ==> Rust_primitives.BitVectors.bounded (Seq.index input i) d
 
-let serialize_post_N (#n: usize) (#n8: usize)
-    (d: nat{d > 0 /\ d <= 12 /\ v n * d == v n8 * 8})
+let serialize_post_N (#n: usize)
+    (d: nat{d > 0 /\ d <= 12})
     (input: t_Array i16 n {serialize_pre_N d input})
-    (output: t_Array u8 n8) : prop =
-  BitVecEq.int_t_array_bitwise_eq input d output 8
+    (output: t_Slice u8 {Seq.length output * 8 == v n * d}) : prop =
+  let n8 : usize = sz (Seq.length output) in
+  let output_arr : t_Array u8 n8 = output in
+  BitVecEq.int_t_array_bitwise_eq input d output_arr 8
 
-let deserialize_post_N (#n: usize) (#n8: usize)
-    (d: nat{d > 0 /\ d <= 12 /\ v n * d == v n8 * 8})
-    (input: t_Array u8 n8)
+let deserialize_post_N (#n: usize)
+    (d: nat{d > 0 /\ d <= 12})
+    (input: t_Slice u8 {Seq.length input * 8 == v n * d})
     (output: t_Array i16 n) : prop =
-  BitVecEq.int_t_array_bitwise_eq input 8 output d /\
+  let n8 : usize = sz (Seq.length input) in
+  let input_arr : t_Array u8 n8 = input in
+  BitVecEq.int_t_array_bitwise_eq input_arr 8 output d /\
   (forall (i: nat). i < v n ==> Rust_primitives.BitVectors.bounded (Seq.index output i) d)
 
 (* Raw 16-bit LE byte load / store.  At n=16 lanes / 32 bytes, these
@@ -485,7 +489,7 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
     pub(crate) fn serialize_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
-            Spec.MLKEM.serialize_pre 1 $vec"#
+            serialize_pre_N 1 $vec"#
         )
     }
 
@@ -493,8 +497,8 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"   
             Seq.length ${result} == 2 /\
-            (Spec.MLKEM.serialize_pre 1 $vec ==> 
-               Spec.MLKEM.serialize_post 1 ${vec} ${result})"#
+            (serialize_pre_N 1 $vec ==> 
+               serialize_post_N 1 ${vec} ${result})"#
         )
     }
 
@@ -506,14 +510,14 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 2 ==>
-            Spec.MLKEM.deserialize_post 1 ${input} ${result}"#
+            deserialize_post_N 1 ${input} ${result}"#
         )
     }
 
     pub(crate) fn serialize_4_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"
-            Spec.MLKEM.serialize_pre 4 $vec"#
+            serialize_pre_N 4 $vec"#
         )
     }
 
@@ -521,8 +525,8 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"   
             Seq.length ${result} == 8 /\
-            (Spec.MLKEM.serialize_pre 4 $vec ==> 
-               Spec.MLKEM.serialize_post 4 ${vec} ${result})"#
+            (serialize_pre_N 4 $vec ==> 
+               serialize_post_N 4 ${vec} ${result})"#
         )
     }
 
@@ -534,14 +538,14 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 8 ==>
-            Spec.MLKEM.deserialize_post 4 ${input} ${result}"#
+            deserialize_post_N 4 ${input} ${result}"#
         )
     }
 
     pub(crate) fn serialize_10_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" 
-            Spec.MLKEM.serialize_pre 10 $vec"#
+            serialize_pre_N 10 $vec"#
         )
     }
 
@@ -549,8 +553,8 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"   
             Seq.length ${result} == 20 /\
-            (Spec.MLKEM.serialize_pre 10 $vec ==> 
-               Spec.MLKEM.serialize_post 10 ${vec} ${result})"#
+            (serialize_pre_N 10 $vec ==> 
+               serialize_post_N 10 ${vec} ${result})"#
         )
     }
 
@@ -562,14 +566,14 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 20 ==>
-            Spec.MLKEM.deserialize_post 10 ${input} ${result}"#
+            deserialize_post_N 10 ${input} ${result}"#
         )
     }
 
     pub(crate) fn serialize_12_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" 
-            Spec.MLKEM.serialize_pre 12 $vec"#
+            serialize_pre_N 12 $vec"#
         )
     }
 
@@ -577,8 +581,8 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"   
             Seq.length ${result} == 24 /\
-            (Spec.MLKEM.serialize_pre 12 $vec ==> 
-               Spec.MLKEM.serialize_post 12 ${vec} ${result})"#
+            (serialize_pre_N 12 $vec ==> 
+               serialize_post_N 12 ${vec} ${result})"#
         )
     }
 
@@ -590,7 +594,7 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         hax_lib::fstar_prop_expr!(
             r#"
             Seq.length ${input} == 24 ==>
-            Spec.MLKEM.deserialize_post 12 ${input} ${result}"#
+            deserialize_post_N 12 ${input} ${result}"#
         )
     }
 }
