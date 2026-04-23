@@ -69,6 +69,27 @@ let to_spec_array (#n: usize)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
   createi n (fun i -> to_spec_fe (Seq.index x (v i)))
 
+(* Build a small zeta slice from explicit i16 zetas, for passing to
+   hacspec's ntt_layer_n / ntt_inverse_layer_n / ntt_multiply_n.
+   The trait's ntt_layer_{1,2,3}_step / inv_ntt_* / ntt_multiply take
+   4 / 2 / 1 zetas as separate parameters. *)
+let zetas_1 (z0: i16)
+    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 1) =
+  createi (mk_usize 1) (fun _ -> to_spec_fe z0)
+
+let zetas_2 (z0 z1: i16)
+    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 2) =
+  createi (mk_usize 2) (fun i ->
+    if v i = 0 then to_spec_fe z0 else to_spec_fe z1)
+
+let zetas_4 (z0 z1 z2 z3: i16)
+    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 4) =
+  createi (mk_usize 4) (fun i ->
+    if v i = 0 then to_spec_fe z0
+    else if v i = 1 then to_spec_fe z1
+    else if v i = 2 then to_spec_fe z2
+    else to_spec_fe z3)
+
 (* Hacspec equations stated elementwise over arrays of any length n.
    The trait instantiates them with n=16; the polynomial layer uses
    n=256.  Each predicate bakes in whatever pre-conditions hacspec's
@@ -82,16 +103,16 @@ let compress_post_N (#n: usize) (d: usize{v d < 12})
 
 (* decompress_d (hacspec) has precondition
      to_bit_size < 12 /\ fe.f_val < 1 << to_bit_size.
-   The trait caller meets the second part by holding each i16 coeff
-   in [0, 2^d).  The predicate therefore requires the input refinement
-   inline so the call to decompress_d is well-typed. *)
+   The first part is in our refinement on d; the second must be
+   supplied by the caller's pre.  We use implication so the predicate
+   is callable without an input refinement. *)
 let decompress_post_N (#n: usize) (d: usize{v d < 12})
-    (input: t_Array i16 n {forall (i: nat). i < v n ==>
-       v (Seq.index input i) >= 0 /\ v (Seq.index input i) < pow2 (v d)})
-    (result: t_Array i16 n) : prop =
-  forall (i: nat). i < v n ==>
+    (input result: t_Array i16 n) : prop =
+  (forall (i: nat). i < v n ==>
+     v (Seq.index input i) >= 0 /\ v (Seq.index input i) < pow2 (v d)) ==>
+  (forall (i: nat). i < v n ==>
     to_spec_fe (Seq.index result i) ==
-    Hacspec_ml_kem.Compress.decompress_d (to_spec_fe (Seq.index input i)) d
+    Hacspec_ml_kem.Compress.decompress_d (to_spec_fe (Seq.index input i)) d)
 
 (* Bit-packing pre/post.  An i16 array of n elements where each
    element's low d bits participate is packed into n8 bytes iff
@@ -121,16 +142,21 @@ let deserialize_post_N (#n: usize)
 
 (* Raw 16-bit LE byte load / store.  At n=16 lanes / 32 bytes, these
    are the trait's from_bytes / to_bytes.  Same BitVecEq path again,
-   d=16 on the i16 side, d=8 on the u8 side. *)
-let from_le_bytes_post_N (#n: usize) (#n2: usize)
-    (input: t_Array u8 n2)
-    (output: t_Array i16 n {v n * 16 == v n2 * 8}) : prop =
-  BitVecEq.int_t_array_bitwise_eq input 8 output 16
+   d=16 on the i16 side, d=8 on the u8 side.  Same slice-with-length
+   coercion pattern as serialize_post_N. *)
+let from_le_bytes_post_N (#n: usize)
+    (input: t_Slice u8 {Seq.length input * 8 == v n * 16})
+    (output: t_Array i16 n) : prop =
+  let n2 : usize = sz (Seq.length input) in
+  let input_arr : t_Array u8 n2 = input in
+  BitVecEq.int_t_array_bitwise_eq input_arr 8 output 16
 
-let to_le_bytes_post_N (#n: usize) (#n2: usize)
-    (input: t_Array i16 n {v n * 16 == v n2 * 8})
-    (output: t_Array u8 n2) : prop =
-  BitVecEq.int_t_array_bitwise_eq input 16 output 8
+let to_le_bytes_post_N (#n: usize)
+    (input: t_Array i16 n)
+    (output: t_Slice u8 {Seq.length output * 8 == v n * 16}) : prop =
+  let n2 : usize = sz (Seq.length output) in
+  let output_arr : t_Array u8 n2 = output in
+  BitVecEq.int_t_array_bitwise_eq input 16 output_arr 8
 "#
         )
     )]
@@ -290,7 +316,10 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
     }
 
     pub(crate) fn compress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"forall i. bounded (Seq.index ${result} i) 1"#)
+        hax_lib::fstar_prop_expr!(
+            r#"(forall i. bounded (Seq.index ${result} i) 1) /\
+               compress_post_N #(mk_usize 16) (mk_usize 1) ${vec} ${result}"#
+        )
     }
 
     pub(crate) fn compress_pre(vec: &[i16; 16], coefficient_bits: i32) -> hax_lib::Prop {
@@ -315,7 +344,28 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) ==>
-                (forall i. bounded (Seq.index ${result} i) (v $coefficient_bits))"#
+                ((forall i. bounded (Seq.index ${result} i) (v $coefficient_bits)) /\
+                 compress_post_N #(mk_usize 16) (mk_usize (v $coefficient_bits)) ${vec} ${result})"#
+        )
+    }
+
+    pub(crate) fn decompress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"decompress_post_N #(mk_usize 16) (mk_usize 1) ${vec} ${result}"#
+        )
+    }
+
+    pub(crate) fn decompress_ciphertext_coefficient_post(
+        vec: &[i16; 16],
+        coefficient_bits: i32,
+        result: &[i16; 16],
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"(v $coefficient_bits == 4 \/
+                v $coefficient_bits == 5 \/
+                v $coefficient_bits == 10 \/
+                v $coefficient_bits == 11) ==>
+                decompress_post_N #(mk_usize 16) (mk_usize (v $coefficient_bits)) ${vec} ${result}"#
         )
     }
 
@@ -364,7 +414,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque(8*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque (8*3328) ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 2)
+                   (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
+        )
     }
 
     pub(crate) fn ntt_layer_2_step_pre(vec: &[i16; 16], zeta0: i16, zeta1: i16) -> hax_lib::Prop {
@@ -380,7 +436,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque (7*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque (7*3328) ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 4)
+                   (zetas_2 ${zeta0} ${zeta1})"#
+        )
     }
 
     pub(crate) fn ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
@@ -395,7 +457,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque (6*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque (6*3328) ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 8)
+                   (zetas_1 ${zeta0})"#
+        )
     }
 
     pub(crate) fn inv_ntt_layer_1_step_pre(
@@ -420,7 +488,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 2)
+                   (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
+        )
     }
 
     pub(crate) fn inv_ntt_layer_2_step_pre(
@@ -440,7 +514,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 4)
+                   (zetas_2 ${zeta0} ${zeta1})"#
+        )
     }
 
     pub(crate) fn inv_ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
@@ -455,7 +535,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
+                   (to_spec_array ${vec}) (mk_usize 8)
+                   (zetas_1 ${zeta0})"#
+        )
     }
 
     pub(crate) fn ntt_multiply_pre(
@@ -483,7 +569,13 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               to_spec_array ${result} ==
+                 Hacspec_ml_kem.Ntt.ntt_multiply_n (mk_usize 16)
+                   (to_spec_array ${lhs}) (to_spec_array ${rhs})
+                   (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
+        )
     }
 
     pub(crate) fn serialize_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {
@@ -597,6 +689,84 @@ let to_le_bytes_post_N (#n: usize) (#n2: usize)
             deserialize_post_N 12 ${input} ${result}"#
         )
     }
+
+    pub(crate) fn serialize_5_pre(vec: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"serialize_pre_N 5 $vec"#)
+    }
+
+    pub(crate) fn serialize_5_post(vec: &[i16; 16], result: &[u8]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${result} == 10 /\
+               (serialize_pre_N 5 $vec ==>
+                  serialize_post_N 5 ${vec} ${result})"#
+        )
+    }
+
+    pub(crate) fn deserialize_5_pre(input: &[u8]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 10"#)
+    }
+
+    pub(crate) fn deserialize_5_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${input} == 10 ==>
+               deserialize_post_N 5 ${input} ${result}"#
+        )
+    }
+
+    pub(crate) fn serialize_11_pre(vec: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"serialize_pre_N 11 $vec"#)
+    }
+
+    pub(crate) fn serialize_11_post(vec: &[i16; 16], result: &[u8]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${result} == 22 /\
+               (serialize_pre_N 11 $vec ==>
+                  serialize_post_N 11 ${vec} ${result})"#
+        )
+    }
+
+    pub(crate) fn deserialize_11_pre(input: &[u8]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 22"#)
+    }
+
+    pub(crate) fn deserialize_11_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${input} == 22 ==>
+               deserialize_post_N 11 ${input} ${result}"#
+        )
+    }
+
+    pub(crate) fn from_bytes_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${input} >= 32 ==>
+               (let head : t_Slice u8 = Seq.slice ${input} 0 32 in
+                from_le_bytes_post_N #(mk_usize 16) head ${result})"#
+        )
+    }
+
+    pub(crate) fn to_bytes_post(input: &[i16; 16], result: &[u8]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${result} >= 32 ==>
+               (let head : t_Slice u8 = Seq.slice ${result} 0 32 in
+                to_le_bytes_post_N #(mk_usize 16) ${input} head)"#
+        )
+    }
+
+    pub(crate) fn rej_sample_post(input: &[u8], count: usize, out: &[i16]) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Seq.length ${input} == 24 ==>
+               (Seq.length ${out} == 16 /\ v ${count} <= 16 /\
+                (let bytes : t_Array u8 (mk_usize 24) = ${input} in
+                 let spec_result, spec_count =
+                   Hacspec_ml_kem.Sampling.rej_sample_step bytes in
+                 v ${count} == v spec_count /\
+                 (forall (j: nat). j < v ${count} ==>
+                    v (Seq.index ${out} j) >= 0 /\
+                    v (Seq.index ${out} j) <= 3328 /\
+                    v (Seq.index ${out} j) ==
+                      v (Seq.index spec_result j).Hacspec_ml_kem.Parameters.f_val)))"#
+        )
+    }
 }
 
 #[hax_lib::attributes]
@@ -615,10 +785,11 @@ pub trait Operations: Copy + Clone + Repr {
     fn to_i16_array(x: Self) -> [i16; 16];
 
     #[requires(array.len() >= 32)]
+    #[ensures(|result| spec::from_bytes_post(&array, &result.repr()))]
     fn from_bytes(array: &[u8]) -> Self;
 
     #[requires(bytes.len() >= 32)]
-    #[ensures(|_| future(bytes).len() == bytes.len())]
+    #[ensures(|_| (future(bytes).len() == bytes.len()).to_prop() & spec::to_bytes_post(&x.repr(), &future(bytes)))]
     fn to_bytes(x: Self, bytes: &mut [u8]);
 
     // Basic arithmetic
@@ -661,10 +832,11 @@ pub trait Operations: Copy + Clone + Repr {
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     #[requires(spec::decompress_1_pre(&a.repr()))]
-    //#[ensures(|result| spec::decompress_1_post(&vector.repr(), &result.repr()))]
+    #[ensures(|result| spec::decompress_1_post(&a.repr(), &result.repr()))]
     fn decompress_1(a: Self) -> Self;
 
     #[requires(spec::decompress_ciphertext_coefficient_pre(&a.repr(), COEFFICIENT_BITS))]
+    #[ensures(|result| spec::decompress_ciphertext_coefficient_post(&a.repr(), COEFFICIENT_BITS, &result.repr()))]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     // NTT
@@ -714,11 +886,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| spec::deserialize_4_post(&a, &result.repr()))]
     fn deserialize_4(a: &[u8]) -> Self;
 
-    //#[requires(spec::serialize_5_pre(&a.repr()))]
-    //#[ensures(|result| spec::serialize_5_post(&a.repr(), &result))]
+    #[requires(spec::serialize_5_pre(&a.repr()))]
+    #[ensures(|result| spec::serialize_5_post(&a.repr(), &result))]
     fn serialize_5(a: Self) -> [u8; 10];
 
-    #[requires(a.len() == 10)]
+    #[requires(spec::deserialize_5_pre(&a))]
+    #[ensures(|result| spec::deserialize_5_post(&a, &result.repr()))]
     fn deserialize_5(a: &[u8]) -> Self;
 
     #[requires(spec::serialize_10_pre(&a.repr()))]
@@ -729,8 +902,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| spec::deserialize_10_post(&a, &result.repr()))]
     fn deserialize_10(a: &[u8]) -> Self;
 
+    #[requires(spec::serialize_11_pre(&a.repr()))]
+    #[ensures(|result| spec::serialize_11_post(&a.repr(), &result))]
     fn serialize_11(a: Self) -> [u8; 22];
-    #[requires(a.len() == 22)]
+
+    #[requires(spec::deserialize_11_pre(&a))]
+    #[ensures(|result| spec::deserialize_11_post(&a, &result.repr()))]
     fn deserialize_11(a: &[u8]) -> Self;
 
     #[requires(spec::serialize_12_pre(&a.repr()))]
@@ -743,9 +920,6 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Rejection sampling
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop() & (
-            hax_lib::forall(|j: usize|
-                hax_lib::implies(j < result,
-                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
+    #[ensures(|result| spec::rej_sample_post(&a, result, &future(out)))]
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }

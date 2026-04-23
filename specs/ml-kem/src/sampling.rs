@@ -57,6 +57,7 @@ pub fn rej_sample_step(bytes: [u8; 24]) -> ([FieldElement; 16], usize) {
     let mut result = [FieldElement::new(0); 16];
     let mut count: usize = 0;
     for i in 0..16 {
+        hax_lib::loop_invariant!(|i: usize| count <= i);
         if decoded[i] < FIELD_MODULUS {
             result[count] = FieldElement::new(decoded[i]);
             count += 1;

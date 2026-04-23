@@ -253,7 +253,7 @@ pub fn butterfly(
 /// len = 2^layer) is what `ntt_layer` below instantiates.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
-    len >= 1 && zetas.len() * 2 * len == N
+    len >= 1 && len < 1024 && zetas.len() < 1024 && zetas.len() * 2 * len == N
 )]
 pub fn ntt_layer_n<const N: usize>(
     p: [FieldElement; N],
@@ -372,7 +372,7 @@ fn base_case_multiply_odd(
 /// full `multiply_ntts` below.  When instantiated at N=16 with 4 zetas
 /// this is the trait's `ntt_multiply(lhs, rhs, z0, z1, z2, z3)`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(zetas.len() * 4 == N)]
+#[hax_lib::requires(zetas.len() < 1024 && zetas.len() * 4 == N)]
 pub fn ntt_multiply_n<const N: usize>(
     p1: &[FieldElement; N],
     p2: &[FieldElement; N],

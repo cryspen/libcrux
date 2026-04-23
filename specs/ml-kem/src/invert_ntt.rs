@@ -54,7 +54,7 @@ pub fn inv_butterfly(
 /// half-size `len`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(
-    len >= 1 && zetas.len() * 2 * len == N
+    len >= 1 && len < 1024 && zetas.len() < 1024 && zetas.len() * 2 * len == N
 )]
 pub fn ntt_inverse_layer_n<const N: usize>(
     p: [FieldElement; N],
