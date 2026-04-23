@@ -91,7 +91,7 @@ fn bit_rev_7(x: usize) -> usize {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-const ZETAS: [FieldElement; 128] = [
+pub const ZETAS: [FieldElement; 128] = [
     FieldElement::new(1),
     FieldElement::new(1729),
     FieldElement::new(2580),
@@ -229,34 +229,60 @@ pub fn get_zeta(i: usize) -> FieldElement {
     ZETAS[i]
 }
 
+/// Cooley–Tukey butterfly: `(a, b, ζ) ↦ (a + ζ·b, a − ζ·b)`.
+/// Used in the forward NTT.
+pub fn butterfly(
+    zeta: FieldElement,
+    a: FieldElement,
+    b: FieldElement,
+) -> (FieldElement, FieldElement) {
+    let t = zeta.mul(b);
+    (a.add(t), a.sub(t))
+}
+
+/// One layer of the NTT, generic over the array length `N`.
+///
+/// The layer is characterised by `(len, groups)` where `groups = zetas.len()`
+/// and `N = 2·groups·len`.  Each of the `groups` butterfly groups spans `2·len`
+/// consecutive coefficients, uses one zeta, and runs `len` independent
+/// butterflies.
+///
+/// This is FIPS 203 Algorithm 8 lines 3-8 applied once at butterfly half-size
+/// `len`.  The within-chunk case (N = 16, len ∈ {2, 4, 8}) corresponds to the
+/// trait's `ntt_layer_{1,2,3}_step`; the full-polynomial case (N = 256,
+/// len = 2^layer) is what `ntt_layer` below instantiates.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(
+    len >= 1 && zetas.len() * 2 * len == N
+)]
+pub fn ntt_layer_n<const N: usize>(
+    p: [FieldElement; N],
+    len: usize,
+    zetas: &[FieldElement],
+) -> [FieldElement; N] {
+    createi(|i| {
+        let group = i / (2 * len);
+        let idx = i % (2 * len);
+        if idx < len {
+            butterfly(zetas[group], p[i], p[i + len]).0
+        } else {
+            butterfly(zetas[group], p[i - len], p[i]).1
+        }
+    })
+}
+
+/// One layer of the 256-coefficient NTT.  Thin wrapper over `ntt_layer_n`
+/// that selects the zeta slice for this layer out of the global `ZETAS`
+/// table.
+///
+/// Follows FIPS 203 Algorithm 8.  Butterfly half-size `len = 2^layer`,
+/// groups = `128 / len`, zetas used = `ZETAS[groups .. 2·groups]`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(layer >= 1 && layer <= 7)]
 fn ntt_layer(p: Polynomial, layer: usize) -> Polynomial {
-    hax_lib::debug_assert!(layer <= 7);
     let len = 1 << layer;
-    hax_lib::fstar!("assert (v len == pow2 (v layer))");
-    let k = 128 / len;
-    hax_lib::fstar!("assert (v k == 128 / (v len))");
-    createi(|i| {
-        let round = i / (2 * len);
-        hax_lib::fstar!("assert (v round < 128 / (v len))");
-        hax_lib::fstar!("assert (v round + v k < 256 / (v len))");
-        hax_lib::fstar!("assert (v len >= 2)");
-        let idx = i % (2 * len);
-        let q = FIELD_MODULUS as u32;
-        if idx < len {
-            FieldElement::new(
-                ((p[i].val as u32 + get_zeta(round + k).val as u32 * p[i + len].val as u32) % q)
-                    as u16,
-            )
-        } else {
-            // Add q² to prevent underflow: q² > (q-1)² >= zeta * p[i]
-            FieldElement::new(
-                ((p[i - len].val as u32 + q * q - get_zeta(round + k).val as u32 * p[i].val as u32)
-                    % q) as u16,
-            )
-        }
-    })
+    let groups = 128 / len;
+    ntt_layer_n(p, len, &ZETAS[groups..2 * groups])
 }
 
 fn ntt(p: Polynomial) -> Polynomial {
@@ -296,10 +322,8 @@ fn base_case_multiply_even(
     b1: FieldElement,
     zeta: FieldElement,
 ) -> FieldElement {
-    FieldElement::new(
-        ((a0.val as u64 * b0.val as u64 + a1.val as u64 * b1.val as u64 * zeta.val as u64)
-            % FIELD_MODULUS as u64) as u16,
-    )
+    // c₀ = a₀·b₀ + a₁·b₁·ζ
+    a0.mul(b0).add(a1.mul(b1).mul(zeta))
 }
 
 fn base_case_multiply_odd(
@@ -308,10 +332,8 @@ fn base_case_multiply_odd(
     b0: FieldElement,
     b1: FieldElement,
 ) -> FieldElement {
-    FieldElement::new(
-        ((a0.val as u64 * b1.val as u64 + a1.val as u64 * b0.val as u64) % FIELD_MODULUS as u64)
-            as u16,
-    )
+    // c₁ = a₀·b₁ + a₁·b₀
+    a0.mul(b1).add(a1.mul(b0))
 }
 
 /// Given two `Polynomial`s in their NTT representations,

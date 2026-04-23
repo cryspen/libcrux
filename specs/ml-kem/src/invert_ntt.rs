@@ -1,4 +1,4 @@
-use crate::ntt::get_zeta;
+use crate::ntt::ZETAS;
 use crate::parameters::*;
 
 const INVERSE_OF_128: FieldElement = FieldElement::new(3303);
@@ -34,35 +34,67 @@ const INVERSE_OF_128: FieldElement = FieldElement::new(3303);
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 ///
+/// Gentleman–Sande butterfly: `(a, b, ζ) ↦ (a + b, ζ·(b − a))`.
+/// Used in the inverse NTT.
+pub fn inv_butterfly(
+    zeta: FieldElement,
+    a: FieldElement,
+    b: FieldElement,
+) -> (FieldElement, FieldElement) {
+    (a.add(b), zeta.mul(b.sub(a)))
+}
+
+/// One layer of the inverse NTT, generic over the array length `N`.
+///
+/// As in `ntt_layer_n`, `N = 2·groups·len` where `groups = zetas.len()`.
+/// Each group spans `2·len` coefficients and uses one zeta for its `len`
+/// Gentleman–Sande butterflies.
+///
+/// This is FIPS 203 Algorithm 9 lines 3-8 applied once at butterfly
+/// half-size `len`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(layer >= 1 && layer <= 7)]
-fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
-    hax_lib::debug_assert!(layer <= 7);
-    let len = 1 << layer;
-    hax_lib::fstar!("assert (v len == pow2 (v layer))");
-    let k = (256 / len) - 1;
-    hax_lib::fstar!("assert (v k == 256 / (v len) - 1)");
+#[hax_lib::requires(
+    len >= 1 && zetas.len() * 2 * len == N
+)]
+pub fn ntt_inverse_layer_n<const N: usize>(
+    p: [FieldElement; N],
+    len: usize,
+    zetas: &[FieldElement],
+) -> [FieldElement; N] {
     createi(|i| {
-        let round = i / (2 * len);
-        hax_lib::fstar!("assert (v round < 128 / (v len))");
-        hax_lib::fstar!("assert (v len >= 2)");
+        let group = i / (2 * len);
         let idx = i % (2 * len);
-        let q = FIELD_MODULUS as u32;
         if idx < len {
-            FieldElement::new(((p[i].val as u32 + p[i + len].val as u32) % q) as u16)
+            inv_butterfly(zetas[group], p[i], p[i + len]).0
         } else {
-            let diff = (p[i].val as u32 + q - p[i - len].val as u32) % q;
-            FieldElement::new((get_zeta(k - round).val as u32 * diff % q) as u16)
+            inv_butterfly(zetas[group], p[i - len], p[i]).1
         }
     })
 }
 
+/// One layer of the 256-coefficient inverse NTT.
+///
+/// Follows FIPS 203 Algorithm 9.  Butterfly half-size `len = 2^layer`,
+/// groups = `128 / len`, zetas used = `ZETAS[groups .. 2·groups]` reversed
+/// (the inverse NTT consumes the zeta table top-down).
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(layer >= 1 && layer <= 7)]
+fn ntt_inverse_layer(p: Polynomial, layer: usize) -> Polynomial {
+    let len = 1 << layer;
+    let groups = 128 / len;
+    // ZETAS[groups .. 2·groups] reversed: zetas[round] = ZETAS[2·groups − 1 − round]
+    let zetas: [FieldElement; 128] = createi(|round| {
+        if round < groups {
+            ZETAS[2 * groups - 1 - round]
+        } else {
+            FieldElement::new(0)
+        }
+    });
+    ntt_inverse_layer_n(p, len, &zetas[0..groups])
+}
+
 pub fn reduce_polynomial(p: Polynomial) -> Polynomial {
-    createi(|i| {
-        FieldElement::new(
-            ((p[i].val as u32 * INVERSE_OF_128.val as u32) % FIELD_MODULUS as u32) as u16,
-        )
-    })
+    createi(|i| p[i].mul(INVERSE_OF_128))
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]

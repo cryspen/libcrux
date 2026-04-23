@@ -155,6 +155,24 @@ impl FieldElement {
     pub const fn new(val: u16) -> Self {
         Self { val }
     }
+
+    /// Addition in ℤ/q.
+    pub fn add(self, other: FieldElement) -> FieldElement {
+        FieldElement::new(((self.val as u32 + other.val as u32) % FIELD_MODULUS as u32) as u16)
+    }
+
+    /// Subtraction in ℤ/q.  Adding q avoids unsigned underflow before reducing.
+    pub fn sub(self, other: FieldElement) -> FieldElement {
+        FieldElement::new(
+            ((self.val as u32 + FIELD_MODULUS as u32 - other.val as u32) % FIELD_MODULUS as u32)
+                as u16,
+        )
+    }
+
+    /// Multiplication in ℤ/q.
+    pub fn mul(self, other: FieldElement) -> FieldElement {
+        FieldElement::new(((self.val as u32 * other.val as u32) % FIELD_MODULUS as u32) as u16)
+    }
 }
 
 /// An ML-KEM polynomial ring element
