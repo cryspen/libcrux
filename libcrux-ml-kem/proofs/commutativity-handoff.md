@@ -242,26 +242,33 @@ Per-function commits.
 
 ### Note on C2b proof strategy
 
-The 9 Layer-0 lemmas split into three groups by proof style:
+The 9 Layer-0 lemmas split into two groups:
 
 1. **Trivial** (`()` only, 1–900 ms each): both addition variants, both
    subtraction variants, Barrett reduction, and Mont-zeta cancellation.
-   These reduce to an `if-then-else` over `% 3329` that Z3 dispatches
-   directly once the hypothesis pins the residue.
+   Once the lift's return type pins `v r.f_val == v x % 3329` (resp.
+   `(v x * 169) % 3329`), each reduces to a direct `% 3329` equality
+   from the hypothesis.
 
-2. **Helper lemmas** (also `()` only) added in-file to factor out the
-   cast/if/refinement reasoning that otherwise swamps Z3:
-   - `lemma_plain_fe_v_val`   — `v (i16_to_spec_fe x).P.f_val == v x % 3329`
-   - `lemma_mont_fe_v_val`    — `v (mont_i16_to_spec_fe x).P.f_val == (v x * 169) % 3329`
-   - `lemma_impl_mul_v_val`   — `v (impl_FieldElement__mul x y).f_val == (v x.f_val * v y.f_val) % 3329`
+2. **Multiplication** (the three cores + three wrappers): naïve `()` hangs
+   Z3 at `--z3rlimit 200 --split_queries always`.  The working pattern is
+   an integer-level modular-arithmetic core lemma per variant, proved
+   with a handful of `FStar.Math.Lemmas.lemma_mod_mul_distr_{l,r}`
+   citations plus one `assert` for associativity; the i16 wrapper calls
+   one `lemma_impl_mul_v_val` helper (to expose the f_val of the
+   `impl_FieldElement__mul` result) and the core.  Each wrapper then
+   dispatches in ~3 ms.
 
-3. **Multiplication** (the three cores + three wrappers): naïve `()` hangs
-   Z3 at `--z3rlimit 200 --split_queries always`; the working pattern is
-   an integer-level modular-arithmetic core lemma proved with a handful
-   of `FStar.Math.Lemmas.lemma_mod_mul_distr_{l,r}` citations plus one
-   `assert` for associativity, then the i16-level wrapper calls the
-   helpers and the core.  Each wrapper dispatches in 3 ms once the
-   helpers have lifted the goal into plain integer modular equalities.
+The two lifts `i16_to_spec_fe` and `mont_i16_to_spec_fe` were
+strengthened to return refined `t_FieldElement`s whose `f_val`'s `v` is
+pinned to the corresponding mod-3329 residue.  The refinement is proved
+locally with a `FStar.Math.Lemmas.modulo_range_lemma` call so the dead
+`if m < 0` branch is gone.  This change is mirrored in the Rust source
+(`src/vector/traits.rs` hax_lib::fstar::before block) so a future
+`hax.py extract` produces the same refined definitions.  The zeta
+builders and array lifts that consume these functions need an explicit
+`<: t_FieldElement` ascription inside `createi` to drop the refinement
+before array construction.
 
 ### Note on C1 deferral
 

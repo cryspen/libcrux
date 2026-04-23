@@ -67,31 +67,37 @@ let map_array (#a #b:Type) (#len:usize)
     : t_Array b len
     = createi (length s) (fun i -> f (Seq.index s (v i)))
 
-(* Plain-domain lift: x is a field representative mod q. *)
+(* Plain-domain lift: x is a field representative mod q.  The return
+   refinement pins `v result.f_val == v x % 3329`, so callers never
+   have to re-discharge the nonneg-modulo obligation. *)
 let i16_to_spec_fe (x: i16)
-    : Hacspec_ml_kem.Parameters.t_FieldElement =
-  let m : int = v x % 3329 in
-  let m_nat : nat = if m < 0 then m + 3329 else m in
-  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m_nat }
+    : r: Hacspec_ml_kem.Parameters.t_FieldElement
+        { v r.Hacspec_ml_kem.Parameters.f_val == v x % 3329 } =
+  FStar.Math.Lemmas.modulo_range_lemma (v x) 3329;
+  let m : nat = v x % 3329 in
+  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m }
 
 (* Montgomery-domain lift: x stores `v_abs * R mod q` with R = 2^16;
    R^{-1} = 169 mod 3329.  Strips the R factor to recover the abstract
    value. *)
 let mont_i16_to_spec_fe (x: i16)
-    : Hacspec_ml_kem.Parameters.t_FieldElement =
-  let m : int = (v x * 169) % 3329 in
-  let m_nat : nat = if m < 0 then m + 3329 else m in
-  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m_nat }
+    : r: Hacspec_ml_kem.Parameters.t_FieldElement
+        { v r.Hacspec_ml_kem.Parameters.f_val == (v x * 169) % 3329 } =
+  FStar.Math.Lemmas.modulo_range_lemma (v x * 169) 3329;
+  let m : nat = (v x * 169) % 3329 in
+  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m }
 
 let i16_to_spec_array (#n: usize)
     (x: t_Array i16 n)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
-  createi n (fun i -> i16_to_spec_fe (Seq.index x (v i)))
+  createi n (fun i ->
+    (i16_to_spec_fe (Seq.index x (v i)) <: Hacspec_ml_kem.Parameters.t_FieldElement))
 
 let mont_i16_to_spec_array (#n: usize)
     (x: t_Array i16 n)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
-  createi n (fun i -> mont_i16_to_spec_fe (Seq.index x (v i)))
+  createi n (fun i ->
+    (mont_i16_to_spec_fe (Seq.index x (v i)) <: Hacspec_ml_kem.Parameters.t_FieldElement))
 
 (* Build a small zeta slice from explicit i16 zetas, for passing to
    hacspec's ntt_layer_n / ntt_inverse_layer_n / ntt_multiply_n.
@@ -100,20 +106,23 @@ let mont_i16_to_spec_array (#n: usize)
    in Montgomery form; the slice holds abstract plain zetas. *)
 let zetas_1 (z0: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 1) =
-  createi (mk_usize 1) (fun _ -> mont_i16_to_spec_fe z0)
+  createi (mk_usize 1) (fun _ ->
+    (mont_i16_to_spec_fe z0 <: Hacspec_ml_kem.Parameters.t_FieldElement))
 
 let zetas_2 (z0 z1: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 2) =
   createi (mk_usize 2) (fun i ->
-    if v i = 0 then mont_i16_to_spec_fe z0 else mont_i16_to_spec_fe z1)
+    (if v i = 0 then mont_i16_to_spec_fe z0 else mont_i16_to_spec_fe z1)
+      <: Hacspec_ml_kem.Parameters.t_FieldElement)
 
 let zetas_4 (z0 z1 z2 z3: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 4) =
   createi (mk_usize 4) (fun i ->
-    if v i = 0 then mont_i16_to_spec_fe z0
-    else if v i = 1 then mont_i16_to_spec_fe z1
-    else if v i = 2 then mont_i16_to_spec_fe z2
-    else mont_i16_to_spec_fe z3)
+    (if v i = 0 then mont_i16_to_spec_fe z0
+     else if v i = 1 then mont_i16_to_spec_fe z1
+     else if v i = 2 then mont_i16_to_spec_fe z2
+     else mont_i16_to_spec_fe z3)
+      <: Hacspec_ml_kem.Parameters.t_FieldElement)
 
 (* Hacspec equations stated elementwise over arrays of any length n.
    The trait instantiates them with n=16; the polynomial layer uses

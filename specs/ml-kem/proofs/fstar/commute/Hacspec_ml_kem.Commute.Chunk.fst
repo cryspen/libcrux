@@ -66,17 +66,9 @@ let lemma_mont_zeta_cancel (zeta_mont zeta_plain: i16) :
           (ensures  mont_i16_to_spec_fe zeta_mont == i16_to_spec_fe zeta_plain)
   = ()
 
-(* Helpers exposing the integer value of each FE's `f_val`.  These factor
-   out the cast / refinement / if-then-else reasoning so the product
-   lemmas below reduce to plain modular arithmetic. *)
-let lemma_plain_fe_v_val (x: i16) :
-    Lemma (v (i16_to_spec_fe x).P.f_val == v x % 3329)
-  = ()
-
-let lemma_mont_fe_v_val (x: i16) :
-    Lemma (v (mont_i16_to_spec_fe x).P.f_val == (v x * 169) % 3329)
-  = ()
-
+(* The `v .f_val` equalities for `i16_to_spec_fe` / `mont_i16_to_spec_fe`
+   are now delivered by each lift's return refinement, so the only helper
+   we still need is the one that exposes the f_val of `impl_FieldElement__mul`. *)
 let lemma_impl_mul_v_val (x y: P.t_FieldElement) :
     Lemma (v (P.impl_FieldElement__mul x y).P.f_val
              == (v x.P.f_val * v y.P.f_val) % 3329)
@@ -120,12 +112,7 @@ let lemma_mont_mul_fe_commute_mont_mont (a b r: i16) :
           (ensures  P.impl_FieldElement__mul
                         (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b)
                     == mont_i16_to_spec_fe r)
-  = let a_fe = mont_i16_to_spec_fe a in
-    let b_fe = mont_i16_to_spec_fe b in
-    lemma_mont_fe_v_val a;
-    lemma_mont_fe_v_val b;
-    lemma_mont_fe_v_val r;
-    lemma_impl_mul_v_val a_fe b_fe;
+  = lemma_impl_mul_v_val (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b);
     lemma_mont_mul_mod_core (v a) (v b) (v r)
 
 (* Mixed mode: `a` Montgomery, `b` plain; result is plain. *)
@@ -134,12 +121,7 @@ let lemma_mont_mul_fe_commute_mont_plain (a b r: i16) :
           (ensures  P.impl_FieldElement__mul
                         (mont_i16_to_spec_fe a) (i16_to_spec_fe b)
                     == i16_to_spec_fe r)
-  = let a_fe = mont_i16_to_spec_fe a in
-    let b_fe = i16_to_spec_fe b in
-    lemma_mont_fe_v_val a;
-    lemma_plain_fe_v_val b;
-    lemma_plain_fe_v_val r;
-    lemma_impl_mul_v_val a_fe b_fe;
+  = lemma_impl_mul_v_val (mont_i16_to_spec_fe a) (i16_to_spec_fe b);
     lemma_mont_plain_mul_mod_core (v a) (v b) (v r)
 
 (* Plain multiplication by a constant coefficient. *)
@@ -147,12 +129,7 @@ let lemma_mul_const_fe_commute_plain (a c r: i16) :
     Lemma (requires v r == v a * v c)
           (ensures  P.impl_FieldElement__mul (i16_to_spec_fe a) (i16_to_spec_fe c)
                     == i16_to_spec_fe r)
-  = let a_fe = i16_to_spec_fe a in
-    let c_fe = i16_to_spec_fe c in
-    lemma_plain_fe_v_val a;
-    lemma_plain_fe_v_val c;
-    lemma_plain_fe_v_val r;
-    lemma_impl_mul_v_val a_fe c_fe;
+  = lemma_impl_mul_v_val (i16_to_spec_fe a) (i16_to_spec_fe c);
     lemma_mul_const_mod_core (v a) (v c) (v r)
 
 (* Layer 1 — 16-lane chunk commute lemmas.
