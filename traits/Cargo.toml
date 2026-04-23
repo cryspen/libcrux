@@ -23,6 +23,6 @@ alloc = []
 zeroize = ["dep:zeroize", "libcrux-secrets/zeroize"]
 
 [dependencies]
-rand = { version = "0.9", default-features = false }
+rand = { version = "0.10", default-features = false }
 libcrux-secrets.workspace = true
 zeroize = { version = "1.8", default-features = false, optional = true }
