@@ -13,6 +13,7 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
-	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction
+	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction \
+	      $(shell git rev-parse --show-toplevel)/specs/ml-kem/proofs/fstar/commute
 
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base

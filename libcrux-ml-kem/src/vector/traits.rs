@@ -33,14 +33,23 @@ pub(crate) mod spec {
     //     is_i16b_array / is_i16b_array_opaque / map_array), copied
     //     verbatim from proofs/fstar/spec/Spec.Utils.fsti so that, with
     //     opaque_to_smt unfolded, the predicate content is identical.
-    //   * `to_spec_fe` : i16 -> Hacspec_ml_kem.Parameters.t_FieldElement,
-    //     total reduction to the canonical field representative in
-    //     [0, 3328].  Agrees with `to_unsigned_representative` on its
-    //     domain [-3328, 3328].  Used by chunk/polynomial predicates
-    //     to state hacspec equations over raw i16 arrays.
-    //   * `to_spec_array` : lifts `to_spec_fe` elementwise; the
-    //     polynomial-layer wrapper `to_spec_poly_t` uses N=256, the
-    //     trait uses N=16.
+    //
+    //   * Two i16 -> t_FieldElement lifts, distinguished by whether the
+    //     impl i16 is a *plain* representative mod q, or a *Montgomery*
+    //     form representing abstract value `(v x * R^{-1}) mod q` with
+    //     R = 2^16 and R^{-1} = 169 mod 3329:
+    //       - i16_to_spec_fe x      := (v x) mod q
+    //       - mont_i16_to_spec_fe x := (v x * 169) mod q
+    //     NTT, inverse-NTT, and ntt_multiply live in Montgomery land;
+    //     compress/decompress/serialize/deserialize/barrett live in
+    //     plain land.  `add`/`sub` are linear and work in either.
+    //
+    //   * Array companions i16_to_spec_array / mont_i16_to_spec_array
+    //     and the small helper builders zetas_{1,2,4} for the trait's
+    //     explicit-zeta NTT steps.  Zetas in the impl are stored in
+    //     Montgomery form (`zeta * R mod q`); the builders use
+    //     `mont_i16_to_spec_fe` so the resulting slice holds plain
+    //     abstract zetas that hacspec's ntt_layer_n expects.
     #[cfg_attr(
         hax,
         hax_lib::fstar::before(
@@ -58,37 +67,53 @@ let map_array (#a #b:Type) (#len:usize)
     : t_Array b len
     = createi (length s) (fun i -> f (Seq.index s (v i)))
 
-let to_spec_fe (x: i16)
+(* Plain-domain lift: x is a field representative mod q. *)
+let i16_to_spec_fe (x: i16)
     : Hacspec_ml_kem.Parameters.t_FieldElement =
   let m : int = v x % 3329 in
   let m_nat : nat = if m < 0 then m + 3329 else m in
   { Hacspec_ml_kem.Parameters.f_val = mk_u16 m_nat }
 
-let to_spec_array (#n: usize)
+(* Montgomery-domain lift: x stores `v_abs * R mod q` with R = 2^16;
+   R^{-1} = 169 mod 3329.  Strips the R factor to recover the abstract
+   value. *)
+let mont_i16_to_spec_fe (x: i16)
+    : Hacspec_ml_kem.Parameters.t_FieldElement =
+  let m : int = (v x * 169) % 3329 in
+  let m_nat : nat = if m < 0 then m + 3329 else m in
+  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m_nat }
+
+let i16_to_spec_array (#n: usize)
     (x: t_Array i16 n)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
-  createi n (fun i -> to_spec_fe (Seq.index x (v i)))
+  createi n (fun i -> i16_to_spec_fe (Seq.index x (v i)))
+
+let mont_i16_to_spec_array (#n: usize)
+    (x: t_Array i16 n)
+    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
+  createi n (fun i -> mont_i16_to_spec_fe (Seq.index x (v i)))
 
 (* Build a small zeta slice from explicit i16 zetas, for passing to
    hacspec's ntt_layer_n / ntt_inverse_layer_n / ntt_multiply_n.
    The trait's ntt_layer_{1,2,3}_step / inv_ntt_* / ntt_multiply take
-   4 / 2 / 1 zetas as separate parameters. *)
+   4 / 2 / 1 zetas as separate parameters.  Impl zetas are stored
+   in Montgomery form; the slice holds abstract plain zetas. *)
 let zetas_1 (z0: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 1) =
-  createi (mk_usize 1) (fun _ -> to_spec_fe z0)
+  createi (mk_usize 1) (fun _ -> mont_i16_to_spec_fe z0)
 
 let zetas_2 (z0 z1: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 2) =
   createi (mk_usize 2) (fun i ->
-    if v i = 0 then to_spec_fe z0 else to_spec_fe z1)
+    if v i = 0 then mont_i16_to_spec_fe z0 else mont_i16_to_spec_fe z1)
 
 let zetas_4 (z0 z1 z2 z3: i16)
     : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 4) =
   createi (mk_usize 4) (fun i ->
-    if v i = 0 then to_spec_fe z0
-    else if v i = 1 then to_spec_fe z1
-    else if v i = 2 then to_spec_fe z2
-    else to_spec_fe z3)
+    if v i = 0 then mont_i16_to_spec_fe z0
+    else if v i = 1 then mont_i16_to_spec_fe z1
+    else if v i = 2 then mont_i16_to_spec_fe z2
+    else mont_i16_to_spec_fe z3)
 
 (* Hacspec equations stated elementwise over arrays of any length n.
    The trait instantiates them with n=16; the polynomial layer uses
@@ -98,8 +123,8 @@ let zetas_4 (z0 z1 z2 z3: i16)
 let compress_post_N (#n: usize) (d: usize{v d < 12})
     (input result: t_Array i16 n) : prop =
   forall (i: nat). i < v n ==>
-    to_spec_fe (Seq.index result i) ==
-    Hacspec_ml_kem.Compress.compress_d (to_spec_fe (Seq.index input i)) d
+    i16_to_spec_fe (Seq.index result i) ==
+    Hacspec_ml_kem.Compress.compress_d (i16_to_spec_fe (Seq.index input i)) d
 
 (* decompress_d (hacspec) has precondition
      to_bit_size < 12 /\ fe.f_val < 1 << to_bit_size.
@@ -111,8 +136,8 @@ let decompress_post_N (#n: usize) (d: usize{v d < 12})
   (forall (i: nat). i < v n ==>
      v (Seq.index input i) >= 0 /\ v (Seq.index input i) < pow2 (v d)) ==>
   (forall (i: nat). i < v n ==>
-    to_spec_fe (Seq.index result i) ==
-    Hacspec_ml_kem.Compress.decompress_d (to_spec_fe (Seq.index input i)) d)
+    i16_to_spec_fe (Seq.index result i) ==
+    Hacspec_ml_kem.Compress.decompress_d (i16_to_spec_fe (Seq.index input i)) d)
 
 (* Bit-packing pre/post.  An i16 array of n elements where each
    element's low d bits participate is packed into n8 bytes iff
@@ -416,9 +441,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (8*3328) ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 2)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 2)
                    (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
         )
     }
@@ -438,9 +463,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (7*3328) ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 4)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 4)
                    (zetas_2 ${zeta0} ${zeta1})"#
         )
     }
@@ -459,9 +484,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (6*3328) ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 8)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 8)
                    (zetas_1 ${zeta0})"#
         )
     }
@@ -490,9 +515,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 2)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 2)
                    (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
         )
     }
@@ -516,9 +541,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 4)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 4)
                    (zetas_2 ${zeta0} ${zeta1})"#
         )
     }
@@ -537,9 +562,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
-                   (to_spec_array ${vec}) (mk_usize 8)
+                   (mont_i16_to_spec_array ${vec}) (mk_usize 8)
                    (zetas_1 ${zeta0})"#
         )
     }
@@ -571,9 +596,9 @@ let to_le_bytes_post_N (#n: usize)
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-               to_spec_array ${result} ==
+               mont_i16_to_spec_array ${result} ==
                  Hacspec_ml_kem.Ntt.ntt_multiply_n (mk_usize 16)
-                   (to_spec_array ${lhs}) (to_spec_array ${rhs})
+                   (mont_i16_to_spec_array ${lhs}) (mont_i16_to_spec_array ${rhs})
                    (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
         )
     }
