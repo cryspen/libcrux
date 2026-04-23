@@ -6,3 +6,12 @@
 pub mod wycheproof;
 
 pub mod acvp;
+
+#[cfg(feature = "blake2")]
+pub mod blake2;
+
+#[cfg(feature = "poly1305")]
+pub mod poly1305;
+
+#[cfg(feature = "sha2")]
+pub mod sha2;

@@ -2,7 +2,7 @@ use libcrux_ecdsa::{
     p256::{self, PublicKey, Signature},
     DigestAlgorithm,
 };
-use wycheproof::{ecdsa, TestResult};
+use libcrux_kats::wycheproof::{ecdsa, TestResult};
 
 fn make_fixed_length(b: &[u8]) -> [u8; 32] {
     let mut out = [0u8; 32];
@@ -57,13 +57,12 @@ fn decode_signature(sig: &[u8]) -> Option<Signature> {
     ))
 }
 
-fn test_ecdsa(test_name: ecdsa::TestName, hash: DigestAlgorithm) {
-    let test_set = ecdsa::TestSet::load(test_name).unwrap();
+fn test_ecdsa(test_set: ecdsa::TestSet, name: &str, hash: DigestAlgorithm) {
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
         // Parse the uncompressed public key
-        let pk = match PublicKey::try_from(test_group.key.key.as_ref()) {
+        let pk = match PublicKey::try_from(test_group.key.key.as_slice()) {
             Ok(pk) => pk,
             Err(_) => {
                 // Skip groups with invalid keys
@@ -112,9 +111,9 @@ fn test_ecdsa(test_name: ecdsa::TestName, hash: DigestAlgorithm) {
         }
     }
 
-    assert!(tests_run > 0, "No tests were run for {:?}", test_name);
+    assert!(tests_run > 0, "No tests were run for {name}");
     println!(
-        "Ran {tests_run} tests for {test_name:?} ({} total in set)",
+        "Ran {tests_run} tests for {name} ({} total in set)",
         test_set.number_of_tests
     );
 }
@@ -122,7 +121,8 @@ fn test_ecdsa(test_name: ecdsa::TestName, hash: DigestAlgorithm) {
 #[test]
 fn ecdsa_p256_sha256() {
     test_ecdsa(
-        ecdsa::TestName::EcdsaSecp256r1Sha256,
+        ecdsa::TestSet::load_secp256r1_sha256(),
+        "ecdsa_secp256r1_sha256",
         DigestAlgorithm::Sha256,
     );
 }
@@ -130,7 +130,8 @@ fn ecdsa_p256_sha256() {
 #[test]
 fn ecdsa_p256_sha512() {
     test_ecdsa(
-        ecdsa::TestName::EcdsaSecp256r1Sha512,
+        ecdsa::TestSet::load_secp256r1_sha512(),
+        "ecdsa_secp256r1_sha512",
         DigestAlgorithm::Sha512,
     );
 }

@@ -19,6 +19,6 @@ libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 libcrux-traits.workspace = true
 
 [dev-dependencies]
-hex = { version = "0.4.3" }
 libcrux-traits = { workspace = true, features = ["generic-tests"] }
-cavp = { path = "../../../cavp" }
+libcrux-kats = { workspace = true, features = ["sha2"] }
+hex = "0.4.3"

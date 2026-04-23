@@ -25,5 +25,4 @@ std = ["rand?/std"]
 [dev-dependencies]
 rand_core = { version = "0.10" }
 rand = { version = "0.10", features = ["sys_rng"] }
-serde = { version = "1.0.217", features = ["derive"] }
-wycheproof = "0.6.0"
+libcrux-kats = { workspace = true, features = ["ecdsa"] }

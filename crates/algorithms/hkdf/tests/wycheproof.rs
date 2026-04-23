@@ -1,9 +1,8 @@
 use libcrux_hkdf::Algorithm;
+use libcrux_kats::wycheproof::{hkdf, TestResult};
 use libcrux_secrets::{Classify, DeclassifyRef};
-use wycheproof::{hkdf, TestResult};
 
-fn test_hkdf(test_name: hkdf::TestName, algo: Algorithm) {
-    let test_set = hkdf::TestSet::load(test_name).unwrap();
+fn test_hkdf(test_set: hkdf::TestSet, name: &str, algo: Algorithm) {
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
@@ -24,7 +23,7 @@ fn test_hkdf(test_name: hkdf::TestName, algo: Algorithm) {
                     });
                     assert_eq!(
                         okm.declassify_ref(),
-                        test.okm.as_ref(),
+                        test.okm.as_slice(),
                         "tc_id {}: output mismatch",
                         test.tc_id,
                     );
@@ -41,24 +40,24 @@ fn test_hkdf(test_name: hkdf::TestName, algo: Algorithm) {
         }
     }
 
-    assert!(tests_run > 0, "No tests were run for {:?}", test_name);
+    assert!(tests_run > 0, "No tests were run for {name}");
     println!(
-        "Ran {tests_run} tests for {test_name:?} ({} total in set)",
+        "Ran {tests_run} tests for {name} ({} total in set)",
         test_set.number_of_tests
     );
 }
 
 #[test]
 fn hkdf_sha256() {
-    test_hkdf(hkdf::TestName::HkdfSha256, Algorithm::Sha256);
+    test_hkdf(hkdf::TestSet::load_sha256(), "hkdf_sha256", Algorithm::Sha256);
 }
 
 #[test]
 fn hkdf_sha384() {
-    test_hkdf(hkdf::TestName::HkdfSha384, Algorithm::Sha384);
+    test_hkdf(hkdf::TestSet::load_sha384(), "hkdf_sha384", Algorithm::Sha384);
 }
 
 #[test]
 fn hkdf_sha512() {
-    test_hkdf(hkdf::TestName::HkdfSha512, Algorithm::Sha512);
+    test_hkdf(hkdf::TestSet::load_sha512(), "hkdf_sha512", Algorithm::Sha512);
 }
