@@ -1,30 +1,28 @@
-use wycheproof::{xdh, TestResult};
+use libcrux_kats::wycheproof::{xdh, TestResult};
 
 #[test]
 fn x25519() {
-    let test_set = xdh::TestSet::load(xdh::TestName::X25519).unwrap();
+    let test_set = xdh::TestSet::load_x25519();
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
         for test in &test_group.tests {
-            if test.public_key.len() != 32 || test.private_key.len() != 32 {
+            if test.public.len() != 32 || test.private.len() != 32 {
                 assert_eq!(test.result, TestResult::Invalid);
                 tests_run += 1;
                 continue;
             }
 
-            let pk: [u8; 32] = test.public_key[..].try_into().unwrap();
-            let sk: [u8; 32] = test.private_key[..].try_into().unwrap();
+            let pk: [u8; 32] = test.public[..].try_into().unwrap();
+            let sk: [u8; 32] = test.private[..].try_into().unwrap();
             let mut out = [0u8; 32];
 
             // HACL rejects some "acceptable" vectors that produce low-order
             // or twist points resulting in a zero shared secret.
             let hacl_rejects = test.flags.iter().any(|f| {
                 matches!(
-                    f,
-                    xdh::TestFlag::LowOrderPublic
-                        | xdh::TestFlag::SmallPublicKey
-                        | xdh::TestFlag::ZeroSharedSecret
+                    f.as_str(),
+                    "LowOrderPublic" | "SmallPublicKey" | "ZeroSharedSecret"
                 )
             });
 
@@ -32,7 +30,7 @@ fn x25519() {
                 Ok(()) => {
                     assert_eq!(
                         &out[..],
-                        test.shared_secret.as_ref(),
+                        test.shared.as_slice(),
                         "tc_id {}: shared secret mismatch",
                         test.tc_id,
                     );

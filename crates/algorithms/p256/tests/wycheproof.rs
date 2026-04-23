@@ -1,8 +1,10 @@
-use wycheproof::{ecdh, TestResult};
+use libcrux_kats::wycheproof::{ecdh, TestResult};
+use libcrux_p256::ecdh_api::EcdhSlice;
+use libcrux_secrets::{Classify, DeclassifyRef};
 
 #[test]
 fn ecdh_secp256r1() {
-    let test_set = ecdh::TestSet::load(ecdh::TestName::EcdhSecp256r1Ecpoint).unwrap();
+    let test_set = ecdh::TestSet::load_secp256r1_ecpoint();
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
@@ -12,8 +14,8 @@ fn ecdh_secp256r1() {
             // The private key is a 32-byte scalar.
             // The shared secret is the X coordinate (32 bytes).
 
-            let pk_bytes = test.public_key.as_ref();
-            let sk_raw = test.private_key.as_ref();
+            let pk_bytes = test.public_key.as_slice();
+            let sk_raw = test.private_key.as_slice();
 
             // Normalize private key to 32 bytes (strip leading zeros or left-pad)
             let sk_bytes: [u8; 32] = if sk_raw.len() > 32 {
@@ -56,30 +58,28 @@ fn ecdh_secp256r1() {
                 continue;
             };
 
-            let mut shared = [0u8; 64];
-
-            let success = libcrux_p256::dh_responder(&mut shared, raw_pk, &sk_bytes);
+            let sk_secret = sk_bytes.to_vec().classify();
+            let mut derived = vec![0u8; 64].classify();
+            let result = libcrux_p256::P256::derive_ecdh(&mut derived, raw_pk, &sk_secret);
 
             match test.result {
                 TestResult::Valid | TestResult::Acceptable => {
                     assert!(
-                        success,
+                        result.is_ok(),
                         "tc_id {}: expected success but ECDH failed",
                         test.tc_id,
                     );
                     // Wycheproof shared secret is just the X coordinate (first 32 bytes)
                     assert_eq!(
-                        &shared[..32],
-                        test.shared_secret.as_ref(),
+                        &derived.declassify_ref()[..32],
+                        test.shared_secret.as_slice(),
                         "tc_id {}: shared secret mismatch",
                         test.tc_id,
                     );
                 }
                 TestResult::Invalid => {
-                    if success {
-                        // Some invalid tests may still compute — that's OK
-                        // as long as we don't claim they're valid
-                    }
+                    // If it fails, that's expected. If it succeeds, that's OK too —
+                    // some invalid tests may still compute a value.
                 }
             }
             tests_run += 1;
