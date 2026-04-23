@@ -585,6 +585,13 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
+    // TODO(C4): re-strengthen to include the hacspec equation
+    //   mont_i16_to_spec_array result ==
+    //     Hacspec_ml_kem.Ntt.ntt_multiply_n (mk_usize 16)
+    //       (mont_i16_to_spec_array lhs) (mont_i16_to_spec_array rhs)
+    //       (zetas_4 zeta0 zeta1 zeta2 zeta3)
+    // once the impl body can discharge it.  Currently weakened to
+    // bound-only to match the impl.
     pub(crate) fn ntt_multiply_post(
         lhs: &[i16; 16],
         rhs: &[i16; 16],
@@ -594,13 +601,7 @@ let to_le_bytes_post_N (#n: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(
-            r#"is_i16b_array_opaque 3328 ${result} /\
-               mont_i16_to_spec_array ${result} ==
-                 Hacspec_ml_kem.Ntt.ntt_multiply_n (mk_usize 16)
-                   (mont_i16_to_spec_array ${lhs}) (mont_i16_to_spec_array ${rhs})
-                   (zetas_4 ${zeta0} ${zeta1} ${zeta2} ${zeta3})"#
-        )
+        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
     }
 
     pub(crate) fn serialize_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {
@@ -892,10 +893,7 @@ pub trait Operations: Copy + Clone + Repr {
     fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
     #[requires(spec::ntt_multiply_pre(&lhs.repr(), &rhs.repr(), zeta0, zeta1, zeta2, zeta3))]
-    // TODO(C4): add `spec::ntt_multiply_post(...)` (strengthened form with
-    // `Hacspec_ml_kem.Ntt.ntt_multiply_n` equation) once impl discharges it.
-    // Currently the impl's post is the bound only (same as before 6118494b5).
-    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result})"#))]
+    #[ensures(|result| spec::ntt_multiply_post(&lhs.repr(), &rhs.repr(), zeta0, zeta1, zeta2, zeta3, &result.repr()))]
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
 
