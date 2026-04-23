@@ -359,13 +359,31 @@ fn base_case_multiply_odd(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
+/// Pointwise polynomial multiplication in the NTT domain, generic over
+/// the array length `N`.
+///
+/// The input is two NTT-domain arrays of `N` coefficients and an array of
+/// `N/4` zetas.  Consecutive 4-coefficient groups are treated as two
+/// quadratic polynomials multiplied modulo `X² − ζ`: the first pair uses
+/// `+ζ`, the second pair uses `−ζ`.  This is the trait-compatible
+/// restriction of FIPS 203 Algorithm 10.
+///
+/// When instantiated at N=256 with `zetas = ZETAS[64..128]` this is the
+/// full `multiply_ntts` below.  When instantiated at N=16 with 4 zetas
+/// this is the trait's `ntt_multiply(lhs, rhs, z0, z1, z2, z3)`.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(zetas.len() * 4 == N)]
+pub fn ntt_multiply_n<const N: usize>(
+    p1: &[FieldElement; N],
+    p2: &[FieldElement; N],
+    zetas: &[FieldElement],
+) -> [FieldElement; N] {
     createi(|i| {
-        let zeta_4 = get_zeta(64 + i / 4);
+        let group = i / 4;
         let zeta = if i % 4 < 2 {
-            zeta_4
+            zetas[group]
         } else {
-            FieldElement::new(FIELD_MODULUS - zeta_4.val)
+            zetas[group].neg()
         };
         if i % 2 == 0 {
             base_case_multiply_even(p1[i], p1[i + 1], p2[i], p2[i + 1], zeta)
@@ -373,6 +391,10 @@ pub fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
             base_case_multiply_odd(p1[i - 1], p1[i], p2[i - 1], p2[i])
         }
     })
+}
+
+pub fn multiply_ntts(p1: &Polynomial, p2: &Polynomial) -> Polynomial {
+    ntt_multiply_n(p1, p2, &ZETAS[64..128])
 }
 
 pub fn vector_ntt<const RANK: usize>(vector: Vector<RANK>) -> Vector<RANK> {

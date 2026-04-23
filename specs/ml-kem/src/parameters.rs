@@ -173,6 +173,11 @@ impl FieldElement {
     pub fn mul(self, other: FieldElement) -> FieldElement {
         FieldElement::new(((self.val as u32 * other.val as u32) % FIELD_MODULUS as u32) as u16)
     }
+
+    /// Additive inverse in ℤ/q.  `a.neg()` = q − a   (0 when a = 0).
+    pub fn neg(self) -> FieldElement {
+        FieldElement::new((FIELD_MODULUS - self.val) % FIELD_MODULUS)
+    }
 }
 
 /// An ML-KEM polynomial ring element

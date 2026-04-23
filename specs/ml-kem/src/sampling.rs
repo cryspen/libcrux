@@ -41,6 +41,30 @@ pub struct BadRejectionSamplingRandomnessError;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+/// One iteration of rejection sampling.
+///
+/// Decodes 24 bytes into 16 u16 values using 12-bit little-endian packing
+/// (FIPS 203 Algorithm 6, inner loop body), keeps those `< q`, and returns
+/// the accepted values packed at the start of a 16-element array together
+/// with the count.  The unused tail of the array is filled with zeros.
+///
+/// This is the natural unit of rejection sampling at the trait boundary
+/// (`Operations::rej_sample` consumes exactly 24 bytes); `sample_ntt`
+/// below repeatedly applies this step until 256 coefficients have been
+/// accepted or the byte stream is exhausted.
+pub fn rej_sample_step(bytes: [u8; 24]) -> ([FieldElement; 16], usize) {
+    let decoded = byte_decode_generic::<2, 16, 24, 192>(&bytes, 12);
+    let mut result = [FieldElement::new(0); 16];
+    let mut count: usize = 0;
+    for i in 0..16 {
+        if decoded[i] < FIELD_MODULUS {
+            result[count] = FieldElement::new(decoded[i]);
+            count += 1;
+        }
+    }
+    (result, count)
+}
+
 #[hax_lib::requires(
     N <= MAX_BYTES / 96
     && N8 == N * 8
