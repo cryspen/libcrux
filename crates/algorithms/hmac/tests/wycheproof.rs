@@ -1,8 +1,7 @@
 use libcrux_hmac::Algorithm;
-use wycheproof::{mac, TestResult};
+use libcrux_kats::wycheproof::{mac, TestResult};
 
-fn test_hmac(test_name: mac::TestName, algo: Algorithm) {
-    let test_set = mac::TestSet::load(test_name).unwrap();
+fn test_hmac(test_set: mac::TestSet, name: &str, algo: Algorithm) {
     let mut tests_run = 0;
 
     for test_group in test_set.test_groups {
@@ -15,7 +14,7 @@ fn test_hmac(test_name: mac::TestName, algo: Algorithm) {
                 TestResult::Valid | TestResult::Acceptable => {
                     assert_eq!(
                         computed.as_slice(),
-                        test.tag.as_ref(),
+                        test.tag.as_slice(),
                         "tc_id {}: tag mismatch",
                         test.tc_id,
                     );
@@ -23,7 +22,7 @@ fn test_hmac(test_name: mac::TestName, algo: Algorithm) {
                 TestResult::Invalid => {
                     assert_ne!(
                         computed.as_slice(),
-                        test.tag.as_ref(),
+                        test.tag.as_slice(),
                         "tc_id {}: expected tag mismatch for invalid test",
                         test.tc_id,
                     );
@@ -33,29 +32,41 @@ fn test_hmac(test_name: mac::TestName, algo: Algorithm) {
         }
     }
 
-    assert!(tests_run > 0, "No tests were run for {:?}", test_name);
+    assert!(tests_run > 0, "No tests were run for {name}");
     println!(
-        "Ran {tests_run} tests for {test_name:?} ({} total in set)",
+        "Ran {tests_run} tests for {name} ({} total in set)",
         test_set.number_of_tests
     );
 }
 
 #[test]
 fn hmac_sha1() {
-    test_hmac(mac::TestName::HmacSha1, Algorithm::Sha1);
+    test_hmac(mac::TestSet::load_hmac_sha1(), "hmac_sha1", Algorithm::Sha1);
 }
 
 #[test]
 fn hmac_sha256() {
-    test_hmac(mac::TestName::HmacSha256, Algorithm::Sha256);
+    test_hmac(
+        mac::TestSet::load_hmac_sha256(),
+        "hmac_sha256",
+        Algorithm::Sha256,
+    );
 }
 
 #[test]
 fn hmac_sha384() {
-    test_hmac(mac::TestName::HmacSha384, Algorithm::Sha384);
+    test_hmac(
+        mac::TestSet::load_hmac_sha384(),
+        "hmac_sha384",
+        Algorithm::Sha384,
+    );
 }
 
 #[test]
 fn hmac_sha512() {
-    test_hmac(mac::TestName::HmacSha512, Algorithm::Sha512);
+    test_hmac(
+        mac::TestSet::load_hmac_sha512(),
+        "hmac_sha512",
+        Algorithm::Sha512,
+    );
 }

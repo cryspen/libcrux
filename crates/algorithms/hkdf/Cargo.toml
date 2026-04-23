@@ -24,4 +24,4 @@ libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
 libcrux-secrets.workspace = true
 
 [dev-dependencies]
-wycheproof = "0.6.0"
+libcrux-kats = { workspace = true, features = ["hkdf"] }

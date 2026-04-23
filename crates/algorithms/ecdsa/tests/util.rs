@@ -1,9 +1,6 @@
 #![allow(dead_code)]
 
 use std::num::ParseIntError;
-pub use std::{fs::File, io::BufReader};
-
-pub use serde::{self, de::DeserializeOwned};
 
 pub(crate) fn hex_str_to_bytes(val: &str) -> Vec<u8> {
     let b: Result<Vec<u8>, ParseIntError> = (0..val.len())

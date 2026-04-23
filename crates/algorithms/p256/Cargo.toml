@@ -33,4 +33,4 @@ check-secret-independence = [
 libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ] }
-wycheproof = "0.6.0"
+libcrux-kats = { workspace = true, features = ["p256"] }

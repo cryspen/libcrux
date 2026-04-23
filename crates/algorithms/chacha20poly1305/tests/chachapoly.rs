@@ -1,5 +1,5 @@
+use libcrux_kats::wycheproof::{aead, TestResult};
 use rand_core::UnwrapErr;
-use wycheproof::{aead, TestResult};
 
 fn randbuf<const N: usize>(rng: &mut impl rand_core::Rng) -> [u8; N] {
     let mut buf = [0; N];
@@ -9,20 +9,20 @@ fn randbuf<const N: usize>(rng: &mut impl rand_core::Rng) -> [u8; N] {
 
 #[test]
 fn wycheproof() {
-    let test_set = aead::TestSet::load(aead::TestName::ChaCha20Poly1305).unwrap();
+    let test_set = aead::TestSet::load_chacha20_poly1305();
     let mut tests_run = 0;
     let mut skipped = 0;
 
     for test_group in test_set.test_groups {
-        if test_group.nonce_size != 96 {
+        if test_group.iv_size != 96 {
             skipped += test_group.tests.len();
             continue;
         }
 
         for test in &test_group.tests {
             let valid = test.result == TestResult::Valid;
-            let nonce = <&[u8; 12]>::try_from(test.nonce.as_ref()).unwrap();
-            let key = <&[u8; 32]>::try_from(test.key.as_ref()).unwrap();
+            let nonce = <&[u8; 12]>::try_from(test.nonce.as_slice()).unwrap();
+            let key = <&[u8; 32]>::try_from(test.key.as_slice()).unwrap();
 
             let mut ctxt = test.pt.to_vec();
             let tag =
@@ -36,18 +36,23 @@ fn wycheproof() {
                 };
 
             if valid {
-                assert_eq!(tag, test.tag.as_ref(), "tc_id {}: tag mismatch", test.tc_id);
+                assert_eq!(
+                    tag,
+                    test.tag.as_slice(),
+                    "tc_id {}: tag mismatch",
+                    test.tc_id
+                );
             } else {
                 assert_ne!(
                     tag,
-                    test.tag.as_ref(),
+                    test.tag.as_slice(),
                     "tc_id {}: expected tag mismatch for invalid test",
                     test.tc_id,
                 );
             }
             assert_eq!(
                 ctxt,
-                test.ct.as_ref(),
+                test.ct.as_slice(),
                 "tc_id {}: ciphertext mismatch",
                 test.tc_id,
             );
@@ -55,8 +60,8 @@ fn wycheproof() {
             let mut decrypted = vec![0; test.pt.len()];
             match libcrux_chacha20poly1305::decrypt(key, &mut decrypted, &ctxt, &test.aad, nonce) {
                 Ok(m) => {
-                    assert_eq!(m, test.pt.as_ref());
-                    assert_eq!(&decrypted, test.pt.as_ref());
+                    assert_eq!(m, test.pt.as_slice());
+                    assert_eq!(&decrypted, test.pt.as_slice());
                 }
                 Err(_) => {
                     assert!(!valid);
@@ -76,20 +81,20 @@ fn wycheproof() {
 
 #[test]
 fn wycheproof_xchacha() {
-    let test_set = aead::TestSet::load(aead::TestName::XChaCha20Poly1305).unwrap();
+    let test_set = aead::TestSet::load_xchacha20_poly1305();
     let mut tests_run = 0;
     let mut skipped = 0;
 
     for test_group in test_set.test_groups {
-        if test_group.nonce_size != 192 {
+        if test_group.iv_size != 192 {
             skipped += test_group.tests.len();
             continue;
         }
 
         for test in &test_group.tests {
             let valid = test.result == TestResult::Valid;
-            let nonce = <&[u8; 24]>::try_from(test.nonce.as_ref()).unwrap();
-            let key = <&[u8; 32]>::try_from(test.key.as_ref()).unwrap();
+            let nonce = <&[u8; 24]>::try_from(test.nonce.as_slice()).unwrap();
+            let key = <&[u8; 32]>::try_from(test.key.as_slice()).unwrap();
 
             let mut ctxt = test.pt.to_vec();
             let tag = match libcrux_chacha20poly1305::xchacha20_poly1305::encrypt(
@@ -103,18 +108,23 @@ fn wycheproof_xchacha() {
             };
 
             if valid {
-                assert_eq!(tag, test.tag.as_ref(), "tc_id {}: tag mismatch", test.tc_id);
+                assert_eq!(
+                    tag,
+                    test.tag.as_slice(),
+                    "tc_id {}: tag mismatch",
+                    test.tc_id
+                );
             } else {
                 assert_ne!(
                     tag,
-                    test.tag.as_ref(),
+                    test.tag.as_slice(),
                     "tc_id {}: expected tag mismatch for invalid test",
                     test.tc_id,
                 );
             }
             assert_eq!(
                 ctxt,
-                test.ct.as_ref(),
+                test.ct.as_slice(),
                 "tc_id {}: ciphertext mismatch",
                 test.tc_id,
             );
@@ -128,8 +138,8 @@ fn wycheproof_xchacha() {
                 nonce,
             ) {
                 Ok(m) => {
-                    assert_eq!(m, test.pt.as_ref());
-                    assert_eq!(&decrypted, test.pt.as_ref());
+                    assert_eq!(m, test.pt.as_slice());
+                    assert_eq!(&decrypted, test.pt.as_slice());
                 }
                 Err(_) => {
                     assert!(!valid);
