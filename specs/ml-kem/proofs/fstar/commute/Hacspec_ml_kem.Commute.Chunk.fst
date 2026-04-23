@@ -10,8 +10,13 @@ open Libcrux_ml_kem.Vector.Traits.Spec
    `mont_i16_to_spec_fe`.  These are the primitive bridges from the impl's
    raw mod-q arithmetic to the hacspec FE algebra. *)
 
-module P = Hacspec_ml_kem.Parameters
-module L = FStar.Math.Lemmas
+module P  = Hacspec_ml_kem.Parameters
+module L  = FStar.Math.Lemmas
+module T  = Libcrux_ml_kem.Vector.Traits
+module TS = Libcrux_ml_kem.Vector.Traits.Spec
+module N  = Hacspec_ml_kem.Ntt
+module IN = Hacspec_ml_kem.Invert_ntt
+module CP = Hacspec_ml_kem.Compress
 
 (* Basic sanity: the two lifts produce valid FEs by construction. *)
 let lemma_i16_to_spec_fe_bounded (x: i16) :
@@ -133,23 +138,291 @@ let lemma_mul_const_fe_commute_plain (a c r: i16) :
     lemma_mul_const_mod_core (v a) (v c) (v r)
 
 (* Layer 1 — 16-lane chunk commute lemmas.
-   These state the trait-level commutativity in terms of hacspec
-   operations over the lifted arrays.  Each lemma is quantified over
-   `{| t_Operations vV |}` so portable, avx2 share a single statement.
+   Each statement is quantified over `{| T.t_Operations vV |}` so the
+   single lemma instance covers portable, avx2, and (once admitted-out
+   neon is revisited) every backend.  The pre-condition is the trait's
+   own `TS.<op>_pre` — anything already holding the impl pre gets the
+   commute statement for free.  Proofs are deferred to C3b: each folds
+   its corresponding Layer-0 lemma 16 times over the lanes via
+   `createi_lemma` (SMTPat, from Hacspec_ml_kem.Parameters).
 
-   Deferred to C3: populate with signatures below. *)
+   ────────────  Linear ops  ────────────
+   `add`/`sub` are R-linear so the same impl equation lifts through
+   either `i16_to_spec_fe` or `mont_i16_to_spec_fe`; two lemmas per op. *)
 
-(* TODO(C3): add the ~13 chunk-level lemmas matching the mode table:
-     lemma_add_chunk_commutes               (either lift)
-     lemma_sub_chunk_commutes               (either)
-     lemma_mul_const_chunk_commutes         (plain)
-     lemma_mont_mul_const_chunk_mont_mont
-     lemma_mont_mul_const_chunk_mont_plain
-     lemma_barrett_chunk_commutes           (plain)
-     lemma_cond_subtract_chunk_commutes
-     lemma_to_unsigned_representative_commutes
-     lemma_compress_chunk_commutes
-     lemma_decompress_chunk_commutes
-     lemma_ntt_layer_{1,2,3}_chunk_commutes
-     lemma_inv_ntt_layer_{1,2,3}_chunk_commutes
-     lemma_ntt_multiply_chunk_commutes *)
+assume val lemma_add_chunk_commutes_plain
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) :
+  Lemma
+    (requires TS.add_pre (T.f_repr lhs) (T.f_repr rhs))
+    (ensures
+       (let r = T.f_add lhs rhs in
+        forall (j: nat). j < 16 ==>
+          Seq.index (i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__add
+                 (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
+                 (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+
+assume val lemma_add_chunk_commutes_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) :
+  Lemma
+    (requires TS.add_pre (T.f_repr lhs) (T.f_repr rhs))
+    (ensures
+       (let r = T.f_add lhs rhs in
+        forall (j: nat). j < 16 ==>
+          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__add
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+
+assume val lemma_sub_chunk_commutes_plain
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) :
+  Lemma
+    (requires TS.sub_pre (T.f_repr lhs) (T.f_repr rhs))
+    (ensures
+       (let r = T.f_sub lhs rhs in
+        forall (j: nat). j < 16 ==>
+          Seq.index (i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__sub
+                 (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
+                 (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+
+assume val lemma_sub_chunk_commutes_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) :
+  Lemma
+    (requires TS.sub_pre (T.f_repr lhs) (T.f_repr rhs))
+    (ensures
+       (let r = T.f_sub lhs rhs in
+        forall (j: nat). j < 16 ==>
+          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__sub
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+
+(* ────────────  Scalar-multiplication ops  ────────────
+   Plain × plain, Mont × Mont (→ Mont), and Mont × plain (→ plain). *)
+
+assume val lemma_multiply_by_constant_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (c: i16) :
+  Lemma
+    (requires TS.multiply_by_constant_pre (T.f_repr vec) c)
+    (ensures
+       (let r = T.f_multiply_by_constant vec c in
+        forall (j: nat). j < 16 ==>
+          Seq.index (i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__mul
+                 (Seq.index (i16_to_spec_array (T.f_repr vec)) j)
+                 (i16_to_spec_fe c)))
+
+assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (c: i16) :
+  Lemma
+    (requires TS.montgomery_multiply_by_constant_pre (T.f_repr vec) c)
+    (ensures
+       (let r = T.f_montgomery_multiply_by_constant vec c in
+        forall (j: nat). j < 16 ==>
+          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__mul
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
+                 (mont_i16_to_spec_fe c)))
+
+assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (c: i16) :
+  Lemma
+    (requires TS.montgomery_multiply_by_constant_pre (T.f_repr vec) c)
+    (ensures
+       (let r = T.f_montgomery_multiply_by_constant vec c in
+        forall (j: nat). j < 16 ==>
+          Seq.index (i16_to_spec_array (T.f_repr r)) j
+            == P.impl_FieldElement__mul
+                 (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
+                 (i16_to_spec_fe c)))
+
+(* ────────────  Identity-on-lift ops  ────────────
+   `barrett_reduce`, `cond_subtract_3329`, `to_unsigned_representative`
+   all preserve the residue class mod q, so they are the identity on the
+   plain FE lift. *)
+
+assume val lemma_barrett_reduce_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) :
+  Lemma
+    (requires TS.barrett_reduce_pre (T.f_repr vec))
+    (ensures
+       (let r = T.f_barrett_reduce vec in
+        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+
+assume val lemma_cond_subtract_3329_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) :
+  Lemma
+    (requires TS.cond_subtract_3329_pre (T.f_repr vec))
+    (ensures
+       (let r = T.f_cond_subtract_3329_ vec in
+        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+
+assume val lemma_to_unsigned_representative_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) :
+  Lemma
+    (requires TS.to_unsigned_representative_pre (T.f_repr vec))
+    (ensures
+       (let r = T.f_to_unsigned_representative vec in
+        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+
+(* ────────────  Compress / decompress  ────────────
+   Reuse the array-length-generic predicates already defined in
+   Traits.Spec so Layer 2 at N = 256 can cite the same shape. *)
+
+assume val lemma_compress_1_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) :
+  Lemma
+    (requires TS.compress_1_pre (T.f_repr vec))
+    (ensures
+       (let r = T.f_compress_1_ vec in
+        TS.compress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
+
+assume val lemma_compress_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (coefficient_bits: i32) (vec: vV) :
+  Lemma
+    (requires
+      (v coefficient_bits == 4 \/ v coefficient_bits == 5 \/
+       v coefficient_bits == 10 \/ v coefficient_bits == 11) /\
+      TS.compress_pre (T.f_repr vec) coefficient_bits)
+    (ensures
+       (let r = T.f_compress coefficient_bits vec in
+        TS.compress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
+          (T.f_repr vec) (T.f_repr r)))
+
+assume val lemma_decompress_1_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) :
+  Lemma
+    (requires TS.decompress_1_pre (T.f_repr vec))
+    (ensures
+       (let r = T.f_decompress_1_ vec in
+        TS.decompress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
+
+assume val lemma_decompress_ciphertext_coefficient_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (coefficient_bits: i32) (vec: vV) :
+  Lemma
+    (requires
+      (v coefficient_bits == 4 \/ v coefficient_bits == 5 \/
+       v coefficient_bits == 10 \/ v coefficient_bits == 11) /\
+      TS.decompress_ciphertext_coefficient_pre (T.f_repr vec) coefficient_bits)
+    (ensures
+       (let r = T.f_decompress_ciphertext_coefficient coefficient_bits vec in
+        TS.decompress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
+          (T.f_repr vec) (T.f_repr r)))
+
+(* ────────────  NTT-layer ops  ────────────
+   Hacspec's `ntt_layer_n` at N = 16 takes half-size `len` and a zeta
+   slice of length `N / (2·len)`.  The three trait steps instantiate:
+     `ntt_layer_1_step`   len = 2, 4 zetas  (zetas_4)
+     `ntt_layer_2_step`   len = 4, 2 zetas  (zetas_2)
+     `ntt_layer_3_step`   len = 8, 1 zeta   (zetas_1)
+   Symmetric layout for the inverse NTT via `ntt_inverse_layer_n`. *)
+
+assume val lemma_ntt_layer_1_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0 zeta1 zeta2 zeta3: i16) :
+  Lemma
+    (requires TS.ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
+    (ensures
+       (let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == N.ntt_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 2)
+               (zetas_4 zeta0 zeta1 zeta2 zeta3)))
+
+assume val lemma_ntt_layer_2_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0 zeta1: i16) :
+  Lemma
+    (requires TS.ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
+    (ensures
+       (let r = T.f_ntt_layer_2_step vec zeta0 zeta1 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == N.ntt_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 4)
+               (zetas_2 zeta0 zeta1)))
+
+assume val lemma_ntt_layer_3_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0: i16) :
+  Lemma
+    (requires TS.ntt_layer_3_step_pre (T.f_repr vec) zeta0)
+    (ensures
+       (let r = T.f_ntt_layer_3_step vec zeta0 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == N.ntt_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 8)
+               (zetas_1 zeta0)))
+
+assume val lemma_inv_ntt_layer_1_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0 zeta1 zeta2 zeta3: i16) :
+  Lemma
+    (requires TS.inv_ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
+    (ensures
+       (let r = T.f_inv_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == IN.ntt_inverse_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 2)
+               (zetas_4 zeta0 zeta1 zeta2 zeta3)))
+
+assume val lemma_inv_ntt_layer_2_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0 zeta1: i16) :
+  Lemma
+    (requires TS.inv_ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
+    (ensures
+       (let r = T.f_inv_ntt_layer_2_step vec zeta0 zeta1 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == IN.ntt_inverse_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 4)
+               (zetas_2 zeta0 zeta1)))
+
+assume val lemma_inv_ntt_layer_3_step_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0: i16) :
+  Lemma
+    (requires TS.inv_ntt_layer_3_step_pre (T.f_repr vec) zeta0)
+    (ensures
+       (let r = T.f_inv_ntt_layer_3_step vec zeta0 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == IN.ntt_inverse_layer_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr vec))
+               (mk_usize 8)
+               (zetas_1 zeta0)))
+
+(* ────────────  NTT multiply  ────────────
+   `ntt_multiply_n` at N = 16 consumes four zetas (N / 4). *)
+
+assume val lemma_ntt_multiply_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) (zeta0 zeta1 zeta2 zeta3: i16) :
+  Lemma
+    (requires TS.ntt_multiply_pre (T.f_repr lhs) (T.f_repr rhs)
+                                  zeta0 zeta1 zeta2 zeta3)
+    (ensures
+       (let r = T.f_ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3 in
+        mont_i16_to_spec_array (T.f_repr r)
+          == N.ntt_multiply_n (mk_usize 16)
+               (mont_i16_to_spec_array (T.f_repr lhs))
+               (mont_i16_to_spec_array (T.f_repr rhs))
+               (zetas_4 zeta0 zeta1 zeta2 zeta3)))

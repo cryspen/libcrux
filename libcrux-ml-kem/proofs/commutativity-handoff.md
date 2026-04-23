@@ -227,7 +227,7 @@ Per-function commits.
 | C2 followup: weak-post revert (batch 4) | **done** | `d9e80ba49` | `compress_1`/`compress`/`ntt_layer_{1,2,3}_step`/`inv_ntt_layer_{1,2,3}_step` helper bodies |
 | **Full prove green** | **done** | tip: `d9e80ba49` | `Checked: 54  Admitted: 3  Failed: 0` — only pre-existing Neon error |
 | C2b Layer 0 proofs (discharge assume val's) | **done** | *(see below)* | all 9 stubs proved; helper lemmas factored out; Commute.Chunk.fst verifies standalone in ~3 s — no extraction-side file touched, so no regression surface |
-| C3 Layer 1 chunk lemmas (stubs) | pending | — | ~13 `assume val` signatures |
+| C3 Layer 1 chunk lemmas (stubs) | **done** | *(next commit)* | 21 `assume val` signatures: 4 add/sub × {plain, mont}, 3 mul variants, 3 identity-style, 4 compress/decompress, 6 ntt-layer, 1 ntt-multiply; Commute.Chunk.fst still verifies standalone |
 | C3b Layer 1 proofs | pending | — | NTT-layer ones are heaviest |
 | C4a `ntt_layer_1_step` (portable) | pending | — | body strengthening + impl annotation rewire |
 | C4b `ntt_layer_2_step` (portable) | pending | — | |
