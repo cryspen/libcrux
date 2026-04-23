@@ -9,7 +9,6 @@ use alloc::vec::Vec;
 
 #[cfg(not(feature = "expose-hacl"))]
 mod hacl {
-    pub(crate) mod hash_sha1;
     pub(crate) mod hmac;
 }
 
