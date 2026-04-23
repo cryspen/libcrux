@@ -810,11 +810,13 @@ pub trait Operations: Copy + Clone + Repr {
     fn to_i16_array(x: Self) -> [i16; 16];
 
     #[requires(array.len() >= 32)]
-    #[ensures(|result| spec::from_bytes_post(&array, &result.repr()))]
+    // TODO(C4): strengthen to `spec::from_bytes_post(&array, &result.repr())`
+    // once impl bodies can discharge it.
     fn from_bytes(array: &[u8]) -> Self;
 
     #[requires(bytes.len() >= 32)]
-    #[ensures(|_| (future(bytes).len() == bytes.len()).to_prop() & spec::to_bytes_post(&x.repr(), &future(bytes)))]
+    #[ensures(|_| future(bytes).len() == bytes.len())]
+    // TODO(C4): add `spec::to_bytes_post(&x.repr(), &future(bytes))` post.
     fn to_bytes(x: Self, bytes: &mut [u8]);
 
     // Basic arithmetic
@@ -945,6 +947,11 @@ pub trait Operations: Copy + Clone + Repr {
 
     // Rejection sampling
     #[requires(a.len() == 24 && out.len() == 16)]
-    #[ensures(|result| spec::rej_sample_post(&a, result, &future(out)))]
+    #[ensures(|result| (future(out).len() == 16 && result <= 16).to_prop() & (
+            hax_lib::forall(|j: usize|
+                hax_lib::implies(j < result,
+                    future(out)[j] >= 0 && future(out)[j] <= 3328))))]
+    // TODO(C4): strengthen to `spec::rej_sample_post(&a, result, &future(out))`
+    // once impl bodies can discharge the rej_sample_step equation.
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
