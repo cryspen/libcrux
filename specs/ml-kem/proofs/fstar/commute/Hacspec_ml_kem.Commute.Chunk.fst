@@ -395,7 +395,7 @@ let lemma_barrett_reduce_chunk_commutes
     Classical.forall_intro aux;
     Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
 
-assume val lemma_cond_subtract_3329_chunk_commutes
+let lemma_cond_subtract_3329_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
   Lemma
@@ -403,6 +403,19 @@ assume val lemma_cond_subtract_3329_chunk_commutes
     (ensures
        (let r = T.f_cond_subtract_3329_ vec in
         i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+  = let r = T.f_cond_subtract_3329_ vec in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == Seq.index (i16_to_spec_array vec_arr) j)
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_plain vec_arr j;
+          lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
 
 let lemma_to_unsigned_representative_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}

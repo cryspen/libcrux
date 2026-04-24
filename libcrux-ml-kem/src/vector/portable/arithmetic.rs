@@ -205,8 +205,11 @@ pub fn shift_right<const SHIFT_BY: i32>(mut vec: PortableVector) -> PortableVect
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b_array (pow2 12 - 1) ${vec}.f_elements"#))]
-#[hax_lib::ensures(|result| fstar!(r#"${result}.f_elements == Spec.Utils.map_array 
-                (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (${vec}.f_elements)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall i.
+    let x = Seq.index ${vec}.f_elements i in
+    let y = Seq.index ${result}.f_elements i in
+    ((v y == v x - 3329 \/ v y == v x) /\
+     (v y % 3329 == v x % 3329))"#))]
 pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
     #[cfg(hax)]
     let _vec0 = vec;
@@ -227,8 +230,18 @@ pub fn cond_subtract_3329(mut vec: PortableVector) -> PortableVector {
     }
 
     hax_lib::fstar!(
-        r#"Seq.lemma_eq_intro ${vec}.f_elements (Spec.Utils.map_array 
-                            (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) ${_vec0}.f_elements)"#
+        r#"let aux (j: nat) : Lemma (j < 16 ==>
+          (let x = Seq.index ${_vec0}.f_elements j in
+           let y = Seq.index ${vec}.f_elements j in
+           ((v y == v x - 3329 \/ v y == v x) /\
+            (v y % 3329 == v x % 3329))))
+          = if j < 16 then begin
+              let x = Seq.index ${_vec0}.f_elements j in
+              if x >=. mk_i16 3329 then
+                FStar.Math.Lemmas.lemma_mod_sub (v x) 3329 1
+              else ()
+            end in
+        Classical.forall_intro aux"#
     );
 
     vec

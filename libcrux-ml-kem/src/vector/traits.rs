@@ -288,12 +288,16 @@ let to_le_bytes_post_N (#n: usize)
     }
 
     pub(crate) fn cond_subtract_3329_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
+        // Stated pointwise rather than as a `map_array` equation: every
+        // lane either stays put or drops by q, preserving the residue
+        // class mod q.  This lets Layer-1 commutativity proofs cite the
+        // residue equation directly (the same shape barrett_reduce uses).
         hax_lib::fstar_prop_expr!(
-            r#"$result == 
-                map_array (fun x -> 
-                    if x >=. (mk_i16 3329) then 
-                        x -! (mk_i16 3329) 
-                    else x) $vec"#
+            r#"forall i.
+                let x = Seq.index $vec i in
+                let y = Seq.index $result i in
+                ((v y == v x - 3329 \/ v y == v x) /\
+                 (v y % 3329 == v x % 3329))"#
         )
     }
 

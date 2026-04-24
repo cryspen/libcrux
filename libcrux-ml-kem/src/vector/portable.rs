@@ -174,7 +174,11 @@ impl Operations for PortableVector {
     }
 
     #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (pow2 12 - 1) (impl.f_repr $v)"#))]
-    #[ensures(|out| fstar!(r#"impl.f_repr out == Spec.Utils.map_array (fun x -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x) (impl.f_repr $v)"#))]
+    #[ensures(|out| fstar!(r#"forall i.
+        let x = Seq.index (impl.f_repr $v) i in
+        let y = Seq.index (impl.f_repr out) i in
+        ((v y == v x - 3329 \/ v y == v x) /\
+         (v y % 3329 == v x % 3329))"#))]
     fn cond_subtract_3329(v: Self) -> Self {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
