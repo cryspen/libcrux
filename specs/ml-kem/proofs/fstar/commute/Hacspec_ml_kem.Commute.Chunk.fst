@@ -150,7 +150,25 @@ let lemma_mul_const_fe_commute_plain (a c r: i16) :
    `add`/`sub` are R-linear so the same impl equation lifts through
    either `i16_to_spec_fe` or `mont_i16_to_spec_fe`; two lemmas per op. *)
 
-assume val lemma_add_chunk_commutes_plain
+(* ────────────  Per-lane index helpers  ────────────
+   Expose `Seq.index (i16_to_spec_array x) j` as `i16_to_spec_fe (Seq.index x j)`
+   for a `nat` index `j` (the trait's `_post` predicates quantify over nat).
+   The underlying `createi_lemma` SMTPat only fires for `(v i)` with `i: usize`,
+   so we wrap it once and use the nat variant throughout Layer 1. *)
+
+let lane_plain (#n: usize) (x: t_Array i16 n) (j: nat {j < v n}) :
+    Lemma (Seq.index (i16_to_spec_array x) j
+           == i16_to_spec_fe (Seq.index x j))
+  = P.createi_lemma #P.t_FieldElement n #(usize -> P.t_FieldElement)
+      (fun k -> (i16_to_spec_fe (Seq.index x (v k)) <: P.t_FieldElement)) (sz j)
+
+let lane_mont (#n: usize) (x: t_Array i16 n) (j: nat {j < v n}) :
+    Lemma (Seq.index (mont_i16_to_spec_array x) j
+           == mont_i16_to_spec_fe (Seq.index x j))
+  = P.createi_lemma #P.t_FieldElement n #(usize -> P.t_FieldElement)
+      (fun k -> (mont_i16_to_spec_fe (Seq.index x (v k)) <: P.t_FieldElement)) (sz j)
+
+let lemma_add_chunk_commutes_plain
     (#vV: Type0) {| i: T.t_Operations vV |}
     (lhs rhs: vV) :
   Lemma
@@ -162,8 +180,24 @@ assume val lemma_add_chunk_commutes_plain
             == P.impl_FieldElement__add
                  (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
                  (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+  = let r = T.f_add lhs rhs in
+    let lhs_arr = T.f_repr lhs in
+    let rhs_arr = T.f_repr rhs in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__add
+               (Seq.index (i16_to_spec_array lhs_arr) j)
+               (Seq.index (i16_to_spec_array rhs_arr) j))
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_plain lhs_arr j;
+          lane_plain rhs_arr j;
+          lemma_add_fe_commute_plain (Seq.index lhs_arr j) (Seq.index rhs_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
-assume val lemma_add_chunk_commutes_mont
+let lemma_add_chunk_commutes_mont
     (#vV: Type0) {| i: T.t_Operations vV |}
     (lhs rhs: vV) :
   Lemma
@@ -175,8 +209,24 @@ assume val lemma_add_chunk_commutes_mont
             == P.impl_FieldElement__add
                  (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
                  (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+  = let r = T.f_add lhs rhs in
+    let lhs_arr = T.f_repr lhs in
+    let rhs_arr = T.f_repr rhs in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (mont_i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__add
+               (Seq.index (mont_i16_to_spec_array lhs_arr) j)
+               (Seq.index (mont_i16_to_spec_array rhs_arr) j))
+      = if j < 16 then begin
+          lane_mont r_arr j;
+          lane_mont lhs_arr j;
+          lane_mont rhs_arr j;
+          lemma_add_fe_commute_mont (Seq.index lhs_arr j) (Seq.index rhs_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
-assume val lemma_sub_chunk_commutes_plain
+let lemma_sub_chunk_commutes_plain
     (#vV: Type0) {| i: T.t_Operations vV |}
     (lhs rhs: vV) :
   Lemma
@@ -188,8 +238,24 @@ assume val lemma_sub_chunk_commutes_plain
             == P.impl_FieldElement__sub
                  (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
                  (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+  = let r = T.f_sub lhs rhs in
+    let lhs_arr = T.f_repr lhs in
+    let rhs_arr = T.f_repr rhs in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__sub
+               (Seq.index (i16_to_spec_array lhs_arr) j)
+               (Seq.index (i16_to_spec_array rhs_arr) j))
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_plain lhs_arr j;
+          lane_plain rhs_arr j;
+          lemma_sub_fe_commute_plain (Seq.index lhs_arr j) (Seq.index rhs_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
-assume val lemma_sub_chunk_commutes_mont
+let lemma_sub_chunk_commutes_mont
     (#vV: Type0) {| i: T.t_Operations vV |}
     (lhs rhs: vV) :
   Lemma
@@ -201,11 +267,27 @@ assume val lemma_sub_chunk_commutes_mont
             == P.impl_FieldElement__sub
                  (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
                  (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+  = let r = T.f_sub lhs rhs in
+    let lhs_arr = T.f_repr lhs in
+    let rhs_arr = T.f_repr rhs in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (mont_i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__sub
+               (Seq.index (mont_i16_to_spec_array lhs_arr) j)
+               (Seq.index (mont_i16_to_spec_array rhs_arr) j))
+      = if j < 16 then begin
+          lane_mont r_arr j;
+          lane_mont lhs_arr j;
+          lane_mont rhs_arr j;
+          lemma_sub_fe_commute_mont (Seq.index lhs_arr j) (Seq.index rhs_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
 (* ────────────  Scalar-multiplication ops  ────────────
    Plain × plain, Mont × Mont (→ Mont), and Mont × plain (→ plain). *)
 
-assume val lemma_multiply_by_constant_chunk_commutes
+let lemma_multiply_by_constant_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) (c: i16) :
   Lemma
@@ -217,8 +299,22 @@ assume val lemma_multiply_by_constant_chunk_commutes
             == P.impl_FieldElement__mul
                  (Seq.index (i16_to_spec_array (T.f_repr vec)) j)
                  (i16_to_spec_fe c)))
+  = let r = T.f_multiply_by_constant vec c in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__mul
+               (Seq.index (i16_to_spec_array vec_arr) j)
+               (i16_to_spec_fe c))
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_plain vec_arr j;
+          lemma_mul_const_fe_commute_plain (Seq.index vec_arr j) c (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
-assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
+let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) (c: i16) :
   Lemma
@@ -230,8 +326,22 @@ assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
             == P.impl_FieldElement__mul
                  (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
                  (mont_i16_to_spec_fe c)))
+  = let r = T.f_montgomery_multiply_by_constant vec c in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (mont_i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__mul
+               (Seq.index (mont_i16_to_spec_array vec_arr) j)
+               (mont_i16_to_spec_fe c))
+      = if j < 16 then begin
+          lane_mont r_arr j;
+          lane_mont vec_arr j;
+          lemma_mont_mul_fe_commute_mont_mont (Seq.index vec_arr j) c (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
-assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
+let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) (c: i16) :
   Lemma
@@ -243,13 +353,27 @@ assume val lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
             == P.impl_FieldElement__mul
                  (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
                  (i16_to_spec_fe c)))
+  = let r = T.f_montgomery_multiply_by_constant vec c in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == P.impl_FieldElement__mul
+               (Seq.index (mont_i16_to_spec_array vec_arr) j)
+               (i16_to_spec_fe c))
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_mont vec_arr j;
+          lemma_mont_mul_fe_commute_mont_plain (Seq.index vec_arr j) c (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux
 
 (* ────────────  Identity-on-lift ops  ────────────
    `barrett_reduce`, `cond_subtract_3329`, `to_unsigned_representative`
    all preserve the residue class mod q, so they are the identity on the
    plain FE lift. *)
 
-assume val lemma_barrett_reduce_chunk_commutes
+let lemma_barrett_reduce_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
   Lemma
@@ -257,6 +381,19 @@ assume val lemma_barrett_reduce_chunk_commutes
     (ensures
        (let r = T.f_barrett_reduce vec in
         i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+  = let r = T.f_barrett_reduce vec in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == Seq.index (i16_to_spec_array vec_arr) j)
+      = if j < 16 then begin
+          lane_plain r_arr j;
+          lane_plain vec_arr j;
+          lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
 
 assume val lemma_cond_subtract_3329_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -267,7 +404,7 @@ assume val lemma_cond_subtract_3329_chunk_commutes
        (let r = T.f_cond_subtract_3329_ vec in
         i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
 
-assume val lemma_to_unsigned_representative_chunk_commutes
+let lemma_to_unsigned_representative_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
   Lemma
@@ -275,6 +412,23 @@ assume val lemma_to_unsigned_representative_chunk_commutes
     (ensures
        (let r = T.f_to_unsigned_representative vec in
         i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+  = let r = T.f_to_unsigned_representative vec in
+    let vec_arr = T.f_repr vec in
+    let r_arr = T.f_repr r in
+    assert (TS.to_unsigned_representative_post vec_arr r_arr);
+    let aux (j: nat) : Lemma (j < 16 ==>
+        Seq.index (i16_to_spec_array r_arr) j
+          == Seq.index (i16_to_spec_array vec_arr) j)
+      = if j < 16 then begin
+          let x = Seq.index vec_arr j in
+          let y = Seq.index r_arr j in
+          assert (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329));
+          lane_plain r_arr j;
+          lane_plain vec_arr j;
+          lemma_barrett_fe_commute x y
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
 
 (* ────────────  Compress / decompress  ────────────
    Reuse the array-length-generic predicates already defined in

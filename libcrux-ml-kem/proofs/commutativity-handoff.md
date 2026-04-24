@@ -227,8 +227,9 @@ Per-function commits.
 | C2 followup: weak-post revert (batch 4) | **done** | `d9e80ba49` | `compress_1`/`compress`/`ntt_layer_{1,2,3}_step`/`inv_ntt_layer_{1,2,3}_step` helper bodies |
 | **Full prove green** | **done** | tip: `d9e80ba49` | `Checked: 54  Admitted: 3  Failed: 0` — only pre-existing Neon error |
 | C2b Layer 0 proofs (discharge assume val's) | **done** | *(see below)* | all 9 stubs proved; helper lemmas factored out; Commute.Chunk.fst verifies standalone in ~3 s — no extraction-side file touched, so no regression surface |
-| C3 Layer 1 chunk lemmas (stubs) | **done** | *(next commit)* | 21 `assume val` signatures: 4 add/sub × {plain, mont}, 3 mul variants, 3 identity-style, 4 compress/decompress, 6 ntt-layer, 1 ntt-multiply; Commute.Chunk.fst still verifies standalone |
-| C3b Layer 1 proofs | pending | — | NTT-layer ones are heaviest |
+| C3 Layer 1 chunk lemmas (stubs) | **done** | `eb1404f02` | 21 `assume val` signatures: 4 add/sub × {plain, mont}, 3 mul variants, 3 identity-style, 4 compress/decompress, 6 ntt-layer, 1 ntt-multiply; Commute.Chunk.fst still verifies standalone |
+| C3b Layer 1 proofs (batch 1: linear + mul + 2 identity) | **done** | *(this commit)* | 9 of 21 proved: 4 add/sub × {plain, mont}, 3 mul variants, barrett_reduce, to_unsigned_representative.  Pattern: helper `lane_plain`/`lane_mont` expose Seq.index of the lift via `createi_lemma (sz j)`; each aux lemma folds a Layer-0 lemma 16× via `Classical.forall_intro`; identity ones close via `Seq.lemma_eq_intro`. |
+| C3b Layer 1 proofs (batch 2: cond_subtract, compress/decompress, NTT) | pending | — | 12 remaining. cond_subtract needs map_array unfolding + case analysis on `x >=. 3329`. compress/decompress need new Layer-0 `compress_d` / `decompress_d` commute helpers. NTT-layer + ntt_multiply fold per-butterfly, heaviest rlimit. |
 | C4a `ntt_layer_1_step` (portable) | pending | — | body strengthening + impl annotation rewire |
 | C4b `ntt_layer_2_step` (portable) | pending | — | |
 | C4c `ntt_layer_3_step` (portable) | pending | — | |
