@@ -79,6 +79,16 @@ let lemma_impl_mul_v_val (x y: P.t_FieldElement) :
              == (v x.P.f_val * v y.P.f_val) % 3329)
   = ()
 
+let lemma_impl_add_v_val (x y: P.t_FieldElement) :
+    Lemma (v (P.impl_FieldElement__add x y).P.f_val
+             == (v x.P.f_val + v y.P.f_val) % 3329)
+  = ()
+
+let lemma_impl_sub_v_val (x y: P.t_FieldElement) :
+    Lemma (v (P.impl_FieldElement__sub x y).P.f_val
+             == (v x.P.f_val - v y.P.f_val) % 3329)
+  = ()
+
 (* Scalar modular-arithmetic cores.  Proved at the `int` level so the
    wrapping lemmas only have to line up `v`-value equalities. *)
 
@@ -107,6 +117,50 @@ let lemma_mul_const_mod_core (a c r: int) :
   = let q : pos = 3329 in
     L.lemma_mod_mul_distr_l a (c % q) q;
     L.lemma_mod_mul_distr_r a c q
+
+(* Integer-level modular cores for the mod-aware add / sub lifts.
+   Each shows that under the mont lift, residue equality at the i16 level
+   transfers to f_val equality. *)
+
+let lemma_add_mont_mod_core (a b r: int) :
+    Lemma (requires r % 3329 == (a + b) % 3329)
+          (ensures  (((a * 169) % 3329) + ((b * 169) % 3329)) % 3329
+                    == (r * 169) % 3329)
+  = let q : pos = 3329 in
+    L.lemma_mod_add_distr ((a * 169) % q) (b * 169) q;
+    L.lemma_mod_add_distr (b * 169) (a * 169) q;
+    assert (a * 169 + b * 169 == (a + b) * 169);
+    L.lemma_mod_mul_distr_l (a + b) 169 q;
+    L.lemma_mod_mul_distr_l r 169 q
+
+let lemma_sub_mont_mod_core (a b r: int) :
+    Lemma (requires r % 3329 == (a - b) % 3329)
+          (ensures  (((a * 169) % 3329) - ((b * 169) % 3329)) % 3329
+                    == (r * 169) % 3329)
+  = let q : pos = 3329 in
+    L.lemma_mod_sub_distr ((a * 169) % q) (b * 169) q;
+    L.lemma_mod_add_distr (- ((b * 169) % q)) (a * 169) q;
+    assert (a * 169 - b * 169 == (a - b) * 169);
+    L.lemma_mod_mul_distr_l (a - b) 169 q;
+    L.lemma_mod_mul_distr_l r 169 q
+
+(* Mod-aware addition: same hypothesis shape as
+   `ntt_spec` / `inv_ntt_spec` give for the butterfly outputs. *)
+let lemma_add_fe_commute_mont_mod (a b r: i16) :
+    Lemma (requires v r % 3329 == (v a + v b) % 3329)
+          (ensures  P.impl_FieldElement__add
+                        (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b)
+                    == mont_i16_to_spec_fe r)
+  = lemma_impl_add_v_val (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b);
+    lemma_add_mont_mod_core (v a) (v b) (v r)
+
+let lemma_sub_fe_commute_mont_mod (a b r: i16) :
+    Lemma (requires v r % 3329 == (v a - v b) % 3329)
+          (ensures  P.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b)
+                    == mont_i16_to_spec_fe r)
+  = lemma_impl_sub_v_val (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b);
+    lemma_sub_mont_mod_core (v a) (v b) (v r)
 
 (* Montgomery multiplication of two Montgomery-form operands: the impl
    computes `r = a * b * R^{-1}` with `R^{-1} = 169`.  Under the
