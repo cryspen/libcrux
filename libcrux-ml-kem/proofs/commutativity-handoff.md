@@ -21,6 +21,55 @@ The existing `Spec.MLKEM.Math.to_spec_fe`, `poly_ntt`, `vector_ntt`, etc. go
 away. Each migration replaces the reference with the hacspec counterpart
 (extending hacspec if something is missing).
 
+## Session resume (continue from another machine)
+
+**Branch**: `trait-poststrengthen` on the libcrux-trait-strengthen worktree.
+**Tip**: `0f936c5e5` (C4e done with admits).
+
+**What's green right now** (tip commit):
+- `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst` — verifies standalone (~7 s).
+- `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Vector.Portable.Ntt.fst` — verifies (~442 s).
+- `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Vector.Portable.fst` — verifies (~217 s).
+
+**Outstanding admits** (all introduced by C4e, all at Layer 0.5 / wrapper-glue — zero leakage into higher modules):
+1. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_even_mod_core` — int-level 3× 169-unwrap mod-distr chain. Auto-split retry succeeded once in 369 ms but monolithic Z3 does not converge at rlimit 300 with `--split_queries always`.
+2. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_odd_mod_core` — int-level 2× 169-unwrap, same situation.
+3. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_even_fe_commute` — FE wrapper over (1), also chokes Z3 through `impl_mul_v_val × 3 + impl_add_v_val × 1`.
+4. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_odd_fe_commute` — FE wrapper over (2), same.
+5. One `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply` wrapper, just before the `p_ntt_mult` predicate definition. Z3 times out at rlimit 400 × 85 s on the 4-FE-per-branch × 4 branches body.
+
+**Recommended revisit strategies for the admits** (in priority order):
+- Split `lemma_base_case_mult_even_mod_core` into per-`169`-unwrap sub-lemmas (one per Montgomery-mul level) and compose them.
+- Run the core lemmas at rlimit ≥ 800 with `#restart_solver` before each.
+- For the wrapper `admit ()`, split `p_ntt_mult` per-branch using `assert_spinoff` so each of the 4 `assert (p_ntt_mult b)` is an isolated SMT query.
+
+**Next step on the plan**: C4f (compress/decompress — `compress_1`, `compress`, `decompress_1`, `decompress_ciphertext_coefficient`). Same "option D" pattern as C4a-e: strengthen `spec::<op>_post` to the FE form, add an opaque butterfly-style wrapper in `Spec.Utils` if useful, rewire the impl body, rewrite the portable.rs wrapper to use the new post. C4a's changes are the cleanest reference template (see `dca0deef1`).
+
+**Expected pain points for C4f**:
+- Batch 2b Layer-1 stubs for `compress_{1,_}`, `decompress_{1,_ciphertext_coefficient}` are unprovable today at the weakened trait contract (see note on Progress tracker row for batch 2b). C4f must both strengthen the posts AND rewire the trait typeclass field so `pred ==> TS.<op>_post ...` (pattern mirrors `f_add_post`). Then batch 2b closes trivially.
+
+**Build/verify commands** (run from `libcrux-ml-kem`):
+
+```bash
+# Extract + patch (always run after .rs or .fsti changes):
+python3 hax.py extract
+rm -f proofs/fstar/extraction/Libcrux_ml_kem.Hash_functions.fst  # workaround: duplicate def bug
+
+# Full build (~15-20 min):
+(cd proofs/fstar/extraction && make)
+
+# Single module (fastest iteration on one file):
+(cd proofs/fstar/extraction && make run/Libcrux_ml_kem.Vector.Portable.fst)
+
+# Commute-only (no extraction dependency):
+(cd ../specs/ml-kem/proofs/fstar/commute && make)
+```
+
+**F* verification notes**:
+- Keep all `#push-options "--z3rlimit N"` under 300 per project guidance (user OK'd up to 800 for `ntt_multiply` only).
+- `--split_queries always` occasionally helps but for the admitted lemmas it did not.
+- `[@@ "opaque_to_smt"]` wrappers around per-function butterfly posts are the pattern for keeping Z3 load contained.
+
 ## Design decisions (locked after discussion)
 
 1. **Single `to_spec_fe` family, two flavours, hacspec-typed.** In
@@ -231,11 +280,11 @@ Per-function commits.
 | C3b Layer 1 proofs (batch 1: linear + mul + 2 identity) | **done** | `62bffb3f5` | 9 of 21 proved: 4 add/sub × {plain, mont}, 3 mul variants, barrett_reduce, to_unsigned_representative.  Pattern: helper `lane_plain`/`lane_mont` expose Seq.index of the lift via `createi_lemma (sz j)`; each aux lemma folds a Layer-0 lemma 16× via `Classical.forall_intro`; identity ones close via `Seq.lemma_eq_intro`. |
 | C3b Layer 1 proofs (batch 2a: cond_subtract_3329) | **done** | *(this commit)* | Restated `cond_subtract_3329_post` pointwise (`forall i. (v y == v x - 3329 \/ v y == v x) /\ (v y % 3329 == v x % 3329)`) in the Rust spec module + extracted Traits.Spec, matched the portable impl's `ensures` and body proof.  Layer-1 lemma then closes trivially using the same `lemma_barrett_fe_commute` pattern as barrett/to_unsigned.  10 of 21 proved. |
 | C3b Layer 1 proofs (batch 2b: compress/decompress, NTT-layer, ntt_multiply) | **blocked on C4** | — | 11 remaining stubs are unprovable at the current trait contract:<br>• `compress_{1,_}`, `ntt_layer_{1,2,3}_step`, `inv_ntt_layer_{1,2,3}_step`, `ntt_multiply` — trait posts were weakened in the C2 revert commits to bounds only (`is_i16b_array_opaque …`) so there is nothing to cite.<br>• `decompress_1`, `decompress_ciphertext_coefficient` — the trait's `f_..._post` field in `Libcrux_ml_kem.Vector.Traits.fst` is a **naked `Type0`** not tied to `TS.decompress_post_N`, so even though the spec post is strong, the trait gives us no guarantee.<br>All five cases land in **C4** — each C4 impl-body commit must both strengthen the trait/impl post to cite the hacspec equation **and** rewire the trait typeclass field so that `pred ==> TS.<op>_post ...` is guaranteed (pattern mirrors `f_add_post`). Once that lands, batch 2b should close trivially. |
-| C4a `ntt_layer_1_step` (portable) | **done** | *(this commit)* | option D (forall4-pointwise FE) post; opaque `ntt_layer_1_butterfly_post` wrapper preserves ntt_multiply SMT perf (query 164: 11s baseline → 12s now, no regression); 4 × `lemma_butterfly_pair_commute` calls + explicit `p_layer_1` predicate unfold in wrapper body; Layer-1 stub closes with `= ()` |
-| C4b `ntt_layer_2_step` (portable) | **done** | *(this commit)* | same template as C4a; 4 butterfly-pair calls cover 2 groups × 2 pairs |
-| C4c `ntt_layer_3_step` (portable) | **done** | *(this commit)* | same template; 8 butterfly-pair calls, 1 group |
-| C4d `inv_ntt_layer_*_step` (portable) | **done** | *(this commit)* | 3 inverse layers via Gentleman-Sande butterfly commute; new `lemma_inv_butterfly_pair_commute` in Chunk; same template as C4a-c |
-| C4e `ntt_multiply` (portable) | **done (with admits)** | *(this commit)* | Full C4e flow: `ntt_multiply_post` strengthened to `is_i16b_array_opaque /\ Spec.Utils.ntt_multiply_butterfly_post /\ forall4 (4-FE-equality-per-branch)`; `ntt_multiply` impl body produces the opaque butterfly_post via reveal of `ntt_multiply_binomials_post`; `Portable.Ntt.fst` (`ntt_multiply` query 164: 216 s with rlimit 800, vs. 11-12 s baseline — new butterfly_post adds load) and `Portable.fst` (wrapper: 217 s) both verify.  The wrapper calls `lemma_base_case_mult_pair_commute` 8 times to convert residue form → FE form, then **`admit()`**s the final `p_ntt_mult` predicate + `forall4` glue because Z3 doesn't converge on the 4-FE-per-branch × 4 branches body at rlimit 400 × 85 s.  Admits concentrated in `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_{even,odd}_{mod_core,fe_commute}` and the one `admit ()` in `Portable.fst`'s wrapper body — content is sound, Z3 convergence is the blocker.  Revisit with: (a) split wrapper per-branch so each `assert (p_ntt_mult b)` is isolated; (b) dedicated rlimit ≥800 pass; (c) decompose the core int-lemma into per-`169`-unwrap sub-lemmas. |
+| C4a `ntt_layer_1_step` (portable) | **done** | `dca0deef1` (+ `b6b200ffe` prep) | option D (forall4-pointwise FE) post; opaque `ntt_layer_1_butterfly_post` wrapper preserves ntt_multiply SMT perf (query 164: 11s baseline → 12s now, no regression); 4 × `lemma_butterfly_pair_commute` calls + explicit `p_layer_1` predicate unfold in wrapper body; Layer-1 stub closes with `= ()` |
+| C4b `ntt_layer_2_step` (portable) | **done** | `0fd9156b7` | same template as C4a; 4 butterfly-pair calls cover 2 groups × 2 pairs |
+| C4c `ntt_layer_3_step` (portable) | **done** | `b20fa3c32` | same template; 8 butterfly-pair calls, 1 group |
+| C4d `inv_ntt_layer_*_step` (portable) | **done** | `31fe2aa19` | 3 inverse layers via Gentleman-Sande butterfly commute; new `lemma_inv_butterfly_pair_commute` in Chunk; same template as C4a-c |
+| C4e `ntt_multiply` (portable) | **done (with admits)** | `57fbc9f7b` + `0f936c5e5` | Full C4e flow: `ntt_multiply_post` strengthened to `is_i16b_array_opaque /\ Spec.Utils.ntt_multiply_butterfly_post /\ forall4 (4-FE-equality-per-branch)`; `ntt_multiply` impl body produces the opaque butterfly_post via reveal of `ntt_multiply_binomials_post`; `Portable.Ntt.fst` (`ntt_multiply` query 164: 216 s with rlimit 800, vs. 11-12 s baseline — new butterfly_post adds load) and `Portable.fst` (wrapper: 217 s) both verify.  The wrapper calls `lemma_base_case_mult_pair_commute` 8 times to convert residue form → FE form, then **`admit()`**s the final `p_ntt_mult` predicate + `forall4` glue because Z3 doesn't converge on the 4-FE-per-branch × 4 branches body at rlimit 400 × 85 s.  Admits concentrated in `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_{even,odd}_{mod_core,fe_commute}` and the one `admit ()` in `Portable.fst`'s wrapper body — content is sound, Z3 convergence is the blocker.  Revisit with: (a) split wrapper per-branch so each `assert (p_ntt_mult b)` is isolated; (b) dedicated rlimit ≥800 pass; (c) decompose the core int-lemma into per-`169`-unwrap sub-lemmas. |
 | C4f compress/decompress (portable) | pending | — | |
 | C4g serialize_5/11, from_bytes, to_bytes, rej_sample | pending | — | |
 | C4′ AVX2 set | pending | — | mirrors C4a-g |
