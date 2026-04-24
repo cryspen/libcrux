@@ -3,6 +3,7 @@ use crate::generic_keccak::simd128::keccak2;
 /// A SHA3 224 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
+#[hax_lib::requires(digest.len() == 28)]
 pub fn sha224(digest: &mut [u8], data: &[u8]) {
     let mut dummy = [0u8; 28];
     keccak2::<144, 0x06u8>(&[data, data], digest, &mut dummy);
@@ -11,6 +12,7 @@ pub fn sha224(digest: &mut [u8], data: &[u8]) {
 /// A SHA3 256 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
+#[hax_lib::requires(digest.len() == 32)]
 pub fn sha256(digest: &mut [u8], data: &[u8]) {
     let mut dummy = [0u8; 32];
     keccak2::<136, 0x06u8>(&[data, data], digest, &mut dummy);
@@ -19,6 +21,7 @@ pub fn sha256(digest: &mut [u8], data: &[u8]) {
 /// A SHA3 384 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
+#[hax_lib::requires(digest.len() == 48)]
 pub fn sha384(digest: &mut [u8], data: &[u8]) {
     let mut dummy = [0u8; 48];
     keccak2::<104, 0x06u8>(&[data, data], digest, &mut dummy);
@@ -27,6 +30,7 @@ pub fn sha384(digest: &mut [u8], data: &[u8]) {
 /// A SHA3 512 implementation.
 #[allow(unused_variables)]
 #[inline(always)]
+#[hax_lib::requires(digest.len() == 64)]
 pub fn sha512(digest: &mut [u8], data: &[u8]) {
     let mut dummy = [0u8; 64];
     keccak2::<72, 0x06u8>(&[data, data], digest, &mut dummy);

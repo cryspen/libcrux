@@ -1,0 +1,486 @@
+# SHA-3 equivalence proof — session handoff
+
+Date: 2026-04-24 (appended to the 2026-04-23 / 2026-04-21 docs below)
+Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
+Branch: `proofs-cleanup`
+
+## 2026-04-24 (late): `assume False` eliminated — Portable.squeeze fully verified
+
+### TL;DR
+
+`Libcrux_sha3.Generic_keccak.Portable.squeeze` now verifies against its
+spec-equivalence ensures without `assume False` — **597 queries, zero
+errors, 55 min build**.  The remaining issue from the earlier session
+(where the final function-scope VC timed out at rlimit 800 even with
+all inline scaffolding) was unblocked by refactoring the final partial
+block into a dedicated `squeeze_last` helper + corresponding
+spec-level `Hacspec_sha3.Sponge.squeeze_last`, so the main squeeze's
+final reconcile sees a clean equality instead of threading an inline
+`if output_rem != 0` through a bloated VC context.
+
+### What changed
+
+**Rust — impl (`crates/algorithms/sha3/src/generic_keccak/portable.rs`):**
+- New method `impl KeccakState<1, u64>::squeeze_last<RATE>` that
+  wraps the final `if output_rem != 0 { keccakf1600; f_squeeze }`.
+  Its ensures pins `self.st` and `out` to `Hacspec_sha3.Sponge.squeeze_last`.
+  Inline scaffolding proves the impl vs spec equivalence via
+  `lemma_keccakf1600_portable` + a per-index aux forall over `squeeze_state`.
+- `squeeze`'s final `if output_rem != 0` block replaced by
+  `s.squeeze_last::<RATE>(output, output_rem);`.
+- `squeeze`'s loop body now has a post-f_squeeze scaffolding block
+  (aux_write_step / aux_tail_step + distributivity hint +
+  `lemma_keccakf1600_portable`) that re-establishes the loop
+  invariant at `i+1`.
+- Removed the `hax_lib::fstar!(r#"assume False"#);` at the squeeze
+  function entry (the whole point).
+
+**Rust — spec (`specs/sha3/src/sponge.rs`):**
+- New `squeeze_last` function matching the impl's shape.
+- `squeeze` now calls `squeeze_last` instead of inlining the final
+  partial-block `if`.
+
+**F* equivalence (`proofs/fstar/equivalence/Hacspec_sha3.Sponge.Lemmas.fst`):**
+- New lemma `lemma_squeeze_unfold` — structural unfold of spec `squeeze`.
+- New lemma `lemma_seq_trans` — transitive equality over the t_Array↔Seq
+  coercion boundary (Z3 couldn't auto-propagate through `<:`).
+- New lemma `lemma_squeeze_last_extensional` — squeeze_last is
+  extensional in its `output` argument at indices `< output_len -
+  output_rem`, used to bridge `squeeze_last(impl_output_after_loop)`
+  with `squeeze_last(spec_out)`.
+
+### Load-bearing admit inventory (3, was 4)
+
+| # | File | Line | Kind | Notes |
+|---|------|------|------|-------|
+| 1 | `EquivImplSpec.Sponge.Portable.API.fst` | 252 | `admit ()` | absorb `lemma_absorb_rec_step` — Z3 4.13.3 LP bug (`lar_solver.cpp:1066`), unchanged |
+| 2 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | unchanged |
+| 3 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | unchanged |
+
+`assume False` from 2026-04-24 morning is **gone**.  Non-load-bearing
+upstream admits (3) in `Proof_Utils.Lemmas.fst:26/33/54` unchanged.
+
+### Key technical lessons
+
+- **`$self_` only works in ensures-clause fstar! blocks, not body ones.**
+  Inside a method body's `hax_lib::fstar!`, use `$self` (the Rust receiver).
+  Similarly, `self_e_future` in ensures must reference the full field
+  path (`.Libcrux_sha3.Generic_keccak.f_st`) because `.st` isn't
+  translated without `$`-interpolation.
+- **Hax can't parse `v $output_len}`** (closing brace after antiquot)
+  — add a space: `v $output_len }`.
+- **Z3 coercion through `<: Seq.seq u8`** isn't automatic.  The
+  `lemma_seq_trans` with a free `spec_result` variable was necessary;
+  inlining the spec-function application directly caused timeouts.
+- **Context pollution drives the final VC.** Profile showed 3,610 QIs
+  on a refinement interpretation — classic Z3 cascade from many
+  `let _:Prims.unit = lemma_... in` blocks.  Refactoring the if-else
+  into a named function with its own VC cut the main squeeze's final
+  reconcile from timeout to ~8s.
+
+### Previous sections (historical)
+
+## 2026-04-24 (earlier): pivot landed; one `assume False` remaining in squeeze body
+
+### TL;DR
+
+The Portable squeeze inline-ensures pivot (started 2026-04-23) **succeeded
+architecturally**. Admits 2–4 from the 2026-04-21 inventory are gone:
+
+- `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` — **0 admits**.  Only
+  `lemma_squeeze_once_portable` remains as a real proof; the middle-loop
+  induction + driver branches were deleted.
+- `EquivImplSpec.Sponge.Portable.API.fst:303–326` — `lemma_squeeze_portable`
+  collapsed to `let _ = Libcrux_sha3.Generic_keccak.Portable.squeeze rate ks output in ()`.
+  It consumes the Rust-side ensures directly.
+- Full `make` **verifies clean** (latest: `/tmp/sq15.log`, 1857s total,
+  ends with `Verified module: EquivImplSpec.Sponge.Portable.API` + `All
+  verification conditions discharged successfully`).
+
+### Catch: one `assume False` in the extracted squeeze body
+
+`src/generic_keccak/portable.rs:132` opens the squeeze function body with
+`hax_lib::fstar!(r#"assume False"#);`.  Extracted at
+`proofs/fstar/extraction/Libcrux_sha3.Generic_keccak.Portable.fst:311` as
+`let _:Prims.unit = assume False in`.
+
+All the inline proof scaffolding below it (aux_write / aux_tail /
+`lemma_squeeze_blocks_base` / `lemma_squeeze_blocks_tail` /
+`forall_intro` + `Seq.lemma_eq_intro` per branch, plus the loop invariant
+at `proofs/fstar/extraction/…:411–429`) is correct and in place — it is
+simply not being discharged because `assume False` short-circuits the
+function's VC.  Removing the `assume False` should expose the real work.
+
+### Revised load-bearing admit inventory (4, was 6)
+
+| # | File | Line | Kind | Notes |
+|---|------|------|------|-------|
+| 1 | `EquivImplSpec.Sponge.Portable.API.fst` | 252 | `admit ()` | absorb `lemma_absorb_rec_step` — Z3 4.13.3 LP bug (`lar_solver.cpp:1066`), unchanged |
+| 2 | `Libcrux_sha3.Generic_keccak.Portable.fst` (extracted) | 311 | `assume False` inside `squeeze` body | **NEW.** Replaces old admits 2–4.  Scaffolding in place; needs the main ensures VC to actually run. |
+| 3 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | unchanged |
+| 4 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | unchanged |
+
+Non-load-bearing upstream admits (3) in `Proof_Utils.Lemmas.fst:26/33/54` — unchanged.
+
+### Why `assume False` is there
+
+The previous session's iteration log (sq2–sq15 on 2026-04-23) went through
+the inline-ensures build attempts.  `/tmp/sq_full.log` (with the old long
+`API.fst:lemma_squeeze_portable` proof in place) recorded 3 Error-19
+timeouts at rlimit 800, each ~200s.  `assume False` was dropped in to
+unblock downstream verification of the dependent `keccak1_portable` /
+top-level SHA-3 hasher theorems while the squeeze-body VC is sorted out.
+
+### Next steps (in priority order)
+
+1. **Lift `assume False` from `src/generic_keccak/portable.rs:132`.**
+   - Re-extract via `bash hax.sh extract` from the sha3 crate root.
+   - Build just `Libcrux_sha3.Generic_keccak.Portable.fst` to see the
+     squeeze VC fail cleanly without dragging the full equivalence
+     chain (rough cost: 30–60 min).
+   - Likely outcome: the monolithic ensures times out.  Mitigation:
+     factor per-branch reconciliations into dedicated lemmas in a new
+     `Hacspec_sha3.Sponge.Lemmas.fst` module and invoke each lemma
+     inside the function body — splits the VC three ways
+     (`output_blocks==0`, loop-entry, final-block).
+   - Possible lemma names: `lemma_squeeze_empty_branch`,
+     `lemma_squeeze_initial_block`, `lemma_squeeze_final_reconcile`.
+
+2. **Mirror the pattern to `absorb`.**  Would eliminate admit #1 *iff* the
+   simpler inline form dodges the Z3 LP bug.  Absorb is a single
+   recursion (no loop + tail), so the VC should be smaller than squeeze.
+
+3. **Arm64 per-lane assumes (#3, #4).**  Clone Portable's scaffolding at
+   `v_N = mk_usize 2` with a lane parameter.  Reuses the closed
+   `sc_load_block` / `sc_store_block` records in
+   `EquivImplSpec.Sponge.Arm64.fst`.
+
+4. **Cleanup.**  Stale plan docs (`plan.md`, `plan-simd.md`, `Proofs.md`);
+   editor backups (`Libcrux_sha3.Generic_keccak.Portable.fst~`,
+   `Utils.fsti~`).
+
+### Files of interest
+
+- `src/generic_keccak/portable.rs:105–287` — squeeze function (the work site).
+- `proofs/fstar/extraction/Libcrux_sha3.Generic_keccak.Portable.fst:280–543` — extracted form.
+- `proofs/fstar/equivalence/EquivImplSpec.Sponge.Portable.API.fst:303–326` — trivial ensures-consumer.
+- `proofs/fstar/equivalence/EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` — kept `lemma_squeeze_once_portable`, everything else deleted.
+- `proofs/fstar/equivalence/Hacspec_sha3.Sponge.Lemmas.fst` — 3 spec helpers (base / unfold / tail).
+- `/tmp/sq15.log` — last clean build (`Verified module` success).
+- `/tmp/sq_full.log` — last full build with non-trivial `lemma_squeeze_portable` (timed out, before `assume False` landed).
+
+### Known constraints (unchanged)
+
+- F* `--z3rlimit ≤ 800` under `--split_queries always` — hitting 800 means refactor, not more time.
+- Never clear the F* cache; delete only specific `.checked` files.
+- Rust-side edits require `bash hax.sh extract`.
+- `cargo fmt` touched Rust crates before committing.
+
+---
+
+## 2026-04-23 status: Portable squeeze architectural pivot
+
+### Overall plan
+Eliminate admits 2–4 (the Portable squeeze Z3-composition gaps) by pushing
+buffer-independence reasoning **inline into the Rust `squeeze` function's
+ensures + loop invariant**, rather than proving it as an external lemma
+chain in `EquivImplSpec.Sponge.Portable.API.fst`.
+
+The key insight: `f_squeeze_post` (in `Libcrux_sha3.Simd.Portable.fst`) and
+the spec `squeeze_state` ensures are structurally identical pointwise
+byte-by-byte specs. Under `v len <= 200`, both say
+`result[i] = to_le_bytes(state[(i-start)/8])[(i-start)%8]` in the write
+range and preserve bytes outside. So the impl output is byte-equal to
+the spec output, without needing a dedicated buffer-independence lemma.
+
+If this lands:
+- `Libcrux_sha3.Generic_keccak.Portable.squeeze` gets a direct
+  `output_future == Hacspec_sha3.Sponge.squeeze (len output) s.st RATE`
+  ensures.
+- `lemma_squeeze_portable` in `API.fst` collapses to `()` (its proof is
+  now the function's ensures).
+- `portable_squeeze_composed` + `lemma_squeeze_portable_aux` + admits 2–4
+  become dead code.
+
+### Changes so far
+
+**Lemmas.fst** (`Hacspec_sha3.Sponge.Lemmas.fst`, new module, added to Makefile):
+- Deleted three dead buffer-independence helpers
+  (`lemma_squeeze_state_writerange_eq`, `lemma_squeeze_state_prefix_ext`,
+  `lemma_squeeze_blocks_prefix_eq`).
+- Kept `lemma_squeeze_blocks_base`, `lemma_squeeze_blocks_unfold`,
+  `lemma_squeeze_blocks_tail` — these are the only spec-side helpers
+  actually used inline by the new Rust ensures. Module builds clean.
+
+**Rust** (`src/generic_keccak/portable.rs`):
+- `squeeze::<RATE>` function rewritten:
+  - Ensures:
+    `output_future == Hacspec_sha3.Sponge.squeeze (len $output) $s.st $RATE`
+  - Options: `--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always`
+  - Ghost bindings: `s_init_st = s.st`, `output_initial = output.to_vec()`
+  - Branches:
+    1. `output_blocks == 0`: one `f_squeeze` call; reconcile with
+       `squeeze_state … zeros 0 output_len` via `forall_intro aux` +
+       `Seq.lemma_eq_intro`.
+    2. else: first `f_squeeze` with `start=0, len=RATE`; establish
+       loop invariant at `i=1` via `lemma_squeeze_blocks_base` +
+       `forall_intro aux_write` + `forall_intro aux_tail`; loop body
+       applies `lemma_squeeze_blocks_tail` then does `keccakf1600` +
+       `f_squeeze`; optional final partial block; final reconcile via
+       `forall_intro aux` + `Seq.lemma_eq_intro` with case split on
+       `output_rem`.
+  - Loop invariant:
+    ```
+    v i >= 1 /\ v i <= v output_blocks /\
+    v i * v RATE <= v output_len /\
+    s.st == spec_st /\
+    (forall (k: nat). k < v i * v RATE /\ k < v output_len ==>
+       output[k] == spec_out[k]) /\
+    (forall (k: nat). v i * v RATE <= k /\ k < v output_len ==>
+       output[k] == output_initial_arr[k])
+    ```
+
+**Not yet done**:
+- `EquivImplSpec.Sponge.Portable.API.fst:303–391` (`lemma_squeeze_portable`
+  proof) — still has the old long proof; collapses to `()` once the new
+  extraction compiles.
+- `EquivImplSpec.Sponge.Portable.Steps.fst` — `portable_squeeze_composed`
+  becomes dead; remove after verification.
+- `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` — stale comments
+  referencing the removed composition.
+
+### Immediate status: build bpigsithv running
+
+**Goal**: F* verification of `Libcrux_sha3.Generic_keccak.Portable.fst` passes.
+
+**Iteration history (this session)**:
+- sq2.log (v1: plain `Seq.equal` assertion): 1 error, query 31 timed out
+  at 917s on output_blocks==0 branch assertion.
+- sq3.log (v2: bounds hints + `Seq.lemma_eq_intro`): 6 errors.
+  - Line 338: `Seq.lemma_eq_intro` precondition unprovable.
+  - Line 391: subtyping — `Seq.index output k` needed `k < len output`.
+  - Line 396/417: initial invariant check failed at fold_range entry.
+- sq4.log (v3: `forall_intro aux` + `v i * v RATE <= v output_len`
+  invariant conjunct + `k < v output_len` in bound-match forall):
+  1 error left — the initial invariant check still fails (entry block
+  had only `aux_write`, missing `aux_tail` for the preservation forall).
+- sq5.log (v4: CURRENT, running as bpigsithv): added `aux_tail` for the
+  `RATE <= k < output_len ==> output[k] == output_initial_arr[k]`
+  preservation forall at entry. Also per-branch aux in
+  `output_blocks == 0` and final reconciliation.
+
+### Files to reload if session restarts
+
+- `src/generic_keccak/portable.rs` — the squeeze function, lines 105–290.
+  Contains the current proof scaffolding in `hax_lib::fstar!(…)` blocks.
+- `proofs/fstar/equivalence/Hacspec_sha3.Sponge.Lemmas.fst` — the 3 kept
+  spec helpers (base, unfold, tail).
+- `proofs/fstar/equivalence/Makefile` — `Hacspec_sha3.Sponge.Lemmas.fst`
+  is in ROOTS.
+- `proofs/fstar/extraction/Libcrux_sha3.Generic_keccak.Portable.fst` —
+  the generated F* (re-extract from Rust via `bash hax.sh extract`).
+- `/tmp/sq5.log` — latest build log (running as bpigsithv).
+
+### Next step if the current build passes
+
+1. Update `lemma_squeeze_portable` in
+   `EquivImplSpec.Sponge.Portable.API.fst` to `= ()`.
+2. Delete now-dead `portable_squeeze_composed` in `Steps.fst` and
+   `lemma_squeeze_portable_aux` + 3 admits in `SqueezeAPI.fst`.
+3. Rebuild full F* chain with `make` under equivalence/.
+4. Apply the same pattern to `absorb` (user follow-up intent).
+
+### Next step if the current build fails
+
+- Read `/tmp/sq5.log`, grep for `Error 19`, identify the failing
+  assertion's line range in the extracted F*, map back to the
+  `hax_lib::fstar!(…)` block in portable.rs, and adjust.
+- Known scalability pitfalls:
+  - Antiquotation: `$name}` is parsed as ident; use `$name }` with a space.
+  - `nat{k < v $name}` → `nat{k < v $name }`.
+  - Avoid `Seq.equal` directly; prefer `forall_intro aux; Seq.lemma_eq_intro`.
+  - `aux` should match the invariant's forall shape exactly (same premise
+    structure, or use `Classical.move_requires`).
+  - Forall's `k: nat` must be bounded by `k < v output_len` in premise
+    for `Seq.index (… <: Seq.seq u8) k` to be well-typed.
+
+### Known constraint
+- F* `--z3rlimit ≤ 800` under `--split_queries always` — hitting 800 means
+  the proof needs refactoring, not more time.
+
+---
+
+## Original 2026-04-21 plan
+
+## TL;DR
+
+The 12 top-level hasher theorems (sha{224,256,384,512}_{portable,arm64} +
+shake{128,256}_{portable,arm64}) in `EquivImplSpec.Sponge.{Portable,Arm64}.API`
+are proved modulo **6 load-bearing `assume val` / `admit ()`** and 3
+non-load-bearing upstream utility admits. `make` passes cleanly.
+
+**Δ from 2026-04-20**: the two `assume val`s in `SqueezeAPI.fst` (squeeze middle
+loop + driver) have been replaced with real structured proofs — the spec
+`squeeze` was rewritten to recurse via a new `squeeze_blocks` helper,
+mirroring `absorb_rec`.  The middle-loop induction (`lemma_squeeze_portable_aux`)
+now exists as a real `let rec` definition; the base case, fold-peeling step,
+body-step bridge, spec-unfolding, and IH call are all laid out.  The only
+remaining obstacle is the final Z3 combining step: even with
+`split_queries always --z3refresh`, one query consistently hits rlimit
+600 trying to thread IH + step facts through the extractor's inline
+fold lambdas.  That one step is now admitted in isolation (not as a whole
+lemma), and similarly for the 2 branches of the driver.
+
+## Remaining admits / assumes
+
+### Load-bearing (6)
+
+| # | File | Line | Kind | What it assumes |
+|---|------|------|------|-----------------|
+| 1 | `EquivImplSpec.Sponge.Portable.API.fst` | 249 | `admit ()` | Slice-identity bridge inside `lemma_absorb_portable_aux` inductive branch: one unfold step of spec `absorb_rec`. Helper `lemma_absorb_rec_step` (same file) encodes the fact; calling it **triggers a Z3 4.13.3 LP-solver internal-assertion bug** at `lar_solver.cpp:1066` on fresh hint generation. `--z3refresh` works around per-query but exceeds `make` timeout. |
+| 2 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 215 | `admit ()` inside `lemma_squeeze_portable_aux` inductive step | Final obligation that combines (a) `lemma_fold_range_step` (fold peeling), (b) `Steps.lemma_squeeze_block_portable` (impl body ≡ spec step), (c) `lemma_squeeze_blocks_unfold` (spec `squeeze_blocks` unfolding), and (d) the inductive hypothesis, into the outer ensures.  Z3 cannot compose these within rlimit 600 even with `split_queries always`.  All 4 source facts are real theorems called in scope. |
+| 3 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 285 | `admit ()` in driver `output_rem ≠ 0` branch | Final normalization: impl `Generic_keccak.Portable.squeeze` ≡ spec `Hacspec_sha3.Sponge.squeeze` after first block + middle loop + tail block.  Middle-loop step provided by `lemma_squeeze_portable_aux`; tail by `Steps.lemma_squeeze_last_portable`.  Same Z3 composition limit as #2. |
+| 4 | `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` | 286 | `admit ()` in driver `output_rem = 0` branch | Final normalization when output length is a multiple of rate.  Middle-loop step provided by `lemma_squeeze_portable_aux`; no tail. |
+| 5 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | Per-lane driver absorb at N=2: `extract_lane l (absorb2 rate delim data).f_st ≡ Hacspec_sha3.Sponge.absorb rate delim (data[l])`. Black-box form over the extracted `Libcrux_sha3.Generic_keccak.Simd128.absorb2` function. |
+| 6 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | Per-lane driver squeeze2 at N=2: lane-`l` output of `squeeze2 rate s out0 out1` ≡ `Hacspec_sha3.Sponge.squeeze outlen (extract_lane l s.f_st) rate`. Black-box form. |
+
+`lemma_keccak2_arm64` itself is **fully proved** (5-line composition of #5 + #6).
+
+### Non-load-bearing (3, upstream)
+
+All in `Proof_Utils.Lemmas.fst`, flagged with `TODO` comments:
+
+| Line | Lemma | Target |
+|------|-------|--------|
+| 26 | `logand_commutative` | hax-lib / core-models |
+| 33 | `lemma_rotate_left_zero` | hax-lib / core-models |
+| 54 | `lemma_index_update_at_range` | pure `Seq` — still used by proofs |
+
+These don't affect spec-equivalence correctness; leave as upstream targets.
+
+## Structural overview
+
+```
+12 top-level hasher theorems  (API.fst files)
+  ↓
+lemma_keccak1_portable  [PROVED]         lemma_keccak2_arm64  [PROVED]
+  = lemma_absorb_portable                 = lemma_absorb2_arm64 per lane
+  ; lemma_squeeze_portable                ; lemma_squeeze2_arm64 per lane
+     │                │                           │        │
+     ▼                ▼                           ▼        ▼
+ lemma_absorb_   lemma_squeeze_               [assume 5] [assume 6]
+  portable [PROVED  portable (driver)
+  modulo admit 1]  [admits 3 & 4]
+     │                │
+     │          calls lemma_squeeze_portable_aux
+     │                │ (recursion mirror, admit 2 in step)
+     ▼                ▼
+ Steps.fst + Generic.{Core,Squeeze}.fst + per-backend sc_* records [ALL PROVED]
+ + lemma_squeeze_blocks_unfold (SqueezeAPI.fst) [PROVED]
+ + lemma_squeeze_once_portable (SqueezeAPI.fst) [PROVED]
+```
+
+## File inventory (equivalence/)
+
+**Proof modules (all build cleanly):**
+- `Proof_Utils.Lemmas.fst` — 3 upstream admits
+- `Proof_Utils.NatFold.fst`, `Proof_Utils.FoldRange.fst`
+- `EquivImplSpec.Keccakf.ChiFold.fst`
+- `EquivImplSpec.Keccakf.Generic.fst` — closed (rho_offsets_values, keccak_f_is_rounds)
+- `EquivImplSpec.Keccakf.Portable.fst`, `EquivImplSpec.Keccakf.Arm64.fst`
+- `EquivImplSpec.Keccakf.SpecRounds.fst`
+- `EquivImplSpec.Sponge.Generic.Core.fst`
+- `EquivImplSpec.Sponge.Generic.Squeeze.fst`
+- `EquivImplSpec.Sponge.Portable.fst` — sc_load_block / sc_load_last / sc_store_block all PROVED
+- `EquivImplSpec.Sponge.Arm64.fst` — sc_load_block / sc_load_last / sc_store_block all PROVED
+- `EquivImplSpec.Sponge.Portable.Steps.fst` — per-step absorb/squeeze lemmas
+- `EquivImplSpec.Sponge.Arm64.Steps.fst` — per-step absorb/squeeze lemmas
+- `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` — NEW MODULE, 3 proved helpers + assumes 2 & 3
+- `EquivImplSpec.Sponge.Portable.API.fst` — re-exports from SqueezeAPI; assume 1
+- `EquivImplSpec.Sponge.Arm64.API.fst` — assumes 4 & 5, `lemma_keccak2_arm64` PROVED
+
+**Cleanup still pending (non-functional):**
+- `equivalence/plan.md`, `equivalence/plan-simd.md`, `equivalence/Proofs.md` — stale plan notes
+- `../extraction/Utils.fsti~` — editor backup
+
+## Rust-side state
+
+The Rust codebase has been refactored:
+- `crates/algorithms/sha3/src/generic_keccak/simd128.rs` — `keccak2` split into named `absorb2` / `squeeze2` / `keccak2` matching Portable's `absorb` / `squeeze` / `keccak1` structure. This lets the Arm64 F* assume_vals refer to the named functions as a black box (mirroring Portable's style).
+- No other Rust changes are needed for any remaining gap.
+
+## How to close the remaining gaps
+
+### Assume 1 (Portable.API.fst:249, slice-identity admit)
+
+**Blocked by Z3 LP bug**, not a proof-strategy problem. Options:
+- Wait for a Z3 version where the `lar_solver` bug is fixed.
+- Rewrite `lemma_absorb_rec_step` so the inductive step can run without the inline lambdas that trigger the LP assertion (e.g. factor every `Seq.slice` into a named term; avoid nested typeclass-dispatched `.[RangeFrom]`).
+- Apply `--z3refresh` per-query and raise the `make` timeout.
+
+### Admits 2–4 (Portable squeeze: aux step + driver branches)
+
+**Status 2026-04-21**: spec `squeeze` rewritten as `squeeze_blocks` (recursive,
+mirrors `absorb_rec`).  The aux lemma `lemma_squeeze_portable_aux` is a real
+`let rec` with base case, inductive step, and IH call all in place.  The
+admits are the final Z3 combining obligations, not opaque whole-lemma gaps.
+
+Two possible routes to close:
+
+1. **Prove a dedicated "step bridge" lemma** that packs the combined facts
+   (`body(output,ks) k ≡ spec step at k`) into a single named postcondition
+   over the extractor's inline lambda shape.  The aux lemma then just
+   chains: `lemma_fold_range_step ; step_bridge ; lemma_squeeze_blocks_unfold ; IH`,
+   each as a separate sub-query.  Prior attempt produced 258 cascading
+   Error 19 subtyping failures because the lambda types were
+   `Prims.int` vs `range_t USIZE` — need to match the extractor output
+   byte-for-byte and add `typ_of_tc` annotations.
+2. **Wait for the F* fold_range closure support** — the
+   `feedback_fold_range_closure_equality` memory notes this is a
+   fundamental SMT limitation.  Proved pattern used in `absorb_rec`
+   is the current workaround.
+
+### Assumes 5–6 (Arm64 per-lane absorb2 / squeeze2)
+
+### Assumes 5–6 (Arm64 per-lane absorb2 / squeeze2)
+
+Symmetric with Portable's `lemma_absorb_portable` / `lemma_squeeze_portable`. Strategy:
+1. Mirror `lemma_absorb_portable_aux` at N=2, parameterised over lane `l ∈ {0,1}`. Uses closed Arm64 `sc_load_block` / `sc_load_last` records + the `lemma_arm64_lane_eq_get_lane_u64` SMTPat (already committed) for extract_lane indexing.
+2. Mirror the squeeze induction (same as admits 2–4) at N=2 per lane, using the closed Arm64 `sc_store_block` record.
+
+Expected: reuse the Portable proof scaffolding once admit 2 is solved — the only difference is `v_N = mk_usize 2` and the lane parameter.
+
+## Verification commands
+
+```bash
+# Clean rebuild (remove only specific .checked files — DO NOT wipe the cache):
+rm -f /Users/karthik/libcrux-proofs-cleanup/.fstar-cache/checked/EquivImplSpec.Sponge.*.fst.checked
+cd /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/proofs/fstar/equivalence
+make
+
+# Status check (should list exactly the 5 load-bearing + 3 upstream):
+rg -n "^(assume val|.* admit \(\))" *.fst Proof_Utils.Lemmas.fst
+
+# Re-extract F* from Rust (only if the Rust side changes):
+bash /Users/karthik/libcrux-proofs-cleanup/crates/algorithms/sha3/hax.sh extract
+```
+
+## Key context / pitfalls
+
+- **Z3 `z3rlimit` ≤ 300** — do not raise higher.
+- **Never clear the F* cache** — delete only specific `.checked` files.
+- **Rust changes require re-extraction** via `hax.sh extract`.
+- **`cargo fmt` the touched Rust crates** before committing.
+- **Heavy F* proofs** — factor into separate modules (done for `SqueezeAPI`) to control Z3 context.
+- **`lemma_fold_range_step`** requires syntactic match with the extractor's inline lambdas — that's what killed prior attempts at assumes 2–3.
+- **The fold_range closure-equality axioms are gone** — earlier versions of the proof had 6 ineliminable closure-equality assumes; these were all removed by the `absorb_rec` rewrite. Don't re-introduce them.
+
+## Related project memories
+
+See `~/.claude/projects/-Users-karthik-libcrux-proofs-cleanup/memory/`:
+- `project_sha3_proof_status.md`
+- `feedback_fstar_proof_patterns.md`
+- `feedback_fstar_factor_modules.md`
+- `feedback_fold_range_closure_equality.md`
+- `feedback_no_cache_clear.md`
+- `feedback_ask_before_killing.md`
