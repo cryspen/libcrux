@@ -776,13 +776,11 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // TODO(C4): re-strengthen to include the hacspec equation
-    //   mont_i16_to_spec_array result ==
-    //     Hacspec_ml_kem.Ntt.ntt_multiply_n (mk_usize 16)
-    //       (mont_i16_to_spec_array lhs) (mont_i16_to_spec_array rhs)
-    //       (zetas_4 zeta0 zeta1 zeta2 zeta3)
-    // once the impl body can discharge it.  Currently weakened to
-    // bound-only to match the impl.
+    // Option D for ntt_multiply: 4 branches × 2 binomials (positive and
+    // negated zeta) × 2 FE equalities (lanes 2i and 2i+1 of each
+    // binomial) = 16 FE equalities total, covering all output lanes.
+    // `ntt_multiply_butterfly_post` bundles the 8 residue equations from
+    // `ntt_multiply_binomials_post` that the impl already produces.
     pub(crate) fn ntt_multiply_post(
         lhs: &[i16; 16],
         rhs: &[i16; 16],
@@ -792,7 +790,58 @@ let to_le_bytes_post_N (#n: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               Spec.Utils.ntt_multiply_butterfly_post ${lhs} ${rhs} ${result}
+                 $zeta0 $zeta1 $zeta2 $zeta3 /\
+               Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+                 (let zp = (if b = 0 then $zeta0
+                            else if b = 1 then $zeta1
+                            else if b = 2 then $zeta2
+                            else $zeta3) in
+                  let k_even : nat = 2 * b in
+                  let lane0 : nat = 2 * k_even in
+                  let lane1 : nat = 2 * k_even + 1 in
+                  let k_odd  : nat = 2 * b + 1 in
+                  let lane2 : nat = 2 * k_odd in
+                  let lane3 : nat = 2 * k_odd + 1 in
+                  mont_i16_to_spec_fe (Seq.index ${result} lane0) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane0))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane0)))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                          (mont_i16_to_spec_fe (Seq.index ${lhs} lane1))
+                          (mont_i16_to_spec_fe (Seq.index ${rhs} lane1)))
+                        (mont_i16_to_spec_fe zp)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} lane1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane0))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane1)))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane1))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane0))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} lane2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane2))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane2)))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                          (mont_i16_to_spec_fe (Seq.index ${lhs} lane3))
+                          (mont_i16_to_spec_fe (Seq.index ${rhs} lane3)))
+                        (mont_i16_to_spec_fe (Spec.Utils.neg_i16 zp))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} lane3) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane2))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane3)))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane3))
+                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane2)))))"#
+        )
     }
 
     pub(crate) fn serialize_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {

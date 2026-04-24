@@ -464,6 +464,9 @@ pub(crate) fn ntt_multiply_binomials(
         Spec.Utils.is_i16b_array 3328 ${rhs}.f_elements "#))]
 #[hax_lib::ensures(|result| fstar!(r#"
         Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
+        Spec.Utils.ntt_multiply_butterfly_post
+            ${lhs}.f_elements ${rhs}.f_elements ${result}.f_elements
+            zeta0 zeta1 zeta2 zeta3 /\
         (let nzeta0:i16 = mk_i16 0 -! zeta0 in
          let nzeta1:i16 = mk_i16 0 -! zeta1 in
          let nzeta2:i16 = mk_i16 0 -! zeta2 in
@@ -545,5 +548,12 @@ pub(crate) fn ntt_multiply(
     hax_lib::fstar!(r#"assert (ntt_multiply_binomials_post lhs rhs nzeta2 (mk_usize 5) out)"#);
     hax_lib::fstar!(r#"assert (ntt_multiply_binomials_post lhs rhs zeta3 (mk_usize 6) out)"#);
     hax_lib::fstar!(r#"assert (ntt_multiply_binomials_post lhs rhs nzeta3 (mk_usize 7) out)"#);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%ntt_multiply_binomials_post)
+                         (ntt_multiply_binomials_post lhs rhs);
+           reveal_opaque (`%Spec.Utils.ntt_multiply_butterfly_post)
+                         (Spec.Utils.ntt_multiply_butterfly_post
+                            lhs.f_elements rhs.f_elements out.f_elements)"#
+    );
     out
 }

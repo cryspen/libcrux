@@ -667,6 +667,47 @@ let inv_ntt_layer_3_butterfly_post
   inv_ntt_spec vec_in (v z0) 4 12 vec_out /\ inv_ntt_spec vec_in (v z0) 5 13 vec_out /\
   inv_ntt_spec vec_in (v z0) 6 14 vec_out /\ inv_ntt_spec vec_in (v z0) 7 15 vec_out
 
+(* Residue pair for one base-case binomial multiply at index k (k < 8).
+   `zeta` is the full int zeta for that binomial — callers pass `v zeta_i`
+   for positive entries and `- v zeta_i` for the negated ones, paralleling
+   the 8-entry zetas sequence `[z0,-z0,z1,-z1,z2,-z2,z3,-z3]`.
+   Marked `unfold` so consumers of the butterfly_post see the residue
+   bodies directly without fuel-based unfolding. *)
+unfold let ntt_multiply_spec
+      (lhs rhs: t_Array i16 (mk_usize 16))
+      (zeta: int) (k: nat{k < 8})
+      (result: t_Array i16 (mk_usize 16)) : Type0 =
+  let ai = Seq.index lhs (2 * k) in
+  let aj = Seq.index lhs (2 * k + 1) in
+  let bi = Seq.index rhs (2 * k) in
+  let bj = Seq.index rhs (2 * k + 1) in
+  let oi = Seq.index result (2 * k) in
+  let oj = Seq.index result (2 * k + 1) in
+  ((v oi % 3329) == (((v ai * v bi + v aj * v bj * zeta * 169) * 169) % 3329)) /\
+  ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))
+
+(* i16 negation — kept as a named helper because inline `mk_i16 0 -! x`
+   doesn't survive hax's `fstar_prop_expr!` parser. *)
+unfold let neg_i16 (x: i16) : i16 = mk_i16 0 -! x
+
+(* Opaque wrapper bundling the 8 `ntt_multiply_spec` residues — one per
+   binomial pair — so the trait post can cite them as a single conjunct.
+   Matches the `[z0, -z0, z1, -z1, z2, -z2, z3, -z3]` ordering that the
+   impl iterates over. *)
+[@@ "opaque_to_smt"]
+let ntt_multiply_butterfly_post
+      (lhs rhs result: t_Array i16 (mk_usize 16))
+      (z0 z1 z2 z3: i16) : Type0 =
+  ntt_multiply_spec lhs rhs (v z0)      0 result /\
+  ntt_multiply_spec lhs rhs (- (v z0))  1 result /\
+  ntt_multiply_spec lhs rhs (v z1)      2 result /\
+  ntt_multiply_spec lhs rhs (- (v z1))  3 result /\
+  ntt_multiply_spec lhs rhs (v z2)      4 result /\
+  ntt_multiply_spec lhs rhs (- (v z2))  5 result /\
+  ntt_multiply_spec lhs rhs (v z3)      6 result /\
+  ntt_multiply_spec lhs rhs (- (v z3))  7 result
+
+
 (* Wrap-around modulo: wraps into ]-p/2; p/2] *)
 let mod_p (v:int) (p:int{p>0/\ p%2=0}) : Tot int =
   let m = v % p in if m > p/2 then m - p else m
