@@ -34,6 +34,7 @@ hax-lib.workspace = true
 tls_codec = { version = "0.4.2", features = [
     "derive",
 ], default-features = false, optional = true }
+zeroize = { version = "1.8", default-features = false, optional = true }
 
 [dev-dependencies]
 rand = { version = "0.10" }
@@ -68,6 +69,9 @@ std = []
 
 # Serialization & Deserialization using tls_codec
 codec = ["dep:tls_codec"]
+
+# Zeroize secret key material on drop
+zeroize = ["dep:zeroize"]
 
 [[bench]]
 name = "manual44"
