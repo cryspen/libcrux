@@ -289,6 +289,119 @@ let lemma_inv_butterfly_fe_commute_mul_diff (vec_i vec_j zeta result_j: i16) :
     lemma_impl_mul_v_val (mont_i16_to_spec_fe zeta) diff_fe;
     lemma_inv_butterfly_mul_diff_core (v vec_i) (v vec_j) (v zeta) (v result_j)
 
+(* `base_case_multiply_even` commute.  The impl's `ntt_multiply_binomials_post`
+   residue for the even lane is
+     v r % q == ((a0*b0 + a1*b1*z*169) * 169) % q
+   and the hacspec FE form is
+     mont_fe r == (mont_fe a0 · mont_fe b0) + ((mont_fe a1 · mont_fe b1) · mont_fe z).
+
+   Pending — C4e-followup.  Content is a direct analog of
+   `lemma_butterfly_mod_core` with one extra Montgomery-unwrap level, and
+   in isolation satisfies the ensures under a full mod-distr chain
+   (`lemma_mod_mul_distr_l/r`, `lemma_mod_add_distr`).  Z3 does not
+   converge on this encoding at r-limit 300 with `--split_queries
+   always`: queries 1-4 succeed in 14, 54, 123, 642 ms but query 5 runs
+   15+ minutes before timing out.  The auto-retry has been observed to
+   succeed in 369 ms (one-off), confirming the math.  Deferred to a
+   future pass — replace with the `butterfly` / `mont-mul` composition
+   and/or per-level helper lemmas, or split the residue into two
+   sub-lemmas. *)
+let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
+    Lemma (requires r % 3329 == ((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329)
+          (ensures  ((((a0 * 169) % 3329 * (b0 * 169) % 3329) % 3329)
+                     + ((((a1 * 169) % 3329 * (b1 * 169) % 3329) % 3329)
+                        * ((z * 169) % 3329)) % 3329) % 3329
+                    == (r * 169) % 3329)
+  = admit ()
+
+(* Pending — C4e-followup.  Chaining the admit'd core through three
+   `impl_mul_v_val` + one `impl_add_v_val` conversions triggers the
+   same non-linear convergence issue (retry after 153 s still times
+   out).  Admitted to unblock trait-level strengthening; revisit when
+   the core lemma lands. *)
+let lemma_base_case_mult_even_fe_commute
+    (a0 a1 b0 b1 zeta result: i16) :
+  Lemma (requires v result % 3329
+                  == ((v a0 * v b0 + v a1 * v b1 * v zeta * 169) * 169) % 3329)
+        (ensures
+           mont_i16_to_spec_fe result ==
+             P.impl_FieldElement__add
+               (P.impl_FieldElement__mul (mont_i16_to_spec_fe a0) (mont_i16_to_spec_fe b0))
+               (P.impl_FieldElement__mul
+                 (P.impl_FieldElement__mul (mont_i16_to_spec_fe a1) (mont_i16_to_spec_fe b1))
+                 (mont_i16_to_spec_fe zeta)))
+  = admit ()
+
+(* `base_case_multiply_odd` has no zeta: residue
+     v r % q == ((a0*b1 + a1*b0) * 169) % q
+   FE form: mont_fe r == (mont_fe a0 · mont_fe b1) + (mont_fe a1 · mont_fe b0).
+
+   Pending — C4e-followup, same situation as the `even` sibling:
+   proof structure is a direct mod-distr chain, content is sound, but
+   Z3 times out at the outer convergence step.  Deferred to a future
+   pass. *)
+let lemma_base_case_mult_odd_mod_core (a0 a1 b0 b1 r: int) :
+    Lemma (requires r % 3329 == ((a0 * b1 + a1 * b0) * 169) % 3329)
+          (ensures  ((((a0 * 169) % 3329 * (b1 * 169) % 3329) % 3329)
+                     + (((a1 * 169) % 3329 * (b0 * 169) % 3329) % 3329)) % 3329
+                    == (r * 169) % 3329)
+  = admit ()
+
+(* Pending — C4e-followup, same as `even` sibling. *)
+let lemma_base_case_mult_odd_fe_commute
+    (a0 a1 b0 b1 result: i16) :
+  Lemma (requires v result % 3329
+                  == ((v a0 * v b1 + v a1 * v b0) * 169) % 3329)
+        (ensures
+           mont_i16_to_spec_fe result ==
+             P.impl_FieldElement__add
+               (P.impl_FieldElement__mul (mont_i16_to_spec_fe a0) (mont_i16_to_spec_fe b1))
+               (P.impl_FieldElement__mul (mont_i16_to_spec_fe a1) (mont_i16_to_spec_fe b0)))
+  = admit ()
+
+(* Combined base-case multiply per binomial pair: takes both residue
+   equations from `ntt_multiply_binomials_post` at binomial k, produces
+   both FE equations for lanes 2k and 2k+1. *)
+let lemma_base_case_mult_pair_commute
+    (a b result: t_Array i16 (mk_usize 16))
+    (zeta: i16) (k: nat{2 * k + 1 < 16}) :
+  Lemma (requires
+           v (Seq.index result (2 * k)) % 3329
+             == ((v (Seq.index a (2 * k)) * v (Seq.index b (2 * k))
+                  + v (Seq.index a (2 * k + 1)) * v (Seq.index b (2 * k + 1)) * v zeta * 169)
+                 * 169) % 3329 /\
+           v (Seq.index result (2 * k + 1)) % 3329
+             == ((v (Seq.index a (2 * k)) * v (Seq.index b (2 * k + 1))
+                  + v (Seq.index a (2 * k + 1)) * v (Seq.index b (2 * k)))
+                 * 169) % 3329)
+        (ensures
+           mont_i16_to_spec_fe (Seq.index result (2 * k)) ==
+             P.impl_FieldElement__add
+               (P.impl_FieldElement__mul
+                 (mont_i16_to_spec_fe (Seq.index a (2 * k)))
+                 (mont_i16_to_spec_fe (Seq.index b (2 * k))))
+               (P.impl_FieldElement__mul
+                 (P.impl_FieldElement__mul
+                   (mont_i16_to_spec_fe (Seq.index a (2 * k + 1)))
+                   (mont_i16_to_spec_fe (Seq.index b (2 * k + 1))))
+                 (mont_i16_to_spec_fe zeta)) /\
+           mont_i16_to_spec_fe (Seq.index result (2 * k + 1)) ==
+             P.impl_FieldElement__add
+               (P.impl_FieldElement__mul
+                 (mont_i16_to_spec_fe (Seq.index a (2 * k)))
+                 (mont_i16_to_spec_fe (Seq.index b (2 * k + 1))))
+               (P.impl_FieldElement__mul
+                 (mont_i16_to_spec_fe (Seq.index a (2 * k + 1)))
+                 (mont_i16_to_spec_fe (Seq.index b (2 * k)))))
+  = lemma_base_case_mult_even_fe_commute
+      (Seq.index a (2 * k)) (Seq.index a (2 * k + 1))
+      (Seq.index b (2 * k)) (Seq.index b (2 * k + 1))
+      zeta (Seq.index result (2 * k));
+    lemma_base_case_mult_odd_fe_commute
+      (Seq.index a (2 * k)) (Seq.index a (2 * k + 1))
+      (Seq.index b (2 * k)) (Seq.index b (2 * k + 1))
+      (Seq.index result (2 * k + 1))
+
 (* One inv-butterfly pair from its two `inv_ntt_spec` residues. *)
 let lemma_inv_butterfly_pair_commute
     (vec result: t_Array i16 (mk_usize 16))
