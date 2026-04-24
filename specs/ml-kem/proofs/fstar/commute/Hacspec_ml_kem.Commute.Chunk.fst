@@ -657,18 +657,15 @@ let lemma_ntt_layer_1_step_chunk_commutes
         TS.ntt_layer_1_step_post (T.f_repr vec) zeta0 zeta1 zeta2 zeta3 (T.f_repr r)))
   = ()
 
-assume val lemma_ntt_layer_2_step_chunk_commutes
+let lemma_ntt_layer_2_step_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) (zeta0 zeta1: i16) :
   Lemma
     (requires TS.ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
     (ensures
        (let r = T.f_ntt_layer_2_step vec zeta0 zeta1 in
-        mont_i16_to_spec_array (T.f_repr r)
-          == N.ntt_layer_n (mk_usize 16)
-               (mont_i16_to_spec_array (T.f_repr vec))
-               (mk_usize 4)
-               (zetas_2 zeta0 zeta1)))
+        TS.ntt_layer_2_step_post (T.f_repr vec) zeta0 zeta1 (T.f_repr r)))
+  = ()
 
 assume val lemma_ntt_layer_3_step_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}

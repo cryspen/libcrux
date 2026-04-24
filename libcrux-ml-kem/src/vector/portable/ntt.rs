@@ -92,11 +92,14 @@ pub(crate) fn ntt_layer_1_step(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                             Spec.Utils.is_i16b_array (6*3328) ${vec}.f_elements"#))]
-#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array (7*3328) ${result}.f_elements"#))]
+#[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array (7*3328) ${result}.f_elements /\
+    Spec.Utils.ntt_layer_2_butterfly_post ${vec}.f_elements ${result}.f_elements zeta0 zeta1"#))]
 pub(crate) fn ntt_layer_2_step(mut vec: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
+    #[cfg(hax)]
+    let _vec0 = vec;
     ntt_step(&mut vec, zeta0, 0, 4);
     ntt_step(&mut vec, zeta0, 1, 5);
     ntt_step(&mut vec, zeta0, 2, 6);
@@ -105,6 +108,10 @@ pub(crate) fn ntt_layer_2_step(mut vec: PortableVector, zeta0: i16, zeta1: i16) 
     ntt_step(&mut vec, zeta1, 9, 13);
     ntt_step(&mut vec, zeta1, 10, 14);
     ntt_step(&mut vec, zeta1, 11, 15);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Spec.Utils.ntt_layer_2_butterfly_post)
+                         (Spec.Utils.ntt_layer_2_butterfly_post ${_vec0}.f_elements)"#
+    );
     vec
 }
 
