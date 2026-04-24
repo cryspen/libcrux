@@ -235,7 +235,7 @@ Per-function commits.
 | C4b `ntt_layer_2_step` (portable) | **done** | *(this commit)* | same template as C4a; 4 butterfly-pair calls cover 2 groups × 2 pairs |
 | C4c `ntt_layer_3_step` (portable) | **done** | *(this commit)* | same template; 8 butterfly-pair calls, 1 group |
 | C4d `inv_ntt_layer_*_step` (portable) | **done** | *(this commit)* | 3 inverse layers via Gentleman-Sande butterfly commute; new `lemma_inv_butterfly_pair_commute` in Chunk; same template as C4a-c |
-| C4e `ntt_multiply` (portable) | pending | — | |
+| C4e `ntt_multiply` (portable) | pending | — | Different butterfly shape via `base_case_multiply_{even,odd}`.  Impl already produces a rich `forall8` post via `ntt_multiply_binomials_post` (residue form) — a strong starting point, but translation to FE form requires new Layer-0.5 compound lemmas for quadratic mul+add with `169` cancellations.  Zeta sequence `[z0,-z0,z1,-z1,z2,-z2,z3,-z3]`. |
 | C4f compress/decompress (portable) | pending | — | |
 | C4g serialize_5/11, from_bytes, to_bytes, rej_sample | pending | — | |
 | C4′ AVX2 set | pending | — | mirrors C4a-g |
