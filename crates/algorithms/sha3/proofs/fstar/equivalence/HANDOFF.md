@@ -2,7 +2,7 @@
 
 Date: 2026-04-24 (appended to the 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
-Branch: `proofs-cleanup`
+Branch: `sha3-proofs-focused` (focused PR to main)
 
 ## 2026-04-24 (late): `assume False` eliminated — Portable.squeeze fully verified
 
