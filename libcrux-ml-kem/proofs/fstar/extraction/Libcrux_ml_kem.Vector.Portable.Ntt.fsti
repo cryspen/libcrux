@@ -45,7 +45,13 @@ val ntt_layer_1_step
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          Spec.Utils.is_i16b_array (8 * 3328) result.f_elements)
+          Spec.Utils.is_i16b_array (8 * 3328) result.f_elements /\
+          Spec.Utils.ntt_layer_1_butterfly_post vec.f_elements
+            result.f_elements
+            zeta0
+            zeta1
+            zeta2
+            zeta3)
 
 val ntt_layer_2_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)

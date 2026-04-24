@@ -162,6 +162,95 @@ let lemma_sub_fe_commute_mont_mod (a b r: i16) :
   = lemma_impl_sub_v_val (mont_i16_to_spec_fe a) (mont_i16_to_spec_fe b);
     lemma_sub_mont_mod_core (v a) (v b) (v r)
 
+(* Butterfly commute lemmas.  `Spec.Utils.ntt_spec` (and `inv_ntt_spec`)
+   produce exactly one of these residue hypotheses per lane; the
+   portable impl's `ntt_layer_1_step` wrapper folds them across 4
+   butterfly pairs to discharge `forall4`-pointwise FE equalities. *)
+
+let lemma_butterfly_mod_core (a b z r: int) :
+    Lemma (requires r % 3329 == (a + b * z * 169) % 3329)
+          (ensures  ((a * 169) % 3329
+                     + (((z * 169) % 3329) * ((b * 169) % 3329)) % 3329) % 3329
+                    == (r * 169) % 3329)
+  = let q : pos = 3329 in
+    L.lemma_mod_mul_distr_l (z * 169) ((b * 169) % q) q;
+    L.lemma_mod_mul_distr_r (z * 169) (b * 169) q;
+    assert ((z * 169) * (b * 169) == b * z * 169 * 169);
+    L.lemma_mod_add_distr ((a * 169) % q) (b * z * 169 * 169) q;
+    L.lemma_mod_add_distr (b * z * 169 * 169) (a * 169) q;
+    assert (a * 169 + b * z * 169 * 169 == (a + b * z * 169) * 169);
+    L.lemma_mod_mul_distr_l (a + b * z * 169) 169 q;
+    L.lemma_mod_mul_distr_l r 169 q
+
+let lemma_butterfly_fe_commute_plus (vec_i vec_j zeta result_i: i16) :
+  Lemma (requires v result_i % 3329
+                  == (v vec_i + v vec_j * v zeta * 169) % 3329)
+        (ensures  mont_i16_to_spec_fe result_i ==
+                  P.impl_FieldElement__add
+                    (mont_i16_to_spec_fe vec_i)
+                    (P.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe zeta)
+                      (mont_i16_to_spec_fe vec_j)))
+  = let prod_fe = P.impl_FieldElement__mul (mont_i16_to_spec_fe zeta)
+                                            (mont_i16_to_spec_fe vec_j) in
+    lemma_impl_mul_v_val (mont_i16_to_spec_fe zeta) (mont_i16_to_spec_fe vec_j);
+    lemma_impl_add_v_val (mont_i16_to_spec_fe vec_i) prod_fe;
+    lemma_butterfly_mod_core (v vec_i) (v vec_j) (v zeta) (v result_i)
+
+let lemma_butterfly_sub_mod_core (a b z r: int) :
+    Lemma (requires r % 3329 == (a - b * z * 169) % 3329)
+          (ensures  ((a * 169) % 3329
+                     - (((z * 169) % 3329) * ((b * 169) % 3329)) % 3329) % 3329
+                    == (r * 169) % 3329)
+  = let q : pos = 3329 in
+    L.lemma_mod_mul_distr_l (z * 169) ((b * 169) % q) q;
+    L.lemma_mod_mul_distr_r (z * 169) (b * 169) q;
+    assert ((z * 169) * (b * 169) == b * z * 169 * 169);
+    L.lemma_mod_sub_distr ((a * 169) % q) (b * z * 169 * 169) q;
+    L.lemma_mod_add_distr (- (b * z * 169 * 169)) (a * 169) q;
+    assert (a * 169 - b * z * 169 * 169 == (a - b * z * 169) * 169);
+    L.lemma_mod_mul_distr_l (a - b * z * 169) 169 q;
+    L.lemma_mod_mul_distr_l r 169 q
+
+let lemma_butterfly_fe_commute_minus (vec_i vec_j zeta result_j: i16) :
+  Lemma (requires v result_j % 3329
+                  == (v vec_i - v vec_j * v zeta * 169) % 3329)
+        (ensures  mont_i16_to_spec_fe result_j ==
+                  P.impl_FieldElement__sub
+                    (mont_i16_to_spec_fe vec_i)
+                    (P.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe zeta)
+                      (mont_i16_to_spec_fe vec_j)))
+  = let prod_fe = P.impl_FieldElement__mul (mont_i16_to_spec_fe zeta)
+                                            (mont_i16_to_spec_fe vec_j) in
+    lemma_impl_mul_v_val (mont_i16_to_spec_fe zeta) (mont_i16_to_spec_fe vec_j);
+    lemma_impl_sub_v_val (mont_i16_to_spec_fe vec_i) prod_fe;
+    lemma_butterfly_sub_mod_core (v vec_i) (v vec_j) (v zeta) (v result_j)
+
+(* Combined plus/minus: a single call produces both output-lane FE
+   equations for one butterfly pair from its two `ntt_spec` residues. *)
+let lemma_butterfly_pair_commute
+    (vec result: t_Array i16 (mk_usize 16))
+    (z: i16) (i j: nat{i < 16 /\ j < 16}) :
+  Lemma (requires
+           v (Seq.index result i) % 3329
+             == (v (Seq.index vec i) + v (Seq.index vec j) * v z * 169) % 3329 /\
+           v (Seq.index result j) % 3329
+             == (v (Seq.index vec i) - v (Seq.index vec j) * v z * 169) % 3329)
+        (ensures
+           mont_i16_to_spec_fe (Seq.index result i) ==
+             P.impl_FieldElement__add
+               (mont_i16_to_spec_fe (Seq.index vec i))
+               (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                         (mont_i16_to_spec_fe (Seq.index vec j))) /\
+           mont_i16_to_spec_fe (Seq.index result j) ==
+             P.impl_FieldElement__sub
+               (mont_i16_to_spec_fe (Seq.index vec i))
+               (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                         (mont_i16_to_spec_fe (Seq.index vec j))))
+  = lemma_butterfly_fe_commute_plus (Seq.index vec i) (Seq.index vec j) z (Seq.index result i);
+    lemma_butterfly_fe_commute_minus (Seq.index vec i) (Seq.index vec j) z (Seq.index result j)
+
 (* Montgomery multiplication of two Montgomery-form operands: the impl
    computes `r = a * b * R^{-1}` with `R^{-1} = 169`.  Under the
    Montgomery lift this is `fe(a) * fe(b)` in the plain FE algebra —
@@ -553,18 +642,20 @@ assume val lemma_decompress_ciphertext_coefficient_chunk_commutes
      `ntt_layer_3_step`   len = 8, 1 zeta   (zetas_1)
    Symmetric layout for the inverse NTT via `ntt_inverse_layer_n`. *)
 
-assume val lemma_ntt_layer_1_step_chunk_commutes
+(* The trait post of `f_ntt_layer_1_step` is exactly this predicate —
+   4 groups of 4 FE equalities, wrapped in `Spec.Utils.forall4`.  The
+   lemma's conclusion is the post itself, so the body is `= ()`.  Layer 2
+   is where the `Seq.lemma_eq_intro` + `N.ntt_layer_n` hacspec
+   aggregation will happen. *)
+let lemma_ntt_layer_1_step_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) (zeta0 zeta1 zeta2 zeta3: i16) :
   Lemma
     (requires TS.ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
     (ensures
        (let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
-        mont_i16_to_spec_array (T.f_repr r)
-          == N.ntt_layer_n (mk_usize 16)
-               (mont_i16_to_spec_array (T.f_repr vec))
-               (mk_usize 2)
-               (zetas_4 zeta0 zeta1 zeta2 zeta3)))
+        TS.ntt_layer_1_step_post (T.f_repr vec) zeta0 zeta1 zeta2 zeta3 (T.f_repr r)))
+  = ()
 
 assume val lemma_ntt_layer_2_step_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}

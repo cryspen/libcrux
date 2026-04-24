@@ -601,12 +601,71 @@ let ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: 
   ((v (Seq.index vec_out j) % 3329) ==
    ((v (Seq.index vec_in i) - (v (Seq.index vec_in j) * zeta * 169)) % 3329))
 
-let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len}) 
+let inv_ntt_spec #len (vec_in: t_Array i16 len) (zeta: int) (i: nat{i < v len}) (j: nat{j < v len})
                  (vec_out: t_Array i16 len) : Type0 =
   ((v (Seq.index vec_out i) % 3329) ==
    ((v (Seq.index vec_in j) + v (Seq.index vec_in i)) % 3329)) /\
   ((v (Seq.index vec_out j) % 3329) ==
    (((v (Seq.index vec_in j) - v (Seq.index vec_in i)) * zeta * 169) % 3329))
+
+(* Opaque wrappers that bundle the 8 butterfly ntt_specs / inv_ntt_specs
+   for within-chunk layers so callers don't pay the cost of an 8-conjunct
+   post in their SMT context unless they reveal it.  The within-chunk
+   pattern at N = 16 uses len ∈ {2, 4, 8}; zetas are 4 / 2 / 1 per layer.
+   Layer-1 commute proofs reveal these in a small local scope. *)
+[@@ "opaque_to_smt"]
+let ntt_layer_1_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0 z1 z2 z3: i16) : Type0 =
+  ntt_spec vec_in (v z0) 0 2 vec_out /\ ntt_spec vec_in (v z0) 1 3 vec_out /\
+  ntt_spec vec_in (v z1) 4 6 vec_out /\ ntt_spec vec_in (v z1) 5 7 vec_out /\
+  ntt_spec vec_in (v z2) 8 10 vec_out /\ ntt_spec vec_in (v z2) 9 11 vec_out /\
+  ntt_spec vec_in (v z3) 12 14 vec_out /\ ntt_spec vec_in (v z3) 13 15 vec_out
+
+[@@ "opaque_to_smt"]
+let ntt_layer_2_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0 z1: i16) : Type0 =
+  ntt_spec vec_in (v z0) 0 4 vec_out /\ ntt_spec vec_in (v z0) 1 5 vec_out /\
+  ntt_spec vec_in (v z0) 2 6 vec_out /\ ntt_spec vec_in (v z0) 3 7 vec_out /\
+  ntt_spec vec_in (v z1) 8 12 vec_out /\ ntt_spec vec_in (v z1) 9 13 vec_out /\
+  ntt_spec vec_in (v z1) 10 14 vec_out /\ ntt_spec vec_in (v z1) 11 15 vec_out
+
+[@@ "opaque_to_smt"]
+let ntt_layer_3_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0: i16) : Type0 =
+  ntt_spec vec_in (v z0) 0 8 vec_out /\ ntt_spec vec_in (v z0) 1 9 vec_out /\
+  ntt_spec vec_in (v z0) 2 10 vec_out /\ ntt_spec vec_in (v z0) 3 11 vec_out /\
+  ntt_spec vec_in (v z0) 4 12 vec_out /\ ntt_spec vec_in (v z0) 5 13 vec_out /\
+  ntt_spec vec_in (v z0) 6 14 vec_out /\ ntt_spec vec_in (v z0) 7 15 vec_out
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_1_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0 z1 z2 z3: i16) : Type0 =
+  inv_ntt_spec vec_in (v z0) 0 2 vec_out /\ inv_ntt_spec vec_in (v z0) 1 3 vec_out /\
+  inv_ntt_spec vec_in (v z1) 4 6 vec_out /\ inv_ntt_spec vec_in (v z1) 5 7 vec_out /\
+  inv_ntt_spec vec_in (v z2) 8 10 vec_out /\ inv_ntt_spec vec_in (v z2) 9 11 vec_out /\
+  inv_ntt_spec vec_in (v z3) 12 14 vec_out /\ inv_ntt_spec vec_in (v z3) 13 15 vec_out
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_2_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0 z1: i16) : Type0 =
+  inv_ntt_spec vec_in (v z0) 0 4 vec_out /\ inv_ntt_spec vec_in (v z0) 1 5 vec_out /\
+  inv_ntt_spec vec_in (v z0) 2 6 vec_out /\ inv_ntt_spec vec_in (v z0) 3 7 vec_out /\
+  inv_ntt_spec vec_in (v z1) 8 12 vec_out /\ inv_ntt_spec vec_in (v z1) 9 13 vec_out /\
+  inv_ntt_spec vec_in (v z1) 10 14 vec_out /\ inv_ntt_spec vec_in (v z1) 11 15 vec_out
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_3_butterfly_post
+      (vec_in vec_out: t_Array i16 (mk_usize 16))
+      (z0: i16) : Type0 =
+  inv_ntt_spec vec_in (v z0) 0 8 vec_out /\ inv_ntt_spec vec_in (v z0) 1 9 vec_out /\
+  inv_ntt_spec vec_in (v z0) 2 10 vec_out /\ inv_ntt_spec vec_in (v z0) 3 11 vec_out /\
+  inv_ntt_spec vec_in (v z0) 4 12 vec_out /\ inv_ntt_spec vec_in (v z0) 5 13 vec_out /\
+  inv_ntt_spec vec_in (v z0) 6 14 vec_out /\ inv_ntt_spec vec_in (v z0) 7 15 vec_out
 
 (* Wrap-around modulo: wraps into ]-p/2; p/2] *)
 let mod_p (v:int) (p:int{p>0/\ p%2=0}) : Tot int =

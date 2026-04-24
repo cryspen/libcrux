@@ -231,7 +231,7 @@ Per-function commits.
 | C3b Layer 1 proofs (batch 1: linear + mul + 2 identity) | **done** | `62bffb3f5` | 9 of 21 proved: 4 add/sub × {plain, mont}, 3 mul variants, barrett_reduce, to_unsigned_representative.  Pattern: helper `lane_plain`/`lane_mont` expose Seq.index of the lift via `createi_lemma (sz j)`; each aux lemma folds a Layer-0 lemma 16× via `Classical.forall_intro`; identity ones close via `Seq.lemma_eq_intro`. |
 | C3b Layer 1 proofs (batch 2a: cond_subtract_3329) | **done** | *(this commit)* | Restated `cond_subtract_3329_post` pointwise (`forall i. (v y == v x - 3329 \/ v y == v x) /\ (v y % 3329 == v x % 3329)`) in the Rust spec module + extracted Traits.Spec, matched the portable impl's `ensures` and body proof.  Layer-1 lemma then closes trivially using the same `lemma_barrett_fe_commute` pattern as barrett/to_unsigned.  10 of 21 proved. |
 | C3b Layer 1 proofs (batch 2b: compress/decompress, NTT-layer, ntt_multiply) | **blocked on C4** | — | 11 remaining stubs are unprovable at the current trait contract:<br>• `compress_{1,_}`, `ntt_layer_{1,2,3}_step`, `inv_ntt_layer_{1,2,3}_step`, `ntt_multiply` — trait posts were weakened in the C2 revert commits to bounds only (`is_i16b_array_opaque …`) so there is nothing to cite.<br>• `decompress_1`, `decompress_ciphertext_coefficient` — the trait's `f_..._post` field in `Libcrux_ml_kem.Vector.Traits.fst` is a **naked `Type0`** not tied to `TS.decompress_post_N`, so even though the spec post is strong, the trait gives us no guarantee.<br>All five cases land in **C4** — each C4 impl-body commit must both strengthen the trait/impl post to cite the hacspec equation **and** rewire the trait typeclass field so that `pred ==> TS.<op>_post ...` is guaranteed (pattern mirrors `f_add_post`). Once that lands, batch 2b should close trivially. |
-| C4a `ntt_layer_1_step` (portable) | pending | — | body strengthening + impl annotation rewire |
+| C4a `ntt_layer_1_step` (portable) | **done** | *(this commit)* | option D (forall4-pointwise FE) post; opaque `ntt_layer_1_butterfly_post` wrapper preserves ntt_multiply SMT perf (query 164: 11s baseline → 12s now, no regression); 4 × `lemma_butterfly_pair_commute` calls + explicit `p_layer_1` predicate unfold in wrapper body; Layer-1 stub closes with `= ()` |
 | C4b `ntt_layer_2_step` (portable) | pending | — | |
 | C4c `ntt_layer_3_step` (portable) | pending | — | |
 | C4d `inv_ntt_layer_*_step` (portable) | pending | — | 3 sub-commits |
@@ -241,6 +241,31 @@ Per-function commits.
 | C4′ AVX2 set | pending | — | mirrors C4a-g |
 | C5a-n Layer 2 polynomial + hacspec migration | pending | — | ~10 lemmas + `src/ntt.rs` rewrites |
 | C6 Layer 3 vector/matrix + hacspec migration | pending | — | ~5 lemmas + `src/matrix.rs` rewrites |
+
+### Note on quantifier style in chunk posts (carry over into C4 and beyond)
+
+Three equivalent forms for "∀ k<N. P k" show up in these posts:
+
+1. `forall (k: nat). k < N ==> P k` — the natural form.  Z3 sees a
+   real quantifier with an implication; instantiation depends on
+   pattern triggers.
+2. `forall (k: nat{k < N}). P k` — same logical content, but the
+   bound lives in the type, so Z3 doesn't need to discharge the
+   implication on each instantiation.
+3. `Spec.Utils.forall<N> (fun (k: nat{k < N}) -> P k)` — expands
+   to `P 0 /\ P 1 /\ … /\ P (N-1)`: no quantifier at all, just N
+   explicit conjuncts.  Typically fastest for callers that need to
+   compose these predicates into larger properties (Layer 2,
+   Polynomial-level composition, etc.), at the cost of slightly
+   noisier authoring.
+
+`Spec.Utils` already provides `forall4`, `forall8`, `forall16`,
+`forall32`, …  We default to form 3 from C4a onward and use form 2
+when `N` doesn't match a `forall<N>` helper.
+
+A follow-up benchmark is worth running once we have a few
+Layer-1 / Layer-2 posts in hand, measuring Z3 time for each variant
+end-to-end from a caller's perspective.
 
 ### Note on C2b proof strategy
 

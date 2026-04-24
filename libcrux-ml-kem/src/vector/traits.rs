@@ -443,8 +443,14 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // TODO(C4): re-add the `mont_i16_to_spec_array result == ntt_layer_n ...`
-    // equation once impl discharges it.
+    // Pointwise FE (option D): for each of the four butterfly groups
+    // b ∈ {0, 1, 2, 3}, the two pairs (4b, 4b+2) and (4b+1, 4b+3)
+    // share zeta_b and satisfy the Cooley–Tukey butterfly in the
+    // Montgomery-FE algebra.  Layer 1 can cite this directly, and
+    // Layer 2 later wraps it with Seq.lemma_eq_intro into hacspec's
+    // ntt_layer_n output.  The `forall4` wrapper (`Spec.Utils.forall4`)
+    // expands to four explicit conjuncts, which Z3 handles much more
+    // efficiently than a logical `forall` with instantiation.
     pub(crate) fn ntt_layer_1_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -453,7 +459,42 @@ let to_le_bytes_post_N (#n: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque (8*3328) ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque (8 * 3328) ${result} /\
+               Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+                 (let z = (if b = 0 then $zeta0
+                           else if b = 1 then $zeta1
+                           else if b = 2 then $zeta2
+                           else $zeta3) in
+                  let i1 : nat = 4 * b in
+                  let j1 : nat = 4 * b + 2 in
+                  let i2 : nat = 4 * b + 1 in
+                  let j2 : nat = 4 * b + 3 in
+                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe z)
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe z)
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe z)
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                        (mont_i16_to_spec_fe z)
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j2)))))"#
+        )
     }
 
     pub(crate) fn ntt_layer_2_step_pre(vec: &[i16; 16], zeta0: i16, zeta1: i16) -> hax_lib::Prop {
