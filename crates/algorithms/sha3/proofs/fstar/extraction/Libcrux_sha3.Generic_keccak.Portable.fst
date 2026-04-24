@@ -311,34 +311,73 @@ let impl__squeeze_first_five_blocks
   in
   self, out <: (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 & t_Slice u8)
 
-#push-options "--z3rlimit 300"
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always"
 
 /// Absorb phase of `keccak1`: initialise a Keccak state, absorb all full
 /// rate-byte blocks of `input`, then pad and absorb the final partial block
 /// with domain-separation byte `DELIM` and the pad10*1 terminator.
+/// The ensures clause asserts direct equality with the spec function
+/// `Hacspec_sha3.Sponge.absorb`. The loop invariant uses the spec helper
+/// `absorb_blocks` (block-indexed analogue of `absorb_rec`, avoiding the
+/// slice-of-slice reasoning that triggers a Z3 4.13.3 LP-solver bug in
+/// older proofs based on `absorb_rec` recursion).
 let absorb (v_RATE: usize) (v_DELIM: u8) (input: t_Slice u8)
     : Prims.Pure (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
       (requires Libcrux_sha3.Proof_utils.valid_rate v_RATE)
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 = result in
+          result.Libcrux_sha3.Generic_keccak.f_st == Hacspec_sha3.Sponge.absorb v_RATE v_DELIM input
+      ) =
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
     Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 1) #u64 ()
   in
   let input_len:usize = Core_models.Slice.impl__len #u8 input in
   let input_blocks:usize = input_len /! v_RATE in
   let input_rem:usize = input_len %! v_RATE in
+  let _:Prims.unit =
+    let zeros:t_Array u64 (mk_usize 25) = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base zeros v_RATE (mk_usize 0) input
+  in
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       input_blocks
-      (fun s temp_1_ ->
+      (fun s i ->
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 = s in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          let zeros:t_Array u64 (mk_usize 25) =
+            Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25)
+          in
+          v i <= v input_blocks /\
+          s.Libcrux_sha3.Generic_keccak.f_st ==
+          Hacspec_sha3.Sponge.absorb_blocks zeros v_RATE (mk_usize 0) i input)
       s
       (fun s i ->
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 = s in
           let i:usize = i in
           let _:Prims.unit =
             Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i input_blocks v_RATE
+          in
+          let _:Prims.unit =
+            let zeros:t_Array u64 (mk_usize 25) =
+              Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25)
+            in
+            let inputs:t_Array (t_Slice u8) (mk_usize 1) =
+              let list = [input] in
+              FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+              Rust_primitives.Hax.array_of_list 1 list
+            in
+            assert (inputs.[ mk_usize 0 ] == input);
+            EquivImplSpec.Sponge.Portable.Steps.lemma_absorb_block_portable v_RATE
+              s
+              inputs
+              (i *! v_RATE);
+            Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail zeros
+              v_RATE
+              (mk_usize 0)
+              i
+              (i +! mk_usize 1)
+              input
           in
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
             Libcrux_sha3.Generic_keccak.impl_2__absorb_block (mk_usize 1)
@@ -351,6 +390,22 @@ let absorb (v_RATE: usize) (v_DELIM: u8) (input: t_Slice u8)
               (i *! v_RATE <: usize)
           in
           s)
+  in
+  let _:Prims.unit =
+    let zeros:t_Array u64 (mk_usize 25) = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+    let inputs:t_Array (t_Slice u8) (mk_usize 1) =
+      let list = [input] in
+      FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+      Rust_primitives.Hax.array_of_list 1 list
+    in
+    assert (inputs.[ mk_usize 0 ] == input);
+    EquivImplSpec.Sponge.Portable.Steps.lemma_absorb_last_portable v_RATE
+      v_DELIM
+      s
+      inputs
+      (input_len -! input_rem)
+      input_rem;
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks zeros v_RATE v_DELIM input
   in
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 =
     Libcrux_sha3.Generic_keccak.impl_2__absorb_final (mk_usize 1)

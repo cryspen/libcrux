@@ -4,6 +4,152 @@ Date: 2026-04-24 (appended to the 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
 
+## 2026-04-24 (evening): Portable.absorb admit eliminated
+
+### TL;DR
+
+`Libcrux_sha3.Generic_keccak.Portable.absorb` now verifies against its
+spec-equivalence ensures without any `admit ()`, following the same
+inline-ensures pattern used for `squeeze` earlier today.  The former
+`lemma_absorb_portable_aux` (2026-04-21's recursive helper, with the
+Z3 4.13.3 LP-solver bug workaround admit at line 252) has been
+**deleted**; `lemma_absorb_portable` collapses to `()` — the proof is
+carried by the Rust-side ensures.
+
+### What changed
+
+**Rust spec (`specs/sha3/src/sponge.rs`):**
+- New `absorb_blocks(state, rate, i, input_blocks, input) -> State`
+  — a block-indexed tail-recursive helper that mirrors
+  `squeeze_blocks`.  It applies `absorb_block` at each
+  `input[k*rate..(k+1)*rate]` for `k ∈ [i, input_blocks)`.
+- Preferred over `absorb_rec` with a `message[rate..]` tail because
+  it indexes into `input` directly by `k*rate`, avoiding the
+  slice-of-slice reasoning that tripped the Z3 LP bug in the
+  previous proof.
+
+**Rust impl (`crates/algorithms/sha3/src/generic_keccak/portable.rs`):**
+- `absorb::<RATE, DELIM>` now has an inline ensures:
+  `$result.st == Hacspec_sha3.Sponge.absorb $RATE $DELIM $input`.
+- Loop invariant: `$s.st == absorb_blocks zeros RATE 0 i input`.
+- Pre-loop scaffolding: `lemma_absorb_blocks_base` (establishes
+  invariant at i=0).
+- Per-iteration scaffolding:
+  `Steps.lemma_absorb_block_portable` (impl step ≡ spec step) +
+  `Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail` (extends
+  `absorb_blocks` by one step on the right).
+- Post-loop scaffolding:
+  `Steps.lemma_absorb_last_portable` (impl absorb_final ≡ spec
+  absorb_final) +
+  `Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks` (bridges
+  `absorb_rec` to `absorb_final ∘ absorb_blocks`).
+- Options: `--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always`
+  (same budget as squeeze).
+
+**F* equivalence (`proofs/fstar/equivalence/Hacspec_sha3.Sponge.Lemmas.fst`):**
+- New lemmas (all proved, no admits):
+  - `lemma_absorb_blocks_base`: `absorb_blocks state rate i i input == state`.
+  - `lemma_absorb_blocks_unfold`: head-unfold at `i < input_blocks`.
+  - `lemma_absorb_blocks_tail`: tail-extension from `j` to `j+1`
+    (mirrors `lemma_squeeze_blocks_tail`).  Proved by induction on
+    `j - i`.
+  - `lemma_absorb_rec_unfold`: one recurrence step of `absorb_rec`
+    when enough bytes remain.
+  - `lemma_tail_block_eq_input_block`: slice-of-RangeFrom identity
+    (uses `FStar.Seq.Properties.slice_slice`).
+  - `lemma_absorb_blocks_shift`: shift key — `absorb_blocks state
+    rate 0 (k+1) input == absorb_blocks state' rate 0 k tail` where
+    `state' = absorb_block state input[0..rate] rate`, `tail =
+    input[rate..]`.  Proved by induction on `k`.
+  - `lemma_absorb_final_shift`: `absorb_final state tail start rem
+    rate delim == absorb_final state input (rate+start) rem rate
+    delim`.  Bytes read by pad_last_block coincide.
+  - `lemma_absorb_rec_via_blocks` (main bridge): `absorb_rec state
+    rate delim input == absorb_final (absorb_blocks state rate 0
+    input_blocks input) input (input_blocks*rate) input_rem rate
+    delim`.  Proved by induction on `|input|`, combining the shift
+    + final-shift helpers.  Verified in 9s at rlimit 300.
+
+**F* equivalence (`proofs/fstar/equivalence/EquivImplSpec.Sponge.Portable.API.fst`):**
+- Deleted: `lemma_absorb_tail_split_seq`, `lemma_absorb_rec_step`,
+  `lemma_absorb_portable_aux` (the former recursive helper with
+  the admit at line 252 — no longer needed).
+- `lemma_absorb_portable` collapses to:
+  `let _ = Libcrux_sha3.Generic_keccak.Portable.absorb rate delim input in ()`
+  — the Rust-side ensures carries the proof.
+
+### Load-bearing admit inventory (2, was 3)
+
+| # | File | Line | Kind | Notes |
+|---|------|------|------|-------|
+| 1 | `EquivImplSpec.Sponge.Arm64.API.fst` | 63 | `assume val lemma_absorb2_arm64` | unchanged |
+| 2 | `EquivImplSpec.Sponge.Arm64.API.fst` | 82 | `assume val lemma_squeeze2_arm64` | unchanged |
+
+Portable absorb admit (formerly #1) is **gone**.  Non-load-bearing
+upstream admits (3) in `Proof_Utils.Lemmas.fst:26/33/54` unchanged.
+
+### Verification stats
+
+- `Hacspec_sha3.Sponge.Lemmas.fst`: verifies with all new lemmas,
+  `lemma_absorb_rec_via_blocks` is the slowest at 9.1s rlimit 300.
+- `Libcrux_sha3.Generic_keccak.Portable.fst` (extracted, containing
+  both the new inline-proved `absorb` and the earlier inline-proved
+  `squeeze`): 497 queries, zero failures, total 381s on this machine.
+- `EquivImplSpec.Sponge.Portable.API.fst` (top-level + collapsed
+  `lemma_absorb_portable`): all 8 hasher theorems discharged in
+  < 200 ms each.
+
+### Key technical lessons (extending 2026-04-24 morning's list)
+
+- **Block-indexed helpers beat suffix-recursive helpers for absorb.**
+  The prior `absorb_rec`-based `lemma_absorb_portable_aux` used
+  progressive `message[k*rate..]` tails that triggered a Z3 LP
+  bug.  Replacing with `absorb_blocks state rate 0 n input` keeps
+  `input` fixed and indexes into it, so the proof never needs
+  slice-of-slice reasoning inside a loop-invariant context.  Slice
+  reasoning is still needed exactly once, in `lemma_absorb_rec_via_blocks`,
+  but there it runs in a small isolated context where Z3 is happy.
+- **Hax `$ident]` / `$ident}` trip antiquotation parse** — always
+  add a space: `[ $input ]`, `v $output_len }`.
+- **Body fstar! blocks use `$self.st`, ensures blocks use the full
+  field path `*.Libcrux_sha3.Generic_keccak.f_st`** (per 2026-04-24
+  morning's note).  For top-level functions, the ensures closure
+  arg (e.g. `|result|`) acts like `$self` — referenced as `$result.st`
+  in F* interpolation.
+- **Pre/post-loop scaffolding blocks needed to establish the
+  invariant at i=0 and consume the final state.**  For absorb, the
+  pre-loop block calls `lemma_absorb_blocks_base` (invariant at
+  i=0: `s.st == zeros == absorb_blocks zeros rate 0 0 input`) and
+  the post-loop block combines `lemma_absorb_last_portable` with
+  `lemma_absorb_rec_via_blocks` to reconcile
+  `absorb_final ∘ absorb_blocks` with spec `absorb`.
+
+### Next steps (in priority order)
+
+1. **Arm64 per-lane assumes (#1, #2 above).**  Clone Portable's
+   scaffolding at `v_N = mk_usize 2` with a lane parameter.
+   Reuses the closed `sc_load_block` / `sc_store_block` records in
+   `EquivImplSpec.Sponge.Arm64.fst`.  Blocked on this machine by
+   the Arm-vs-x86 SIMD extraction drift (cached `.checked` for
+   `Libcrux_intrinsics.Arm64_extract.fsti` was built from an
+   Arm-extracted file with `bit_vec` types; x86 re-extraction
+   produces `u8`-stub types).  Fix path: retain Arm-extracted
+   intrinsics when working on x86, or restore/copy `bit_vec`-typed
+   stubs.
+2. **Cleanup.**  Stale plan docs (`plan.md`, `plan-simd.md`,
+   `Proofs.md`); editor backups (`*.fst~`, `*.fsti~`).
+
+### Files of interest
+
+- `specs/sha3/src/sponge.rs` — `absorb_blocks` helper added.
+- `src/generic_keccak/portable.rs:145–225` — `absorb` with inline ensures.
+- `proofs/fstar/equivalence/Hacspec_sha3.Sponge.Lemmas.fst:223–562` — new lemmas.
+- `proofs/fstar/equivalence/EquivImplSpec.Sponge.Portable.API.fst:60–82` — collapsed `lemma_absorb_portable`.
+- `/tmp/verify_portable1.log` — last clean verification log.
+- `/tmp/verify_lemmas6.log` — last clean Lemmas verification log.
+
+---
+
 ## 2026-04-24 (late): `assume False` eliminated — Portable.squeeze fully verified
 
 ### TL;DR

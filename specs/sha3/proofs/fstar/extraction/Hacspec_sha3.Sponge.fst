@@ -303,6 +303,50 @@ let rec absorb_rec (state: t_Array u64 (mk_usize 25)) (rate: usize) (delim: u8) 
         <:
         t_Slice u8)
 
+#push-options "--z3rlimit 200"
+
+/// Iterative middle-loop of [absorb]: for each block index `k ∈ [i, input_blocks)`,
+/// XOR `input[k*rate..(k+1)*rate]` into the state and apply Keccak-f via
+/// [absorb_block]. Returns the state after the final [absorb_block].
+/// Shape chosen to mirror [squeeze_blocks], so the F* equivalence proof can line
+/// up the libcrux impl\'s `fold_range 0 input_blocks` step-by-step against this
+/// recursion via tail-extension lemmas, dodging the slice-of-slice reasoning
+/// that triggers a Z3 4.13.3 LP-solver internal-assertion bug in the older
+/// proof that used `absorb_rec` with progressive `message[rate..]` tails.
+let rec absorb_blocks
+      (state: t_Array u64 (mk_usize 25))
+      (rate i input_blocks: usize)
+      (input: t_Slice u8)
+    : Prims.Pure (t_Array u64 (mk_usize 25))
+      (requires
+        rate >. mk_usize 0 && rate <=. mk_usize 200 && (rate %! mk_usize 8 <: usize) =. mk_usize 0 &&
+        i <=. input_blocks &&
+        input_blocks <=. ((Core_models.Slice.impl__len #u8 input <: usize) /! rate <: usize))
+      (fun _ -> Prims.l_True)
+      (decreases
+        ((Rust_primitives.Hax.Int.from_machine input_blocks <: Hax_lib.Int.t_Int) -
+          (Rust_primitives.Hax.Int.from_machine i <: Hax_lib.Int.t_Int)
+          <:
+          Hax_lib.Int.t_Int)) =
+  if i <. input_blocks
+  then
+    let state:t_Array u64 (mk_usize 25) =
+      absorb_block state
+        (input.[ {
+              Core_models.Ops.Range.f_start = i *! rate <: usize;
+              Core_models.Ops.Range.f_end = (i *! rate <: usize) +! rate <: usize
+            }
+            <:
+            Core_models.Ops.Range.t_Range usize ]
+          <:
+          t_Slice u8)
+        rate
+    in
+    absorb_blocks state rate (i +! mk_usize 1 <: usize) input_blocks input
+  else state
+
+#pop-options
+
 #push-options "--z3rlimit 300"
 
 /// Recursive middle-loop of [squeeze]: for each block index `i ∈ [i, output_blocks)`,

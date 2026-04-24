@@ -125,6 +125,35 @@ pub fn absorb_rec(state: State, rate: usize, delim: u8, message: &[u8]) -> State
     }
 }
 
+/// Iterative middle-loop of [absorb]: for each block index `k ∈ [i, input_blocks)`,
+/// XOR `input[k*rate..(k+1)*rate]` into the state and apply Keccak-f via
+/// [absorb_block]. Returns the state after the final [absorb_block].
+///
+/// Shape chosen to mirror [squeeze_blocks], so the F* equivalence proof can line
+/// up the libcrux impl's `fold_range 0 input_blocks` step-by-step against this
+/// recursion via tail-extension lemmas, dodging the slice-of-slice reasoning
+/// that triggers a Z3 4.13.3 LP-solver internal-assertion bug in the older
+/// proof that used `absorb_rec` with progressive `message[rate..]` tails.
+#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::requires(rate > 0 && rate <= 200 && rate % 8 == 0
+                     && i <= input_blocks
+                     && input_blocks <= input.len() / rate)]
+#[hax_lib::decreases(input_blocks.to_int() - i.to_int())]
+pub fn absorb_blocks(
+    state: State,
+    rate: usize,
+    i: usize,
+    input_blocks: usize,
+    input: &[u8],
+) -> State {
+    if i < input_blocks {
+        let state = absorb_block(state, &input[i * rate..i * rate + rate], rate);
+        absorb_blocks(state, rate, i + 1, input_blocks, input)
+    } else {
+        state
+    }
+}
+
 /// Absorb phase of the Keccak sponge (FIPS 202, Algorithm 8, step 6 combined
 /// with the pad10*1 padding of Algorithm 9).
 ///

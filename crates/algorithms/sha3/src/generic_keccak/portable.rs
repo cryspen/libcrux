@@ -145,20 +145,73 @@ impl KeccakState<1, u64> {
 /// Absorb phase of `keccak1`: initialise a Keccak state, absorb all full
 /// rate-byte blocks of `input`, then pad and absorb the final partial block
 /// with domain-separation byte `DELIM` and the pad10*1 terminator.
+///
+/// The ensures clause asserts direct equality with the spec function
+/// `Hacspec_sha3.Sponge.absorb`. The loop invariant uses the spec helper
+/// `absorb_blocks` (block-indexed analogue of `absorb_rec`, avoiding the
+/// slice-of-slice reasoning that triggers a Z3 4.13.3 LP-solver bug in
+/// older proofs based on `absorb_rec` recursion).
 #[hax_lib::requires(valid_rate(RATE))]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::ensures(|result| fstar!(r#"
+    $result.st ==
+      Hacspec_sha3.Sponge.absorb $RATE $DELIM $input
+"#))]
+#[hax_lib::fstar::options("--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always")]
 #[inline]
 pub(crate) fn absorb<const RATE: usize, const DELIM: u8>(input: &[u8]) -> KeccakState<1, u64> {
     let mut s = KeccakState::<1, u64>::new();
     let input_len = input.len();
     let input_blocks = input_len / RATE;
     let input_rem = input_len % RATE;
+    hax_lib::fstar!(
+        r#"let zeros : t_Array u64 (mk_usize 25) =
+               Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base
+               zeros $RATE (mk_usize 0) $input"#
+    );
     for i in 0..input_blocks {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"let zeros : t_Array u64 (mk_usize 25) =
+                       Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+                   v $i <= v $input_blocks /\
+                   $s.st ==
+                     Hacspec_sha3.Sponge.absorb_blocks
+                       zeros $RATE (mk_usize 0) $i $input"#
+            )
+        });
         #[cfg(hax)]
         lemma_mul_succ_le(i, input_blocks, RATE);
 
+        hax_lib::fstar!(
+            r#"let zeros : t_Array u64 (mk_usize 25) =
+                   Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+               let inputs : t_Array (t_Slice u8) (mk_usize 1) =
+                   let list = [ $input ] in
+                   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+                   Rust_primitives.Hax.array_of_list 1 list in
+               assert (inputs.[ mk_usize 0 ] == $input);
+               EquivImplSpec.Sponge.Portable.Steps.lemma_absorb_block_portable
+                   $RATE $s inputs ($i *! $RATE);
+               Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail
+                   zeros $RATE (mk_usize 0) $i ($i +! mk_usize 1) $input"#
+        );
+
         s.absorb_block::<RATE>(&[input], i * RATE);
     }
+    hax_lib::fstar!(
+        r#"let zeros : t_Array u64 (mk_usize 25) =
+               Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+           let inputs : t_Array (t_Slice u8) (mk_usize 1) =
+               let list = [ $input ] in
+               FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+               Rust_primitives.Hax.array_of_list 1 list in
+           assert (inputs.[ mk_usize 0 ] == $input);
+           EquivImplSpec.Sponge.Portable.Steps.lemma_absorb_last_portable
+               $RATE $DELIM $s inputs ($input_len -! $input_rem) $input_rem;
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks
+               zeros $RATE $DELIM $input"#
+    );
     s.absorb_final::<RATE, DELIM>(&[input], input_len - input_rem, input_rem);
     s
 }
