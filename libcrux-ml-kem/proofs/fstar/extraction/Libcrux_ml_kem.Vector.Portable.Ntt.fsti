@@ -72,7 +72,8 @@ val ntt_layer_3_step (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portable
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in
-          Spec.Utils.is_i16b_array (6 * 3328) result.f_elements)
+          Spec.Utils.is_i16b_array (6 * 3328) result.f_elements /\
+          Spec.Utils.ntt_layer_3_butterfly_post vec.f_elements result.f_elements zeta)
 
 val inv_ntt_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
