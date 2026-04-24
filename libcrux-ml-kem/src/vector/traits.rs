@@ -620,6 +620,10 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
+    // Option D, inverse layer 1: Gentleman–Sande butterflies, same pair
+    // layout as forward ntt_layer_1_step — 4 forall4 branches × 2 pairs
+    // each.  Per butterfly (i, j): result[i] = vec[i] + vec[j];
+    // result[j] = zeta · (vec[j] − vec[i]).
     pub(crate) fn inv_ntt_layer_1_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -628,8 +632,38 @@ let to_le_bytes_post_N (#n: usize)
         zeta3: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        // TODO(C4): re-add the hacspec ntt_inverse_layer_n equation.
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+                 (let z = (if b = 0 then $zeta0
+                           else if b = 1 then $zeta1
+                           else if b = 2 then $zeta2
+                           else $zeta3) in
+                  let i1 : nat = 4 * b in
+                  let j1 : nat = 4 * b + 2 in
+                  let i2 : nat = 4 * b + 1 in
+                  let j2 : nat = 4 * b + 3 in
+                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe z)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe z)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+        )
     }
 
     pub(crate) fn inv_ntt_layer_2_step_pre(
@@ -643,14 +677,44 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // TODO(C4): re-add the hacspec ntt_inverse_layer_n equation.
+    // Option D, inverse layer 2: same pair layout as forward layer 2.
     pub(crate) fn inv_ntt_layer_2_step_post(
         vec: &[i16; 16],
         zeta0: i16,
         zeta1: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+                 (let z = (if b < 2 then $zeta0 else $zeta1) in
+                  let base : nat = if b < 2 then 0 else 8 in
+                  let off  : nat = if b = 0 || b = 2 then 0 else 2 in
+                  let i1 : nat = base + off in
+                  let j1 : nat = i1 + 4 in
+                  let i2 : nat = i1 + 1 in
+                  let j2 : nat = j1 + 1 in
+                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe z)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe z)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+        )
     }
 
     pub(crate) fn inv_ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
@@ -660,13 +724,40 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // TODO(C4): re-add the hacspec ntt_inverse_layer_n equation.
+    // Option D, inverse layer 3: same pair layout as forward layer 3.
     pub(crate) fn inv_ntt_layer_3_step_post(
         vec: &[i16; 16],
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${result}"#)
+        hax_lib::fstar_prop_expr!(
+            r#"is_i16b_array_opaque 3328 ${result} /\
+               Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+                 (let i1 : nat = 2 * b in
+                  let j1 : nat = 2 * b + 8 in
+                  let i2 : nat = 2 * b + 1 in
+                  let j2 : nat = 2 * b + 9 in
+                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe $zeta0)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
+                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
+                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                      (mont_i16_to_spec_fe $zeta0)
+                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
+                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+        )
     }
 
     pub(crate) fn ntt_multiply_pre(

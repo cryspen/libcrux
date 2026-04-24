@@ -234,7 +234,7 @@ Per-function commits.
 | C4a `ntt_layer_1_step` (portable) | **done** | *(this commit)* | option D (forall4-pointwise FE) post; opaque `ntt_layer_1_butterfly_post` wrapper preserves ntt_multiply SMT perf (query 164: 11s baseline → 12s now, no regression); 4 × `lemma_butterfly_pair_commute` calls + explicit `p_layer_1` predicate unfold in wrapper body; Layer-1 stub closes with `= ()` |
 | C4b `ntt_layer_2_step` (portable) | **done** | *(this commit)* | same template as C4a; 4 butterfly-pair calls cover 2 groups × 2 pairs |
 | C4c `ntt_layer_3_step` (portable) | **done** | *(this commit)* | same template; 8 butterfly-pair calls, 1 group |
-| C4d `inv_ntt_layer_*_step` (portable) | pending | — | 3 sub-commits |
+| C4d `inv_ntt_layer_*_step` (portable) | **done** | *(this commit)* | 3 inverse layers via Gentleman-Sande butterfly commute; new `lemma_inv_butterfly_pair_commute` in Chunk; same template as C4a-c |
 | C4e `ntt_multiply` (portable) | pending | — | |
 | C4f compress/decompress (portable) | pending | — | |
 | C4g serialize_5/11, from_bytes, to_bytes, rej_sample | pending | — | |
