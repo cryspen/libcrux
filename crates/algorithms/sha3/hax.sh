@@ -10,6 +10,7 @@ function extract_all() {
     rename_core_models_files crates/utils/core-models
 
     extract crates/utils/intrinsics \
+        -C --features simd128 ";" \
         into -i "-core_models::**" \
         fstar --z3rlimit 80 --interfaces "+**"
 

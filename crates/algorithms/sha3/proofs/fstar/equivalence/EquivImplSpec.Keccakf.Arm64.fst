@@ -149,3 +149,44 @@ let lemma_keccakf1600_arm64
          (G.extract_lane (mk_usize 2) lc_arm64
             ks.Libcrux_sha3.Generic_keccak.f_st l))
   = G.lemma_keccakf1600_to_spec (mk_usize 2) lc_arm64 ks l
+
+
+(* ================================================================
+   Initial-state lane extraction: at the zero SIMD state produced by
+   [impl_2__new], extracting any lane yields the scalar all-zero
+   state [repeat 0u64 25].  Used by the Arm64 absorb2 inline proof
+   to establish the loop invariant at i=0.
+   ================================================================ *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
+let lemma_extract_lane_zero_arm64 (l: nat{l < 2})
+  : Lemma
+      (G.extract_lane (mk_usize 2) lc_arm64
+         (Rust_primitives.Hax.repeat
+           (Libcrux_sha3.Traits.f_zero
+             #I.t_e_uint64x2_t #(mk_usize 2)
+             #FStar.Tactics.Typeclasses.solve ()) (mk_usize 25)) l
+       ==
+       Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25))
+  = let zeros_simd : t_Array I.t_e_uint64x2_t (mk_usize 25) =
+      Rust_primitives.Hax.repeat
+        (Libcrux_sha3.Traits.f_zero
+          #I.t_e_uint64x2_t #(mk_usize 2)
+          #FStar.Tactics.Typeclasses.solve ()) (mk_usize 25) in
+    let zeros_u64 : t_Array u64 (mk_usize 25) =
+      Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+    let lhs = G.extract_lane (mk_usize 2) lc_arm64 zeros_simd l in
+    let aux (i: nat{i < 25}) : Lemma (Seq.index lhs i == Seq.index zeros_u64 i) =
+      let ii : usize = mk_usize i in
+      (* Trigger lemma_extract_lane_index SMTPat: lhs.[ii] == lc.lane zeros_simd.[ii] l *)
+      assert (lhs.[ii] == lc_arm64.G.lane zeros_simd.[ii] l);
+      (* zeros_simd.[ii] == f_zero ()  (repeat element access) *)
+      assert (zeros_simd.[ii] ==
+                Libcrux_sha3.Traits.f_zero
+                  #I.t_e_uint64x2_t #(mk_usize 2)
+                  #FStar.Tactics.Typeclasses.solve ());
+      (* arm64_lane (f_zero ()) l == 0u64 *)
+      arm64_lc_zero l
+    in
+    FStar.Classical.forall_intro aux;
+    Seq.lemma_eq_intro (lhs <: Seq.seq u64) (zeros_u64 <: Seq.seq u64)
+#pop-options

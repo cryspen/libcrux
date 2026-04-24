@@ -129,15 +129,41 @@ upstream admits (3) in `Proof_Utils.Lemmas.fst:26/33/54` unchanged.
 1. **Arm64 per-lane assumes (#1, #2 above).**  Clone Portable's
    scaffolding at `v_N = mk_usize 2` with a lane parameter.
    Reuses the closed `sc_load_block` / `sc_store_block` records in
-   `EquivImplSpec.Sponge.Arm64.fst`.  Blocked on this machine by
-   the Arm-vs-x86 SIMD extraction drift (cached `.checked` for
-   `Libcrux_intrinsics.Arm64_extract.fsti` was built from an
-   Arm-extracted file with `bit_vec` types; x86 re-extraction
-   produces `u8`-stub types).  Fix path: retain Arm-extracted
-   intrinsics when working on x86, or restore/copy `bit_vec`-typed
-   stubs.
+   `EquivImplSpec.Sponge.Arm64.fst`.  The earlier x86-vs-Arm
+   extraction-drift block has been resolved — see "Arm64 extraction
+   on x86" below.
 2. **Cleanup.**  Stale plan docs (`plan.md`, `plan-simd.md`,
    `Proofs.md`); editor backups (`*.fst~`, `*.fsti~`).
+
+### Arm64 extraction on x86 (2026-04-24 evening)
+
+The Arm64 intrinsics F* extraction (produced by `cargo hax into fstar`
+on `crates/utils/intrinsics`) must be run with `--features simd128`
+so the `#[cfg(feature = "simd128")]`-gated `arm64_extract` module is
+compiled.  Without the feature, the module is skipped and the
+generated `Libcrux_intrinsics.Arm64_extract.fsti` does not include
+the `bit_vec`-typed type aliases (`t_e_uint64x2_t`,
+`t_e_uint16x4_t`, etc.) that downstream SHA-3 Arm64 modules depend
+on.
+
+The `proofs` directory of `crates/utils/intrinsics` is gitignored,
+so these files are always regenerated.  If you re-extract on a
+machine where a previous intrinsics extraction was done without
+`simd128`, rerun the intrinsics extraction step first:
+
+```bash
+cd crates/utils/intrinsics
+cargo hax -C --features simd128 ';' into -i '+**' fstar --z3rlimit 80 --interfaces '+**'
+```
+
+(The sha3 crate's `hax.sh` does not currently pass `--features
+simd128` in its intrinsics-extract step, which is the root cause of
+the drift.)
+
+Full `make verify` in
+`crates/algorithms/sha3/proofs/fstar/equivalence/` passes green
+once the intrinsics is re-extracted with `simd128`.  See
+`/tmp/verify_full2.log` for the last successful run.
 
 ### Files of interest
 

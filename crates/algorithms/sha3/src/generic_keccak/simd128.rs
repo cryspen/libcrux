@@ -9,22 +9,86 @@ use libcrux_intrinsics::arm64::_uint64x2_t;
 /// absorb all full rate-byte blocks of `data[0]` and `data[1]` in
 /// parallel, then pad and absorb each lane's final partial block
 /// with domain-separation byte `DELIM` and the pad10*1 terminator.
+///
+/// The ensures clause asserts per-lane equality with the scalar spec
+/// function `Hacspec_sha3.Sponge.absorb`.  The loop invariant uses
+/// `absorb_blocks` per lane, mirroring the Portable backend.
 #[inline]
 #[hax_lib::requires(valid_rate(RATE) && data[0].len() == data[1].len())]
-#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::ensures(|result| fstar!(r#"
+    (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+       EquivImplSpec.Keccakf.Arm64.lc_arm64 $result.st 0) ==
+      Hacspec_sha3.Sponge.absorb $RATE $DELIM (Core_models.Ops.Index.f_index $data (mk_usize 0)) /\
+    (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+       EquivImplSpec.Keccakf.Arm64.lc_arm64 $result.st 1) ==
+      Hacspec_sha3.Sponge.absorb $RATE $DELIM (Core_models.Ops.Index.f_index $data (mk_usize 1))
+"#))]
+#[hax_lib::fstar::options("--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always")]
 pub(crate) fn absorb2<const RATE: usize, const DELIM: u8>(
     data: &[&[u8]; 2],
 ) -> KeccakState<2, _uint64x2_t> {
     let mut s = KeccakState::<2, _uint64x2_t>::new();
     let data_len = data[0].len();
     let data_blocks = data_len / RATE;
+    let rem = data_len % RATE;
+    hax_lib::fstar!(
+        r#"let zeros : t_Array u64 (mk_usize 25) =
+               Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+           EquivImplSpec.Keccakf.Arm64.lemma_extract_lane_zero_arm64 0;
+           EquivImplSpec.Keccakf.Arm64.lemma_extract_lane_zero_arm64 1;
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base
+               zeros $RATE (mk_usize 0) (Core_models.Ops.Index.f_index $data (mk_usize 0));
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base
+               zeros $RATE (mk_usize 0) (Core_models.Ops.Index.f_index $data (mk_usize 1))"#
+    );
     for i in 0..data_blocks {
+        hax_lib::loop_invariant!(|i: usize| {
+            fstar!(
+                r#"let zeros : t_Array u64 (mk_usize 25) =
+                       Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+                   v $i <= v $data_blocks /\
+                   (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+                      EquivImplSpec.Keccakf.Arm64.lc_arm64 $s.st 0) ==
+                     Hacspec_sha3.Sponge.absorb_blocks
+                       zeros $RATE (mk_usize 0) $i (Core_models.Ops.Index.f_index $data (mk_usize 0)) /\
+                   (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+                      EquivImplSpec.Keccakf.Arm64.lc_arm64 $s.st 1) ==
+                     Hacspec_sha3.Sponge.absorb_blocks
+                       zeros $RATE (mk_usize 0) $i (Core_models.Ops.Index.f_index $data (mk_usize 1))"#
+            )
+        });
         #[cfg(hax)]
         lemma_mul_succ_le(i, data_blocks, RATE);
 
+        hax_lib::fstar!(
+            r#"let zeros : t_Array u64 (mk_usize 25) =
+                   Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+               EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_block_arm64
+                   $RATE $s $data ($i *! $RATE) 0;
+               EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_block_arm64
+                   $RATE $s $data ($i *! $RATE) 1;
+               Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail
+                   zeros $RATE (mk_usize 0) $i ($i +! mk_usize 1)
+                   (Core_models.Ops.Index.f_index $data (mk_usize 0));
+               Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail
+                   zeros $RATE (mk_usize 0) $i ($i +! mk_usize 1)
+                   (Core_models.Ops.Index.f_index $data (mk_usize 1))"#
+        );
+
         s.absorb_block::<RATE>(data, i * RATE);
     }
-    let rem = data_len % RATE;
+    hax_lib::fstar!(
+        r#"let zeros : t_Array u64 (mk_usize 25) =
+               Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+           EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_last_arm64
+               $RATE $DELIM $s $data ($data_len -! $rem) $rem 0;
+           EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_last_arm64
+               $RATE $DELIM $s $data ($data_len -! $rem) $rem 1;
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks
+               zeros $RATE $DELIM (Core_models.Ops.Index.f_index $data (mk_usize 0));
+           Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks
+               zeros $RATE $DELIM (Core_models.Ops.Index.f_index $data (mk_usize 1))"#
+    );
     s.absorb_final::<RATE, DELIM>(data, data_len - rem, rem);
     s
 }

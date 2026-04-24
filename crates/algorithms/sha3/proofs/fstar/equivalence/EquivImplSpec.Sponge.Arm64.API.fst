@@ -59,8 +59,12 @@ module KA = EquivImplSpec.Keccakf.Arm64
 
 (** Driver-level absorb at N=2.  Running [absorb2] yields a state
     whose lane-[l] extraction equals the scalar
-    [Hacspec_sha3.Sponge.absorb] applied to [data[l]]. *)
-assume val lemma_absorb2_arm64
+    [Hacspec_sha3.Sponge.absorb] applied to [data[l]].
+
+    The per-lane equivalence is discharged directly by the Rust-side
+    ensures on [Libcrux_sha3.Generic_keccak.Simd128.absorb2] (proved
+    inline via an [absorb_blocks]-based loop invariant at N=2). *)
+let lemma_absorb2_arm64
       (rate: usize) (delim: u8)
       (data: t_Array (t_Slice u8) (mk_usize 2))
       (l: nat{l < 2})
@@ -74,6 +78,8 @@ assume val lemma_absorb2_arm64
           s2.Libcrux_sha3.Generic_keccak.f_st l
         ==
         Hacspec_sha3.Sponge.absorb rate delim (data.[ mk_usize l ])))
+  = let _ = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim data in
+    ()
 
 (** Driver-level squeeze2 at N=2.  For an arbitrary two-lane state
     [s], running [squeeze2] yields output slices whose lane-[l]

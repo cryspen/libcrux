@@ -10,12 +10,15 @@ let _ =
   let open Libcrux_sha3.Traits in
   ()
 
-#push-options "--z3rlimit 300"
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always"
 
 /// Absorb phase of `keccak2`: initialise a two-lane Keccak state,
 /// absorb all full rate-byte blocks of `data[0]` and `data[1]` in
 /// parallel, then pad and absorb each lane\'s final partial block
 /// with domain-separation byte `DELIM` and the pad10*1 terminator.
+/// The ensures clause asserts per-lane equality with the scalar spec
+/// function `Hacspec_sha3.Sponge.absorb`.  The loop invariant uses
+/// `absorb_blocks` per lane, mirroring the Portable backend.
 let absorb2 (v_RATE: usize) (v_DELIM: u8) (data: t_Array (t_Slice u8) (mk_usize 2))
     : Prims.Pure
       (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
@@ -24,7 +27,26 @@ let absorb2 (v_RATE: usize) (v_DELIM: u8) (data: t_Array (t_Slice u8) (mk_usize 
         Libcrux_sha3.Proof_utils.valid_rate v_RATE &&
         (Core_models.Slice.impl__len #u8 (data.[ mk_usize 0 ] <: t_Slice u8) <: usize) =.
         (Core_models.Slice.impl__len #u8 (data.[ mk_usize 1 ] <: t_Slice u8) <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
+            Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
+            result
+          in
+          (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+              EquivImplSpec.Keccakf.Arm64.lc_arm64
+              result.Libcrux_sha3.Generic_keccak.f_st
+              0) ==
+          Hacspec_sha3.Sponge.absorb v_RATE
+            v_DELIM
+            (Core_models.Ops.Index.f_index data (mk_usize 0)) /\
+          (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+              EquivImplSpec.Keccakf.Arm64.lc_arm64
+              result.Libcrux_sha3.Generic_keccak.f_st
+              1) ==
+          Hacspec_sha3.Sponge.absorb v_RATE
+            v_DELIM
+            (Core_models.Ops.Index.f_index data (mk_usize 1))) =
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
     Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
     Libcrux_sha3.Generic_keccak.impl_2__new (mk_usize 2)
@@ -33,17 +55,52 @@ let absorb2 (v_RATE: usize) (v_DELIM: u8) (data: t_Array (t_Slice u8) (mk_usize 
   in
   let data_len:usize = Core_models.Slice.impl__len #u8 (data.[ mk_usize 0 ] <: t_Slice u8) in
   let data_blocks:usize = data_len /! v_RATE in
+  let rem:usize = data_len %! v_RATE in
+  let _:Prims.unit =
+    let zeros:t_Array u64 (mk_usize 25) = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+    EquivImplSpec.Keccakf.Arm64.lemma_extract_lane_zero_arm64 0;
+    EquivImplSpec.Keccakf.Arm64.lemma_extract_lane_zero_arm64 1;
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base zeros
+      v_RATE
+      (mk_usize 0)
+      (Core_models.Ops.Index.f_index data (mk_usize 0));
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_base zeros
+      v_RATE
+      (mk_usize 0)
+      (Core_models.Ops.Index.f_index data (mk_usize 1))
+  in
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
     Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       data_blocks
-      (fun s temp_1_ ->
+      (fun s i ->
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
             Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
             s
           in
-          let _:usize = temp_1_ in
-          true)
+          let i:usize = i in
+          let zeros:t_Array u64 (mk_usize 25) =
+            Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25)
+          in
+          v i <= v data_blocks /\
+          (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+              EquivImplSpec.Keccakf.Arm64.lc_arm64
+              s.Libcrux_sha3.Generic_keccak.f_st
+              0) ==
+          Hacspec_sha3.Sponge.absorb_blocks zeros
+            v_RATE
+            (mk_usize 0)
+            i
+            (Core_models.Ops.Index.f_index data (mk_usize 0)) /\
+          (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2)
+              EquivImplSpec.Keccakf.Arm64.lc_arm64
+              s.Libcrux_sha3.Generic_keccak.f_st
+              1) ==
+          Hacspec_sha3.Sponge.absorb_blocks zeros
+            v_RATE
+            (mk_usize 0)
+            i
+            (Core_models.Ops.Index.f_index data (mk_usize 1)))
       s
       (fun s i ->
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
@@ -53,6 +110,25 @@ let absorb2 (v_RATE: usize) (v_DELIM: u8) (data: t_Array (t_Slice u8) (mk_usize 
           let i:usize = i in
           let _:Prims.unit =
             Libcrux_sha3.Proof_utils.Lemmas.lemma_mul_succ_le i data_blocks v_RATE
+          in
+          let _:Prims.unit =
+            let zeros:t_Array u64 (mk_usize 25) =
+              Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25)
+            in
+            EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_block_arm64 v_RATE s data (i *! v_RATE) 0;
+            EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_block_arm64 v_RATE s data (i *! v_RATE) 1;
+            Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail zeros
+              v_RATE
+              (mk_usize 0)
+              i
+              (i +! mk_usize 1)
+              (Core_models.Ops.Index.f_index data (mk_usize 0));
+            Hacspec_sha3.Sponge.Lemmas.lemma_absorb_blocks_tail zeros
+              v_RATE
+              (mk_usize 0)
+              i
+              (i +! mk_usize 1)
+              (Core_models.Ops.Index.f_index data (mk_usize 1))
           in
           let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
             Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
@@ -65,7 +141,31 @@ let absorb2 (v_RATE: usize) (v_DELIM: u8) (data: t_Array (t_Slice u8) (mk_usize 
           in
           s)
   in
-  let rem:usize = data_len %! v_RATE in
+  let _:Prims.unit =
+    let zeros:t_Array u64 (mk_usize 25) = Rust_primitives.Hax.repeat (mk_u64 0) (mk_usize 25) in
+    EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_last_arm64 v_RATE
+      v_DELIM
+      s
+      data
+      (data_len -! rem)
+      rem
+      0;
+    EquivImplSpec.Sponge.Arm64.Steps.lemma_absorb_last_arm64 v_RATE
+      v_DELIM
+      s
+      data
+      (data_len -! rem)
+      rem
+      1;
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks zeros
+      v_RATE
+      v_DELIM
+      (Core_models.Ops.Index.f_index data (mk_usize 0));
+    Hacspec_sha3.Sponge.Lemmas.lemma_absorb_rec_via_blocks zeros
+      v_RATE
+      v_DELIM
+      (Core_models.Ops.Index.f_index data (mk_usize 1))
+  in
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2)
     Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
     Libcrux_sha3.Generic_keccak.impl_2__absorb_final (mk_usize 2)
