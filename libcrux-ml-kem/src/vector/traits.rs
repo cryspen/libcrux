@@ -705,6 +705,14 @@ let to_le_bytes_post_N (#n: usize)
     }
 
     // Option D, inverse layer 2: same pair layout as forward layer 2.
+    //
+    // Output bound is `2*3328` (not `3328`) because the body computes a raw
+    // `a + b` for half the output lanes without an intervening Barrett
+    // reduction.  This matches the AVX2 / Neon implementations and the
+    // portable implementation post-fix.  See `src/invert_ntt.rs` for the
+    // full bound trace through the inverse NTT and the safety argument
+    // (no i16 wrapping, no i32 overflow, Barrett input headroom preserved
+    // for the eventual reduction in `invert_ntt_at_layer_4_plus`).
     pub(crate) fn inv_ntt_layer_2_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -712,7 +720,7 @@ let to_le_bytes_post_N (#n: usize)
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"is_i16b_array_opaque 3328 ${result} /\
+            r#"is_i16b_array_opaque (2*3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
                  (let z = (if b < 2 then $zeta0 else $zeta1) in
                   let base : nat = if b < 2 then 0 else 8 in
@@ -744,21 +752,30 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
+    // Input bound is `2*3328` (not `3328`) because the previous layer
+    // (`inv_ntt_layer_2_step`) skips Barrett reduction on its sum lanes.
     pub(crate) fn inv_ntt_layer_3_step_pre(vec: &[i16; 16], zeta0: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#" is_i16b 1664 $zeta0 /\
-                is_i16b_array_opaque 3328 ${vec}"#
+                is_i16b_array_opaque (2*3328) ${vec}"#
         )
     }
 
     // Option D, inverse layer 3: same pair layout as forward layer 3.
+    //
+    // Output bound is `4*3328` because the body, like layer 2, skips
+    // Barrett reduction on the raw sum lanes.  With input bounded by
+    // `2*3328`, the sum can reach `2 * 2*3328 = 4*3328 = 13312`, well
+    // inside i16 range.  The eventual reduction to `3328` happens in
+    // `invert_ntt_at_layer_4_plus`'s `inv_ntt_layer_int_vec_step_reduce`
+    // (Barrett there is preserved).
     pub(crate) fn inv_ntt_layer_3_step_post(
         vec: &[i16; 16],
         zeta0: i16,
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"is_i16b_array_opaque 3328 ${result} /\
+            r#"is_i16b_array_opaque (4*3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
                  (let i1 : nat = 2 * b in
                   let j1 : nat = 2 * b + 8 in

@@ -130,7 +130,7 @@ val inv_ntt_layer_3_step
       (vec: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (zeta: i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-      (requires Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array 3328 vec.f_elements)
+      (requires Spec.Utils.is_i16b 1664 zeta /\ Spec.Utils.is_i16b_array (2 * 3328) vec.f_elements)
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = result in

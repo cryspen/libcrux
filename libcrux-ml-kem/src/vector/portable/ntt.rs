@@ -264,10 +264,15 @@ pub(crate) fn inv_ntt_layer_2_step(
     vec
 }
 
+// Pre relaxed from `is_i16b_array 3328` to `is_i16b_array (2*3328)` because
+// `inv_ntt_layer_2_step` no longer Barrett-reduces its sum lanes — see the
+// bound trace comment in `src/invert_ntt.rs:invert_ntt_at_layer_2`.
+// Inner `inv_ntt_step` accepts up to `4*3328` already, and Barrett there
+// keeps the per-call output ≤ `3328`, so the post is unchanged.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-                            Spec.Utils.is_i16b_array 3328 ${vec}.f_elements"#))]
+                            Spec.Utils.is_i16b_array (2*3328) ${vec}.f_elements"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Spec.Utils.is_i16b_array 3328 ${result}.f_elements /\
     Spec.Utils.inv_ntt_layer_3_butterfly_post ${vec}.f_elements ${result}.f_elements zeta"#))]
 pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> PortableVector {

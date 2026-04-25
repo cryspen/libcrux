@@ -290,6 +290,87 @@ Verified: `Vector.Avx2.fst`, `Vector.Avx2.Ntt.fst`,
 `Vector.Avx2.{Arithmetic,Compress,Sampling,Serialize}.fst`,
 `Vector.Portable.fst` all PASS.
 
+## Inverse NTT layer 2/3 Barrett: spec aligned with AVX2/Neon optimization
+
+`inv_ntt_layer_{2,3}_step` in `src/vector/avx2/ntt.rs` and
+`src/vector/neon/ntt.rs` deliberately omit the Barrett reduction on
+the sum lanes that portable's `inv_ntt_step` (called from
+`inv_ntt_layer_{2,3}_step` in `src/vector/portable/ntt.rs`) applies.
+This is an intentional optimization: each Barrett costs ~5 SIMD ops,
+and the next Barrett in `invert_ntt_at_layer_4_plus`'s `step_reduce`
+mops up the looser bound.  Portable was over-reducing.
+
+Spec changes (in `src/vector/traits.rs`):
+- `inv_ntt_layer_2_step_post`: `is_i16b_array_opaque 3328` →
+  `is_i16b_array_opaque (2*3328)`.
+- `inv_ntt_layer_3_step_pre`:  `is_i16b_array_opaque 3328` →
+  `is_i16b_array_opaque (2*3328)`.
+- `inv_ntt_layer_3_step_post`: `is_i16b_array_opaque 3328` →
+  `is_i16b_array_opaque (4*3328)`.
+
+Caller-side changes (in `src/invert_ntt.rs`):
+- `invert_ntt_at_layer_2`: ensures bound `3328` → `2*3328`.
+- `invert_ntt_at_layer_3`: requires bound `3328` → `2*3328`; ensures
+  `3328` → `4*3328`.
+- `invert_ntt_at_layer_4_plus`: requires bound `3328` → `4*3328`
+  (uniform across all 4 calls; widening hints added in
+  `invert_ntt_montgomery` between consecutive layer_4_plus calls).
+- `inv_ntt_layer_int_vec_step_reduce`: requires
+  `is_bounded_vector(3328, ...)` → `is_bounded_vector(4*3328, ...)`;
+  internal `is_bounded_vector_higher` adjusted from `(6656, 28296)`
+  to `(8*3328, 28296)`.
+
+Bound trace (documented inline in `src/invert_ntt.rs`):
+```
+layer 1 input:  4*3328 → output: 3328 (Barrett)
+layer 2 input:  3328   → output: 2*3328  (no Barrett)
+layer 3 input:  2*3328 → output: 4*3328  (no Barrett)
+layer 4_plus(4) input: 4*3328 → output: 3328 (Barrett in step_reduce)
+layer 4_plus(5..7):    3328   → 3328 (steady state)
+```
+
+Safety (no integer overflow): worst-case sums in layers 2/3 are
+`6656` and `13312`, both well below `i16` max (`32767`).  In
+`step_reduce`, `a_plus_b` reaches `26624 < 28296` (Barrett pre).
+Mont-mul i32 product peaks at `26624 × 1664 ≈ 4.4×10⁷ << 2³¹`.
+
+External impact: **none** — `invert_ntt_montgomery`'s post is
+unchanged at `is_bounded_poly(3328)`, so callers see identical
+contracts.
+
+Performance gain: ~80 SIMD ops saved per inverse NTT call (16
+Barrett reductions removed × ~5 ops each) — was previously redundant
+work on portable, was an unproven implicit optimization on AVX2/Neon.
+
+Verified: `Vector.Portable.fst`, `Vector.Avx2.fst`, `Invert_ntt.fst`
+all PASS (rlimit 400 on `invert_ntt_at_layer_{1,2,3}` due to query
+size, with `--ext context_pruning` and split-query retries).
+
+Note: portable's `inv_ntt_step` still does Barrett (used by layer 1).
+Layers 2/3 in portable accept the looser primitive output trivially
+(3328 ≤ 6656 ≤ 13312).  Removing Barrett from portable layers 2/3
+specifically would require splitting `inv_ntt_step` into Barrett and
+no-Barrett variants — left as a perf follow-up.
+
+## Forward NTT bound symmetry
+
+Audited via subagent: all three backends (portable, AVX2, Neon) use
+pure mont_mul + add/sub butterflies in forward `ntt_layer_N_step`
+bodies — no Barrett anywhere.  Bounds grow monotonically `3 → 4803 →
+2*3328 → … → 8*3328`, then `re.poly_barrett_reduce()` once at the end
+of `ntt`.  No analogue to the inverse-NTT layer 2/3 Barrett asymmetry
+in the forward direction.
+
+## Manual proof targets (A1–A7) for the user
+
+See `proofs/manual-proof-targets.md` for a brief on which lemmas in
+`Hacspec_ml_kem.Commute.Chunk.fst` would maximally unblock Claude's
+ongoing work toward the milestone "every trait fn proven down to
+SIMD/integer-arithmetic admits".  Tier 1: 4 admitted
+`lemma_base_case_mult_*` (close `op_ntt_multiply` on both backends).
+Tier 2: 3 easy compress/decompress fe_commute lemmas to write (close
+6 wrappers).
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may

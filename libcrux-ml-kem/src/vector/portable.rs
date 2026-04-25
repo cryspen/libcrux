@@ -549,6 +549,13 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let out = inv_ntt_layer_2_step(a, zeta0, zeta1);
+    // Output bound from primitive is `3328` (Barrett still in portable);
+    // widen to the trait's loosened `2*3328` post.  Once portable also
+    // drops Barrett, this widen is a no-op.
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
+    );
     hax_lib::fstar!(
         r#"
         reveal_opaque (`%Spec.Utils.inv_ntt_layer_2_butterfly_post)
@@ -612,11 +619,22 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
+    // Trait pre is now `is_i16b_array_opaque (2*3328)` (previously `3328`);
+    // see comment on `inv_ntt_layer_3_step_post` in `src/vector/traits.rs`.
+    // Reveal at the new bound so the underlying primitive's pre
+    // (which we also loosen to `is_i16b_array (2*3328)`) discharges.
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
     );
     let out = inv_ntt_layer_3_step(a, zeta);
+    // Output bound from primitive is `3328` (Barrett still in portable);
+    // widen to the trait's `4*3328` post.  Once portable also drops Barrett,
+    // this widen is a no-op.
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
+    );
     hax_lib::fstar!(
         r#"
         reveal_opaque (`%Spec.Utils.inv_ntt_layer_3_butterfly_post)
