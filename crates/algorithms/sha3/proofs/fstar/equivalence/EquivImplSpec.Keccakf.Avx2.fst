@@ -93,23 +93,11 @@ let avx2_lc_xor5 (a b c d e: I.t_Vec256) (l: nat{l < 4})
 
 (* Bridge: the AVX2 implementation of rotate_left as
    (x <<! LEFT) ^. (x >>! RIGHT) (when LEFT + RIGHT == 64) yields
-   the per-lane Core_models rotate_left.  Cannot be proved here:
-   [Core_models.Num.impl_u64__rotate_left] is an opaque
-   [assume val] in Core_models.Num.fst:493.  Closing this admit
-   requires a Core_models-side spec lemma [impl_u64__rotate_left x n
-     == (x <<! cast n) ^. (x >>! cast (64-n))] for [0 < n < 64]. *)
-private val lemma_shl_xor_shr_is_rotate_left
-      (x: u64) (v_LEFT v_RIGHT: i32)
-  : Lemma
-      (requires
-        v v_LEFT >= 0 /\ v v_LEFT < 64 /\
-        v v_RIGHT > 0 /\ v v_RIGHT < 64 /\
-        v v_LEFT + v v_RIGHT == 64)
-      (ensures
-        ((x <<! v_LEFT) ^. (x >>! v_RIGHT)) ==
-        Core_models.Num.impl_u64__rotate_left x (cast (v_LEFT <: i32) <: u32))
-
-let lemma_shl_xor_shr_is_rotate_left x v_LEFT v_RIGHT = admit ()
+   the per-lane Core_models rotate_left.  Lemma is admitted in
+   [Libcrux_sha3.Proof_utils.Lemmas.lemma_shl_xor_shr_is_rotate_left]
+   because [Core_models.Num.impl_u64__rotate_left] is an opaque
+   [assume val] (Core_models.Num.fst:493). *)
+module PUL = Libcrux_sha3.Proof_utils.Lemmas
 
 #push-options "--z3rlimit 200"
 let avx2_lc_rotate_left1_and_xor (a b: I.t_Vec256) (l: nat{l < 4})
@@ -122,7 +110,7 @@ let avx2_lc_rotate_left1_and_xor (a b: I.t_Vec256) (l: nat{l < 4})
        where rotate_left 1 63 b = mm256_xor_si256 (mm256_slli_epi64 1 b) (mm256_srli_epi64 63 b).
        SMTPats give per-lane shifts/xor; bridge lemma equates
        (x <<! 1) ^. (x >>! 63) with impl_u64__rotate_left x 1. *)
-    lemma_shl_xor_shr_is_rotate_left (avx2_lane b l) (mk_i32 1) (mk_i32 63)
+    PUL.lemma_shl_xor_shr_is_rotate_left (avx2_lane b l) (mk_i32 1) (mk_i32 63)
 #pop-options
 
 #push-options "--z3rlimit 200"
@@ -144,7 +132,7 @@ let avx2_lc_xor_and_rotate (v_LEFT v_RIGHT: i32) (a b: I.t_Vec256) (l: nat{l < 4
        Per-lane: avx2_lane(xor a b) l = avx2_lane a l ^. avx2_lane b l, then
        rotate_left over that lane via lemma_shl_xor_shr_is_rotate_left. *)
     let xab_lane = avx2_lane a l ^. avx2_lane b l in
-    lemma_shl_xor_shr_is_rotate_left xab_lane v_LEFT v_RIGHT
+    PUL.lemma_shl_xor_shr_is_rotate_left xab_lane v_LEFT v_RIGHT
 #pop-options
 
 let avx2_lc_and_not_xor (a b c: I.t_Vec256) (l: nat{l < 4})

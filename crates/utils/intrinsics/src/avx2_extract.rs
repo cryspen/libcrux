@@ -424,6 +424,7 @@ pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after("let lemma_mm256_or_si256_u64x4 (a b: t_Vec256) = admit ()")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -444,6 +445,7 @@ pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after("let lemma_mm256_xor_si256_u64x4 (lhs rhs: t_Vec256) = admit ()")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -489,6 +491,9 @@ pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after(
+    "let lemma_mm256_srli_epi64_u64x4 (v_SHIFT_BY: i32) (vector: t_Vec256) = admit ()"
+)]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -646,6 +651,9 @@ pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after(
+    "let lemma_mm256_slli_epi64_u64x4 (v_LEFT: i32) (x: t_Vec256) = admit ()"
+)]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -672,6 +680,7 @@ pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after("let lemma_mm256_andnot_si256_u64x4 (a b: t_Vec256) = admit ()")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -688,6 +697,7 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::after("let lemma_mm256_set1_epi64x_u64x4 (a: i64) = admit ()")]
 #[hax_lib::fstar::replace(
     interface,
     r#"

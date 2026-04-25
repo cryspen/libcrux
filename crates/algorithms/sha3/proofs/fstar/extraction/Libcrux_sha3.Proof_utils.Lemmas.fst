@@ -17,3 +17,14 @@ let rec lemma_mul_succ_le (k n d: usize)
   if v n = 0 then ()
   else if v k = v n - 1 then ()
   else lemma_mul_succ_le k (n -! mk_usize 1) d
+
+let lemma_shl_xor_shr_is_rotate_left (x: u64) (v_LEFT v_RIGHT: i32)
+  : Lemma
+      (requires
+        v v_LEFT >= 0 /\ v v_LEFT < 64 /\
+        v v_RIGHT > 0 /\ v v_RIGHT < 64 /\
+        v v_LEFT + v v_RIGHT == 64)
+      (ensures
+        ((x <<! v_LEFT) ^. (x >>! v_RIGHT)) ==
+        Core_models.Num.impl_u64__rotate_left x (cast (v_LEFT <: i32) <: u32))
+  = admit ()

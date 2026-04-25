@@ -17,7 +17,9 @@ pub(crate) fn keccak_xof_state_inv(rate: usize, buf_len: usize) -> bool {
     valid_rate(rate) && buf_len <= rate
 }
 
-pub(crate) use lemmas::{lemma_div_mul_mod, lemma_mul_succ_le};
+pub(crate) use lemmas::{
+    lemma_div_mul_mod, lemma_mul_succ_le, lemma_shl_xor_shr_is_rotate_left,
+};
 
 mod lemmas {
     //! F* verification lemmas for SHA3/Keccak implementation.
@@ -64,4 +66,31 @@ let rec lemma_mul_succ_le (k n d: usize)
 "#
     )]
     pub(crate) fn lemma_mul_succ_le(_k: usize, _n: usize, _d: usize) {}
+
+    /// Bridge lemma: `(x <<! LEFT) ^. (x >>! RIGHT) ≡ rotate_left x LEFT`
+    /// when `LEFT + RIGHT == 64` and `0 < RIGHT < 64`.
+    ///
+    /// Used by `EquivImplSpec.Keccakf.Avx2.avx2_lc_rotate_left1_and_xor`
+    /// (and friends) to bridge per-lane shift+xor SMTPats to the
+    /// `Core_models.Num.impl_u64__rotate_left` form used in the spec.
+    ///
+    /// **Admitted**: `Core_models.Num.impl_u64__rotate_left` is an
+    /// opaque `assume val` in `Core_models.Num.fst:493`.  Closing this
+    /// admit requires a Core_models-side spec lemma
+    /// `lemma_impl_u64__rotate_left_via_shifts` upstream.
+    #[hax_lib::fstar::replace(
+        r#"
+let lemma_shl_xor_shr_is_rotate_left (x: u64) (v_LEFT v_RIGHT: i32)
+  : Lemma
+      (requires
+        v v_LEFT >= 0 /\ v v_LEFT < 64 /\
+        v v_RIGHT > 0 /\ v v_RIGHT < 64 /\
+        v v_LEFT + v v_RIGHT == 64)
+      (ensures
+        ((x <<! v_LEFT) ^. (x >>! v_RIGHT)) ==
+        Core_models.Num.impl_u64__rotate_left x (cast (v_LEFT <: i32) <: u32))
+  = admit ()
+"#
+    )]
+    pub(crate) fn lemma_shl_xor_shr_is_rotate_left(_x: u64, _left: i32, _right: i32) {}
 }
