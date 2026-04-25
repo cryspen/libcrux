@@ -388,6 +388,55 @@ seven serialize bridge admits in `Vector.Avx2.fst`).  Phased rollout
 with single-cfg-flag toggle (`pre_core_models`) for incremental
 migration.
 
+## C4' AVX2 NTT-layer top-to-bottom proofs — 2 of 6 done, 4 blocked on Z3
+
+Done:
+- `ntt_layer_3_step` (commit `38ac22188`)
+- `inv_ntt_layer_3_step` (commit `7c426e2e1`)
+
+Both use the same SIMD lane lemmas (cast/extract/insert/add/sub for
+Vec128/Vec256) admitted in a `fstar::before` block on
+`ntt_layer_3_step`.  The wrappers in `vector/avx2.rs` now discharge
+the trait FE-form post directly via 8
+`lemma_{,inv_}butterfly_pair_commute` calls + per-b assertions +
+`forall4` — bridge admits removed.
+
+Blocked on Z3:
+- `ntt_layer_1_step`, `ntt_layer_2_step`, `inv_ntt_layer_1_step`,
+  `inv_ntt_layer_2_step`.
+
+Each of the 4 blocked layers has the same structural shape: a
+parallel SIMD body computing all 16 lanes via a single
+`mm256_add_epi16`, with 4 zeta groups and 4 sub-equations per group
+(64 atomic facts to chain through SMTPats simultaneously).  Z3
+times out at rlimit 800 + 1800s wall-clock even when the body proof
+is decomposed into 16 explicit per-lane assertions with
+`--split_queries always`.  The portable side proves these efficiently
+because its body is **sequential** per-lane (one `inv_ntt_step` /
+`ntt_step` call per pair), so the proof chain is also sequential.
+
+Possible mitigations (none attempted yet):
+1. Refactor each AVX2 layer body into 4 per-zeta sub-functions
+   (each handling 4 lanes), so the proof obligations are 4
+   independent 4-lane proofs instead of one 16-lane proof.  Big
+   AVX2 refactor.
+2. Adopt the deferred SIMD model unification
+   (`proofs/simd-model-unification-plan.md`) — Model B's defined
+   `to_i16x16` (vs Model A's abstract `vec256_as_i16x16`) plus
+   `bitvec_postprocess_norm` rewrite tactic should make the chain
+   compositional rather than per-lane SMTPat-fire-storm.  Deferred
+   until C4' is "done to admit boundary".
+3. Manually-written F* lemmas inside `Vector.Avx2.Ntt.fst` that
+   capture each "shuffle + mont_mul + add yields butterfly residue"
+   as an admitted Vec256→Vec256 fact, called once per layer.
+   Reduces 16-lane chain to 1-lane equality, but admits a per-layer
+   black-box.
+
+Status: pause AVX2 NTT-layer wrapper proofs at 2/6 done; wait for
+user to land A1–A7 (`proofs/manual-proof-targets.md`) so progress
+can resume on `op_ntt_multiply` and compress/decompress wrappers,
+which don't have the 4-zeta-parallel SIMD wall.
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
