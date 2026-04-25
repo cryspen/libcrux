@@ -371,6 +371,23 @@ SIMD/integer-arithmetic admits".  Tier 1: 4 admitted
 Tier 2: 3 easy compress/decompress fe_commute lemmas to write (close
 6 wrappers).
 
+## Deferred: SIMD model unification with libcrux-ml-dsa
+
+See `proofs/simd-model-unification-plan.md` for a deferred plan to
+unify the AVX2 SIMD model with libcrux-ml-dsa's `core-models`-based
+approach.  Today both crates have parallel, incompatible bit-vector
+libraries (`fstar-helpers/fstar-bitvec/BitVec.Bv` vs
+`core_models::abstractions::bitvec::BitVec`) and parallel lane views
+(abstract `vec256_as_i16x16` vs defined `to_i16x16` with inversion
+lemmas) — every SIMD lemma we write today is doomed to a single repo.
+
+**To pick up after C4' is fully done.**  Migration is sequenced to
+discharge several currently-admitted ML-KEM SIMD lemmas as a side
+effect (the four lane-bridge admits in `Vector.Avx2.Ntt.fsti`, the
+seven serialize bridge admits in `Vector.Avx2.fst`).  Phased rollout
+with single-cfg-flag toggle (`pre_core_models`) for incremental
+migration.
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
