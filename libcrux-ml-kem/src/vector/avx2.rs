@@ -296,17 +296,11 @@ let op_inv_ntt_layer_2_step_bridge
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result))
   = admit ()
 
-let op_inv_ntt_layer_3_step_bridge
-    (vector: bit_vec 256) (zeta: i16) (result: bit_vec 256) : Lemma
-  (requires
-    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_pre
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector) zeta /\
-    result == Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step vector zeta)
-  (ensures
-    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vector) zeta
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 result))
-  = admit ()
+// `op_inv_ntt_layer_3_step_bridge` is no longer admitted: the strengthened
+// post of `Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step` (per-lane
+// inv-butterfly residue + bound `4*3328`) plus 8
+// `lemma_inv_butterfly_pair_commute` applications discharge the trait post
+// directly.  The wrapper does this inline; no bridge needed.
 "#
 )]
 #[inline(always)]
@@ -433,8 +427,56 @@ fn op_inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIM
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
+    );
     let elements = ntt::inv_ntt_layer_3_step(vector.elements, zeta);
-    hax_lib::fstar!(r#"op_inv_ntt_layer_3_step_bridge ${vector}.f_elements zeta ${elements}"#);
+    hax_lib::fstar!(
+        r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328));
+           let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
+           let out = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${elements} in
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 0 8;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 1 9;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 2 10;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 3 11;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 4 12;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 5 13;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 6 14;
+           Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute vec out zeta 7 15;
+           let p_inv_layer_3 : (b: nat{b < 4}) -> Type0 =
+             fun (b: nat{b < 4}) ->
+               (let i1 : nat = 2 * b in
+                let j1 : nat = 2 * b + 8 in
+                let i2 : nat = 2 * b + 1 in
+                let j2 : nat = 2 * b + 9 in
+                Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index out i1) ==
+                  Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec i1))
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec j1)) /\
+                Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index out j1) ==
+                  Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe zeta)
+                    (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                      (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec j1))
+                      (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec i1))) /\
+                Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index out i2) ==
+                  Hacspec_ml_kem.Parameters.impl_FieldElement__add
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec i2))
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec j2)) /\
+                Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index out j2) ==
+                  Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                    (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe zeta)
+                    (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                      (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec j2))
+                      (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index vec i2)))) in
+           assert (p_inv_layer_3 0);
+           assert (p_inv_layer_3 1);
+           assert (p_inv_layer_3 2);
+           assert (p_inv_layer_3 3);
+           assert (Spec.Utils.forall4 p_inv_layer_3)"#
+    );
     SIMD256Vector { elements }
 }
 

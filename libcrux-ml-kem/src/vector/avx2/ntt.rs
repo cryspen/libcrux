@@ -252,20 +252,83 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta"#))]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
+    Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    Spec.Utils.is_i16b_array (4*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    (forall (i:nat). i < 8 ==>
+       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) i) % 3329 ==
+         (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) +
+          v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i)) % 3329 /\
+       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) (i+8)) % 3329 ==
+         ((v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) -
+           v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i))
+          * v zeta * 169) % 3329)
+"#))]
 pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let lhs = mm256_extracti128_si256::<1>(vector);
+    hax_lib::fstar!(r#"lemma_mm256_extracti128_si256_1 ${vector}"#);
+    // forall i<8. get_lane128 lhs i = get_lane vector (i+8)
+
     let rhs = mm256_castsi256_si128(vector);
+    hax_lib::fstar!(r#"lemma_mm256_castsi256_si128 ${vector}"#);
+    // forall i<8. get_lane128 rhs i = get_lane vector i
 
     let lower_coefficients = mm_add_epi16(lhs, rhs);
+    // mm_add_epi16 post + lemma_add_i_128 (SMTPat) lift +. → +
+    hax_lib::fstar!(
+        r#"assert (forall (i:nat). i < 8 ==>
+                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) +
+                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))"#
+    );
 
     let upper_coefficients = mm_sub_epi16(lhs, rhs);
+    hax_lib::fstar!(
+        r#"assert (forall (i:nat). i < 8 ==>
+                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
+                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))"#
+    );
+
+    let zetas_v128 = mm_set1_epi16(zeta);
+    hax_lib::fstar!(
+        r#"assert (forall (i:nat). i < 8 ==>
+                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${zetas_v128} i) == v zeta);
+           assert (Spec.Utils.is_i16b_array 1664
+                     (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${zetas_v128}))"#
+    );
+
     let upper_coefficients =
-        arithmetic::montgomery_multiply_m128i_by_constants(upper_coefficients, mm_set1_epi16(zeta));
+        arithmetic::montgomery_multiply_m128i_by_constants(upper_coefficients, zetas_v128);
+    // Post: is_i16b_array 3328 upper_coefficients /\
+    //   forall i<8. v(upper[i]) % 3329 ==
+    //               (v(vec[i+8]) - v(vec[i])) * v zeta * 169 % 3329
+    hax_lib::fstar!(
+        r#"assert (forall (i:nat). i < 8 ==>
+                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) % 3329 ==
+                ((v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
+                  v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))
+                 * v zeta * 169) % 3329)"#
+    );
 
-    let combined = mm256_castsi128_si256(lower_coefficients);
-    let combined = mm256_inserti128_si256::<1>(combined, upper_coefficients);
+    let combined_lo = mm256_castsi128_si256(lower_coefficients);
+    hax_lib::fstar!(r#"lemma_mm256_castsi128_si256_lo ${lower_coefficients}"#);
 
+    let combined = mm256_inserti128_si256::<1>(combined_lo, upper_coefficients);
+    hax_lib::fstar!(r#"lemma_mm256_inserti128_si256_1 ${combined_lo} ${upper_coefficients}"#);
+    // forall i<8. combined[i]   = lower[i]
+    //             combined[i+8] = upper[i]
+    hax_lib::fstar!(
+        r#"
+        assert (forall (i:nat). i < 8 ==>
+                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) i ==
+                Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i);
+        assert (forall (i:nat). i < 8 ==>
+                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) (i + 8) ==
+                Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i)"#
+    );
     combined
 }
 
