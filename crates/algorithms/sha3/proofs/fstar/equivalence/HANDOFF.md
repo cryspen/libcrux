@@ -4,6 +4,106 @@ Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
 
+## 2026-04-25 (evening, late): AVX2 verification + equivalence chain
+
+Two layers landed (commit `d9dd345ef`):
+
+### Layer 1 — AVX2 modules verify without `--admit_smt_queries`
+
+Added `#[hax_lib::requires]`/`#[hax_lib::ensures]` to:
+
+- `crates/algorithms/sha3/src/simd/avx2.rs` — `load_block`, `load_last`,
+  `store_block` (with body-level `hax_lib::fstar!("admit()")` mirroring
+  arm64); trait impls `Absorb<4>`, `Squeeze4`, `KeccakItem<4>`.
+- `crates/algorithms/sha3/src/generic_keccak/simd256.rs` — refactored
+  to expose `absorb4` and `squeeze4` as separate functions (mirrors
+  `Simd128.absorb2` / `Simd128.squeeze2`); `keccak4` now composes
+  them.  Body of `absorb4` admitted; `squeeze4` body verifies clean.
+- `crates/algorithms/sha3/src/avx2.rs` — `x4::shake256` and seven
+  `x4::incremental::*` functions get the analogous Portable-style
+  preconditions.
+- `crates/algorithms/sha3/src/traits.rs` — `Squeeze4` trait now has
+  `#[hax_lib::attributes]` with `requires`/`ensures` on `squeeze4`
+  (mirrors `Squeeze2`).
+- `crates/algorithms/sha3/hax.sh::patch_fstar_extractions` — adds
+  `noeq` to `Avx2.X4.Incremental.t_KeccakState`.
+
+`make verify` GREEN under `proofs/fstar/extraction/`.
+
+### Layer 2 — equivalence chain replicated through `lemma_squeeze4_avx2`
+
+Created four new files mirroring the arm64 chain:
+
+1. `EquivImplSpec.Keccakf.Avx2.fst` — defines `avx2_lane =
+   get_lane_u64x4`, `lc_avx2`, derives `lemma_keccakf1600_avx2`.
+   **All 7 lane-correctness `avx2_lc_*` lemmas are PROVED** (real
+   `let`s, not admits) by composing per-u64-lane SMTPats on AVX2
+   intrinsics.  One small admit:
+   `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num
+   `impl_u64__rotate_left` is opaque).
+
+2. `EquivImplSpec.Sponge.Avx2.fst` — `sq_lane_avx2`,
+   `sponge_correctness` record `sc_avx2`.  Three `avx2_sc_*` bridges
+   are admitted (analogous to where arm64 SC bridges would be admitted
+   if `mm256_loadu_si256_u8` / `mm256_storeu_si256_u8` had no
+   bytewise lane ensures).
+
+3. `EquivImplSpec.Sponge.Avx2.Steps.fst` — four step lemmas
+   (`absorb_block`, `absorb_last`, `squeeze_block`, `squeeze_last`)
+   all proved by composition.
+
+4. `EquivImplSpec.Sponge.Avx2.API.fst` — `assume val
+   lemma_absorb4_avx2`, `assume val lemma_squeeze4_avx2`,
+   `lemma_keccak4_avx2` proved by composition,
+   `lemma_shake256_x4_avx2` (top-level for the AVX2 X4 hasher)
+   proved from `lemma_keccak4_avx2`.
+
+### Strategy lessons
+
+- Initial bit_vec-extensionality approach (using
+  `bit_vec_to_int_t` directly) was wrong — closing it requires a
+  bit-extensionality lemma on `int_t` that doesn't exist in
+  `Rust_primitives.BitVectors`.  Pivoted to **mirror the arm64
+  strategy exactly**: opaque `vec256_as_u64x4 : bit_vec 256 → t_Array
+  u64 (sz 4)` + `get_lane_u64x4` + per-u64-lane `lemma_mm256_*_u64x4`
+  SMTPats on the AVX2 intrinsics.  The per-lane lemmas are admitted
+  in `Libcrux_intrinsics.Avx2_extract.fst` (appended via
+  `hax.sh::patch_fstar_extractions`), exactly the same trust boundary
+  arm64 uses where the `e_v*q_u64` intrinsic ensures clauses are
+  trusted.
+- Re-bracketed `_veor5q_u64` left-associatively in the Rust source
+  (((a^b)^c)^d)^e to match the spec shape — avoids needing
+  associativity/commutativity of `^.` on u64 in `avx2_lc_xor5`.
+- Added bit_vec definitions to `BitVec.Intrinsics.fsti` for the 5
+  newly-imported AVX2 ops (`mm256_xor_si256`, `mm256_or_si256`,
+  `mm256_andnot_si256`, `mm256_slli_epi64`, `mm256_set1_epi64x`).
+  These don't directly serve the lane-correctness proofs (those go
+  through the per-u64-lane SMTPats) but make the operations
+  semantically meaningful.
+- Added `vec256_as_u64x4` + `get_lane_u64x4` to `avx2_extract.rs`'s
+  `Vec256` interface via `hax::fstar::replace`.
+
+### Next steps
+
+1. Close the 6 `lemma_mm256_*_u64x4` admits in
+   `Libcrux_intrinsics.Avx2_extract.fst`.  The bit_vec
+   definitions + the `vec256_as_u64x4` opaque val give enough
+   structure; just need a bit-extensionality lemma on `t_Array u64
+   (sz 4)`.  Same task that arm64 has already done via its NEON
+   intrinsic ensures clauses (which are themselves trusted).
+2. Close `lemma_shl_xor_shr_is_rotate_left` by adding a
+   spec lemma to `Core_models.Num` saying
+   `impl_u64__rotate_left x n == (x <<! cast n) ^. (x >>! cast (64-n))`
+   for `0 < n < 64`.
+3. Close the three `avx2_sc_*` admits in `EquivImplSpec.Sponge.Avx2`
+   by adding bytewise lane ensures to `mm256_loadu_si256_u8` and
+   `mm256_storeu_si256_u8` (mirror the arm64 stubs' ensures).
+4. Close `lemma_absorb4_avx2` via inline loop-invariant proof on
+   `Generic_keccak.Simd256.absorb4` (mirrors `Simd128.absorb2`,
+   already done).
+5. Close `lemma_squeeze4_avx2` — same pattern, harder (analogous to
+   `lemma_squeeze2_arm64` which is *also* still admitted on arm64).
+
 ## 2026-04-25 (afternoon): AVX2 extraction enabled (mirrors arm64)
 
 Extraction of the SHA-3 AVX2 backend (`crates/algorithms/sha3/src/simd/avx2.rs`,
