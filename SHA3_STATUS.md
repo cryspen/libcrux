@@ -3,7 +3,45 @@
 Quick status pointer. Full details in
 `crates/algorithms/sha3/proofs/fstar/equivalence/HANDOFF.md`.
 
-## Current focus (2026-04-25 evening)
+## Current focus (2026-04-25 night, late)
+
+**`lemma_absorb4_avx2` is now PROVED.**  The AVX2 driver-level absorb
+lemma is no longer an `assume val` — it's a real `let` discharged by
+the Rust-side ensures on `Libcrux_sha3.Generic_keccak.Simd256.absorb4`
+(proved inline via an `absorb_blocks`-based loop invariant at N=4,
+mirroring the arm64 `Simd128.absorb2` proof at N=2).  Net AVX2
+load-bearing admit count drops from 9 to 8.
+
+`absorb4` body no longer has the `hax_lib::fstar!("admit()")`.  The
+function now verifies its full per-lane equivalence ensures clause at
+`--z3rlimit 800 --split_queries always`.  Two `assert
+(slices_same_len 4 data)` hints inside the per-iteration and post-loop
+scaffolding give Z3 the bridge fact for the `lemma_absorb_block_avx2`
+preconditions.
+
+Incidental fix: `squeeze4`'s `--z3rlimit` bumped from 300 to 600 with
+`--split_queries always`, since the original was hitting timeouts on
+the loop-body `f_squeeze4` precondition (pre-existing flake unmasked
+once we removed the `absorb4` body admit and Z3 stopped short-
+circuiting the module).
+
+### Source changes (2026-04-25 night, late)
+
+- `crates/algorithms/sha3/src/generic_keccak/simd256.rs` — `absorb4`
+  gets per-lane `ensures` (4 conjuncts) + inline scaffolding (4 ×
+  `lemma_extract_lane_zero_avx2` + 4 × `lemma_absorb_blocks_base`
+  pre-loop, 4 × `lemma_absorb_block_avx2` + 4 × `lemma_absorb_blocks_tail`
+  per-iter, 4 × `lemma_absorb_last_avx2` + 4 ×
+  `lemma_absorb_rec_via_blocks` post-loop) mirroring arm64 absorb2
+  at N=4; explicit `assert (slices_same_len 4 data)` hints for Z3.
+  Body `admit()` removed.  `squeeze4` rlimit bumped to 600 with
+  `--split_queries always`.
+- `crates/algorithms/sha3/proofs/fstar/equivalence/EquivImplSpec.Sponge.Avx2.API.fst`
+  — `lemma_absorb4_avx2` flipped from `assume val` to `let _ =
+  Simd256.absorb4 rate delim data in ()`, mirroring arm64
+  `lemma_absorb2_arm64`.
+
+## Earlier focus (2026-04-25 evening)
 
 **AVX2 modules now verify without `--admit_smt_queries`.**
 The four extracted AVX2 modules — `Libcrux_sha3.Simd.Avx2`,
@@ -188,19 +226,24 @@ default `cargo hax into fstar` invocation.
 
 | # | File | Kind |
 |---|------|------|
-| 2 | `Libcrux_sha3.Generic_keccak.Simd256.fst` (`absorb4`, `keccak4` chain) | `admit()` body of `absorb4` |
-| 3 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_block` |
-| 4 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_last` |
-| 5 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `store_block` |
+| 2 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_block` |
+| 3 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_last` |
+| 4 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `store_block` |
+
+(Note: the body-level `admit()` formerly in `Simd256.absorb4` was
+removed on 2026-04-25 night, late — `absorb4` now verifies its
+per-lane equivalence ensures inline.)
 
 ### AVX2 — equivalence-chain admits (replicating arm64 chain)
 
 | # | File | Kind |
 |---|------|------|
-| 6..11 | `Libcrux_intrinsics.Avx2_extract.fst` | 6 × `admit()` on per-u64-lane SMTPat lemmas: `lemma_mm256_{xor,or,andnot,slli_epi64,srli_epi64,set1_epi64x}_u64x4` |
-| 12 | `EquivImplSpec.Keccakf.Avx2.fst` | `admit()` on `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num.impl_u64__rotate_left is opaque) |
-| 13 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_absorb4_avx2` |
-| 14 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_squeeze4_avx2` |
+| 5..10 | `Libcrux_intrinsics.Avx2_extract.fst` | 6 × `admit()` on per-u64-lane SMTPat lemmas: `lemma_mm256_{xor,or,andnot,slli_epi64,srli_epi64,set1_epi64x}_u64x4` |
+| 11 | `EquivImplSpec.Keccakf.Avx2.fst` | `admit()` on `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num.impl_u64__rotate_left is opaque) |
+| 12 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_squeeze4_avx2` |
+
+(`lemma_absorb4_avx2` was an `assume val` here — now a real `let`
+discharged from the Rust ensures on `Simd256.absorb4`.)
 
 **ALL SEVEN lane-correctness lemmas (`avx2_lc_zero`, `avx2_lc_xor5`,
 `avx2_lc_rotate_left1_and_xor`, `avx2_lc_xor_and_rotate`,

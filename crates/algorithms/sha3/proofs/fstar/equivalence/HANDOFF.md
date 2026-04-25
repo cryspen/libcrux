@@ -4,6 +4,75 @@ Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
 
+## 2026-04-25 (night, late): lemma_absorb4_avx2 PROVED
+
+Mirrored the arm64 `lemma_absorb2_arm64` proof at N=4: `lemma_absorb4_avx2`
+is now a real `let` discharged from the Rust-side ensures on
+`Libcrux_sha3.Generic_keccak.Simd256.absorb4`.  Net AVX2 admit count drops
+from 9 to 8.
+
+### Changes
+
+1. `crates/algorithms/sha3/src/generic_keccak/simd256.rs::absorb4`
+   - Added per-lane `#[hax_lib::ensures]` (4 conjuncts, one per lane).
+   - Added `--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always`.
+   - Added inline scaffolding mirroring arm64 absorb2 at N=4:
+     - Pre-loop: `lemma_extract_lane_zero_avx2` × 4 + `lemma_absorb_blocks_base` × 4.
+     - Loop invariant: 4-lane `absorb_blocks` equality + `i <= data_blocks`.
+     - Per-iteration: `lemma_absorb_block_avx2` × 4 + `lemma_absorb_blocks_tail` × 4,
+       gated by `assert (slices_same_len 4 data)`.
+     - Post-loop: `lemma_absorb_last_avx2` × 4 + `lemma_absorb_rec_via_blocks` × 4,
+       same `slices_same_len` assert.
+   - Body `hax_lib::fstar!("admit()")` removed.
+2. `crates/algorithms/sha3/src/generic_keccak/simd256.rs::squeeze4`
+   - Bumped `#[hax_lib::fstar::options]` from `--z3rlimit 300` to
+     `--z3rlimit 600 --split_queries always` (pre-existing flake unmasked
+     once absorb4 stopped admitting; loop-body `f_squeeze4` precondition
+     was timing out at rlimit 300).
+3. `proofs/fstar/equivalence/EquivImplSpec.Sponge.Avx2.API.fst`
+   - `assume val lemma_absorb4_avx2` → `let lemma_absorb4_avx2 ... =
+     let _ = Libcrux_sha3.Generic_keccak.Simd256.absorb4 rate delim data
+     in ()`.
+
+### Z3 strategy notes
+
+The N=4 fan-out (4× lemma calls per lane bunched in one `fstar!` block)
+initially tripped Z3 on the lane-1 and lane-2 `lemma_absorb_block_avx2`
+preconditions at queries 286/290 (timeout at rlimit 800).  Adding an
+explicit `assert (slices_same_len 4 data)` at the head of each bunched
+block resolved both — Z3 needed the bridge fact made explicit rather
+than rederiving it via SMT-pattern dispatch on the original
+function-precondition pair.
+
+### Verification
+
+- `Libcrux_sha3.Generic_keccak.Simd256.fst.checked` builds clean (no
+  failed queries on `absorb4`; the F* split-retry mechanism handles
+  one slow `squeeze4` query).
+- `EquivImplSpec.Sponge.Avx2.API.fst.checked` builds in ~4 s.
+- `make verify` under `proofs/fstar/equivalence/` is GREEN.
+
+### Remaining AVX2 admits (8)
+
+| File | Kind |
+|---|---|
+| `Libcrux_intrinsics.Avx2_extract.fst` | 6 × per-u64-lane SMTPat lemma admits (intrinsic-level trust boundary, same as arm64) |
+| `EquivImplSpec.Keccakf.Avx2.fst` | 1 × `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num opacity) |
+| `EquivImplSpec.Sponge.Avx2.API.fst` | 1 × driver-level `assume val lemma_squeeze4_avx2` |
+
+Plus 3 body-level `admit()`s in `Libcrux_sha3.Simd.Avx2.fst` for
+`load_block` / `load_last` / `store_block` (heavy bit-twiddling that
+mirrors arm64's body admits).
+
+### Next steps
+
+1. Close `lemma_squeeze4_avx2` — same mirror-the-arm64-pattern strategy,
+   harder (analogous to `lemma_squeeze2_arm64` which is *also* still
+   admitted on arm64).  See the 2026-04-25 squeeze2-pivot post-mortem
+   below for the BoxBool/BoxInt cascade you'll likely hit at N=4.
+2. Close `lemma_shl_xor_shr_is_rotate_left` by adding
+   `Core_models.Num.lemma_impl_u64__rotate_left_via_shifts` upstream.
+
 ## 2026-04-25 (night): All 3 avx2_sc_* bridge admits closed
 
 Mirrored the arm64 sc_* bridge proof pattern at N=4.  All three

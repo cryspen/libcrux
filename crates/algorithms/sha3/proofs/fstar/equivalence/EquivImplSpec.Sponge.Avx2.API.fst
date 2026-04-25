@@ -52,12 +52,11 @@ module KA = EquivImplSpec.Keccakf.Avx2
     whose lane-[l] extraction equals the scalar
     [Hacspec_sha3.Sponge.absorb] applied to [data[l]].
 
-    The Arm64 analogue [lemma_absorb2_arm64] is discharged by the
-    Rust-side ensures on [Simd128.absorb2] (proved inline via an
-    [absorb_blocks]-based loop invariant at N=2).  The AVX2
-    [Simd256.absorb4] body is admitted at the Rust level
-    ([hax_lib::fstar!("admit()")]) so this lemma is an [assume val]. *)
-assume val lemma_absorb4_avx2
+    The per-lane equivalence is discharged directly by the Rust-side
+    ensures on [Libcrux_sha3.Generic_keccak.Simd256.absorb4] (proved
+    inline via an [absorb_blocks]-based loop invariant at N=4,
+    mirroring the Arm64 [Simd128.absorb2] proof). *)
+let lemma_absorb4_avx2
       (rate: usize) (delim: u8)
       (data: t_Array (t_Slice u8) (mk_usize 4))
       (l: nat{l < 4})
@@ -71,6 +70,8 @@ assume val lemma_absorb4_avx2
           s4.Libcrux_sha3.Generic_keccak.f_st l
         ==
         Hacspec_sha3.Sponge.absorb rate delim (data.[ mk_usize l ])))
+  = let _ = Libcrux_sha3.Generic_keccak.Simd256.absorb4 rate delim data in
+    ()
 
 
 (** Driver-level squeeze4 at N=4.  For an arbitrary four-lane state
