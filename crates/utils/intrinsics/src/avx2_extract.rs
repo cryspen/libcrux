@@ -4,6 +4,9 @@
 #![allow(unused_variables, non_camel_case_types, dead_code)]
 
 #[cfg(hax)]
+use hax_lib::prop::*;
+
+#[cfg(hax)]
 #[derive(Clone, Copy, Debug)]
 #[hax_lib::fstar::replace(
     interface,
@@ -37,6 +40,21 @@ pub type Vec128 = u8;
 pub type Vec256Float = u8;
 
 #[inline(always)]
+#[hax_lib::lean::replace_body("sorry")]
+#[hax_lib::requires(lane < 4)]
+#[hax_lib::ensures(|result| fstar!("$result == get_lane_u64x4 $vec (v $lane)"))]
+pub fn get_lane_u64(vec: Vec256, lane: usize) -> u64 {
+    unimplemented!()
+}
+
+#[inline(always)]
+#[hax_lib::requires(output.len() == 32)]
+#[hax_lib::ensures(|()| (future(output).len() == output.len()).to_prop()
+    & hax_lib::forall(|i: usize|
+        if i < 4 {
+            u64::from_le_bytes(future(output)[i*8..i*8+8].try_into().unwrap())
+              == get_lane_u64(vector, i)
+        } else { true }))]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
     unimplemented!()
@@ -84,6 +102,12 @@ pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(input.len() == 32)]
+#[hax_lib::ensures(|result| hax_lib::forall(|i: usize|
+    if i < 4 {
+        get_lane_u64(result, i)
+          == u64::from_le_bytes(input[i*8..i*8+8].try_into().unwrap())
+    } else { true }))]
 pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
     unimplemented!()

@@ -199,34 +199,40 @@ default `cargo hax into fstar` invocation.
 |---|------|------|
 | 6..11 | `Libcrux_intrinsics.Avx2_extract.fst` | 6 × `admit()` on per-u64-lane SMTPat lemmas: `lemma_mm256_{xor,or,andnot,slli_epi64,srli_epi64,set1_epi64x}_u64x4` |
 | 12 | `EquivImplSpec.Keccakf.Avx2.fst` | `admit()` on `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num.impl_u64__rotate_left is opaque) |
-| 13 | `EquivImplSpec.Sponge.Avx2.fst` | `admit()` on `avx2_sc_load_block` |
-| 14 | `EquivImplSpec.Sponge.Avx2.fst` | `admit()` on `avx2_sc_load_last` |
-| 15 | `EquivImplSpec.Sponge.Avx2.fst` | `admit()` on `avx2_sc_store_block` |
-| 16 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_absorb4_avx2` |
-| 17 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_squeeze4_avx2` |
+| 13 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_absorb4_avx2` |
+| 14 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_squeeze4_avx2` |
 
 **ALL SEVEN lane-correctness lemmas (`avx2_lc_zero`, `avx2_lc_xor5`,
 `avx2_lc_rotate_left1_and_xor`, `avx2_lc_xor_and_rotate`,
-`avx2_lc_and_not_xor`, `avx2_lc_xor_constant`, `avx2_lc_xor`) are now
+`avx2_lc_and_not_xor`, `avx2_lc_xor_constant`, `avx2_lc_xor`) are
 PROVED** (by composing the SMTPat'd `lemma_mm256_*_u64x4` admits, which
 themselves mirror how arm64's per-lane intrinsic ensures are *also*
-admitted in `Libcrux_intrinsics.Arm64_extract`).  This is the same
-trust boundary as arm64.  The `_veor5q_u64` Rust source was
-re-bracketed left-associatively (((a^b)^c)^d)^e to match the spec
-shape — same number of XOR ops, no perf regression.
+admitted in `Libcrux_intrinsics.Arm64_extract`).  Same trust boundary
+as arm64.  The `_veor5q_u64` Rust source was re-bracketed
+left-associatively (((a^b)^c)^d)^e to match the spec shape — same
+number of XOR ops, no perf regression.
 
-The three `avx2_sc_*` admits (#13–#15) correspond to the proved
-`arm64_sc_*` lemmas and would close once per-u64-lane ensures
-on `mm256_loadu_si256_u8` / `mm256_storeu_si256_u8` are added to
-`Libcrux_intrinsics.Avx2_extract` (mirroring the arm64 stubs'
-ensures).  The two API-level `assume val`s (#16, #17) are the AVX2
-analogues of `lemma_absorb2_arm64` (recently proved on arm64) and
-`lemma_squeeze2_arm64` (still admitted on arm64); discharging
-them requires inline loop-invariant proofs on
-`Generic_keccak.Simd256.{absorb4, squeeze4}` analogous to the
-ones on `Simd128.{absorb2, squeeze2}`.
+**ALL THREE `avx2_sc_*` bridge lemmas (`avx2_sc_load_block`,
+`avx2_sc_load_last`, `avx2_sc_store_block`) are now PROVED** —
+they mirror the proved `arm64_sc_*` lemmas at N=4, threading
+`avx2_lane = get_lane_u64x4` through per-u64-lane ensures clauses
+on `Simd.Avx2.{load_block, load_last, store_block}` (added to the
+Rust source mirroring arm64) and ultimately bottoming out on
+per-u64-lane ensures on `mm256_loadu_si256_u8` /
+`mm256_storeu_si256_u8` (added to `avx2_extract.rs`, mirroring
+arm64's NEON load/store stubs).  Source change: `Simd.Avx2.load_last`
+loop unrolled to expose `buffer0..buffer3` separately (same
+compiled code as the previous `for i in 0..4 { buffers[i]... }`
+form) so the F* bridge can reconstruct each buffer in scope.
 
-`lemma_keccak4_avx2` is **proved by composition** of #16 and #17
+The two API-level `assume val`s (#13, #14) are the AVX2 analogues of
+`lemma_absorb2_arm64` (recently proved on arm64) and
+`lemma_squeeze2_arm64` (still admitted on arm64); discharging them
+requires inline loop-invariant proofs on
+`Generic_keccak.Simd256.{absorb4, squeeze4}` analogous to the ones on
+`Simd128.{absorb2, squeeze2}`.
+
+`lemma_keccak4_avx2` is **proved by composition** of #13 and #14
 (mirrors how `lemma_keccak2_arm64` composes the two arm64
 driver-lemmas).  `lemma_shake256_x4_avx2` (top-level hasher
 theorem for `Libcrux_sha3.Avx2.X4.shake256`) is then

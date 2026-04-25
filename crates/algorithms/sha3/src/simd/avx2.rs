@@ -57,12 +57,36 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(valid_rate(RATE)
             && blocks[0].len() == blocks[1].len()
             && blocks[0].len() == blocks[2].len()
             && blocks[0].len() == blocks[3].len()
             && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int()
 )]
+#[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
+    if i < 25 {
+        if i < RATE / 8 {
+            get_lane_u64(future(state)[i], 0)
+                == get_lane_u64(state[i], 0)
+                   ^ u64::from_le_bytes(blocks[0][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+            && get_lane_u64(future(state)[i], 1)
+                == get_lane_u64(state[i], 1)
+                   ^ u64::from_le_bytes(blocks[1][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+            && get_lane_u64(future(state)[i], 2)
+                == get_lane_u64(state[i], 2)
+                   ^ u64::from_le_bytes(blocks[2][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+            && get_lane_u64(future(state)[i], 3)
+                == get_lane_u64(state[i], 3)
+                   ^ u64::from_le_bytes(blocks[3][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+        } else {
+            get_lane_u64(future(state)[i], 0) == get_lane_u64(state[i], 0)
+            && get_lane_u64(future(state)[i], 1) == get_lane_u64(state[i], 1)
+            && get_lane_u64(future(state)[i], 2) == get_lane_u64(state[i], 2)
+            && get_lane_u64(future(state)[i], 3) == get_lane_u64(state[i], 3)
+        }
+    } else { true }
+))]
 pub(crate) fn load_block<const RATE: usize>(
     state: &mut [Vec256; 25],
     blocks: &[&[u8]; 4],
@@ -141,27 +165,35 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     start: usize,
     len: usize,
 ) {
-    hax_lib::fstar!("admit()");
-    let mut buffers = [[0u8; RATE]; 4];
-    for i in 0..4 {
-        buffers[i][0..len].copy_from_slice(&blocks[i][start..start + len]);
-        buffers[i][len] = DELIMITER;
-        buffers[i][RATE - 1] |= 0x80;
-    }
+    // Loop unrolled to mirror simd/arm64.rs::load_last so the F*
+    // bridge [lemma_load_last_eq_xor_block_into_state_avx2] can
+    // reconstruct each buffer in scope without reasoning about a
+    // fold_range over [buffers].
+    let mut buffer0 = [0u8; RATE];
+    buffer0[0..len].copy_from_slice(&blocks[0][start..start + len]);
+    buffer0[len] = DELIMITER;
+    buffer0[RATE - 1] |= 0x80;
 
-    load_block::<RATE>(
-        state,
-        &[
-            &buffers[0] as &[u8],
-            &buffers[1] as &[u8],
-            &buffers[2] as &[u8],
-            &buffers[3] as &[u8],
-        ],
-        0,
-    );
+    let mut buffer1 = [0u8; RATE];
+    buffer1[0..len].copy_from_slice(&blocks[1][start..start + len]);
+    buffer1[len] = DELIMITER;
+    buffer1[RATE - 1] |= 0x80;
+
+    let mut buffer2 = [0u8; RATE];
+    buffer2[0..len].copy_from_slice(&blocks[2][start..start + len]);
+    buffer2[len] = DELIMITER;
+    buffer2[RATE - 1] |= 0x80;
+
+    let mut buffer3 = [0u8; RATE];
+    buffer3[0..len].copy_from_slice(&blocks[3][start..start + len]);
+    buffer3[len] = DELIMITER;
+    buffer3[RATE - 1] |= 0x80;
+
+    load_block::<RATE>(state, &[&buffer0, &buffer1, &buffer2, &buffer3], 0);
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(valid_rate(RATE)
     && len <= RATE
     && start.to_int() + len.to_int() <= out0.len().to_int()
@@ -173,6 +205,42 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     & (future(out1).len() == out1.len()).to_prop()
     & (future(out2).len() == out2.len()).to_prop()
     & (future(out3).len() == out3.len()).to_prop()
+    & hax_lib::forall(|i: usize| if i < out0.len() {
+        if i < start {
+            out0[i] == future(out0)[i]
+        } else if i < start + len {
+            future(out0)[i] == get_lane_u64(s[(i - start) / 8], 0).to_le_bytes()[(i - start) % 8]
+        } else {
+            out0[i] == future(out0)[i]
+        }
+    } else { true })
+    & hax_lib::forall(|i: usize| if i < out1.len() {
+        if i < start {
+            out1[i] == future(out1)[i]
+        } else if i < start + len {
+            future(out1)[i] == get_lane_u64(s[(i - start) / 8], 1).to_le_bytes()[(i - start) % 8]
+        } else {
+            out1[i] == future(out1)[i]
+        }
+    } else { true })
+    & hax_lib::forall(|i: usize| if i < out2.len() {
+        if i < start {
+            out2[i] == future(out2)[i]
+        } else if i < start + len {
+            future(out2)[i] == get_lane_u64(s[(i - start) / 8], 2).to_le_bytes()[(i - start) % 8]
+        } else {
+            out2[i] == future(out2)[i]
+        }
+    } else { true })
+    & hax_lib::forall(|i: usize| if i < out3.len() {
+        if i < start {
+            out3[i] == future(out3)[i]
+        } else if i < start + len {
+            future(out3)[i] == get_lane_u64(s[(i - start) / 8], 3).to_le_bytes()[(i - start) % 8]
+        } else {
+            out3[i] == future(out3)[i]
+        }
+    } else { true })
 )]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[Vec256; 25],

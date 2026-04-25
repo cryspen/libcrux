@@ -4,6 +4,73 @@ Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
 
+## 2026-04-25 (night): All 3 avx2_sc_* bridge admits closed
+
+Mirrored the arm64 sc_* bridge proof pattern at N=4.  All three
+`avx2_sc_load_block`, `avx2_sc_load_last`, `avx2_sc_store_block`
+are now real `let`s (no `admit ()`s).  Net AVX2 admit count drops
+from 17 to 9.
+
+### Changes
+
+1. `crates/utils/intrinsics/src/avx2_extract.rs`
+   - Added `get_lane_u64(vec: Vec256, lane: usize) -> u64` (Rust
+     stub) with ensures `result == get_lane_u64x4 vec (v lane)`,
+     mirroring arm64's `get_lane_u64` over `t_e_uint64x2_t`.
+   - Added `vec256_as_u64x4` opaque val + `get_lane_u64x4` helper to
+     the `Vec256` interface (via fstar::replace).
+   - Added per-u64-lane ensures to `mm256_loadu_si256_u8` and
+     `mm256_storeu_si256_u8`.
+2. `crates/utils/intrinsics/src/avx2.rs` — added matching
+   `get_lane_u64` Rust impl (used by Rust callers that need lane
+   extraction).
+3. `crates/algorithms/sha3/src/simd/avx2.rs`
+   - Added per-u64-lane `#[hax_lib::ensures(...)]` to `load_block`
+     and `store_block` mirroring the arm64 form (4 lanes vs 2).
+   - Unrolled `load_last`'s buffer loop into `buffer0..buffer3`
+     (same compiled code as the previous `for i in 0..4 {
+     buffers[i]... }`; needed so the F* bridge can reconstruct
+     each buffer in scope).
+4. `crates/algorithms/sha3/proofs/fstar/equivalence/EquivImplSpec.Sponge.Avx2.fst`
+   - Added bridge lemmas:
+     `lemma_load_block_eq_xor_block_into_state_avx2`,
+     `lemma_load_last_eq_xor_block_into_state_avx2`,
+     `lemma_sq_lane_avx2_eq_squeeze_state` — all PROVED, mirroring
+     the arm64 versions at N=4.
+   - `avx2_sc_load_block`, `avx2_sc_load_last`, `avx2_sc_store_block`
+     now reduce to one-line calls of the bridge lemmas.
+   - Reuses `EquivImplSpec.Sponge.Arm64.lemma_load_last_buffer_eq_padded_arm64`
+     (the per-buffer padded equality is generic — not arm64-specific).
+
+### Verification
+
+`make verify` GREEN under `proofs/fstar/equivalence/` (exit 0).
+`lemma_load_last_eq_xor_block_into_state_avx2` is the costly one
+at `--z3rlimit 600`, ~10 minutes wall-clock.
+
+### Remaining AVX2 admits (9)
+
+| File | Kind |
+|---|---|
+| `Libcrux_intrinsics.Avx2_extract.fst` | 6 × per-u64-lane SMTPat lemma admits (intrinsic-level trust boundary, same as arm64) |
+| `EquivImplSpec.Keccakf.Avx2.fst` | 1 × `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num opacity) |
+| `EquivImplSpec.Sponge.Avx2.API.fst` | 2 × driver-level `assume val`s: `lemma_absorb4_avx2`, `lemma_squeeze4_avx2` |
+
+Plus 4 body-level `admit()`s in `Libcrux_sha3.Simd.Avx2.fst` and
+`Libcrux_sha3.Generic_keccak.Simd256.fst` for the heavy bit-twiddling
+(load_block, load_last, store_block bodies; absorb4 body) — these
+mirror arm64's body-level admits.
+
+### Next steps
+
+1. Close `lemma_absorb4_avx2` via inline loop-invariant proof on
+   `Generic_keccak.Simd256.absorb4` (mirrors `Simd128.absorb2`,
+   already done on arm64).
+2. Close `lemma_squeeze4_avx2` — same pattern, harder (analogous
+   to `lemma_squeeze2_arm64` which is *also* still admitted on arm64).
+3. Close `lemma_shl_xor_shr_is_rotate_left` by adding
+   `Core_models.Num.lemma_impl_u64__rotate_left_via_shifts` upstream.
+
 ## 2026-04-25 (evening, late): AVX2 verification + equivalence chain
 
 Two layers landed (commit `d9dd345ef`):
