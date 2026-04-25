@@ -24,7 +24,18 @@ away. Each migration replaces the reference with the hacspec counterpart
 ## Session resume (continue from another machine)
 
 **Branch**: `trait-poststrengthen` on the libcrux-trait-strengthen worktree.
-**Tip**: `0f936c5e5` (C4e done with admits).
+**Tip**: `bd54105b3` (C4f WIP — primitive bodies + wrapper rewires landed; verification in progress this session). Prior green tip: `0f936c5e5` (C4e done with admits).
+
+**Session note (2026-04-25)**: WIP commit's `panic_free` rewrite of the
+`ntt_multiply` wrapper dropped the `reveal_opaque is_i16b_array_opaque
+3328` call needed by the underlying `Ntt.ntt_multiply` precondition.
+Re-added in this session as a single one-liner at top of the wrapper
+body. Re-verifying. WIP also added `--z3refresh` to the `impl_1` push-options;
+this slowed Vector.Portable.fst from ~217 s (C4e baseline) to ~37 min on
+this machine. If subsequent runs confirm no SMT flakiness without it,
+remove. AVX2 `compress_*` / `decompress_*` wrappers are still
+bound-only-post and will fail against the strengthened trait — separate
+C4′ task.
 
 **What's green right now** (tip commit):
 - `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst` — verifies standalone (~7 s).

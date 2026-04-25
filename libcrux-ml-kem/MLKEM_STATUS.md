@@ -105,6 +105,41 @@ File: `Hacspec_ml_kem.Commute.Chunk.fst` (lines 768-810).
 S1a: strengthen `compress_message_coefficient` post with integer form,
 try to prove.
 
+## Verification log (post-WIP `bd54105b3`, this session)
+
+- `Libcrux_ml_kem.Vector.Portable.Compress.fst` — **PASS** (~73 s).
+  All 4 primitive bodies (`compress_message_coefficient`,
+  `compress_ciphertext_coefficient`, `decompress_1_`,
+  `decompress_ciphertext_coefficient`) pass with `panic_free` +
+  hacspec-form posts.
+- `Libcrux_ml_kem.Vector.Portable.fst` — **FAILED** (37 min, 1 site, 10
+  sub-query reports under `--split_queries always`):
+  `ntt_multiply` wrapper's call to `Ntt.ntt_multiply` couldn't discharge
+  `is_i16b_array 3328 lhs.f_elements` from the wrapper's
+  `is_i16b_array_opaque 3328` pre.
+  Root cause: WIP commit replaced the C4e wrapper body (reveal_opaque →
+  proof → admit) with `panic_free` only — but `panic_free` skips the
+  wrapper's *post* check, not subroutine-call *pre* checks.
+  **Fix this session:** put the single `reveal_opaque
+  is_i16b_array_opaque 3328` back at the top of the wrapper body.
+  Re-verifying now.
+- `Hacspec_ml_kem.Commute.Chunk.fst` — not yet re-checked this session
+  (no relevant changes since C4e tip; should still verify in ~3-7 s).
+
+## Side notes
+
+- `Spec.Utils.fsti`: `neg_i16` made total via guard on `i16::MIN`
+  (overflow case sent to `mk_i16 0`). Lets the helper appear in trait
+  posts without propagating an i16-MIN refinement.
+- `--z3refresh` was added to `impl_1` push-options in WIP commit. Cost:
+  Vector.Portable.fst went from ~217 s (C4e baseline) to ~37 min in
+  this session. Consider removing if SMT flakiness is not actually
+  observed; revisit after re-verify confirms the fix above.
+- AVX2 `compress_*` / `decompress_*` wrappers (`src/vector/avx2.rs:405-451`)
+  still use the old bound-only posts — they will fail against the
+  strengthened trait posts (citing `compress_post_N`/`decompress_post_N`).
+  This is the C4′ AVX2 mirror task; tracked but not in C4f scope.
+
 ## Pointer to full handoff
 
 See `proofs/commutativity-handoff.md`.

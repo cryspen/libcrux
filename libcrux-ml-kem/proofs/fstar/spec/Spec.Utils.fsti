@@ -687,8 +687,13 @@ unfold let ntt_multiply_spec
   ((v oj % 3329) == (((v ai * v bj + v aj * v bi) * 169) % 3329))
 
 (* i16 negation — kept as a named helper because inline `mk_i16 0 -! x`
-   doesn't survive hax's `fstar_prop_expr!` parser. *)
-unfold let neg_i16 (x: i16) : i16 = mk_i16 0 -! x
+   doesn't survive hax's `fstar_prop_expr!` parser.  Made total by
+   guarding `i16::MIN` (whose negation overflows i16); every actual
+   caller passes a zeta or a bounded value, so the guard's `else`
+   branch is unreachable in practice but lets the helper appear in
+   trait posts without propagating a refinement. *)
+unfold let neg_i16 (x: i16) : i16 =
+  if v x > - pow2 15 then mk_i16 0 -! x else mk_i16 0
 
 (* Opaque wrapper bundling the 8 `ntt_multiply_spec` residues — one per
    binomial pair — so the trait post can cite them as a single conjunct.

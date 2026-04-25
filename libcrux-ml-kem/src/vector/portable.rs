@@ -702,6 +702,15 @@ impl Operations for PortableVector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
+        // Reveal `is_i16b_array_opaque 3328` so the call to `Ntt.ntt_multiply`,
+        // which states its pre as `Spec.Utils.is_i16b_array 3328 …` (non-opaque),
+        // can be discharged from the wrapper's opaque-form pre.  `panic_free`
+        // skips post-condition verification but still requires precondition
+        // discharge on subroutine calls.
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
+        );
         ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
     }
 
