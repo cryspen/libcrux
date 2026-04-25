@@ -257,3 +257,47 @@ class t_Squeeze2 (v_Self: Type0) (v_T: Type0) = {
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let _ = fun (v_Self:Type0) (v_T:Type0) {|i: t_Squeeze2 v_Self v_T|} -> i._super_i0
+
+/// Trait to squeeze bytes out of the state.
+/// Note that this is implemented for each platform (1, 2, 4) because hax can't
+/// handle the mutability required for a generic implementation.
+/// Store blocks `N = 4`
+class t_Squeeze4 (v_Self: Type0) (v_T: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_i0:t_KeccakItem v_T (mk_usize 4);
+  f_squeeze4_pre:
+      v_RATE: usize ->
+      v_Self ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      usize ->
+      usize
+    -> Type0;
+  f_squeeze4_post:
+      v_RATE: usize ->
+      v_Self ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      t_Slice u8 ->
+      usize ->
+      usize ->
+      (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+    -> Type0;
+  f_squeeze4:
+      v_RATE: usize ->
+      x0: v_Self ->
+      x1: t_Slice u8 ->
+      x2: t_Slice u8 ->
+      x3: t_Slice u8 ->
+      x4: t_Slice u8 ->
+      x5: usize ->
+      x6: usize
+    -> Prims.Pure (t_Slice u8 & t_Slice u8 & t_Slice u8 & t_Slice u8)
+        (f_squeeze4_pre v_RATE x0 x1 x2 x3 x4 x5 x6)
+        (fun result -> f_squeeze4_post v_RATE x0 x1 x2 x3 x4 x5 x6 result)
+}
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let _ = fun (v_Self:Type0) (v_T:Type0) {|i: t_Squeeze4 v_Self v_T|} -> i._super_i0

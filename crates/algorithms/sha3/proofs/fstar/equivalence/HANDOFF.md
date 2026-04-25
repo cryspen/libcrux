@@ -1,8 +1,207 @@
 # SHA-3 equivalence proof — session handoff
 
-Date: 2026-04-24 (appended to the 2026-04-23 / 2026-04-21 docs below)
+Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
+
+## 2026-04-25 (afternoon): AVX2 extraction enabled (mirrors arm64)
+
+Extraction of the SHA-3 AVX2 backend (`crates/algorithms/sha3/src/simd/avx2.rs`,
+`avx2.rs::x4`, and `generic_keccak/simd256.rs`) is now wired into `hax.sh`,
+mirroring the arm64 plumbing.  Four new modules emit cleanly:
+
+- `Libcrux_sha3.Simd.Avx2`              (KeccakItem / Absorb / Squeeze4 instances)
+- `Libcrux_sha3.Generic_keccak.Simd256` (4-lane keccak4)
+- `Libcrux_sha3.Avx2.X4`                (top-level shake256_x4)
+- `Libcrux_sha3.Avx2.X4.Incremental`    (4-lane incremental API)
+
+All four typecheck under `--admit_smt_queries true` when invoked directly
+(`fstar.exe ...`).  No equivalence proofs yet — that is the next step,
+mirroring the arm64 path under `EquivImplSpec.*.Arm64.*`.
+
+### Plumbing changes
+
+1. `hax.sh::extract_all` exports `RUSTFLAGS="--cfg pre_core_models"` so
+   the `libcrux-intrinsics` crate emits the `avx2_extract.rs` stub
+   (bit_vec 256 / 128) instead of routing through the heavier
+   `core_models::arch::x86::*` (Bitvec/Funarr) chain.  This mirrors the
+   way `arm64_extract.rs` is the source for arm64 — bit_vec stubs all
+   the way down, no Funarr dependency.
+2. `hax.sh` extraction now passes `-C --features simd128,simd256`
+   (intrinsics + sha3) and drops the `-i "-**::avx2::**"` /
+   `-i "-**::simd256::**"` exclusions.  Only `neon::x2::**` remains
+   excluded.
+3. `patch_fstar_extractions` adds an `_super_i0 = …solve;` line to the
+   AVX2 `Squeeze4` instance, identical to the arm64 `Squeeze2` patch.
+4. `proofs/fstar/extraction/Makefile` adds `../stubs` to the include
+   path.
+5. New `proofs/fstar/stubs/Spec.Utils.fsti` + `.fst` provide a tiny
+   stub for the four `Spec.Utils` symbols (`create`, `create16`,
+   `map2`, `map_array`, plus `mul_mod`) that `Avx2_extract.fsti` cites
+   in `ensures`/lemmas.  The real `Spec.Utils` lives under
+   `libcrux-ml-kem/proofs/fstar/spec/`, which we do not want to depend
+   on from sha3 — and it currently references a `Core_models` symbol
+   that does not exist in the version we extract.
+
+### Outstanding: full-tree `make` is flaky on F* segfaults
+
+`bash hax.sh prove --admit` from `crates/algorithms/sha3` randomly
+segfaults `fstar.exe` on different files (Tactics.Utils, BitVec.Equality,
+Hax_lib.Int, EquivImplSpec.Keccakf.Generic, etc.) when the cache is
+cold or partially-populated.  Running F* manually on each new AVX2
+module succeeds (`EXIT: 0`).  Suspect a parallelism/cache interaction
+in the F* harness rather than a problem in the extracted modules.
+**Workaround:** manual per-module `fstar.exe ... --admit_smt_queries
+true <module>.fst` works.  See `/tmp/avx2_alone.log` and
+`/tmp/avx2_all.log` for confirmation that the four AVX2 modules
+typecheck.
+
+### Next steps (mirroring arm64)
+
+1. Write `EquivImplSpec.Sponge.Avx2.fst` (mirror of
+   `EquivImplSpec.Sponge.Arm64.fst`) connecting AVX2 KeccakState back
+   to the per-lane scalar spec.
+2. Write `EquivImplSpec.Sponge.Avx2.API.fst` with `lemma_absorb4_avx2`
+   and `lemma_squeeze4_avx2`, mirroring the arm64 API lemmas.  Same
+   load-bearing-admit-vs-prove tradeoffs are likely.
+
+## 2026-04-25: squeeze2 inline-ensures pivot — Z3 cascade, reverted
+
+### TL;DR
+
+Attempted to mirror the Portable `squeeze`/`squeeze_last` inline-ensures
+pattern on Arm64 `squeeze2` to eliminate the remaining
+`lemma_squeeze2_arm64` assume val.  Structural work went in cleanly but
+Z3 hits a **400k-instantiation BoxBool/BoxInt quantifier cascade** on
+one query inside the loop-invariant re-establishment proof.  Even at
+rlimit 800 with `--z3refresh` + `--split_queries always`, the one query
+exceeds wall-clock limits.
+
+**State after this session:** reverted simd128.rs, API.fst, and
+extraction back to the 2026-04-24 state (1 load-bearing `assume val`
+at `EquivImplSpec.Sponge.Arm64.API.fst:63`).  Two new helper lemmas
+kept in `Hacspec_sha3.Sponge.Lemmas.fst` for reuse when the main proof
+is attempted again.
+
+### What was tried
+
+**Scaffolding added (and reverted on impl/API side):**
+- `simd128.rs::squeeze2` grown to ~750 lines with `squeeze_last2`
+  helper + inline loop invariant using `squeeze_blocks` per lane,
+  mirroring Portable.
+- `lemma_squeeze2_arm64` in `API.fst` collapsed to a one-liner
+  consuming the Rust ensures.
+- Two per-lane step lemmas (`lemma_squeeze_loop_step_lane_{write,tail}`)
+  in `Hacspec_sha3.Sponge.Lemmas.fst` to factor the per-iteration
+  inductive step.
+
+**Helper lemmas kept** (these verify clean, no admits, at rlimit 200/100):
+- `lemma_squeeze_state_byte_eq_in_range` — byte-level equality between
+  two `squeeze_state` calls sharing state/write range/rate but differing
+  in their pre-array.  Inside the write range both produce the same
+  byte; outside they preserve their respective pre-arrays.
+- `lemma_squeeze_state_byte_preserve` — byte-level equality between
+  `squeeze_state` and its pre-array for indices outside the write range.
+
+### Why it didn't close
+
+Using `--log_queries --z3refresh --query_stats`, one query inside
+`lemma_squeeze_loop_step_lane_write` (the forall_intro of an aux helper
+that calls `lemma_squeeze_state_byte_eq_in_range`) reliably times out
+at ~60-80s wall-clock.  `z3 smt.qi.profile=true` on the captured
+`.smt2` file shows:
+
+| quantifier         | instantiations |
+|--------------------|---------------|
+| k!43               | 406,293       |
+| projection_inverse_BoxBool_proj_0 | 121,134  |
+| k!59               | 57,268        |
+| constructor_distinct_BoxInt | 33,538 |
+
+Classic F*-encoding cascade driven by `Seq.index`-keyed patterns on
+**three overlapping forall preconditions in the lemma**:
+1. `forall k. k < i*rate /\ k < output_len ==> out_pre[k] == spec_out[k]`
+2. `forall k. i*rate <= k /\ k < output_len ==> out_pre[k] == out_initial[k]`
+3. body-eq: `out_post == body_out`  (tried as propositional `==`, tried
+   byte-wise forall — same cascade either way).
+
+The cascade is triggered when Z3 needs to prove the loop-invariant
+re-establishment and instantiates BoxBool/BoxInt repeatedly because
+the three forall bodies mention `Seq.index` of **different** arrays
+(out_pre, out_initial, out_post, body_out, spec_out, spec_out_new,
+new_spec_out).  Unlike the Portable case (only 2 arrays), the Arm64
+per-lane case has 4+ arrays live in the VC and Z3 explores
+combinatorially.
+
+Mitigations tried:
+- `--z3refresh` between queries (stops state pollution; helped other queries but not this one).
+- Split the combined lemma into write-side + tail-side (reduced to one forall postcondition each — still cascade).
+- Replace byte-wise forall with propositional `Seq.equal` (via `Seq.lemma_eq_intro`) — Z3 still internally expands to a forall with the same patterns.
+- Arithmetic preamble to pre-bind `i *! rate` and discharge the overflow check early (helped a different ~30s query, not the main one).
+- `#restart-solver` before the lemma — no effect (we already use `--z3refresh`).
+
+### Why this is genuinely harder than Portable.squeeze or absorb2
+
+- **absorb2**: no output buffer to track byte-wise; loop invariant is
+  just per-lane spec-state equality.  2 equalities total, one per lane.
+- **Portable.squeeze**: 1 lane, 2 forall conjuncts in the loop
+  invariant (write + tail).  `f_squeeze` writes one buffer from one
+  state; byte bridge is clean.
+- **Arm64.squeeze2**: 2 lanes, 4 forall conjuncts in the loop
+  invariant.  `f_squeeze2` writes BOTH out0 and out1 from ONE call, so
+  `sq_lane_arm64` adds an `if l=0 then ... else ...` branch that lives
+  in the byte-bridge hot path.  Combinatorial blowup: roughly 2× arrays
+  live, 2× quantifiers live, and the disjunction introduces case-split
+  overhead.
+
+### Paths forward (for next session)
+
+1. **Option A — `introduce forall`** with explicit case-split per
+   branch (technique #9 from smtprofiling skill), replacing the
+   `Classical.forall_intro` + SMT quantifier pattern firing entirely.
+2. **Option B — Dedicated `Steps`-level lemma per lane** that takes
+   impl-side facts (post-`keccakf1600` state, `f_squeeze2` outputs as
+   pair) and proves ONE forall conjunct, using `arm64_sc_store_block`
+   directly.  Four small lemma calls in the loop body instead of the
+   current single big lemma.
+3. **Option C — Opaque-bundle the Arm64-specific state predicates**
+   (technique #4 from smtprofiling) so Z3 stops unfolding them during
+   the VC check — worth ~30-50% reduction in the cascade.
+4. **Option D — Rewrite loop invariant using `Seq.slice`-based
+   predicate** (`out_pre[0..i*rate] == spec_out[0..i*rate]` etc.).
+   Collapses 4 forall conjuncts to 4 propositional equalities.  Needs
+   the range-check arithmetic handled carefully but cleans up the
+   cascade.
+
+### Files touched this session
+
+Kept:
+- `Hacspec_sha3.Sponge.Lemmas.fst:220-292` — two new helper lemmas
+  `lemma_squeeze_state_byte_eq_in_range` and
+  `lemma_squeeze_state_byte_preserve`.
+
+Reverted (back to 2026-04-24 state):
+- `crates/algorithms/sha3/src/generic_keccak/simd128.rs`
+- `proofs/fstar/equivalence/EquivImplSpec.Sponge.Arm64.API.fst`
+- Extracted files (re-extracted via `bash hax.sh extract`).
+
+### Load-bearing admit inventory (unchanged from 2026-04-24)
+
+| # | File | Line | Kind |
+|---|------|------|------|
+| 1 | `EquivImplSpec.Sponge.Arm64.API.fst` | ~63 | `assume val lemma_squeeze2_arm64` |
+
+Non-load-bearing upstream admits (3) in `Proof_Utils.Lemmas.fst:26/33/54` unchanged.
+
+### Environment note (F* install)
+
+`/root/.local/bin/fstar.exe` was symlinked to a nightly F*
+(2026-04-21) install that was missing `FStar.Mul.fst` in its ulib.
+Relinked to `/root/.opam/5.2.0/bin/fstar.exe` (F* 2025.03.25~dev) for
+this session.  Future sessions should `eval $(opam env)` first or
+confirm the PATH resolves `fstar.exe` to the opam build.
+
+---
 
 ## 2026-04-24 (evening): Portable.absorb admit eliminated
 

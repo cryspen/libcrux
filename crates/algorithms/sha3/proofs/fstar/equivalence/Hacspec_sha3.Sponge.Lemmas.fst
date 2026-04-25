@@ -219,6 +219,55 @@ let lemma_squeeze_last_extensional
 #pop-options
 
 
+(* Helper: byte-level equality between two [squeeze_state] applications
+   that share the state, write range, and rate but differ in their
+   pre-array.  Inside the write range both produce the same byte; outside
+   they preserve their respective pre-arrays. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_squeeze_state_byte_eq_in_range
+      (output_len: usize)
+      (state: t_Array u64 (mk_usize 25))
+      (out_a out_b: t_Array u8 output_len)
+      (out_offset len: usize)
+      (k: nat{k < v output_len /\ k < v out_offset + v len})
+  : Lemma
+      (requires
+        v len <= 200 /\
+        v out_offset + v len <= v output_len /\
+        (k < v out_offset ==>
+           Seq.index (out_a <: Seq.seq u8) k ==
+           Seq.index (out_b <: Seq.seq u8) k))
+      (ensures
+        Seq.index (HS.squeeze_state output_len state out_a out_offset len <: Seq.seq u8) k ==
+        Seq.index (HS.squeeze_state output_len state out_b out_offset len <: Seq.seq u8) k)
+  = let ki : usize = mk_usize k in
+    assert (v ki == k);
+    if k < v out_offset then ()
+    else assert ((k - v out_offset) / 8 < 25)
+#pop-options
+
+(* Helper: byte-level equality between [squeeze_state] and its pre-array
+   for indices outside the write range (preservation). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_squeeze_state_byte_preserve
+      (output_len: usize)
+      (state: t_Array u64 (mk_usize 25))
+      (out_pre: t_Array u8 output_len)
+      (out_offset len: usize)
+      (k: nat{k < v output_len})
+  : Lemma
+      (requires
+        v len <= 200 /\
+        v out_offset + v len <= v output_len /\
+        (k < v out_offset \/ v out_offset + v len <= k))
+      (ensures
+        Seq.index (HS.squeeze_state output_len state out_pre out_offset len <: Seq.seq u8) k ==
+        Seq.index (out_pre <: Seq.seq u8) k)
+  = let ki : usize = mk_usize k in
+    assert (v ki == k)
+#pop-options
+
+
 (* ================================================================
    Absorb-side helpers about [Hacspec_sha3.Sponge.absorb_blocks].
 
@@ -561,3 +610,5 @@ let rec lemma_absorb_rec_via_blocks
       lemma_absorb_final_shift state_k rate delim input final_offset_tail tail_rem
     end
 #pop-options
+
+

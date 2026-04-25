@@ -2,28 +2,33 @@
 set -ex
 
 function extract_all() {
+    # `--cfg pre_core_models` routes the AVX2 backend to
+    # `avx2_extract.rs` (the bit_vec stub), mirroring the arm64
+    # pattern.  Without it, hax pulls in the full
+    # `core_models::arch::x86::*` chain (Bitvec/Funarr) which we do
+    # not need for the SHA-3 proofs.
+    export RUSTFLAGS="${RUSTFLAGS:-} --cfg pre_core_models"
+
     extract crates/sys/platform \
         into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
         fstar --z3rlimit 80 --interfaces "+**"
-    
+
     extract crates/utils/core-models into fstar
     rename_core_models_files crates/utils/core-models
 
     extract crates/utils/intrinsics \
-        -C --features simd128 ";" \
+        -C --features simd128,simd256 ";" \
         into -i "-core_models::**" \
         fstar --z3rlimit 80 --interfaces "+**"
 
     extract crates/utils/secrets \
         into -i "+**" \
         fstar --z3rlimit 80
-    
+
     extract crates/algorithms/sha3 \
-        -C --features simd128 ";" \
+        -C --features simd128,simd256 ";" \
         into -i "+**" \
-        -i "-**::avx2::**" \
         -i "-**::neon::x2::**" \
-        -i "-**::simd256::**" \
         fstar --z3rlimit 80
 
     patch_fstar_extractions
@@ -120,6 +125,10 @@ function patch_fstar_extractions() {
     # Squeeze2 trait instance; insert it so F* can resolve the class.
     $SED -i '/f_squeeze2_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
         "$target_dir"/Libcrux_sha3.Simd.Arm64.fst
+
+    # Same omission in the AVX2 Squeeze4 trait instance.
+    $SED -i '/f_squeeze4_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
+        "$target_dir"/Libcrux_sha3.Simd.Avx2.fst
 }
 
 function rename_core_models_uses() {
