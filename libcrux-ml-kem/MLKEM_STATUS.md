@@ -164,13 +164,52 @@ Final state at the C4f-closing tip:
   (overflow case sent to `mk_i16 0`). Lets the helper appear in trait
   posts without propagating an i16-MIN refinement.
 
+## C4′ AVX2 mirror — refactor landed (proofs pending)
+
+`src/vector/avx2.rs` mirrors the portable `op_*` flattening:
+
+- Each impl method body collapses to a one-line `op_<name>(args)` call;
+  trait subtyping check is `P ==> P`.
+- `op_*` functions for previously-verified arithmetic ops
+  (`cond_subtract_3329`, `barrett_reduce`,
+  `montgomery_multiply_by_constant`, `to_unsigned_representative`)
+  carry **real proofs** (no `panic_free`): each is a thin
+  `reveal_opaque(is_i16b_array_opaque)` plus a call to the AVX2
+  primitive, whose strong post (already proven in
+  `Vector.Avx2.Arithmetic.fst`) discharges the trait post.
+  `op_cond_subtract_3329` adds a `Seq.lemma_eq_intro` to bridge
+  per-lane equality to `Spec.Utils.map_array` form (improvement over
+  the pre-C4f `lax`).
+- `op_*` for compress/decompress/NTT-layer/ntt_multiply carry
+  `panic_free` with the same strengthened `${spec::*_post}` posts as
+  the portable side (compress_post_N / decompress_post_N /
+  hacspec FE-form for NTT). **Body proofs are pending C4′ Layer-1
+  helpers in `Hacspec_ml_kem.Commute.Chunk.fst` plus AVX2-specific
+  per-lane Vec256 ↔ array bridging.**
+- `add`, `sub`, `multiply_by_constant`, `from_bytes`, `to_bytes`,
+  `from_i16_array`, `to_i16_array`, `ZERO` — no `op_*` needed: the
+  underlying `arithmetic::*` primitive's pre/post already matches the
+  trait's exactly, so the impl method body is already a one-liner.
+  (`to_bytes` stays `lax` — same as pre-C4f, F*/hax modeling issue
+  around `&mut` slice bounds, out of C4' scope.)
+
+Verification (this session):
+- `Libcrux_ml_kem.Vector.Avx2.fst` — **PASS** (~11.5 s).
+- `Libcrux_ml_kem.Vector.Avx2.Arithmetic.fst` — **PASS** (~26 s).
+- `Libcrux_ml_kem.Vector.Avx2.Compress.fst` — **PASS** (~3.6 s).
+- `Libcrux_ml_kem.Vector.Avx2.Ntt.fst` — **PASS** (~3.7 s).
+- `Libcrux_ml_kem.Vector.Avx2.Serialize.fst` — **PASS** (~48.6 s).
+- `Libcrux_ml_kem.Vector.Avx2.Sampling.fst` — **PASS** (~4.6 s).
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
   be able to fold the bridging directly into the underlying primitive's
   annotations and drop the wrapper.  Tracked separately.
-- **C4′ AVX2 mirror**: AVX2 NTT-layer + compress/decompress + ntt_multiply
-  wrappers need the same op_* + panic_free → proof transitions.
+- **C4′ true mirror (drop `panic_free`)**: AVX2 NTT-layer + compress/
+  decompress + ntt_multiply `op_*` bodies need real proofs once
+  the portable Layer-1 helpers and AVX2 per-lane Vec256↔array bridges
+  are in place.
 - **Forall-style benchmark**: which of `forall (k:nat). k<N ==> P k` /
   `forall (k:nat{k<N}). P k` / `Spec.Utils.forall<N> (fun k -> P k)`
   is most efficient in trait posts and at callers.  Dispatched as a
