@@ -87,7 +87,7 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { git = "https://github.com/cryspen/hax" }
+hax-lib = { git = "https://github.com/cryspen/hax", branch = "integer-lemmas" }
 libcrux-aead = { version = "=0.0.7", path = "crates/primitives/aead" }
 libcrux-aesgcm = { version = "=0.0.7", path = "crates/algorithms/aesgcm" }
 libcrux-blake2 = { version = "=0.0.6", path = "crates/algorithms/blake2" }
@@ -245,7 +245,7 @@ strip = true
 # opt-level = 1
 
 [patch.crates-io]
-hax-lib = { git = "https://github.com/cryspen/hax" }
+hax-lib = { git = "https://github.com/cryspen/hax", branch = "integer-lemmas" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
