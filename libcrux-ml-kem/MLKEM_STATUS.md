@@ -201,6 +201,29 @@ Verification (this session):
 - `Libcrux_ml_kem.Vector.Avx2.Serialize.fst` — **PASS** (~48.6 s).
 - `Libcrux_ml_kem.Vector.Avx2.Sampling.fst` — **PASS** (~4.6 s).
 
+## C4′ AVX2 serialize/deserialize wrappers — `lax` removed for {1, 4, 10, 12}
+
+`src/vector/avx2.rs` `op_serialize_{4,10,12}` and
+`op_deserialize_{1,4,10,12}` now drop `lax` and discharge the trait's
+`{,de}serialize_post_N` via per-N admitted bridge lemmas
+`op_{serialize,deserialize}_N_{pre,post}_bridge` (defined in a
+`fstar::before` block on `op_serialize_4`).  Each bridge connects the
+AVX2 primitive's BitVec lane post (`bit_vec_of_int_t_array r 8 i ==
+vector ((i/N)*16 + i%N)`) to the trait's array-form post
+(`BitVecEq.int_t_array_bitwise_eq` at depth N).
+
+- 7 admitted bridge lemmas total (4 serialize: 3 pre + 3 post for
+  N ∈ {4,10,12}; 4 deserialize post for N ∈ {1,4,10,12}; deserialize
+  has no pre-bridge — the only pre is `Seq.length`).
+- `op_serialize_1`, `op_serialize_11`, `op_deserialize_11` still `lax`:
+  underlying primitive is `lax` too, so wrapper bridging is pointless
+  until the primitives are proven first.
+- **Removal plan for the admits**: per-N `Tactics.GetBit.prove_bit_vector_equality'`
+  invocation plus a `bit_vec_of_int_t_array (vec256_as_i16x16 v) N`
+  decomposition lemma in `Libcrux_intrinsics.Avx2_extract`.
+
+Verified: `Vector.Avx2.fst` PASS.
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
