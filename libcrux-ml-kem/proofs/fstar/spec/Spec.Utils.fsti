@@ -719,20 +719,20 @@ let mod_p (v:int) (p:int{p>0/\ p%2=0}) : Tot int =
 
 let is_intb_bt (l:nat) (x:int) = (x > -l) && (x <= l)
 
-let forall4 (p:(x:nat{x < 4} -> Type0)) =
+unfold let forall4 (p:(x:nat{x < 4} -> Type0)) =
     p 0  /\ p 1  /\ p 2  /\ p 3
     
-let forall8 (p:(x:nat{x < 8} -> Type0)) =
+unfold let forall8 (p:(x:nat{x < 8} -> Type0)) =
     p 0  /\ p 1  /\ p 2  /\ p 3  /\
     p 4  /\ p 5  /\ p 6  /\ p 7 
 
-let forall16 (p:(x:nat{x < 16} -> Type0)) =
+unfold let forall16 (p:(x:nat{x < 16} -> Type0)) =
     p 0  /\ p 1  /\ p 2  /\ p 3  /\
     p 4  /\ p 5  /\ p 6  /\ p 7  /\
     p 8  /\ p 9  /\ p 10 /\ p 11 /\
     p 12 /\ p 13 /\ p 14 /\ p 15
 
-let forall32 (p:(x:nat{x < 32} -> Type0)) =
+unfold let forall32 (p:(x:nat{x < 32} -> Type0)) =
     p 0  /\ p 1  /\ p 2  /\ p 3  /\
     p 4  /\ p 5  /\ p 6  /\ p 7  /\
     p 8  /\ p 9  /\ p 10 /\ p 11 /\
