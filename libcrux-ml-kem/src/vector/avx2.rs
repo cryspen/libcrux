@@ -1,4 +1,4 @@
-use super::traits::Operations;
+use super::traits::{spec, Operations};
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
@@ -402,45 +402,46 @@ impl Operations for SIMD256Vector {
         }
     }
 
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-        v (Seq.index (impl.f_repr $vector) i) < 3329"#))]
-    #[ensures(|out| fstar!(r#"forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) 1"#))]
+    // AVX2 compress/decompress: `panic_free` placeholders matching the
+    // strengthened trait posts.  C4f (portable) introduced
+    // `compress_post_N` / `decompress_post_N` (hacspec FE-equation form)
+    // into the trait's compress/decompress ensures.  AVX2 impl bodies
+    // have not yet been ported to discharge this stronger post — that
+    // is the C4′ AVX2 mirror task.  Until then, `panic_free` skips the
+    // body postcondition obligation while preserving the trait
+    // subtyping relation (impl ensures = trait ensures via
+    // `${spec::*_post}`, so the subtyping check is `P ==> P`).
+    // **Removal plan**: drop `panic_free` and prove the body when C4′
+    // AVX2 lands; tracked in `proofs/commutativity-handoff.md`
+    // progress tracker row C4′.
+    #[hax_lib::fstar::verification_status(panic_free)]
+    #[requires(fstar!(r#"${spec::compress_1_pre} (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"${spec::compress_1_post} (impl.f_repr $vector) (impl.f_repr $out)"#))]
     #[inline(always)]
     fn compress_1(vector: Self) -> Self {
         compress_1(vector)
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-            v $COEFFICIENT_BITS == 5 \/
-            v $COEFFICIENT_BITS == 10 \/
-            v $COEFFICIENT_BITS == 11) /\
-        (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-            v (Seq.index (impl.f_repr $vector) i) < 3329)"#))]
-    #[ensures(|out| fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-            v $COEFFICIENT_BITS == 5 \/
-            v $COEFFICIENT_BITS == 10 \/
-            v $COEFFICIENT_BITS == 11) ==>
-                (forall (i:nat). i < 16 ==> bounded (Seq.index (impl.f_repr $out) i) (v $COEFFICIENT_BITS))"#))]
+    #[hax_lib::fstar::verification_status(panic_free)]
+    #[requires(fstar!(r#"${spec::compress_pre} (impl.f_repr $vector) $COEFFICIENT_BITS"#))]
+    #[ensures(|out| fstar!(r#"${spec::compress_post} (impl.f_repr $vector) $COEFFICIENT_BITS (impl.f_repr $out)"#))]
     #[inline(always)]
     fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         compress::<COEFFICIENT_BITS>(vector)
     }
 
-    #[requires(fstar!(r#"forall (i:nat). i < 16 ==> 
-                                    (let x = Seq.index (impl.f_repr $a) i in 
-                                     (x == mk_i16 0 \/ x == mk_i16 1))"#))]
+    #[hax_lib::fstar::verification_status(panic_free)]
+    #[requires(fstar!(r#"${spec::decompress_1_pre} (impl.f_repr $a)"#))]
+    #[ensures(|out| fstar!(r#"${spec::decompress_1_post} (impl.f_repr $a) (impl.f_repr $out)"#))]
     fn decompress_1(a: Self) -> Self {
         Self {
             elements: compress::decompress_1(a.elements),
         }
     }
 
-    #[requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
-        v $COEFFICIENT_BITS == 5 \/
-        v $COEFFICIENT_BITS == 10 \/
-        v $COEFFICIENT_BITS == 11) /\
-    (forall (i:nat). i < 16 ==> v (Seq.index (impl.f_repr $vector) i) >= 0 /\
-        v (Seq.index (impl.f_repr $vector) i) < pow2 (v $COEFFICIENT_BITS))"#))]
+    #[hax_lib::fstar::verification_status(panic_free)]
+    #[requires(fstar!(r#"${spec::decompress_ciphertext_coefficient_pre} (impl.f_repr $vector) $COEFFICIENT_BITS"#))]
+    #[ensures(|out| fstar!(r#"${spec::decompress_ciphertext_coefficient_post} (impl.f_repr $vector) $COEFFICIENT_BITS (impl.f_repr $out)"#))]
     #[inline(always)]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
         Self {

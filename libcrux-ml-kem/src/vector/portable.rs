@@ -223,10 +223,30 @@ impl Operations for PortableVector {
         to_unsigned_representative(a)
     }
 
+    // Compress / decompress wrappers — `panic_free` (C4f, in progress).
+    // The hacspec FE-equation post on each (`compress_post_N` /
+    // `decompress_post_N`) is not yet discharged from the impl body; the
+    // bridge math is captured in `MLKEM_STATUS.md` (S1/S2/S3) but proof
+    // is left as a 3-case integer eval (compress_1) / Barrett-exactness
+    // (compress<D>) / case-eval (decompress_*).  **Removal plan**: drop
+    // `panic_free` and prove the body when the bridge lemmas in
+    // `Hacspec_ml_kem.Commute.Chunk` for compress/decompress land.
+    //
+    // The `reveal_opaque` for `bounded_i16_array` is needed even with
+    // `panic_free` because the wrapper's pre uses `bounded_*_i16_array`
+    // (whose base predicate is opaque) but the underlying primitive
+    // (`Compress.compress_1_`, `Compress.compress`, etc.) states its pre
+    // as `forall i. v (Seq.index a.f_elements i) >= 0 /\ … < 3329`.
+    // `panic_free` skips post-condition verification but still requires
+    // subroutine-call precondition discharge.
     #[hax_lib::fstar::verification_status(panic_free)]
     #[requires(fstar!(r#"${spec::compress_1_pre} ${a}.f_elements"#))]
     #[ensures(|out| fstar!(r#"${spec::compress_1_post} ${a}.f_elements ${out}.f_elements"#))]
     fn compress_1(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+        );
         compress_1(a)
     }
 
@@ -234,6 +254,10 @@ impl Operations for PortableVector {
     #[requires(fstar!(r#"${spec::compress_pre} ${a}.f_elements $COEFFICIENT_BITS"#))]
     #[ensures(|out| fstar!(r#"${spec::compress_post} ${a}.f_elements $COEFFICIENT_BITS ${out}.f_elements"#))]
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+        );
         compress::<COEFFICIENT_BITS>(a)
     }
 
@@ -241,6 +265,10 @@ impl Operations for PortableVector {
     #[requires(fstar!(r#"${spec::decompress_1_pre} ${a}.f_elements"#))]
     #[ensures(|out| fstar!(r#"${spec::decompress_1_post} ${a}.f_elements ${out}.f_elements"#))]
     fn decompress_1(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+        );
         decompress_1(a)
     }
 
@@ -248,6 +276,10 @@ impl Operations for PortableVector {
     #[requires(fstar!(r#"${spec::decompress_ciphertext_coefficient_pre} ${a}.f_elements $COEFFICIENT_BITS"#))]
     #[ensures(|out| fstar!(r#"${spec::decompress_ciphertext_coefficient_post} ${a}.f_elements $COEFFICIENT_BITS ${out}.f_elements"#))]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self {
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+        );
         decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a)
     }
 
