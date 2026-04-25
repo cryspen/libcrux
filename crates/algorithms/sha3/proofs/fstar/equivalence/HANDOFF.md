@@ -4,6 +4,100 @@ Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
 
+## 2026-04-25 (later): squeeze4_avx2 — partial progress, banked infrastructure
+
+Attempted to mirror the Portable.squeeze inline-ensures pattern at N=4
+to discharge `lemma_squeeze4_avx2`.  **Banking the infrastructure
+that verified, reverting the rest, deferring the full proof.**
+
+### What landed
+
+- `KeccakState<4, Vec256>::squeeze_last4` — new `pub(crate) fn`
+  mirroring `KeccakState<1, u64>::squeeze_last`.  Carries per-lane
+  ensures: for each `l ∈ [0,4)`, the post-state lane-`l` extraction
+  and the corresponding output buffer match
+  `Hacspec_sha3.Sponge.squeeze_last`.  Internal proof composes 4 ×
+  `EquivImplSpec.Sponge.Avx2.Steps.lemma_squeeze_last_avx2`.
+  Verifies clean (824 successful queries, 0 failed).
+- `_keccak_state_impl4_opts` dummy fn before `impl KeccakState<4, Vec256>`
+  pushes `--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always`
+  for methods inside the impl block (workaround for hax#1698 — same as
+  Portable's `_keccak_state_impl_opts`).
+- `out0.len() < usize::MAX - 200` precondition propagated up to
+  `keccak4` and `avx2::shake256` — needed by the eventual
+  `Hacspec_sha3.Sponge.squeeze` post-conditions.
+
+### What was reverted
+
+- The full inline-ensures attempt on `Simd256.squeeze4`.  Verified the
+  `blocks == 0` branch (985 succeeded, 0 failed), then hit the Z3
+  cascade on the pre-loop scaffolding — one query timed out at
+  rlimit 800 (~5 min) before the verify gave up.  The per-iteration
+  block (the next placeholder) would have been strictly harder.
+
+### Why the monolithic VC blows up at N=4
+
+This mirrors the 2026-04-25 (earlier) squeeze2 post-mortem.  At N=2
+the Arm64 attempt hit a 400k-instantiation BoxBool/BoxInt cascade on
+ONE loop-invariant re-establishment query, with 4 forall conjuncts
+in the invariant.  At N=4:
+
+- 4 lane-state equality conjuncts in the loop invariant (vs 2 at N=2)
+- 8 forall conjuncts (write/tail × 4 lanes vs write/tail × 2)
+- 4 spec arrays + 4 impl arrays + 4 initial arrays = 12 arrays live in
+  the VC context (vs 6 at N=2)
+
+Z3's pattern-driven instantiation explores combinatorially across
+those arrays.  Empirically: pre-loop scaffolding (which is
+*easier* than the per-iteration step) already times out at rlimit 800
+on at least one query in ~5 min.
+
+### Path forward — Option B (per-lane Steps lemmas)
+
+The fix is to factor the per-iteration proof into a dedicated Steps
+lemma that operates on ONE lane at a time, so each VC sees only
+one lane's worth of state:
+
+```
+val lemma_squeeze_one_step_avx2
+      (rate: usize)
+      (ks_pre: t_KeccakState 4 Vec256)
+      (outputs: t_Array (t_Slice u8) 4)
+      (i: usize)
+      (l: nat{l < 4})
+  : Lemma
+      (requires
+         valid_rate rate /\
+         v i >= 1 /\
+         v (i +! mk_usize 1) * v rate <= Seq.length (outputs.[mk_usize l]) /\
+         (* lane-l invariant entering iteration: state, write range, tail *)
+         ...)
+      (ensures
+         (* lane-l invariant exiting iteration *)
+         ...)
+```
+
+With this lemma, the Rust per-iteration scaffolding becomes 4 calls
+(one per lane), each with a small VC.  Pre-loop and post-loop
+similarly factored.
+
+### Estimated effort to close lemma_squeeze4_avx2
+
+- Build the per-lane Steps lemma: 1-2 days
+- Wire the inline scaffolding: 0.5-1 day
+- Same for `lemma_squeeze2_arm64` once squeeze4 lands (strictly easier
+  port at N=2)
+
+### Squeeze step lemmas already proved (re-usable for Option B)
+
+- `EquivImplSpec.Sponge.Avx2.Steps.lemma_squeeze_block_avx2`
+- `EquivImplSpec.Sponge.Avx2.Steps.lemma_squeeze_last_avx2`
+- `Hacspec_sha3.Sponge.Lemmas.lemma_squeeze_blocks_base/unfold/tail`
+- `Hacspec_sha3.Sponge.Lemmas.lemma_squeeze_unfold/seq_trans/last_extensional`
+- `EquivImplSpec.Sponge.Avx2.avx2_sc_store_block` (no-keccakf bridge)
+
+These are the building blocks; they're all in place and verified.
+
 ## 2026-04-25 (night, late): lemma_absorb4_avx2 PROVED
 
 Mirrored the arm64 `lemma_absorb2_arm64` proof at N=4: `lemma_absorb4_avx2`

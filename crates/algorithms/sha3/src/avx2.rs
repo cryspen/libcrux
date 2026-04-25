@@ -9,6 +9,7 @@ pub mod x4 {
     #[allow(clippy::too_many_arguments)]
     #[inline(always)]
     #[hax_lib::requires(
+        out0.len() < usize::MAX - 200 &&
         out0.len() == out1.len() &&
         out0.len() == out2.len() &&
         out0.len() == out3.len() &&

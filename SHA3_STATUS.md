@@ -3,7 +3,36 @@
 Quick status pointer. Full details in
 `crates/algorithms/sha3/proofs/fstar/equivalence/HANDOFF.md`.
 
-## Current focus (2026-04-25 night, late)
+## Current focus (2026-04-25 later)
+
+**Attempted `lemma_squeeze4_avx2`; banked infrastructure, deferred main proof.**
+The full inline-ensures pattern at N=4 (mirroring Portable.squeeze)
+hits the same Z3 BoxBool cascade documented in the squeeze2 attempt
+post-mortem; at N=4 it's worse (8 forall conjuncts vs 4 at N=2, and
+12 live arrays in the VC vs 6).  The path forward is Option B from
+the squeeze2 post-mortem: build a per-lane Steps lemma so each VC
+sees only one lane's facts.  Estimated ~2-3 days.
+
+### What landed (banked)
+
+- `KeccakState<4, Vec256>::squeeze_last4` — new helper method with
+  per-lane ensures pinning each output to `Hacspec_sha3.Sponge.squeeze_last`.
+  Verified clean (824 queries, 0 failed).  Re-usable by the eventual
+  Option B proof.
+- `_keccak_state_impl4_opts` push-options workaround so methods
+  inside `impl KeccakState<4, Vec256>` can use `--z3rlimit 800
+  --split_queries always` (mirrors Portable's setup).
+- `out0.len() < usize::MAX - 200` precondition propagated up to
+  `Simd256::keccak4` and `avx2::shake256` — needed for the eventual
+  `Hacspec_sha3.Sponge.squeeze` ensures.
+
+`lemma_squeeze4_avx2` in `EquivImplSpec.Sponge.Avx2.API.fst` remains
+an `assume val`.  Admit count unchanged.
+
+See `crates/algorithms/sha3/proofs/fstar/equivalence/HANDOFF.md`
+"2026-04-25 (later)" for the post-mortem and Option B sketch.
+
+## Earlier focus (2026-04-25 night, late)
 
 **`lemma_absorb4_avx2` is now PROVED.**  The AVX2 driver-level absorb
 lemma is no longer an `assume val` — it's a real `let` discharged by
