@@ -250,6 +250,46 @@ FE-butterfly form on `vec256_as_i16x16`).
 Verified: `Vector.Avx2.fst` PASS, `Vector.Avx2.{Arithmetic,Compress,
 Ntt,Serialize,Sampling}.fst` all PASS, `Vector.Portable.fst` PASS.
 
+## C4′ AVX2 ntt_layer_3_step — top-to-bottom proof landed
+
+Strengthened `Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_3_step` post in
+`src/vector/avx2/ntt.rs` to expose the per-lane butterfly residue
+equation + `is_i16b_array (6*3328)` bound (matching the trait's
+strengthened `ntt_layer_3_step_post`).  Body proof composes:
+
+- **6 generic SIMD lane lemmas** in a `fstar::before` block on
+  `ntt_layer_3_step`:
+  - `lemma_mm256_castsi256_si128`, `lemma_mm256_extracti128_si256_1`,
+    `lemma_mm256_castsi128_si256_lo`, `lemma_mm256_inserti128_si256_1`
+    — admitted (require knowing the abstract `vec256_as_i16x16` /
+    `vec128_as_i16x8` definitions, which are declared `val` in
+    `Avx2_extract.fsti`).
+  - `lemma_add_i_128`, `lemma_sub_i_128` — proven by `()`, with
+    `SMTPat` triggers on `add_mod` / `sub_mod` to lift `+.` / `-.`
+    to integer `+` / `-` under no-overflow.
+- Intermediate per-lane assertions chain through `mm256_extracti128`
+  → `mm_set1` → `montgomery_multiply_m128i_by_constants` →
+  `mm256_castsi256_si128` → `mm_add_epi16` / `mm_sub_epi16` →
+  `mm256_castsi128_si256` → `mm256_inserti128_si256<1>`.
+- rlimit 400, `--split_queries always`.
+
+The wrapper `op_ntt_layer_3_step` in `src/vector/avx2.rs` now
+discharges the trait FE-form post directly via 8
+`Hacspec_ml_kem.Commute.Chunk.lemma_butterfly_pair_commute` calls
+(one per pair `(i, i+8)`) + per-b assertions + `forall4` —
+identical pattern to portable.  No bridge admit needed for
+`ntt_layer_3_step` anymore.
+
+The other 5 NTT-layer wrappers (`ntt_layer_{1,2}_step` +
+`inv_ntt_layer_{1,2,3}_step`) still use admitted bridge lemmas;
+each could follow the same pattern once their primitive bodies in
+`Vector.Avx2.Ntt.fst` get the matching strengthened posts (the 4
+SIMD lane lemmas defined here are reusable).
+
+Verified: `Vector.Avx2.fst`, `Vector.Avx2.Ntt.fst`,
+`Vector.Avx2.{Arithmetic,Compress,Sampling,Serialize}.fst`,
+`Vector.Portable.fst` all PASS.
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
