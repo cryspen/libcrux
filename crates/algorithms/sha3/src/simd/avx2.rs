@@ -1,10 +1,20 @@
+#[cfg(hax)]
+use hax_lib::int::ToInt;
+
+#[cfg(hax)]
+use hax_lib::prop::*;
+
+#[cfg(hax)]
+use crate::proof_utils::valid_rate;
+
 use libcrux_intrinsics::avx2::*;
 
 use crate::{generic_keccak::KeccakState, traits::*};
 
 #[inline(always)]
+#[hax_lib::requires(0 <= LEFT && LEFT <= 64 && 0 <= RIGHT && RIGHT <= 64)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
-    #[cfg(not(eurydice))]
+    #[cfg(not(any(eurydice, hax)))]
     debug_assert!(LEFT + RIGHT == 64);
     // This could be done more efficiently, if the shift values are multiples of 8.
     // However, in SHA-3 this function is only called twice with such inputs (8/56).
@@ -13,9 +23,12 @@ fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
 
 #[inline(always)]
 fn _veor5q_u64(a: Vec256, b: Vec256, c: Vec256, d: Vec256, e: Vec256) -> Vec256 {
+    // Left-associated to match the spec shape `(((a^b)^c)^d)^e` so
+    // [avx2_lc_xor5] can compose lane-wise SMTPats without needing
+    // assoc/comm of `^.` on u64.
     let ab = mm256_xor_si256(a, b);
-    let cd = mm256_xor_si256(c, d);
-    let abcd = mm256_xor_si256(ab, cd);
+    let abc = mm256_xor_si256(ab, c);
+    let abcd = mm256_xor_si256(abc, d);
     mm256_xor_si256(abcd, e)
 }
 
@@ -25,6 +38,7 @@ fn _vrax1q_u64(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(0 <= LEFT && LEFT <= 64 && 0 <= RIGHT && RIGHT <= 64)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: Vec256, b: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
     rotate_left::<LEFT, RIGHT>(ab)
@@ -43,6 +57,12 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE)
+            && blocks[0].len() == blocks[1].len()
+            && blocks[0].len() == blocks[2].len()
+            && blocks[0].len() == blocks[3].len()
+            && offset.to_int() + RATE.to_int() <= blocks[0].len().to_int()
+)]
 pub(crate) fn load_block<const RATE: usize>(
     state: &mut [Vec256; 25],
     blocks: &[&[u8]; 4],
@@ -50,6 +70,7 @@ pub(crate) fn load_block<const RATE: usize>(
 ) {
     #[cfg(not(eurydice))]
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
+    hax_lib::fstar!("admit()");
     for i in 0..RATE / 32 {
         let start = offset + 32 * i;
         let v0 = mm256_loadu_si256_u8(&blocks[0][start..start + 32]);
@@ -107,12 +128,20 @@ pub(crate) fn load_block<const RATE: usize>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE)
+    && len < RATE
+    && start.to_int() + len.to_int() <= blocks[0].len().to_int()
+    && blocks[0].len() == blocks[1].len()
+    && blocks[0].len() == blocks[2].len()
+    && blocks[0].len() == blocks[3].len()
+)]
 pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
     state: &mut [Vec256; 25],
     blocks: &[&[u8]; 4],
     start: usize,
     len: usize,
 ) {
+    hax_lib::fstar!("admit()");
     let mut buffers = [[0u8; RATE]; 4];
     for i in 0..4 {
         buffers[i][0..len].copy_from_slice(&blocks[i][start..start + len]);
@@ -133,6 +162,18 @@ pub(crate) fn load_last<const RATE: usize, const DELIMITER: u8>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(valid_rate(RATE)
+    && len <= RATE
+    && start.to_int() + len.to_int() <= out0.len().to_int()
+    && out0.len() == out1.len()
+    && out0.len() == out2.len()
+    && out0.len() == out3.len()
+)]
+#[hax_lib::ensures(|_| (future(out0).len() == out0.len()).to_prop()
+    & (future(out1).len() == out1.len()).to_prop()
+    & (future(out2).len() == out2.len()).to_prop()
+    & (future(out3).len() == out3.len()).to_prop()
+)]
 pub(crate) fn store_block<const RATE: usize>(
     s: &[Vec256; 25],
     out0: &mut [u8],
@@ -142,6 +183,7 @@ pub(crate) fn store_block<const RATE: usize>(
     start: usize,
     len: usize,
 ) {
+    hax_lib::fstar!("admit()");
     let chunks = len / 32;
     for i in 0..chunks {
         let i0 = (4 * i) / 5;
@@ -197,6 +239,7 @@ pub(crate) fn store_block<const RATE: usize>(
     }
 }
 
+#[hax_lib::attributes]
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
@@ -211,6 +254,11 @@ impl KeccakItem<4> for Vec256 {
         _vrax1q_u64(a, b)
     }
     #[inline(always)]
+    #[hax_lib::requires(
+        LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
+        RIGHT > 0 &&
+        RIGHT < 64
+    )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self {
         _vxarq_u64::<LEFT, RIGHT>(a, b)
     }
@@ -228,11 +276,27 @@ impl KeccakItem<4> for Vec256 {
     }
 }
 
+#[hax_lib::attributes]
 impl Absorb<4> for KeccakState<4, Vec256> {
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        start.to_int() + RATE.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len() &&
+        input[0].len() == input[2].len() &&
+        input[0].len() == input[3].len()
+    )]
     fn load_block<const RATE: usize>(&mut self, input: &[&[u8]; 4], start: usize) {
         load_block::<RATE>(&mut self.st, input, start);
     }
 
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        len < RATE &&
+        start.to_int() + len.to_int() <= input[0].len().to_int() &&
+        input[0].len() == input[1].len() &&
+        input[0].len() == input[2].len() &&
+        input[0].len() == input[3].len()
+    )]
     fn load_last<const RATE: usize, const DELIMITER: u8>(
         &mut self,
         input: &[&[u8]; 4],
@@ -243,7 +307,22 @@ impl Absorb<4> for KeccakState<4, Vec256> {
     }
 }
 
+#[hax_lib::attributes]
 impl Squeeze4<Vec256> for KeccakState<4, Vec256> {
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        len <= RATE &&
+        start.to_int() + len.to_int() <= out0.len().to_int() &&
+        out0.len() == out1.len() &&
+        out0.len() == out2.len() &&
+        out0.len() == out3.len()
+    )]
+    #[hax_lib::ensures(|_|
+        future(out0).len() == out0.len() &&
+        future(out1).len() == out1.len() &&
+        future(out2).len() == out2.len() &&
+        future(out3).len() == out3.len()
+    )]
     fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],

@@ -11,6 +11,9 @@
 unfold type $:{Vec256} = bit_vec 256
 val vec256_as_i16x16 (x: bit_vec 256) : t_Array i16 (sz 16)
 let get_lane (v: bit_vec 256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
+val vec256_as_u64x4 (x: bit_vec 256) : t_Array u64 (sz 4)
+let get_lane_u64x4 (v: bit_vec 256) (i: nat{i < 4}) : u64 =
+  Seq.index (vec256_as_u64x4 v) i
 "#
 )]
 pub struct Vec256(u8);
@@ -397,6 +400,17 @@ pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_or_si256 as mm256_or_si256}
+val lemma_mm256_or_si256_u64x4 (a b: t_Vec256)
+  : Lemma (forall (i: nat{i < 4}).
+             get_lane_u64x4 (mm256_or_si256 a b) i ==
+             (get_lane_u64x4 a i |. get_lane_u64x4 b i))
+        [SMTPat (mm256_or_si256 a b)]
+"#
+)]
 #[inline(always)]
 pub fn mm256_or_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
@@ -406,6 +420,17 @@ pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_xor_si256 as mm256_xor_si256}
+val lemma_mm256_xor_si256_u64x4 (lhs rhs: t_Vec256)
+  : Lemma (forall (i: nat{i < 4}).
+             get_lane_u64x4 (mm256_xor_si256 lhs rhs) i ==
+             (get_lane_u64x4 lhs i ^. get_lane_u64x4 rhs i))
+        [SMTPat (mm256_xor_si256 lhs rhs)]
+"#
+)]
 pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -442,7 +467,17 @@ pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
 
 #[hax_lib::fstar::replace(
     interface,
-    "include BitVec.Intrinsics {mm256_srli_epi64 as ${mm256_srli_epi64::<0>}}"
+    r#"
+include BitVec.Intrinsics {mm256_srli_epi64 as ${mm256_srli_epi64::<0>}}
+val lemma_mm256_srli_epi64_u64x4 (v_SHIFT_BY: i32) (vector: t_Vec256)
+  : Lemma
+      (requires v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 64)
+      (ensures
+        forall (i: nat{i < 4}).
+          get_lane_u64x4 (mm256_srli_epi64 v_SHIFT_BY vector) i ==
+          (get_lane_u64x4 vector i >>! v_SHIFT_BY))
+        [SMTPat (mm256_srli_epi64 v_SHIFT_BY vector)]
+"#
 )]
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
@@ -587,6 +622,21 @@ pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_slli_epi64 as ${mm256_slli_epi64::<0>}}
+val lemma_mm256_slli_epi64_u64x4 (v_LEFT: i32) (x: t_Vec256)
+  : Lemma
+      (requires v v_LEFT >= 0 /\ v v_LEFT < 64)
+      (ensures
+        forall (i: nat{i < 4}).
+          get_lane_u64x4 (mm256_slli_epi64 v_LEFT x) i ==
+          (get_lane_u64x4 x i <<! v_LEFT))
+        [SMTPat (mm256_slli_epi64 v_LEFT x)]
+"#
+)]
+#[hax_lib::requires(LEFT >= 0 && LEFT <= 64)]
 #[inline(always)]
 pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
     unimplemented!()
@@ -598,11 +648,32 @@ pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_andnot_si256 as mm256_andnot_si256}
+val lemma_mm256_andnot_si256_u64x4 (a b: t_Vec256)
+  : Lemma (forall (i: nat{i < 4}).
+             get_lane_u64x4 (mm256_andnot_si256 a b) i ==
+             (get_lane_u64x4 b i &. (~. (get_lane_u64x4 a i))))
+        [SMTPat (mm256_andnot_si256 a b)]
+"#
+)]
 #[inline(always)]
 pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_set1_epi64x as mm256_set1_epi64x}
+val lemma_mm256_set1_epi64x_u64x4 (a: i64)
+  : Lemma (forall (i: nat{i < 4}).
+             get_lane_u64x4 (mm256_set1_epi64x a) i == (cast_mod #i64_inttype #u64_inttype a))
+        [SMTPat (mm256_set1_epi64x a)]
+"#
+)]
 #[inline(always)]
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unimplemented!()

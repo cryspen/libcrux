@@ -84,7 +84,24 @@ let mm256_set1_epi16_pow2_minus_one (n: nat): bit_vec 256
 
 let mm256_and_si256 (x y: bit_vec 256): bit_vec 256
   = mk_bv (fun i -> if y i = 0 then 0 else x i)
-  
+
+let mm256_or_si256 (x y: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if y i = 1 then 1 else x i)
+
+let mm256_xor_si256 (x y: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if y i = 0 then x i else (if x i = 0 then 1 else 0))
+
+let mm256_andnot_si256 (a b: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if a i = 0 then b i else 0)
+
+let mm256_slli_epi64 (shift: i32 {v shift >= 0 /\ v shift <= 64}) (vec: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> let nth_bit = i % 64 in
+                 if nth_bit >= v shift then vec (i - v shift) else 0)
+
+let mm256_set1_epi64x (a: i64): bit_vec 256
+  = mk_bv (fun i -> get_bit a (sz (i % 64)))
+
+
 let mm256_set1_epi16 (constant: i16)
   (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> (((mk_i16 1) <<! mk_i32 n <: i16) -! (mk_i16 1) <: i16))) [] with
      | Some [x] -> `(mm256_set1_epi16_pow2_minus_one (`#x))

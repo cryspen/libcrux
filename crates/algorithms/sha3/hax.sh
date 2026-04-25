@@ -129,6 +129,30 @@ function patch_fstar_extractions() {
     # Same omission in the AVX2 Squeeze4 trait instance.
     $SED -i '/f_squeeze4_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
         "$target_dir"/Libcrux_sha3.Simd.Avx2.fst
+
+    # The AVX2 X4.Incremental.t_KeccakState wraps an opaque Vec256 record
+    # that has no decidable equality.  Mark the wrapper noeq.
+    $SED -i 's/^type t_KeccakState =/noeq type t_KeccakState =/' \
+        "$target_dir"/Libcrux_sha3.Avx2.X4.Incremental.fst
+
+    # Append admits for the per-u64-lane semantics of the AVX2
+    # intrinsics (mirrors the admit pattern for the i16 lane lemmas
+    # in Libcrux_intrinsics.Avx2_extract.fsti).  These [val] declarations
+    # come from the [hax_lib::fstar::replace(interface, ...)] blocks on
+    # mm256_{xor,or,andnot,slli_epi64,srli_epi64,set1_epi64x} in
+    # crates/utils/intrinsics/src/avx2_extract.rs.
+    local intrinsics_fst="$ROOT/crates/utils/intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fst"
+    if [ -f "$intrinsics_fst" ] && ! grep -q "lemma_mm256_xor_si256_u64x4" "$intrinsics_fst"; then
+        cat >> "$intrinsics_fst" <<'EOF'
+
+let lemma_mm256_xor_si256_u64x4 (lhs rhs: t_Vec256) = admit ()
+let lemma_mm256_or_si256_u64x4 (a b: t_Vec256) = admit ()
+let lemma_mm256_andnot_si256_u64x4 (a b: t_Vec256) = admit ()
+let lemma_mm256_slli_epi64_u64x4 (v_LEFT: i32) (x: t_Vec256) = admit ()
+let lemma_mm256_srli_epi64_u64x4 (v_SHIFT_BY: i32) (vector: t_Vec256) = admit ()
+let lemma_mm256_set1_epi64x_u64x4 (a: i64) = admit ()
+EOF
+    fi
 }
 
 function rename_core_models_uses() {

@@ -192,7 +192,22 @@ pub(crate) trait Squeeze2<T: KeccakItem<2>> {
 ///
 /// Store blocks `N = 4`
 #[cfg(feature = "simd256")]
+#[hax_lib::attributes]
 pub(crate) trait Squeeze4<T: KeccakItem<4>> {
+    #[hax_lib::requires(
+        valid_rate(RATE) &&
+        len <= RATE &&
+        start.to_int() + len.to_int() <= out0.len().to_int() &&
+        out0.len() == out1.len() &&
+        out0.len() == out2.len() &&
+        out0.len() == out3.len()
+    )]
+    #[hax_lib::ensures(|_|
+        future(out0).len() == out0.len() &&
+        future(out1).len() == out1.len() &&
+        future(out2).len() == out2.len() &&
+        future(out3).len() == out3.len()
+    )]
     fn squeeze4<const RATE: usize>(
         &self,
         out0: &mut [u8],
