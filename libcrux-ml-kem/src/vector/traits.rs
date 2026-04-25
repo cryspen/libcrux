@@ -61,6 +61,32 @@ let is_i16b_array (l:nat) (x:t_Slice i16) : prop =
 [@@ "opaque_to_smt"]
 let is_i16b_array_opaque (l:nat) (x:t_Slice i16) : prop =
     is_i16b_array l x
+
+(* Generic interval bound on each lane of an i16 array.  Marked
+   opaque so that typeclass instances (e.g. impl_1 : t_Operations
+   PortableVector) do not drag the inner `forall` into per-method
+   VCs.  Reveal at consumers that need the pointwise expansion.
+
+   The two thin wrappers below (`bounded_abs_i16_array`,
+   `bounded_pos_i16_array`) specialise to the two patterns that
+   show up in trait posts:
+
+     * symmetric absolute bound:  [-l, l]      (NTT, barrett etc.)
+     * unsigned bit-width bound:  [0, 2^d)     (compress, serialize)
+
+   They are kept transparent so the typeclass record sees them as
+   `bounded_i16_array (mk_i16 ...) (mk_i16 ...) x` — still opaque
+   to SMT, since the *base* predicate is opaque. *)
+[@@ "opaque_to_smt"]
+let bounded_i16_array (lo hi: i16) (x: t_Slice i16) : prop =
+    forall (i: nat). i < Seq.length x ==>
+        v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi
+
+let bounded_abs_i16_array (l: nat {l < pow2 15}) (x: t_Slice i16) : prop =
+    bounded_i16_array (mk_i16 (- l)) (mk_i16 l) x
+
+let bounded_pos_i16_array (d: nat {d < 15}) (x: t_Slice i16) : prop =
+    bounded_i16_array (mk_i16 0) (mk_i16 (pow2 d - 1)) x
 let map_array (#a #b:Type) (#len:usize)
     (f: a -> b)
     (s: t_Array a len)
@@ -127,8 +153,13 @@ let zetas_4 (z0 z1 z2 z3: i16)
 (* Hacspec equations stated elementwise over arrays of any length n.
    The trait instantiates them with n=16; the polynomial layer uses
    n=256.  Each predicate bakes in whatever pre-conditions hacspec's
-   underlying primitive demands (e.g. compress_d requires d < 12). *)
+   underlying primitive demands (e.g. compress_d requires d < 12).
+   `opaque_to_smt` so that the trait class definition does not unfold
+   the hacspec compress_d/decompress_d during typechecking of unrelated
+   methods (otherwise impl_1's per-method VCs slow down — measured
+   at ntt_layer_1_step's `assert (p_layer_1 3)` exceeding rlimit 400). *)
 
+[@@ "opaque_to_smt"]
 let compress_post_N (#n: usize) (d: usize{v d < 12})
     (input result: t_Array i16 n) : prop =
   forall (i: nat). i < v n ==>
@@ -140,6 +171,7 @@ let compress_post_N (#n: usize) (d: usize{v d < 12})
    The first part is in our refinement on d; the second must be
    supplied by the caller's pre.  We use implication so the predicate
    is callable without an input refinement. *)
+[@@ "opaque_to_smt"]
 let decompress_post_N (#n: usize) (d: usize{v d < 12})
     (input result: t_Array i16 n) : prop =
   (forall (i: nat). i < v n ==>
@@ -353,10 +385,11 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // TODO(C4): re-add `compress_post_N #(mk_usize 16) (mk_usize 1) vec result`
-    // conjunct once the impl body discharges it.
     pub(crate) fn compress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"forall i. bounded (Seq.index ${result} i) 1"#)
+        hax_lib::fstar_prop_expr!(
+            r#"bounded_pos_i16_array 1 ${result} /\
+               compress_post_N #(mk_usize 16) (mk_usize 1) ${vec} ${result}"#
+        )
     }
 
     pub(crate) fn compress_pre(vec: &[i16; 16], coefficient_bits: i32) -> hax_lib::Prop {
@@ -365,13 +398,10 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) /\
-                (forall i. 
-                    v (Seq.index $vec i) >= 0 /\
-                    v (Seq.index $vec i) < 3329)"#
+                bounded_i16_array (mk_i16 0) (mk_i16 3328) ${vec}"#
         )
     }
 
-    // TODO(C4): re-add the compress_post_N conjunct once impl discharges it.
     pub(crate) fn compress_post(
         vec: &[i16; 16],
         coefficient_bits: i32,
@@ -382,7 +412,8 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) ==>
-                (forall i. bounded (Seq.index ${result} i) (v $coefficient_bits))"#
+                (bounded_pos_i16_array (v $coefficient_bits) ${result} /\
+                 compress_post_N #(mk_usize 16) (mk_usize (v $coefficient_bits)) ${vec} ${result})"#
         )
     }
 
@@ -408,9 +439,7 @@ let to_le_bytes_post_N (#n: usize)
 
     pub(crate) fn decompress_1_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
-               let x = Seq.index ${vec} i in 
-               (x == mk_i16 0 \/ x == mk_i16 1)"#
+            r#"bounded_pos_i16_array 1 ${vec}"#
         )
     }
 
@@ -423,9 +452,7 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) /\
-                (forall i. 
-                    v (Seq.index $vec i) >= 0 /\
-                    v (Seq.index $vec i) < pow2 (v $coefficient_bits))"#
+                bounded_pos_i16_array (v $coefficient_bits) ${vec}"#
         )
     }
 
@@ -1100,11 +1127,11 @@ pub trait Operations: Copy + Clone + Repr {
     fn compress<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     #[requires(spec::decompress_1_pre(&a.repr()))]
-    // TODO(C4): add `spec::decompress_1_post(...)` once impl discharges it.
+    #[ensures(|result| spec::decompress_1_post(&a.repr(), &result.repr()))]
     fn decompress_1(a: Self) -> Self;
 
     #[requires(spec::decompress_ciphertext_coefficient_pre(&a.repr(), COEFFICIENT_BITS))]
-    // TODO(C4): add `spec::decompress_ciphertext_coefficient_post(...)` post.
+    #[ensures(|result| spec::decompress_ciphertext_coefficient_post(&a.repr(), COEFFICIENT_BITS, &result.repr()))]
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Self) -> Self;
 
     // NTT

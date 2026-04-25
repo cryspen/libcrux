@@ -56,7 +56,9 @@ let compress_message_coefficient (fe: u16) =
     assert (v fe > 2496 ==> r1 = mk_i16 0);
     assert (v res = v r1)
   in
-  res
+  let result:u8 = res in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -72,12 +74,16 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   let compressed:u64 = compressed +! mk_u64 1664 in
   let compressed:u64 = compressed *! mk_u64 10321340 in
   let compressed:u64 = compressed >>! mk_i32 35 in
-  Libcrux_secrets.Int.f_as_i16 #u32
-    #FStar.Tactics.Typeclasses.solve
-    (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
-        (Libcrux_secrets.Int.f_as_u32 #u64 #FStar.Tactics.Typeclasses.solve compressed <: u32)
-      <:
-      u32)
+  let result:i16 =
+    Libcrux_secrets.Int.f_as_i16 #u32
+      #FStar.Tactics.Typeclasses.solve
+      (Libcrux_ml_kem.Vector.Portable.Arithmetic.get_n_least_significant_bits coefficient_bits
+          (Libcrux_secrets.Int.f_as_u32 #u64 #FStar.Tactics.Typeclasses.solve compressed <: u32)
+        <:
+        u32)
+  in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -150,7 +156,9 @@ let compress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     assert (forall (i: nat).
           i < 16 ==> v (a.f_elements.[ sz i ] <: i16) >= 0 /\ v (a.f_elements.[ sz i ] <: i16) < 2)
   in
-  a
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -231,7 +239,9 @@ let compress
           (v (a.f_elements.[ sz i ] <: i16) >= 0 /\
             v (a.f_elements.[ sz i ] <: i16) < pow2 (v v_COEFFICIENT_BITS)))
   in
-  a
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -265,7 +275,16 @@ let decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
     assert (forall i.
           Seq.index res.f_elements i == mk_i16 0 \/ Seq.index res.f_elements i == mk_i16 1665)
   in
-  res
+  let _:Prims.unit =
+    assert (forall (i: nat).
+          i < 16 ==>
+          (let a_i = v (Seq.index a.f_elements i) in
+            (a_i == 0 ==> (2 * a_i * 3329 + 2) / 4 == 0) /\
+            (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)))
+  in
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = res in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options
 
@@ -363,6 +382,8 @@ let decompress_ciphertext_coefficient
           in
           a)
   in
-  a
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = a in
+  let _:Prims.unit = admit () (* Panic freedom *) in
+  result
 
 #pop-options

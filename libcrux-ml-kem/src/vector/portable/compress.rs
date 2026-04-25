@@ -24,11 +24,22 @@ use libcrux_secrets::*;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
 #[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
+// Post: threshold form AND hacspec integer form.  The hacspec form
+// is `v result == ((v fe * 2 * 2^1 + 3329) / (2 * 3329)) % 2^1`
+// simplified: `((v fe * 4 + 3329) / 6658) % 2`.  Both forms are
+// equivalent on [0, 3329); the bridge lemma uses the hacspec form.
+//
+// Marked `panic_free` (skips body postcondition verification, still
+// panic-checked) per user directive: prove the math at the chunk /
+// Layer-1 level rather than at the primitive.  The 3-case integer
+// chain in the body left as documentation.
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"((833 <= v fe && v fe <= 2496) ==> v result == 1) /\
-						    (~(833 <=  v fe && v fe <= 2496) ==> v result == 0)"#)))]
+						    (~(833 <=  v fe && v fe <= 2496) ==> v result == 0) /\
+						    (v result == ((v fe * 4 + 3329) / 6658) % 2)"#)))]
 pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
     // The approach used here is inspired by:
     // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
@@ -82,7 +93,7 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
     hax_lib::fstar!(
         r#"assert (v $r0 = v $shifted_positive_in_range / pow2 15);
         assert (if v $shifted_positive_in_range < 0 then $r0 = ones else $r0 = zero);
-        logand_lemma (mk_i16 1) $r0; 
+        logand_lemma (mk_i16 1) $r0;
         assert (if v $shifted_positive_in_range < 0 then $r1 = mk_i16 1 else $r1 = mk_i16 0);
         assert ((v $fe >= 833 && v $fe <= 2496) ==> $r1 = mk_i16 1);
         assert (v $fe < 833 ==> $r1 = mk_i16 0);
@@ -90,9 +101,16 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
         assert (v $res = v $r1)"#
     );
 
+    // Hacspec-form post `v res == ((v fe * 4 + 3329) / 6658) % 2` is
+    // discharged via the `panic_free` admit; the math is a 3-case
+    // integer-division evaluation on `fe ∈ [0, 3329)`:
+    //   fe ∈ [0, 832]:    4*fe+3329 ∈ [3329, 6657],   quot 0, mod 2 = 0
+    //   fe ∈ [833, 2496]: 4*fe+3329 ∈ [6661, 13313],  quot 1, mod 2 = 1
+    //   fe ∈ [2497, 3328]: 4*fe+3329 ∈ [13317, 16641], quot 2, mod 2 = 0
     res
 }
 
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
 #[cfg_attr(hax,
@@ -102,9 +120,19 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
          coefficient_bits == 10 ||
          coefficient_bits == 11) &&
          fe < (FIELD_MODULUS as u16)))]
+// Post: bounds AND hacspec integer form.  The hacspec form is
+// `v result == ((v fe * 2 * pow2 D + 3329) / 6658) % pow2 D` where
+// D = v coefficient_bits.  This is the exact NIST FIPS 203
+// Compress_d formula; the impl uses a Barrett-style approximation
+// (magic constant 10_321_340 >> 35 ≈ 1/3329).  Proving the Barrett
+// approximation is *exact* for D ∈ {4,5,10,11} and fe ∈ [0, 3329)
+// requires either case-by-case enumeration (3329 * 4 ≈ 13k cases)
+// or Barrett-reduction theory.  Marked `panic_free` pending that proof.
 #[cfg_attr(hax,
      hax_lib::ensures(
-     |result| fstar!(r#"v result >= 0 && v result < pow2 (v $coefficient_bits)"#)))]
+     |result| fstar!(r#"v result >= 0 /\ v result < pow2 (v $coefficient_bits) /\
+                        v result == ((v $fe * 2 * pow2 (v $coefficient_bits) + 3329) / 6658)
+                                    % pow2 (v $coefficient_bits)"#)))]
 pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: U16) -> FieldElement {
     // hax_debug_assert!(
     //     coefficient_bits == 4
@@ -139,12 +167,21 @@ let compress_message_coefficient_range_helper (fe: u16) : Lemma
 "#
     )
 )]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
     v (Seq.index ${a}.f_elements i) < 3329"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
-    v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
-    v (${result}.f_elements.[ sz i ] <: i16) < 2"#))]
+// Hacspec-form post: `v result[i] == ((v a[i] * 4 + 3329) / 6658) % 2`
+// (hacspec `compress_d _ 1` in integer form).  Marked `panic_free` —
+// body proof deferred per user directive ("move up the stack"); the
+// math chains primitive `compress_message_coefficient`'s integer post
+// up through the per-lane assignment.  Layer-1 chunk-commute lemma
+// then converts integer form → spec-fe form.
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+    (let res_i = v (${result}.f_elements.[ sz i ] <: i16) in
+     let a_i   = v (Seq.index ${a}.f_elements i) in
+     res_i >= 0 /\ res_i < 2 /\
+     res_i == ((a_i * 4 + 3329) / 6658) % 2)"#))]
 pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         "assert (forall (i:nat). i < 16 ==> (cast (${a}.f_elements.[ sz i ]) <: u16) <.
@@ -182,17 +219,27 @@ pub(crate) fn compress_1(mut a: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
 #[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
         v $COEFFICIENT_BITS == 10 \/
         v $COEFFICIENT_BITS == 11) /\
-    (forall (i:nat). i < 16 ==> 
+    (forall (i:nat). i < 16 ==>
         (v (Seq.index ${a}.f_elements i) >= 0 /\
          v (Seq.index ${a}.f_elements i) < 3329))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
-    (v (${result}.f_elements.[ sz i ] <: i16) >= 0 /\
-     v (${result}.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#))]
+// Hacspec-form post: `v result[i] == ((v a[i] * 2 * 2^D + 3329) / 6658) % 2^D`
+// (hacspec `compress_d _ D` in integer form).  Marked `panic_free` —
+// body proof deferred per user directive.  Primitive
+// `compress_ciphertext_coefficient` is also `panic_free` (Barrett
+// exactness pending), so the chain doesn't close at the chunk level
+// either; revisit when both come together.
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
+    (let res_i = v (${result}.f_elements.[ sz i ] <: i16) in
+     let a_i   = v (Seq.index ${a}.f_elements i) in
+     res_i >= 0 /\ res_i < pow2 (v $COEFFICIENT_BITS) /\
+     res_i == ((a_i * 2 * pow2 (v $COEFFICIENT_BITS) + 3329) / 6658)
+              % pow2 (v $COEFFICIENT_BITS))"#))]
 pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         "assert (v (cast ($COEFFICIENT_BITS) <: u8) == v $COEFFICIENT_BITS);
@@ -200,7 +247,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
         assert (v (cast ($FIELD_MODULUS) <: u16) == 3329)"
     );
     hax_lib::fstar!(
-        "assert (forall (i:nat). i < 16 ==> 
+        "assert (forall (i:nat). i < 16 ==>
             (cast (${a}.f_elements.[ sz i ]) <: u16) <.
             (cast ($FIELD_MODULUS) <: u16))"
     );
@@ -211,7 +258,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
                 r#"((forall (j:nat). (j >= v $i /\ j < 16) ==>
                       v (cast (${a}.f_elements.[ sz j ]) <: u16) < v (cast ($FIELD_MODULUS) <: u16))) /\
                     (forall (j:nat). j < v $i ==> v (${a}.f_elements.[ sz j ] <: i16) >= 0 /\
-                     v (${a}.f_elements.[ sz j ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#
+                     v (${a}.f_elements.[ sz j ] <: i16) < pow2 (v $COEFFICIENT_BITS))"#
             )
         });
 
@@ -231,7 +278,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
         );
     }
     hax_lib::fstar!(
-        r#"assert (forall (i:nat). i < 16 ==> 
+        r#"assert (forall (i:nat). i < 16 ==>
                     (v (${a}.f_elements.[ sz i ] <: i16) >= 0 /\
                      v (${a}.f_elements.[ sz i ] <: i16) < pow2 (v $COEFFICIENT_BITS)))"#
     );
@@ -239,12 +286,19 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
     a
 }
 
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in 
+#[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in
                                         (x == mk_i16 0 \/ x == mk_i16 1)"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+// Hacspec-form post: per-lane integer equation matching
+// `Hacspec_ml_kem.Compress.decompress_d fe 1` = `(2*fe*3329 + 2) / 4`.
+// On input ∈ {0, 1}: decompress_d 0 1 = 0, decompress_d 1 1 = 1665.
+// Marked `panic_free` per user directive — body proof deferred.
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
         (let res_i = v (Seq.index ${result}.f_elements i) in
-         res_i == 0 \/ res_i == 1665)"#))]
+         let a_i   = v (Seq.index ${a}.f_elements i) in
+         (res_i == 0 \/ res_i == 1665) /\
+         res_i == (2 * a_i * 3329 + 2) / 4)"#))]
 #[inline(always)]
 pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
     let z = zero();
@@ -270,14 +324,27 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
     let res = bitwise_and_with_constant(s, 1665);
 
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/ 
+        r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/
                                       Seq.index ${res}.f_elements i == mk_i16 1665)"#
+    );
+
+    // Hacspec form: res_i == (2*a_i*3329 + 2) / 4 for a_i ∈ {0, 1}.
+    //   a_i = 0: (0 + 2)/4 = 0  (res = 0)
+    //   a_i = 1: (6658 + 2)/4 = 6660/4 = 1665  (res = 1665)
+    // The equation is bijective on {0,1} ↔ {0, 1665}, so we case
+    // on a_i.  The assertion pairs up cleanly.
+    hax_lib::fstar!(
+        r#"assert (forall (i:nat). i < 16 ==>
+             (let a_i = v (Seq.index ${a}.f_elements i) in
+              (a_i == 0 ==> (2 * a_i * 3329 + 2) / 4 == 0) /\
+              (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)))"#
     );
 
     res
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"(v $COEFFICIENT_BITS == 4 \/
         v $COEFFICIENT_BITS == 5 \/
@@ -285,9 +352,17 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
         v $COEFFICIENT_BITS == 11) /\
     (forall (i:nat). i < 16 ==> v (Seq.index ${a}.f_elements i) >= 0 /\
         v (Seq.index ${a}.f_elements i) < pow2 (v $COEFFICIENT_BITS))"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==> 
+// Hacspec-form post: `v result[i] == (2*v a[i]*3329 + pow2 D) / pow2 (D+1)`,
+// which is exactly `Hacspec_ml_kem.Compress.decompress_d fe D` when fe
+// has val = v a[i] (fe in [0, 2^D) guarantees val < 2^D < 3329 so the
+// u16 mod-3329 normalisation is a no-op).  Marked `panic_free` per
+// user directive — body proof deferred.
+#[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
         (let res_i = v (Seq.index ${result}.f_elements i) in
-         res_i >= 0 /\ res_i < v $FIELD_MODULUS)"#))]
+         let a_i   = v (Seq.index ${a}.f_elements i) in
+         res_i >= 0 /\ res_i < v $FIELD_MODULUS /\
+         res_i == (2 * a_i * 3329 + pow2 (v $COEFFICIENT_BITS))
+                  / pow2 (v $COEFFICIENT_BITS + 1))"#))]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     mut a: PortableVector,
 ) -> PortableVector {

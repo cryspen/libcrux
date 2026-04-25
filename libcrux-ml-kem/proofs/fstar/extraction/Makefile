@@ -1,5 +1,6 @@
 SLOW_MODULES += Libcrux_ml_kem.Vector.Rej_sample_table.fsti
 SLOW_MODULES += Libcrux_ml_kem.Matrix.fst
+SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
 
 ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 	      Libcrux_ml_kem.Ind_cpa.fst \

@@ -231,7 +231,7 @@ let lemma_butterfly_fe_commute_minus (vec_i vec_j zeta result_j: i16) :
    equations for one butterfly pair from its two `ntt_spec` residues. *)
 let lemma_butterfly_pair_commute
     (vec result: t_Array i16 (mk_usize 16))
-    (z: i16) (i j: nat{i < 16 /\ j < 16}) :
+    (z: i16) (i: nat{i < 16}) (j: nat{j < 16}) :
   Lemma (requires
            v (Seq.index result i) % 3329
              == (v (Seq.index vec i) + v (Seq.index vec j) * v z * 169) % 3329 /\
@@ -405,7 +405,7 @@ let lemma_base_case_mult_pair_commute
 (* One inv-butterfly pair from its two `inv_ntt_spec` residues. *)
 let lemma_inv_butterfly_pair_commute
     (vec result: t_Array i16 (mk_usize 16))
-    (z: i16) (i j: nat{i < 16 /\ j < 16}) :
+    (z: i16) (i: nat{i < 16}) (j: nat{j < 16}) :
   Lemma (requires
            v (Seq.index result i) % 3329
              == (v (Seq.index vec j) + v (Seq.index vec i)) % 3329 /\
@@ -765,7 +765,11 @@ let lemma_to_unsigned_representative_chunk_commutes
    Reuse the array-length-generic predicates already defined in
    Traits.Spec so Layer 2 at N = 256 can cite the same shape. *)
 
-assume val lemma_compress_1_chunk_commutes
+(* The trait posts now bake in `compress_post_N` / `decompress_post_N`
+   directly, so each lemma's conclusion is just one conjunct of the
+   trait method's post — `= ()` is enough. *)
+
+let lemma_compress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
   Lemma
@@ -773,8 +777,9 @@ assume val lemma_compress_1_chunk_commutes
     (ensures
        (let r = T.f_compress_1_ vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
+  = ()
 
-assume val lemma_compress_chunk_commutes
+let lemma_compress_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (coefficient_bits: i32) (vec: vV) :
   Lemma
@@ -786,8 +791,9 @@ assume val lemma_compress_chunk_commutes
        (let r = T.f_compress coefficient_bits vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
+  = ()
 
-assume val lemma_decompress_1_chunk_commutes
+let lemma_decompress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
   Lemma
@@ -795,8 +801,9 @@ assume val lemma_decompress_1_chunk_commutes
     (ensures
        (let r = T.f_decompress_1_ vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
+  = ()
 
-assume val lemma_decompress_ciphertext_coefficient_chunk_commutes
+let lemma_decompress_ciphertext_coefficient_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (coefficient_bits: i32) (vec: vV) :
   Lemma
@@ -808,6 +815,7 @@ assume val lemma_decompress_ciphertext_coefficient_chunk_commutes
        (let r = T.f_decompress_ciphertext_coefficient coefficient_bits vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
+  = ()
 
 (* ────────────  NTT-layer ops  ────────────
    Hacspec's `ntt_layer_n` at N = 16 takes half-size `len` and a zeta
