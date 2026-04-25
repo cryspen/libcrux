@@ -112,7 +112,7 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
     serialize::deserialize_12(a.classify_ref())
 }
 
-#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always --z3refresh""#)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --split_queries always""#)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::attributes]
 impl Operations for PortableVector {
