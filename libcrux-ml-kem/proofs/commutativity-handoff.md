@@ -24,18 +24,62 @@ away. Each migration replaces the reference with the hacspec counterpart
 ## Session resume (continue from another machine)
 
 **Branch**: `trait-poststrengthen` on the libcrux-trait-strengthen worktree.
-**Tip**: `bd54105b3` (C4f WIP — primitive bodies + wrapper rewires landed; verification in progress this session). Prior green tip: `0f936c5e5` (C4e done with admits).
+**Tip**: C4f closing tip (this session) — Vector.Portable.fst verifies in 117 s with no admits (vs C4e baseline 217 s).
 
-**Session note (2026-04-25)**: WIP commit's `panic_free` rewrite of the
-`ntt_multiply` wrapper dropped the `reveal_opaque is_i16b_array_opaque
-3328` call needed by the underlying `Ntt.ntt_multiply` precondition.
-Re-added in this session as a single one-liner at top of the wrapper
-body. Re-verifying. WIP also added `--z3refresh` to the `impl_1` push-options;
-this slowed Vector.Portable.fst from ~217 s (C4e baseline) to ~37 min on
-this machine. If subsequent runs confirm no SMT flakiness without it,
-remove. AVX2 `compress_*` / `decompress_*` wrappers are still
-bound-only-post and will fail against the strengthened trait — separate
-C4′ task.
+**Session summary (2026-04-25)**:
+
+The C4f WIP commit `bd54105b3` carried three latent issues that were
+diagnosed and fixed this session, plus an architectural refactor that
+the user directed mid-session:
+
+1. WIP commit's `panic_free` rewrite of `ntt_multiply` wrapper dropped
+   the `reveal_opaque is_i16b_array_opaque 3328` needed by the
+   underlying `Ntt.ntt_multiply` pre.  Restored.
+2. WIP added `--z3refresh` to `impl_1` push-options; cost ~10× on
+   Vector.Portable.fst (217 s → 37 min).  Removed per user feedback
+   ("--z3refresh is not good") and per `smtprofiling` skill technique 3.
+3. Compress/decompress wrappers (panic_free) needed
+   `reveal_opaque bounded_i16_array` to discharge the underlying
+   primitives' non-opaque pre.  Added.
+
+**Architectural refactor (per-method `op_*` flattening)** — user
+directed mid-session: each function in `impl Operations for
+PortableVector` should be a one-line wrapper around a free function
+with *exactly* the same pre/post.  Implemented in
+`src/vector/portable.rs`:
+
+- 15 free `op_*` functions absorb the previous-impl-method proof
+  bodies (reveal_opaques, lemma calls, `forall4` assertions).  Each
+  has the *exact* trait pre/post.  `panic_free` annotations live only
+  on `op_*` (compress family + ntt_multiply); impl methods carry
+  strong pre/post and have no admits.
+- impl methods that previously matched (`add`, `sub`,
+  `multiply_by_constant`) and the various serialize_*/deserialize_*
+  / ZERO / from_i16_array / etc. stayed as one-liners.
+- Side fix: `Spec.Utils.fsti` — marked `forall{4,8,16,32}` as
+  `unfold let` (was non-`unfold let`).  Without `unfold`, at the
+  project default `--fuel 0` Z3 never inlined them, so `assert (forall4 p)`
+  appeared as an unrelated function application even when the four
+  conjuncts were known.  Unblocked the 6 NTT-layer wrappers' final
+  `forall4` assertions at rlimit 200.
+
+AVX2 `compress_*` / `decompress_*` wrappers were pre-emptively marked
+`panic_free` with the strengthened `${spec::*_post}` matching the
+trait — same C4′ pattern; tracked but not in C4f scope.
+
+**End-state (C4f closing tip):**
+
+- `Libcrux_ml_kem.Vector.Portable.fst` — PASS (117 s, rlimit 200).
+- `Libcrux_ml_kem.Vector.Portable.Compress.fst` — PASS (~73 s).
+- Full `make` from extraction dir — PASS except the pre-existing
+  unrelated `Vector.Neon.Vector_type.fsti(7,8-7,54)` "decidable
+  equality" error (documented in handoff under "Out of scope").
+- C4e Layer-0.5 admits in `Hacspec_ml_kem.Commute.Chunk.fst` are
+  preserved (no regression); closing them unlocks dropping
+  `panic_free` from `op_ntt_multiply`.
+
+Iteration cost on any one impl method dropped from ~5 min (verifying
+all of `impl_1`) to ~10 s (verifying only that method's `op_*`).
 
 **What's green right now** (tip commit):
 - `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst` — verifies standalone (~7 s).
@@ -326,6 +370,33 @@ when `N` doesn't match a `forall<N>` helper.
 A follow-up benchmark is worth running once we have a few
 Layer-1 / Layer-2 posts in hand, measuring Z3 time for each variant
 end-to-end from a caller's perspective.
+
+**Update (2026-04-25)** — benchmark run; results below.
+
+A standalone benchmark exercising a 4-equality butterfly post under
+all three forms (definition + caller-instance + caller-conjunction,
+N ∈ {4, 16}) found:
+
+- **Definition typecheck**: all three forms cost the same (~12-18 ms
+  at N=4, ~120-135 ms at N=16).  No penalty for adopting Form 3 in
+  trait posts.
+- **Caller pulling out one lane (`P 2`)**: Form 3 succeeds in
+  16-24 ms; **Forms 1 and 2 fail** with `unknown because (incomplete
+  quantifiers)` (no rlimit fixes it — structural triggering failure).
+- **Caller forwarding to another `forall_N`-shaped contract**:
+  Form 3 succeeds in 17-33 ms; Form 1 succeeds at N=4 (66 ms) but is
+  **44× slower at N=16** (1466 ms vs 33 ms); **Form 2 fails** at both
+  N=4 and N=16.
+
+**Recommendation locked in**: use Form 3 for all bounded universal
+post-conditions (N ∈ {4, 8, 16, 32}).  For N values without a
+`forall_N` helper (e.g. 256), fall back to Form 1.  The `unfold` on
+`forall_N` is load-bearing — without it, Z3 won't see through the
+helper and the advantage disappears (this is why this session's
+`unfold let forall{4,8,16,32}` change in `Spec.Utils.fsti` was
+necessary, even though `forall_N` was already used as Form 3).
+
+Repro: `bash /tmp/forall-bench/run.sh`.
 
 ### Note on C2b proof strategy
 

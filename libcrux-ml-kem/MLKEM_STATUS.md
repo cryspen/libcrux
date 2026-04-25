@@ -105,40 +105,79 @@ File: `Hacspec_ml_kem.Commute.Chunk.fst` (lines 768-810).
 S1a: strengthen `compress_message_coefficient` post with integer form,
 try to prove.
 
-## Verification log (post-WIP `bd54105b3`, this session)
+## Verification log (this session — C4f closed)
+
+Final state at the C4f-closing tip:
 
 - `Libcrux_ml_kem.Vector.Portable.Compress.fst` — **PASS** (~73 s).
-  All 4 primitive bodies (`compress_message_coefficient`,
-  `compress_ciphertext_coefficient`, `decompress_1_`,
-  `decompress_ciphertext_coefficient`) pass with `panic_free` +
-  hacspec-form posts.
-- `Libcrux_ml_kem.Vector.Portable.fst` — **FAILED** (37 min, 1 site, 10
-  sub-query reports under `--split_queries always`):
-  `ntt_multiply` wrapper's call to `Ntt.ntt_multiply` couldn't discharge
-  `is_i16b_array 3328 lhs.f_elements` from the wrapper's
-  `is_i16b_array_opaque 3328` pre.
-  Root cause: WIP commit replaced the C4e wrapper body (reveal_opaque →
-  proof → admit) with `panic_free` only — but `panic_free` skips the
-  wrapper's *post* check, not subroutine-call *pre* checks.
-  **Fix this session:** put the single `reveal_opaque
-  is_i16b_array_opaque 3328` back at the top of the wrapper body.
-  Re-verifying now.
-- `Hacspec_ml_kem.Commute.Chunk.fst` — not yet re-checked this session
-  (no relevant changes since C4e tip; should still verify in ~3-7 s).
+- `Libcrux_ml_kem.Vector.Portable.fst` — **PASS** (117 s, rlimit 200).
+  Down from C4e baseline 217 s — **45 % faster** despite carrying
+  6 NTT-layer + 4 compress/decompress + ntt_multiply
+  hacspec-FE-form posts (none of which existed in C4e).
+- Full `make` from extraction dir — only failure is the pre-existing
+  unrelated `Vector.Neon.Vector_type.fsti(7,8-7,54)` "decidable
+  equality" error (same as C4e tip; documented in handoff under
+  "Out of scope").
+
+## Architectural changes this session
+
+1. **Per-method `op_*` flattening of `impl Operations for PortableVector`.**
+   Every impl method body is now either a one-line call to a free
+   `op_<name>(args)` whose pre/post is the *exact* trait pre/post
+   (subtyping check `P ==> P`, trivial), or a one-line call to an
+   underlying primitive whose pre/post already matches the trait
+   (`add`, `sub`, `multiply_by_constant`).  No proof code lives inside
+   the impl block.  Each `op_*` and primitive verifies in its own SMT
+   scope with its own `#push-options`; `impl_1`'s VC is uniformly
+   trivial.  Iteration on any single method is now ~10 s instead of
+   ~5 min.
+
+2. **`panic_free` annotations live only on `op_*`** (compress family
+   + ntt_multiply) — never on the impl method.  Impl methods carry the
+   strong (opaque-where-needed) trait pre/post and have no admits.
+
+3. **`unfold let forall{4,8,16,32}`** in `Spec.Utils.fsti`.  These
+   small helpers expand to a fixed N-conjunction; without `unfold`,
+   F* leaves them un-inlined at fuel 0, so `assert (forall4 p)`
+   appeared to Z3 as an unrelated function application even when each
+   `assert (p k)` succeeded individually.  `unfold` makes them inline
+   at every use site, turning the assertion into the conjunction
+   directly.  Unblocked all 6 NTT-layer wrappers at rlimit 200 — was
+   timing out at 225 s on rlimit 400 in `op_ntt_layer_1_step`.
+
+4. **`--z3refresh` removed** from `impl_1` push-options.  It cost ~10×
+   on Vector.Portable.fst (217 s → 37 min) and per the smtprofiling
+   skill catalog (technique 3) is generally a worse choice than
+   `--split_queries always` alone.
+
+5. **AVX2 `compress_*` / `decompress_*`** wrappers were
+   pre-emptively marked `panic_free` with strengthened
+   `${spec::*_post}` annotations matching the trait's strengthened
+   posts (`compress_post_N` / `decompress_post_N`).  Per user
+   guideline: don't burn F*/Z3 cycles on doomed proofs; document each
+   annotation's reason and removal plan.  **Removal plan**: drop
+   `panic_free` and prove the body when C4′ AVX2 mirror lands.
 
 ## Side notes
 
 - `Spec.Utils.fsti`: `neg_i16` made total via guard on `i16::MIN`
   (overflow case sent to `mk_i16 0`). Lets the helper appear in trait
   posts without propagating an i16-MIN refinement.
-- `--z3refresh` was added to `impl_1` push-options in WIP commit. Cost:
-  Vector.Portable.fst went from ~217 s (C4e baseline) to ~37 min in
-  this session. Consider removing if SMT flakiness is not actually
-  observed; revisit after re-verify confirms the fix above.
-- AVX2 `compress_*` / `decompress_*` wrappers (`src/vector/avx2.rs:405-451`)
-  still use the old bound-only posts — they will fail against the
-  strengthened trait posts (citing `compress_post_N`/`decompress_post_N`).
-  This is the C4′ AVX2 mirror task; tracked but not in C4f scope.
+
+## Open follow-ups
+
+- **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
+  be able to fold the bridging directly into the underlying primitive's
+  annotations and drop the wrapper.  Tracked separately.
+- **C4′ AVX2 mirror**: AVX2 NTT-layer + compress/decompress + ntt_multiply
+  wrappers need the same op_* + panic_free → proof transitions.
+- **Forall-style benchmark**: which of `forall (k:nat). k<N ==> P k` /
+  `forall (k:nat{k<N}). P k` / `Spec.Utils.forall<N> (fun k -> P k)`
+  is most efficient in trait posts and at callers.  Dispatched as a
+  parallel research task this session; results inform Phase 2.
+- **C4e Layer-0.5 admits**: `lemma_base_case_mult_{even,odd}_{mod_core,fe_commute}`
+  in `Hacspec_ml_kem.Commute.Chunk.fst` are still admitted; closing
+  them unlocks dropping `panic_free` from `op_ntt_multiply`.
 
 ## Pointer to full handoff
 
