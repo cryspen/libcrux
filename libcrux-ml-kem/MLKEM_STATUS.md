@@ -224,6 +224,32 @@ vector ((i/N)*16 + i%N)`) to the trait's array-form post
 
 Verified: `Vector.Avx2.fst` PASS.
 
+## C4′ AVX2 NTT-layer wrappers — `panic_free` removed for all 6
+
+`src/vector/avx2.rs` `op_{ntt,inv_ntt}_layer_{1,2,3}_step` now drop
+`panic_free` and discharge the trait's strengthened FE-form posts via
+6 admitted bridge lemmas
+`op_{ntt,inv_ntt}_layer_N_step_bridge` (defined in a `fstar::before`
+block on `op_ntt_layer_1_step`).  Each bridge takes `vector` + zetas
++ `result == ntt::*_step vector zetas` and concludes the trait
+`*_step_post` (lifting the AVX2 primitive's body equality up to the
+FE-butterfly form on `vec256_as_i16x16`).
+
+- `op_inv_ntt_layer_1_step_bridge` precondition uses the primitive's
+  non-opaque `is_i16b_array` (because the underlying
+  `inv_ntt_layer_1_step.fsti` requires it); wrapper does
+  `reveal_opaque is_i16b_array_opaque` before the call.
+- **Removal plan for the admits**: strengthen the primitive posts in
+  `Libcrux_ml_kem.Vector.Avx2.Ntt.fsti` (currently `Prims.l_True`)
+  to expose per-lane FE equations, then prove each bridge directly
+  from those.  `inv_ntt_layer_1_step.fst` body has
+  `--admit_smt_queries true` which must be removed first.
+- `op_ntt_multiply` keeps `panic_free` (blocked on C4e Layer-0.5
+  admits — same on portable).
+
+Verified: `Vector.Avx2.fst` PASS, `Vector.Avx2.{Arithmetic,Compress,
+Ntt,Serialize,Sampling}.fst` all PASS, `Vector.Portable.fst` PASS.
+
 ## Open follow-ups
 
 - **Phase 2 of the impl-flattening refactor**: for some `op_*` we may
