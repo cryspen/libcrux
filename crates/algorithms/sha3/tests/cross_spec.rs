@@ -396,7 +396,7 @@ mod avx2_cross_spec {
 
     #[test]
     fn avx2_x4_shake128_matches_spec() {
-        let inputs: [&[u8]; 4] = [b"one", b"two", b"three!", b"four!!"];
+        let inputs: [&[u8]; 4] = [b"oneone", b"twotwo", b"three!", b"four!!"];
         let mut state = libcrux_sha3::avx2::x4::incremental::init();
         libcrux_sha3::avx2::x4::incremental::shake128_absorb_final(
             &mut state, inputs[0], inputs[1], inputs[2], inputs[3],
