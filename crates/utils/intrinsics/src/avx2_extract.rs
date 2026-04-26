@@ -576,6 +576,24 @@ pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_unpackhi_epi64 as mm256_unpackhi_epi64}
+let lemma_mm256_unpackhi_epi64_u64x4 (lhs rhs: t_Vec256)
+  : Lemma (
+      get_lane_u64x4 (mm256_unpackhi_epi64 lhs rhs) 0 == get_lane_u64x4 lhs 1 /\
+      get_lane_u64x4 (mm256_unpackhi_epi64 lhs rhs) 1 == get_lane_u64x4 rhs 1 /\
+      get_lane_u64x4 (mm256_unpackhi_epi64 lhs rhs) 2 == get_lane_u64x4 lhs 3 /\
+      get_lane_u64x4 (mm256_unpackhi_epi64 lhs rhs) 3 == get_lane_u64x4 rhs 3)
+    [SMTPat (mm256_unpackhi_epi64 lhs rhs)]
+  = let r = mm256_unpackhi_epi64 lhs rhs in
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 0) (get_lane_u64x4 lhs 1);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 1) (get_lane_u64x4 rhs 1);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 2) (get_lane_u64x4 lhs 3);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 3) (get_lane_u64x4 rhs 3)
+"#
+)]
 pub fn mm256_unpackhi_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -759,16 +777,90 @@ let lemma_mm256_set1_epi64x_u64x4 (a: i64)
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unimplemented!()
 }
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_set_epi64x as mm256_set_epi64x}
+let lemma_mm256_set_epi64x_u64x4 (input3 input2 input1 input0: i64)
+  : Lemma (
+      get_lane_u64x4 (mm256_set_epi64x input3 input2 input1 input0) 0 == cast_mod #i64_inttype #u64_inttype input0 /\
+      get_lane_u64x4 (mm256_set_epi64x input3 input2 input1 input0) 1 == cast_mod #i64_inttype #u64_inttype input1 /\
+      get_lane_u64x4 (mm256_set_epi64x input3 input2 input1 input0) 2 == cast_mod #i64_inttype #u64_inttype input2 /\
+      get_lane_u64x4 (mm256_set_epi64x input3 input2 input1 input0) 3 == cast_mod #i64_inttype #u64_inttype input3)
+    [SMTPat (mm256_set_epi64x input3 input2 input1 input0)]
+  = let r = mm256_set_epi64x input3 input2 input1 input0 in
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits
+      (get_lane_u64x4 r 0) (cast_mod #i64_inttype #u64_inttype input0);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits
+      (get_lane_u64x4 r 1) (cast_mod #i64_inttype #u64_inttype input1);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits
+      (get_lane_u64x4 r 2) (cast_mod #i64_inttype #u64_inttype input2);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits
+      (get_lane_u64x4 r 3) (cast_mod #i64_inttype #u64_inttype input3)
+"#
+)]
 #[inline(always)]
 pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_unpacklo_epi64 as mm256_unpacklo_epi64}
+let lemma_mm256_unpacklo_epi64_u64x4 (a b: t_Vec256)
+  : Lemma (
+      get_lane_u64x4 (mm256_unpacklo_epi64 a b) 0 == get_lane_u64x4 a 0 /\
+      get_lane_u64x4 (mm256_unpacklo_epi64 a b) 1 == get_lane_u64x4 b 0 /\
+      get_lane_u64x4 (mm256_unpacklo_epi64 a b) 2 == get_lane_u64x4 a 2 /\
+      get_lane_u64x4 (mm256_unpacklo_epi64 a b) 3 == get_lane_u64x4 b 2)
+    [SMTPat (mm256_unpacklo_epi64 a b)]
+  = let r = mm256_unpacklo_epi64 a b in
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 0) (get_lane_u64x4 a 0);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 1) (get_lane_u64x4 b 0);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 2) (get_lane_u64x4 a 2);
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 3) (get_lane_u64x4 b 2)
+"#
+)]
 #[inline(always)]
 pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[hax_lib::requires(IMM8 == 0x20 || IMM8 == 0x31)]
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+include BitVec.Intrinsics {mm256_permute2x128_si256 as ${mm256_permute2x128_si256::<0>}}
+let lemma_mm256_permute2x128_si256_u64x4 (v_IMM8: i32) (a b: t_Vec256)
+  : Lemma
+      (requires v v_IMM8 == 0x20 \/ v v_IMM8 == 0x31)
+      (ensures
+        (v v_IMM8 == 0x20 ==>
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 0 == get_lane_u64x4 a 0 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 1 == get_lane_u64x4 a 1 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 2 == get_lane_u64x4 b 0 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 3 == get_lane_u64x4 b 1) /\
+        (v v_IMM8 == 0x31 ==>
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 0 == get_lane_u64x4 a 2 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 1 == get_lane_u64x4 a 3 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 2 == get_lane_u64x4 b 2 /\
+          get_lane_u64x4 (mm256_permute2x128_si256 v_IMM8 a b) 3 == get_lane_u64x4 b 3))
+    [SMTPat (mm256_permute2x128_si256 v_IMM8 a b)]
+  = let r = mm256_permute2x128_si256 v_IMM8 a b in
+    if v v_IMM8 = 0x20 then begin
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 0) (get_lane_u64x4 a 0);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 1) (get_lane_u64x4 a 1);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 2) (get_lane_u64x4 b 0);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 3) (get_lane_u64x4 b 1)
+    end else begin
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 0) (get_lane_u64x4 a 2);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 1) (get_lane_u64x4 a 3);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 2) (get_lane_u64x4 b 2);
+      Rust_primitives.Integers.lemma_int_t_eq_via_bits (get_lane_u64x4 r 3) (get_lane_u64x4 b 3)
+    end
+"#
+)]
 #[inline(always)]
 pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()

@@ -1,8 +1,115 @@
 # SHA-3 equivalence proof — session handoff
 
-Date: 2026-04-25 (appended to 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
+Date: 2026-04-26 (appended to prior 2026-04-25 / 2026-04-24 / 2026-04-23 / 2026-04-21 docs below)
 Working dir: `crates/algorithms/sha3/proofs/fstar/equivalence/`
 Branch: `sha3-proofs-focused` (focused PR to main)
+
+## 2026-04-26: arm64 `load_block` body admit DISCHARGED
+
+`Libcrux_sha3.Simd.Arm64.fst::load_block` is no longer a body admit.
+Per-lane ensures + a lane-bytewise loop invariant on `Simd.Arm64.load_block`
+follow the same pattern that already verifies arm64 `load_last`.  The
+`hax_lib::fstar!("admit()")` line in
+`crates/algorithms/sha3/src/simd/arm64.rs::load_block` is gone; the
+extracted `let load_block` carries no `admit ()`.  Net arm64 body-admit
+count drops from 2 to 1.  Committed in `abf8b5297` ("load-blocl").
+
+### Real load-bearing admits remaining (5 total)
+
+**Arm64 (2):**
+
+| # | File | Line | Kind | Notes |
+|---|------|------|------|-------|
+| A1 | `Libcrux_sha3.Simd.Arm64.fst` | 909 | body `admit ()` in `store_block` | bytewise reasoning + loop invariant; mirror of the now-proved `load_block`/`load_last` patterns |
+| A2 | `EquivImplSpec.Sponge.Arm64.API.fst` | 88 | `assume val lemma_squeeze2_arm64` | unblocked by per-lane Steps lemma (Option B from the squeeze2 post-mortem) |
+
+**AVX2 (3):**
+
+| # | File | Line | Kind | Notes |
+|---|------|------|------|-------|
+| V1 | `Libcrux_sha3.Simd.Avx2.fst` | 1433 | body `admit ()` in `store_block` | mirror of A1 at N=4 |
+| V2 | `EquivImplSpec.Sponge.Avx2.API.fst` | 87 | `assume val lemma_squeeze4_avx2` | mirror of A2 at N=4; same Option B lemma closes both |
+| V3 | `Libcrux_intrinsics.Avx2_extract.fsti` | 21 | `val lemma_get_lane_u64x4_bit` | bit-bridge axiom; the only AVX2-specific intrinsic-level trust point — all ten `lemma_mm256_*_u64x4` SMTPats (six original + four new this session for `unpackhi/unpacklo_epi64`, `set_epi64x`, `permute2x128_si256`) now derive from it |
+
+NEON intrinsic-level `val` declarations in `Libcrux_intrinsics.Arm64_extract.fsti`
+are uninterpreted axioms too, but represent the same trust boundary as
+intrinsics on AVX2 (not double-counted above).
+
+### Discharged this session
+
+- **Arm64 `load_block`** — body admit removed.  Verified inline.
+
+### Discharged earlier (since the 2026-04-25 evening snapshot)
+
+- 6 × `lemma_mm256_*_u64x4` SMTPats in
+  `Libcrux_intrinsics.Avx2_extract.fsti` — converted from `admit ()`
+  to real proofs via the bit-bridge `lemma_get_lane_u64x4_bit` +
+  `Rust_primitives.Integers.lemma_int_t_eq_via_bits` (commit
+  `ef12db0ce`).  Trust shrinks from 6 axioms to 1.
+- `Libcrux_sha3.Proof_utils.Lemmas.lemma_shl_xor_shr_is_rotate_left`
+  — proved.  (The comment at `EquivImplSpec.Keccakf.Avx2.fst:96-99`
+  still calls it "admitted"; that is stale documentation, not a real
+  admit.)
+- 4 × `Proof_Utils.Lemmas.fst` upstream admits closed via the
+  `cryspen/hax integer-lemmas` branch (commit `a078bd14c`).
+
+### AVX2 `load_block` — committed but NOT verifying
+
+`crates/algorithms/sha3/src/simd/avx2.rs` adds `load_lane_u64`,
+`load_u64x4x4`, `load_u64x4` helpers + an inline loop invariant on
+AVX2 `load_block` (mirror of the arm64 work).  Helpers verify cleanly
+(both annotated `[@@ "opaque_to_smt"]` so callers consume their
+ensures without unfolding the body).  **`load_block` itself does NOT
+verify within F*'s practical limits** in this session.
+
+#### Configurations attempted on `load_block` (all failed)
+
+| Config | Outcome |
+|---|---|
+| `--z3rlimit 800 --split_queries always` (no opaque helpers) | Z3 4.13.3 segfaulted under heavy split-query load |
+| `--z3rlimit 2000` (opaque helpers, no split) | Z3 ran 13.1 min, canceled, F* retry-split path → Z3 segfault |
+| `--z3rlimit 800 --split_queries always` (opaque helpers, no z3refresh) | reached split #653, hit a 4-min sub-goal, killed by user |
+| Same + `OTHERFLAGS="--z3refresh"` | Z3 RPC parse-error after ~490 splits (F* harness bug at ~800 z3 process spawns) |
+
+#### Why N=4 is harder than N=2
+
+arm64 `load_block` verifies inline at N=2 with `--z3rlimit 800
+--split_queries always` in ~300 splits.  AVX2 N=4 doubles the
+per-state-element conjuncts in both the postcondition and the loop
+invariant, pushing total split count to 600+.  The verification path
+also exposes a hard F*/Z3 RPC parse-error bug after ~800 z3 process
+spawns (likely an fd / handle leak in F* 2025.03.25-dev).
+
+#### Intrinsic-level work that DID land this session
+
+`crates/utils/intrinsics/src/avx2_extract.rs` and
+`fstar-helpers/fstar-bitvec/BitVec.Intrinsics.fsti`: added bit-level
+definitions and four new SMTPat lemmas
+`lemma_mm256_{unpackhi,unpacklo}_epi64_u64x4`,
+`lemma_mm256_set_epi64x_u64x4`, `lemma_mm256_permute2x128_si256_u64x4`
+— all **proved** from the existing bridge axiom
+`lemma_get_lane_u64x4_bit` (no new trust axioms).  Trust budget at the
+AVX2 intrinsic boundary remains 1 (V3).  These benefit any future
+verification that needs u64-lane semantics for these intrinsics (e.g.
+ML-DSA NTT/INVNTT/encoding which use them today without u64-level
+specs).  Per-call `mm256_loadu_si256_u8` ensures (+27 lines added to
+`avx2_extract.rs`) are still ad-hoc and should be moved to the same
+lemma-from-bridge pattern when revisited.
+
+#### Next steps for whoever picks this up
+
+1. **Refactor**: hoist the `load_block` per-iteration body into a
+   `load_block_chunk` helper with its own `[@@ "opaque_to_smt"]` +
+   `--split_queries always` + ensures
+   (`state[(4i)..(4i+4)]` = loaded, rest preserved).
+   `load_block`'s outer VC then becomes thin loop-glue and should
+   drop the split count well under the F* harness threshold.  This
+   is one level deeper than what arm64 needed.
+2. **Or simplify ensures**: replace the explicit per-lane conjunction
+   in both postcondition and invariant with a recursive predicate.
+3. **Or hand-prove in F***: write the proof directly via an `assume
+   val` interface + a `.fst` body using lemmas, bypassing hax's
+   auto-VC.  Heavier but sidesteps the harness bug entirely.
 
 ## 2026-04-25 (later): squeeze4_avx2 — partial progress, banked infrastructure
 

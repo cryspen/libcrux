@@ -3,7 +3,90 @@
 Quick status pointer. Full details in
 `crates/algorithms/sha3/proofs/fstar/equivalence/HANDOFF.md`.
 
-## Current focus (2026-04-25 later)
+## Current focus (2026-04-26)
+
+**Arm64 `load_block` body admit DISCHARGED.**  Net arm64 body-level
+admit count drops from 2 to 1 (`store_block` is the last remaining
+body admit on arm64).  Committed in `abf8b5297` ("load-blocl"); per-lane
+ensures + loop invariant on `Simd.Arm64.load_block` follow the same
+pattern that already verifies arm64 `load_last`.  Source change:
+`crates/algorithms/sha3/src/simd/arm64.rs::load_block` gets a real
+proof; `--z3rlimit` settings adjusted to `800 --split_queries always`.
+
+### "Real" admits remaining — concise inventory
+
+**Arm64 (2 load-bearing):**
+
+| # | Where | Kind | Notes |
+|---|-------|------|-------|
+| A1 | `Libcrux_sha3.Simd.Arm64.fst:909` | body `admit ()` in `store_block` | needs bytewise byte-level reasoning + loop invariant; mirrors arm64 `load_block`/`load_last` patterns now that those are proved |
+| A2 | `EquivImplSpec.Sponge.Arm64.API.fst:88` | `assume val lemma_squeeze2_arm64` | unblocked by the per-lane Steps lemma (Option B from the squeeze2 post-mortem) — same lemma also unblocks AVX2 `lemma_squeeze4_avx2` |
+
+**AVX2 (3 load-bearing):**
+
+| # | Where | Kind | Notes |
+|---|-------|------|-------|
+| V1 | `Libcrux_sha3.Simd.Avx2.fst:1433` | body `admit ()` in `store_block` | mirror of A1 at N=4 |
+| V2 | `EquivImplSpec.Sponge.Avx2.API.fst:87` | `assume val lemma_squeeze4_avx2` | mirror of A2 at N=4; same Option B lemma closes both |
+| V3 | `Libcrux_intrinsics.Avx2_extract.fsti:21` | `val lemma_get_lane_u64x4_bit` (bit-bridge axiom) | single trust point relating the opaque `vec256_as_u64x4` lane extraction to the underlying bit vector — all ten `lemma_mm256_*_u64x4` SMTPats (six original + four added this session for `unpackhi/unpacklo_epi64`, `set_epi64x`, `permute2x128_si256`) now derive from this one bridge |
+
+(NEON intrinsic-level `val` declarations in `Libcrux_intrinsics.Arm64_extract.fsti`
+are uninterpreted axioms too, but the same intrinsic-level trust
+boundary applies on both platforms — not double-counted above.)
+
+### Recently DISCHARGED (no longer admits)
+
+- **Arm64 `load_block`** — body admit removed (commit `abf8b5297`,
+  2026-04-26).  Now verifies its full per-lane equivalence ensures
+  inline.  *(Arm64 `load_last` was never an admit.)*
+- **6 AVX2 `lemma_mm256_*_u64x4` SMTPats** — `or, xor, andnot,
+  slli_epi64, srli_epi64, set1_epi64x` — were `admit ()`s in the
+  extracted `.fsti`; now real `let` proofs deriving from the V3
+  bit-bridge (commit `ef12db0ce`, 2026-04-25 night).  Trust shrinks
+  from 6 axioms to 1.
+- **`lemma_shl_xor_shr_is_rotate_left`** — proved in
+  `Libcrux_sha3.Proof_utils.Lemmas.fst:21` via per-bit equality +
+  `lemma_int_t_eq_via_bits` + `lemma_rotate_left_u_get_bit`.  No
+  longer an admit.  (Stale comment in `EquivImplSpec.Keccakf.Avx2.fst:96-99`
+  still references it as "admitted" — text-only doc lag.)
+- **3 `Proof_Utils.Lemmas.fst` upstream admits** — closed via
+  `cryspen/hax integer-lemmas` branch (commit `a078bd14c`).
+- **`avx2_sc_load_block` / `avx2_sc_load_last` / `avx2_sc_store_block`**
+  — all three bridges proved (commit `c6aada632`).
+- **`lemma_absorb4_avx2`** — driver-level `assume val` flipped to a
+  real `let` (commit `a2c9f1da4`).
+- **`lemma_absorb2_arm64`** — proved earlier (2026-04-24 evening).
+
+### AVX2 `load_block` — committed but NOT verifying
+
+`crates/algorithms/sha3/src/simd/avx2.rs` adds `load_lane_u64`,
+`load_u64x4x4`, `load_u64x4` helpers (both ops helpers
+`[@@ "opaque_to_smt"]`) and an inline loop invariant on `load_block`.
+Helpers verify cleanly.  **`load_block` itself does NOT verify
+within F*'s practical limits** — N=4 doubles the per-state-element
+conjuncts vs arm64 N=2, pushing total split count to 600+, and the
+verification path also exposes a hard F*/Z3 RPC parse-error bug
+after ~800 z3 process spawns (likely an fd / handle leak in F*
+2025.03.25-dev).  See HANDOFF.md for the full configuration matrix
+tried and the three suggested next steps (refactor to
+`load_block_chunk` helper / simplify ensures with recursive predicate
+/ hand-prove in F*).  Until `load_block` verifies, the AVX2 body
+admits stay at `store_block` + `load_block`.
+
+#### Intrinsic-level work that DID land this session
+
+`crates/utils/intrinsics/src/avx2_extract.rs` and
+`fstar-helpers/fstar-bitvec/BitVec.Intrinsics.fsti`: added bit-level
+definitions and four new SMTPat lemmas
+`lemma_mm256_{unpackhi,unpacklo}_epi64_u64x4`,
+`lemma_mm256_set_epi64x_u64x4`,
+`lemma_mm256_permute2x128_si256_u64x4` — all **proved** from the
+existing bridge axiom `lemma_get_lane_u64x4_bit` (no new trust
+axioms, V3 still the only u64x4 trust point).  These are usable by
+ML-DSA NTT/INVNTT/encoding too if those proofs ever need u64-lane
+semantics.
+
+## Earlier focus (2026-04-25 later)
 
 **Attempted `lemma_squeeze4_avx2`; banked infrastructure, deferred main proof.**
 The full inline-ensures pattern at N=4 (mirroring Portable.squeeze)
@@ -243,90 +326,53 @@ default `cargo hax into fstar` invocation.
 - `/tmp/verify_api2.log` — final collapsed API verification.
 - `/tmp/verify_full.log` — latest full make run.
 
-## Load-bearing admit inventory (2026-04-25 evening)
+## Load-bearing admit inventory (2026-04-26)
 
-### Arm64
+### Arm64 (2)
 
 | # | File | Line | Kind |
 |---|------|------|------|
-| 1 | `EquivImplSpec.Sponge.Arm64.API.fst` | 88 | `assume val lemma_squeeze2_arm64` |
+| A1 | `Libcrux_sha3.Simd.Arm64.fst` | 909 | body `admit ()` inside `store_block` |
+| A2 | `EquivImplSpec.Sponge.Arm64.API.fst` | 88 | `assume val lemma_squeeze2_arm64` |
 
-### AVX2 — extracted code body admits (mirror arm64 pattern)
+### AVX2 (3)
 
-| # | File | Kind |
-|---|------|------|
-| 2 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_block` |
-| 3 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `load_last` |
-| 4 | `Libcrux_sha3.Simd.Avx2.fst` | `admit()` body of `store_block` |
+| # | File | Line | Kind |
+|---|------|------|------|
+| V1 | `Libcrux_sha3.Simd.Avx2.fst` | 1433 | body `admit ()` inside `store_block` |
+| V2 | `EquivImplSpec.Sponge.Avx2.API.fst` | 87 | `assume val lemma_squeeze4_avx2` |
+| V3 | `Libcrux_intrinsics.Avx2_extract.fsti` | 21 | `val lemma_get_lane_u64x4_bit` (the single bit-bridge axiom relating `get_lane_u64x4` to the underlying bit vector — all ten SMTPat'd `lemma_mm256_*_u64x4` lemmas now derive from this) |
 
-(Note: the body-level `admit()` formerly in `Simd256.absorb4` was
-removed on 2026-04-25 night, late — `absorb4` now verifies its
-per-lane equivalence ensures inline.)
+### Discharged since 2026-04-25 evening
 
-### AVX2 — equivalence-chain admits (replicating arm64 chain)
+- `Libcrux_sha3.Simd.Arm64.fst::load_block` body — proved
+  (commit `abf8b5297`, 2026-04-26).
+- `Libcrux_intrinsics.Avx2_extract.fsti::lemma_mm256_{or,xor,andnot,slli_epi64,srli_epi64,set1_epi64x}_u64x4`
+  — 6 admits collapsed to 1 bit-bridge `val` (commit `ef12db0ce`).
+- `Libcrux_sha3.Proof_utils.Lemmas.lemma_shl_xor_shr_is_rotate_left`
+  — proved via per-bit equality + `lemma_int_t_eq_via_bits`.  The
+  comment at `EquivImplSpec.Keccakf.Avx2.fst:96-99` calling it
+  "admitted" is stale doc (the lemma is a real `let` proof now).
+- `Proof_Utils.Lemmas.fst` — 4 upstream admits closed via
+  `cryspen/hax integer-lemmas` branch (commit `a078bd14c`).
+- AVX2 `lemma_absorb4_avx2`, `avx2_sc_*` bridges (3), `arm64_sc_*`
+  bridges, all 7 lane-correctness lemmas, `lemma_keccak4_avx2`,
+  `lemma_shake256_x4_avx2`, `lemma_absorb2_arm64` — all proved earlier.
 
-| # | File | Kind |
-|---|------|------|
-| 5..10 | `Libcrux_intrinsics.Avx2_extract.fst` | 6 × `admit()` on per-u64-lane SMTPat lemmas: `lemma_mm256_{xor,or,andnot,slli_epi64,srli_epi64,set1_epi64x}_u64x4` |
-| 11 | `EquivImplSpec.Keccakf.Avx2.fst` | `admit()` on `lemma_shl_xor_shr_is_rotate_left` (Core_models.Num.impl_u64__rotate_left is opaque) |
-| 12 | `EquivImplSpec.Sponge.Avx2.API.fst` | `assume val lemma_squeeze4_avx2` |
+### Properties of the remaining inventory
 
-(`lemma_absorb4_avx2` was an `assume val` here — now a real `let`
-discharged from the Rust ensures on `Simd256.absorb4`.)
+- **A1 ↔ V1 mirror at N=2/N=4.**  Both `store_block` bodies need
+  byte-level loop-invariant + per-lane bytewise reasoning
+  (essentially the dual of the now-proved `load_block` patterns).
+- **A2 ↔ V2 mirror at N=2/N=4.**  Both API-level `assume val`s are
+  unblocked by the same per-lane Steps lemma (Option B from the
+  squeeze2 post-mortem) — one `lemma_squeeze_one_step` proof closes
+  both, since `Simd128.squeeze2` and `Simd256.squeeze4` then become 2
+  / 4 calls with single-lane state in scope.
+- **V3 is the only AVX2-specific intrinsic-level trust axiom.**  It
+  plays the same role as the (uninterpreted) NEON intrinsic `val`s
+  on arm64 — a primitive bit/lane semantic relation — but, unlike
+  arm64, AVX2 collapses 6 such axioms down to this single bridge.
 
-**ALL SEVEN lane-correctness lemmas (`avx2_lc_zero`, `avx2_lc_xor5`,
-`avx2_lc_rotate_left1_and_xor`, `avx2_lc_xor_and_rotate`,
-`avx2_lc_and_not_xor`, `avx2_lc_xor_constant`, `avx2_lc_xor`) are
-PROVED** (by composing the SMTPat'd `lemma_mm256_*_u64x4` admits, which
-themselves mirror how arm64's per-lane intrinsic ensures are *also*
-admitted in `Libcrux_intrinsics.Arm64_extract`).  Same trust boundary
-as arm64.  The `_veor5q_u64` Rust source was re-bracketed
-left-associatively (((a^b)^c)^d)^e to match the spec shape — same
-number of XOR ops, no perf regression.
-
-**ALL THREE `avx2_sc_*` bridge lemmas (`avx2_sc_load_block`,
-`avx2_sc_load_last`, `avx2_sc_store_block`) are now PROVED** —
-they mirror the proved `arm64_sc_*` lemmas at N=4, threading
-`avx2_lane = get_lane_u64x4` through per-u64-lane ensures clauses
-on `Simd.Avx2.{load_block, load_last, store_block}` (added to the
-Rust source mirroring arm64) and ultimately bottoming out on
-per-u64-lane ensures on `mm256_loadu_si256_u8` /
-`mm256_storeu_si256_u8` (added to `avx2_extract.rs`, mirroring
-arm64's NEON load/store stubs).  Source change: `Simd.Avx2.load_last`
-loop unrolled to expose `buffer0..buffer3` separately (same
-compiled code as the previous `for i in 0..4 { buffers[i]... }`
-form) so the F* bridge can reconstruct each buffer in scope.
-
-The two API-level `assume val`s (#13, #14) are the AVX2 analogues of
-`lemma_absorb2_arm64` (recently proved on arm64) and
-`lemma_squeeze2_arm64` (still admitted on arm64); discharging them
-requires inline loop-invariant proofs on
-`Generic_keccak.Simd256.{absorb4, squeeze4}` analogous to the ones on
-`Simd128.{absorb2, squeeze2}`.
-
-`lemma_keccak4_avx2` is **proved by composition** of #13 and #14
-(mirrors how `lemma_keccak2_arm64` composes the two arm64
-driver-lemmas).  `lemma_shake256_x4_avx2` (top-level hasher
-theorem for `Libcrux_sha3.Avx2.X4.shake256`) is then
-proved from `lemma_keccak4_avx2`.
-
-Admits #2-#5 are the AVX2 analogues of arm64's body-level admits in
-`Libcrux_sha3.Simd.Arm64.fst` and `Libcrux_sha3.Generic_keccak.Simd128.fst`.
-The API contracts (preconditions, postconditions, and integration
-into the keccak/sponge chain) are real and discharged.
-
-`lemma_absorb2_arm64` (formerly load-bearing) is **now proved** — it
-appears as a real `let` definition at
-`EquivImplSpec.Sponge.Arm64.API.fst:67`.
-
-Admits #2-#5 are the AVX2 analogues of arm64's body-level admits in
-`Libcrux_sha3.Simd.Arm64.fst` and `Libcrux_sha3.Generic_keccak.Simd128.fst`.
-The API contracts (preconditions, postconditions, and integration
-into the keccak/sponge chain) are real and discharged.
-
-`lemma_absorb2_arm64` (formerly load-bearing) is **now proved** — it
-appears as a real `let` definition at
-`EquivImplSpec.Sponge.Arm64.API.fst:67`.
-
-Non-load-bearing upstream admits (3) remain in
-`Proof_Utils.Lemmas.fst:26/33/54` (hax-lib / core-models targets).
+Non-load-bearing utility admits: none.  (The 3 historical admits in
+`Proof_Utils.Lemmas.fst` are gone.)

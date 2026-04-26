@@ -56,8 +56,133 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
     mm256_xor_si256(a, c)
 }
 
+/// Spec function (mirrors arm64::load_lane_u64 at N=4): per-lane
+/// semantics of "XOR state element with 8 bytes from input block".
+#[cfg(hax)]
+#[hax_lib::requires(i < 25 && lane < 4 &&
+        offset.to_int() + (8.to_int() * i.to_int()) + 8.to_int() <= blocks[lane].len().to_int())]
+fn load_lane_u64(
+    blocks: &[&[u8]; 4],
+    offset: usize,
+    i: usize,
+    statei: Vec256,
+    lane: usize,
+) -> u64 {
+    get_lane_u64(statei, lane)
+        ^ u64::from_le_bytes(
+            blocks[lane][offset + 8 * i..offset + 8 * i + 8]
+                .try_into()
+                .unwrap(),
+        )
+}
+
+/// Bulk-block load helper (mirrors arm64::load_u64x2x2 at N=4).
+/// Loads 32 bytes from each of the 4 blocks at `offset + 32*i`,
+/// gathers them via unpack/permute into 4 Vec256s, each holding the
+/// `(4*i + idx)`th u64 from each block in lane `lane`, then XORs
+/// with the corresponding state inputs `inK`.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::requires(i < 6
+        && blocks[0].len() == blocks[1].len()
+        && blocks[0].len() == blocks[2].len()
+        && blocks[0].len() == blocks[3].len()
+        && offset.to_int() + (32.to_int() * i.to_int()) + 32.to_int() <= blocks[0].len().to_int())]
+#[hax_lib::ensures(|(r0, r1, r2, r3)|
+    get_lane_u64(r0, 0) == load_lane_u64(blocks, offset, 4*i, in0, 0)
+    && get_lane_u64(r0, 1) == load_lane_u64(blocks, offset, 4*i, in0, 1)
+    && get_lane_u64(r0, 2) == load_lane_u64(blocks, offset, 4*i, in0, 2)
+    && get_lane_u64(r0, 3) == load_lane_u64(blocks, offset, 4*i, in0, 3)
+    && get_lane_u64(r1, 0) == load_lane_u64(blocks, offset, 4*i + 1, in1, 0)
+    && get_lane_u64(r1, 1) == load_lane_u64(blocks, offset, 4*i + 1, in1, 1)
+    && get_lane_u64(r1, 2) == load_lane_u64(blocks, offset, 4*i + 1, in1, 2)
+    && get_lane_u64(r1, 3) == load_lane_u64(blocks, offset, 4*i + 1, in1, 3)
+    && get_lane_u64(r2, 0) == load_lane_u64(blocks, offset, 4*i + 2, in2, 0)
+    && get_lane_u64(r2, 1) == load_lane_u64(blocks, offset, 4*i + 2, in2, 1)
+    && get_lane_u64(r2, 2) == load_lane_u64(blocks, offset, 4*i + 2, in2, 2)
+    && get_lane_u64(r2, 3) == load_lane_u64(blocks, offset, 4*i + 2, in2, 3)
+    && get_lane_u64(r3, 0) == load_lane_u64(blocks, offset, 4*i + 3, in3, 0)
+    && get_lane_u64(r3, 1) == load_lane_u64(blocks, offset, 4*i + 3, in3, 1)
+    && get_lane_u64(r3, 2) == load_lane_u64(blocks, offset, 4*i + 3, in3, 2)
+    && get_lane_u64(r3, 3) == load_lane_u64(blocks, offset, 4*i + 3, in3, 3)
+)]
+fn load_u64x4x4(
+    blocks: &[&[u8]; 4],
+    offset: usize,
+    i: usize,
+    in0: Vec256,
+    in1: Vec256,
+    in2: Vec256,
+    in3: Vec256,
+) -> (Vec256, Vec256, Vec256, Vec256) {
+    let start = offset + 32 * i;
+    let v0 = mm256_loadu_si256_u8(&blocks[0][start..start + 32]);
+    let v1 = mm256_loadu_si256_u8(&blocks[1][start..start + 32]);
+    let v2 = mm256_loadu_si256_u8(&blocks[2][start..start + 32]);
+    let v3 = mm256_loadu_si256_u8(&blocks[3][start..start + 32]);
+
+    let v0l = mm256_unpacklo_epi64(v0, v1);
+    let v1h = mm256_unpackhi_epi64(v0, v1);
+    let v2l = mm256_unpacklo_epi64(v2, v3);
+    let v3h = mm256_unpackhi_epi64(v2, v3);
+
+    let g0 = mm256_permute2x128_si256::<0x20>(v0l, v2l);
+    let g1 = mm256_permute2x128_si256::<0x20>(v1h, v3h);
+    let g2 = mm256_permute2x128_si256::<0x31>(v0l, v2l);
+    let g3 = mm256_permute2x128_si256::<0x31>(v1h, v3h);
+
+    (
+        mm256_xor_si256(in0, g0),
+        mm256_xor_si256(in1, g1),
+        mm256_xor_si256(in2, g2),
+        mm256_xor_si256(in3, g3),
+    )
+}
+
+/// Partial-block load helper (mirrors arm64::load_u64x2 at N=4).
+/// Loads 8 bytes from each of the 4 blocks at `offset + 8*i`,
+/// gathers them into a Vec256, and XORs with `statei`.
+#[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(i < 25
+        && blocks[0].len() == blocks[1].len()
+        && blocks[0].len() == blocks[2].len()
+        && blocks[0].len() == blocks[3].len()
+        && offset.to_int() + (8.to_int() * i.to_int()) + 8.to_int() <= blocks[0].len().to_int())]
+#[hax_lib::ensures(|result|
+    get_lane_u64(result, 0) == load_lane_u64(blocks, offset, i, statei, 0)
+    && get_lane_u64(result, 1) == load_lane_u64(blocks, offset, i, statei, 1)
+    && get_lane_u64(result, 2) == load_lane_u64(blocks, offset, i, statei, 2)
+    && get_lane_u64(result, 3) == load_lane_u64(blocks, offset, i, statei, 3)
+)]
+fn load_u64x4(blocks: &[&[u8]; 4], offset: usize, i: usize, statei: Vec256) -> Vec256 {
+    let v0 = u64::from_le_bytes(
+        blocks[0][offset + 8 * i..offset + 8 * i + 8]
+            .try_into()
+            .unwrap(),
+    ) as i64;
+    let v1 = u64::from_le_bytes(
+        blocks[1][offset + 8 * i..offset + 8 * i + 8]
+            .try_into()
+            .unwrap(),
+    ) as i64;
+    let v2 = u64::from_le_bytes(
+        blocks[2][offset + 8 * i..offset + 8 * i + 8]
+            .try_into()
+            .unwrap(),
+    ) as i64;
+    let v3 = u64::from_le_bytes(
+        blocks[3][offset + 8 * i..offset + 8 * i + 8]
+            .try_into()
+            .unwrap(),
+    ) as i64;
+    let u = mm256_set_epi64x(v3, v2, v1, v0);
+    mm256_xor_si256(statei, u)
+}
+
+#[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
 #[hax_lib::requires(valid_rate(RATE)
             && blocks[0].len() == blocks[1].len()
             && blocks[0].len() == blocks[2].len()
@@ -67,18 +192,10 @@ fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
 #[hax_lib::ensures(|_| hax_lib::forall(|i: usize|
     if i < 25 {
         if i < RATE / 8 {
-            get_lane_u64(future(state)[i], 0)
-                == get_lane_u64(state[i], 0)
-                   ^ u64::from_le_bytes(blocks[0][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
-            && get_lane_u64(future(state)[i], 1)
-                == get_lane_u64(state[i], 1)
-                   ^ u64::from_le_bytes(blocks[1][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
-            && get_lane_u64(future(state)[i], 2)
-                == get_lane_u64(state[i], 2)
-                   ^ u64::from_le_bytes(blocks[2][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
-            && get_lane_u64(future(state)[i], 3)
-                == get_lane_u64(state[i], 3)
-                   ^ u64::from_le_bytes(blocks[3][offset + 8 * i..offset + 8 * i + 8].try_into().unwrap())
+            get_lane_u64(future(state)[i], 0) == load_lane_u64(blocks, offset, i, state[i], 0)
+            && get_lane_u64(future(state)[i], 1) == load_lane_u64(blocks, offset, i, state[i], 1)
+            && get_lane_u64(future(state)[i], 2) == load_lane_u64(blocks, offset, i, state[i], 2)
+            && get_lane_u64(future(state)[i], 3) == load_lane_u64(blocks, offset, i, state[i], 3)
         } else {
             get_lane_u64(future(state)[i], 0) == get_lane_u64(state[i], 0)
             && get_lane_u64(future(state)[i], 1) == get_lane_u64(state[i], 1)
@@ -94,24 +211,25 @@ pub(crate) fn load_block<const RATE: usize>(
 ) {
     #[cfg(not(eurydice))]
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
-    hax_lib::fstar!("admit()");
+    #[cfg(hax)]
+    let old_state = *state;
     for i in 0..RATE / 32 {
-        let start = offset + 32 * i;
-        let v0 = mm256_loadu_si256_u8(&blocks[0][start..start + 32]);
-        let v1 = mm256_loadu_si256_u8(&blocks[1][start..start + 32]);
-        let v2 = mm256_loadu_si256_u8(&blocks[2][start..start + 32]);
-        let v3 = mm256_loadu_si256_u8(&blocks[3][start..start + 32]);
-
-        let v0l = mm256_unpacklo_epi64(v0, v1); // 0 0 2 2
-        let v1h = mm256_unpackhi_epi64(v0, v1); // 1 1 3 3
-        let v2l = mm256_unpacklo_epi64(v2, v3); // 0 0 2 2
-        let v3h = mm256_unpackhi_epi64(v2, v3); // 1 1 3 3
-
-        let v0 = mm256_permute2x128_si256::<0x20>(v0l, v2l); // 0 0 0 0
-        let v1 = mm256_permute2x128_si256::<0x20>(v1h, v3h); // 1 1 1 1
-        let v2 = mm256_permute2x128_si256::<0x31>(v0l, v2l); // 2 2 2 2
-        let v3 = mm256_permute2x128_si256::<0x31>(v1h, v3h); // 3 3 3 3
-
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize|
+            if j < 25 {
+                if j < 4 * i {
+                    get_lane_u64(state[j], 0) == load_lane_u64(blocks, offset, j, old_state[j], 0)
+                        && get_lane_u64(state[j], 1) == load_lane_u64(blocks, offset, j, old_state[j], 1)
+                        && get_lane_u64(state[j], 2) == load_lane_u64(blocks, offset, j, old_state[j], 2)
+                        && get_lane_u64(state[j], 3) == load_lane_u64(blocks, offset, j, old_state[j], 3)
+                } else {
+                    get_lane_u64(state[j], 0) == get_lane_u64(old_state[j], 0)
+                        && get_lane_u64(state[j], 1) == get_lane_u64(old_state[j], 1)
+                        && get_lane_u64(state[j], 2) == get_lane_u64(old_state[j], 2)
+                        && get_lane_u64(state[j], 3) == get_lane_u64(old_state[j], 3)
+                }
+            } else {
+                true
+            }));
         let i0 = (4 * i) / 5;
         let j0 = (4 * i) % 5;
         let i1 = (4 * i + 1) / 5;
@@ -120,34 +238,29 @@ pub(crate) fn load_block<const RATE: usize>(
         let j2 = (4 * i + 2) % 5;
         let i3 = (4 * i + 3) / 5;
         let j3 = (4 * i + 3) % 5;
-
-        set_ij(state, i0, j0, mm256_xor_si256(*get_ij(state, i0, j0), v0));
-        set_ij(state, i1, j1, mm256_xor_si256(*get_ij(state, i1, j1), v1));
-        set_ij(state, i2, j2, mm256_xor_si256(*get_ij(state, i2, j2), v2));
-        set_ij(state, i3, j3, mm256_xor_si256(*get_ij(state, i3, j3), v3));
+        let (g0, g1, g2, g3) = load_u64x4x4(
+            blocks,
+            offset,
+            i,
+            *get_ij(state, i0, j0),
+            *get_ij(state, i1, j1),
+            *get_ij(state, i2, j2),
+            *get_ij(state, i3, j3),
+        );
+        set_ij(state, i0, j0, g0);
+        set_ij(state, i1, j1, g1);
+        set_ij(state, i2, j2, g2);
+        set_ij(state, i3, j3, g3);
     }
 
     let rem = RATE % 32; // has to be 8 or 16
-    let start = offset + 32 * (RATE / 32);
-    let mut u8s = [0u8; 32];
-    u8s[0..8].copy_from_slice(&blocks[0][start..start + 8]);
-    u8s[8..16].copy_from_slice(&blocks[1][start..start + 8]);
-    u8s[16..24].copy_from_slice(&blocks[2][start..start + 8]);
-    u8s[24..32].copy_from_slice(&blocks[3][start..start + 8]);
-    let u = mm256_loadu_si256_u8(u8s.as_slice());
-    let i = (4 * (RATE / 32)) / 5;
-    let j = (4 * (RATE / 32)) % 5;
-    set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
+    let i = 4 * (RATE / 32);
+    let result = load_u64x4(blocks, offset, i, *get_ij(state, i / 5, i % 5));
+    set_ij(state, i / 5, i % 5, result);
     if rem == 16 {
-        let mut u8s = [0u8; 32];
-        u8s[0..8].copy_from_slice(&blocks[0][start + 8..start + 16]);
-        u8s[8..16].copy_from_slice(&blocks[1][start + 8..start + 16]);
-        u8s[16..24].copy_from_slice(&blocks[2][start + 8..start + 16]);
-        u8s[24..32].copy_from_slice(&blocks[3][start + 8..start + 16]);
-        let u = mm256_loadu_si256_u8(u8s.as_slice());
-        let i = (4 * (RATE / 32) + 1) / 5;
-        let j = (4 * (RATE / 32) + 1) % 5;
-        set_ij(state, i, j, mm256_xor_si256(*get_ij(state, i, j), u));
+        let i = 4 * (RATE / 32) + 1;
+        let result = load_u64x4(blocks, offset, i, *get_ij(state, i / 5, i % 5));
+        set_ij(state, i / 5, i % 5, result);
     }
 }
 

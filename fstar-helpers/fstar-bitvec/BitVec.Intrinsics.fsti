@@ -101,6 +101,29 @@ let mm256_slli_epi64 (shift: i32 {v shift >= 0 /\ v shift <= 64}) (vec: bit_vec 
 let mm256_set1_epi64x (a: i64): bit_vec 256
   = mk_bv (fun i -> get_bit a (sz (i % 64)))
 
+let mm256_set_epi64x (input3 input2 input1 input0: i64): bit_vec 256
+  = mk_bv (fun i ->
+      let h (x: i64) = get_bit x (sz (i % 64)) in
+      match i / 64 with
+      | 0 -> h input0
+      | 1 -> h input1
+      | 2 -> h input2
+      | _ -> h input3)
+
+let mm256_unpacklo_epi64 (a b: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if (i / 64) % 2 = 0 then a i else b (i - 64))
+
+let mm256_unpackhi_epi64 (lhs rhs: bit_vec 256): bit_vec 256
+  = mk_bv (fun i -> if (i / 64) % 2 = 0 then lhs (i + 64) else rhs i)
+
+let mm256_permute2x128_si256 (control: i32 {v control == 0x20 \/ v control == 0x31})
+                              (a b: bit_vec 256): bit_vec 256
+  = mk_bv (fun i ->
+      if v control = 0x20 then
+        (if i < 128 then a i else b (i - 128))
+      else
+        (if i < 128 then a (i + 128) else b i))
+
 
 let mm256_set1_epi16 (constant: i16)
   (#[Tactics.exact (match unify_app (quote constant) (quote (fun n -> (((mk_i16 1) <<! mk_i32 n <: i16) -! (mk_i16 1) <: i16))) [] with
