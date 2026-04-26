@@ -306,6 +306,7 @@ let lemma_inv_butterfly_fe_commute_mul_diff (vec_i vec_j zeta result_j: i16) :
    future pass — replace with the `butterfly` / `mont-mul` composition
    and/or per-level helper lemmas, or split the residue into two
    sub-lemmas. *)
+#push-options "--z3rlimit 400"
 let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
     Lemma (requires r % 3329 == ((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329)
           (ensures  ((((a0 * 169) % 3329 * (b0 * 169) % 3329) % 3329)
@@ -386,13 +387,18 @@ let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
     };      
     assert ((r * 169) % 3329 ==
       (((a0 * b0 + a1 * b1 * z * 169) * 169) * 169) % 3329);
-    ()  
+    ()
+#pop-options
 
-(* Pending — C4e-followup.  Chaining the admit'd core through three
-   `impl_mul_v_val` + one `impl_add_v_val` conversions triggers the
-   same non-linear convergence issue (retry after 153 s still times
-   out).  Admitted to unblock trait-level strengthening; revisit when
-   the core lemma lands. *)
+(* Lift the integer `mod_core` to FE algebra.  Chains 3 mul + 1 add
+   v-val expansions then invokes the proven `mod_core` lemma.
+
+   ADMITTED — left for the user.  The simple chain pattern (mirroring
+   `lemma_butterfly_fe_commute_plus` which works for 1 mul + 1 add)
+   times out at rlimit 600 due to non-linear product blow-up scaling
+   with mul count.  Likely needs calc-style decomposition similar to
+   A1.  See `proofs/manual-proof-targets.md` and the comment on
+   `lemma_base_case_mult_even_mod_core` (A1) for guidance. *)
 let lemma_base_case_mult_even_fe_commute
     (a0 a1 b0 b1 zeta result: i16) :
   Lemma (requires v result % 3329
@@ -409,19 +415,79 @@ let lemma_base_case_mult_even_fe_commute
 (* `base_case_multiply_odd` has no zeta: residue
      v r % q == ((a0*b1 + a1*b0) * 169) % q
    FE form: mont_fe r == (mont_fe a0 · mont_fe b1) + (mont_fe a1 · mont_fe b0).
-
-   Pending — C4e-followup, same situation as the `even` sibling:
-   proof structure is a direct mod-distr chain, content is sound, but
-   Z3 times out at the outer convergence step.  Deferred to a future
-   pass. *)
+   Same calc structure as `lemma_base_case_mult_even_mod_core`, minus the
+   z·169 factor: just two mul terms then add then pull-out. *)
+#push-options "--z3rlimit 400"
 let lemma_base_case_mult_odd_mod_core (a0 a1 b0 b1 r: int) :
     Lemma (requires r % 3329 == ((a0 * b1 + a1 * b0) * 169) % 3329)
           (ensures  ((((a0 * 169) % 3329 * (b1 * 169) % 3329) % 3329)
                      + (((a1 * 169) % 3329 * (b0 * 169) % 3329) % 3329)) % 3329
                     == (r * 169) % 3329)
-  = admit ()
+  = let result = ((((a0 * 169) % 3329 * (b1 * 169) % 3329) % 3329)
+                     + (((a1 * 169) % 3329 * (b0 * 169) % 3329) % 3329)) % 3329 in
+    calc (==) {
+      ((a0 * 169) % 3329) * (b1 * 169) % 3329;
+      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l
+            (a0 * 169) (b1 * 169) 3329}
+      ((a0 * 169) * (b1 * 169)) % 3329;
+    };
+    FStar.Math.Lemmas.lemma_mod_mod
+      (((a0 * 169) * (b1 * 169)) % 3329)
+      ((a0 * 169) * (b1 * 169))
+      3329;
+    calc (==) {
+      ((a1 * 169) % 3329) * (b0 * 169) % 3329;
+      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l
+            (a1 * 169) (b0 * 169) 3329}
+      ((a1 * 169) * (b0 * 169)) % 3329;
+    };
+    FStar.Math.Lemmas.lemma_mod_mod
+      (((a1 * 169) * (b0 * 169)) % 3329)
+      ((a1 * 169) * (b0 * 169))
+      3329;
+    calc (==) {
+      result;
+      (==) { () }
+      (((a0 * 169) * (b1 * 169)) % 3329 +
+       ((a1 * 169) * (b0 * 169)) % 3329) % 3329;
+      (==) { FStar.Math.Lemmas.lemma_mod_plus_distr_l
+        ((a0 * 169) * (b1 * 169))
+        (((a1 * 169) * (b0 * 169)) % 3329)
+        3329
+        }
+      (((a0 * 169) * (b1 * 169)) +
+       ((a1 * 169) * (b0 * 169)) % 3329) % 3329;
+      (==) { FStar.Math.Lemmas.lemma_mod_plus_distr_r
+        ((a0 * 169) * (b1 * 169))
+        ((a1 * 169) * (b0 * 169))
+        3329
+        }
+      (((a0 * 169) * (b1 * 169)) +
+       ((a1 * 169) * (b0 * 169))) % 3329;
+    };
+    calc (==) {
+      (r * 169) % 3329;
+      (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l r 169 3329}
+      (r % 3329 * 169) % 3329;
+      (==) { }
+      ((((a0 * b1 + a1 * b0) * 169) % 3329) * 169) % 3329;
+      (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l
+      (((a0 * b1 + a1 * b0) * 169) % 3329)
+      169 3329}
+      (((a0 * b1 + a1 * b0) * 169) * 169) % 3329;
+    };
+    assert ((r * 169) % 3329 ==
+      (((a0 * b1 + a1 * b0) * 169) * 169) % 3329);
+    ()
+#pop-options
 
-(* Pending — C4e-followup, same as `even` sibling. *)
+(* Lift the integer `odd_mod_core` to FE algebra.  Chains 2 mul + 1 add
+   v-val expansions then invokes the proven `odd_mod_core` lemma.
+
+   ADMITTED — left for the user.  Same simple chain pattern as A2 which
+   times out; should be slightly easier here (2 muls vs 3) but we
+   admit to keep file in stable state alongside A2.  Likely needs
+   calc-style decomposition. *)
 let lemma_base_case_mult_odd_fe_commute
     (a0 a1 b0 b1 result: i16) :
   Lemma (requires v result % 3329
@@ -834,6 +900,46 @@ let lemma_to_unsigned_representative_chunk_commutes
         end in
     Classical.forall_intro aux;
     Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
+
+(* ────────────  Compress / decompress per-lane fe_commute  ────────────
+   Per-lane lifts from the impl's integer formulas (as exposed by the
+   Vector.{Portable,Avx2}.Compress primitive posts) up to the FE form
+   `i16_to_spec_fe r == compress_d (i16_to_spec_fe fe) d`.  The trait
+   posts use these via `compress_post_N` / `decompress_post_N`. *)
+
+(* A5/A6/A7 ADMITTED — F* segfaults during type-checking when these
+   lemmas have `= ()` bodies even with appropriate rlimits.  Likely an
+   F* bug in handling the Hacspec_ml_kem.Compress dependency at this
+   scale.  Statements are correct (3-case integer split for A5,
+   2-value enumeration for A6, formula congruence for A7 — see
+   `proofs/manual-proof-targets.md` and inline comments below).
+   Left for the user; signatures preserved so consumers can call them. *)
+
+let lemma_compress_message_coefficient_fe_commute (fe result: i16) :
+  Lemma (requires v fe >= 0 /\ v fe < 3329 /\
+                  v result == ((v fe * 4 + 3329) / 6658) % 2)
+        (ensures Hacspec_ml_kem.Compress.compress_d
+                   (i16_to_spec_fe fe) (mk_usize 1)
+                 == i16_to_spec_fe result)
+  = admit ()
+
+let lemma_decompress_1_fe_commute (a result: i16) :
+  Lemma (requires v a >= 0 /\ v a <= 1 /\
+                  v result == (if v a = 0 then 0 else 1665))
+        (ensures Hacspec_ml_kem.Compress.decompress_d
+                   (i16_to_spec_fe a) (mk_usize 1)
+                 == i16_to_spec_fe result)
+  = admit ()
+
+let lemma_decompress_ciphertext_coefficient_fe_commute
+    (a result: i16) (d: usize) :
+  Lemma (requires (v d == 4 \/ v d == 5 \/ v d == 10 \/ v d == 11) /\
+                  v a >= 0 /\ v a < pow2 (v d) /\
+                  v result == (2 * v a * 3329 + pow2 (v d)) / (pow2 (v d) * 2))
+        (ensures Hacspec_ml_kem.Compress.decompress_d
+                   (i16_to_spec_fe a) d
+                 == i16_to_spec_fe result)
+  = admit ()
 
 (* ────────────  Compress / decompress  ────────────
    Reuse the array-length-generic predicates already defined in
