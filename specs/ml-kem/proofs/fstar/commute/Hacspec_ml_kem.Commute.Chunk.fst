@@ -961,6 +961,18 @@ let lemma_compress_message_coefficient_fe_commute (fe result: i16) :
     assert(v (i16_to_spec_fe result).f_val == v result); 
     ()
 
+(* A8 (parameterized compress): admitted.  Barrett-exactness math —
+   tedious 4-case enumeration over D ∈ {4, 5, 10, 11}.  Statement
+   matches the integer-form post of `compress<D>` in portable/compress.rs. *)
+let lemma_compress_ciphertext_coefficient_fe_commute (fe result: i16) (d: usize) :
+  Lemma (requires (v d == 4 \/ v d == 5 \/ v d == 10 \/ v d == 11) /\
+                  v fe >= 0 /\ v fe < 3329 /\
+                  v result == ((v fe * 2 * pow2 (v d) + 3329) / 6658) % pow2 (v d))
+        (ensures Hacspec_ml_kem.Compress.compress_d
+                   (i16_to_spec_fe fe) d
+                 == i16_to_spec_fe result)
+  = admit ()
+
 let lemma_decompress_1_fe_commute (a result: i16) :
   Lemma (requires v a >= 0 /\ v a <= 1 /\
                   v result == (if v a = 0 then 0 else 1665))

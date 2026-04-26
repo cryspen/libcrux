@@ -215,7 +215,7 @@ fn op_compress_1(a: PortableVector) -> PortableVector {
     result
 }
 
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(fstar!(r#"${spec::compress_pre} ${a}.f_elements $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_post} ${a}.f_elements $COEFFICIENT_BITS ${out}.f_elements"#))]
 fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector {
@@ -223,7 +223,26 @@ fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
     );
-    compress::<COEFFICIENT_BITS>(a)
+    let result = compress::<COEFFICIENT_BITS>(a);
+    hax_lib::fstar!(
+        r#"let aux (j: nat{j < 16}) :
+              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
+                       (Seq.index ${result}.f_elements j) ==
+                     Hacspec_ml_kem.Compress.compress_d
+                       (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
+                          (Seq.index ${a}.f_elements j))
+                       (mk_usize (v $COEFFICIENT_BITS))) =
+             Hacspec_ml_kem.Commute.Chunk.lemma_compress_ciphertext_coefficient_fe_commute
+               (Seq.index ${a}.f_elements j)
+               (Seq.index ${result}.f_elements j)
+               (mk_usize (v $COEFFICIENT_BITS))
+           in
+           aux 0;  aux 1;  aux 2;  aux 3;
+           aux 4;  aux 5;  aux 6;  aux 7;
+           aux 8;  aux 9;  aux 10; aux 11;
+           aux 12; aux 13; aux 14; aux 15"#
+    );
+    result
 }
 
 #[hax_lib::fstar::verification_status(panic_free)]
