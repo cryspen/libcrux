@@ -367,29 +367,47 @@ See `proofs/manual-proof-targets.md` for the original brief.  Status
 update (2026-04-26):
 
 - **A1** (`lemma_base_case_mult_even_mod_core`): ✅ proven by user with
-  calc-style proof at rlimit 400 (commit `08999e562`).
+  calc-style proof at rlimit 400 (~4 s; commit `08999e562`).
+- **A2** (`lemma_base_case_mult_even_fe_commute`): ✅ proven (commit
+  `e4a5f848a`).  Clean chain: `lemma_impl_*_v_val × 4 +
+  lemma_base_case_mult_even_mod_core_fe_form`.  Closes in ~7 ms.
 - **A3** (`lemma_base_case_mult_odd_mod_core`): ✅ proven by Claude with
-  same calc style at rlimit 400, ~3s (commit `44f401e72`).
-- **A2** (`lemma_base_case_mult_even_fe_commute`): ⏸️ admitted.  Simple
-  3-mul + 1-add chain (mirroring `lemma_butterfly_fe_commute_plus`)
-  times out at rlimit 600 — non-linear product blowup.  Needs
-  calc-style decomposition.
-- **A4** (`lemma_base_case_mult_odd_fe_commute`): ⏸️ admitted.  2-mul
-  + 1-add chain.  Slightly easier than A2; admitted to keep file
-  stable alongside A2.  Same fix pattern.
+  same calc style as A1 at rlimit 400 (~0.9 s; commit `44f401e72`).
+- **A4** (`lemma_base_case_mult_odd_fe_commute`): ✅ proven (commit
+  `e4a5f848a`).  Same chain pattern as A2 minus zeta.  Closes in ~6 ms.
 - **A5/A6/A7** (compress/decompress fe_commute lemmas): ⏸️ admitted.
   F* segfaulted during type-checking when these had `= ()` bodies —
   appears to be an F* internal bug interacting with the
   Hacspec_ml_kem.Compress dependency at this scale.  Statements are
   correct (case math in `proofs/manual-proof-targets.md`).
 
-Closing A1 + A3 + admitted A2/A4 = the integer/FE Layer-0.5 chain
-is structurally complete (with admit boundary).  Closing A2 and A4
-to actual proofs would unblock dropping `panic_free` from
-`op_ntt_multiply` on both backends.
+**A1–A4 design note**: the FE chain
+`impl_add (impl_mul (mont a0) (mont b0)) (impl_mul (impl_mul (mont a1)
+(mont b1)) (mont z))` produces an f_val whose inner products are
+`((a*169)%q) * ((b*169)%q)` (both factors inner-modded), while A1/A3's
+ensures have only the first factor inner-modded.  Two new int-level
+helpers `lemma_base_case_mult_{even,odd}_mod_core_fe_form` absorb the
+redundant inner mods via two `lemma_mod_mul_distr_r` calls and invoke
+A1/A3.  This keeps A1/A3's calc proofs unchanged and fast; A2/A4
+become trivial `lemma_impl_*_v_val` chains.
+
+Closing A1+A2+A3+A4 unblocks dropping `panic_free` from
+`op_ntt_multiply` on both portable and AVX2 backends, and replacing
+the wrapper `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply`
+with a real proof (the `lemma_base_case_mult_pair_commute` calls are
+already in place).
 
 Closing A5/A6/A7 would unblock `op_compress_1`, `op_decompress_1`,
 `op_decompress_ciphertext_coefficient` panic_free removals.
+
+**Chunk-level commute lemmas now admitted**: the 4 lemmas
+`lemma_{compress,decompress}{_1,}_chunk_commutes` previously had
+`= ()` bodies that were unsound — the trait field's post is bound-only
+and does not imply the FE-form `compress_post_N`.  They were passing
+only by Z3 luck; the increased SMT context from A2/A4 closed that
+luck path.  Admitted in commit `e4a5f848a`; they close once A5/A6/A7
+land via `Classical.forall_intro` over the per-element lemma +
+`Seq.lemma_eq_intro`.
 
 ## Deferred: SIMD model unification with libcrux-ml-dsa
 

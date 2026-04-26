@@ -86,17 +86,23 @@ all of `impl_1`) to ~10 s (verifying only that method's `op_*`).
 - `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Vector.Portable.Ntt.fst` — verifies (~442 s).
 - `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Vector.Portable.fst` — verifies (~217 s).
 
-**Outstanding admits** (all introduced by C4e, all at Layer 0.5 / wrapper-glue — zero leakage into higher modules):
-1. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_even_mod_core` — int-level 3× 169-unwrap mod-distr chain. Auto-split retry succeeded once in 369 ms but monolithic Z3 does not converge at rlimit 300 with `--split_queries always`.
-2. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_odd_mod_core` — int-level 2× 169-unwrap, same situation.
-3. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_even_fe_commute` — FE wrapper over (1), also chokes Z3 through `impl_mul_v_val × 3 + impl_add_v_val × 1`.
-4. `Hacspec_ml_kem.Commute.Chunk.lemma_base_case_mult_odd_fe_commute` — FE wrapper over (2), same.
-5. One `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply` wrapper, just before the `p_ntt_mult` predicate definition. Z3 times out at rlimit 400 × 85 s on the 4-FE-per-branch × 4 branches body.
+**Outstanding admits** (Layer 0.5 / wrapper-glue):
+1. ~~`lemma_base_case_mult_even_mod_core`~~ ✅ closed by user (commit `08999e562`).
+2. ~~`lemma_base_case_mult_odd_mod_core`~~ ✅ closed by Claude (commit `44f401e72`).
+3. ~~`lemma_base_case_mult_even_fe_commute`~~ ✅ closed (commit `e4a5f848a`).  Clean chain via new int-level `lemma_base_case_mult_even_mod_core_fe_form` helper that absorbs the FE-chain's redundant inner mod, then invokes A1.
+4. ~~`lemma_base_case_mult_odd_fe_commute`~~ ✅ closed (commit `e4a5f848a`), same pattern via `_odd_mod_core_fe_form`.
+5. One `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply` wrapper, just before the `p_ntt_mult` predicate definition. Z3 times out at rlimit 400 × 85 s on the 4-FE-per-branch × 4 branches body.  **Now should be retryable** since A2/A4 are real proofs — the wrapper's `lemma_base_case_mult_pair_commute` calls now produce real FE equations instead of admitted ones.
+6. Four chunk-level commute lemmas in `Hacspec_ml_kem.Commute.Chunk.fst` (commit `e4a5f848a`):
+   - `lemma_compress_1_chunk_commutes`
+   - `lemma_compress_chunk_commutes`
+   - `lemma_decompress_1_chunk_commutes`
+   - `lemma_decompress_ciphertext_coefficient_chunk_commutes`
+   Previously had `= ()` body that was unsound (trait field's post is bound-only, doesn't imply FE-form `compress_post_N`).  They were passing only by Z3 luck; A2/A4 changes closed that path.  Closes via `Classical.forall_intro` over A5/A6/A7 + `Seq.lemma_eq_intro` once those land.
 
-**Recommended revisit strategies for the admits** (in priority order):
-- Split `lemma_base_case_mult_even_mod_core` into per-`169`-unwrap sub-lemmas (one per Montgomery-mul level) and compose them.
-- Run the core lemmas at rlimit ≥ 800 with `#restart_solver` before each.
-- For the wrapper `admit ()`, split `p_ntt_mult` per-branch using `assert_spinoff` so each of the 4 `assert (p_ntt_mult b)` is an isolated SMT query.
+**Recommended next-step priorities**:
+- **A5/A6/A7** (per-element compress/decompress fe_commute) — unblocks the 4 chunk-level commute admits and `panic_free` removal on `op_compress_1`, `op_decompress_1`, `op_decompress_ciphertext_coefficient` (both backends).
+- **Drop the `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply` wrapper** — A2+A4 are now proven, so the path through `lemma_base_case_mult_pair_commute` is real.  Try with `assert_spinoff` per-branch for `p_ntt_mult` if Z3 still struggles.
+- **Mirror on AVX2**: same `panic_free` removal on `op_ntt_multiply` and (after A5-A7) on the AVX2 compress/decompress wrappers.
 
 **Next step on the plan**: C4f (compress/decompress — `compress_1`, `compress`, `decompress_1`, `decompress_ciphertext_coefficient`). Same "option D" pattern as C4a-e: strengthen `spec::<op>_post` to the FE form, add an opaque butterfly-style wrapper in `Spec.Utils` if useful, rewire the impl body, rewrite the portable.rs wrapper to use the new post. C4a's changes are the cleanest reference template (see `dca0deef1`).
 
