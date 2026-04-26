@@ -361,15 +361,35 @@ bodies — no Barrett anywhere.  Bounds grow monotonically `3 → 4803 →
 of `ntt`.  No analogue to the inverse-NTT layer 2/3 Barrett asymmetry
 in the forward direction.
 
-## Manual proof targets (A1–A7) for the user
+## Manual proof targets (A1–A7) — partial progress
 
-See `proofs/manual-proof-targets.md` for a brief on which lemmas in
-`Hacspec_ml_kem.Commute.Chunk.fst` would maximally unblock Claude's
-ongoing work toward the milestone "every trait fn proven down to
-SIMD/integer-arithmetic admits".  Tier 1: 4 admitted
-`lemma_base_case_mult_*` (close `op_ntt_multiply` on both backends).
-Tier 2: 3 easy compress/decompress fe_commute lemmas to write (close
-6 wrappers).
+See `proofs/manual-proof-targets.md` for the original brief.  Status
+update (2026-04-26):
+
+- **A1** (`lemma_base_case_mult_even_mod_core`): ✅ proven by user with
+  calc-style proof at rlimit 400 (commit `08999e562`).
+- **A3** (`lemma_base_case_mult_odd_mod_core`): ✅ proven by Claude with
+  same calc style at rlimit 400, ~3s (commit `44f401e72`).
+- **A2** (`lemma_base_case_mult_even_fe_commute`): ⏸️ admitted.  Simple
+  3-mul + 1-add chain (mirroring `lemma_butterfly_fe_commute_plus`)
+  times out at rlimit 600 — non-linear product blowup.  Needs
+  calc-style decomposition.
+- **A4** (`lemma_base_case_mult_odd_fe_commute`): ⏸️ admitted.  2-mul
+  + 1-add chain.  Slightly easier than A2; admitted to keep file
+  stable alongside A2.  Same fix pattern.
+- **A5/A6/A7** (compress/decompress fe_commute lemmas): ⏸️ admitted.
+  F* segfaulted during type-checking when these had `= ()` bodies —
+  appears to be an F* internal bug interacting with the
+  Hacspec_ml_kem.Compress dependency at this scale.  Statements are
+  correct (case math in `proofs/manual-proof-targets.md`).
+
+Closing A1 + A3 + admitted A2/A4 = the integer/FE Layer-0.5 chain
+is structurally complete (with admit boundary).  Closing A2 and A4
+to actual proofs would unblock dropping `panic_free` from
+`op_ntt_multiply` on both backends.
+
+Closing A5/A6/A7 would unblock `op_compress_1`, `op_decompress_1`,
+`op_decompress_ciphertext_coefficient` panic_free removals.
 
 ## Deferred: SIMD model unification with libcrux-ml-dsa
 
