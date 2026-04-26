@@ -388,7 +388,10 @@ let to_le_bytes_post_N (#n: usize)
     pub(crate) fn compress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"bounded_pos_i16_array 1 ${result} /\
-               compress_post_N #(mk_usize 16) (mk_usize 1) ${vec} ${result}"#
+               Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
+                 i16_to_spec_fe (Seq.index ${result} i) ==
+                 Hacspec_ml_kem.Compress.compress_d
+                   (i16_to_spec_fe (Seq.index ${vec} i)) (mk_usize 1))"#
         )
     }
 
@@ -413,13 +416,22 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) ==>
                 (bounded_pos_i16_array (v $coefficient_bits) ${result} /\
-                 compress_post_N #(mk_usize 16) (mk_usize (v $coefficient_bits)) ${vec} ${result})"#
+                 Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
+                   i16_to_spec_fe (Seq.index ${result} i) ==
+                   Hacspec_ml_kem.Compress.compress_d
+                     (i16_to_spec_fe (Seq.index ${vec} i))
+                     (mk_usize (v $coefficient_bits))))"#
         )
     }
 
     pub(crate) fn decompress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"decompress_post_N #(mk_usize 16) (mk_usize 1) ${vec} ${result}"#
+            r#"(forall (i: nat). i < 16 ==> v (Seq.index ${vec} i) >= 0 /\
+                                          v (Seq.index ${vec} i) < 2) ==>
+               Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
+                 i16_to_spec_fe (Seq.index ${result} i) ==
+                 Hacspec_ml_kem.Compress.decompress_d
+                   (i16_to_spec_fe (Seq.index ${vec} i)) (mk_usize 1))"#
         )
     }
 
@@ -433,7 +445,13 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) ==>
-                decompress_post_N #(mk_usize 16) (mk_usize (v $coefficient_bits)) ${vec} ${result}"#
+               (forall (i: nat). i < 16 ==> v (Seq.index ${vec} i) >= 0 /\
+                                          v (Seq.index ${vec} i) < pow2 (v $coefficient_bits)) ==>
+               Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
+                 i16_to_spec_fe (Seq.index ${result} i) ==
+                 Hacspec_ml_kem.Compress.decompress_d
+                   (i16_to_spec_fe (Seq.index ${vec} i))
+                   (mk_usize (v $coefficient_bits)))"#
         )
     }
 
