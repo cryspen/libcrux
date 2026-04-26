@@ -200,9 +200,10 @@ pub(crate) fn squeeze4<const RATE: usize>(
     } else {
         s.squeeze4::<RATE>(out0, out1, out2, out3, 0, RATE);
         for i in 1..blocks {
-            hax_lib::loop_invariant!(|_: usize|
-                out0.len() == out0_len && out1.len() == out1_len &&
-                out2.len() == out2_len && out3.len() == out3_len);
+            hax_lib::loop_invariant!(|_: usize| out0.len() == out0_len
+                && out1.len() == out1_len
+                && out2.len() == out2_len
+                && out3.len() == out3_len);
             #[cfg(hax)]
             lemma_mul_succ_le(i, blocks, RATE);
 
@@ -260,7 +261,9 @@ pub(crate) fn keccak4<const RATE: usize, const DELIM: u8>(
 // last items in this file are the free `keccak4` etc. with their own
 // options.
 #[cfg(hax)]
-#[hax_lib::fstar::before(r#"#push-options "--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always""#)]
+#[hax_lib::fstar::before(
+    r#"#push-options "--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always""#
+)]
 fn _keccak_state_impl4_opts() {}
 
 #[hax_lib::attributes]

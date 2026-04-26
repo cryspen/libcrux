@@ -17,9 +17,7 @@ pub(crate) fn keccak_xof_state_inv(rate: usize, buf_len: usize) -> bool {
     valid_rate(rate) && buf_len <= rate
 }
 
-pub(crate) use lemmas::{
-    lemma_div_mul_mod, lemma_mul_succ_le, lemma_shl_xor_shr_is_rotate_left,
-};
+pub(crate) use lemmas::{lemma_div_mul_mod, lemma_mul_succ_le, lemma_shl_xor_shr_is_rotate_left};
 
 mod lemmas {
     //! F* verification lemmas for SHA3/Keccak implementation.
