@@ -361,7 +361,7 @@ bodies — no Barrett anywhere.  Bounds grow monotonically `3 → 4803 →
 of `ntt`.  No analogue to the inverse-NTT layer 2/3 Barrett asymmetry
 in the forward direction.
 
-## Manual proof targets (A1–A7) — partial progress
+## Manual proof targets (A1–A7) — all closed
 
 See `proofs/manual-proof-targets.md` for the original brief.  Status
 update (2026-04-26):
@@ -375,11 +375,17 @@ update (2026-04-26):
   same calc style as A1 at rlimit 400 (~0.9 s; commit `44f401e72`).
 - **A4** (`lemma_base_case_mult_odd_fe_commute`): ✅ proven (commit
   `e4a5f848a`).  Same chain pattern as A2 minus zeta.  Closes in ~6 ms.
-- **A5/A6/A7** (compress/decompress fe_commute lemmas): ⏸️ admitted.
-  F* segfaulted during type-checking when these had `= ()` bodies —
-  appears to be an F* internal bug interacting with the
-  Hacspec_ml_kem.Compress dependency at this scale.  Statements are
-  correct (case math in `proofs/manual-proof-targets.md`).
+- **A5** (`lemma_compress_message_coefficient_fe_commute`): ✅ proven
+  (commit `a47efd17c`).  Two `f_val` asserts then `()`; closes in
+  ~tens of ms.  Earlier `= ()`-only body segfaulted F* — the asserts
+  unblock it.
+- **A6** (`lemma_decompress_1_fe_commute`): ✅ proven (commit
+  `a47efd17c`).  `()` body suffices; closes in ~1.6 s.
+- **A7** (`lemma_decompress_ciphertext_coefficient_fe_commute`): ✅
+  proven (commit `a47efd17c`).  `()` body suffices; closes in ~2.9 s.
+
+`Hacspec_ml_kem.Commute.Chunk.fst` verifies end-to-end in ~109 s post
+A1–A7 (verified 2026-04-26).
 
 **A1–A4 design note**: the FE chain
 `impl_add (impl_mul (mont a0) (mont b0)) (impl_mul (impl_mul (mont a1)
@@ -391,23 +397,23 @@ redundant inner mods via two `lemma_mod_mul_distr_r` calls and invoke
 A1/A3.  This keeps A1/A3's calc proofs unchanged and fast; A2/A4
 become trivial `lemma_impl_*_v_val` chains.
 
-Closing A1+A2+A3+A4 unblocks dropping `panic_free` from
-`op_ntt_multiply` on both portable and AVX2 backends, and replacing
-the wrapper `admit ()` in `src/vector/portable.rs::Operations::ntt_multiply`
+A1+A2+A3+A4 land enables dropping `panic_free` from `op_ntt_multiply`
+on both portable and AVX2 backends, and replacing the wrapper
+`admit ()` in `src/vector/portable.rs::Operations::ntt_multiply`
 with a real proof (the `lemma_base_case_mult_pair_commute` calls are
 already in place).
 
-Closing A5/A6/A7 would unblock `op_compress_1`, `op_decompress_1`,
-`op_decompress_ciphertext_coefficient` panic_free removals.
+A5/A6/A7 unblock `op_compress_1`, `op_decompress_1`,
+`op_decompress_ciphertext_coefficient` panic_free removals — but
+each goes through the chunk-level wrapper below first.
 
-**Chunk-level commute lemmas now admitted**: the 4 lemmas
-`lemma_{compress,decompress}{_1,}_chunk_commutes` previously had
-`= ()` bodies that were unsound — the trait field's post is bound-only
-and does not imply the FE-form `compress_post_N`.  They were passing
-only by Z3 luck; the increased SMT context from A2/A4 closed that
-luck path.  Admitted in commit `e4a5f848a`; they close once A5/A6/A7
-land via `Classical.forall_intro` over the per-element lemma +
-`Seq.lemma_eq_intro`.
+**Chunk-level commute lemmas (B-tier) still admitted**: the 4 lemmas
+`lemma_{compress,decompress}{_1,}_chunk_commutes` (lines 1001/1016/
+1026/1040 in `Commute.Chunk.fst`) admit `= ()` and previously closed
+only by Z3 luck — the trait field's post is bound-only and does not
+imply the FE-form `compress_post_N`.  Now that A5/A6/A7 land, these
+close via `Classical.forall_intro` over the per-element fe_commute
+lemma + `Seq.lemma_eq_intro`.  Next pickup.
 
 ## Deferred: SIMD model unification with libcrux-ml-dsa
 
