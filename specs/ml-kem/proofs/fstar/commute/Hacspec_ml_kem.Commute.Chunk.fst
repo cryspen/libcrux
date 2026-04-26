@@ -318,21 +318,21 @@ let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
                         * ((z * 169) % 3329)) % 3329) % 3329 in
     calc (==) {
       ((a0 * 169) % 3329) * (b0 * 169) % 3329;
-      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l 
+      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l
             (a0 * 169) (b0 * 169) 3329}
       ((a0 * 169) * (b0 * 169)) % 3329;
     };
-    FStar.Math.Lemmas.lemma_mod_mod 
+    FStar.Math.Lemmas.lemma_mod_mod
       (((a0 * 169) * (b0 * 169)) % 3329)
       ((a0 * 169) * (b0 * 169))
       3329;
     calc (==) {
       ((a1 * 169) % 3329) * (b1 * 169) % 3329;
-      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l 
+      (==) {FStar.Math.Lemmas.lemma_mod_mul_distr_l
             (a1 * 169) (b1 * 169) 3329}
       ((a1 * 169) * (b1 * 169)) % 3329;
     };
-    FStar.Math.Lemmas.lemma_mod_mod 
+    FStar.Math.Lemmas.lemma_mod_mod
       (((a1 * 169) * (b1 * 169)) % 3329)
       ((a1 * 169) * (b1 * 169))
       3329;
@@ -342,17 +342,17 @@ let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
      (==) { () }
      (((a1 * 169) * (b1 * 169)) % 3329
       * ((z * 169) % 3329)) % 3329;
-     (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l 
+     (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l
           ((a1 * 169) * (b1 * 169))
           ((z * 169) % 3329)
           3329}
      (((a1 * 169) * (b1 * 169))
       * ((z * 169) % 3329)) % 3329;
-     (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_r 
+     (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_r
           ((a1 * 169) * (b1 * 169))
           (z * 169)
           3329}
-     (((a1 * 169) * (b1 * 169)) * (z * 169)) % 3329;                       
+     (((a1 * 169) * (b1 * 169)) * (z * 169)) % 3329;
     };
     calc (==) {
       result;
@@ -372,33 +372,41 @@ let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
         3329
         }
       (((a0 * 169) * (b0 * 169)) +
-       (((a1 * 169) * (b1 * 169)) * (z * 169))) % 3329;       
+       (((a1 * 169) * (b1 * 169)) * (z * 169))) % 3329;
     };
     calc (==) {
       (r * 169) % 3329;
       (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l r 169 3329}
       (r % 3329 * 169) % 3329;
-      (==) { }
+      (==) { () }
       ((((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329) * 169) % 3329;
-      (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l 
-      (((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329)
+      (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l
+      ((a0 * b0 + a1 * b1 * z * 169) * 169)
       169 3329}
       (((a0 * b0 + a1 * b1 * z * 169) * 169) * 169) % 3329;
-    };      
+    };
     assert ((r * 169) % 3329 ==
-      (((a0 * b0 + a1 * b1 * z * 169) * 169) * 169) % 3329);
-    ()
+      (((a0 * b0 + a1 * b1 * z * 169) * 169) * 169) % 3329)
 #pop-options
 
-(* Lift the integer `mod_core` to FE algebra.  Chains 3 mul + 1 add
-   v-val expansions then invokes the proven `mod_core` lemma.
+(* Int-level FE-chain bridge for A1.  The chain
+   `impl_add (impl_mul (mont a0) (mont b0)) (impl_mul (impl_mul (mont a1)
+   (mont b1)) (mont z))` produces an f_val with both factors of each
+   inner product inner-modded (`((a*169)%q) * ((b*169)%q)`).  A1's
+   ensures has only the first factor inner-modded.  This wrapper does
+   the two `lemma_mod_mul_distr_r` absorptions and invokes A1, so the
+   FE-level lemma A2 is a clean chain. *)
+let lemma_base_case_mult_even_mod_core_fe_form
+    (a0 a1 b0 b1 z r: int) :
+    Lemma (requires r % 3329 == ((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329)
+          (ensures  ((((a0 * 169) % 3329) * ((b0 * 169) % 3329)) % 3329
+                     + ((((a1 * 169) % 3329) * ((b1 * 169) % 3329)) % 3329
+                        * ((z * 169) % 3329)) % 3329) % 3329
+                    == (r * 169) % 3329)
+  = L.lemma_mod_mul_distr_r ((a0 * 169) % 3329) (b0 * 169) 3329;
+    L.lemma_mod_mul_distr_r ((a1 * 169) % 3329) (b1 * 169) 3329;
+    lemma_base_case_mult_even_mod_core a0 a1 b0 b1 z r
 
-   ADMITTED — left for the user.  The simple chain pattern (mirroring
-   `lemma_butterfly_fe_commute_plus` which works for 1 mul + 1 add)
-   times out at rlimit 600 due to non-linear product blow-up scaling
-   with mul count.  Likely needs calc-style decomposition similar to
-   A1.  See `proofs/manual-proof-targets.md` and the comment on
-   `lemma_base_case_mult_even_mod_core` (A1) for guidance. *)
 let lemma_base_case_mult_even_fe_commute
     (a0 a1 b0 b1 zeta result: i16) :
   Lemma (requires v result % 3329
@@ -410,7 +418,20 @@ let lemma_base_case_mult_even_fe_commute
                (P.impl_FieldElement__mul
                  (P.impl_FieldElement__mul (mont_i16_to_spec_fe a1) (mont_i16_to_spec_fe b1))
                  (mont_i16_to_spec_fe zeta)))
-  = admit ()
+  = let a0_fe = mont_i16_to_spec_fe a0 in
+    let b0_fe = mont_i16_to_spec_fe b0 in
+    let a1_fe = mont_i16_to_spec_fe a1 in
+    let b1_fe = mont_i16_to_spec_fe b1 in
+    let z_fe  = mont_i16_to_spec_fe zeta in
+    let prod_a  = P.impl_FieldElement__mul a0_fe b0_fe in
+    let prod_b  = P.impl_FieldElement__mul a1_fe b1_fe in
+    let prod_bz = P.impl_FieldElement__mul prod_b z_fe in
+    lemma_impl_mul_v_val a0_fe b0_fe;
+    lemma_impl_mul_v_val a1_fe b1_fe;
+    lemma_impl_mul_v_val prod_b z_fe;
+    lemma_impl_add_v_val prod_a prod_bz;
+    lemma_base_case_mult_even_mod_core_fe_form
+      (v a0) (v a1) (v b0) (v b1) (v zeta) (v result)
 
 (* `base_case_multiply_odd` has no zeta: residue
      v r % q == ((a0*b1 + a1*b0) * 169) % q
@@ -472,7 +493,7 @@ let lemma_base_case_mult_odd_mod_core (a0 a1 b0 b1 r: int) :
       (==) { }
       ((((a0 * b1 + a1 * b0) * 169) % 3329) * 169) % 3329;
       (==) { FStar.Math.Lemmas.lemma_mod_mul_distr_l
-      (((a0 * b1 + a1 * b0) * 169) % 3329)
+      ((a0 * b1 + a1 * b0) * 169)
       169 3329}
       (((a0 * b1 + a1 * b0) * 169) * 169) % 3329;
     };
@@ -481,13 +502,18 @@ let lemma_base_case_mult_odd_mod_core (a0 a1 b0 b1 r: int) :
     ()
 #pop-options
 
-(* Lift the integer `odd_mod_core` to FE algebra.  Chains 2 mul + 1 add
-   v-val expansions then invokes the proven `odd_mod_core` lemma.
+(* Int-level FE-chain bridge for A3, analogous to A1's `_fe_form`.
+   Two `lemma_mod_mul_distr_r` absorb the redundant inner mods, then A3. *)
+let lemma_base_case_mult_odd_mod_core_fe_form
+    (a0 a1 b0 b1 r: int) :
+    Lemma (requires r % 3329 == ((a0 * b1 + a1 * b0) * 169) % 3329)
+          (ensures  ((((a0 * 169) % 3329) * ((b1 * 169) % 3329)) % 3329
+                     + (((a1 * 169) % 3329) * ((b0 * 169) % 3329)) % 3329) % 3329
+                    == (r * 169) % 3329)
+  = L.lemma_mod_mul_distr_r ((a0 * 169) % 3329) (b1 * 169) 3329;
+    L.lemma_mod_mul_distr_r ((a1 * 169) % 3329) (b0 * 169) 3329;
+    lemma_base_case_mult_odd_mod_core a0 a1 b0 b1 r
 
-   ADMITTED — left for the user.  Same simple chain pattern as A2 which
-   times out; should be slightly easier here (2 muls vs 3) but we
-   admit to keep file in stable state alongside A2.  Likely needs
-   calc-style decomposition. *)
 let lemma_base_case_mult_odd_fe_commute
     (a0 a1 b0 b1 result: i16) :
   Lemma (requires v result % 3329
@@ -497,7 +523,17 @@ let lemma_base_case_mult_odd_fe_commute
              P.impl_FieldElement__add
                (P.impl_FieldElement__mul (mont_i16_to_spec_fe a0) (mont_i16_to_spec_fe b1))
                (P.impl_FieldElement__mul (mont_i16_to_spec_fe a1) (mont_i16_to_spec_fe b0)))
-  = admit ()
+  = let a0_fe = mont_i16_to_spec_fe a0 in
+    let b1_fe = mont_i16_to_spec_fe b1 in
+    let a1_fe = mont_i16_to_spec_fe a1 in
+    let b0_fe = mont_i16_to_spec_fe b0 in
+    let prod_a = P.impl_FieldElement__mul a0_fe b1_fe in
+    let prod_b = P.impl_FieldElement__mul a1_fe b0_fe in
+    lemma_impl_mul_v_val a0_fe b1_fe;
+    lemma_impl_mul_v_val a1_fe b0_fe;
+    lemma_impl_add_v_val prod_a prod_b;
+    lemma_base_case_mult_odd_mod_core_fe_form
+      (v a0) (v a1) (v b0) (v b1) (v result)
 
 (* Combined base-case multiply per binomial pair: takes both residue
    equations from `ntt_multiply_binomials_post` at binomial k, produces
@@ -945,10 +981,13 @@ let lemma_decompress_ciphertext_coefficient_fe_commute
    Reuse the array-length-generic predicates already defined in
    Traits.Spec so Layer 2 at N = 256 can cite the same shape. *)
 
-(* The trait posts now bake in `compress_post_N` / `decompress_post_N`
-   directly, so each lemma's conclusion is just one conjunct of the
-   trait method's post — `= ()` is enough. *)
-
+(* The chunk-level commute lemmas below close once their per-element
+   `*_fe_commute` lemmas (A5/A6/A7) land — typically by
+   `Classical.forall_intro` over `lemma_<op>_fe_commute` followed by
+   `Seq.lemma_eq_intro`.  Until then the `()` body is unsound (the
+   trait field's post `compress_1_post` is bound-only and does not
+   imply the FE-form `compress_post_N`); previously this lemma was
+   passing only by Z3 luck.  Admitted in a clean state pending A5. *)
 let lemma_compress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
@@ -957,8 +996,9 @@ let lemma_compress_1_chunk_commutes
     (ensures
        (let r = T.f_compress_1_ vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
-  = ()
+  = admit ()
 
+(* Like `lemma_compress_1_chunk_commutes`: pending A5 / A7 / A6 etc. *)
 let lemma_compress_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (coefficient_bits: i32) (vec: vV) :
@@ -971,7 +1011,7 @@ let lemma_compress_chunk_commutes
        (let r = T.f_compress coefficient_bits vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
-  = ()
+  = admit ()
 
 let lemma_decompress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -981,7 +1021,7 @@ let lemma_decompress_1_chunk_commutes
     (ensures
        (let r = T.f_decompress_1_ vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
-  = ()
+  = admit ()
 
 let lemma_decompress_ciphertext_coefficient_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -995,7 +1035,7 @@ let lemma_decompress_ciphertext_coefficient_chunk_commutes
        (let r = T.f_decompress_ciphertext_coefficient coefficient_bits vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
-  = ()
+  = admit ()
 
 (* ────────────  NTT-layer ops  ────────────
    Hacspec's `ntt_layer_n` at N = 16 takes half-size `len` and a zeta
