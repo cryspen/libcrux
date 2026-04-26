@@ -983,13 +983,11 @@ let lemma_decompress_ciphertext_coefficient_fe_commute
    Reuse the array-length-generic predicates already defined in
    Traits.Spec so Layer 2 at N = 256 can cite the same shape. *)
 
-(* The chunk-level commute lemmas below close once their per-element
-   `*_fe_commute` lemmas (A5/A6/A7) land — typically by
-   `Classical.forall_intro` over `lemma_<op>_fe_commute` followed by
-   `Seq.lemma_eq_intro`.  Until then the `()` body is unsound (the
-   trait field's post `compress_1_post` is bound-only and does not
-   imply the FE-form `compress_post_N`); previously this lemma was
-   passing only by Z3 luck.  Admitted in a clean state pending A5. *)
+(* The trait field's post `compress_1_post` is
+     `bounded_pos_i16_array 1 result /\ compress_post_N 1 vec result`
+   so the FE-form post is already a syntactic conjunct of what
+   `f_compress_1_` returns.  No A5 application needed at this layer
+   — A5 is what closed the impl side; this layer just projects. *)
 let lemma_compress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (vec: vV) :
@@ -998,9 +996,8 @@ let lemma_compress_1_chunk_commutes
     (ensures
        (let r = T.f_compress_1_ vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
-  = admit ()
+  = ()
 
-(* Like `lemma_compress_1_chunk_commutes`: pending A5 / A7 / A6 etc. *)
 let lemma_compress_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
     (coefficient_bits: i32) (vec: vV) :
@@ -1013,7 +1010,7 @@ let lemma_compress_chunk_commutes
        (let r = T.f_compress coefficient_bits vec in
         TS.compress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
-  = admit ()
+  = ()
 
 let lemma_decompress_1_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -1023,7 +1020,7 @@ let lemma_decompress_1_chunk_commutes
     (ensures
        (let r = T.f_decompress_1_ vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize 1) (T.f_repr vec) (T.f_repr r)))
-  = admit ()
+  = ()
 
 let lemma_decompress_ciphertext_coefficient_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -1037,7 +1034,7 @@ let lemma_decompress_ciphertext_coefficient_chunk_commutes
        (let r = T.f_decompress_ciphertext_coefficient coefficient_bits vec in
         TS.decompress_post_N #(mk_usize 16) (mk_usize (v coefficient_bits))
           (T.f_repr vec) (T.f_repr r)))
-  = admit ()
+  = ()
 
 (* ────────────  NTT-layer ops  ────────────
    Hacspec's `ntt_layer_n` at N = 16 takes half-size `len` and a zeta

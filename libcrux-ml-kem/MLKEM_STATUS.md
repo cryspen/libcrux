@@ -404,16 +404,21 @@ with a real proof (the `lemma_base_case_mult_pair_commute` calls are
 already in place).
 
 A5/A6/A7 unblock `op_compress_1`, `op_decompress_1`,
-`op_decompress_ciphertext_coefficient` panic_free removals — but
-each goes through the chunk-level wrapper below first.
+`op_decompress_ciphertext_coefficient` panic_free removals — through
+the chunk-level wrappers below.
 
-**Chunk-level commute lemmas (B-tier) still admitted**: the 4 lemmas
-`lemma_{compress,decompress}{_1,}_chunk_commutes` (lines 1001/1016/
-1026/1040 in `Commute.Chunk.fst`) admit `= ()` and previously closed
-only by Z3 luck — the trait field's post is bound-only and does not
-imply the FE-form `compress_post_N`.  Now that A5/A6/A7 land, these
-close via `Classical.forall_intro` over the per-element fe_commute
-lemma + `Seq.lemma_eq_intro`.  Next pickup.
+**Chunk-level commute lemmas (B-tier) closed**: the 4 lemmas
+`lemma_{compress,decompress}{_1,}_chunk_commutes` (Commute.Chunk.fst
+~lines 998/1011/1021/1034) close with `()` because the trait posts
+`compress_1_post` / `compress_post` / `decompress_1_post` /
+`decompress_ciphertext_coefficient_post` were strengthened to include
+`compress_post_N` / `decompress_post_N` directly — the chunk-level
+goal is now a syntactic projection of the trait post, no
+forall_intro/Seq.lemma_eq_intro needed.  Each closes in 60–130 ms.
+
+These chunk-level lemmas + A5/A6/A7 in turn unblock dropping
+`panic_free` from `op_compress_1`, `op_compress`, `op_decompress_1`,
+`op_decompress_ciphertext_coefficient` on portable + AVX2.
 
 ## Deferred: SIMD model unification with libcrux-ml-dsa
 
