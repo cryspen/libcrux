@@ -957,7 +957,9 @@ let lemma_compress_message_coefficient_fe_commute (fe result: i16) :
         (ensures Hacspec_ml_kem.Compress.compress_d
                    (i16_to_spec_fe fe) (mk_usize 1)
                  == i16_to_spec_fe result)
-  = admit ()
+  = assert(v (i16_to_spec_fe fe).f_val == v fe); 
+    assert(v (i16_to_spec_fe result).f_val == v result); 
+    ()
 
 let lemma_decompress_1_fe_commute (a result: i16) :
   Lemma (requires v a >= 0 /\ v a <= 1 /\
@@ -965,7 +967,7 @@ let lemma_decompress_1_fe_commute (a result: i16) :
         (ensures Hacspec_ml_kem.Compress.decompress_d
                    (i16_to_spec_fe a) (mk_usize 1)
                  == i16_to_spec_fe result)
-  = admit ()
+  = ()
 
 let lemma_decompress_ciphertext_coefficient_fe_commute
     (a result: i16) (d: usize) :
@@ -975,7 +977,7 @@ let lemma_decompress_ciphertext_coefficient_fe_commute
         (ensures Hacspec_ml_kem.Compress.decompress_d
                    (i16_to_spec_fe a) d
                  == i16_to_spec_fe result)
-  = admit ()
+  = ()
 
 (* ────────────  Compress / decompress  ────────────
    Reuse the array-length-generic predicates already defined in
