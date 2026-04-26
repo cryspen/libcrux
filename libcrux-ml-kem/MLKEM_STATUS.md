@@ -403,22 +403,33 @@ on both portable and AVX2 backends, and replacing the wrapper
 with a real proof (the `lemma_base_case_mult_pair_commute` calls are
 already in place).
 
-A5/A6/A7 unblock `op_compress_1`, `op_decompress_1`,
-`op_decompress_ciphertext_coefficient` panic_free removals — through
-the chunk-level wrappers below.
+**A5/A7 + A8 admit**: closing the per-element fe_commute lemmas was
+the input for the impl-side `op_compress*` panic_free drops.  A8
+(parameterized `lemma_compress_ciphertext_coefficient_fe_commute`,
+Barrett-exactness 4-case math) is admitted with statement preserved
+— follows the same admit-then-prove pattern as A5–A7.
 
-**Chunk-level commute lemmas (B-tier) closed**: the 4 lemmas
-`lemma_{compress,decompress}{_1,}_chunk_commutes` (Commute.Chunk.fst
-~lines 998/1011/1021/1034) close with `()` because the trait posts
-`compress_1_post` / `compress_post` / `decompress_1_post` /
-`decompress_ciphertext_coefficient_post` were strengthened to include
-`compress_post_N` / `decompress_post_N` directly — the chunk-level
-goal is now a syntactic projection of the trait post, no
-forall_intro/Seq.lemma_eq_intro needed.  Each closes in 60–130 ms.
+**Trait posts refactored to `Spec.Utils.forall16`** (commit
+`fb4f8154d`).  Old form used `compress_post_N #16 1 vec result`
+(generic-N forall, Form 1).  Per the C4-era forall benchmark, Form 1
+at N=16 is 44× slower for callers and sometimes fails outright with
+"incomplete quantifiers".  All 4 trait posts (compress_1_post /
+compress_post / decompress_1_post / decompress_ciphertext_coefficient_post)
+now use `Spec.Utils.forall16 (fun (i: nat{i<16}) -> ...)` directly.
+The decompress posts retain their input-bound implication wrapper
+(needed for `decompress_d`'s `Pure` requires to type-check).
 
-These chunk-level lemmas + A5/A6/A7 in turn unblock dropping
-`panic_free` from `op_compress_1`, `op_compress`, `op_decompress_1`,
-`op_decompress_ciphertext_coefficient` on portable + AVX2.
+**Chunk-level commute lemmas**: compress lemmas close cleanly
+(`compress_1`: 755 ms, `compress`: 1888 ms).  Decompress chunk
+lemmas (`decompress_1`, `decompress_ciphertext_coefficient`) admitted
+— Z3 query 11/16 fails "incomplete quantifiers" even after revealing
+`bounded_i16_array`.
+
+**Portable `op_compress_1` / `op_compress<D>` panic_free DROPPED**
+(commits `fb4f8154d`, `830ec8b8b`).  Body proof = 16 explicit per-lane
+applications of A5 / A8.  Verifies in 6.3 s / 14 s respectively.
+Same pattern is ready for `op_decompress_*` once their chunk lemmas
+unblock.
 
 ## Deferred: SIMD model unification with libcrux-ml-dsa
 
