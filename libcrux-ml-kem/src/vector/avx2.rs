@@ -170,7 +170,7 @@ fn op_to_unsigned_representative(a: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"${spec::compress_1_pre} (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_1_post} (impl.f_repr ${vector}) (impl.f_repr ${out})"#))]
 fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
@@ -178,9 +178,28 @@ fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
     );
-    SIMD256Vector {
-        elements: compress::compress_message_coefficient(vector.elements),
-    }
+    let result_elements = compress::compress_message_coefficient(vector.elements);
+    let result = SIMD256Vector { elements: result_elements };
+    hax_lib::fstar!(
+        r#"let aux (j: nat{j < 16}) :
+              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
+                       (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
+                                     ${result}.f_elements) j) ==
+                     Hacspec_ml_kem.Compress.compress_d
+                       (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
+                          (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
+                                        ${vector}.f_elements) j))
+                       (mk_usize 1)) =
+             Hacspec_ml_kem.Commute.Chunk.lemma_compress_message_coefficient_fe_commute
+               (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements) j)
+               (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}.f_elements) j)
+           in
+           aux 0;  aux 1;  aux 2;  aux 3;
+           aux 4;  aux 5;  aux 6;  aux 7;
+           aux 8;  aux 9;  aux 10; aux 11;
+           aux 12; aux 13; aux 14; aux 15"#
+    );
+    result
 }
 
 #[inline(always)]
