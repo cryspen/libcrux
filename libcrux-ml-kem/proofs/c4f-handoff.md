@@ -1,7 +1,29 @@
 # C4f Handoff — Trait Postcondition Closures (post forall16 refactor)
 
-Status as of 2026-04-26.  Previous brief: `manual-proof-targets.md`.
-Active branch: `trait-poststrengthen`.  Pushed through `830ec8b8b`.
+Status as of 2026-04-27.  Previous brief: `manual-proof-targets.md`.
+Active branch: `trait-poststrengthen`.
+
+## Update 2026-04-27 — `op_decompress_*` Mac failure fix
+
+Mac verification surfaced `Libcrux_ml_kem.Vector.Portable.fst:269,8-273,25` —
+the `aux` lemma in `op_decompress_1_` failing to discharge
+`lemma_decompress_1_fe_commute_int`'s precondition `v a <= 1`.
+
+**Root cause**: `decompress_1_pre` is `bounded_pos_i16_array 1 vec`, which
+unfolds to `forall i. 0 <= v a_i <= pow2 1 - 1`.  Z3 doesn't auto-simplify
+`pow2 1 - 1 = 1` in this context — so the per-lane `v a_j <= 1` needed
+by the lemma stays out of reach.  `op_compress_1` works because
+`compress_1_pre` is the transparent `forall i. 0 <= v vec_i < 3329`
+shape (no `pow2` involved).  Same shape applied to
+`op_decompress_ciphertext_coefficient` plus a `pow2 (D+1) = pow2 D * 2`
+bridge (primitive's denominator vs. lemma's denominator).
+
+**Fix** (this session): Added explicit per-lane bound asserts after the
+`reveal_opaque` in both `op_decompress_1` and
+`op_decompress_ciphertext_coefficient`, plus a `pow2_plus` invocation
+for the latter.  Source: `src/vector/portable.rs:251-275, 280-312`.
+Extracted `.fst` patched manually to mirror (re-extract was risky due
+to a recent rustc ICE on this box).  **Verify on Mac.**
 
 ## What landed (this session)
 

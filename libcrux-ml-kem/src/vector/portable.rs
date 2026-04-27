@@ -251,7 +251,11 @@ fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector
 fn op_decompress_1(a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           assert_norm (pow2 1 - 1 == 1);
+           assert (forall (i:nat). i < 16 ==>
+                     0 <= v (Seq.index ${a}.f_elements i) /\
+                     v (Seq.index ${a}.f_elements i) <= 1)"#
     );
     let result = decompress_1(a);
     hax_lib::fstar!(
@@ -280,9 +284,18 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
 fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           assert (forall (i:nat). i < 16 ==>
+                     0 <= v (Seq.index ${a}.f_elements i) /\
+                     v (Seq.index ${a}.f_elements i) < pow2 (v $COEFFICIENT_BITS))"#
     );
     let result = decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a);
+    // Bridge: primitive's post uses `pow2 (D+1)` denominator; lemma's precondition
+    // uses `pow2 D * 2`.  Same value, but Z3 doesn't auto-unfold `pow2 (n+1)`.
+    hax_lib::fstar!(
+        r#"FStar.Math.Lemmas.pow2_plus (v $COEFFICIENT_BITS) 1;
+           assert (pow2 (v $COEFFICIENT_BITS + 1) == pow2 (v $COEFFICIENT_BITS) * 2)"#
+    );
     hax_lib::fstar!(
         r#"let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
