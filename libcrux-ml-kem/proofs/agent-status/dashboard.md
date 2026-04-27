@@ -13,7 +13,7 @@ progress eagerly to its branch (see "Resume protocol" below).
 |---|---|---|---|---|---|
 | **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **A done** (4/6 proven, tip `65668af62`); **A2 spawning**: stretch goal — close 2 layer-1 admits via 4-per-zeta refactor recipe | `proofs/agent-status/agent-A-brief.md` + `agent-A2-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
 | **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | **done**: 9/9 brief cites + 1/6 trivial helper, 5 documented for next phase (tip `06d5e65ff`, ~75 min wall) | `proofs/agent-status/agent-B-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
-| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C done** (2/5 proven, tip `aa48507b5`); **C2 spawning**: stretch goal — strengthen mm256_cmpgt_epi16 post for C5, retry C1/C2 with bit-extraction lemmas | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
+| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C+C2 done** (4/5 proven total, 1/5 admit-with-comment; C2 added 2 SMTPat axioms in Avx2_extract matching existing convention; tip `d077f29bc`) | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
