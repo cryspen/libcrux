@@ -407,7 +407,7 @@ fn op_ntt_layer_1_step(a: PortableVector, zeta0: i16, zeta1: i16, zeta2: i16, ze
     out
 }
 
-#[hax_lib::fstar::options("--admit_smt_queries true")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_2_step_pre} ${a}.f_elements zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_2_step_post} ${a}.f_elements zeta0 zeta1 ${out}.f_elements"#))]
 fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
@@ -485,7 +485,7 @@ fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVec
     out
 }
 
-#[hax_lib::fstar::options("--admit_smt_queries true")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
@@ -712,7 +712,7 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
     out
 }
 
-#[hax_lib::fstar::options("--admit_smt_queries true")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
