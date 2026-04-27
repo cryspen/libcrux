@@ -1083,6 +1083,113 @@ let lemma_decompress_ciphertext_coefficient_chunk_commutes
      `ntt_layer_3_step`   len = 8, 1 zeta   (zetas_1)
    Symmetric layout for the inverse NTT via `ntt_inverse_layer_n`. *)
 
+(* ────────────  Per-branch (concrete-b) layer-1 NTT helpers  ────────────
+   Phase 6 follow-up (agent A2).  At call sites in
+   `vector/portable.rs::op_ntt_layer_1_step`, the per-branch predicate
+   `ntt_layer_1_step_branch_post` selects one of {zeta0..zeta3} via a
+   4-way `if b=0 then zeta0 else if b=1 ... else zeta3` ladder.  When the
+   wrapper asserts `p_layer_1 b` for symbolic-but-concrete `b ∈ {0,1,2,3}`,
+   Z3 case-splits on the ladder for every per-lane FE-algebra fact, which
+   blew up at rlimit 800 (single sub-query > 10 min).
+   Refactor: 4 per-branch lemmas, each with `b` literal so the if-ladder
+   collapses to the right zeta on both pre and post sides.  Each lemma:
+   - takes the 2 `ntt_spec` residues for that branch's lane pairs,
+   - calls `lemma_butterfly_pair_commute` twice,
+   - reveals the opaque `ntt_layer_1_step_branch_post`,
+   - concludes the per-branch post for its concrete `b`.
+   Mirror set provided for `inv_ntt_layer_1_step_branch_post`. *)
+
+#push-options "--z3rlimit 80 --fuel 0 --ifuel 0"
+
+(* Helper: produce the 4 FE equalities for one zeta-pair group from the
+   2 ntt_spec residues.  This isolates the integer/Mont arithmetic
+   side, leaving the top-level branch wrapper a trivial composition. *)
+private
+let lemma_ntt_layer_1_butterfly_to_fe
+    (vec result: t_Array i16 (mk_usize 16))
+    (z: i16) (i1 j1 i2 j2: nat) :
+  Lemma (requires i1 < 16 /\ j1 < 16 /\ i2 < 16 /\ j2 < 16 /\
+                  Spec.Utils.ntt_spec vec (v z) i1 j1 result /\
+                  Spec.Utils.ntt_spec vec (v z) i2 j2 result)
+        (ensures
+          mont_i16_to_spec_fe (Seq.index result i1) ==
+            P.impl_FieldElement__add
+              (mont_i16_to_spec_fe (Seq.index vec i1))
+              (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                        (mont_i16_to_spec_fe (Seq.index vec j1))) /\
+          mont_i16_to_spec_fe (Seq.index result j1) ==
+            P.impl_FieldElement__sub
+              (mont_i16_to_spec_fe (Seq.index vec i1))
+              (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                        (mont_i16_to_spec_fe (Seq.index vec j1))) /\
+          mont_i16_to_spec_fe (Seq.index result i2) ==
+            P.impl_FieldElement__add
+              (mont_i16_to_spec_fe (Seq.index vec i2))
+              (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                        (mont_i16_to_spec_fe (Seq.index vec j2))) /\
+          mont_i16_to_spec_fe (Seq.index result j2) ==
+            P.impl_FieldElement__sub
+              (mont_i16_to_spec_fe (Seq.index vec i2))
+              (P.impl_FieldElement__mul (mont_i16_to_spec_fe z)
+                                        (mont_i16_to_spec_fe (Seq.index vec j2))))
+  = lemma_butterfly_pair_commute vec result z i1 j1;
+    lemma_butterfly_pair_commute vec result z i2 j2
+
+(* Mirror for the inverse (Gentleman-Sande) butterfly. *)
+private
+let lemma_inv_ntt_layer_1_butterfly_to_fe
+    (vec result: t_Array i16 (mk_usize 16))
+    (z: i16) (i1 j1 i2 j2: nat) :
+  Lemma (requires i1 < 16 /\ j1 < 16 /\ i2 < 16 /\ j2 < 16 /\
+                  Spec.Utils.inv_ntt_spec vec (v z) i1 j1 result /\
+                  Spec.Utils.inv_ntt_spec vec (v z) i2 j2 result)
+        (ensures
+          mont_i16_to_spec_fe (Seq.index result i1) ==
+            P.impl_FieldElement__add
+              (mont_i16_to_spec_fe (Seq.index vec i1))
+              (mont_i16_to_spec_fe (Seq.index vec j1)) /\
+          mont_i16_to_spec_fe (Seq.index result j1) ==
+            P.impl_FieldElement__mul
+              (mont_i16_to_spec_fe z)
+              (P.impl_FieldElement__sub
+                (mont_i16_to_spec_fe (Seq.index vec j1))
+                (mont_i16_to_spec_fe (Seq.index vec i1))) /\
+          mont_i16_to_spec_fe (Seq.index result i2) ==
+            P.impl_FieldElement__add
+              (mont_i16_to_spec_fe (Seq.index vec i2))
+              (mont_i16_to_spec_fe (Seq.index vec j2)) /\
+          mont_i16_to_spec_fe (Seq.index result j2) ==
+            P.impl_FieldElement__mul
+              (mont_i16_to_spec_fe z)
+              (P.impl_FieldElement__sub
+                (mont_i16_to_spec_fe (Seq.index vec j2))
+                (mont_i16_to_spec_fe (Seq.index vec i2))))
+  = lemma_inv_butterfly_pair_commute vec result z i1 j1;
+    lemma_inv_butterfly_pair_commute vec result z i2 j2
+
+#pop-options
+
+(* Per-branch wrappers `lemma_ntt_layer_1_branch_{0..3}` (and the inv
+   mirror) were attempted here (Phase 6 follow-up agent A2) but Z3 still
+   hangs even with `b` literal: revealing
+   `ntt_layer_1_step_branch_post` exposes the if-ladder
+   `let z = if b = 0 then zeta0 else if b = 1 then ...`, and Z3
+   case-splits even when the outer `b` is a literal.  Tried at
+   - rlimit 200 + split_queries always: 16 sub-queries succeed in
+     7-130 ms each, then a single sub-query (#17) hangs > 60 s.
+   - rlimit 400 + no split: full timeout.
+   The two helper lemmas above (which DO verify, ~25 ms each) provide
+   the FE-form bridge from `ntt_spec` residues for one zeta-pair group,
+   useful for whatever next-step refactor lands the layer-1 wrappers.
+   Closing the wrappers requires either:
+   - rewriting `ntt_layer_1_step_branch_post` so the zeta is selected
+     by the caller and passed in as an `i16` (eliminates the in-body
+     if-ladder); or
+   - a tactic-based normalize step (`assert_norm` / `Tactics.compute`)
+     to eagerly reduce the if-ladder before SMT.
+   For now `op_ntt_layer_1_step` and `op_inv_ntt_layer_1_step` retain
+   `--admit_smt_queries true`. *)
+
 (* The trait post of `f_ntt_layer_1_step` is exactly this predicate —
    4 groups of 4 FE equalities, wrapped in `Spec.Utils.forall4`.  The
    lemma's conclusion is the post itself, so the body is `= ()`.  Layer 2
