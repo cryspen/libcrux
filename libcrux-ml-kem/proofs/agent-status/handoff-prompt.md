@@ -1,92 +1,133 @@
-# Handoff prompt — paste into new session
+# Focused next-session prompt — paste into a new Claude Code session
 
-Copy the block below into a fresh Claude Code session at
-`/Users/karthik/libcrux-trait-opacify/libcrux-ml-kem`.  It primes the
-new session to load durable state and resume work.
+Open a fresh Claude Code session at
+`/Users/karthik/libcrux-trait-opacify/libcrux-ml-kem` and paste the
+block below.  This prompt is more focused than a generic handoff —
+it loads durable state, internalizes hard rules from the prior
+session, and tells the new session what NOT to repeat.
 
 ---
 
 ```
-You are continuing a multi-agent F* verification effort on the
-libcrux-ml-kem trait-opacify branch.  The previous session ran 6
-agents in parallel across Phases 6, 6c, 7c, and 7a, then handed off
-intentionally for token efficiency.
+You are continuing a multi-agent F* verification effort on
+libcrux-ml-kem trait-opacify branch.  The previous session:
 
-Resume protocol — read these files in order, then report back what
-state you found:
+  * Landed Phase 6 (4/6 portable NTT admits proven, merged 6f41ec5bc)
+  * Landed Phase 6c (4/5 AVX2 helper admits proven + 2 SIMD intrinsic
+    axioms in Avx2_extract, merged 2953fbf9c)
+  * HELD agent/phase-7c-serialize (B+B') — admit-driven bridge
+    scaffolding, unacceptable, see held-work-Bprime-L123.md
+  * HELD agent/phase-7a-polynomial (E) — admit-driven Tier-1 lemma
+    scaffolding + body assumes, unacceptable, see held-work-E-Phase7a.md
 
-1. libcrux-ml-kem/proofs/agent-status/handoff-2026-04-27.md  (THIS FIRST)
-2. libcrux-ml-kem/MLKEM_STATUS.md
-3. libcrux-ml-kem/proofs/session-handoff.md
-4. libcrux-ml-kem/proofs/agent-status/dashboard.md
-5. libcrux-ml-kem/proofs/proof-style-guide.md
-6. libcrux-ml-kem/proofs/agent-status/held-work-Bprime-L123.md
+trait-opacify tip: see `git log --oneline trait-opacify -5`.  Should
+be at-or-after 3709dcc4e.
 
-If Agent E (Phase 7a Polynomial) had not completed when the handoff
-was prepared, check now:
-- git log --oneline agent/phase-7a-polynomial -10
-- git show agent/phase-7a-polynomial:libcrux-ml-kem/proofs/agent-status/agent-E.md | tail -40
-If E has finished and you find a completion notification waiting,
-update handoff-2026-04-27.md with E's outcome, then propose merging
-agent/phase-7a-polynomial into trait-opacify (or holding it like
-B+B' if the proofs are bridge-only and not worth merging).
+Resume protocol — load durable state by reading these in order, then
+report ONE PARAGRAPH of state summary:
 
-Working principles to honor (these are durable preferences from
-prior sessions, do not relearn):
+  1. libcrux-ml-kem/proofs/agent-status/handoff-2026-04-27.md
+  2. libcrux-ml-kem/proofs/agent-status/dashboard.md
+  3. libcrux-ml-kem/MLKEM_STATUS.md (skim Phase 7 table + USER tasks)
+  4. libcrux-ml-kem/proofs/proof-style-guide.md (skim §3.4–§3.7)
+  5. libcrux-ml-kem/proofs/agent-status/held-work-E-Phase7a.md
+  6. libcrux-ml-kem/proofs/agent-status/held-work-Bprime-L123.md
 
-HARD RULE on agent runs (established this session):
-- Admit-driven scaffolding is UNACCEPTABLE.  An agent run that adds
-  hacspec citations but discharges them via admitted bridge axioms,
-  admitted Tier-N commute lemmas, or body `assume`s about loop
-  invariants is treated as a HELD branch, not merged.  See
-  held-work-Bprime-L123.md and held-work-E-Phase7a.md for prior
-  examples.
-- Future agent briefs MUST require: close target #1 with a real
-  proof body before ANY admits.  If target #1 doesn't close in
-  ~30 min, ABORT and report what's missing — do NOT pivot to
-  scaffolding.
-- The trait-opacify design (Phases 1-5) makes above-trait proofs
-  MECHANICAL.  Trait posts in src/vector/traits.rs::spec deliver
-  per-lane FE equations behind opaque predicates.  Tier-N commute
-  lemmas are Classical.forall_intro compositions, not new math.
-  Body `assume`s are evidence the agent worked from a pre-trait-
-  opacify mental model — the correct fix is to USE the trait post
-  directly.
+============== HARD RULES (do not relearn) ==============
 
-Other principles:
-- User handles math-heavy / Z3-blocked / template-setting proofs.
-  Agents handle pattern-following / Tier-N composition / mechanical work.
-- Default to plain `make` for verification; fstar-mcp only when
-  iterating ≥5 times on the SAME hand-written F* file.
-- Resource budget: ≤4 concurrent F* processes (8 brief), 8 GB each,
-  total <32 GB on this 48 GB box.  Past OOMs crashed the system.
-- Agents work in isolated worktrees on dedicated branches;
-  eager-commit logs to proofs/agent-status/agent-X.md on the branch.
-- Rust function bodies: don't touch algorithmically (only loop-
-  invariant strengthening, which should rarely be needed).  F* spec /
-  commute / opaque-predicate files: editable.  traits.rs::spec opaque
-  per-branch predicates: don't redesign.
+R1.  Admit-driven scaffolding is UNACCEPTABLE.  An agent run that
+     adds hacspec citations but discharges them via admitted bridge
+     axioms, admitted Tier-N lemmas, or body `assume`s about loop
+     invariants is treated as a HELD branch, not merged.  Two such
+     runs (B+B' and E) already produced ~2 hours of compute for zero
+     verification content; do not commission a third.
 
-After loading state, decide the next concrete action:
-- If E is done: aggregate its outcome, update dashboard, and ask the
-  user whether to spawn Wave 3 (Phases 7b NTT, 7d Matrix, 7n
-  Sampling — see handoff doc for the parallelism plan).
-- If E is still running: poll, check memory pressure, wait for
-  completion notification.  Don't spawn additional agents until E
-  finishes.
+R2.  The trait-opacify design (Phases 1–5, already landed) makes
+     above-trait proofs MECHANICAL.  The trait posts in
+     src/vector/traits.rs::spec deliver per-lane / per-branch FE
+     equations via opaque predicates.  Tier-N commute lemmas in
+     specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst
+     are Classical.forall_intro compositions over EXISTING per-vector
+     chunk-commute lemmas (e.g., lemma_barrett_reduce_chunk_commutes,
+     lemma_add_chunk_commutes_plain).  No new arithmetic is needed.
 
-Be terse in your initial state report — one paragraph or a short
-table.  Don't replay the full handoff doc back to the user.
+R3.  Future agent briefs MUST require: close target #1 with a real
+     proof body before any admits.  If target #1 doesn't close in
+     ~30 min, ABORT and report what's missing in trait-opacity.  Do
+     NOT pivot to admit scaffolding.  Provide a concrete first-target
+     recipe in the brief (loop invariant + reveal_opaque + Tier-1
+     lemma call).
+
+R4.  EXISTING proofs in modules being post-strengthened (e.g.,
+     Libcrux_ml_kem.Polynomial.fst's existing impl→Spec.MLKEM body
+     proofs) are REFERENCE ONLY.  They use pre-trait-opacify patterns
+     (manual loop-invariant strengthening with Spec.MLKEM lemma
+     chains).  Do NOT mimic, extend, or chain off them.  The new
+     work is post-only: ADD a Hacspec_ml_kem.* citation conjunct to
+     the post; discharge via the trait posts directly through Tier-N
+     commute lemmas.  When the existing body proof uses a pattern
+     that contradicts trait-opacity, leave the existing body alone;
+     your new conjunct should discharge orthogonally to it.
+
+R5.  Body `assume`s about loop invariants are UNACCEPTABLE.  If the
+     loop invariant doesn't carry the needed fact, FIRST check
+     whether the trait post does (it usually does post-trait-opacify).
+     Body assumes silently misuse the trait-opacity guarantees.
+
+R6.  Resource budget: ≤4 concurrent F* processes (8 brief), 8 GB each;
+     total < 32 GB on this 48 GB box.  Past OOMs crashed the system.
+     `ulimit -v 8388608` + `--z3cliopt smt.memory_max_size=8000` per
+     agent.  F* rlimit ≤ 800.
+
+R7.  Default to plain `make` for verification.  fstar-mcp only when
+     iterating ≥5 times on the SAME hand-written F* file content.
+
+R8.  Agents work in isolated worktrees on dedicated branches; eager-
+     commit logs to proofs/agent-status/agent-X.md on the branch.
+
+R9.  Rust function bodies: don't touch algorithmically (loop-invariant
+     strengthening should rarely be needed post-trait-opacify).
+     traits.rs::spec opaque per-branch predicates: don't redesign.
+
+============== NEXT-ACTION OPTIONS ==============
+
+Pick ONE based on user direction and the loaded state:
+
+(a) Real-proof specialist for Phase 7a (Polynomial 7 fns).  Use the
+    held E branch's structural choices as reference.  Brief in
+    held-work-E-Phase7a.md.  First target: poly_barrett_reduce.
+    Hard rules R1-R5 above.
+
+(b) Wave 3 fan-out (Phases 7b NTT layers, 7d Matrix, 7n Sampling).
+    Per the parallelism plan in MLKEM_STATUS.md.  These can run
+    concurrent with (a) since they touch different files.  Each
+    needs a trait-opacity-aware first-target recipe in its brief.
+
+(c) L1/L2/L3 specialist for the B+B' bit-vector chain.  Brief in
+    held-work-Bprime-L123.md.  Independent of (a) and (b).
+
+(d) Other USER-lane work (USER-1..7 in MLKEM_STATUS.md).
+
+Default if user is silent: ask them which lane to attack, summarizing
+load and noting that (a) and (c) require focused real-proof work
+while (b) is more parallelizable.
+
+Be terse in your initial state report — one paragraph or short
+table.  Don't replay durable docs back to the user.
 ```
 
 ---
 
-## Why a handoff prompt and not just "continue from where we left off"
+## Why this prompt is more focused than a generic handoff
 
-A fresh session has no memory of this conversation.  The prompt above
-gives it a precise read-list and the durable preferences it needs to
-honor without relearning them.  All other state is in git, where the
-new session reads it directly.
+The earlier `handoff-2026-04-27.md` is a comprehensive state doc.  This
+prompt is the user-facing instruction that:
 
-The new session may also miss subtle context (e.g., why a particular
-agent was held).  The handoff doc covers those decisions explicitly.
+1. Names the prior session's failures (B+B', E held — admit scaffolding)
+   so the new session understands the policy reaction concretely.
+2. Distills 9 hard rules (R1–R9) so policy is loaded immediately.
+3. Specifies four next-action options ordered by likely user
+   priority, so the new session can act after one read of the state.
+4. Forbids the specific anti-patterns (admit scaffolding, body
+   `assume`s, mimicking pre-trait-opacity proofs) that wasted the
+   prior session's runtime.
