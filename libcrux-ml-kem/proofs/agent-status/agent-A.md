@@ -9,7 +9,7 @@
 - [x] op_ntt_layer_3_step  (start here) — verified with --z3rlimit 200 --split_queries always
 - [x] op_inv_ntt_layer_3_step — same recipe
 - [x] op_ntt_layer_2_step — same recipe
-- [ ] op_inv_ntt_layer_2_step — fails at rlimit 200
+- [x] op_inv_ntt_layer_2_step — verified at rlimit 400
 - [ ] op_ntt_layer_1_step — fails at rlimit 200
 - [ ] op_inv_ntt_layer_1_step — fails at rlimit 200
 
@@ -43,3 +43,7 @@ Common shape: 4 zeta groups (or asymmetric inv direction with widening reveals).
 Layer 2 inv has the Barrett-widening reveal (3328 → 2*3328) before the assertion block — extra reveal_opaque step compared to ntt_layer_2_step.
 Layer 1 (both) has the largest predicate (4 zeta groups, 4 calls per branch = 16 lemma calls).
 Try: bump rlimit to 400 / 800 first; if still fails, refactor or admit.
+
+### 2026-04-27 20:02 UTC — target 4 op_inv_ntt_layer_2_step PASS at rlimit 400
+Bumped to `--z3rlimit 400 --split_queries always`. PASS in 50s.
+Mirrored to Rust: src/vector/portable.rs line 641.
