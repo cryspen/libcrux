@@ -128,18 +128,50 @@ via `Classical.forall_intro` over 16 vectors × 16 lanes = 256 elements):
 - `verification_result.txt` always reflects the LAST `python3 hax.py prove`
   run.  TOTAL TIME entries give pure F* per-module CPU times.
 
-## Things deliberately out of scope right now
+## Outstanding admits / deferred proofs (full roster)
 
-- The 4 admitted AVX2 NTT-layer-1/2 wrapper bridges (Z3-blocked per
-  `MLKEM_STATUS.md`).
-- The 7 admitted serialize/deserialize bridges in AVX2.
-- A8 (`lemma_compress_ciphertext_coefficient_fe_commute`) — admitted
-  with statement preserved.
-- AVX2 `Vector.Avx2.Sampling.fst` / `Compress.fst` — 3 `admit ()` each,
-  pre-existing.
-- Removing `--admit_smt_queries true` from
-  `Sampling.sample_from_uniform_distribution_next` (rejection loop).
-- `Ind_cpa.fst` admit (downstream module — Phase 7j).
+Mapped to phases so nothing falls through.  See `MLKEM_STATUS.md` for the
+canonical version of this table.
+
+### Trait-impl layer
+
+- **6 portable NTT-layer ops** (`--admit_smt_queries true`) →
+  **Phase 6** above.  Lines 331, 410, 488, 563, 638, 715 in
+  `src/vector/portable.rs` (op_ntt_layer_{1,2,3}_step +
+  op_inv_ntt_layer_{1,2,3}_step).
+- **4 AVX2 NTT-layer 1/2 bridge admits** in `src/vector/avx2.rs`
+  (`op_ntt_layer_{1,2}_step_bridge`, `op_inv_ntt_layer_{1,2}_step_bridge`)
+  → **Phase 6 extension** or defer.  Z3-blocked on the 4-zeta-parallel
+  SIMD wall; mitigation is per-zeta-sub-function refactor or the SIMD
+  model unification (`proofs/simd-model-unification-plan.md`).
+- **A8** (`lemma_compress_ciphertext_coefficient_fe_commute` in
+  `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`,
+  admitted with statement preserved) → **Phase 7a prerequisite**.
+  Barrett-exactness 4-case math; closing it strengthens
+  `compress_then_serialize_{10,11,4,5}` downstream posts.
+- **`op_ntt_multiply` is `panic_free` on portable + AVX2** →
+  **Phase 7i**.  Blocked on Tier-3 layer composition (the 128-iteration
+  loop over A1–A4 base-case mults).
+- **7 AVX2 serialize/deserialize bridges** (admitted in `avx2.rs`
+  fstar::before block) → out-of-scope here; separate effort.
+- **AVX2 `Vector.Avx2.Sampling.fst` / `Vector.Avx2.Compress.fst`** —
+  3× `admit ()` each, pre-existing → out-of-scope.
+
+### Above-trait modules
+
+- **`Sampling.sample_from_uniform_distribution_next`**
+  `--admit_smt_queries true` on the rejection loop body → out-of-scope
+  (orthogonal to Hacspec_ml_kem migration).
+- **`Ind_cpa.fst`** module admit → **Phase 7j** (migrate downstream off
+  `Spec.MLKEM`).
+- **`Ind_cca.Unpacked.fst`** module admit → **Phase 7j**.
+
+### Pre-existing Vector.Neon
+
+- All `Vector.Neon.*` modules in ADMIT_MODULES → out-of-scope (no Neon
+  proofs done).
+- `Vector.Neon.Vector_type.fsti(10,0-13,1)` Error 162 (decidable-eq) →
+  out-of-scope.  Only Failed module in `hax.py prove`.
 
 ## File references
 

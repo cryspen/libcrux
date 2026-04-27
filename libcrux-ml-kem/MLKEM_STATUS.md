@@ -52,12 +52,43 @@ Serialize.fst) dropped.  Verification: 53 Checked / 4 Admitted
 (pre-existing) / 1 Failed (pre-existing Vector.Neon.Vector_type.fsti
 decidable-eq, unrelated).
 
-## Phase 6 punch list (in progress)
+## Outstanding admits / deferred proofs (full roster)
 
-1. 6 portable NTT-layer ops still on `--admit_smt_queries true` in
-   `src/vector/portable.rs` (lines 331, 410, 488, 563, 638, 715 —
-   op_ntt_layer_{1,2,3}_step + op_inv_ntt_layer_{1,2,3}_step).  Drop these
-   admits using fstar-mcp for fast per-file iteration.
+Every admit, `assume`, `--admit_smt_queries true`, and `panic_free` body
+in the codebase, mapped to a phase or explicitly bucketed.  Goal: nothing
+falls through the cracks.
+
+### Trait-impl layer (Vector.Portable, Vector.Avx2, Hacspec_ml_kem.Commute.Chunk)
+
+| Item | Location | Lines | Phase | Notes |
+|---|---|---|---|---|
+| 6 portable NTT-layer ops `--admit_smt_queries true` | `src/vector/portable.rs` | 331, 410, 488, 563, 638, 715 — `op_ntt_layer_{1,2,3}_step` + `op_inv_ntt_layer_{1,2,3}_step` | **Phase 6** | Trait post is now opaque branch_post; the existing 8 butterfly_pair_commute calls + `forall4 p_layer_X` assertion need the new opaque predicate revealed.  Use fstar-mcp for fast iteration. |
+| 4 AVX2 NTT-layer 1/2 bridge admits | `src/vector/avx2.rs` | `op_ntt_layer_{1,2}_step_bridge`, `op_inv_ntt_layer_{1,2}_step_bridge` | **Phase 6 (extension)** or out-of-scope | Z3-blocked: 4-zeta-parallel SIMD wall.  Mitigations: refactor AVX2 layer body into 4 per-zeta sub-functions, OR adopt the deferred SIMD model unification (`proofs/simd-model-unification-plan.md`). |
+| 7 AVX2 serialize/deserialize bridges | `src/vector/avx2.rs` | bridges for `serialize_{4,10,12}` + `deserialize_{1,4,10,12}` | Out-of-scope (separate effort) | Per-N `Tactics.GetBit.prove_bit_vector_equality'` invocation + `bit_vec_of_int_t_array` decomposition lemma in `Libcrux_intrinsics.Avx2_extract` needed. |
+| **A8** — `lemma_compress_ciphertext_coefficient_fe_commute` | `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst` | admitted, statement preserved | **Phase 7a-prerequisite** (or 7e) | Barrett-exactness 4-case math for D ∈ {4,5,10,11}.  Used by impl `op_compress` and Phase 7c `compress_then_serialize_{10,11,4,5}` posts.  Closing it strengthens those downstream posts. |
+| AVX2 `Vector.Avx2.Sampling.fst` | extracted .fst | 3× `admit ()` | Out-of-scope | Pre-existing AVX2 SIMD bridges. |
+| AVX2 `Vector.Avx2.Compress.fst` | extracted .fst | 3× `admit ()` | Out-of-scope | Pre-existing AVX2 SIMD bridges. |
+| `op_ntt_multiply` keeps `panic_free` | `src/vector/portable.rs`, `src/vector/avx2.rs` | the impl method | **Phase 7i (ntt_multiply)** | Blocked on Tier-3 layer composition + 128-iteration loop wrap over A1–A4 (which are proven). |
+
+### Above-trait modules
+
+| Item | Location | Phase | Notes |
+|---|---|---|---|
+| `Sampling.sample_from_uniform_distribution_next` rejection loop has `--admit_smt_queries true` | `Libcrux_ml_kem.Sampling.fst` | Out-of-scope (orthogonal pattern) | Pre-existing pragmatic admit on the rejection loop body. |
+| `Libcrux_ml_kem.Ind_cpa.fst` (full module admit) | Makefile ADMIT_MODULES | **Phase 7j** | Migrate downstream consumers off `Spec.MLKEM` to `Hacspec_ml_kem` first. |
+| `Libcrux_ml_kem.Ind_cca.Unpacked.fst` (full module admit) | Makefile ADMIT_MODULES | **Phase 7j** | Same. |
+
+### Pre-existing Vector.Neon admits
+
+| Item | Location | Phase | Notes |
+|---|---|---|---|
+| All `Vector.Neon.*` modules | Makefile ADMIT_MODULES | Out-of-scope | No Neon proofs done yet. |
+| `Vector.Neon.Vector_type.fsti(10,0-13,1)` Error 162 (decidable-eq) | the .fsti | Out-of-scope | Pre-existing, only Failed module in `hax.py prove`. |
+
+### Phase 6 punch list (active)
+
+1. 6 portable NTT-layer ops admits (above table).  Drop using fstar-mcp.
+2. Optionally: AVX2 NTT-layer 1/2 bridges (significant Z3 work; may defer).
 
 ---
 
