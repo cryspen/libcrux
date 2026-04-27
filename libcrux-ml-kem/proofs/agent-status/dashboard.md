@@ -11,9 +11,9 @@ progress eagerly to its branch (see "Resume protocol" below).
 
 | Agent | Phase | Branch | State | Brief | Log |
 |---|---|---|---|---|---|
-| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | running (4/6 proven, 2 remaining) | `proofs/agent-status/agent-A-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
-| **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | spawning | `proofs/agent-status/agent-B-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
-| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | spawning | `proofs/agent-status/agent-C-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
+| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **done**: 4/6 proven, 2/6 admit-with-comment (tip `65668af62`) | `proofs/agent-status/agent-A-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
+| **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | running (HacspecBridge.fst scaffolding built; 1/14 cited at tip `3073e6c02`) | `proofs/agent-status/agent-B-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
+| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | running (4/5 handled: C3+C4 proven, C1+C2 admit-with-comment Vec256-gap; C5 in flight at tip `6f9d1ead0`) | `proofs/agent-status/agent-C-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
