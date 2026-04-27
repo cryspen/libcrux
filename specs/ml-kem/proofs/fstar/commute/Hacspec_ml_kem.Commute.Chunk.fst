@@ -1476,3 +1476,186 @@ let lemma_add_to_ring_element_commute
         end in
     Classical.forall_intro aux;
     Seq.lemma_eq_intro r_poly hp
+
+(*** Phase 7b — INTT-Mont finalization (agent F) ***)
+
+(* The constants `1441` (the impl's "fused finalization" mont_mul factor)
+   and `1353 = R^2 mod q` and `2285 = R mod q` and `169 = R^{-1} mod q`
+   appear in the chain that turns `mont_mul(b, 1441)` (post-INTT) back
+   into the plain abstract value.  The structural identity, per
+   `pq-crystals/kyber/ref/ntt.c` line 106 ("1441 = mont^2/128"), is
+   `(128 * 1441) mod q == R^2 mod q`. *)
+
+let lemma_1441_eq_RR_div_128 () :
+    Lemma ((128 * 1441) % 3329 == 1353 /\
+           (2285 * 2285) % 3329 == 1353 /\
+           (2285 * 169) % 3329 == 1)
+  = assert_norm ((128 * 1441) % 3329 == 1353);
+    assert_norm ((2285 * 2285) % 3329 == 1353);
+    assert_norm ((2285 * 169) % 3329 == 1)
+
+(* Per-element INTT-Mont finalization lemma.
+
+   Given the INTT-Mont form precondition on `b` (the impl's
+   pre-finalization i16 coefficient lane):
+     `(v b * R) mod q == (v b_real_val * 128) mod q`
+   (i.e., the impl's `b` represents Mont(spec_butterflies_value); per
+   the audit, when the input to `invert_ntt_montgomery` is in Mont
+   form, after 7 layers of inverse butterflies the lane stores
+   `f_real * 128 * R^{-1} mod q`, equivalently `v b * R ≡ f_real * 128
+   (mod q)` where `f_real * 128` is exactly `ntt_inverse_butterflies`
+   applied to the spec input.)
+
+   And given the trait's `mont_mul(b, 1441)` post:
+     `v r mod q == (v b * 1441 * 169) mod q`
+   (mont_mul-by-constant produces the value `b * c * R^{-1} mod q`;
+   1441 is the impl's chosen finalization constant since
+   `1441 = R^2/128 mod q`).
+
+   Conclusion: `v r ≡ b_real_val (mod q)`, equivalently
+   `i16_to_spec_fe r == FE(b_real_val mod q)`.
+
+   This is the per-lane core that lets callers (subtract_reduce et al.)
+   chain `i16_to_spec_fe (mont_mul(b, 1441) result) == b_real_fe`
+   under the INTT-Mont form precondition. *)
+
+let lemma_intt_mont_form_post (b r: i16) (b_real_val: int) :
+    Lemma
+    (requires
+      (v b * 2285) % 3329 == (b_real_val * 128) % 3329 /\
+      v r % 3329 == (v b * 1441 * 169) % 3329)
+    (ensures v r % 3329 == b_real_val % 3329)
+  = let q : pos = 3329 in
+    (* Show (v b * 1441 * 169) ≡ b_real (mod q). *)
+    (* Step 1: v b * 1441 * 169 == v b * (1441 * 169) (associativity). *)
+    assert (v b * 1441 * 169 == v b * (1441 * 169));
+    (* Step 2: 1441 * 169 ≡ ?
+       Numerically: 1441 * 169 = 243529; 243529 % 3329 = 243529 - 73*3329
+                                = 243529 - 243017 = 512.
+       So 1441 * 169 ≡ 512 (mod q). *)
+    assert_norm ((1441 * 169) % 3329 == 512);
+    L.lemma_mod_mul_distr_r (v b) (1441 * 169) q;
+    (* Now: (v b * 1441 * 169) % q == (v b * 512) % q. *)
+    assert ((v b * 1441 * 169) % q == (v b * 512) % q);
+    (* Step 3: 512 ≡ ? in terms of R = 2285 and 169.
+       Note: 512 = (2 * 2285 * 169) / 169... let me think differently.
+       Goal: relate (v b * 512) % q to (b_real * 128 * 169) % q via
+       the precondition (v b * 2285) % q == (b_real * 128) % q.
+       Multiply both sides by 169:
+         (v b * 2285 * 169) % q == (b_real * 128 * 169) % q.
+       And 2285 * 169 ≡ 1 (mod q) (R * R^{-1}).
+       So (v b * 1) % q == (b_real * 128 * 169) % q,
+          i.e. v b % q == (b_real * 128 * 169) % q. *)
+    L.lemma_mod_mul_distr_l (v b * 2285) 169 q;
+    L.lemma_mod_mul_distr_l (b_real_val * 128) 169 q;
+    assert ((v b * 2285 * 169) % q == ((v b * 2285) % q * 169) % q);
+    assert ((b_real_val * 128 * 169) % q == ((b_real_val * 128) % q * 169) % q);
+    assert ((v b * 2285 * 169) % q == (b_real_val * 128 * 169) % q);
+    (* And 2285 * 169 == 386165; 386165 % 3329 == 1. *)
+    assert_norm ((2285 * 169) % 3329 == 1);
+    (* So (v b * 2285 * 169) % q == (v b * 1) % q == v b % q. *)
+    assert (v b * 2285 * 169 == v b * (2285 * 169));
+    L.lemma_mod_mul_distr_r (v b) (2285 * 169) q;
+    assert ((v b * (2285 * 169)) % q == (v b * ((2285 * 169) % q)) % q);
+    assert ((v b * 1) % q == v b % q);
+    (* So v b % q == (b_real * 128 * 169) % q. *)
+    assert (v b % q == (b_real_val * 128 * 169) % q);
+    (* Now relate this to (v b * 512) % q.
+       128 * 169 == 21632; 21632 % 3329 == 21632 - 6*3329 = 21632 - 19974 = 1658.
+       Hmm — that doesn't match 512. Let me try a different chain.
+       We have:
+         (v b * 1441 * 169) % q == (v b * 512) % q                  -- (A)
+         v b % q == (b_real * 128 * 169) % q                         -- (B)
+       Want: (v b * 512) % q == b_real % q.
+       From (B), multiply by 512: (v b * 512) % q == (b_real * 128 * 169 * 512) % q.
+       Compute 128 * 169 * 512 mod q:
+         128 * 169 = 21632; 21632 mod 3329 = 1658.
+         1658 * 512 = 848896; 848896 mod 3329: 848896 / 3329 ≈ 254.99; 254 * 3329 = 845566; 848896 - 845566 = 3330; 3330 mod 3329 = 1.
+       So (b_real * 128 * 169 * 512) ≡ b_real (mod q). *)
+    L.lemma_mod_mul_distr_l (v b) 512 q;
+    L.lemma_mod_mul_distr_l (b_real_val * 128 * 169) 512 q;
+    assert ((v b * 512) % q == ((v b % q) * 512) % q);
+    assert (((v b % q) * 512) % q == (((b_real_val * 128 * 169) % q) * 512) % q);
+    assert ((((b_real_val * 128 * 169) % q) * 512) % q == (b_real_val * 128 * 169 * 512) % q);
+    assert_norm ((128 * 169 * 512) % 3329 == 1);
+    assert (b_real_val * 128 * 169 * 512 == b_real_val * (128 * 169 * 512));
+    L.lemma_mod_mul_distr_r b_real_val (128 * 169 * 512) q;
+    assert ((b_real_val * (128 * 169 * 512)) % q == (b_real_val * ((128 * 169 * 512) % q)) % q);
+    assert ((b_real_val * 1) % q == b_real_val % q)
+
+(* INTT-Mont form opaque per-lane predicate.
+
+   Input lane: the i16 stored in the impl's polynomial after 7 layers
+   of inverse butterflies (`invert_ntt_montgomery`'s output).
+   `hacspec_butterflies_lane`: the corresponding spec FE value, i.e.,
+   the lane of `Hacspec_ml_kem.Invert_ntt.ntt_inverse_butterflies` applied
+   to the spec lift of the function's input.
+
+   Body: `(v input_lane * R) mod q == (val(hacspec) * 128) mod q`,
+   capturing that the impl coefficient is in `f_real · 128 · R^{-1}`
+   form (Mont-domain post-INTT-without-finalization).
+
+   Marked opaque so callers see only the structural per-lane predicate;
+   the raw mod arithmetic stays hidden. *)
+
+[@@ "opaque_to_smt"]
+let intt_mont_form_lane
+    (input_lane: i16) (hacspec_butterflies_lane: P.t_FieldElement) : prop =
+  (v input_lane * 2285) % 3329 == (v hacspec_butterflies_lane.P.f_val * 128) % 3329
+
+(* Reveal-on-demand helper for the per-lane predicate.  No SMTPat —
+   call explicitly inside Tier-2 lemmas that need the unfolded form
+   (style §3.3 of proof-style-guide.md). *)
+let lemma_intt_mont_form_lane_reveal
+    (input_lane: i16) (hacspec_butterflies_lane: P.t_FieldElement) :
+    Lemma (requires intt_mont_form_lane input_lane hacspec_butterflies_lane)
+          (ensures
+            (v input_lane * 2285) % 3329 ==
+            (v hacspec_butterflies_lane.P.f_val * 128) % 3329)
+  = reveal_opaque (`%intt_mont_form_lane)
+                  (intt_mont_form_lane input_lane hacspec_butterflies_lane)
+
+(* Intro direction: build `intt_mont_form_lane` from the unfolded body. *)
+let lemma_intt_mont_form_lane_intro
+    (input_lane: i16) (hacspec_butterflies_lane: P.t_FieldElement) :
+    Lemma (requires
+            (v input_lane * 2285) % 3329 ==
+            (v hacspec_butterflies_lane.P.f_val * 128) % 3329)
+          (ensures intt_mont_form_lane input_lane hacspec_butterflies_lane)
+  = reveal_opaque (`%intt_mont_form_lane)
+                  (intt_mont_form_lane input_lane hacspec_butterflies_lane)
+
+(* Per-chunk wrap (matches `forall16` pattern in trait posts).
+   The body inlines to a 16-conjunction of opaque atoms, so callers
+   see only the structural iteration. *)
+let intt_mont_form_chunk
+    (input_chunk: t_Array i16 (mk_usize 16))
+    (hacspec_butterflies_chunk: t_Array P.t_FieldElement (mk_usize 16)) : prop =
+  Spec.Utils.forall16 (fun (i: nat {i < 16}) ->
+    intt_mont_form_lane (Seq.index input_chunk i)
+                        (Seq.index hacspec_butterflies_chunk i))
+
+(* Per-lane consumer lemma: given the INTT-Mont form on lane `b` and the
+   trait's `montgomery_multiply_by_constant(b, 1441)` post (delivering
+   `v r % q == (v b * 1441 * 169) % q`), conclude that `r` carries the
+   plain abstract value `b_real`.
+
+   This is the per-element bridge that callers like `subtract_reduce`,
+   `add_error_reduce`, and `add_message_error_reduce` need: after the
+   `mont_mul(coefficient, 1441)` and Barrett reduction, the lane is back
+   to plain `f_real` form. *)
+
+let lemma_intt_mont_finalize_fe
+    (b r: i16) (b_real: P.t_FieldElement) :
+    Lemma (requires
+            intt_mont_form_lane b b_real /\
+            v r % 3329 == (v b * 1441 * 169) % 3329)
+          (ensures i16_to_spec_fe r == b_real)
+  = reveal_opaque (`%intt_mont_form_lane) (intt_mont_form_lane b b_real);
+    lemma_intt_mont_form_post b r (v b_real.P.f_val);
+    (* Now `v r % 3329 == v b_real.f_val % 3329`.  Since `b_real`'s
+       refinement gives `v b_real.f_val < 3329`, that's `v b_real.f_val`. *)
+    assert (v r % 3329 == v b_real.P.f_val % 3329);
+    assert (v b_real.P.f_val % 3329 == v b_real.P.f_val);
+    (* `i16_to_spec_fe r` has `f_val = (v r) % 3329`. *)
+    ()

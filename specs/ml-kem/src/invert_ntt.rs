@@ -97,8 +97,22 @@ pub fn reduce_polynomial(p: Polynomial) -> Polynomial {
     createi(|i| p[i].mul(INVERSE_OF_128))
 }
 
+/// FIPS 203 Algorithm 9 lines 3-8 only — the seven layers of
+/// Gentleman–Sande inverse butterflies, *without* the final
+/// `f ← f · 3303 mod q` finalization (the `· 128⁻¹` factor).
+///
+/// This is the natural intermediate form of the inverse NTT and
+/// matches the impl's `invert_ntt_montgomery`, which deliberately
+/// omits the `· 3303` finalization because every call site fuses it
+/// with the next per-element operation (see `polynomial.rs::subtract_reduce`,
+/// `add_error_reduce`, `add_message_error_reduce`'s `mont_mul(b, 1441)`
+/// where `1441 ≡ R²/128 mod q`).  Reference:
+/// `pq-crystals/kyber/ref/ntt.c` line 106 (the `1441 = mont²/128` comment).
+///
+/// The fully-finalized FIPS-203 INTT (`ntt_inverse` above) factors as
+/// `reduce_polynomial ∘ ntt_inverse_butterflies`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-pub fn ntt_inverse(p: Polynomial) -> Polynomial {
+pub fn ntt_inverse_butterflies(p: Polynomial) -> Polynomial {
     let p = ntt_inverse_layer(p, 1);
     let p = ntt_inverse_layer(p, 2);
     let p = ntt_inverse_layer(p, 3);
@@ -106,7 +120,12 @@ pub fn ntt_inverse(p: Polynomial) -> Polynomial {
     let p = ntt_inverse_layer(p, 5);
     let p = ntt_inverse_layer(p, 6);
     let p = ntt_inverse_layer(p, 7);
-    reduce_polynomial(p)
+    p
+}
+
+#[hax_lib::fstar::options("--z3rlimit 150")]
+pub fn ntt_inverse(p: Polynomial) -> Polynomial {
+    reduce_polynomial(ntt_inverse_butterflies(p))
 }
 
 /// Inverse NTT applied to each polynomial in a vector.
