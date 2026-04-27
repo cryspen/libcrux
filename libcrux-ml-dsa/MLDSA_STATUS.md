@@ -1,9 +1,10 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Phase-1 rework complete at `04fd066f0`.
-**Live blocker for Phase 2/3 empirical validation**: `Libcrux_core_models.Abstractions.Funarr.fst:97` (`Error 92`, in `crates/utils/core-models`) gates every `Simd.*` `.checked` build. Fix is a one-line spurious-`#`-implicit-argument removal in the hax extraction or a hax extractor patch — out of `libcrux-ml-dsa` scope.
-**Next handoff plan**: [`proofs/phase-2a-3a-plan.md`](proofs/phase-2a-3a-plan.md) — parallel Phase 2A + 3A execution with worktree isolation, agent briefings, recovery procedure.
+**Tip**: Funarr unblock + Phase-1 trait rework complete at `1c827fab7`.
+**Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
+**Empirical baseline**: 60 modules invoked, 37 in `[CHECK]` mode, **52 verified**, 25 errors (all real downstream proof issues). Was 12 invoked / 1 in CHECK / 11 verified at session start.
+**Next handoff plan**: [`proofs/next-session-plan.md`](proofs/next-session-plan.md) — triage of the 25 remaining errors with recommended order; supersedes `proofs/phase-2a-3a-plan.md`.
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)
 **Outstanding admits**: [`proofs/outstanding-admits.md`](proofs/outstanding-admits.md)
@@ -48,10 +49,41 @@ to the USER lane (math-heavy or Z3-blocked) for human follow-up.
 | **0** | Hardening + scaffolding (FIPS fixes, cross-spec tests, mirror docs, hacspec extensions) | done | `ml-dsa-proofs` |
 | **1** | Strengthen Operations trait posts | done | `ml-dsa-proofs` |
 | **1.5** | Phase-1 rework: fix Specs.fst lemmas, relax over-strong posts, fix AVX2 reduce loop | done at `04fd066f0` | `ml-dsa-proofs` |
-| **2** | Portable Operations proofs (waves 2A–2G) | source-pattern unblocked; empirical validation gated by Funarr | handoff |
-| **3** | AVX2 Operations proofs (waves 3A–3E) | source-pattern unblocked; empirical validation gated by Funarr | handoff |
+| **1.6** | Funarr/Bitvec source-level unblock (`from_fn` two-implicit fix in core-models) + traits.rs Eta/Seq.length fixes | done at `42d4a3347` and `1c827fab7` | `ml-dsa-proofs` |
+| **2** | Portable Operations proofs (waves 2A–2G) | empirically unblocked; underlying primitive proofs already pass; impl-Operations file (`Simd.Portable.fst`) in ADMIT mode pending wave 2A | handoff |
+| **3** | AVX2 Operations proofs (waves 3A–3E) | empirically unblocked; arithmetic primitive proofs pass; encoding waves 3A iii/iv have 7 errors; INVNTT wave 3E in pre-budgeted admit zone (15 errors) | handoff |
 | **4** | Spec migration & integration (waves 4A–4D) | pending | handoff |
-| **F** | Funarr Error 92 in core-models (gates all Simd.* validation) | blocked, upstream | core-models maintainers |
+
+## Modules empirically verified at session end (1c827fab7)
+
+Reading `verification_result.txt` after the Funarr unblock:
+
+**`[CHECK]`-mode and passing** (the proof is actually being checked, no
+admit short-circuit, no errors):
+`Simd.Traits`, `Simd.Traits.Specs`, `Simd.Avx2.Arithmetic`,
+`Simd.Avx2.Encoding.Commitment`, `Simd.Avx2.Ntt`,
+`Simd.Avx2.Rejection_sample.{Less_than_field_modulus, Shuffle_table}`,
+`Simd.Avx2.Vector_type`,
+`Simd.Portable.Encoding.{Commitment, Error, Gamma1, T0, T1}`,
+`Simd.Portable.Sample`, `Simd.Portable.Vector_type`,
+plus all `Constants.*`, `Encoding.*`, `Hash_functions.*`, `Polynomial`,
+`Ntt`, `Pre_hash`, `Types`, `Specs.Simd.Portable.Sample`, and the
+`Libcrux_core_models.*` infrastructure. **52 modules total.**
+
+**`[CHECK]`-mode and erroring** (8 files / 25 errors):
+`Simd.Avx2.Invntt` (15), `Simd.Avx2.Encoding.Gamma1` (4),
+`Simd.Avx2.Encoding.{T0, T1, Error}` (1 each),
+`Simd.Portable.Arithmetic` (1 in `infinity_norm_exceeds`),
+`Libcrux_ml_dsa.Arithmetic` (1, above-trait),
+`Libcrux_ml_dsa.Sample` (1, above-trait).
+
+**`[ADMIT]`-mode** (23 modules; not yet attempted at CHECK level —
+includes the impl-Operations files `Simd.Portable.fst`, `Simd.Avx2.fst`
+which are the wave-2A/3A wave (i) deliverable, and several higher-level
+flow files like `Ml_dsa_generic`).
+
+See [`proofs/next-session-plan.md`](proofs/next-session-plan.md) for
+triage of the 25 errors and recommended next-up order.
 
 ## Operations trait method status
 
@@ -59,35 +91,42 @@ The 21 methods of `Operations` in `src/simd/traits.rs:36-176`. Status
 columns: pre/post strength after Phase 1 (T), portable proof (P), AVX2
 proof (A). Legend: ✅ done, 🟡 admit/bounds-only, ⏳ pending.
 
+**Important**: P/A reflect the **underlying primitive's** verification
+status (`Simd.{Portable,Avx2}.Arithmetic.fst` or `…Encoding.{name}.fst`,
+etc.), since those are the modules currently in CHECK mode. The
+trait-impl files (`Simd.Portable.fst`, `Simd.Avx2.fst`) remain in ADMIT
+mode pending wave-2A and wave-3A (i)/(ii) work that lifts them to CHECK
+mode under the thin-wrapper pattern.
+
 | Method | T | P | A | Spec anchor | Notes |
 |---|---|---|---|---|---|
-| `zero` | ✅ | ⏳ | ⏳ | trivial (`repr() == [0;8]`) | already strong |
-| `from_coefficient_array` | ✅ | ⏳ | ⏳ | trivial | already strong |
-| `to_coefficient_array` | ✅ | ⏳ | ⏳ | trivial | already strong |
-| `add` | ✅ | ⏳ | ⏳ | `Polynomial.poly_add` | per-lane integer post (already strong, kept) |
-| `subtract` | ✅ | ⏳ | ⏳ | `Polynomial.poly_sub` | per-lane integer post (already strong, kept) |
-| `infinity_norm_exceeds` | ✅ | ⏳ | ⏳ | `Arithmetic.coeff_norm` lifted | opaque post via `infinity_norm_exceeds_post` |
-| `decompose` | ✅ | ⏳ | ⏳ | `Arithmetic.decompose` × 8 lanes | per-lane opaque `decompose_lane_post` + dual-trigger lemmas |
-| `compute_hint` | ✅ | ⏳ | ⏳ | `Arithmetic.make_hint` × 8 + popcount | per-lane bool→0/1 conversion captured |
-| `use_hint` | ✅ | ⏳ | ⏳ | `Arithmetic.uuse_hint` × 8 lanes | spec name has typo `uuse_hint` |
-| `montgomery_multiply` | ✅ | ⏳ | ⏳ | per-lane `mod_q(a·b·R⁻¹)` | both `Spec.MLDSA.Math.mod_q` (kept) and `Hacspec_ml_dsa.Arithmetic.mod_q` posts in parallel; Phase 4A drops obsolete |
-| `shift_left_then_reduce` | ✅ | ⏳ | ⏳ | `Arithmetic.shift_left_then_reduce` | per-lane opaque post |
-| `power2round` | ✅ | ⏳ | ⏳ | `Arithmetic.power2round` | per-lane opaque post; spec returns (r1, r0) |
-| `rejection_sample_<_field_modulus` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_three_bytes` | bounds-only; lane post deferred to Phase 2 (admit doc) |
-| `rejection_sample_<_eta_2` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | bounds-only; admit doc |
-| `rejection_sample_<_eta_4` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | bounds-only; admit doc |
-| `gamma1_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width γ₁_exp+1 | length-preserving post; bitvec deferred (admit doc) |
-| `gamma1_deserialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_unpack` width γ₁_exp+1 | gamma1_exponent precondition added; bitvec deferred |
-| `commitment_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 4 or 6 | length-preserving post; admit doc |
-| `error_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width 3 or 4 | length-preserving post; admit doc |
-| `error_deserialize` | ✅ | ⏳ | ⏳ | `Encoding.bit_unpack` width 3 or 4 | per-lane bounds [-η, η] |
-| `t0_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width 13 | length-preserving post; admit doc |
-| `t0_deserialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_unpack` width 13 | bitvec deferred |
-| `t1_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 10 | length-preserving post; admit doc |
-| `t1_deserialize` | ✅ | ⏳ | ⏳ | `Encoding.simple_bit_unpack` width 10 | per-lane bounds [0, 2¹⁰) |
-| `ntt` | 🟡 | ⏳ | ⏳ | `Ntt.ntt` flat-256 | bounds-only post (existing); per-poly admit (Tier-3 chain, USER lane) |
-| `invert_ntt_montgomery` | 🟡 | ⏳ | ⏳ | `Ntt.intt` flat-256 | bounds-only post (existing); per-poly admit (USER lane) |
-| `reduce` | ✅ | ⏳ | ⏳ | per-lane `mod_q` ∧ `\|x\| < q` | per-lane opaque post + lookup/intro lemmas |
+| `zero` | ✅ | ✅ | ✅ | trivial (`repr() == [0;8]`) | trivial; both impls verify |
+| `from_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
+| `to_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
+| `add` | ✅ | ✅ | ✅ | `add_post` per-lane integer | both `*.Arithmetic.fst` verify the underlying primitive |
+| `subtract` | ✅ | ✅ | ✅ | `sub_post` per-lane integer | both verify |
+| `infinity_norm_exceeds` | ✅ (relaxed 04fd066f0) | ❌ | ✅ | raw signed `abs` | portable: `Simd.Portable.Arithmetic.fst:738` errs in `assert (v normalized == abs (v coefficient))` after post relaxation; AVX2 verifies |
+| `decompose` | ✅ | ✅ | 🟡 | `Arithmetic.decompose` × 8 lanes | portable verifies; AVX2 in lax/admit (wave 3C — already pre-existing) |
+| `compute_hint` | ✅ | ✅ | 🟡 | `Arithmetic.make_hint` × 8 + popcount | same |
+| `use_hint` | ✅ | ✅ | 🟡 | `Arithmetic.uuse_hint` × 8 lanes | same |
+| `montgomery_multiply` | ✅ (rewritten in `int` 04fd066f0) | ✅ | ✅ | per-lane `(v lhs * v rhs * 8265825) % q` | both verify |
+| `shift_left_then_reduce` | ✅ | ✅ | ✅ | `Arithmetic.shift_left_then_reduce` | both verify |
+| `power2round` | ✅ | ✅ | ✅ | `Arithmetic.power2round` | both verify |
+| `rejection_sample_<_field_modulus` | 🟡 (Seq.length 1c827fab7) | ✅ | ✅ | bounds-only post | both verify |
+| `rejection_sample_<_eta_2` | 🟡 | ✅ | ✅ | bounds-only post | both verify |
+| `rejection_sample_<_eta_4` | 🟡 | ✅ | ✅ | bounds-only post | both verify |
+| `gamma1_serialize` | 🟡 | ✅ | ❌ | `Encoding.bit_pack` width γ₁_exp+1 | AVX2: `Simd.Avx2.Encoding.Gamma1.fst` errs (4 errors, wave 3A iv) |
+| `gamma1_deserialize` | 🟡 | ✅ | ❌ | `Encoding.bit_unpack` width γ₁_exp+1 | same file |
+| `commitment_serialize` | 🟡 | ✅ | ✅ | `Encoding.simple_bit_pack` width 4 or 6 | both verify |
+| `error_serialize` | 🟡 | ✅ | ❌ | `Encoding.bit_pack` width 3 or 4 | AVX2: `Simd.Avx2.Encoding.Error.fst:140` errs |
+| `error_deserialize` | ✅ (Eta enum 1c827fab7) | ✅ | ❌ | `Encoding.bit_unpack` width 3 or 4 | same file |
+| `t0_serialize` | 🟡 | ✅ | ❌ | `Encoding.bit_pack` width 13 | AVX2: `Simd.Avx2.Encoding.T0.fst:149` errs |
+| `t0_deserialize` | 🟡 | ✅ | ❌ | `Encoding.bit_unpack` width 13 | same file |
+| `t1_serialize` | 🟡 | ✅ | ❌ | `Encoding.simple_bit_pack` width 10 | AVX2: `Simd.Avx2.Encoding.T1.fst:20-127` errs |
+| `t1_deserialize` | ✅ | ✅ | ❌ | `Encoding.simple_bit_unpack` width 10 | same file |
+| `ntt` | 🟡 | 🟡 | ✅ | `Ntt.ntt` flat-256 | portable in admit (Tier-3 USER); AVX2 verifies |
+| `invert_ntt_montgomery` | 🟡 | 🟡 | ❌ | `Ntt.intt` flat-256 | portable in admit; AVX2 has 15 errors in `Simd.Avx2.Invntt.fst:894-941` (wave 3E, **pre-budgeted admit**) |
+| `reduce` | ✅ (relaxed 04fd066f0; loop fixed) | ✅ | ✅ | per-lane centered Barrett `mod_q` | both verify |
 
 ## Pre-budgeted admits
 

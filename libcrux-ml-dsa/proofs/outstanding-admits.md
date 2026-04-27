@@ -54,36 +54,57 @@ so subsequent sessions don't burn budget retrying:
 
 ---
 
-## Phase-1 rework (resolved 2026-04-27, see commit history for SHA)
+## Resolved (2026-04-27/28 Funarr-unblock session)
 
-Three findings + one impl bug surfaced during Phase 2A/3A coordination
-have been repaired. Documented here for traceability.
+Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
 
+### Specs.fst lemma fixes (commit `04fd066f0`)
 - **`lemma_decompose_lane_lookup` Error 19** — fixed by hoisting
   `((v gamma2 == 95232) \/ (v gamma2 == 261888))` into the lemma's
   `requires`. Same hoist applied to `lemma_compute_hint_lane_lookup` and
   `lemma_use_hint_lane_lookup` which had the identical opaque-shielded
   function-call-precondition issue (revealed once the decompose error
   was cleared).
+
+### Phase-1 over-strong post relaxations (commit `04fd066f0`)
 - **`infinity_norm_exceeds_post` over-strong vs pre** — relaxed: now
   cites raw signed absolute value (`if x >= 0 then x else -x`) instead
   of `Hacspec_ml_dsa.Arithmetic.coeff_norm`. Compatible with the loose
-  `is_i32b_array_opaque FIELD_MAX simd_unit` pre. The relationship to
-  FIPS 204's centered `coeff_norm` holds whenever inputs are already
-  centered.
+  `is_i32b_array_opaque FIELD_MAX simd_unit` pre.
 - **`reduce_lane_post` over-strong vs impl** — relaxed from `0 <= v r < q`
   to centered Barrett range `(-q < v r < q) /\ (v r) % q == (v input) % q`.
 - **`montgomery_multiply_lane_post` triple-product i64 overflow** —
   rewrote post in mathematical `int` arithmetic
   (`(v future_lhs) % q == (v lhs * v rhs * 8265825) % q`) instead of the
   i64 expression `(cast lhs *! cast rhs *! mk_i64 8265825)` which
-  overflows i64 for arbitrary i32 inputs. Equivalent semantics; sidesteps
-  the overflow obligation. Hidden behind decompose lookup error before
-  Step B.
-- **AVX2 `Operations::reduce` 4-of-32 impl bug** — replaced the four
-  hard-coded `shift_left_then_reduce::<0>(&mut simd_units[{0,8,16,24}].value)`
-  calls with `for i in 0..simd_units.len() { ... }` matching the portable
-  impl.
+  overflows i64.
+
+### AVX2 reduce impl bug (commit `04fd066f0`)
+- **`Operations::reduce` 4-of-32** — replaced four hard-coded
+  `shift_left_then_reduce::<0>(&mut simd_units[{0,8,16,24}].value)`
+  calls with `for i in 0..simd_units.len() { ... }`.
+
+### Funarr/Bitvec source-level unblock (commit `42d4a3347`)
+- **`crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`** —
+  the hax-generated F\* `replace` overrides for `FunArray::from_fn` and
+  `BitVec::from_fn` declared a single implicit type slot (`#v_T`) but
+  hax extracts call sites with two implicits (impl-block's `T` plus the
+  closure's auto-inferred `F: Fn(u64) -> T`). Added an `#_v_F: Type0`
+  absorbing slot to both override signatures plus passed it explicitly
+  at the in-replace call sites inside `FunArray::fold` and the inner
+  call from `BitVec::from_fn` to `FunArray::from_fn`. Persistent
+  source-level fix; survives `./hax.sh extract`. **Unblocked all
+  `Simd.*` impl proofs from empirical validation** — this was the
+  single largest gating finding of the session.
+
+### Trait-side fixes surfaced by the unblock (commit `1c827fab7`)
+- **`error_deserialize` post Eta enum projection (Error 189)** — used
+  `v $eta == 2 / 4` against the `Eta` enum (not an int_t). Replaced
+  with direct variant equality (`$eta == Libcrux_ml_dsa.Constants.Eta_Two`).
+- **Three `rejection_sample_*` posts Seq.index well-formedness (Error 19)** —
+  `forall (i:nat). i < v $result ==> v (Seq.index ${out}_future i) ...`
+  doesn't typecheck without `i < Seq.length out_future`. Bound `i`
+  in-forall to `i:nat{i < Seq.length ${out}_future}`.
 
 ## Active admits
 
@@ -111,26 +132,6 @@ have been repaired. Documented here for traceability.
   Until tightened, downstream proofs that rely on this SMTPat are
   effectively unsound (they admit a false lemma). NEEDS FIX before any
   serious correctness claim against `add_pre`/`add_post`.
-
----
-
-## Pre-existing failures (out of scope for the ML-DSA proof sprint)
-
-### Libcrux_core_models.Abstractions.Funarr (Error 92)
-- **File**: `crates/utils/core-models/proofs/fstar/extraction/Libcrux_core_models.Abstractions.Funarr.fst:97`
-- **Phase observed**: 0 (baseline)
-- **Diagnosis**: Pre-existing F* typecheck failure unrelated to ML-DSA.
-  `git log` shows the last touches were `3000c7b7a` (core-models: fix
-  implicit/explicit argument mismatch in Funarr) and `6accee650`
-  (gitignore hax-generated F* files), both prior to this sprint.
-  The error appears upstream of any ML-DSA module so `make` reports
-  Error 2 even when ML-DSA-specific files would individually verify.
-- **Suggested mitigation**: out of scope for the ML-DSA sprint — this
-  is in `core-models`, a workspace dependency, and needs to be fixed
-  there.  Future sessions should be aware that `make` exits non-zero
-  on this file regardless of ML-DSA proof state.
-
-## Active admits
 
 ### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)
@@ -193,6 +194,6 @@ have been repaired. Documented here for traceability.
 
 ---
 
-## Resolved admits
+## Pre-existing failures (out of scope for the ML-DSA proof sprint)
 
-(none yet)
+(none currently — Funarr was the only one and is resolved at `42d4a3347`)
