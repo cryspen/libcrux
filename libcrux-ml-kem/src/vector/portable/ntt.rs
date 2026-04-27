@@ -315,7 +315,7 @@ pub(crate) fn inv_ntt_layer_3_step(mut vec: PortableVector, zeta: i16) -> Portab
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 #[hax_lib::fstar::options(
-    "--z3rlimit 250 --split_queries always --query_stats --ext context_prune"
+    "--z3rlimit 500 --split_queries always --query_stats --ext context_prune"
 )]
 #[hax_lib::fstar::before(
     interface,

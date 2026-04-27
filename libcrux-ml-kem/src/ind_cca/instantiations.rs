@@ -525,5 +525,7 @@ instantiate! {portable, crate::vector::portable::PortableVector, crate::hash_fun
 pub mod avx2;
 
 // NEON generic implementation.
-#[cfg(feature = "simd128")]
+// Gated out of hax extraction: hash_functions::neon depends on
+// `libcrux_sha3::neon::x2` which is not currently extracted.
+#[cfg(all(feature = "simd128", not(hax)))]
 instantiate! {neon, crate::vector::SIMD128Vector, crate::hash_functions::neon::Simd128Hash}

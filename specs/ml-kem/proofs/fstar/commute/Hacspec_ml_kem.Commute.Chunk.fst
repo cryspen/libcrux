@@ -1026,7 +1026,7 @@ let lemma_compress_1_chunk_commutes
           TS.i16_to_spec_fe (Seq.index (T.f_repr r) j) ==
           Hacspec_ml_kem.Compress.compress_d
             (TS.i16_to_spec_fe (Seq.index (T.f_repr vec) j)) (mk_usize 1))))
-  = ()
+  = reveal_opaque (`%TS.compress_1_lane_post) TS.compress_1_lane_post
 
 let lemma_compress_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -1043,7 +1043,7 @@ let lemma_compress_chunk_commutes
           Hacspec_ml_kem.Compress.compress_d
             (TS.i16_to_spec_fe (Seq.index (T.f_repr vec) j))
             (mk_usize (v coefficient_bits)))))
-  = ()
+  = reveal_opaque (`%TS.compress_d_lane_post) TS.compress_d_lane_post
 
 (* Decompress chunk lemmas: kept admitted for now (TODO).  Their
    ensures cite `TS.decompress_1_post` / `TS.decompress_ciphertext_coefficient_post`

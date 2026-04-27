@@ -176,7 +176,9 @@ fn op_to_unsigned_representative(a: SIMD256Vector) -> SIMD256Vector {
 fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post"#
     );
     let result_elements = compress::compress_message_coefficient(vector.elements);
     let result = SIMD256Vector { elements: result_elements };
@@ -355,7 +357,9 @@ fn op_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256
 fn op_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post"#
     );
     let elements = ntt::ntt_layer_3_step(vector.elements, zeta);
     hax_lib::fstar!(
@@ -443,12 +447,15 @@ fn op_inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIM
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post"#
     );
     let elements = ntt::inv_ntt_layer_3_step(vector.elements, zeta);
     hax_lib::fstar!(

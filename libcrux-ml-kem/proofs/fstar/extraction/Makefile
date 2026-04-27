@@ -29,16 +29,25 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 
 # `compress_then_serialize_message` Q2 cancels at rlimit 80 (full 80 in
 #   ~18 s on Mac, ~26 s here).  Assert at line 57 about Vector.Traits.fst:587.
+# Re-enabled 2026-04-27 on trait-opacify: the opacity work moves the failure
+# point but the underlying issue (trait-pre `bounded_i16_array` ↔ trait-post
+# `forall j. bounded` bridge across many trait call sites in serialize.rs)
+# is the same.  Each call site needs an explicit reveal+assert; deferred.
 ADMIT_MODULES += Libcrux_ml_kem.Serialize.fst
 
 # `Polynomial.ntt_multiply` Q54 cancels at rlimit 300 (full 300 in ~90 s on
 #   Mac).  Subtyping on the loop accumulator refinement at line 845.
-ADMIT_MODULES += Libcrux_ml_kem.Polynomial.fst
+# REMOVED 2026-04-27: with Phase 2 opacity (per-branch opaque
+# ntt_multiply_branch_post), the loop-accumulator forall-in-refinement
+# no longer floods the SMT context with FE equations.
+# ADMIT_MODULES += Libcrux_ml_kem.Polynomial.fst
 
 # `invert_ntt_at_layer_2_` Q2 "unknown" at rlimit 400 (full 400 in ~86 s).
 #   Subtyping on the loop accumulator refinement at line 149 — same forall-
 #   in-refinement pattern as Polynomial above.
-ADMIT_MODULES += Libcrux_ml_kem.Invert_ntt.fst
+# REMOVED 2026-04-27: Phase 2 opacity (per-branch opaque
+# inv_ntt_layer_2_step_branch_post) eliminates the SMT context flooding.
+# ADMIT_MODULES += Libcrux_ml_kem.Invert_ntt.fst
 
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \

@@ -39,7 +39,7 @@ pub(crate) mod avx2 {
         #[allow(unsafe_code)]
     );
 }
-#[cfg(feature = "simd128")]
+#[cfg(all(feature = "simd128", not(hax)))]
 pub(crate) mod neon {
     use super::*;
 

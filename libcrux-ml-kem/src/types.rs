@@ -85,23 +85,11 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<usize> for $name<SIZE> {
-            fn index_mut(&mut self, range: usize) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
-
         impl<const SIZE: usize> core::ops::Index<core::ops::Range<usize>> for $name<SIZE> {
             type Output = [u8];
 
             fn index(&self, range: core::ops::Range<usize>) -> &Self::Output {
                 &self.value[range]
-            }
-        }
-
-        impl<const SIZE: usize> core::ops::IndexMut<core::ops::Range<usize>> for $name<SIZE> {
-            fn index_mut(&mut self, range: core::ops::Range<usize>) -> &mut Self::Output {
-                &mut self.value[range]
             }
         }
 
@@ -113,17 +101,39 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeTo<usize>> for $name<SIZE> {
-            fn index_mut(&mut self, range: core::ops::RangeTo<usize>) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
-
         impl<const SIZE: usize> core::ops::Index<core::ops::RangeFrom<usize>> for $name<SIZE> {
             type Output = [u8];
 
             fn index(&self, range: core::ops::RangeFrom<usize>) -> &Self::Output {
                 &self.value[range]
+            }
+        }
+    };
+}
+
+// IndexMut impls are not extracted to F*: hax cannot represent &mut
+// indexing (issue hacspec/hax#420), so the extracted bodies were
+// failure stubs that no longer typecheck against the new
+// `Core_models.Ops.Index.IndexMut.t_IndexMut` shape. They have no
+// other F* users, so we hide them from hax extraction here.
+#[cfg(not(hax))]
+macro_rules! impl_index_mut_impls_for_generic_struct {
+    ($name:ident) => {
+        impl<const SIZE: usize> core::ops::IndexMut<usize> for $name<SIZE> {
+            fn index_mut(&mut self, range: usize) -> &mut Self::Output {
+                &mut self.value[range]
+            }
+        }
+
+        impl<const SIZE: usize> core::ops::IndexMut<core::ops::Range<usize>> for $name<SIZE> {
+            fn index_mut(&mut self, range: core::ops::Range<usize>) -> &mut Self::Output {
+                &mut self.value[range]
+            }
+        }
+
+        impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeTo<usize>> for $name<SIZE> {
+            fn index_mut(&mut self, range: core::ops::RangeTo<usize>) -> &mut Self::Output {
+                &mut self.value[range]
             }
         }
 
@@ -145,6 +155,13 @@ mod index_impls {
     impl_index_impls_for_generic_struct!(MlKemCiphertext);
     impl_index_impls_for_generic_struct!(MlKemPrivateKey);
     impl_index_impls_for_generic_struct!(MlKemPublicKey);
+
+    #[cfg(not(hax))]
+    impl_index_mut_impls_for_generic_struct!(MlKemCiphertext);
+    #[cfg(not(hax))]
+    impl_index_mut_impls_for_generic_struct!(MlKemPrivateKey);
+    #[cfg(not(hax))]
+    impl_index_mut_impls_for_generic_struct!(MlKemPublicKey);
 }
 
 #[cfg(all(feature = "codec", feature = "alloc"))]

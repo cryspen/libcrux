@@ -223,6 +223,335 @@ let to_le_bytes_post_N (#n: usize)
   let n2 : usize = sz (Seq.length output) in
   let output_arr : t_Array u8 n2 = output in
   BitVecEq.int_t_array_bitwise_eq input 16 output_arr 8
+
+(* =====================================================================
+   Per-lane / per-branch opaque predicates for the FE-form trait posts.
+
+   The trait operates on 16-element vectors; modules above the trait
+   (polynomial, ntt, invert_ntt, serialize, matrix, sampling) operate on
+   256-element ring elements (16 vectors of 16 elements each) by *iterating*
+   over vectors and chaining per-vector posts in loop invariants.
+
+   To make those iterations efficient — and free of hacspec / FE-algebra
+   internal details — we keep the iteration structure (`Spec.Utils.forall16`
+   for compress/decompress, `Spec.Utils.forall4` for NTT-layer/butterfly)
+   transparent at the trait surface, and wrap *only the per-lane (or
+   per-branch) function* in an `[@@ "opaque_to_smt"]` predicate.
+
+   Effect for callers above the trait:
+     * They see `forall16 (fun i -> compress_1_lane_post v.[i] r.[i])` →
+       a 16-conjunction over atomic facts.
+     * Each conjunct is opaque — the hacspec `compress_d` / `decompress_d`
+       body and the FE-algebra `add` / `sub` / `mul` body never unfold
+       into the caller's SMT context.
+     * Callers chain the atoms across loop iterations without paying any
+       hacspec-internal SMT cost.
+
+   Effect for impl methods (portable / AVX2):
+     * Add one `reveal_opaque` per opaque predicate inside the impl proof
+       body so the existing aux-lemma chain (which establishes the body
+       facts pointwise) discharges the post.
+
+   Bridge sites (Hacspec_ml_kem.Commute.Chunk lemmas) reveal when they
+   genuinely need the underlying hacspec equation. *)
+
+[@@ "opaque_to_smt"]
+let compress_1_lane_post (input result: i16) : prop =
+  i16_to_spec_fe result ==
+  Hacspec_ml_kem.Compress.compress_d (i16_to_spec_fe input) (mk_usize 1)
+
+[@@ "opaque_to_smt"]
+let compress_d_lane_post
+    (d: usize {v d == 4 \/ v d == 5 \/ v d == 10 \/ v d == 11})
+    (input result: i16) : prop =
+  i16_to_spec_fe result ==
+  Hacspec_ml_kem.Compress.compress_d (i16_to_spec_fe input) d
+
+[@@ "opaque_to_smt"]
+let decompress_1_lane_post (input result: i16) : prop =
+  (v input >= 0 /\ v input < 2) ==>
+  i16_to_spec_fe result ==
+  Hacspec_ml_kem.Compress.decompress_d (i16_to_spec_fe input) (mk_usize 1)
+
+[@@ "opaque_to_smt"]
+let decompress_d_lane_post
+    (d: usize {v d == 4 \/ v d == 5 \/ v d == 10 \/ v d == 11})
+    (input result: i16) : prop =
+  (v input >= 0 /\ v input < pow2 (v d)) ==>
+  i16_to_spec_fe result ==
+  Hacspec_ml_kem.Compress.decompress_d (i16_to_spec_fe input) d
+
+(* Per-branch FE-butterfly predicates for NTT / inverse-NTT layers and
+   ntt_multiply.  Each branch covers the 4 lane equations sharing a single
+   zeta (or no zeta, for layer 3).  Marked opaque so the FE-algebra
+   `impl_FieldElement__{add,sub,mul}` invocations do not unfold into
+   caller SMT context.  The `forall4` wrapper at each trait post stays
+   transparent — callers iterate per-branch as opaque atoms. *)
+
+[@@ "opaque_to_smt"]
+let ntt_layer_1_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1 zeta2 zeta3: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let z = (if b = 0 then zeta0
+           else if b = 1 then zeta1
+           else if b = 2 then zeta2
+           else zeta3) in
+  let i1 : nat = 4 * b in
+  let j1 : nat = 4 * b + 2 in
+  let i2 : nat = 4 * b + 1 in
+  let j2 : nat = 4 * b + 3 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j2))) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j2)))
+
+[@@ "opaque_to_smt"]
+let ntt_layer_2_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let z = (if b < 2 then zeta0 else zeta1) in
+  let base : nat = if b < 2 then 0 else 8 in
+  let off  : nat = if b = 0 || b = 2 then 0 else 2 in
+  let i1 : nat = base + off in
+  let j1 : nat = i1 + 4 in
+  let i2 : nat = i1 + 1 in
+  let j2 : nat = j1 + 1 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j2))) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe z)
+        (mont_i16_to_spec_fe (Seq.index input j2)))
+
+[@@ "opaque_to_smt"]
+let ntt_layer_3_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let i1 : nat = 2 * b in
+  let j1 : nat = 2 * b + 8 in
+  let i2 : nat = 2 * b + 1 in
+  let j2 : nat = 2 * b + 9 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe zeta0)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe zeta0)
+        (mont_i16_to_spec_fe (Seq.index input j1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe zeta0)
+        (mont_i16_to_spec_fe (Seq.index input j2))) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe zeta0)
+        (mont_i16_to_spec_fe (Seq.index input j2)))
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_1_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1 zeta2 zeta3: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let z = (if b = 0 then zeta0
+           else if b = 1 then zeta1
+           else if b = 2 then zeta2
+           else zeta3) in
+  let i1 : nat = 4 * b in
+  let j1 : nat = 4 * b + 2 in
+  let i2 : nat = 4 * b + 1 in
+  let j2 : nat = 4 * b + 3 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (mont_i16_to_spec_fe (Seq.index input j1)) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe z)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j1))
+        (mont_i16_to_spec_fe (Seq.index input i1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (mont_i16_to_spec_fe (Seq.index input j2)) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe z)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j2))
+        (mont_i16_to_spec_fe (Seq.index input i2)))
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_2_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let z = (if b < 2 then zeta0 else zeta1) in
+  let base : nat = if b < 2 then 0 else 8 in
+  let off  : nat = if b = 0 || b = 2 then 0 else 2 in
+  let i1 : nat = base + off in
+  let j1 : nat = i1 + 4 in
+  let i2 : nat = i1 + 1 in
+  let j2 : nat = j1 + 1 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (mont_i16_to_spec_fe (Seq.index input j1)) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe z)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j1))
+        (mont_i16_to_spec_fe (Seq.index input i1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (mont_i16_to_spec_fe (Seq.index input j2)) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe z)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j2))
+        (mont_i16_to_spec_fe (Seq.index input i2)))
+
+[@@ "opaque_to_smt"]
+let inv_ntt_layer_3_step_branch_post
+    (b: nat{b < 4})
+    (input: t_Array i16 (mk_usize 16))
+    (zeta0: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let i1 : nat = 2 * b in
+  let j1 : nat = 2 * b + 8 in
+  let i2 : nat = 2 * b + 1 in
+  let j2 : nat = 2 * b + 9 in
+  mont_i16_to_spec_fe (Seq.index result i1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i1))
+      (mont_i16_to_spec_fe (Seq.index input j1)) /\
+  mont_i16_to_spec_fe (Seq.index result j1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe zeta0)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j1))
+        (mont_i16_to_spec_fe (Seq.index input i1))) /\
+  mont_i16_to_spec_fe (Seq.index result i2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (mont_i16_to_spec_fe (Seq.index input i2))
+      (mont_i16_to_spec_fe (Seq.index input j2)) /\
+  mont_i16_to_spec_fe (Seq.index result j2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+      (mont_i16_to_spec_fe zeta0)
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+        (mont_i16_to_spec_fe (Seq.index input j2))
+        (mont_i16_to_spec_fe (Seq.index input i2)))
+
+[@@ "opaque_to_smt"]
+let ntt_multiply_branch_post
+    (b: nat{b < 4})
+    (lhs rhs: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1 zeta2 zeta3: i16)
+    (result: t_Array i16 (mk_usize 16)) : prop =
+  let zp = (if b = 0 then zeta0
+            else if b = 1 then zeta1
+            else if b = 2 then zeta2
+            else zeta3) in
+  let k_even : nat = 2 * b in
+  let lane0 : nat = 2 * k_even in
+  let lane1 : nat = 2 * k_even + 1 in
+  let k_odd  : nat = 2 * b + 1 in
+  let lane2 : nat = 2 * k_odd in
+  let lane3 : nat = 2 * k_odd + 1 in
+  mont_i16_to_spec_fe (Seq.index result lane0) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane0))
+        (mont_i16_to_spec_fe (Seq.index rhs lane0)))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+          (mont_i16_to_spec_fe (Seq.index lhs lane1))
+          (mont_i16_to_spec_fe (Seq.index rhs lane1)))
+        (mont_i16_to_spec_fe zp)) /\
+  mont_i16_to_spec_fe (Seq.index result lane1) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane0))
+        (mont_i16_to_spec_fe (Seq.index rhs lane1)))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane1))
+        (mont_i16_to_spec_fe (Seq.index rhs lane0))) /\
+  mont_i16_to_spec_fe (Seq.index result lane2) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane2))
+        (mont_i16_to_spec_fe (Seq.index rhs lane2)))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+          (mont_i16_to_spec_fe (Seq.index lhs lane3))
+          (mont_i16_to_spec_fe (Seq.index rhs lane3)))
+        (mont_i16_to_spec_fe (Spec.Utils.neg_i16 zp))) /\
+  mont_i16_to_spec_fe (Seq.index result lane3) ==
+    Hacspec_ml_kem.Parameters.impl_FieldElement__add
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane2))
+        (mont_i16_to_spec_fe (Seq.index rhs lane3)))
+      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+        (mont_i16_to_spec_fe (Seq.index lhs lane3))
+        (mont_i16_to_spec_fe (Seq.index rhs lane2)))
 "#
         )
     )]
@@ -389,9 +718,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"bounded_pos_i16_array 1 ${result} /\
                Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
-                 i16_to_spec_fe (Seq.index ${result} i) ==
-                 Hacspec_ml_kem.Compress.compress_d
-                   (i16_to_spec_fe (Seq.index ${vec} i)) (mk_usize 1))"#
+                 compress_1_lane_post (Seq.index ${vec} i) (Seq.index ${result} i))"#
         )
     }
 
@@ -417,21 +744,15 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 11) ==>
                 (bounded_pos_i16_array (v $coefficient_bits) ${result} /\
                  Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
-                   i16_to_spec_fe (Seq.index ${result} i) ==
-                   Hacspec_ml_kem.Compress.compress_d
-                     (i16_to_spec_fe (Seq.index ${vec} i))
-                     (mk_usize (v $coefficient_bits))))"#
+                   compress_d_lane_post (mk_usize (v $coefficient_bits))
+                     (Seq.index ${vec} i) (Seq.index ${result} i)))"#
         )
     }
 
     pub(crate) fn decompress_1_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall (i: nat). i < 16 ==> v (Seq.index ${vec} i) >= 0 /\
-                                          v (Seq.index ${vec} i) < 2) ==>
-               Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
-                 i16_to_spec_fe (Seq.index ${result} i) ==
-                 Hacspec_ml_kem.Compress.decompress_d
-                   (i16_to_spec_fe (Seq.index ${vec} i)) (mk_usize 1))"#
+            r#"Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
+                 decompress_1_lane_post (Seq.index ${vec} i) (Seq.index ${result} i))"#
         )
     }
 
@@ -445,13 +766,9 @@ let to_le_bytes_post_N (#n: usize)
                 v $coefficient_bits == 5 \/
                 v $coefficient_bits == 10 \/
                 v $coefficient_bits == 11) ==>
-               (forall (i: nat). i < 16 ==> v (Seq.index ${vec} i) >= 0 /\
-                                          v (Seq.index ${vec} i) < pow2 (v $coefficient_bits)) ==>
                Spec.Utils.forall16 (fun (i: nat{i < 16}) ->
-                 i16_to_spec_fe (Seq.index ${result} i) ==
-                 Hacspec_ml_kem.Compress.decompress_d
-                   (i16_to_spec_fe (Seq.index ${vec} i))
-                   (mk_usize (v $coefficient_bits)))"#
+                 decompress_d_lane_post (mk_usize (v $coefficient_bits))
+                   (Seq.index ${vec} i) (Seq.index ${result} i))"#
         )
     }
 
@@ -488,14 +805,11 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Pointwise FE (option D): for each of the four butterfly groups
-    // b ∈ {0, 1, 2, 3}, the two pairs (4b, 4b+2) and (4b+1, 4b+3)
-    // share zeta_b and satisfy the Cooley–Tukey butterfly in the
-    // Montgomery-FE algebra.  Layer 1 can cite this directly, and
-    // Layer 2 later wraps it with Seq.lemma_eq_intro into hacspec's
-    // ntt_layer_n output.  The `forall4` wrapper (`Spec.Utils.forall4`)
-    // expands to four explicit conjuncts, which Z3 handles much more
-    // efficiently than a logical `forall` with instantiation.
+    // Cooley–Tukey butterfly post: bound + per-branch FE-equation atom.
+    // `forall4` stays transparent so callers iterate per-branch; the
+    // per-branch FE equations are wrapped in `ntt_layer_1_step_branch_post`
+    // (opaque), so callers see the iteration structure but never the
+    // FE-algebra body.
     pub(crate) fn ntt_layer_1_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -507,38 +821,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (8 * 3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let z = (if b = 0 then $zeta0
-                           else if b = 1 then $zeta1
-                           else if b = 2 then $zeta2
-                           else $zeta3) in
-                  let i1 : nat = 4 * b in
-                  let j1 : nat = 4 * b + 2 in
-                  let i2 : nat = 4 * b + 1 in
-                  let j2 : nat = 4 * b + 3 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2)))))"#
+                 ntt_layer_1_step_branch_post b ${vec} $zeta0 $zeta1 $zeta2 $zeta3 ${result})"#
         )
     }
 
@@ -549,12 +832,6 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D, layer 2: 4 groups of 2-butterfly pairs × 4 FE equalities
-    // each, same shape as ntt_layer_1_step_post.  At N = 16, len = 4 the
-    // butterflies are: (z0, 0, 4), (z0, 1, 5), (z0, 2, 6), (z0, 3, 7),
-    // (z1, 8, 12), (z1, 9, 13), (z1, 10, 14), (z1, 11, 15).  We encode
-    // them as `forall4 (fun b -> ...)` where each branch covers 2 pairs
-    // — b ∈ {0,1} drives zeta0 halves, b ∈ {2,3} drives zeta1 halves.
     pub(crate) fn ntt_layer_2_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -564,37 +841,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (7 * 3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let z = (if b < 2 then $zeta0 else $zeta1) in
-                  let base : nat = if b < 2 then 0 else 8 in
-                  let off  : nat = if b = 0 || b = 2 then 0 else 2 in
-                  let i1 : nat = base + off in
-                  let j1 : nat = i1 + 4 in
-                  let i2 : nat = i1 + 1 in
-                  let j2 : nat = j1 + 1 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe z)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2)))))"#
+                 ntt_layer_2_step_branch_post b ${vec} $zeta0 $zeta1 ${result})"#
         )
     }
 
@@ -605,13 +852,6 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D, layer 3: single zeta, 8 butterflies at len = 8.
-    // Pairs: (0,8), (1,9), (2,10), (3,11), (4,12), (5,13), (6,14), (7,15).
-    // Encoded as `forall4` with 2 butterfly pairs per branch —
-    //   b=0: pairs (0,8) and (1,9)
-    //   b=1: pairs (2,10) and (3,11)
-    //   b=2: pairs (4,12) and (5,13)
-    //   b=3: pairs (6,14) and (7,15)
     pub(crate) fn ntt_layer_3_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -620,34 +860,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (6 * 3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let i1 : nat = 2 * b in
-                  let j1 : nat = 2 * b + 8 in
-                  let i2 : nat = 2 * b + 1 in
-                  let j2 : nat = 2 * b + 9 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe $zeta0)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe $zeta0)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe $zeta0)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe $zeta0)
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2)))))"#
+                 ntt_layer_3_step_branch_post b ${vec} $zeta0 ${result})"#
         )
     }
 
@@ -665,10 +878,6 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D, inverse layer 1: Gentleman–Sande butterflies, same pair
-    // layout as forward ntt_layer_1_step — 4 forall4 branches × 2 pairs
-    // each.  Per butterfly (i, j): result[i] = vec[i] + vec[j];
-    // result[j] = zeta · (vec[j] − vec[i]).
     pub(crate) fn inv_ntt_layer_1_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -680,34 +889,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let z = (if b = 0 then $zeta0
-                           else if b = 1 then $zeta1
-                           else if b = 2 then $zeta2
-                           else $zeta3) in
-                  let i1 : nat = 4 * b in
-                  let j1 : nat = 4 * b + 2 in
-                  let i2 : nat = 4 * b + 1 in
-                  let j2 : nat = 4 * b + 3 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe z)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe z)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+                 inv_ntt_layer_1_step_branch_post b ${vec} $zeta0 $zeta1 $zeta2 $zeta3 ${result})"#
         )
     }
 
@@ -722,15 +904,9 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D, inverse layer 2: same pair layout as forward layer 2.
-    //
     // Output bound is `2*3328` (not `3328`) because the body computes a raw
     // `a + b` for half the output lanes without an intervening Barrett
-    // reduction.  This matches the AVX2 / Neon implementations and the
-    // portable implementation post-fix.  See `src/invert_ntt.rs` for the
-    // full bound trace through the inverse NTT and the safety argument
-    // (no i16 wrapping, no i32 overflow, Barrett input headroom preserved
-    // for the eventual reduction in `invert_ntt_at_layer_4_plus`).
+    // reduction.  See `src/invert_ntt.rs` for the bound trace.
     pub(crate) fn inv_ntt_layer_2_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -740,33 +916,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (2*3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let z = (if b < 2 then $zeta0 else $zeta1) in
-                  let base : nat = if b < 2 then 0 else 8 in
-                  let off  : nat = if b = 0 || b = 2 then 0 else 2 in
-                  let i1 : nat = base + off in
-                  let j1 : nat = i1 + 4 in
-                  let i2 : nat = i1 + 1 in
-                  let j2 : nat = j1 + 1 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe z)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe z)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+                 inv_ntt_layer_2_step_branch_post b ${vec} $zeta0 $zeta1 ${result})"#
         )
     }
 
@@ -779,14 +929,9 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D, inverse layer 3: same pair layout as forward layer 3.
-    //
     // Output bound is `4*3328` because the body, like layer 2, skips
-    // Barrett reduction on the raw sum lanes.  With input bounded by
-    // `2*3328`, the sum can reach `2 * 2*3328 = 4*3328 = 13312`, well
-    // inside i16 range.  The eventual reduction to `3328` happens in
-    // `invert_ntt_at_layer_4_plus`'s `inv_ntt_layer_int_vec_step_reduce`
-    // (Barrett there is preserved).
+    // Barrett reduction on the raw sum lanes.  Reduction to `3328` happens
+    // in `invert_ntt_at_layer_4_plus`'s `inv_ntt_layer_int_vec_step_reduce`.
     pub(crate) fn inv_ntt_layer_3_step_post(
         vec: &[i16; 16],
         zeta0: i16,
@@ -795,30 +940,7 @@ let to_le_bytes_post_N (#n: usize)
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque (4*3328) ${result} /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let i1 : nat = 2 * b in
-                  let j1 : nat = 2 * b + 8 in
-                  let i2 : nat = 2 * b + 1 in
-                  let j2 : nat = 2 * b + 9 in
-                  mont_i16_to_spec_fe (Seq.index ${result} i1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i1))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j1)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe $zeta0)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j1))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i1))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} i2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (mont_i16_to_spec_fe (Seq.index ${vec} i2))
-                      (mont_i16_to_spec_fe (Seq.index ${vec} j2)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} j2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                      (mont_i16_to_spec_fe $zeta0)
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                        (mont_i16_to_spec_fe (Seq.index ${vec} j2))
-                        (mont_i16_to_spec_fe (Seq.index ${vec} i2)))))"#
+                 inv_ntt_layer_3_step_branch_post b ${vec} $zeta0 ${result})"#
         )
     }
 
@@ -838,11 +960,9 @@ let to_le_bytes_post_N (#n: usize)
         )
     }
 
-    // Option D for ntt_multiply: 4 branches × 2 binomials (positive and
-    // negated zeta) × 2 FE equalities (lanes 2i and 2i+1 of each
-    // binomial) = 16 FE equalities total, covering all output lanes.
-    // `ntt_multiply_butterfly_post` bundles the 8 residue equations from
-    // `ntt_multiply_binomials_post` that the impl already produces.
+    // Bound + already-opaque ntt_multiply_butterfly_post + per-branch FE
+    // equation atom.  `forall4` stays transparent so the loop in
+    // Polynomial.ntt_multiply iterates per-branch as opaque atoms.
     pub(crate) fn ntt_multiply_post(
         lhs: &[i16; 16],
         rhs: &[i16; 16],
@@ -857,52 +977,8 @@ let to_le_bytes_post_N (#n: usize)
                Spec.Utils.ntt_multiply_butterfly_post ${lhs} ${rhs} ${result}
                  $zeta0 $zeta1 $zeta2 $zeta3 /\
                Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
-                 (let zp = (if b = 0 then $zeta0
-                            else if b = 1 then $zeta1
-                            else if b = 2 then $zeta2
-                            else $zeta3) in
-                  let k_even : nat = 2 * b in
-                  let lane0 : nat = 2 * k_even in
-                  let lane1 : nat = 2 * k_even + 1 in
-                  let k_odd  : nat = 2 * b + 1 in
-                  let lane2 : nat = 2 * k_odd in
-                  let lane3 : nat = 2 * k_odd + 1 in
-                  mont_i16_to_spec_fe (Seq.index ${result} lane0) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane0))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane0)))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                          (mont_i16_to_spec_fe (Seq.index ${lhs} lane1))
-                          (mont_i16_to_spec_fe (Seq.index ${rhs} lane1)))
-                        (mont_i16_to_spec_fe zp)) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} lane1) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane0))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane1)))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane1))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane0))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} lane2) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane2))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane2)))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                          (mont_i16_to_spec_fe (Seq.index ${lhs} lane3))
-                          (mont_i16_to_spec_fe (Seq.index ${rhs} lane3)))
-                        (mont_i16_to_spec_fe (Spec.Utils.neg_i16 zp))) /\
-                  mont_i16_to_spec_fe (Seq.index ${result} lane3) ==
-                    Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane2))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane3)))
-                      (Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                        (mont_i16_to_spec_fe (Seq.index ${lhs} lane3))
-                        (mont_i16_to_spec_fe (Seq.index ${rhs} lane2)))))"#
+                 ntt_multiply_branch_post b ${lhs} ${rhs}
+                   $zeta0 $zeta1 $zeta2 $zeta3 ${result})"#
         )
     }
 

@@ -17,6 +17,7 @@ pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) $re"#))]
 #[hax_lib::ensures(|result|
     fstar!(r#"$result ==
@@ -34,6 +35,19 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
 
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
+        // Bridge: compress_1's post `bounded_pos_i16_array 1` (after reveal,
+        // `forall j. 0 <= v r[j] <= 1`) to serialize_1's pre `serialize_pre_N
+        // 1 r` (= `forall j. bounded r[j] 1` = `forall j. 0 <= v r[j] < 2`).
+        // Z3 needs the explicit instantiation; `bounded` is opaque-ish.
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+               assert_norm (pow2 1 == 2);
+               assert (forall (k: nat). {:pattern Seq.index
+                       (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}) k}
+                  k < 16 ==> Rust_primitives.BitVectors.bounded
+                    (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}) k) 1)"#
+        );
 
         let bytes = Vector::serialize_1(coefficient_compressed);
         serialized[2 * i..2 * i + 2].copy_from_slice(&bytes);
@@ -54,6 +68,14 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
         let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 2]);
+        // Bridge: deserialize_1's post `forall j. bounded r[j] 1`
+        // (= `forall j. 0 <= v r[j] < 2`) to decompress_1's pre
+        // `bounded_pos_i16_array 1 r` (= same after reveal).
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
+                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+               assert_norm (pow2 1 == 2)"#
+        );
         re.coefficients[i] = Vector::decompress_1(coefficient_compressed);
     }
     re

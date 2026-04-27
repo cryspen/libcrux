@@ -192,25 +192,25 @@ fn op_to_unsigned_representative(a: PortableVector) -> PortableVector {
 fn op_compress_1(a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post"#
     );
     let result = compress_1(a);
+    // Single per-lane lemma + `Classical.forall_intro` to lift to the
+    // full forall16 in one shot — replaces the 16 manual `aux 0; ...; aux 15`
+    // invocations.  Z3 sees one universally-quantified obligation rather
+    // than 16 sequential lemma instantiations.
     hax_lib::fstar!(
         r#"let aux (j: nat{j < 16}) :
-              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                       (Seq.index ${result}.f_elements j) ==
-                     Hacspec_ml_kem.Compress.compress_d
-                       (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                          (Seq.index ${a}.f_elements j))
-                       (mk_usize 1)) =
+              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post
+                       (Seq.index ${a}.f_elements j)
+                       (Seq.index ${result}.f_elements j)) =
              Hacspec_ml_kem.Commute.Chunk.lemma_compress_message_coefficient_fe_commute
                (Seq.index ${a}.f_elements j)
                (Seq.index ${result}.f_elements j)
            in
-           aux 0;  aux 1;  aux 2;  aux 3;
-           aux 4;  aux 5;  aux 6;  aux 7;
-           aux 8;  aux 9;  aux 10; aux 11;
-           aux 12; aux 13; aux 14; aux 15"#
+           Classical.forall_intro aux"#
     );
     result
 }
@@ -221,26 +221,23 @@ fn op_compress_1(a: PortableVector) -> PortableVector {
 fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post"#
     );
     let result = compress::<COEFFICIENT_BITS>(a);
     hax_lib::fstar!(
         r#"let aux (j: nat{j < 16}) :
-              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                       (Seq.index ${result}.f_elements j) ==
-                     Hacspec_ml_kem.Compress.compress_d
-                       (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                          (Seq.index ${a}.f_elements j))
-                       (mk_usize (v $COEFFICIENT_BITS))) =
+              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post
+                       (mk_usize (v $COEFFICIENT_BITS))
+                       (Seq.index ${a}.f_elements j)
+                       (Seq.index ${result}.f_elements j)) =
              Hacspec_ml_kem.Commute.Chunk.lemma_compress_ciphertext_coefficient_fe_commute
                (Seq.index ${a}.f_elements j)
                (Seq.index ${result}.f_elements j)
                (mk_usize (v $COEFFICIENT_BITS))
            in
-           aux 0;  aux 1;  aux 2;  aux 3;
-           aux 4;  aux 5;  aux 6;  aux 7;
-           aux 8;  aux 9;  aux 10; aux 11;
-           aux 12; aux 13; aux 14; aux 15"#
+           Classical.forall_intro aux"#
     );
     result
 }
@@ -257,10 +254,10 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
                      v (Seq.index a.f_elements i) >= 0 /\
                      v (Seq.index a.f_elements i) <= 1);
            assert(forall (i:nat). {:pattern Seq.index a.f_elements i} i < 16 ==>
-                     v (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe 
+                     v (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
                            (Seq.index a.f_elements i)).f_val < 2);
            assert(forall (i:nat). {:pattern Seq.index a.f_elements i} i < 16 ==>
-                     (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe 
+                     (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
                            (Seq.index a.f_elements i)).f_val <. (mk_u16 1 <<! sz 1));
            assert(mk_usize 1 <. mk_usize 12)
           "#
@@ -282,7 +279,9 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
            aux 0;  aux 1;  aux 2;  aux 3;
            aux 4;  aux 5;  aux 6;  aux 7;
            aux 8;  aux 9;  aux 10; aux 11;
-           aux 12; aux 13; aux 14; aux 15"#
+           aux 12; aux 13; aux 14; aux 15;
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.decompress_1_lane_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.decompress_1_lane_post"#
     );
     result
 }
@@ -294,6 +293,8 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Portable
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post;
            assert (forall (i:nat). i < 16 ==>
                      0 <= v (Seq.index ${a}.f_elements i) /\
                      v (Seq.index ${a}.f_elements i) < pow2 (v $COEFFICIENT_BITS))"#
@@ -307,21 +308,16 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Portable
     );
     hax_lib::fstar!(
         r#"let aux (j: nat{j < 16}) :
-              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                       (Seq.index ${result}.f_elements j) ==
-                     Hacspec_ml_kem.Compress.decompress_d
-                       (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
-                          (Seq.index ${a}.f_elements j))
-                       (mk_usize (v $COEFFICIENT_BITS))) =
+              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post
+                       (mk_usize (v $COEFFICIENT_BITS))
+                       (Seq.index ${a}.f_elements j)
+                       (Seq.index ${result}.f_elements j)) =
              Hacspec_ml_kem.Commute.Chunk.lemma_decompress_ciphertext_coefficient_fe_commute
                (Seq.index ${a}.f_elements j)
                (Seq.index ${result}.f_elements j)
                (mk_usize (v $COEFFICIENT_BITS))
            in
-           aux 0;  aux 1;  aux 2;  aux 3;
-           aux 4;  aux 5;  aux 6;  aux 7;
-           aux 8;  aux 9;  aux 10; aux 11;
-           aux 12; aux 13; aux 14; aux 15"#
+           Classical.forall_intro aux"#
     );
     result
 }
@@ -332,13 +328,15 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Portable
 // (FE-algebra equality)` post.  Bridge = 8 `lemma_butterfly_pair_commute`
 // calls + per-group `assert (p_layer_X N)` + final
 // `assert (forall4 p_layer_X)`.
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_1_step_pre} ${a}.f_elements zeta0 zeta1 zeta2 zeta3"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_1_step_post} ${a}.f_elements zeta0 zeta1 zeta2 zeta3 ${out}.f_elements"#))]
 fn op_ntt_layer_1_step(a: PortableVector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_1_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_1_step_branch_post"#
     );
     let out = ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3);
     hax_lib::fstar!(
@@ -409,13 +407,15 @@ fn op_ntt_layer_1_step(a: PortableVector, zeta0: i16, zeta1: i16, zeta2: i16, ze
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_2_step_pre} ${a}.f_elements zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_2_step_post} ${a}.f_elements zeta0 zeta1 ${out}.f_elements"#))]
 fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post"#
     );
     let out = ntt_layer_2_step(a, zeta0, zeta1);
     hax_lib::fstar!(
@@ -485,13 +485,15 @@ fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVec
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post"#
     );
     let out = ntt_layer_3_step(a, zeta);
     hax_lib::fstar!(
@@ -558,13 +560,15 @@ fn op_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_1_step_pre} ${a}.f_elements zeta0 zeta1 zeta2 zeta3"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_1_step_post} ${a}.f_elements zeta0 zeta1 zeta2 zeta3 ${out}.f_elements"#))]
 fn op_inv_ntt_layer_1_step(a: PortableVector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_1_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_1_step_branch_post"#
     );
     let out = inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3);
     hax_lib::fstar!(
@@ -631,13 +635,15 @@ fn op_inv_ntt_layer_1_step(a: PortableVector, zeta0: i16, zeta1: i16, zeta2: i16
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_2_step_pre} ${a}.f_elements zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_2_step_post} ${a}.f_elements zeta0 zeta1 ${out}.f_elements"#))]
 fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_2_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_2_step_branch_post"#
     );
     let out = inv_ntt_layer_2_step(a, zeta0, zeta1);
     // Output bound from primitive is `3328` (Barrett still in portable);
@@ -706,7 +712,7 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
     out
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
@@ -716,7 +722,9 @@ fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     // (which we also loosen to `is_i16b_array (2*3328)`) discharges.
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
+                    (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
+           reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post)
+                    Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post"#
     );
     let out = inv_ntt_layer_3_step(a, zeta);
     // Output bound from primitive is `3328` (Barrett still in portable);

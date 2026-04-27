@@ -434,7 +434,7 @@ fn to_standard_domain<T: Operations>(vector: T) -> T {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &error))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(3328, &future(myself)))]
 fn add_standard_error_reduce<Vector: Operations>(

@@ -10,7 +10,7 @@ use instantiations::avx2::{
     generate_keypair as generate_keypair_avx2,
 };
 
-#[cfg(feature = "simd128")]
+#[cfg(all(feature = "simd128", not(hax)))]
 use instantiations::neon::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
     generate_keypair as generate_keypair_neon,
@@ -22,7 +22,7 @@ use instantiations::portable::{
     generate_keypair as generate_keypair_avx2,
 };
 
-#[cfg(not(feature = "simd128"))]
+#[cfg(any(not(feature = "simd128"), hax))]
 use instantiations::portable::{
     decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
     generate_keypair as generate_keypair_neon,
@@ -34,7 +34,7 @@ use instantiations::avx2::{
     kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
-#[cfg(all(feature = "simd128", feature = "kyber"))]
+#[cfg(all(feature = "simd128", feature = "kyber", not(hax)))]
 use instantiations::neon::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
     kyber_generate_keypair as kyber_generate_keypair_neon,
@@ -46,7 +46,7 @@ use instantiations::portable::{
     kyber_generate_keypair as kyber_generate_keypair_avx2,
 };
 
-#[cfg(all(not(feature = "simd128"), feature = "kyber"))]
+#[cfg(all(any(not(feature = "simd128"), hax), feature = "kyber"))]
 use instantiations::portable::{
     kyber_decapsulate as kyber_decapsulate_neon, kyber_encapsulate as kyber_encapsulate_neon,
     kyber_generate_keypair as kyber_generate_keypair_neon,

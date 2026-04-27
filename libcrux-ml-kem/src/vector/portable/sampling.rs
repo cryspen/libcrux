@@ -4,6 +4,7 @@ use crate::vector::FIELD_MODULUS;
 use hax_lib::prop::ToProp;
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 50")]
 #[hax_lib::requires(a.len() == 24 && result.len() == 16)]
 #[hax_lib::ensures(|res| (future(result).len() == result.len() && res <= 16).to_prop().and(
     hax_lib::forall(|j: usize|
