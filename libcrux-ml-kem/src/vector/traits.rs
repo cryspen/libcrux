@@ -82,6 +82,27 @@ let bounded_i16_array (lo hi: i16) (x: t_Slice i16) : prop =
     forall (i: nat). i < Seq.length x ==>
         v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi
 
+(* SMTPat-fired per-index unfolding (consume direction).  The dual trigger
+   `(Seq.index x i, bounded_i16_array lo hi x)` only fires when Z3 actually
+   needs the bound on a specific lane `x.[i]` AND has `bounded_i16_array`
+   available — instead of dumping all 16 lane bounds whenever the predicate
+   appears. *)
+let lemma_bounded_i16_array_lookup (lo hi: i16) (x: t_Slice i16) (i: nat)
+    : Lemma (requires bounded_i16_array lo hi x /\ i < Seq.length x)
+            (ensures v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi)
+            [SMTPat (Seq.index x i); SMTPat (bounded_i16_array lo hi x)] =
+  reveal_opaque (`%bounded_i16_array) (bounded_i16_array lo hi x)
+
+(* Reverse direction (intro): construct `bounded_i16_array lo hi x` from a
+   per-lane bound.  No SMTPat — call explicitly at the call sites where
+   needed.  A global SMTPat here would over-instantiate (every appearance
+   of `bounded_i16_array` would force Z3 to try to derive it from a forall). *)
+let lemma_bounded_i16_array_intro (lo hi: i16) (x: t_Slice i16)
+    : Lemma (requires forall (i: nat). i < Seq.length x ==>
+                       v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi)
+            (ensures bounded_i16_array lo hi x) =
+  reveal_opaque (`%bounded_i16_array) (bounded_i16_array lo hi x)
+
 let bounded_abs_i16_array (l: nat {l < pow2 15}) (x: t_Slice i16) : prop =
     bounded_i16_array (mk_i16 (- l)) (mk_i16 l) x
 

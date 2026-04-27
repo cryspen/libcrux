@@ -223,7 +223,16 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
             )
         });
         hax_lib::fstar!(r#"assert (20 * v $i + 20 <= 320)"#);
-        let coefficient = Vector::compress::<10>(to_unsigned_field_modulus(re.coefficients[i]));
+        let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
+        // Intro direction: prove `bounded_i16_array (mk_i16 0) (mk_i16 3328)`
+        // from `to_unsigned_field_modulus`'s post (forall j. 0 <= v r[j] <= 3328)
+        // for `compress::<10>`'s pre.  Use the named lemma (no global SMTPat).
+        hax_lib::fstar!(
+            r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
+                  (mk_i16 0) (mk_i16 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
+        );
+        let coefficient = Vector::compress::<10>(unreduced);
 
         let bytes = Vector::serialize_10(coefficient);
         serialized[20 * i..20 * i + 20].copy_from_slice(&bytes);
@@ -296,7 +305,14 @@ fn compress_then_serialize_4<Vector: Operations>(
             )
         });
         hax_lib::fstar!(r#"assert (8 * v $i + 8 <= 128)"#);
-        let coefficient = Vector::compress::<4>(to_unsigned_field_modulus(re.coefficients[i]));
+        let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
+        // Intro direction for compress::<4>'s pre.
+        hax_lib::fstar!(
+            r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
+                  (mk_i16 0) (mk_i16 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
+        );
+        let coefficient = Vector::compress::<4>(unreduced);
 
         let bytes = Vector::serialize_4(coefficient);
         serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
@@ -371,6 +387,14 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
             let coefficient = Vector::deserialize_10(bytes);
+            // Intro: deserialize_10 post `forall j. bounded c[j] 10` -> trait pre
+            // `bounded_pos_i16_array 10` (= `bounded_i16_array 0 1023`).
+            hax_lib::fstar!(
+                r#"assert_norm (pow2 10 - 1 == 1023);
+                   Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
+                     (mk_i16 0) (mk_i16 1023)
+                     (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient})"#
+            );
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<10>(coefficient);
         }
     }
@@ -443,6 +467,14 @@ fn deserialize_then_decompress_4<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(8).enumerate() {
             let coefficient = Vector::deserialize_4(bytes);
+            // Intro: deserialize_4 post `forall j. bounded c[j] 4` -> trait pre
+            // `bounded_pos_i16_array 4` (= `bounded_i16_array 0 15`).
+            hax_lib::fstar!(
+                r#"assert_norm (pow2 4 - 1 == 15);
+                   Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
+                     (mk_i16 0) (mk_i16 15)
+                     (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient})"#
+            );
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<4>(coefficient);
         }
     }

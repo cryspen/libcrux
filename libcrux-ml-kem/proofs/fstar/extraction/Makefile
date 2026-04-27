@@ -29,11 +29,11 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
 
 # `compress_then_serialize_message` Q2 cancels at rlimit 80 (full 80 in
 #   ~18 s on Mac, ~26 s here).  Assert at line 57 about Vector.Traits.fst:587.
-# Re-enabled 2026-04-27 on trait-opacify: the opacity work moves the failure
-# point but the underlying issue (trait-pre `bounded_i16_array` ↔ trait-post
-# `forall j. bounded` bridge across many trait call sites in serialize.rs)
-# is the same.  Each call site needs an explicit reveal+assert; deferred.
-ADMIT_MODULES += Libcrux_ml_kem.Serialize.fst
+# Phase 5: dual-trigger SMTPat `lemma_bounded_i16_array_lookup` in traits::spec
+# auto-unfolds the predicate per-index (consume direction).  Intro direction
+# (proving `bounded_i16_array` from per-lane bounds) handled by explicit
+# `reveal_opaque` at the few call sites that need it.
+# ADMIT_MODULES += Libcrux_ml_kem.Serialize.fst
 
 # `Polynomial.ntt_multiply` Q54 cancels at rlimit 300 (full 300 in ~90 s on
 #   Mac).  Subtyping on the loop accumulator refinement at line 845.
