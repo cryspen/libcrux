@@ -42,10 +42,10 @@ to the USER lane (math-heavy or Z3-blocked) for human follow-up.
 
 | Phase | Description | Status | Owner / branch |
 |---|---|---|---|
-| **0** | Hardening + scaffolding (FIPS fixes, cross-spec tests, mirror docs, hacspec extensions) | in progress | `ml-dsa-proofs` (this session) |
-| **1** | Strengthen Operations trait posts | pending | handoff |
-| **2** | Portable Operations proofs (waves 2A–2G) | pending | handoff |
-| **3** | AVX2 Operations proofs (waves 3A–3E) | pending | handoff |
+| **0** | Hardening + scaffolding (FIPS fixes, cross-spec tests, mirror docs, hacspec extensions) | done | `ml-dsa-proofs` |
+| **1** | Strengthen Operations trait posts | done | `ml-dsa-proofs` |
+| **2** | Portable Operations proofs (waves 2A–2G) | unblocked | handoff |
+| **3** | AVX2 Operations proofs (waves 3A–3E) | unblocked | handoff |
 | **4** | Spec migration & integration (waves 4A–4D) | pending | handoff |
 
 ## Operations trait method status
@@ -56,33 +56,33 @@ proof (A). Legend: ✅ done, 🟡 admit/bounds-only, ⏳ pending.
 
 | Method | T | P | A | Spec anchor | Notes |
 |---|---|---|---|---|---|
-| `zero` | ⏳ | ⏳ | ⏳ | trivial (`repr() == [0;8]`) | already strong |
-| `from_coefficient_array` | ⏳ | ⏳ | ⏳ | trivial | already strong |
-| `to_coefficient_array` | ⏳ | ⏳ | ⏳ | trivial | already strong |
-| `add` | ⏳ | ⏳ | ⏳ | `Polynomial.poly_add` | bounds-only post exists |
-| `subtract` | ⏳ | ⏳ | ⏳ | `Polynomial.poly_sub` | bounds-only post exists |
-| `infinity_norm_exceeds` | ⏳ | ⏳ | ⏳ | `Polynomial.poly_infinity_norm` | F15: switch to constant-time mask in Phase 0A |
-| `decompose` | ⏳ | ⏳ | ⏳ | `Arithmetic.decompose` × 8 lanes | gamma2 ∈ {95232, 261888} |
-| `compute_hint` | ⏳ | ⏳ | ⏳ | `Arithmetic.make_hint` × 8 + popcount | returns 0/1 not bool |
-| `use_hint` | ⏳ | ⏳ | ⏳ | `Arithmetic.uuse_hint` × 8 lanes | spec name has typo `uuse_hint` |
-| `montgomery_multiply` | ⏳ | ⏳ | ⏳ | per-lane `mod_q(a·b·R⁻¹)` | uses `Arithmetic.mod_q` after Phase 4A |
-| `shift_left_then_reduce` | ⏳ | ⏳ | ⏳ | `Arithmetic.shift_left_then_reduce` | helper added in Phase 0D |
-| `power2round` | ⏳ | ⏳ | ⏳ | `Arithmetic.power2round` | helper exists |
-| `rejection_sample_<_field_modulus` | ⏳ | ⏳ | ⏳ | `Encoding.coeff_from_three_bytes` | per-byte step |
-| `rejection_sample_<_eta_2` | ⏳ | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | η=2 |
-| `rejection_sample_<_eta_4` | ⏳ | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | η=4 |
-| `gamma1_serialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_pack` width γ₁_exp+1 | bitvec |
-| `gamma1_deserialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_unpack` width γ₁_exp+1 | bitvec |
-| `commitment_serialize` | ⏳ | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 4 or 6 | per gamma2 |
-| `error_serialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_pack` width 3 or 4 | per eta |
-| `error_deserialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_unpack` width 3 or 4 | per eta |
-| `t0_serialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_pack` width 13 | signed |
-| `t0_deserialize` | ⏳ | ⏳ | ⏳ | `Encoding.bit_unpack` width 13 | signed |
-| `t1_serialize` | ⏳ | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 10 | unsigned |
-| `t1_deserialize` | ⏳ | ⏳ | ⏳ | `Encoding.simple_bit_unpack` width 10 | unsigned |
-| `ntt` | ⏳ | ⏳ | ⏳ | `Ntt.ntt` flat-256 | per-poly via `forall32` |
-| `invert_ntt_montgomery` | ⏳ | ⏳ | ⏳ | `Ntt.intt` flat-256 | post-INTT in standard domain |
-| `reduce` | ⏳ | ⏳ | ⏳ | per-lane `mod_q` ∧ `\|x\| < q` | Barrett |
+| `zero` | ✅ | ⏳ | ⏳ | trivial (`repr() == [0;8]`) | already strong |
+| `from_coefficient_array` | ✅ | ⏳ | ⏳ | trivial | already strong |
+| `to_coefficient_array` | ✅ | ⏳ | ⏳ | trivial | already strong |
+| `add` | ✅ | ⏳ | ⏳ | `Polynomial.poly_add` | per-lane integer post (already strong, kept) |
+| `subtract` | ✅ | ⏳ | ⏳ | `Polynomial.poly_sub` | per-lane integer post (already strong, kept) |
+| `infinity_norm_exceeds` | ✅ | ⏳ | ⏳ | `Arithmetic.coeff_norm` lifted | opaque post via `infinity_norm_exceeds_post` |
+| `decompose` | ✅ | ⏳ | ⏳ | `Arithmetic.decompose` × 8 lanes | per-lane opaque `decompose_lane_post` + dual-trigger lemmas |
+| `compute_hint` | ✅ | ⏳ | ⏳ | `Arithmetic.make_hint` × 8 + popcount | per-lane bool→0/1 conversion captured |
+| `use_hint` | ✅ | ⏳ | ⏳ | `Arithmetic.uuse_hint` × 8 lanes | spec name has typo `uuse_hint` |
+| `montgomery_multiply` | ✅ | ⏳ | ⏳ | per-lane `mod_q(a·b·R⁻¹)` | both `Spec.MLDSA.Math.mod_q` (kept) and `Hacspec_ml_dsa.Arithmetic.mod_q` posts in parallel; Phase 4A drops obsolete |
+| `shift_left_then_reduce` | ✅ | ⏳ | ⏳ | `Arithmetic.shift_left_then_reduce` | per-lane opaque post |
+| `power2round` | ✅ | ⏳ | ⏳ | `Arithmetic.power2round` | per-lane opaque post; spec returns (r1, r0) |
+| `rejection_sample_<_field_modulus` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_three_bytes` | bounds-only; lane post deferred to Phase 2 (admit doc) |
+| `rejection_sample_<_eta_2` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | bounds-only; admit doc |
+| `rejection_sample_<_eta_4` | 🟡 | ⏳ | ⏳ | `Encoding.coeff_from_half_byte` | bounds-only; admit doc |
+| `gamma1_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width γ₁_exp+1 | length-preserving post; bitvec deferred (admit doc) |
+| `gamma1_deserialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_unpack` width γ₁_exp+1 | gamma1_exponent precondition added; bitvec deferred |
+| `commitment_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 4 or 6 | length-preserving post; admit doc |
+| `error_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width 3 or 4 | length-preserving post; admit doc |
+| `error_deserialize` | ✅ | ⏳ | ⏳ | `Encoding.bit_unpack` width 3 or 4 | per-lane bounds [-η, η] |
+| `t0_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_pack` width 13 | length-preserving post; admit doc |
+| `t0_deserialize` | 🟡 | ⏳ | ⏳ | `Encoding.bit_unpack` width 13 | bitvec deferred |
+| `t1_serialize` | 🟡 | ⏳ | ⏳ | `Encoding.simple_bit_pack` width 10 | length-preserving post; admit doc |
+| `t1_deserialize` | ✅ | ⏳ | ⏳ | `Encoding.simple_bit_unpack` width 10 | per-lane bounds [0, 2¹⁰) |
+| `ntt` | 🟡 | ⏳ | ⏳ | `Ntt.ntt` flat-256 | bounds-only post (existing); per-poly admit (Tier-3 chain, USER lane) |
+| `invert_ntt_montgomery` | 🟡 | ⏳ | ⏳ | `Ntt.intt` flat-256 | bounds-only post (existing); per-poly admit (USER lane) |
+| `reduce` | ✅ | ⏳ | ⏳ | per-lane `mod_q` ∧ `\|x\| < q` | per-lane opaque post + lookup/intro lemmas |
 
 ## Pre-budgeted admits
 

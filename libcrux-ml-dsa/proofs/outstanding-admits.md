@@ -72,7 +72,64 @@ so subsequent sessions don't burn budget retrying:
 
 ## Active admits
 
-(none yet — populated in Phases 1–4)
+### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)
+- **Annotation**: bounds-only post retained; no per-poly forall32-with-Hacspec_ml_dsa.Ntt.ntt conjunct added
+- **Phase added**: 1
+- **Diagnosis**: Tier-3 chain across 8 layers with BitRev₈ zeta indexing — the
+  ML-KEM USER-2 analog with one extra layer. A per-poly post would require
+  composing 8 layer-step lemmas with subtle indexing; this is Z3-incompatible
+  in the trait-level 20-min budget. The bounds-only post is sufficient for
+  upstream callers that only need the FIELD_MAX bound.
+- **Suggested mitigation**: USER lane. Build per-layer commute lemmas in
+  `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`
+  (Phase 2F prerequisite), then chain into a `lemma_ntt_full_commute` after
+  ML-KEM's analog lands as a template.
+- **Template value**: closes the NTT layer of the proof; INVNTT and
+  ntt_multiply compositions are direct adaptations.
+
+### Libcrux_ml_dsa.Simd.Traits.invert_ntt_montgomery (per-poly post)
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:175-187`
+- **Annotation**: bounds-only post retained
+- **Phase added**: 1
+- **Diagnosis**: Analogous to NTT — Tier-3 chain with the additional
+  Montgomery-domain → standard-domain conversion at exit.
+- **Suggested mitigation**: USER lane, after `lemma_ntt_full_commute` lands.
+- **Template value**: matches NTT template once NTT is proven.
+
+### Libcrux_ml_dsa.Simd.Traits.rejection_sample_* (per-byte step posts)
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:108-118`
+- **Annotation**: bound + count-bound post; per-element citation of
+  `Hacspec_ml_dsa.Encoding.coeff_from_three_bytes` /
+  `coeff_from_half_byte` deferred (lane post predicates exist in
+  `Libcrux_ml_dsa.Simd.Traits.Specs` but the trait post does not connect
+  out[i] to the originating randomness chunk).
+- **Phase added**: 1
+- **Diagnosis**: The trait method consumes a length-24 (or length-4) byte
+  buffer and outputs accepted coefficients into `out`. A per-byte step
+  predicate would have to thread a loop index `j` through randomness
+  chunks and witness the partial-acceptance count — non-trivial in a
+  trait-level post and exceeds the 20-min budget.
+- **Suggested mitigation**: agent-lane Phase 2 work. Add a
+  loop-invariant-style relational predicate citing `coeff_from_*` once
+  the impl proof is being driven in `simd/portable/sample.rs`.
+
+### Libcrux_ml_dsa.Simd.Traits.{gamma1,commitment,error,t0,t1}_{serialize,deserialize}
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:120-156`
+- **Annotation**: length-preservation + bound conjuncts only;
+  `BitVecEq.int_t_array_bitwise_eq` round-trip equation against
+  `Hacspec_ml_dsa.Encoding.{simple_bit_pack,bit_pack,simple_bit_unpack,bit_unpack}`
+  deferred.
+- **Phase added**: 1
+- **Diagnosis**: Bit-vector equivalence via `BitVecEq.int_t_array_bitwise_eq`
+  is the canonical ML-KEM template, but the encoding-side gamma1/t0 widths
+  use offset-encoded bit_pack (each value `v` packed as `b - v` over a
+  signed range), which the ML-KEM template does not cover. The full
+  predicate can be added once the helpers in
+  `fstar-helpers/fstar-bitvec/BitVecEq.fst` are extended for offset packing.
+- **Suggested mitigation**: agent-lane Phase 2D. Mirror the ML-KEM
+  `serialize_post_N` / `deserialize_post_N` shape, with offset-aware
+  variants for gamma1/t0/error.
 
 ---
 

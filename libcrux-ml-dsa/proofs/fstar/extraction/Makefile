@@ -21,7 +21,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
-	Libcrux_ml_dsa.Simd.Traits.Spec.fst \
+	Libcrux_ml_dsa.Simd.Traits.Specs.fst \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	Libcrux_ml_dsa.Constants.fst \
 	Libcrux_ml_dsa.Types.fst \
