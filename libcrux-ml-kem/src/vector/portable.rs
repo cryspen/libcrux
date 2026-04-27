@@ -245,7 +245,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector
     result
 }
 
-#[hax_lib::fstar::options("--z3rlimit 200")]
+#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} ${a}.f_elements"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} ${a}.f_elements ${out}.f_elements"#))]
 fn op_decompress_1(a: PortableVector) -> PortableVector {
@@ -253,19 +253,28 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
            assert_norm (pow2 1 - 1 == 1);
-           assert (forall (i:nat). i < 16 ==>
-                     0 <= v (Seq.index ${a}.f_elements i) /\
-                     v (Seq.index ${a}.f_elements i) <= 1)"#
+           assert(forall (i: nat). {:pattern Seq.index a.f_elements i} i < 16 ==>
+                     v (Seq.index a.f_elements i) >= 0 /\
+                     v (Seq.index a.f_elements i) <= 1);
+           assert(forall (i:nat). {:pattern Seq.index a.f_elements i} i < 16 ==>
+                     v (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe 
+                           (Seq.index a.f_elements i)).f_val < 2);
+           assert(forall (i:nat). {:pattern Seq.index a.f_elements i} i < 16 ==>
+                     (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe 
+                           (Seq.index a.f_elements i)).f_val <. (mk_u16 1 <<! sz 1));
+           assert(mk_usize 1 <. mk_usize 12)
+          "#
     );
     let result = decompress_1(a);
     hax_lib::fstar!(
-        r#"let aux (j: nat{j < 16}) :
-              Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
+        r#"let aux (j: nat) :
+              Lemma (requires j < 16)
+                    (ensures (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
                        (Seq.index ${result}.f_elements j) ==
                      Hacspec_ml_kem.Compress.decompress_d
                        (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
                           (Seq.index ${a}.f_elements j))
-                       (mk_usize 1)) =
+                       (mk_usize 1))) =
              Hacspec_ml_kem.Commute.Chunk.lemma_decompress_1_fe_commute_int
                (Seq.index ${a}.f_elements j)
                (Seq.index ${result}.f_elements j)
