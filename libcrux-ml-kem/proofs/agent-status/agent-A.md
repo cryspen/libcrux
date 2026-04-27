@@ -177,5 +177,11 @@ refactor recipe (move ladder out of opaque body / norm before SMT)
 applies symmetrically to inv direction.
 
 ### Commits on agent/phase-6-portable-ntt
-- TBD: `agent-A2: layer-1 helper FE-bridge lemmas + analysis comment`
+- 3e4bc21ea: `agent-A2: layer-1 helper FE-bridge lemmas + analysis comment`
+
+### Final regression (post-A2)
+- `make run/Libcrux_ml_kem.Vector.Portable.fst` PASS.
+- Wall: 1:28.32 (user 83.66 s).  TOTAL TIME 83260 ms.
+- 4 layer-2/3 admits remain dropped (no regression).
+- 2 layer-1 admits retained with admit-with-comment.
 
