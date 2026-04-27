@@ -34,15 +34,108 @@ function prove() {
         *);;
     esac
     go_to "libcrux-ml-dsa"
-    JOBS="${JOBS:-$(nproc --all)}"
-    JOBS="${JOBS:-4}"
-    make -C proofs/fstar/extraction -j $JOBS "$@"
+
+    # Detect parallel-job count portably (Linux uses `nproc --all`; macOS
+    # uses `sysctl -n hw.ncpu`; other systems get a hard-coded fallback).
+    JOBS="${JOBS:-$(nproc --all 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
+
+    # Save full make output for post-mortem inspection; analogous to
+    # libcrux-ml-kem/hax.py's `verification_result.txt`.
+    local output_file="${VERIFICATION_OUTPUT:-verification_result.txt}"
+    msg "$BLUE" "Running F* verification (output saved to ${BOLD}${output_file}${RESET})"
+
+    # `make -k` keeps going after a failed target so the per-module
+    # summary covers every module rather than stopping at the first
+    # error.  PIPESTATUS[0] preserves make's real exit code through the
+    # `tee`.
+    set +e
+    make -k -C proofs/fstar/extraction -j $JOBS "$@" 2>&1 | tee "$output_file"
+    local rc=${PIPESTATUS[0]}
+    set -e
+
+    summarize_verification "$output_file"
+    return $rc
+}
+
+# Print a one-shot summary of an F* `make` log: per-module CHECK/ADMIT
+# tags, F* errors, and make-level failures.  Mirrors the
+# `Verification Summary` block emitted by libcrux-ml-kem/hax.py so the
+# two crates' workflows are interchangeable.
+function summarize_verification() {
+    local output_file="$1"
+    if [ ! -f "$output_file" ]; then
+        msg "$BLUE" "No verification output file at ${BOLD}${output_file}${RESET}; skipping summary."
+        return
+    fi
+
+    # Strip ANSI escape codes so the grep patterns don't have to deal
+    # with the `\033[NN;...m` colour markers the Makefile emits.
+    local clean
+    clean=$($SED 's/\x1b\[[0-9;]*m//g' "$output_file")
+
+    # Tags emitted by fstar-helpers/Makefile.generic at the start of each
+    # module run: `[CHECK] <module>` or `[ADMIT] <module>`.
+    local n_check
+    local n_admit
+    n_check=$(printf '%s\n' "$clean" | grep -c '^\[CHECK\]' || true)
+    n_admit=$(printf '%s\n' "$clean" | grep -c '^\[ADMIT\]' || true)
+
+    # F* prints `Verified module: X` (or `Verified i'face …: X`) when a
+    # module is fully discharged.
+    local n_verified
+    n_verified=$(printf '%s\n' "$clean" | grep -cE "^Verified (module|i'face)" || true)
+
+    # `* Error N at FILE(L,C-L,C):` is F*'s typecheck error format.
+    local n_errors
+    n_errors=$(printf '%s\n' "$clean" | grep -cE '^\* Error [0-9]+ at' || true)
+
+    # `*** [.../X.checked] Error Y` is make's signal that a target died.
+    local n_make_fail
+    n_make_fail=$(printf '%s\n' "$clean" | grep -cE '^\*\*\* \[.*\.checked\]' || true)
+
+    echo
+    echo "======================================================================"
+    echo "  F* Verification Summary"
+    echo "======================================================================"
+    printf "  Modules invoked:        %d  ([CHECK]=%d  [ADMIT]=%d)\n" \
+        "$((n_check + n_admit))" "$n_check" "$n_admit"
+    printf "  Modules verified by F*: %d\n" "$n_verified"
+    printf "  F* errors reported:     %d\n" "$n_errors"
+    printf "  Make-level failures:    %d\n" "$n_make_fail"
+
+    if [ "$n_errors" -gt 0 ]; then
+        echo
+        echo "  Error locations (first 10):"
+        printf '%s\n' "$clean" | grep -E '^\* Error [0-9]+ at' | head -10 \
+            | $SED 's/^/    /'
+    fi
+
+    if [ "$n_make_fail" -gt 0 ]; then
+        echo
+        echo "  Failed make targets (first 10):"
+        printf '%s\n' "$clean" | grep -E '^\*\*\* \[.*\.checked\]' | head -10 \
+            | $SED 's/^/    /'
+    fi
+
+    echo
+    printf "  Full output:            %s\n" "$output_file"
+    echo "======================================================================"
 }
 
 function init_vars() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
     SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_NAME}"
+
+    # GNU sed (handles `-i''` for in-place edits without a backup suffix).
+    # On Linux distros, `sed` is GNU sed; on macOS, `sed` is BSD sed which
+    # interprets `-i''` differently, so we prefer `gsed` (Homebrew package
+    # `gnu-sed`) when it's on PATH.
+    if command -v gsed >/dev/null 2>&1; then
+        SED=gsed
+    else
+        SED=sed
+    fi
 
     if [ -t 1 ]; then
         BLUE='\033[34m'
@@ -79,14 +172,14 @@ function rename_core_models_files() {
         new_filename="Libcrux_core_models${filename#Core_models}"
         mv "$file" "$dir_path/$new_filename"
     done
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec "$SED" -i'' \
         -e 's/module Core_models/module Libcrux_core_models/g' \
         {} +
 }
 
 function rename_core_models_uses() {
     local target_dir="proofs/fstar/extraction"
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec "$SED" -i'' \
         -e 's/Core_models\.Abstractions/Libcrux_core_models.Abstractions/g' \
         -e 's/Core_models\.Core_arch/Libcrux_core_models.Core_arch/g' \
         {} +
@@ -112,7 +205,7 @@ function help() {
     echo ""
     echo "Comands:"
     echo ""
-    grep '[#]>' "$SCRIPT_PATH" | sed 's/[)] #[>]/\t/g'
+    grep '[#]>' "$SCRIPT_PATH" | "$SED" 's/[)] #[>]/\t/g'
     echo ""
 }
 
