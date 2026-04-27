@@ -5,8 +5,8 @@
 **Worktree**: /Users/karthik/libcrux-agent-C-phase6c
 
 ## Targets
-- [ ] C1: lemma_mm256_xor_si256_lane (compress.rs:40 / extracted line 35)
-- [ ] C2: lemma_mm256_srli_epi16_15  (compress.rs:48 / extracted line 43)
+- [~] C1: lemma_mm256_xor_si256_lane (compress.rs:40 / extracted line 35) — admit-with-comment
+- [~] C2: lemma_mm256_srli_epi16_15  (compress.rs:48 / extracted line 43) — admit-with-comment
 - [x] C3: lemma_i16_xor_neg1         (compress.rs:62 / extracted line 57)
 - [x] C4: lemma_i16_xor_zero         (compress.rs:67 / extracted line 62)
 - [ ] C5: rejection_sample panic_free body (sampling.rs Rust assumes / extracted line 98)
@@ -31,3 +31,13 @@
 - Edited both `src/vector/avx2/compress.rs` `fstar::before` block AND extracted `.fst` (gitignored, only used for local verification).
 - `make Libcrux_ml_kem.Vector.Avx2.Compress.fst.checked` PASSES (10.4 s).
 - Now C1 (mm256_xor_si256_lane) — likely Vec256-model gap — and C2 (mm256_srli_epi16_15) similarly.
+
+### 2026-04-27 19:48:00 UTC — C1 + C2 admit-with-comment
+- Confirmed model gap as predicted by brief:
+  - `mm256_xor_si256` is `assume val ... -> Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)` in `crates/utils/intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fst:311–315`. Post is `True`, so SMT has nothing to chain.
+  - `vec256_as_i16x16` is `val`-only at `Libcrux_intrinsics.Avx2_extract.fsti:7` (`val vec256_as_i16x16 (x: bit_vec 256) : t_Array i16 (sz 16)`).  No bit-level characterization.
+  - `mm256_srli_epi16` IS bit-transparent (`BitVec.Intrinsics.fsti:15` defines it via `mk_bv` per-bit) but the lane view abstraction blocks the connection.
+  - `Tactics.GetBit.prove_bit_vector_equality'` operates on `get_bit ... i == get_bit ... i` goals over both sides; closing C1/C2 needs the lane view to be bit-transparent first.
+- Wrote detailed admit-with-comment in BOTH `src/vector/avx2/compress.rs` `fstar::before` block AND extracted `Compress.fst`.  Captures: math reason it should hold, F* model gap, what user should try (strengthen `mm256_xor_si256` post + add `lemma_vec256_as_i16x16_*` bit-extraction lemma, then close via `prove_bit_vector_equality'`), reference to `simd-model-unification-plan.md` and USER-4.
+- `make Libcrux_ml_kem.Vector.Avx2.Compress.fst.checked` PASSES (9.6 s).
+- Decision: budget per-target ~15 min, this is genuine model gap — moving on to C5.

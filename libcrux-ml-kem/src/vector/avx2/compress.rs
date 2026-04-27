@@ -31,6 +31,35 @@ fn mulhi_mm256_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
+(* BLOCKED — admit-with-comment.
+   Asserts: per-lane xor on Vec256, i.e. lane i of (xor lhs rhs) equals
+   xor of lane i of lhs with lane i of rhs.
+
+   Why this should hold (math): xor on the underlying `bit_vec 256` is
+   bit-pointwise; `vec256_as_i16x16` partitions the 256 bits into 16
+   contiguous groups of 16 and treats each group as an i16.  Bit-pointwise
+   xor inside a 16-bit window is exactly i16 xor.
+
+   What's blocking us in F*: in `crates/utils/intrinsics/proofs/fstar/extraction/
+   Libcrux_intrinsics.Avx2_extract.fst:311–315`, `mm256_xor_si256` is
+   `assume val ... -> Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)`
+   — its post is `True`.  And `vec256_as_i16x16` (line 7 of the .fsti) is a
+   `val`-only declaration.  Without a per-bit characterization of either,
+   SMT cannot connect the lane view to bit-level xor.
+
+   What the user should try:
+   - Strengthen `mm256_xor_si256` in `Avx2_extract.fst` so its post says
+     the result equals the bit-pointwise xor of `lhs` and `rhs` (treating
+     `t_Vec256` as `bit_vec 256`).
+   - Add a lemma `lemma_vec256_as_i16x16_bit_pointwise_op` (or similar) in
+     `BitVec.Intrinsics` connecting bit-pointwise i16-aligned operations
+     to lane xor: e.g.
+        `vec256_as_i16x16 (mk_bv (fun j -> a j ^^ b j))
+        == Spec.Utils.map2 (^.) (vec256_as_i16x16 a) (vec256_as_i16x16 b)`.
+     `Tactics.GetBit.prove_bit_vector_equality'` is the closing tactic.
+   - See `proofs/simd-model-unification-plan.md` (the structural fix for
+     the model gap).  Until then this is the same family as the AVX2
+     NTT-layer 1/2 bridge admits (USER-4 in MLKEM_STATUS.md). *)
 let lemma_mm256_xor_si256_lane (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) : Lemma
   (ensures (forall (i: nat). i < 16 ==>
     Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
@@ -39,6 +68,30 @@ let lemma_mm256_xor_si256_lane (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec25
     Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i))
   = admit ()
 
+(* BLOCKED — admit-with-comment.
+   Asserts: lane i of `mm256_srli_epi16 15 vec` is 1 iff lane i of `vec`
+   is negative, else 0.  This is the "extract sign bit as 0/1" idiom.
+
+   Why this should hold: `mm256_srli_epi16` is bit-transparent (defined
+   in `BitVec.Intrinsics.fsti:15` as a per-bit function that shifts
+   each 16-bit lane right, filling with zeros).  Shifting an i16 right by
+   15 with logical fill yields exactly the top bit (0 or 1).  The top bit
+   of an i16 is its sign bit.
+
+   What's blocking us in F*: same `vec256_as_i16x16` model gap as C1.
+   Although the bit-level definition of `mm256_srli_epi16` is unfolded,
+   `vec256_as_i16x16` is `val`-only with no connection to bit-level
+   layout, so SMT cannot reason "the top bit of the i16 returned for lane i
+   equals bit (16*i+15) of the underlying bit_vec 256".
+
+   What the user should try:
+   - Add a lane-extraction characterization lemma in `BitVec.Intrinsics`
+     stating `Seq.index (vec256_as_i16x16 v) i = bv_to_int_t 16
+     (sub_bv_lane v i)` for some `sub_bv_lane`, or equivalently
+     `get_bit (Seq.index (vec256_as_i16x16 v) i) k = v (16*i + k)`.
+   - With that, `prove_bit_vector_equality'` should close it.
+   - Alternatively: refactor `vec256_as_i16x16` to be a `let` (not `val`)
+     — see `proofs/simd-model-unification-plan.md`. *)
 let lemma_mm256_srli_epi16_15 (vec: Libcrux_intrinsics.Avx2_extract.t_Vec256) : Lemma
   (ensures (forall (i: nat). i < 16 ==>
     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
