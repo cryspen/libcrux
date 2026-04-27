@@ -1,9 +1,26 @@
  module Spec.MLDSA.Ntt
+ (*
+   ⚠️  DELETION-PENDING (scheduled for Phase 4 of the ML-DSA proof sprint).
+
+   This module is the OBSOLETE hand-written tier of the ML-DSA spec
+   hierarchy.  The CANONICAL NTT spec is in
+   `specs/ml-dsa/proofs/fstar/extraction/Hacspec_ml_dsa.Ntt.fst`,
+   which contains the authoritative `ntt`, `intt`, `ntt_layer`, and
+   `intt_layer` definitions.
+
+   DO NOT add new citations to anything in this module.  Existing
+   citations (currently from AVX2 NTT proofs) are scheduled to migrate
+   to `Hacspec_ml_dsa.Ntt` in Phase 4A, and then this file is deleted
+   in Phase 4B.
+
+   See `libcrux-ml-dsa/proofs/sprint-plan.md` for the migration plan
+   and `libcrux-ml-dsa/MLDSA_STATUS.md` for current status.
+ *)
  open Core_models
  open FStar.Mul
  open Spec.Intrinsics
  open Spec.MLDSA.Math
- 
+
  #set-options "--fuel 0 --ifuel 0 --z3rlimit 100"
 
  let ntt_step zeta (a, b) =

@@ -411,9 +411,15 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
 
         hax_lib::fstar!("assert (v $normalized == abs (v $coefficient))");
 
+        // Constant-time: use bitwise `|` (always evaluates both operands)
+        // instead of logical `||` (short-circuits on `result == true`).
+        // This eliminates the per-coefficient timing-side-channel that the
+        // logical-OR form would leak (which lane first violated the
+        // bound).  The comparison `normalized >= bound` itself compiles
+        // to a branchless `cmp + setge` on x86.  See FIPS 204 §3.6.
         // FIXME: return
         // [hax] https://github.com/hacspec/hax/issues/1204
-        result = result || normalized >= bound;
+        result = result | (normalized >= bound);
     }
 
     result

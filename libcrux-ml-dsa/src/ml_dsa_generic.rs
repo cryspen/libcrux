@@ -368,6 +368,17 @@ pub(crate) mod generic {
         domain_separation_context: Option<DomainSeparationContext>,
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
+        // Per FIPS 204 §3.6.2, an implementation that accepts inputs for σ
+        // or pk of any other length than specified shall return false.  The
+        // typed arguments enforce this at compile time for direct Rust
+        // callers; these asserts mirror the keygen pattern (lines 68-70)
+        // and document the invariant for FFI / C-extraction surfaces where
+        // the array length may be erased.
+        #[cfg(not(eurydice))]
+        debug_assert!(verification_key.len() == VERIFICATION_KEY_SIZE);
+        #[cfg(not(eurydice))]
+        debug_assert!(signature_serialized.len() == SIGNATURE_SIZE);
+
         let (seed_for_a, t1_serialized) = verification_key.split_at(SEED_FOR_A_SIZE);
         let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         encoding::verification_key::deserialize::<SIMDUnit>(
@@ -697,6 +708,11 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
         shake.absorb(&[domain_separation_context.context().len() as u8]);
         shake.absorb(domain_separation_context.context());
         if let Some(pre_hash_oid) = domain_separation_context.pre_hash_oid() {
+            // FIPS 204 Alg 4 line 23 / Alg 5 line 18: absorb the OID
+            // verbatim (no extra IntegerToBytes(|OID|, 1) prefix).  The
+            // OID is already DER-encoded with tag+length (see the
+            // `SHAKE128_OID` constant in pre_hash.rs), so it carries
+            // its own length information.
             shake.absorb(pre_hash_oid)
         }
     }

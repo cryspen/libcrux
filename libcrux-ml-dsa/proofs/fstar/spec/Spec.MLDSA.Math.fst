@@ -1,4 +1,23 @@
 module Spec.MLDSA.Math
+(*
+  ⚠️  DELETION-PENDING (scheduled for Phase 4 of the ML-DSA proof sprint).
+
+  This module is the OBSOLETE hand-written tier of the ML-DSA spec
+  hierarchy.  The CANONICAL spec is in
+  `specs/ml-dsa/proofs/fstar/extraction/Hacspec_ml_dsa.*.fst`, in
+  particular `Hacspec_ml_dsa.Arithmetic.fst` (which contains the
+  authoritative `mod_q`, `decompose`, `power2round`, `make_hint`,
+  `uuse_hint`, etc.).
+
+  DO NOT add new citations to anything in this module.  Existing
+  citations (currently from `montgomery_multiply` post in
+  `traits.rs`, and AVX2 NTT proofs) are scheduled to migrate to
+  `Hacspec_ml_dsa.Arithmetic` / `Hacspec_ml_dsa.Ntt` in Phase 4A,
+  and then this file is deleted in Phase 4B.
+
+  See `libcrux-ml-dsa/proofs/sprint-plan.md` for the migration plan
+  and `libcrux-ml-dsa/MLDSA_STATUS.md` for current status.
+*)
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open FStar.Mul
 open Core_models

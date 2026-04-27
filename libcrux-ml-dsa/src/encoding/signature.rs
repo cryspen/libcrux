@@ -32,6 +32,16 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
     let mut true_hints_seen = 0;
 
+    // FIPS 204 §7.2 Algorithm 20 (HintBitPack) requires that bytes in
+    // y[Index..ω] (between the last written hint index and the start of
+    // the per-row offsets) are zero, and HintBitUnpack rejects nonzero
+    // padding (§7.2 Algorithm 21).  Explicitly zero the range we'll
+    // write into so we don't depend on the caller having pre-zeroed the
+    // signature buffer.
+    for k in 0..(max_ones_in_hint + rows_in_a) {
+        signature[offset + k] = 0;
+    }
+
     // Unfortunately the following does not go through hax:
     //
     //     let hint_serialized = &mut signature[offset..];
@@ -81,6 +91,19 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
         );
     }
 
+    // Initialise out_hint to all-zeros up front, so that on the Err path
+    // the function has a well-defined post-state (each [i][j] is 0 or 1,
+    // never an unrelated value carried over from a recycled buffer).
+    // Combined with gating set_hint on `!malformed_hint` below, this gives
+    // the F* post a clean shape: Err ⇒ out_hint contains a prefix of the
+    // spec decoding followed by zeros, which is what `verify_internal`'s
+    // proof obligation needs.
+    for i in 0..rows_in_a {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            out_hint[i][j] = 0;
+        }
+    }
+
     // While there are several ways to encode the same hint vector, we
     // allow only one such encoding, to ensure strong unforgeability.
     let mut previous_true_hints_seen = 0usize;
@@ -110,7 +133,12 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
                 break;
             }
 
-            set_hint(out_hint, i, hint_serialized[j] as usize);
+            // Gate the write on the malformed flag so a later-detected
+            // failure cannot leave a partial hint in out_hint that came
+            // after the failure point in the same row.
+            if !malformed_hint {
+                set_hint(out_hint, i, hint_serialized[j] as usize);
+            }
         }
 
         if malformed_hint {

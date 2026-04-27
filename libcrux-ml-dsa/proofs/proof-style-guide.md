@@ -1,0 +1,236 @@
+# ML-DSA Proof Style Guide
+
+This guide is forked from `libcrux-ml-kem/proofs/proof-style-guide.md`
+and adapted for ML-DSA (FIPS 204). The phase structure and patterns are
+identical; the constants and module names differ.
+
+## 1. Spec hierarchy convention
+
+| Tier | ML-DSA | Status |
+|---|---|---|
+| ✅ Canonical | `Hacspec_ml_dsa.*` (in `specs/ml-dsa/proofs/fstar/extraction/`) | Cite this |
+| ⚠️ Obsolete (deletion-pending) | `Spec.MLDSA.Math`, `Spec.MLDSA.Ntt`, `Spec.Intrinsics` (in `proofs/fstar/spec/`) | DO NOT extend. Banner-marked. |
+| 🔄 Temporary scaffolding | `Spec.Utils.*` (shared with ML-KEM) | Pieces we use will move to `Proof_utils.*` |
+
+## 1.1 ML-DSA-specific naming gotchas
+
+- `Hacspec_ml_dsa.Arithmetic.uuse_hint` (note the typo: `uuse`, not
+  `use`). It is canonical — do not "fix" it without a coordinated rename
+  across the spec, all proofs, and the extraction Makefile.
+- `Hacspec_ml_dsa.Arithmetic.make_hint` returns `bool`; the SIMD impl
+  returns `i32` (0 or 1). The trait post relating them must convert
+  bool ↔ {0, 1}.
+- `Hacspec_ml_dsa.Encoding.coeff_from_three_bytes` /
+  `coeff_from_half_byte` are the per-byte rejection-sampling step
+  helpers. Trait posts on `rejection_sample_*` cite these.
+
+## 2. Architectural pattern: trait at the bottom + opacity
+
+ML-DSA's SIMD trait (`Simd::Traits::Operations`) provides a uniform
+8-element interface (vs. ML-KEM's 16-element). Above it sit modules
+(Polynomial, Ntt, Matrix, Encoding) that compose per-vector operations
+into per-polynomial / per-vector algorithms.
+
+Trait posts must give STRONG semantic guarantees (not just bounds) so
+above-trait modules can lift to spec correspondence. Wrap the FE-equation
+portion in opaque predicates so the iteration structure (`forall8` /
+`forall32` / `forall4`) stays transparent but the hacspec-internal body
+is hidden.
+
+### The forall-of-opaque-atoms shape
+
+```
+bound_predicate
+  /\ Spec.Utils.forall8 (fun i -> X_lane_post v.[i] r.[i])
+```
+
+Where `forall8` is `unfold let` (transparent) and `X_lane_post` is
+`[@@ "opaque_to_smt"]` (hidden body).
+
+Predicate granularity:
+- **Per-lane** for compress / decompress / unary / decompose / power2round
+  (one atom per lane, each carrying a small equation referencing one
+  i32 pair).
+- **Per-branch** for NTT-layer / butterfly ops (one atom per zeta-group;
+  ML-DSA NTT uses radix-2 Cooley-Tukey, so the branching pattern is
+  similar to ML-KEM).
+
+## 3. Specific F* / Z3 techniques
+
+### 3.1 Opaque predicate definition
+
+```fstar
+[@@ "opaque_to_smt"]
+let X_lane_post (input result: i32) : prop =
+  i32_to_spec_fe result == hacspec_fn (i32_to_spec_fe input)
+```
+
+### 3.2 Dual-trigger SMTPat for predicate unfolding
+
+```fstar
+let lemma_X_lookup (lo hi: i32) (x: t_Slice i32) (i: nat)
+    : Lemma (requires bounded x lo hi /\ i < Seq.length x)
+            (ensures v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi)
+            [SMTPat (Seq.index x i); SMTPat (bounded x lo hi)] =
+  reveal_opaque (`%bounded) (bounded x lo hi)
+```
+
+**Anti-pattern**: bidirectional SMTPat with the SAME trigger. Use the
+named-intro pattern (3.3) for the produce direction.
+
+### 3.3 Named intro lemma (no SMTPat)
+
+```fstar
+let lemma_X_intro (lo hi: i32) (x: t_Slice i32)
+    : Lemma (requires forall (i: nat). i < Seq.length x ==>
+                       v lo <= v (Seq.index x i) /\ v (Seq.index x i) <= v hi)
+            (ensures bounded x lo hi) =
+  reveal_opaque (`%bounded) (bounded x lo hi)
+```
+
+### 3.4 `Classical.forall_intro` for collapsing N manual aux invocations
+
+```rust
+hax_lib::fstar!(r#"
+  let aux (j: nat{j < 8}) : Lemma (X_lane_post a.[j] r.[j]) =
+    lemma_per_lane_commute (Seq.index a j) (Seq.index r j)
+  in
+  Classical.forall_intro aux
+"#);
+```
+
+ML-KEM measured 35–50% Z3-time speedup over manual `aux 0; aux 1; ...`
+unrolling. The same pattern applies to ML-DSA's 8-lane vectors.
+
+### 3.5 Per-element commute lemmas
+
+Each per-element transformation gets a "fe_commute" lemma in
+`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`
+(new file in Phase 2F):
+
+```fstar
+let lemma_X_fe_commute (a result: i32) :
+  Lemma (requires <integer-form post from primitive>)
+        (ensures hacspec_fn (i32_to_spec_fe a) == i32_to_spec_fe result)
+  = (* ~5 lines of integer arithmetic + i32_to_spec_fe refinement *) ()
+```
+
+Targets for ML-DSA: per-lane `decompose`, `power2round`, `make_hint`,
+`use_hint`, `montgomery_multiply`, `shift_left_then_reduce`,
+butterfly_pair (NTT), inv_butterfly_pair (INVNTT), Barrett (reduce).
+
+### 3.6 Tier-N composition lemmas
+
+- **Tier 1 (poly-level)**: `Classical.forall_intro` lifts a per-lane
+  commute lemma to a per-vector statement. Iterate over 32 SIMD units
+  to get a polynomial-level statement.
+- **Tier 2 (NTT layer-step)**: Composes butterfly_pair_commute calls
+  into the hacspec layer's `forall_n` form. One lemma per layer.
+- **Tier 3 (full NTT)**: Chains 8 layer-step lemmas (vs. ML-KEM's 7),
+  matching the BitRev₈ zeta-table ordering. Hard — likely USER lane.
+- **Tier 4 (matrix/vector)**: `vector_add`, `vector_sub`,
+  `multiply_matrix_by_column` built from per-poly composition.
+
+### 3.7 The post-only invariant
+
+Every change in the migration phase satisfies:
+- **Pre-conditions**: never touched.
+- **Post-conditions**: only conjunctive additions.
+
+## 4. ML-DSA-specific constants
+
+| Constant | Value | Used for |
+|---|---|---|
+| `Q` | 8380417 | Field modulus |
+| `D` | 13 | Power2Round split bit |
+| `R` | 2³² | Montgomery |
+| `R⁻¹` mod Q | 8265825 | Montgomery |
+| `Q⁻¹` mod R | 58728449 | Montgomery |
+| `256⁻¹·R²` mod Q | 41978 | INVNTT post-scale (libcrux's Montgomery-aware variant of FIPS f=8347681) |
+| `γ₂` | (Q-1)/88 = 95232 or (Q-1)/32 = 261888 | Decompose / hints |
+| `γ₁` | 2¹⁷ or 2¹⁹ | Mask sampling |
+| `η` | 2 or 4 | Error sampling |
+| `τ` | 39, 49, 60 | SampleInBall (per param set 44/65/87) |
+| `β` | τ·η | Bound checks |
+| `ω` | 80, 55, 75 | Hint count cap (per param set 44/65/87) |
+
+## 5. The 20-minute rule
+
+Every individual proof attempt has a hard wall-clock budget of **20
+minutes**. If the proof does not close in that window:
+
+1. Mark the function as admitted via either:
+   - `#[hax_lib::fstar::verification_status::panic_free]` on the Rust function, OR
+   - `hax_lib::fstar!("admit()")` at the top of the function body
+2. Document in `proofs/outstanding-admits.md`:
+   - File and line range.
+   - Diagnosis (Z3 timeout? quantifier blowup? missing lemma?).
+   - Suggested USER-lane mitigation.
+3. Move on.
+
+The objective is **maximum easy-proof coverage** in the sprint window.
+
+## 6. Phase methodology
+
+- **Phase 1**: Strengthen trait posts (single-agent serial — every method
+  post lives in `traits.rs` / `traits/specs.rs`).
+- **Phase 2**: Portable Operations impls (waves 2A–2G; 2A–2E parallel,
+  2F→2G sequential because they share commute lemmas).
+- **Phase 3**: AVX2 Operations impls (waves 3A–3E; 3A and 3B parallel,
+  3D→3E sequential).
+- **Phase 4**: Migration (4A serial, 4B depends 4A, 4C parallel with 4A,
+  4D last).
+
+See `proofs/sprint-plan.md` for the full phase table with parallelism.
+
+## 7. User-vs-agent task split
+
+### User lane (manual, math-heavy, Z3-blocked)
+- Standalone integer-arithmetic proofs (Barrett 4-case, Montgomery identity).
+- SMT-blocked SIMD proofs (AVX2 4-zeta-parallel layer where Z3 can't handle the wide context).
+- Tier-3 layer compositions with subtle indexing (BitRev₈).
+- Anything that hits "incomplete quantifiers" repeatedly.
+
+### Agent lane (mechanical, pattern-following)
+- Tier-1 per-poly composition lemmas via `Classical.forall_intro`.
+- Tier-2 NTT layer-step commute lemmas (with templates).
+- Tier-4 matrix/vector composition lemmas.
+- Adding hacspec citations to module posts.
+- Re-rooting obsolete spec citations to canonical.
+- Phase 6 impl-admit drops.
+
+### Cut-off (escalate to user)
+- A single Z3 query times out at rlimit ≥ 800 with `--split_queries always`.
+- Lemma needs new mathematical reasoning we don't have a pattern for.
+- Refactor would change > ~50 lines of existing proof code.
+- Verification time on a single module exceeds 10 minutes pure F* CPU.
+
+## 8. Tooling
+
+- **`fstar-mcp` skill** — incremental F* typechecking via the fstar-mcp server. Default for proof iteration.
+- **`proofdebugging` skill** — systematic Z3 failure triage.
+- **`hax.sh extract` + `make -C proofs/fstar/extraction`** — full pipeline.
+- **Hint files** in `.fstar-cache/hints/` — speed up Z3 selection.
+
+## 9. Cache-invalidation lessons
+
+Every change to `traits.rs`'s `fstar::before` block invalidates
+`Simd.Traits.Spec.fst`'s digest, cascading to ~15+ Simd.* modules and
+forcing a long re-verify. Mitigation: factor helpers (`bounded_i32_array`,
+lookup, intro lemmas) into a separate hand-written F* file (e.g.,
+`proofs/fstar/spec/Libcrux_ml_dsa.Simd.Bounds.fst`) included via
+`FSTAR_INCLUDE_DIRS_EXTRA`. Helper additions then invalidate only that
+file + its direct importers.
+
+## 10. Documentation cadence
+
+`MLDSA_STATUS.md` and `proofs/outstanding-admits.md` MUST be kept in sync
+after each meaningful step (new commit or wave complete). The session
+may close at any time — both files together are the resume point.
+
+## 11. Branch / commit conventions
+
+- Each wave is one commit. Commit message: imperative, names the wave
+  and the dropped admit (if any).
+- `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
+  on agent-authored commits.
