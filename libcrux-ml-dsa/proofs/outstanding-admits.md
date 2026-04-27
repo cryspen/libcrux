@@ -54,6 +54,22 @@ so subsequent sessions don't burn budget retrying:
 
 ---
 
+## Pre-existing failures (out of scope for the ML-DSA proof sprint)
+
+### Libcrux_core_models.Abstractions.Funarr (Error 92)
+- **File**: `crates/utils/core-models/proofs/fstar/extraction/Libcrux_core_models.Abstractions.Funarr.fst:97`
+- **Phase observed**: 0 (baseline)
+- **Diagnosis**: Pre-existing F* typecheck failure unrelated to ML-DSA.
+  `git log` shows the last touches were `3000c7b7a` (core-models: fix
+  implicit/explicit argument mismatch in Funarr) and `6accee650`
+  (gitignore hax-generated F* files), both prior to this sprint.
+  The error appears upstream of any ML-DSA module so `make` reports
+  Error 2 even when ML-DSA-specific files would individually verify.
+- **Suggested mitigation**: out of scope for the ML-DSA sprint — this
+  is in `core-models`, a workspace dependency, and needs to be fixed
+  there.  Future sessions should be aware that `make` exits non-zero
+  on this file regardless of ML-DSA proof state.
+
 ## Active admits
 
 (none yet — populated in Phases 1–4)

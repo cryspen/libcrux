@@ -115,6 +115,52 @@ Items being acted on in Phase 0A (proof simplification benefit):
 Items F1, F6–F12, F14, F16–F33 are conformance-confirmations or
 cosmetic/perf with no proof impact — deferred past the sprint.
 
+## Cross-spec test activation checklist (for the next session)
+
+The cross-spec test scaffolding lands in Phase 0 with **41 TODO
+markers** — every per-Operations-method test is stubbed because the
+`Operations` trait, the per-impl SIMD unit types, and the hacspec
+helpers are all `pub(crate)`. The scaffolding compiles and the 36
+non-stubbed tests pass (`cargo test --features cross-spec-tests`),
+but the meat of the tests is one source-side accessibility change
+away.
+
+**Activation steps** (next session, ≤30 min):
+
+1. **In `libcrux-ml-dsa/src/simd/traits.rs`**: change
+   `pub(crate) trait Operations` → `pub trait Operations` and the
+   two consts (`COEFFICIENTS_IN_SIMD_UNIT`, `SIMD_UNITS_IN_RING_ELEMENT`)
+   to `pub`. Pattern matches `libcrux-ml-kem/src/vector/traits.rs`
+   where the analogous trait is unconditionally `pub`.
+
+2. **In `libcrux-ml-dsa/src/lib.rs`** (under existing `test-utils` feature):
+   ```rust
+   #[cfg(feature = "test-utils")]
+   pub mod simd { pub use crate::simd::*; }
+   #[cfg(feature = "test-utils")]
+   pub mod polynomial { pub use crate::polynomial::*; }
+   ```
+
+3. **In `specs/ml-dsa/src/lib.rs`**: re-export the per-element helpers:
+   ```rust
+   pub use arithmetic::{decompose, make_hint, use_hint, power2round,
+                         shift_left_then_reduce, montgomery_reduce, mod_q};
+   pub use encoding::{coeff_from_three_bytes, coeff_from_half_byte,
+                       simple_bit_pack, simple_bit_unpack,
+                       bit_pack, bit_unpack, hint_bit_pack, hint_bit_unpack};
+   pub use ntt::{ntt, intt};
+   pub use sampling::sample_in_ball;
+   ```
+
+4. **In `libcrux-ml-dsa/tests/cross_spec/{arithmetic,encoding,sampling,ntt,helpers}.rs`
+   and `tests/edge_cases.rs`**: each TODO marker has the intended body
+   inlined as a comment — uncomment them. Then run
+   `cargo test --features cross-spec-tests` to confirm.
+
+After step 4, the per-method tests (24 cross-spec × 2 SIMD variants
+where `simd256` is enabled) become real assertions against the
+hacspec.
+
 ## Documentation cadence
 
 This file MUST be kept in sync after each meaningful step (new
