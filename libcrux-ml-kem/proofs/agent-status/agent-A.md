@@ -88,3 +88,94 @@ then zeta2 else zeta3`) which Z3 case-splits on every per-lane fact
 instantiation. Recommended refactor noted in Rust source: 4 dedicated
 per-zeta lemmas + Spec.Utils.forall4 intro (factor into Hacspec_ml_kem.Commute.Chunk.fst).
 
+## Phase 6 follow-up (agent A2) — 2026-04-27
+
+Continuation brief: close the 2 remaining layer-1 admits by factoring 4
+per-branch lemmas into `Hacspec_ml_kem.Commute.Chunk.fst`.
+
+### plan
+- Add 4 lemmas `lemma_ntt_layer_1_branch_{0,1,2,3}` to Commute.Chunk.fst.
+  Each takes `(vec result: t_Array i16 16)` + 4 zetas + `Lemma (requires
+  <2 ntt_spec residues for that branch>) (ensures
+  ntt_layer_1_step_branch_post n vec zeta0 zeta1 zeta2 zeta3 result)`.
+  Body: `reveal_opaque ntt_layer_1_step_branch_post` then 2 calls to
+  `lemma_butterfly_pair_commute`.  With `n` literal, the per-branch
+  if-ladder collapses to the right zeta on both pre and post sides.
+- Same for `lemma_inv_ntt_layer_1_branch_{0,1,2,3}` using
+  `lemma_inv_butterfly_pair_commute` and `inv_ntt_layer_1_step_branch_post`.
+- At the wrappers in src/vector/portable.rs: drop the 4 `assert (p_layer_1 b)`
+  steps; instead call the 4 new branch lemmas.  Final `forall4 p_layer_1`
+  follows from the 4 branch posts directly.
+
+### outcome (2026-04-27 22:45 UTC)
+
+**Result: 0 of 2 newly proven.  Both targets keep admit-with-comment.**
+
+Two helper lemmas successfully landed in
+`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`:
+- `lemma_ntt_layer_1_butterfly_to_fe` (vec, result, z, i1, j1, i2, j2)
+  — packages 2 `lemma_butterfly_pair_commute` calls and yields the 4
+  FE equalities for one zeta-pair group.  Verified ~25 ms.
+- `lemma_inv_ntt_layer_1_butterfly_to_fe` — mirror for the inverse
+  direction.  Verified ~25 ms.
+
+Per-branch lemmas (`lemma_ntt_layer_1_branch_{0..3}` and inv mirror)
+**failed to verify** even with `b` literal.  Symptoms:
+- rlimit 200 + `--split_queries always`: 16 sub-queries succeed in
+  ~7-130 ms each, then a single sub-query (#17 onward) hangs > 60 s.
+- rlimit 400 without split_queries: full timeout, no progress.
+- rlimit 200 with `--fuel 0 --ifuel 0`: branch lemma never returned a
+  query (Z3 stuck in pre-solve simplification).
+
+Diagnosis: revealing `ntt_layer_1_step_branch_post` exposes the
+`let z = if b = 0 then zeta0 else if b = 1 then zeta1 ...` ladder
+inside the post body.  Even when the outer `b` is a literal `0`, Z3
+case-splits on the if-ladder during instantiation of the
+`mont_i16_to_spec_fe` post equations — the same blowup that the layer-1
+admits suffered originally.  The literal `b = 0` does not trigger
+F*-side normalization of the if-ladder before SMT.
+
+The `ntt_layer_1_butterfly_to_fe` helpers (which DO verify) bridge from
+`ntt_spec` residues to FE-form equations for one zeta-pair group, so
+they remain useful for the next-step refactor.
+
+Restoration: per-branch lemma definitions removed from Commute.Chunk;
+both wrappers in `src/vector/portable.rs` retain
+`#[hax_lib::fstar::options("--admit_smt_queries true")]` (unchanged
+from agent A's tip 65668af62).  Helper lemmas + a documentation comment
+explaining the failure mode were committed as a partial gain.
+
+### Recommended next-step (USER)
+
+Two viable refactor paths, roughly equal effort:
+
+(a) **Reshape `ntt_layer_1_step_branch_post`** in
+   `libcrux-ml-kem/src/vector/traits.rs::spec` so the zeta is selected
+   *outside* the opaque body and passed in as an `i16` argument:
+   ```fstar
+   let ntt_layer_1_step_branch_post
+       (b: nat{b < 4}) (z: i16)             // z chosen by caller
+       (input: t_Array i16 16) (result: t_Array i16 16) : prop = ...
+   ```
+   The 4-way zeta dispatch then lives at the *call site* (which in F*
+   is post-`forall4`-binding, not inside the opaque body), and Z3's
+   per-branch reasoning never sees the if-ladder.  This change is
+   additive at the post level (one extra arg) and ripples through
+   the post construction `ntt_layer_1_step_post` (which assembles the
+   `forall4`).  The brief explicitly forbade redesigning per-branch
+   predicates *for this agent*, but a USER pass can do it.
+
+(b) **Tactic-based normalization at the wrappers**.  Replace each
+   `assert (p_layer_1 b)` with
+   `assert (p_layer_1 b) by (FStar.Tactics.norm [iota; primops; delta])`
+   to fully reduce the if-ladder before passing to SMT.  Lower
+   architectural change but adds tactic-language dependency at the
+   wrappers.
+
+Both approaches preserve the helper lemmas above; the helpers'
+refactor recipe (move ladder out of opaque body / norm before SMT)
+applies symmetrically to inv direction.
+
+### Commits on agent/phase-6-portable-ntt
+- TBD: `agent-A2: layer-1 helper FE-bridge lemmas + analysis comment`
+
