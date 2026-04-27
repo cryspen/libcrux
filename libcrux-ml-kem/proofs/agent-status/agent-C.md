@@ -62,3 +62,28 @@
 - `make Libcrux_ml_kem.Vector.Avx2.Sampling.fst.checked` PASSES (~5 s).
 
 - Decision: C5 admit-with-comment recorded in extracted `.fst` (which is gitignored).  In Rust source, the only thing I could touch was the `assume`-block in the `hax_lib::fstar!()` macro.  Two of the three assumes turn into asserts; the third remains with a pointer to the panic-freedom comment.  This is the same family as the AVX2 serialize/deserialize bridge admits (`session-handoff.md` listed them as out-of-scope).
+
+### 2026-04-27 19:55:27 UTC — Final regression
+- Cold-cache rebuild of both Compress.fst and Sampling.fst:
+  - `make Libcrux_ml_kem.Vector.Avx2.Compress.fst.checked` PASSES.
+  - `make Libcrux_ml_kem.Vector.Avx2.Sampling.fst.checked` PASSES.
+  - Combined wall time: 17.6 s (cold), pure F* time ~2.7 s for Sampling, ~10 s for Compress.
+- Final commit hash on `agent/phase-6c-avx2-stragglers`: `1899f1223` (will append final-regression commit after this entry).
+
+## Summary
+
+| # | Status | Notes |
+|---|---|---|
+| C1 | `[~]` admit-with-comment | Vec256 model gap; `mm256_xor_si256` post is `True`, `vec256_as_i16x16` val-only.  USER-4 family. |
+| C2 | `[~]` admit-with-comment | Same model gap; `mm256_srli_epi16` is bit-transparent but lane view is abstract. |
+| C3 | `[x]` proven | `Rust_primitives.Integers.logxor_lemma x (mk_i16 (-1)); lognot_lemma x` |
+| C4 | `[x]` proven | `Rust_primitives.Integers.logxor_lemma x (mk_i16 0)` |
+| C5 | `[~]` admit-with-comment + cleanup | 2 assumes -> asserts (count_ones <= 8 from refinement type); panic_free admit kept with detailed comment because of `mm256_cmpgt_epi16` + `count_ones_u8` model gaps + missing slice-range bridging lemma. |
+
+Net: 2 admits PROVEN, 3 admits ADMITTED-WITH-COMMENT (all match the brief's "likely admit-with-comment" predictions).  No blockers.  No escalations.
+
+Verification state on `agent/phase-6c-avx2-stragglers`:
+- `Libcrux_ml_kem.Vector.Avx2.Compress.fst` — verifies, contains 2 admit-with-comment.
+- `Libcrux_ml_kem.Vector.Avx2.Sampling.fst` — verifies, contains 1 admit-with-comment + 2 promoted asserts.
+- No regressions on neighbouring modules (cache rebuilt cleanly during regression).
+
