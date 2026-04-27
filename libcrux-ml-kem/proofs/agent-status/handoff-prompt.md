@@ -62,12 +62,17 @@ R4.  EXISTING proofs in modules being post-strengthened (e.g.,
      Libcrux_ml_kem.Polynomial.fst's existing impl→Spec.MLKEM body
      proofs) are REFERENCE ONLY.  They use pre-trait-opacify patterns
      (manual loop-invariant strengthening with Spec.MLKEM lemma
-     chains).  Do NOT mimic, extend, or chain off them.  The new
-     work is post-only: ADD a Hacspec_ml_kem.* citation conjunct to
-     the post; discharge via the trait posts directly through Tier-N
-     commute lemmas.  When the existing body proof uses a pattern
-     that contradicts trait-opacity, leave the existing body alone;
-     your new conjunct should discharge orthogonally to it.
+     chains).  Do NOT mimic, extend, or chain off them.
+
+R4a. REPLACE, don't ADD.  Old policy was "additive — keep Spec.MLKEM
+     cites alongside new Hacspec_ml_kem cites for Phase 7c-7k transition".
+     NEW policy (2026-04-27 evening): switch each module to hacspec
+     citations IN-PLACE, dropping the Spec.MLKEM citation as you go,
+     so long as you preserve any bounds precondition the Spec.MLKEM
+     citation carried.  Bounds preconditions are load-bearing for
+     downstream call sites; the citation form is not.  This makes
+     Bridge files (B+B' approach) UNNECESSARY — there's no need to
+     bridge two specs that don't need to coexist.
 
 R5.  Body `assume`s about loop invariants are UNACCEPTABLE.  If the
      loop invariant doesn't carry the needed fact, FIRST check
