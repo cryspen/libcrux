@@ -168,5 +168,17 @@ Net delta over agent C: **2 more admits PROVEN** (C1, C2 → proven).
 **Spec strengthening landed**: yes, in `Avx2_extract.fsti` —
 `lemma_mm256_xor_si256` and `lemma_mm256_srli_epi16` SMTPat axioms.
 
-Last commit: `agent-C2: C1 + C2 proven via spec strengthening`.
+Last commit: `agent-C2: log Phase 6c follow-up` (after `agent-C2: C1 + C2 proven via spec strengthening`).
+
+### Final cold regression (all five AVX2 modules)
+
+```
+Compress    11 s pure F* (15 s wall)
+Sampling     4 s            ( 8 s)
+Ntt         43 s            (48 s)
+Arithmetic  14 s            (18 s)
+Serialize   72 s            (78 s)
+```
+
+No regressions on any AVX2 module after the spec strengthening landed.
 
