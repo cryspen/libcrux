@@ -11,9 +11,9 @@ progress eagerly to its branch (see "Resume protocol" below).
 
 | Agent | Phase | Branch | State | Brief | Log |
 |---|---|---|---|---|---|
-| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **done**: 4/6 proven, 2/6 admit-with-comment (tip `65668af62`) | `proofs/agent-status/agent-A-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
+| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **A done** (4/6 proven, tip `65668af62`); **A2 spawning**: stretch goal — close 2 layer-1 admits via 4-per-zeta refactor recipe | `proofs/agent-status/agent-A-brief.md` + `agent-A2-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
 | **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | running (HacspecBridge.fst scaffolding built; 1/14 cited at tip `3073e6c02`, last commit 10m ago) | `proofs/agent-status/agent-B-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
-| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **done**: 2/5 proven, 3/5 admit-with-comment (tip `aa48507b5`, ~19 min wall) | `proofs/agent-status/agent-C-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
+| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C done** (2/5 proven, tip `aa48507b5`); **C2 spawning**: stretch goal — strengthen mm256_cmpgt_epi16 post for C5, retry C1/C2 with bit-extraction lemmas | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
