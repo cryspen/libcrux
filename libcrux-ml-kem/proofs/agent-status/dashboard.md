@@ -11,9 +11,9 @@ progress eagerly to its branch (see "Resume protocol" below).
 
 | Agent | Phase | Branch | State | Brief | Log |
 |---|---|---|---|---|---|
-| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **A done** (4/6 proven, tip `65668af62`); **A2 spawning**: stretch goal — close 2 layer-1 admits via 4-per-zeta refactor recipe | `proofs/agent-status/agent-A-brief.md` + `agent-A2-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
+| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | **A+A2 done & MERGED** (4/6 proven; A2 0/2 stretch — added 2 helper lemmas for future predicate-reshape USER work); merge `6f41ec5bc` | `proofs/agent-status/agent-A-brief.md` + `agent-A2-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch + trait-opacify) |
 | **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | **B done** (9/9+1/6 cited via bridges, tip `06d5e65ff`); **B' spawning**: per-user choice option (b) — body proofs for 4 simple functions (uncompressed serialize/deserialize + message {de,}compress); compress family stays bridged | `proofs/agent-status/agent-B-brief.md` + `agent-B-prime-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
-| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C+C2 done** (4/5 proven total, 1/5 admit-with-comment; C2 added 2 SMTPat axioms in Avx2_extract matching existing convention; tip `d077f29bc`) | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
+| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C+C2 done & MERGED** (4/5 proven, 1/5 admit-with-comment; 2 SMTPat axioms in Avx2_extract); merge `2953fbf9c` | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch + trait-opacify) |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
