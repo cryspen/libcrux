@@ -406,6 +406,21 @@ pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unimplemented!()
 }
 
+// AGENT C2: spec strengthening — `lemma_mm256_xor_si256` axiomatises the
+// per-lane xor characterization, mirroring `lemma_mm256_and_si256`.  Soundness
+// matches the actual SIMD `_mm256_xor_si256` intrinsic (bitwise xor on 256
+// bits).
+#[hax_lib::fstar::replace(
+    interface,
+    r#"
+val ${mm256_xor_si256} (lhs rhs: t_Vec256) : Prims.Pure t_Vec256 Prims.l_True (fun _ -> Prims.l_True)
+val lemma_mm256_xor_si256 (lhs rhs: t_Vec256)
+  : Lemma (   vec256_as_i16x16 (${mm256_xor_si256} lhs rhs)
+           == Spec.Utils.map2 (^.) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs)
+          )
+          [SMTPat (vec256_as_i16x16 (${mm256_xor_si256} lhs rhs))]
+"#
+)]
 pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
@@ -422,9 +437,22 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+// AGENT C2: spec strengthening — `lemma_mm256_srli_epi16` axiomatises the
+// per-lane logical-shift-right characterization.  Soundness matches the actual
+// SIMD `_mm256_srli_epi16` intrinsic (logical right shift, zero-fill, applied
+// to each 16-bit lane independently).
 #[hax_lib::fstar::replace(
     interface,
-    "include BitVec.Intrinsics {mm256_srli_epi16 as ${mm256_srli_epi16::<0>}}"
+    r#"
+include BitVec.Intrinsics {mm256_srli_epi16 as ${mm256_srli_epi16::<0>}}
+val lemma_mm256_srli_epi16 (v_SHIFT_BY: i32 {v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 16}) (vector: t_Vec256)
+  : Lemma (   vec256_as_i16x16 (${mm256_srli_epi16::<0>} v_SHIFT_BY vector)
+           == Spec.Utils.map_array (fun (x:i16) ->
+                  cast ((cast x <: u16) >>! v_SHIFT_BY) <: i16)
+                (vec256_as_i16x16 vector)
+          )
+          [SMTPat (vec256_as_i16x16 (${mm256_srli_epi16::<0>} v_SHIFT_BY vector))]
+"#
 )]
 pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);

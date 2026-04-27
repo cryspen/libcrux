@@ -24,28 +24,54 @@ fn mulhi_mm256_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 // ─────────────────────────────────────────────────────────────────────────
 // Generic SIMD lane lemmas for compress_message_coefficient.  These bridge
-// bit-level Vec256 ops to their per-lane i16 views.  Admitted because
-// `vec256_as_i16x16` is `val`-declared in `Avx2_extract.fsti`; same
-// pattern as the NTT-layer-3 bridge lemmas.
+// bit-level Vec256 ops to their per-lane i16 views.  Closed via
+// per-lane axioms `lemma_mm256_xor_si256` and `lemma_mm256_srli_epi16`
+// added to `Libcrux_intrinsics.Avx2_extract` (siblings of
+// `lemma_mm256_and_si256`).
 // ─────────────────────────────────────────────────────────────────────────
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
+(* AGENT C2: closed via `lemma_mm256_xor_si256` axiom (sibling of
+   `lemma_mm256_and_si256`).  Strengthens the per-lane xor characterization. *)
 let lemma_mm256_xor_si256_lane (lhs rhs: Libcrux_intrinsics.Avx2_extract.t_Vec256) : Lemma
   (ensures (forall (i: nat). i < 16 ==>
     Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
                  (Libcrux_intrinsics.Avx2_extract.mm256_xor_si256 lhs rhs)) i ==
     Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 lhs) i ^.
     Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 rhs) i))
-  = admit ()
+  = Libcrux_intrinsics.Avx2_extract.lemma_mm256_xor_si256 lhs rhs
 
+(* AGENT C2: closed via `lemma_mm256_srli_epi16` axiom.  Specialises the
+   per-lane logical right-shift characterization to SHIFT = 15 (sign bit
+   extraction). *)
 let lemma_mm256_srli_epi16_15 (vec: Libcrux_intrinsics.Avx2_extract.t_Vec256) : Lemma
   (ensures (forall (i: nat). i < 16 ==>
     v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
                     (Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 15) vec)) i) ==
     (if v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vec) i) < 0
      then 1 else 0)))
-  = admit ()
+  = Libcrux_intrinsics.Avx2_extract.lemma_mm256_srli_epi16 (mk_i32 15) vec;
+    let view = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vec in
+    let view_shifted = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
+                         (Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 (mk_i32 15) vec) in
+    introduce forall (i: nat). i < 16 ==>
+      v (Seq.index view_shifted i) ==
+      (if v (Seq.index view i) < 0 then 1 else 0)
+    with begin
+      if i < 16 then begin
+        let x = Seq.index view i in
+        if v x < 0 then begin
+          assert (v (cast x <: u16) == v x + pow2 16);
+          assert (v ((cast x <: u16) >>! mk_i32 15) == (v x + pow2 16) / pow2 15);
+          assert ((v x + pow2 16) / pow2 15 == 1)
+        end else begin
+          assert (v (cast x <: u16) == v x);
+          assert (v ((cast x <: u16) >>! mk_i32 15) == v x / pow2 15);
+          assert (v x / pow2 15 == 0)
+        end
+      end
+    end
 
 (* >>! 15 on i16 (arithmetic shift) is sign extension: -1 if negative, else 0 *)
 let lemma_i16_arith_shr_15 (x: i16) : Lemma
@@ -54,17 +80,19 @@ let lemma_i16_arith_shr_15 (x: i16) : Lemma
   = ()
 
 (* xor of an i16 with all-ones (-1) is bitwise NOT, i.e. (-x - 1).
-   xor with all-zeros is identity.  Admitted: these are basic
-   integer-bitvector facts F* doesn't ship as auto SMTPats. *)
+   xor with all-zeros is identity.  Proved via Rust_primitives.Integers
+   logxor_lemma + lognot_lemma (covers a ^ ones == lognot a and
+   v (lognot a) == -1 - v a on signed types). *)
 let lemma_i16_xor_neg1 (x: i16) : Lemma
   (ensures v (x ^. mk_i16 (-1)) == -(v x) - 1)
   [SMTPat (x ^. mk_i16 (-1))]
-  = admit ()
+  = Rust_primitives.Integers.logxor_lemma x (mk_i16 (-1));
+    Rust_primitives.Integers.lognot_lemma x
 
 let lemma_i16_xor_zero (x: i16) : Lemma
   (ensures v (x ^. mk_i16 0) == v x)
   [SMTPat (x ^. mk_i16 0)]
-  = admit ()
+  = Rust_primitives.Integers.logxor_lemma x (mk_i16 0)
 "#
 )]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
