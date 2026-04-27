@@ -33,6 +33,27 @@ B+B' if the proofs are bridge-only and not worth merging).
 
 Working principles to honor (these are durable preferences from
 prior sessions, do not relearn):
+
+HARD RULE on agent runs (established this session):
+- Admit-driven scaffolding is UNACCEPTABLE.  An agent run that adds
+  hacspec citations but discharges them via admitted bridge axioms,
+  admitted Tier-N commute lemmas, or body `assume`s about loop
+  invariants is treated as a HELD branch, not merged.  See
+  held-work-Bprime-L123.md and held-work-E-Phase7a.md for prior
+  examples.
+- Future agent briefs MUST require: close target #1 with a real
+  proof body before ANY admits.  If target #1 doesn't close in
+  ~30 min, ABORT and report what's missing — do NOT pivot to
+  scaffolding.
+- The trait-opacify design (Phases 1-5) makes above-trait proofs
+  MECHANICAL.  Trait posts in src/vector/traits.rs::spec deliver
+  per-lane FE equations behind opaque predicates.  Tier-N commute
+  lemmas are Classical.forall_intro compositions, not new math.
+  Body `assume`s are evidence the agent worked from a pre-trait-
+  opacify mental model — the correct fix is to USE the trait post
+  directly.
+
+Other principles:
 - User handles math-heavy / Z3-blocked / template-setting proofs.
   Agents handle pattern-following / Tier-N composition / mechanical work.
 - Default to plain `make` for verification; fstar-mcp only when
@@ -41,13 +62,10 @@ prior sessions, do not relearn):
   total <32 GB on this 48 GB box.  Past OOMs crashed the system.
 - Agents work in isolated worktrees on dedicated branches;
   eager-commit logs to proofs/agent-status/agent-X.md on the branch.
-- Bridge-admit scaffolding (B's pattern) is NOT preferred when the
-  spec being bridged is scheduled for deletion.  Hold and document
-  for future specialist work instead.
 - Rust function bodies: don't touch algorithmically (only loop-
-  invariant strengthening).  F* spec / commute / opaque-predicate
-  files: editable.  traits.rs::spec opaque per-branch predicates:
-  don't redesign.
+  invariant strengthening, which should rarely be needed).  F* spec /
+  commute / opaque-predicate files: editable.  traits.rs::spec opaque
+  per-branch predicates: don't redesign.
 
 After loading state, decide the next concrete action:
 - If E is done: aggregate its outcome, update dashboard, and ask the
