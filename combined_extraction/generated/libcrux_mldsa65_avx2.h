@@ -8,7 +8,7 @@
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 242687bfb0fbc29107b95a0f3e72202e9978064b
+ * Libcrux: 12602b67ac1ebf1b58692e189d25b96a34102093
  */
 
 
@@ -4675,10 +4675,11 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_reduce_a2(Eurydice_arr_cd0 *simd_units)
 {
-  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(simd_units->data);
-  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(&simd_units->data[8U]);
-  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(&simd_units->data[16U]);
-  libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(&simd_units->data[24U]);
+  for (size_t i = (size_t)0U; i < (size_t)32U; i++)
+  {
+    size_t i0 = i;
+    libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(&simd_units->data[i0]);
+  }
 }
 
 /**
