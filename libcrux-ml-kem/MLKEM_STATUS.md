@@ -52,43 +52,207 @@ Serialize.fst) dropped.  Verification: 53 Checked / 4 Admitted
 (pre-existing) / 1 Failed (pre-existing Vector.Neon.Vector_type.fsti
 decidable-eq, unrelated).
 
-## Outstanding admits / deferred proofs (full roster)
+## USER TASKS — please pick from here first
 
-Every admit, `assume`, `--admit_smt_queries true`, and `panic_free` body
-in the codebase, mapped to a phase or explicitly bucketed.  Goal: nothing
-falls through the cracks.
+Manual / Z3-blocked / math-heavy proofs.  Each one is exemplary: the
+agent can copy the style to extend the pattern to similar admits.
 
-### Trait-impl layer (Vector.Portable, Vector.Avx2, Hacspec_ml_kem.Commute.Chunk)
+### USER-1 (do first — template for all subsequent compress<D> posts)
 
-| Item | Location | Lines | Phase | Notes |
-|---|---|---|---|---|
-| 6 portable NTT-layer ops `--admit_smt_queries true` | `src/vector/portable.rs` | 331, 410, 488, 563, 638, 715 — `op_ntt_layer_{1,2,3}_step` + `op_inv_ntt_layer_{1,2,3}_step` | **Phase 6** | Trait post is now opaque branch_post; the existing 8 butterfly_pair_commute calls + `forall4 p_layer_X` assertion need the new opaque predicate revealed.  Use fstar-mcp for fast iteration. |
-| 4 AVX2 NTT-layer 1/2 bridge admits | `src/vector/avx2.rs` | `op_ntt_layer_{1,2}_step_bridge`, `op_inv_ntt_layer_{1,2}_step_bridge` | **Phase 6 (extension)** or out-of-scope | Z3-blocked: 4-zeta-parallel SIMD wall.  Mitigations: refactor AVX2 layer body into 4 per-zeta sub-functions, OR adopt the deferred SIMD model unification (`proofs/simd-model-unification-plan.md`). |
-| 7 AVX2 serialize/deserialize bridges | `src/vector/avx2.rs` | bridges for `serialize_{4,10,12}` + `deserialize_{1,4,10,12}` | Out-of-scope (separate effort) | Per-N `Tactics.GetBit.prove_bit_vector_equality'` invocation + `bit_vec_of_int_t_array` decomposition lemma in `Libcrux_intrinsics.Avx2_extract` needed. |
-| **A8** — `lemma_compress_ciphertext_coefficient_fe_commute` | `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst` | admitted, statement preserved | **Phase 7a-prerequisite** (or 7e) | Barrett-exactness 4-case math for D ∈ {4,5,10,11}.  Used by impl `op_compress` and Phase 7c `compress_then_serialize_{10,11,4,5}` posts.  Closing it strengthens those downstream posts. |
-| AVX2 `Vector.Avx2.Sampling.fst` | extracted .fst | 3× `admit ()` | Out-of-scope | Pre-existing AVX2 SIMD bridges. |
-| AVX2 `Vector.Avx2.Compress.fst` | extracted .fst | 3× `admit ()` | Out-of-scope | Pre-existing AVX2 SIMD bridges. |
-| `op_ntt_multiply` keeps `panic_free` | `src/vector/portable.rs`, `src/vector/avx2.rs` | the impl method | **Phase 7i (ntt_multiply)** | Blocked on Tier-3 layer composition + 128-iteration loop wrap over A1–A4 (which are proven). |
+**`lemma_compress_ciphertext_coefficient_fe_commute`** (a.k.a. **A8**) in
+`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`.
 
-### Above-trait modules
+- **Status**: admitted, statement preserved.
+- **Math**: Barrett-exactness 4-case enumeration over D ∈ {4, 5, 10, 11}.
+  For each D, the integer formula `((v fe * 2 * 2^D + 3329) / 6658) % 2^D`
+  equals hacspec's `compress_d (i16_to_spec_fe fe) D`.
+- **Why first**: closes the per-element commute layer for compress<D>;
+  unblocks Phase 7c (Serialize compress_then_serialize_{4,10,11,5}).
+- **Template value**: the 4-case enumeration pattern + `lemma_impl_*_v_val`
+  chain is the model for any future "primitive integer formula ↔ hacspec
+  function" lemma.  After this lands, the agent can extend the same
+  pattern to other primitive-vs-hacspec proofs.
 
-| Item | Location | Phase | Notes |
+### USER-2 (do second — template for full NTT layer composition)
+
+**Tier-3 forward-NTT composition lemma**:
+`lemma_ntt_full_commute` in `Hacspec_ml_kem.Commute.Chunk.fst` (new file).
+
+- **Status**: not yet started; depends on Tier-2 (`lemma_ntt_layer_n_commute`,
+  Phase 7b) which agent can do first.
+- **Math**: chain 7 layer-step lemmas, matching the BitRev₇ zeta-table
+  ordering exactly.
+- **Why second**: closes the NTT layer of the proof.  Once the forward
+  composition is proven, the inverse NTT and ntt_multiply compositions
+  are direct adaptations.
+- **Template value**: shows how to compose layer-step lemmas across the
+  zeta indexing.  Agent can copy the structure for `lemma_invert_ntt_full_commute`
+  and (with A1–A4) `lemma_ntt_multiply_commute`.
+
+### USER-3 — `to_standard_domain` Montgomery inverse identity
+
+**`Polynomial.to_standard_domain`** post in
+`libcrux-ml-kem/src/polynomial.rs` (line ~711–809).
+
+- **Status**: post unfolds to raw `mod q` form referencing `1353 * 169`.
+- **Math**: prove `(x * 1353 * 169) mod 3329 == x mod 3329` (Montgomery
+  domain identity), so the impl post is equivalent to identity-mod-q.
+- **Why user-lane**: standalone modular arithmetic; not a template for
+  agent work.
+
+### USER-4 — AVX2 NTT-layer 1/2 bridges (Z3-blocked)
+
+**4 admitted bridges** in `src/vector/avx2.rs`:
+- `op_ntt_layer_1_step_bridge`, `op_ntt_layer_2_step_bridge`
+- `op_inv_ntt_layer_1_step_bridge`, `op_inv_ntt_layer_2_step_bridge`
+
+- **Status**: admitted; Z3-blocked on the 4-zeta-parallel SIMD wall.
+- **Mitigation paths** (user choice):
+  1. Refactor each AVX2 layer body into 4 per-zeta sub-functions so the
+     proof obligations split.
+  2. Adopt the deferred SIMD model unification — see
+     `proofs/simd-model-unification-plan.md`.
+- **Templates that already exist**: `ntt_layer_3_step` and
+  `inv_ntt_layer_3_step` AVX2 wrappers prove their trait posts inline
+  without bridge admits — same pattern can extend to layers 1 / 2 once
+  the parallelism wall is mitigated.
+
+### USER-5 — `ntt_multiply` Tier-3 wrap (after USER-2)
+
+**`Polynomial.ntt_multiply`** post strengthening + closing
+`op_ntt_multiply` `panic_free` annotation.
+
+- **Status**: A1–A4 base-case lemmas proven; need the 128-iteration loop
+  wrap.
+- **Math**: 128 invocations of `lemma_base_case_mult_{even,odd}_fe_commute`
+  composed into hacspec's `multiply_ntts`.
+- **Why after USER-2**: requires the Tier-3 layer-composition pattern.
+
+### USER-6 — `invert_ntt_montgomery` (after USER-2)
+
+**`Invert_ntt.invert_ntt_montgomery`** post strengthening.
+
+- **Status**: bounds-only post; needs hacspec_ml_kem.Invert_ntt.ntt_inverse
+  citation + final scale-by-3303 (`128⁻¹ mod q`).
+- **Math**: 7-layer inverse composition + Montgomery scale.
+- **Why after USER-2**: same Tier-3 template.
+
+---
+
+## AGENT TASKS — parallelizable mechanical work
+
+Pattern-following proofs and migrations.  Multiple agent sessions can
+run in parallel; each phase commit-able independently.
+
+### Parallelism plan — what to fan out vs. serialize
+
+**Hard constraint**: only `src/vector/traits.rs` is touched by multiple
+phases.  All Phase 7* additions to `traits.rs` are post-only conjunctive
+additions; the diffs don't conflict structurally, but any rebase still
+costs the cache invalidation on `Vector.Traits.fst` (cascades through
+Vector.{Portable,Avx2}.fst).  So minimize cross-branch traits.rs edits
+in flight.
+
+**Wave 1 — fan out 4-way (no shared file edits)**:
+| Branch | Phase | Touches | Cache scope |
 |---|---|---|---|
-| `Sampling.sample_from_uniform_distribution_next` rejection loop has `--admit_smt_queries true` | `Libcrux_ml_kem.Sampling.fst` | Out-of-scope (orthogonal pattern) | Pre-existing pragmatic admit on the rejection loop body. |
-| `Libcrux_ml_kem.Ind_cpa.fst` (full module admit) | Makefile ADMIT_MODULES | **Phase 7j** | Migrate downstream consumers off `Spec.MLKEM` to `Hacspec_ml_kem` first. |
-| `Libcrux_ml_kem.Ind_cca.Unpacked.fst` (full module admit) | Makefile ADMIT_MODULES | **Phase 7j** | Same. |
+| `agent/phase-6-portable-ntt` | Phase 6 (6 portable NTT-layer admits) | `src/vector/portable.rs` only | invalidates Vector.Portable.fst only |
+| `agent/phase-7c-serialize` | Phase 7c (Serialize re-root) | `src/serialize.rs` + Serialize callers | invalidates Serialize.fst only |
+| `agent/phase-6c-avx2-stragglers` | Phase 6c (Sampling/Compress AVX2 admits) | `src/vector/avx2/sampling.rs`, `compress.rs` | invalidates Vector.Avx2.{Sampling,Compress}.fst |
+| `agent/phase-6d-neon-mask` | Phase 6d (Vector.Neon Error 162) | `proofs/fstar/extraction/Makefile` | n/a (admit) |
 
-### Pre-existing Vector.Neon admits
+These four can run concurrently.  None of them require new commute
+lemmas; all are confined to single F* modules; cache invalidation
+windows are disjoint.
 
-| Item | Location | Phase | Notes |
+**Wave 2 — Polynomial (single agent, chunk-commute is the gate)**:
+- Phase 7a (Polynomial 7 fns).  This phase **adds Tier-1 commute lemmas**
+  in `Hacspec_ml_kem.Commute.Chunk.fst`; those lemmas become the input
+  for Phase 7b/d.  Don't fan out 7b before 7a's lemmas exist.
+- Phase 7a touches `src/polynomial.rs` (post additions) + Chunk lemma
+  file additions.  Single agent.
+
+**Wave 3 — fan out 3-way once Wave 2 lemmas exist**:
+| Branch | Phase | Depends on Wave 2 lemma | Touches |
 |---|---|---|---|
-| All `Vector.Neon.*` modules | Makefile ADMIT_MODULES | Out-of-scope | No Neon proofs done yet. |
-| `Vector.Neon.Vector_type.fsti(10,0-13,1)` Error 162 (decidable-eq) | the .fsti | Out-of-scope | Pre-existing, only Failed module in `hax.py prove`. |
+| `agent/phase-7b-ntt` | 7b (Ntt + Invert_ntt layers 1-3) | Tier-2 layer-step commute (new in 7b itself) | `src/ntt.rs`, `src/invert_ntt.rs`, Chunk |
+| `agent/phase-7d-matrix` | 7d (Matrix 4 fns) | Tier-1 (Wave 2) + Tier-2 (after 7b lands) | `src/matrix.rs`, Chunk |
+| `agent/phase-7n-sampling` | 7n (sample_from_uniform_distribution_next) | none (orthogonal) | `src/sampling.rs` |
 
-### Phase 6 punch list (active)
+7b and 7n run in parallel.  7d can start in parallel with 7b *only* if
+the matrix proofs don't need Tier-2; otherwise queue 7d after 7b.
 
-1. 6 portable NTT-layer ops admits (above table).  Drop using fstar-mcp.
-2. Optionally: AVX2 NTT-layer 1/2 bridges (significant Z3 work; may defer).
+**Wave 4 — Spec.MLKEM teardown (sequential)**:
+- Phase 7j → 7k → 7l → 7m chained.  Don't fan out — each step removes
+  symbols the next step depends on absence-of.  One agent end-to-end.
+
+**Wave 5 — USER tasks merge in**:
+- USER-1 (A8) can land any time — independent.
+- USER-2/5/6 (full NTT / ntt_multiply / invert_ntt_montgomery) gated on
+  Wave 3 (Phase 7b's Tier-2 layer-step commute).
+- USER-3 (`to_standard_domain`) independent — can land any time.
+- USER-4 (AVX2 NTT-layer 1/2 bridges) independent of all the above
+  (Z3-blocked; mitigation, not throughput, is the bottleneck).
+
+**Recommended kickoff (parallel today)**:
+```
+Wave 1 (concurrent):
+  agent A: Phase 6 (portable NTT-layer admits)
+  agent B: Phase 7c (Serialize re-root)
+  agent C: Phase 6c (AVX2 Sampling/Compress)
+  agent D: Phase 6d (Neon mask — 5 min)
+
+Wave 2 (after Wave 1):
+  agent E: Phase 7a (Polynomial + Tier-1 lemmas)
+
+Wave 3 (after Wave 2):
+  agent F: Phase 7b (NTT + Inv-NTT + Tier-2 lemmas)
+  agent G: Phase 7n (Sampling, parallel with 7b)
+  agent H: Phase 7d (Matrix, after 7b lands)
+
+Wave 4 (after Wave 3):
+  agent I: Phase 7j → 7k → 7l → 7m sequentially
+
+USER tracks (parallel to all waves):
+  user-A: USER-1 (A8) — anytime
+  user-B: USER-2 (full NTT commute) — after Wave 3 lemmas land
+  user-C: USER-3 (to_standard_domain) — anytime
+  user-D: USER-4 (AVX2 layer 1/2 bridges) — anytime, blocked separately
+```
+
+**Why not fan out wider** in Wave 1: the four-way split saturates the
+non-traits-touching mechanical work.  Any further parallelism (e.g.
+splitting Phase 6 into per-layer subagents) yields diminishing returns
+because each F* file rebuild dominates over per-method iteration.
+
+### Trait-impl layer
+
+| Item | Location | Phase | Effort |
+|---|---|---|---|
+| 6 portable NTT-layer ops `--admit_smt_queries true` | `src/vector/portable.rs` lines 331, 410, 488, 563, 638, 715 (op_ntt_layer_{1,2,3}_step + op_inv_ntt_layer_{1,2,3}_step) | **Phase 6** | 4-6 h.  Use `fstar-mcp` for per-file iteration; existing 8-butterfly_pair_commute structure + `forall4 p_layer_X` assert are in place. |
+| 7 AVX2 serialize/deserialize bridge admits | `src/vector/avx2.rs` (bridges for serialize_{4,10,12} + deserialize_{1,4,10,12}) | **Phase 6b** | Per-N `Tactics.GetBit.prove_bit_vector_equality'` invocation + `bit_vec_of_int_t_array` decomposition lemma in `Libcrux_intrinsics.Avx2_extract`.  Mechanical once the lane-bridge lemma is written. |
+| 3× `admit ()` in `Vector.Avx2.Sampling.fst` (extracted) | corresponding `src/vector/avx2/sampling.rs` | **Phase 6c** | Investigate; may follow same pattern as Compress. |
+| 3× `admit ()` in `Vector.Avx2.Compress.fst` (extracted) | `src/vector/avx2/compress.rs` | **Phase 6c** | Same. |
+
+### Above-trait modules (post-only strengthening, citing `Hacspec_ml_kem.*`)
+
+| Item | Phase | Effort |
+|---|---|---|
+| Polynomial 7 fns: add_to_ring_element, poly_barrett_reduce, subtract_reduce, add_error_reduce, add_standard_error_reduce, add_message_error_reduce, multiply_by_constant_bounded | **Phase 7a** | 6-10 h.  Add Tier-1 chunk commute lemmas via `Classical.forall_intro`. |
+| Ntt + Invert_ntt layers 1-3 (8 fns) | **Phase 7b** | 8-12 h.  Add Tier-2 layer-step commute lemmas. |
+| Serialize re-root: 8 already-cite-Spec.MLKEM + 6 trivial-post helpers | **Phase 7c** | 6-8 h.  Replace `Spec.MLKEM.*` citations with `Hacspec_ml_kem.Serialize.*` (additive, then Spec.MLKEM dropped in 7k). |
+| Matrix 4 fns (compute_message, compute_ring_element_v, compute_As_plus_e, sample_matrix_A) | **Phase 7d** | 6-8 h.  Tier-4 vector/matrix commute lemmas. |
+| `Sampling.sample_from_uniform_distribution_next` `--admit_smt_queries true` cleanup | **Phase 7n** | Investigation; may need rejection-loop invariant tightening. |
+| Migrate Ind_cpa.fst, Ind_cca.Unpacked.fst off `Spec.MLKEM.*` to `Hacspec_ml_kem.*` | **Phase 7j** | 4-6 h.  Post-only consumer-side switch. |
+| Drop `Spec.MLKEM.*` conjuncts from Serialize.fst (now redundant) | **Phase 7k** | 1 h.  Pure removal. |
+| **Delete `Spec.MLKEM.*` module** | **Phase 7l** | 1 h.  Drop files; update Makefile / hax includes. |
+| `Spec.Utils.*` → `Proof_utils.*` symbol-level migration | **Phase 7m** | 2-4 h. |
+| Mask `Vector.Neon.Vector_type.fsti(10,0-13,1)` Error 162 in ADMIT_MODULES | **Phase 6d** | 5 min.  Decidable-equality is a module-level F* issue; admit unblocks `hax.py prove`. |
+
+### Genuinely out of scope (per user goal: portable + AVX2)
+
+- All other Vector.Neon.* modules — Neon proofs are not part of the
+  end-to-end portable+AVX2 goal.  Stay in ADMIT_MODULES indefinitely.
 
 ---
 

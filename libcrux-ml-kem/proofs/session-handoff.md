@@ -45,7 +45,81 @@
 Verification: 53 Checked / 4 Admitted (pre-existing) / 1 Failed
 (pre-existing decidable-eq on Vector.Neon.Vector_type.fsti, unrelated).
 
-## What's open (Phase 6 + post-strengthening)
+## What's open — USER vs AGENT split
+
+Mirrors `MLKEM_STATUS.md`.  The canonical version with effort estimates
+and full rationale is there; this file keeps the resume-ready short
+list.
+
+### USER tasks (manual / Z3-blocked / template-setting)
+
+Pick from this list first.  Each item closes a math-heavy or
+SMT-blocked proof; each is exemplary and the agent will later copy
+the pattern to similar admits.
+
+1. **USER-1 — A8** (`lemma_compress_ciphertext_coefficient_fe_commute`)
+   in `Hacspec_ml_kem.Commute.Chunk.fst`.  Barrett-exactness 4-case
+   over D ∈ {4,5,10,11}.  **Do first** — template for all subsequent
+   `compress<D>` commute proofs; unblocks Phase 7c.
+2. **USER-2 — `lemma_ntt_full_commute`** (Tier-3 forward-NTT
+   composition).  Chain 7 layer-step lemmas in BitRev₇ order.  **Do
+   second** — template for `lemma_invert_ntt_full_commute` and
+   `lemma_ntt_multiply_commute`.
+3. **USER-3 — `to_standard_domain` Montgomery inverse identity** in
+   `src/polynomial.rs`.  Standalone modular arithmetic.
+4. **USER-4 — 4 AVX2 NTT-layer 1/2 bridges** in `src/vector/avx2.rs`.
+   Z3-blocked on 4-zeta-parallel SIMD wall; mitigation is sub-function
+   refactor or SIMD-model unification.
+5. **USER-5 — `ntt_multiply` Tier-3 wrap** (after USER-2).  128-iter
+   loop over A1–A4.
+6. **USER-6 — `invert_ntt_montgomery`** (after USER-2).  7-layer
+   inverse + Montgomery scale-by-3303.
+
+### AGENT tasks (mechanical / parallelizable)
+
+**Wave 1 (today, parallel — 4-way fan-out, no shared-file conflicts)**:
+- Phase 6 — drop 6 portable NTT-layer impl admits in
+  `src/vector/portable.rs` lines 331, 410, 488, 563, 638, 715.
+- Phase 7c — Serialize re-root from `Spec.MLKEM.*` to
+  `Hacspec_ml_kem.Serialize.*` (8 cite-Spec.MLKEM + 6 trivial fns).
+- Phase 6c — 3× `admit ()` each in `Vector.Avx2.{Sampling,Compress}.fst`.
+- Phase 6d — Mask `Vector.Neon.Vector_type.fsti(10,0-13,1)` Error 162
+  in `Makefile` ADMIT_MODULES (5 min).
+
+**Wave 2 (after Wave 1 — single agent, gates Wave 3 lemmas)**:
+- Phase 7a — Polynomial 7 fns + Tier-1 chunk commute lemmas in
+  `Hacspec_ml_kem.Commute.Chunk.fst`.
+
+**Wave 3 (after Wave 2 — 3-way fan-out)**:
+- Phase 7b — NTT + Invert_ntt layers 1–3 (8 fns) + Tier-2 layer-step
+  commute lemmas.
+- Phase 7n — `Sampling.sample_from_uniform_distribution_next` admits
+  cleanup (orthogonal).
+- Phase 7d — Matrix 4 fns + Tier-4 commute lemmas (queue after 7b if
+  matrix needs Tier-2).
+
+**Wave 4 (sequential after Wave 3)**:
+- Phase 7j — Migrate Ind_cpa.fst, Ind_cca.Unpacked.fst off
+  `Spec.MLKEM.*` to `Hacspec_ml_kem.*`.
+- Phase 7k — Drop `Spec.MLKEM.*` conjuncts from Serialize.fst.
+- Phase 7l — Delete `Spec.MLKEM.*` module.
+- Phase 7m — `Spec.Utils.*` → `Proof_utils.*` migration.
+
+### Why this batching
+
+- Only `src/vector/traits.rs` is touched by multiple Phase 7 commits;
+  all Phase 7* additions are post-only conjunctive — diffs don't
+  conflict structurally, but cache invalidation on
+  `Vector.Traits.fst` cascades, so don't pile up traits.rs edits.
+- Wave 1's four branches touch disjoint Rust files and disjoint F*
+  modules — F* `.checked` cache invalidation windows don't overlap.
+- Wave 2 is sequenced first because Phase 7a **adds Tier-1 chunk
+  commute lemmas** that Phase 7b/d consume; running 7b in parallel
+  with 7a would block on the same Chunk.fst symbols.
+- Wave 4 is sequential because each step removes symbols the next
+  step depends on absence-of.
+
+## What's open (Phase 6 + post-strengthening) — full punch list
 
 ### Phase 6 — drop the 6 portable NTT-layer impl admits
 File: `src/vector/portable.rs`, lines 331, 410, 488, 563, 638, 715.
