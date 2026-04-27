@@ -1271,3 +1271,145 @@ assume val lemma_ntt_multiply_chunk_commutes
                (mont_i16_to_spec_array (T.f_repr lhs))
                (mont_i16_to_spec_array (T.f_repr rhs))
                (zetas_4 zeta0 zeta1 zeta2 zeta3)))
+
+(*** Phase 7a Tier-1 commute lemmas — Polynomial ***)
+
+(* These lemmas lift per-vector trait posts (already established by the
+   trait's `op_*` proofs) to the per-polynomial hacspec equation form,
+   so callers in Libcrux_ml_kem.Polynomial.fst can cite
+   `Hacspec_ml_kem.Polynomial.<f>` directly in their `ensures`.
+
+   Lift: a `PolynomialRingElement v_Vector` is 16 vectors of 16 i16s
+   each.  The hacspec polynomial is `t_Array t_FieldElement 256`.
+   Lane `i` (0 ≤ i < 256) maps to the lane `i % 16` of the i-th-divided
+   vector, then `i16_to_spec_fe` (plain domain) or `mont_i16_to_spec_fe`
+   (Mont domain — for NTT-domain polys). *)
+
+module HP = Hacspec_ml_kem.Polynomial
+module V  = Libcrux_ml_kem.Vector
+
+(* Plain-domain poly lift: each i16 lane is reduced mod q via the
+   `i16_to_spec_fe` refinement. *)
+let to_spec_poly_plain
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV)
+    : t_Array P.t_FieldElement (mk_usize 256)
+  = P.createi #P.t_FieldElement (mk_usize 256)
+        #(usize -> P.t_FieldElement)
+        (fun (j: usize { j <. mk_usize 256 }) ->
+          (i16_to_spec_fe
+            (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v j / 16)))
+                       (v j % 16))
+           <: P.t_FieldElement))
+
+(* Mont-domain poly lift: each i16 lane is interpreted as `a*R mod q`
+   with R = 2^16; `mont_i16_to_spec_fe` strips the R factor. *)
+let to_spec_poly_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV)
+    : t_Array P.t_FieldElement (mk_usize 256)
+  = P.createi #P.t_FieldElement (mk_usize 256)
+        #(usize -> P.t_FieldElement)
+        (fun (j: usize { j <. mk_usize 256 }) ->
+          (mont_i16_to_spec_fe
+            (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v j / 16)))
+                       (v j % 16))
+           <: P.t_FieldElement))
+
+(* Per-lane index helper for `to_spec_poly_plain`.  Wraps `createi_lemma`
+   to accept a `nat` index, mirroring `lane_plain` for the per-vector
+   lift.  Useful when peeling per-lane facts from the poly equation. *)
+let poly_lane_plain
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV) (j: nat {j < 256}) :
+    Lemma (Seq.index (to_spec_poly_plain p) j
+           == i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (j / 16)))
+                           (j % 16)))
+  = P.createi_lemma #P.t_FieldElement (mk_usize 256)
+      #(usize -> P.t_FieldElement)
+      (fun (k: usize { k <. mk_usize 256 }) ->
+        (i16_to_spec_fe
+          (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                     (v k % 16))
+         <: P.t_FieldElement))
+      (sz j)
+
+(* Same for `to_spec_poly_mont`. *)
+let poly_lane_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV) (j: nat {j < 256}) :
+    Lemma (Seq.index (to_spec_poly_mont p) j
+           == mont_i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (j / 16)))
+                           (j % 16)))
+  = P.createi_lemma #P.t_FieldElement (mk_usize 256)
+      #(usize -> P.t_FieldElement)
+      (fun (k: usize { k <. mk_usize 256 }) ->
+        (mont_i16_to_spec_fe
+          (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                     (v k % 16))
+         <: P.t_FieldElement))
+      (sz j)
+
+(* `poly_barrett_reduce` is the identity on FE polynomials.
+   Hacspec's body is `createi 256 (i -> FE.new (p.[i].f_val % q))`; since
+   `p.[i] : t_FieldElement` is refined by `f_val < FIELD_MODULUS`, the
+   inner `% FIELD_MODULUS` is a no-op and `FE.new (p.[i].f_val) == p.[i]`. *)
+let lemma_poly_barrett_reduce_id
+    (p: t_Array P.t_FieldElement (mk_usize 256)) :
+    Lemma (HP.poly_barrett_reduce p == p)
+  = let lhs = HP.poly_barrett_reduce p in
+    let aux (j: nat) : Lemma (j < 256 ==> Seq.index lhs j == Seq.index p j)
+      = if j < 256 then begin
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (i: usize { i <. mk_usize 256 }) ->
+              P.impl_FieldElement__new
+                ((Seq.index p (v i)).P.f_val %! P.v_FIELD_MODULUS)
+              <: P.t_FieldElement)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs p
+
+(* ----- E1: poly_barrett_reduce -----
+   The trait post for each vector chunk is
+     `forall i. v r.[i] % 3329 == v vec.[i] % 3329`,
+   i.e. `barrett_reduce_post vec r`.  Pointwise this lifts to
+     `i16_to_spec_fe r.[i] == i16_to_spec_fe vec.[i]`
+   via `lemma_barrett_fe_commute`.  Composing across the 16 chunks gives
+   `to_spec_poly_plain result == to_spec_poly_plain myself`, and
+   `poly_barrett_reduce` is the identity (above). *)
+let lemma_poly_barrett_reduce_commute
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (myself: V.t_PolynomialRingElement vV)
+    (result: V.t_PolynomialRingElement vV) :
+  Lemma
+    (requires
+      forall (k: nat). k < 16 ==>
+        TS.barrett_reduce_post
+          (T.f_repr (Seq.index myself.V.f_coefficients k))
+          (T.f_repr (Seq.index result.V.f_coefficients k)))
+    (ensures
+       to_spec_poly_plain result
+         == HP.poly_barrett_reduce (to_spec_poly_plain myself))
+  = let aux (j: nat) : Lemma (j < 256 ==>
+        Seq.index (to_spec_poly_plain result) j
+          == Seq.index (to_spec_poly_plain myself) j)
+      = if j < 256 then begin
+          let k : nat = j / 16 in
+          let l : nat = j % 16 in
+          let m_arr = T.f_repr (Seq.index myself.V.f_coefficients k) in
+          let r_arr = T.f_repr (Seq.index result.V.f_coefficients k) in
+          (* From requires (instantiated at k): `barrett_reduce_post m_arr r_arr`,
+             which gives `v r_arr.[l] % 3329 == v m_arr.[l] % 3329`. *)
+          assert (TS.barrett_reduce_post m_arr r_arr);
+          assert (v (Seq.index r_arr l) % 3329 == v (Seq.index m_arr l) % 3329);
+          lemma_barrett_fe_commute (Seq.index m_arr l) (Seq.index r_arr l);
+          poly_lane_plain myself j;
+          poly_lane_plain result j
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro (to_spec_poly_plain result) (to_spec_poly_plain myself);
+    lemma_poly_barrett_reduce_id (to_spec_poly_plain myself)
