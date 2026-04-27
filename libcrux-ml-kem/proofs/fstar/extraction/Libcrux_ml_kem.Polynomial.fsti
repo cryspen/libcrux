@@ -208,8 +208,13 @@ val add_to_ring_element
             myself_future
           in
           Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector
-            (e_bound +! mk_usize 3328 <: usize)
-            myself_future)
+            (e_bound +! mk_usize 3328)
+            myself_future /\
+          Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector myself_future ==
+          Hacspec_ml_kem.Polynomial.add_to_ring_element (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                #v_Vector
+                myself)
+            (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector rhs))
 
 val poly_barrett_reduce
       (#v_Vector: Type0)

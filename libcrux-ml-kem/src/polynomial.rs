@@ -232,19 +232,43 @@ pub(crate) const fn vec_len_bytes<const K: usize, Vector: Operations>() -> usize
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 500 --split_queries always")]
 #[hax_lib::requires((_bound <= 4* 3328).to_prop() & (spec::is_bounded_poly(_bound, &myself) & (spec::is_bounded_poly(3328, &rhs))))]
-#[hax_lib::ensures(|_| spec::is_bounded_poly(_bound+3328, &future(myself)))]
+#[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #$:Vector
+                                  (${_bound} +! mk_usize 3328) ${myself}_future /\
+                                Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #$:Vector
+                                  ${myself}_future ==
+                                Hacspec_ml_kem.Polynomial.add_to_ring_element
+                                  (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                                    #$:Vector ${myself})
+                                  (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                                    #$:Vector ${rhs})"#))]
 fn add_to_ring_element<Vector: Operations>(
     myself: &mut PolynomialRingElement<Vector>,
     rhs: &PolynomialRingElement<Vector>,
     _bound: usize, // Used to state properties about the bound on myself
 ) {
+    #[cfg(hax)]
+    let _myself_orig = myself.coefficients;
+
     for i in 0..16 {
         hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
             if j < 16 {
                 if j < i {
                     spec::is_bounded_vector(_bound + 3328, &myself.coefficients[j])
+                        & fstar!(
+                            r#"Libcrux_ml_kem.Vector.Traits.Spec.add_post
+                                 (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                                   (Seq.index ${_myself_orig} (v $j)))
+                                 (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                                   (Seq.index ${rhs}.f_coefficients (v $j)))
+                                 (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                                   (Seq.index ${myself}.f_coefficients (v $j)))"#
+                        )
                 } else {
                     spec::is_bounded_vector(_bound, &myself.coefficients[j])
+                        & fstar!(
+                            r#"Seq.index ${myself}.f_coefficients (v $j) ==
+                               Seq.index ${_myself_orig} (v $j)"#
+                        )
                 }
             } else {
                 true.to_prop()
@@ -254,6 +278,18 @@ fn add_to_ring_element<Vector: Operations>(
         myself.coefficients[i] =
             add_bounded(myself.coefficients[i], _bound, &rhs.coefficients[i], 3328);
     }
+    // Phase 7a (E2): cite Hacspec_ml_kem.Polynomial.add_to_ring_element.
+    // The strengthened loop invariant carries per-vector add_pre + add_post
+    // for already-processed chunks; the Tier-1 lemma lifts to poly-level.
+    hax_lib::fstar!(
+        r#"
+          Hacspec_ml_kem.Commute.Chunk.lemma_add_to_ring_element_commute
+            #$:Vector
+            ({ Libcrux_ml_kem.Vector.f_coefficients = ${_myself_orig} })
+            ${rhs}
+            ${myself}
+        "#
+    );
 }
 
 #[inline(always)]

@@ -1413,3 +1413,66 @@ let lemma_poly_barrett_reduce_commute
     Classical.forall_intro aux;
     Seq.lemma_eq_intro (to_spec_poly_plain result) (to_spec_poly_plain myself);
     lemma_poly_barrett_reduce_id (to_spec_poly_plain myself)
+
+(* ----- E2: add_to_ring_element -----
+   The trait post `add_post lhs rhs r` is `forall i. v r.[i] == v lhs.[i] + v rhs.[i]`.
+   Per-lane via `lemma_add_fe_commute_plain`:
+     `impl_FieldElement__add (i16_to_spec_fe lhs.[i]) (i16_to_spec_fe rhs.[i])
+        == i16_to_spec_fe r.[i]`.
+   Applied across 256 lanes, we get
+     `to_spec_poly_plain result.[j]
+        == impl_FieldElement__add (to_spec_poly_plain myself).[j]
+                                  (to_spec_poly_plain rhs).[j]`.
+   The hacspec `add_to_ring_element lhs rhs .[j]` is structurally the
+   same FE.new ((lhs[j].val + rhs[j].val) % q) pattern as
+   `impl_FieldElement__add lhs[j] rhs[j]`, so the two are equal lane-wise. *)
+let lemma_add_to_ring_element_commute
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (myself rhs result: V.t_PolynomialRingElement vV) :
+  Lemma
+    (requires
+      forall (k: nat). k < 16 ==>
+        TS.add_post
+          (T.f_repr (Seq.index myself.V.f_coefficients k))
+          (T.f_repr (Seq.index rhs.V.f_coefficients k))
+          (T.f_repr (Seq.index result.V.f_coefficients k)))
+    (ensures
+       to_spec_poly_plain result
+         == HP.add_to_ring_element
+              (to_spec_poly_plain myself) (to_spec_poly_plain rhs))
+  = let lhs_poly = to_spec_poly_plain myself in
+    let rhs_poly = to_spec_poly_plain rhs in
+    let r_poly = to_spec_poly_plain result in
+    let hp = HP.add_to_ring_element lhs_poly rhs_poly in
+    let aux (j: nat) : Lemma (j < 256 ==>
+        Seq.index r_poly j == Seq.index hp j)
+      = if j < 256 then begin
+          let k : nat = j / 16 in
+          let l : nat = j % 16 in
+          let m_arr = T.f_repr (Seq.index myself.V.f_coefficients k) in
+          let s_arr = T.f_repr (Seq.index rhs.V.f_coefficients k) in
+          let r_arr = T.f_repr (Seq.index result.V.f_coefficients k) in
+          assert (TS.add_post m_arr s_arr r_arr);
+          assert (v (Seq.index r_arr l)
+                  == v (Seq.index m_arr l) + v (Seq.index s_arr l));
+          lemma_add_fe_commute_plain
+            (Seq.index m_arr l) (Seq.index s_arr l) (Seq.index r_arr l);
+          poly_lane_plain myself j;
+          poly_lane_plain rhs j;
+          poly_lane_plain result j;
+          (* Unfold the `createi` in `HP.add_to_ring_element` at index `j`. *)
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__new
+                (cast (((cast ((Seq.index lhs_poly (v jj)).P.f_val <: u16) <: u32) +!
+                        (cast ((Seq.index rhs_poly (v jj)).P.f_val <: u16) <: u32)
+                        <: u32)
+                      %! (cast (P.v_FIELD_MODULUS <: u16) <: u32)
+                      <: u32)
+                <: u16)
+              <: P.t_FieldElement)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro r_poly hp
