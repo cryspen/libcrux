@@ -1,6 +1,8 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
+**Tip**: Phase 1 complete at `7be6b31b1`.
+**Next handoff plan**: [`proofs/phase-2a-3a-plan.md`](proofs/phase-2a-3a-plan.md) — parallel Phase 2A + 3A execution with worktree isolation, agent briefings, recovery procedure.
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)
 **Outstanding admits**: [`proofs/outstanding-admits.md`](proofs/outstanding-admits.md)
