@@ -54,74 +54,63 @@ so subsequent sessions don't burn budget retrying:
 
 ---
 
-## Phase-1 carryover findings (discovered during Phase 2A/3A coordination)
+## Phase-1 rework (resolved 2026-04-27, see commit history for SHA)
 
-These three findings surfaced when both parallel Phase 2/3 wave agents tried
-to discharge the strengthened trait posts. They predate the wave commits and
-must be repaired before any Simd.* impl proof can validate end-to-end.
-Status: scheduled for repair in the upcoming Phase-1 rework commit (Step B
-of the 2026-04-27 coordination plan).
+Three findings + one impl bug surfaced during Phase 2A/3A coordination
+have been repaired. Documented here for traceability.
 
-### Libcrux_ml_dsa.Simd.Traits.Specs.lemma_decompose_lane_lookup (Error 19)
-- **Source**: `libcrux-ml-dsa/src/simd/traits/specs.rs:75-81`
-- **F\*** location: `Libcrux_ml_dsa.Simd.Traits.Specs.fst:69-70`
-- **Phase added**: 1 (commit `7be6b31b1`, missed by handoff baseline)
-- **Diagnosis**: Lemma fails to typecheck — `unknown because (incomplete
-  quantifiers)` at rlimit 80. The lemma's ensures references
-  `Hacspec_ml_dsa.Arithmetic.decompose input gamma2`, whose precondition
-  requires `gamma2 ∈ {95232, 261888}`. That constraint lives inside the
-  body of the opaque `decompose_lane_post`, so F* cannot see it when
-  typechecking the ensures clause. The two sister lemmas
-  `lemma_reduce_lane_lookup` and `lemma_compute_hint_lane_lookup`
-  typecheck because their ensures clauses do not have a function-call
-  precondition.
-- **Impact**: Specs.fst.checked is never produced; every `Simd.Portable.*`
-  and `Simd.Avx2.*` module short-circuits at this dependency. No Phase 2
-  or Phase 3 impl proof can be empirically validated until this clears.
-- **Repair**: hoist `((v gamma2 == 95232) \/ (v gamma2 == 261888))` into
-  the lemma's `requires`. Done in Step B.
+- **`lemma_decompose_lane_lookup` Error 19** — fixed by hoisting
+  `((v gamma2 == 95232) \/ (v gamma2 == 261888))` into the lemma's
+  `requires`. Same hoist applied to `lemma_compute_hint_lane_lookup` and
+  `lemma_use_hint_lane_lookup` which had the identical opaque-shielded
+  function-call-precondition issue (revealed once the decompose error
+  was cleared).
+- **`infinity_norm_exceeds_post` over-strong vs pre** — relaxed: now
+  cites raw signed absolute value (`if x >= 0 then x else -x`) instead
+  of `Hacspec_ml_dsa.Arithmetic.coeff_norm`. Compatible with the loose
+  `is_i32b_array_opaque FIELD_MAX simd_unit` pre. The relationship to
+  FIPS 204's centered `coeff_norm` holds whenever inputs are already
+  centered.
+- **`reduce_lane_post` over-strong vs impl** — relaxed from `0 <= v r < q`
+  to centered Barrett range `(-q < v r < q) /\ (v r) % q == (v input) % q`.
+- **`montgomery_multiply_lane_post` triple-product i64 overflow** —
+  rewrote post in mathematical `int` arithmetic
+  (`(v future_lhs) % q == (v lhs * v rhs * 8265825) % q`) instead of the
+  i64 expression `(cast lhs *! cast rhs *! mk_i64 8265825)` which
+  overflows i64 for arbitrary i32 inputs. Equivalent semantics; sidesteps
+  the overflow obligation. Hidden behind decompose lookup error before
+  Step B.
+- **AVX2 `Operations::reduce` 4-of-32 impl bug** — replaced the four
+  hard-coded `shift_left_then_reduce::<0>(&mut simd_units[{0,8,16,24}].value)`
+  calls with `for i in 0..simd_units.len() { ... }` matching the portable
+  impl.
 
-### Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post over-strong vs pre
-- **Source**: `libcrux-ml-dsa/src/simd/traits/specs.rs` (post predicate)
-  and `libcrux-ml-dsa/src/simd/traits.rs` (trait method pre/post).
-- **Phase added**: 1
-- **Diagnosis**: Trait pre allows `is_i32b_array_opaque FIELD_MAX simd_unit`
-  (i.e. `|v lane| ≤ q-1`, the FIELD_MAX range). Phase-1 post cites
-  `Hacspec_ml_dsa.Arithmetic.coeff_norm`, which folds inputs through
-  `((a%q)+q)%q` and then maps `>q/2` to `q-r` — i.e. centered absolute
-  value. For inputs in `(q/2, q-1]` the impl's signed `abs(v lane)` and
-  the spec's `coeff_norm` differ, so the post is unprovable as stated.
-- **Repair**: relax the post to use the impl's actual signed `abs` (or
-  add an explicit lane-centering normalization in the impl). Done in
-  Step B by adjusting `infinity_norm_exceeds_post`.
+## Active admits
 
-### Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post over-strong vs impl
-- **Source**: `libcrux-ml-dsa/src/simd/traits/specs.rs:48-55` (post + lookup
-  + intro).
-- **Phase added**: 1
-- **Diagnosis**: Phase-1 post requires `0 <= v result < 8380417`. Impl
-  delegates to `shift_left_then_reduce::<0>` → Barrett reduction → returns
-  centered representative in `[-(q-1), q-1]`. The `>= 0` conjunct is
-  unprovable for any input whose Barrett reduction lands in `[-(q-1), 0)`.
-- **Repair**: relax to `is_i32b 8380416 result /\ (v result) % q == (v input) % q`
-  (centered representative + congruence). Done in Step B.
-
-## Implementation bugs (out of proof scope)
-
-### AVX2 Operations::reduce only reduces 4 of 32 SIMD units
-- **File / lines**: `libcrux-ml-dsa/src/simd/avx2.rs:160-165`
-- **Discovered**: Phase 3A wave (i) coordination, 2026-04-27.
-- **Diagnosis**: Body unconditionally calls
-  `shift_left_then_reduce::<0>(&mut simd_units[i].value)` for `i ∈ {0, 8, 16, 24}`
-  only. `shift_left_then_reduce` operates on a single `Vec256`, so 28 of
-  32 SIMD units (indices 1-7, 9-15, 17-23, 25-31) are left un-reduced.
-  This is materially false against any per-SIMD-unit forall reduce post
-  (Phase 0 or Phase 1) and is a correctness defect pre-dating the proof
-  sprint. A correct implementation iterates `for i in 0..simd_units.len()`
-  matching the portable impl.
-- **Status**: scheduled for fix on a separate non-proof branch (Step C
-  of the 2026-04-27 coordination plan); not addressed by Phase 2/3 proof
-  waves.
+### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits/specs.rs:292-368`
+  (the four `#[hax_lib::fstar::after]` SMTPat-bridge lemmas).
+- **Annotation**: `admit ()` in lemma body.
+- **Phase added**: pre-existing (predates Phase 1; surfaced once
+  `lemma_decompose_lane_lookup` cleared).
+- **Diagnosis**: The four lemmas claim
+  `is_i32b_array_opaque b1 a /\ is_i32b_array_opaque b2 b /\ b1+b2 ≤ u32::MAX`
+  implies `add_pre a b` (i.e. each lane sum fits in i32). But `b1+b2 ≤
+  u32::MAX = 2^32-1` allows the sum `v a[i] + v b[i]` to reach `2^32-1`,
+  which exceeds `i32::MAX = 2^31-1`. The bound is genuinely insufficient
+  to prove the conclusion. Correct constraint would be `b1+b2 ≤ i32::MAX`
+  (= `2^31-1`) for `add_pre`, or a similarly tighter constraint for
+  `add_post`/`sub_pre`/`sub_post`.
+- **Suggested mitigation**: USER lane / pre-Phase-1 owner. Tighten the
+  constraint on `b1+b2` to `2147483647` (i32::MAX) in the four lemmas.
+  Once tightened, the `reveal_opaque (\`%add_pre)` body should close.
+  Alternatively, weaken `add_pre`/`sub_pre`/`add_post`/`sub_post` to
+  not require i32-fit (using saturating semantics).
+- **Template value**: this is the canonical bounds-bridge SMTPat used by
+  every downstream caller of `add`/`subtract` to satisfy the trait pre.
+  Until tightened, downstream proofs that rely on this SMTPat are
+  effectively unsound (they admit a false lemma). NEEDS FIX before any
+  serious correctness claim against `add_pre`/`add_post`.
 
 ---
 
