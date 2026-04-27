@@ -146,7 +146,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // `randomness` to hold 24 bytes.
     #[hax_lib::requires(true)]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
-        (forall (i:nat). i < v $result ==>
+        (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= 0 /\
           v (Seq.index ${out}_future i) < 8380417)"#))]
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize;
@@ -155,13 +155,13 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // we expect `randomness` to hold 4 bytes.
     #[hax_lib::requires(true)]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
-        (forall (i:nat). i < v $result ==>
+        (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -2 /\ v (Seq.index ${out}_future i) <= 2)"#))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
 
     #[hax_lib::requires(true)]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
-        (forall (i:nat). i < v $result ==>
+        (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -4 /\ v (Seq.index ${out}_future i) <= 4)"#))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;
 
@@ -191,10 +191,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(true)]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
-          (v $eta == 2 ==> v (Seq.index (f_repr ${out}_future) i) >= -2 /\
-                          v (Seq.index (f_repr ${out}_future) i) <= 2) /\
-          (v $eta == 4 ==> v (Seq.index (f_repr ${out}_future) i) >= -4 /\
-                          v (Seq.index (f_repr ${out}_future) i) <= 4))"#))]
+          ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
+              v (Seq.index (f_repr ${out}_future) i) >= -2 /\
+              v (Seq.index (f_repr ${out}_future) i) <= 2) /\
+          ($eta == Libcrux_ml_dsa.Constants.Eta_Four ==>
+              v (Seq.index (f_repr ${out}_future) i) >= -4 /\
+              v (Seq.index (f_repr ${out}_future) i) <= 4))"#))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
     // t0: bit_pack with width 13.
