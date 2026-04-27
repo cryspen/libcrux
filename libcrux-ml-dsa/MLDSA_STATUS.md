@@ -1,7 +1,8 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Phase 1 complete at `7be6b31b1`.
+**Tip**: Phase-1 rework complete at `04fd066f0`.
+**Live blocker for Phase 2/3 empirical validation**: `Libcrux_core_models.Abstractions.Funarr.fst:97` (`Error 92`, in `crates/utils/core-models`) gates every `Simd.*` `.checked` build. Fix is a one-line spurious-`#`-implicit-argument removal in the hax extraction or a hax extractor patch — out of `libcrux-ml-dsa` scope.
 **Next handoff plan**: [`proofs/phase-2a-3a-plan.md`](proofs/phase-2a-3a-plan.md) — parallel Phase 2A + 3A execution with worktree isolation, agent briefings, recovery procedure.
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)
@@ -46,9 +47,11 @@ to the USER lane (math-heavy or Z3-blocked) for human follow-up.
 |---|---|---|---|
 | **0** | Hardening + scaffolding (FIPS fixes, cross-spec tests, mirror docs, hacspec extensions) | done | `ml-dsa-proofs` |
 | **1** | Strengthen Operations trait posts | done | `ml-dsa-proofs` |
-| **2** | Portable Operations proofs (waves 2A–2G) | unblocked | handoff |
-| **3** | AVX2 Operations proofs (waves 3A–3E) | unblocked | handoff |
+| **1.5** | Phase-1 rework: fix Specs.fst lemmas, relax over-strong posts, fix AVX2 reduce loop | done at `04fd066f0` | `ml-dsa-proofs` |
+| **2** | Portable Operations proofs (waves 2A–2G) | source-pattern unblocked; empirical validation gated by Funarr | handoff |
+| **3** | AVX2 Operations proofs (waves 3A–3E) | source-pattern unblocked; empirical validation gated by Funarr | handoff |
 | **4** | Spec migration & integration (waves 4A–4D) | pending | handoff |
+| **F** | Funarr Error 92 in core-models (gates all Simd.* validation) | blocked, upstream | core-models maintainers |
 
 ## Operations trait method status
 
