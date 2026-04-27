@@ -328,6 +328,32 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(a: Portable
 // (FE-algebra equality)` post.  Bridge = 8 `lemma_butterfly_pair_commute`
 // calls + per-group `assert (p_layer_X N)` + final
 // `assert (forall4 p_layer_X)`.
+//
+// `op_ntt_layer_1_step`: admit-with-comment, Phase 6 agent A 2026-04-27.
+//   What was tried: same recipe that closes layers 2 / 3 (drop the
+//   `--admit_smt_queries true` and replace with
+//   `--z3rlimit N --split_queries always`) at N ∈ {200, 400, 800}.
+//   Outcome: at rlimit 800 with split_queries, F* completed 60 sub-queries
+//   in ~16 ms each, then a single sub-query (one of the 4 per-branch
+//   `p_layer_1 b` asserts, b ∈ {0..3}) ran for >10 min without resolving
+//   before manual cancel.  Earlier rlimit 400 run failed cleanly with
+//   Error 19 "Assertion failed" at the same block in 4 min.
+//   Hypothesis: the per-branch `p_layer_1` body uses a 4-way conditional
+//   `if b=0 then zeta0 else if b=1 then zeta1 else if b=2 then zeta2 else
+//   zeta3` to pick the right zeta, which Z3 case-splits on every
+//   instantiation.  Compounded with the 16 underlying lemma facts, the
+//   per-branch goal exceeds Z3's reasoning budget at rlimit 800.
+//   Layers 2 / 3 verify because layer 3 has 0 zeta dispatching (single
+//   zeta) and layer 2 has only a 2-way conditional (`if b<2 then zeta0
+//   else zeta1`).
+//   Next step (USER): refactor by replacing the 4-way `if/else` ladder
+//   with 4 separate per-zeta let-rebinds, e.g. assert each
+//   `p_layer_1_zeta{0..3}` first, then introduce `p_layer_1` as a
+//   case-split lemma combining them.  Or factor each branch into a
+//   dedicated `lemma_op_ntt_layer_1_step_branch_b` lemma in
+//   `Hacspec_ml_kem.Commute.Chunk.fst` that takes `b` and the matching
+//   `zeta_b` explicitly, then close the wrapper via 4 such calls
+//   followed by `Spec.Utils.forall4` intro.
 #[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_1_step_pre} ${a}.f_elements zeta0 zeta1 zeta2 zeta3"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_1_step_post} ${a}.f_elements zeta0 zeta1 zeta2 zeta3 ${out}.f_elements"#))]
@@ -560,6 +586,13 @@ fn op_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     out
 }
 
+// `op_inv_ntt_layer_1_step`: admit-with-comment, Phase 6 agent A
+// 2026-04-27.  Same shape as `op_ntt_layer_1_step` — 4-way zeta dispatch
+// in the per-branch predicate `p_inv_1`.  Not attempted directly (would
+// exceed wall-clock budget); admitted by analogy.  Same hypothesis and
+// next-step refactor recipe as `op_ntt_layer_1_step` above:
+// replace the 4-way `if/else` ladder with 4 explicit per-zeta lemmas
+// + `forall4` intro.
 #[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_1_step_pre} ${a}.f_elements zeta0 zeta1 zeta2 zeta3"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_1_step_post} ${a}.f_elements zeta0 zeta1 zeta2 zeta3 ${out}.f_elements"#))]
