@@ -1,4 +1,10 @@
 module Spec.MLKEM.Instances
+(* =====================================================================
+   ⚠️  OBSOLETE — DO NOT EXTEND OR CITE FROM NEW PROOFS  ⚠️
+   `Spec.MLKEM.*` is scheduled for deletion.  Canonical spec is
+   `Hacspec_ml_kem.*`.  See `Spec.MLKEM.fst` header for full migration
+   plan and `MLKEM_STATUS.md` / `proofs/session-handoff.md`.
+   =====================================================================*)
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 30"
 open FStar.Mul
 open Core_models

@@ -1,4 +1,69 @@
-# MLKEM Verification Status (C4f plan, revised after user feedback)
+# MLKEM Verification Status
+
+**Branch**: `trait-opacify`  **Tip**: `1c47e3632` (pushed to origin)
+
+## Spec hierarchy (DO NOT FORGET)
+
+- ✅ **Canonical**: `Hacspec_ml_kem.*` — in
+  `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.*.fst[i]`. ALL new
+  proofs and post-conditions cite this.
+- ⚠️ **Obsolete (scheduled for deletion)**: `Spec.MLKEM.*`. Existing
+  citations are migrating; do NOT add new ones. Banners in
+  `proofs/fstar/spec/Spec.MLKEM*.fst`.
+- 🔄 **Temporary scaffolding**: `Spec.Utils.*` — pieces we use will move
+  to a future `Proof_utils.*` module.
+
+## Migration plan (post-only — pre-conditions never touched)
+
+The trait-opacity work (Phases 1–5, done) provided the foundation: trait
+posts now carry strong FE-form equations behind opaque per-lane / per-branch
+predicates.  The next phase strengthens **above-trait** module posts to cite
+`Hacspec_ml_kem.*`, module by module, post-only (additive conjuncts) so each
+commit lands without breaking neighbours.
+
+### Combined sequence (from session 2026-04-27)
+
+| # | Phase | Module(s) | Citation target | Notes |
+|---|---|---|---|---|
+| A | 7a — Polynomial scalar ops | `Polynomial.fst` (7 fns: add_to_ring_element, poly_barrett_reduce, subtract_reduce, add_error_reduce, add_standard_error_reduce, add_message_error_reduce, multiply_by_constant_bounded) | `Hacspec_ml_kem.Polynomial.*` | New chunk-level commute lemmas via Classical.forall_intro |
+| B | 7b — NTT/inv-NTT layers 1–3 | `Ntt.fst`, `Invert_ntt.fst` (8 fns) | `Hacspec_ml_kem.Ntt.*`, `Hacspec_ml_kem.Invert_ntt.*` | 2 layer-step commute lemmas |
+| C | 7c — Serialize re-root | `Serialize.fst` (8 already-cite-Spec.MLKEM + 6 trivial) | `Hacspec_ml_kem.Serialize.*` (added alongside Spec.MLKEM, then Spec.MLKEM dropped) | Enables Spec.MLKEM deletion |
+| D | 7d — Matrix | `Matrix.fst` (5 fns) | `Hacspec_ml_kem.Matrix.*` | Vector + matrix commute lemmas |
+| E | 7e — Trait-opacify Phase 6 (parallel) | drop 6 NTT-layer impl admits in `portable.rs` | n/a (impl-side) | Independent; uses fstar-mcp |
+| F-I | Hard cases | full NTT, `ntt_multiply`, `to_standard_domain`, `compute_vector_u`, `invert_ntt_montgomery` | `Hacspec_ml_kem.*` | Tier-3 layer composition; standalone-hard proofs |
+| J | Migrate downstream | Ind_cpa, Ind_cca | `Hacspec_ml_kem.*` (replace Spec.MLKEM lookups) | Post-only consumer-side switch |
+| K | Drop Spec.MLKEM conjuncts | Serialize.fst (and any others) | n/a | Pure removal of redundant post conjuncts |
+| L | **Delete `Spec.MLKEM.*` module** | n/a | n/a | Drop files; update Makefile / hax includes |
+| M | `Spec.Utils` → `Proof_utils` migration | trait posts, commute lemmas | n/a | Symbol-level rewrite |
+
+### Invariants enforced at every step
+
+1. **Pre-conditions: never touched.** A and beyond.
+2. **Posts: only conjunctive additions** in A–J. Removals (K) only of conjuncts that are dual citations of an equivalent property.
+
+## Trait-opacify completed phases (1–5)
+
+Branch `trait-opacify`, commits:
+- `9f154fd80` — Trait opacify: per-lane / per-branch opaque predicates + drop Polynomial / Invert_ntt admits
+- `1c47e3632` — Drop Serialize.fst admit (Phase 5): SMTPat lookup + named intro lemma
+
+All three trait-boundary admits (Polynomial.fst, Invert_ntt.fst,
+Serialize.fst) dropped.  Verification: 53 Checked / 4 Admitted
+(pre-existing) / 1 Failed (pre-existing Vector.Neon.Vector_type.fsti
+decidable-eq, unrelated).
+
+## Phase 6 punch list (in progress)
+
+1. 6 portable NTT-layer ops still on `--admit_smt_queries true` in
+   `src/vector/portable.rs` (lines 331, 410, 488, 563, 638, 715 —
+   op_ntt_layer_{1,2,3}_step + op_inv_ntt_layer_{1,2,3}_step).  Drop these
+   admits using fstar-mcp for fast per-file iteration.
+
+---
+
+# Historical: trait-poststrengthen branch (C4f plan)
+
+(everything below is from before the trait-opacify branch was created)
 
 **Branch**: `trait-poststrengthen`  **Tip**: `68233ffd4`
 **Task**: C4f — portable `compress_1` / `compress<D>` / `decompress_1` /

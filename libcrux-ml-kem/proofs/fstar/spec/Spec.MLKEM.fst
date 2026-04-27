@@ -1,4 +1,24 @@
 module Spec.MLKEM
+(* =====================================================================
+   ⚠️  OBSOLETE — DO NOT EXTEND OR CITE FROM NEW PROOFS  ⚠️
+   =====================================================================
+   `Spec.MLKEM.*` is scheduled for deletion.  The canonical specification
+   for libcrux-ml-kem is `Hacspec_ml_kem.*` (in
+   `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.*.fst[i]`).
+
+   New post-conditions and lemmas MUST cite `Hacspec_ml_kem.*` only.
+   Existing posts that reference `Spec.MLKEM.*` are being migrated:
+   the standard pattern is to ADD a `Hacspec_ml_kem.*` conjunct alongside
+   the `Spec.MLKEM.*` one (post-only, additive), then remove the
+   `Spec.MLKEM.*` conjunct in a later cleanup commit, then delete this
+   module.
+
+   `Spec.Utils.*` is also temporary scaffolding — its used pieces will
+   migrate to a `Proof_utils.*` module.
+
+   See `MLKEM_STATUS.md` and `proofs/session-handoff.md` for current
+   migration status.
+   =====================================================================*)
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open FStar.Mul
 open Core_models
