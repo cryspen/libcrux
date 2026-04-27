@@ -9,7 +9,7 @@
 - [~] C2: lemma_mm256_srli_epi16_15  (compress.rs:48 / extracted line 43) — admit-with-comment
 - [x] C3: lemma_i16_xor_neg1         (compress.rs:62 / extracted line 57)
 - [x] C4: lemma_i16_xor_zero         (compress.rs:67 / extracted line 62)
-- [ ] C5: rejection_sample panic_free body (sampling.rs Rust assumes / extracted line 98)
+- [~] C5: rejection_sample panic_free body (sampling.rs Rust assumes / extracted line 98) — admit-with-comment + 2 assumes -> asserts
 
 ## Progress (append-only, newest at bottom)
 
@@ -41,3 +41,24 @@
 - Wrote detailed admit-with-comment in BOTH `src/vector/avx2/compress.rs` `fstar::before` block AND extracted `Compress.fst`.  Captures: math reason it should hold, F* model gap, what user should try (strengthen `mm256_xor_si256` post + add `lemma_vec256_as_i16x16_*` bit-extraction lemma, then close via `prove_bit_vector_equality'`), reference to `simd-model-unification-plan.md` and USER-4.
 - `make Libcrux_ml_kem.Vector.Avx2.Compress.fst.checked` PASSES (9.6 s).
 - Decision: budget per-target ~15 min, this is genuine model gap — moving on to C5.
+
+### 2026-04-27 19:54:16 UTC — C5 progress: 2 assumes -> asserts, panic_free admit-with-comment
+- Investigated the `admit ()` at extracted Sampling.fst:98 — it's the hax-inserted "Panic freedom" admit that discharges all remaining proof obligations (subtyping, post-condition, slice indexing).
+- Removed the admit and saw failures: 4+ "Subtyping check failed" + 1 "Assertion failed" with "incomplete quantifiers" — even with `--z3rlimit 400 --split_queries always`.
+- The two obligation classes are:
+  1. Slice indexing: `output[sampled_count..sampled_count+8]` requires
+     `sampled_count + 8 <= len(output) = 16`.  Since `sampled_count = count_ones(good[0])` and `count_ones_u8 : u8 -> r:u32{v r <= 8}`, this should be derivable.  The Rust `assume` already names it; the issue is the bridging through `f_index_pre output {start;end}`.
+  2. Functional post: `forall j. j < result ==> output_future[j] in [0, 3328]`.
+     This needs reasoning about `mm_shuffle_epi8` applied with REJECTION_SAMPLE_SHUFFLE_TABLE to compact lanes whose `compare_with_field_modulus` bit is set.  Two separate model gaps:
+     - `mm256_cmpgt_epi16`'s post in `Avx2_extract.fsti:175–181` only constrains "non-bit-0 bits = 0" within each 16-bit lane — does NOT relate to the actual `>` comparison.  So we can't even prove "good encodes the bitmask of lanes < 3329".
+     - `count_ones_u8` is val-only beyond its `<= 8` bound; nothing connects it to the bitmask shape.
+
+- Wins:
+  - The two `assume (count_ones <= 8)` lines became `assert` (refinement type carries the bound) — mechanical cleanup.
+  - The third `assume (f_index_pre output ...)` left in place — bridging to slice-range pre needs a separate lemma we don't have.
+
+- Restored the `let _:Prims.unit = admit () (* Panic freedom *)` with a long admit-with-comment in the extracted .fst (gitignored).
+- Cannot put a comment in the Rust source for the panic_free `admit ()` because that admit is hax-generated; pointed at by the `// The remaining `assume` ... see panic-freedom comment` in `src/vector/avx2/sampling.rs`.
+- `make Libcrux_ml_kem.Vector.Avx2.Sampling.fst.checked` PASSES (~5 s).
+
+- Decision: C5 admit-with-comment recorded in extracted `.fst` (which is gitignored).  In Rust source, the only thing I could touch was the `assume`-block in the `hax_lib::fstar!()` macro.  Two of the three assumes turn into asserts; the third remains with a pointer to the panic-freedom comment.  This is the same family as the AVX2 serialize/deserialize bridge admits (`session-handoff.md` listed them as out-of-scope).
