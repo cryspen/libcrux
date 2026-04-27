@@ -37,3 +37,26 @@ Started 2026-04-28 00:16 local.
 4. Strengthen 6 polynomial.rs ensures clauses citing the lemmas; discharge
    in body with NO `assume`s.
 
+## Target #1 — `poly_barrett_reduce` — CLOSED (00:16-00:37, 21 min)
+
+✅ Real proof of `lemma_poly_barrett_reduce_commute` in Chunk.fst (134ms).
+✅ Helper `lemma_poly_barrett_reduce_id` (49ms).
+✅ Lifts `to_spec_poly_plain` / `to_spec_poly_mont` and per-lane index
+   helpers `poly_lane_plain` / `poly_lane_mont`.
+✅ `polynomial.rs::poly_barrett_reduce` post strengthened in-place: cites
+   `Hacspec_ml_kem.Polynomial.poly_barrett_reduce`, preserves `is_bounded_poly`
+   bound. Loop invariant minimally strengthened to carry per-vector
+   `barrett_reduce_post (orig.[j]) (curr.[j])` for `j < i` and
+   `current.[j] == orig.[j]` for `j >= i`.
+✅ Body discharge: ONE call to `lemma_poly_barrett_reduce_commute` after
+   the loop, no assumes, no admits.
+✅ `Libcrux_ml_kem.Polynomial.fst` re-extracted and verified (190s wall,
+   all queries pass).
+✅ `Hacspec_ml_kem.Commute.Chunk.fst` verified (51s wall).
+
+Recipe validated.  Pattern: minimal strengthening of `j < i` branch with
+the exact trait post needed for the Tier-1 lemma's `requires` shape; one
+`{ f_coefficients = orig }` snapshot reconstruction at lemma call site.
+
+Proceed with remaining 5 targets per pattern.
+

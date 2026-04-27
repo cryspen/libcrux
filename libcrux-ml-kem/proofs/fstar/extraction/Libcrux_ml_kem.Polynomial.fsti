@@ -222,7 +222,11 @@ val poly_barrett_reduce
           let myself_future:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
             myself_future
           in
-          Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) myself_future)
+          Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) myself_future /\
+          Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector myself_future ==
+          Hacspec_ml_kem.Polynomial.poly_barrett_reduce (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                #v_Vector
+                myself))
 
 val subtract_reduce
       (#v_Vector: Type0)

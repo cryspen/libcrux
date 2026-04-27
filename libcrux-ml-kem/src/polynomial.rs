@@ -258,7 +258,13 @@ fn add_to_ring_element<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::requires(spec::is_bounded_poly(28296, &myself))]
-#[hax_lib::ensures(|_| spec::is_bounded_poly(3328, &future(myself)))]
+#[hax_lib::ensures(|_| fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #$:Vector
+                                  (mk_usize 3328) ${myself}_future /\
+                                Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #$:Vector
+                                  ${myself}_future ==
+                                Hacspec_ml_kem.Polynomial.poly_barrett_reduce
+                                  (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                                    #$:Vector ${myself})"#))]
 fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Vector>) {
     #[cfg(hax)]
     let _myself = myself.coefficients;
@@ -268,8 +274,19 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
             if j < 16 {
                 if j < i {
                     spec::is_bounded_vector(3328, &myself.coefficients[j])
+                        & fstar!(
+                            r#"Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_post
+                                 (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                                   (Seq.index ${_myself} (v $j)))
+                                 (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                                   (Seq.index ${myself}.f_coefficients (v $j)))"#
+                        )
                 } else {
                     spec::is_bounded_vector(28296, &myself.coefficients[j])
+                        & fstar!(
+                            r#"Seq.index ${myself}.f_coefficients (v $j) ==
+                               Seq.index ${_myself} (v $j)"#
+                        )
                 }
             } else {
                 true.to_prop()
@@ -278,6 +295,19 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 
         myself.coefficients[i] = Vector::barrett_reduce(myself.coefficients[i]);
     }
+    // Phase 7a (E1): cite Hacspec_ml_kem.Polynomial.poly_barrett_reduce.
+    // After the loop, the strengthened invariant gives us, for each chunk,
+    // the per-vector `barrett_reduce_post (orig.[k]) (curr.[k])`.  The
+    // Tier-1 lemma `lemma_poly_barrett_reduce_commute` lifts this to the
+    // poly-level hacspec equation.
+    hax_lib::fstar!(
+        r#"
+          Hacspec_ml_kem.Commute.Chunk.lemma_poly_barrett_reduce_commute
+            #$:Vector
+            ({ Libcrux_ml_kem.Vector.f_coefficients = ${_myself} })
+            ${myself}
+        "#
+    );
 }
 
 #[inline(always)]
