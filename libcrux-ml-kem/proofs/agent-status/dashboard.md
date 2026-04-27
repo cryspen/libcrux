@@ -11,9 +11,9 @@ progress eagerly to its branch (see "Resume protocol" below).
 
 | Agent | Phase | Branch | State | Brief | Log |
 |---|---|---|---|---|---|
-| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | spawning | `proofs/agent-status/agent-A-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
-| **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | not started | — | — |
-| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | not started | — | — |
+| **A** | Phase 6 — drop 6 portable NTT-layer admits | `agent/phase-6-portable-ntt` | running (4/6 proven, 2 remaining) | `proofs/agent-status/agent-A-brief.md` | `proofs/agent-status/agent-A.md` (on agent branch) |
+| **B** | Phase 7c — Serialize re-root | `agent/phase-7c-serialize` | spawning | `proofs/agent-status/agent-B-brief.md` | `proofs/agent-status/agent-B.md` (on agent branch) |
+| **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | spawning | `proofs/agent-status/agent-C-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch) |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
@@ -53,6 +53,18 @@ The brief files in `proofs/agent-status/agent-X-brief.md` on `trait-opacify`
 are the source of truth for the prompt that was originally given.  The log
 files on each agent branch are the source of truth for what the agent
 actually did.
+
+## Tooling decision (recorded after agent A's first 4 admits)
+
+- **Default to plain `make`** for verification.  Inner loop is
+  Rust-edit → `python3 hax.py extract` → `make X.fst.checked`; re-extract
+  invalidates any fstar-mcp session anyway, so the session-amortization
+  story doesn't apply.  Agent A demonstrated 50 s `make` cycles per
+  iteration and dropped 4/6 admits in ~30 min.
+- **fstar-mcp pays off only** when iterating ≥5 times on the same
+  hand-written F\* file content (e.g., commute lemmas in
+  `Hacspec_ml_kem.Commute.Chunk.fst` during Phase 7a).  Reassess at
+  Wave 2.
 
 ## Update cadence
 
