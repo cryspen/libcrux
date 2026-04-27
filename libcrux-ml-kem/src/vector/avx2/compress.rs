@@ -54,17 +54,19 @@ let lemma_i16_arith_shr_15 (x: i16) : Lemma
   = ()
 
 (* xor of an i16 with all-ones (-1) is bitwise NOT, i.e. (-x - 1).
-   xor with all-zeros is identity.  Admitted: these are basic
-   integer-bitvector facts F* doesn't ship as auto SMTPats. *)
+   xor with all-zeros is identity.  Proved via Rust_primitives.Integers
+   logxor_lemma + lognot_lemma (covers a ^ ones == lognot a and
+   v (lognot a) == -1 - v a on signed types). *)
 let lemma_i16_xor_neg1 (x: i16) : Lemma
   (ensures v (x ^. mk_i16 (-1)) == -(v x) - 1)
   [SMTPat (x ^. mk_i16 (-1))]
-  = admit ()
+  = Rust_primitives.Integers.logxor_lemma x (mk_i16 (-1));
+    Rust_primitives.Integers.lognot_lemma x
 
 let lemma_i16_xor_zero (x: i16) : Lemma
   (ensures v (x ^. mk_i16 0) == v x)
   [SMTPat (x ^. mk_i16 0)]
-  = admit ()
+  = Rust_primitives.Integers.logxor_lemma x (mk_i16 0)
 "#
 )]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
