@@ -587,5 +587,9 @@ mod tests {
         }
         reduce(&mut re);
         let _ = core::hint::black_box(invert_ntt_montgomery(&mut re.simd_units));
+        assert_eq!(
+            re.to_i32_array(),
+            PolynomialRingElement::<crate::simd::portable::PortableSIMDUnit>::zero().to_i32_array()
+        );
     }
 }
