@@ -226,7 +226,7 @@ class proveAction(argparse.Action):
                     errors[err_file] = clean
 
                 # Detect make errors for a module
-                make_err = regex.search(r'\*\*\* \[.*?/(\S+)\.checked\]', clean)
+                make_err = regex.search(r'\*\*\* \[.*?/([^/\s]+)\.checked\]', clean)
                 if make_err:
                     mod_file = make_err.group(1)
                     for m in results:

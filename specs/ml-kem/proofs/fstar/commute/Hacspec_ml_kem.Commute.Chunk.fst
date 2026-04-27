@@ -396,6 +396,7 @@ let lemma_base_case_mult_even_mod_core (a0 a1 b0 b1 z r: int) :
    ensures has only the first factor inner-modded.  This wrapper does
    the two `lemma_mod_mul_distr_r` absorptions and invokes A1, so the
    FE-level lemma A2 is a clean chain. *)
+#push-options "--z3rlimit 400"
 let lemma_base_case_mult_even_mod_core_fe_form
     (a0 a1 b0 b1 z r: int) :
     Lemma (requires r % 3329 == ((a0 * b0 + a1 * b1 * z * 169) * 169) % 3329)
@@ -406,6 +407,7 @@ let lemma_base_case_mult_even_mod_core_fe_form
   = L.lemma_mod_mul_distr_r ((a0 * 169) % 3329) (b0 * 169) 3329;
     L.lemma_mod_mul_distr_r ((a1 * 169) % 3329) (b1 * 169) 3329;
     lemma_base_case_mult_even_mod_core a0 a1 b0 b1 z r
+#pop-options
 
 let lemma_base_case_mult_even_fe_commute
     (a0 a1 b0 b1 zeta result: i16) :
@@ -504,6 +506,7 @@ let lemma_base_case_mult_odd_mod_core (a0 a1 b0 b1 r: int) :
 
 (* Int-level FE-chain bridge for A3, analogous to A1's `_fe_form`.
    Two `lemma_mod_mul_distr_r` absorb the redundant inner mods, then A3. *)
+#push-options "--z3rlimit 400"
 let lemma_base_case_mult_odd_mod_core_fe_form
     (a0 a1 b0 b1 r: int) :
     Lemma (requires r % 3329 == ((a0 * b1 + a1 * b0) * 169) % 3329)
@@ -513,6 +516,7 @@ let lemma_base_case_mult_odd_mod_core_fe_form
   = L.lemma_mod_mul_distr_r ((a0 * 169) % 3329) (b1 * 169) 3329;
     L.lemma_mod_mul_distr_r ((a1 * 169) % 3329) (b0 * 169) 3329;
     lemma_base_case_mult_odd_mod_core a0 a1 b0 b1 r
+#pop-options
 
 let lemma_base_case_mult_odd_fe_commute
     (a0 a1 b0 b1 result: i16) :
@@ -957,8 +961,8 @@ let lemma_compress_message_coefficient_fe_commute (fe result: i16) :
         (ensures Hacspec_ml_kem.Compress.compress_d
                    (i16_to_spec_fe fe) (mk_usize 1)
                  == i16_to_spec_fe result)
-  = assert(v (i16_to_spec_fe fe).f_val == v fe); 
-    assert(v (i16_to_spec_fe result).f_val == v result); 
+  = assert(v (i16_to_spec_fe fe).f_val == v fe);
+    assert(v (i16_to_spec_fe result).f_val == v result);
     ()
 
 (* A8 (parameterized compress): admitted.  Barrett-exactness math —
@@ -976,6 +980,16 @@ let lemma_compress_ciphertext_coefficient_fe_commute (fe result: i16) (d: usize)
 let lemma_decompress_1_fe_commute (a result: i16) :
   Lemma (requires v a >= 0 /\ v a <= 1 /\
                   v result == (if v a = 0 then 0 else 1665))
+        (ensures Hacspec_ml_kem.Compress.decompress_d
+                   (i16_to_spec_fe a) (mk_usize 1)
+                 == i16_to_spec_fe result)
+  = ()
+
+(* A6' (integer form): matches the per-element primitive post on
+   portable's `decompress_1` directly, without the case-split. *)
+let lemma_decompress_1_fe_commute_int (a result: i16) :
+  Lemma (requires v a >= 0 /\ v a <= 1 /\
+                  v result == (2 * v a * 3329 + 2) / 4)
         (ensures Hacspec_ml_kem.Compress.decompress_d
                    (i16_to_spec_fe a) (mk_usize 1)
                  == i16_to_spec_fe result)
