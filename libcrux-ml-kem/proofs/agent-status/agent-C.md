@@ -87,3 +87,86 @@ Verification state on `agent/phase-6c-avx2-stragglers`:
 - `Libcrux_ml_kem.Vector.Avx2.Sampling.fst` — verifies, contains 1 admit-with-comment + 2 promoted asserts.
 - No regressions on neighbouring modules (cache rebuilt cleanly during regression).
 
+## Phase 6c follow-up (agent C2) — 2026-04-27
+
+Continuation focused on the 3 admit-with-comment targets agent C left.
+
+### 2026-04-27 — C1 + C2 closed via spec strengthening
+
+Approach: instead of trying to prove `lemma_mm256_xor_si256_lane` and
+`lemma_mm256_srli_epi16_15` from the existing weak posts, **strengthen
+the spec** in `crates/utils/intrinsics/src/avx2_extract.rs` by adding
+two new SMTPat lemmas (mirrored in
+`crates/utils/intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fsti`):
+
+  - `lemma_mm256_xor_si256 lhs rhs`:
+      `vec256_as_i16x16 (mm256_xor_si256 lhs rhs)
+       == Spec.Utils.map2 (^.) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs)`
+
+  - `lemma_mm256_srli_epi16 SHIFT vector`:
+      `vec256_as_i16x16 (mm256_srli_epi16 SHIFT vector)
+       == Spec.Utils.map_array (fun (x:i16) -> cast ((cast x : u16) >>! SHIFT) : i16) (vec256_as_i16x16 vector)`
+
+Both are admits relative to `vec256_as_i16x16` (which is `val`-only), but
+match the actual SIMD intrinsic semantics — sibling axioms to the
+existing `lemma_mm256_and_si256` (`Avx2_extract.fsti:224–228`).
+
+With these in place:
+- C1 (`lemma_mm256_xor_si256_lane`): closes by direct dispatch to the
+  new axiom (one-liner).
+- C2 (`lemma_mm256_srli_epi16_15`): closes via the axiom + a small
+  case-split on `v x < 0` to discharge the `(cast x : u16) >>! 15`
+  arithmetic.
+
+`make Libcrux_ml_kem.Vector.Avx2.Compress.fst.checked` PASSES (~10 s cold).
+
+Source-level edits:
+- `crates/utils/intrinsics/src/avx2_extract.rs`: adds `fstar::replace`
+  blocks on `mm256_xor_si256` and `mm256_srli_epi16` to declare the new
+  axioms.
+- `libcrux-ml-kem/src/vector/avx2/compress.rs`: replaces the two admits
+  in the `fstar::before` block with proofs that invoke the new axioms.
+
+Downstream regression: cold rebuild of
+`make Libcrux_ml_kem.Vector.Avx2.fst.checked` (parent of
+Compress/Sampling/Ntt/Arithmetic/Serialize) — PASSES in ~36 s pure F*
+time, ~58 s wall.  No regressions.
+
+### 2026-04-27 — C5 left as admit-with-comment
+
+Investigated whether the strengthened axioms enable any progress on the
+`rejection_sample` panic_free admit.  Conclusion: the post-condition
+splits into two parts, and the genuinely-hard half remains blocked:
+
+  1. Length / `result <= 16`: derivable in principle from the
+     `count_ones_u8` refinement type + `update_at_range` + `mm_storeu_si128`
+     posts.
+  2. Functional `forall j. j < result ==> output_future[j] in [0, 3328]`:
+     genuine model gap — requires (a) `mm256_cmpgt_epi16` post relating
+     bit-0-of-lane to `lhs > rhs` (current post only says non-bit-0
+     bits are 0; the lane semantics is hidden), (b) a model for
+     `count_ones_u8` as a bitmask cardinality (currently only the
+     `<= 8` refinement is exposed), (c) shuffle-compaction reasoning
+     for `mm_shuffle_epi8` against `REJECTION_SAMPLE_SHUFFLE_TABLE`,
+     which is the AVX2 analogue of the rejection-sampling mathematics.
+
+The user's original "strengthen `mm256_cmpgt_epi16` post" recipe
+matches part (a); parts (b) and (c) are extra. None of these went in
+the per-target budget.  C5 stays as admit-with-comment.
+
+### Final outcome
+
+| # | Status | Notes |
+|---|---|---|
+| C1 | `[x]` PROVEN | via `lemma_mm256_xor_si256` axiom |
+| C2 | `[x]` PROVEN | via `lemma_mm256_srli_epi16` axiom + case-split |
+| C3 | `[x]` proven (agent C) | unchanged |
+| C4 | `[x]` proven (agent C) | unchanged |
+| C5 | `[~]` admit-with-comment | unchanged; functional post requires extensive model strengthening |
+
+Net delta over agent C: **2 more admits PROVEN** (C1, C2 → proven).
+**Spec strengthening landed**: yes, in `Avx2_extract.fsti` —
+`lemma_mm256_xor_si256` and `lemma_mm256_srli_epi16` SMTPat axioms.
+
+Last commit: `agent-C2: C1 + C2 proven via spec strengthening`.
+
