@@ -192,18 +192,31 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-         ${hint.len()} == ${re_vector.len()} /\ 
+         ${hint.len()} == ${re_vector.len()} /\
          v (${hint.len()}) <= 8 /\
          (forall i. forall j.
-            (v (Seq.index (Seq.index ${hint} i) j) == 0 \/ 
+            (v (Seq.index (Seq.index ${hint} i) j) == 0 \/
              v (Seq.index (Seq.index ${hint} i) j) == 1)) /\
-         (forall i. forall j. 
-            Spec.Utils.is_i32b_array_opaque 
-            (v ${crate::simd::traits::specs::FIELD_MAX}) 
+         (forall i. forall j.
+            Spec.Utils.is_i32b_array_opaque
+            (v ${crate::simd::traits::specs::FIELD_MAX})
             (i0._super_i2.f_repr (Seq.index (Seq.index re_vector i).f_simd_units j)))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${re_vector}_future == Seq.length re_vector /\
+    (forall (i:nat). i < Seq.length ${re_vector}_future ==>
+      (forall (j:nat). j < 32 ==>
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 44
+              (i0._super_i2.f_repr
+                (Seq.index (Seq.index ${re_vector}_future i).Libcrux_ml_dsa.Polynomial.f_simd_units j))) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 16
+              (i0._super_i2.f_repr
+                (Seq.index (Seq.index ${re_vector}_future i).Libcrux_ml_dsa.Polynomial.f_simd_units j))))))"#))]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
     hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],
