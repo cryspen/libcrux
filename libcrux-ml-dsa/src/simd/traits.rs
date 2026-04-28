@@ -67,6 +67,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (v $gamma2) (f_repr ${low}_future) /\
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 16 (f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
             $gamma2
@@ -77,8 +82,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#))]
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${low}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${high})"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
+          (f_repr ${hint}_future) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.compute_hint_lane_post
             $gamma2
@@ -93,6 +102,10 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit}) /\
         Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque (f_repr ${hint})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 44 (f_repr ${hint}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 16 (f_repr ${hint}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.use_hint_lane_post
             $gamma2
@@ -131,6 +144,10 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(fstar!(r#"
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${t0})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${t0}_future) /\
+        Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+          v (Seq.index (f_repr ${t1}_future) i) >= 0 /\
+          v (Seq.index (f_repr ${t1}_future) i) < pow2 10) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
             (Seq.index (f_repr ${t0}) i)
@@ -187,6 +204,9 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
+          (f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment: 4 bytes for gamma2 = 261888 (4-bit packing) or 6 for gamma2 = 95232 (6-bit).
@@ -231,10 +251,16 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13
     #[hax_lib::requires(serialized.len() == 13)]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self);
 
     // t1: simple_bit_pack with width 10.
-    #[hax_lib::requires(out.len() == 10)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $out == 10 /\
+        (forall (i: nat). i < 8 ==>
+          v (Seq.index (f_repr ${simd_unit}) i) >= 0 /\
+          v (Seq.index (f_repr ${simd_unit}) i) < pow2 10)"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]); // out len 10
@@ -276,6 +302,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
                 (f_repr (Seq.index ${simd_units} i)))"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         (forall (j:nat). j < 32 ==>
+          Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+            (f_repr (Seq.index ${simd_units}_future j)) /\
           Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
             Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
               (Seq.index (f_repr (Seq.index ${simd_units} j)) i)
