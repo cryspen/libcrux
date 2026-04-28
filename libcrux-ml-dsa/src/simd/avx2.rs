@@ -156,6 +156,14 @@ impl Operations for AVX2SIMDUnit {
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future))) /\
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
             $gamma2
@@ -170,8 +178,12 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
-         v $gamma2 == v ${crate::constants::GAMMA2_V95_232})"#))]
+         v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) /\
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${high})"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
+          (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.compute_hint_lane_post
             $gamma2
@@ -190,6 +202,10 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) /\
         Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#))]
     #[ensures(|_| fstar!(r#"
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.use_hint_lane_post
             $gamma2
@@ -249,6 +265,10 @@ impl Operations for AVX2SIMDUnit {
     #[requires(fstar!(r#"
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0})"#))]
     #[ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 12) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) /\
+        Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) >= 0 /\
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) < pow2 10) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) i)
@@ -269,7 +289,9 @@ impl Operations for AVX2SIMDUnit {
         );
         arithmetic::power2round(&mut t0.value, &mut t1.value);
         hax_lib::fstar!(
-            r#"let pf (k: nat{k < 8}) : Lemma
+            r#"
+            // Per-lane lane-post via existing commute lemma.
+            let pf (k: nat{k < 8}) : Lemma
                 (ensures Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
                     (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
                     (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
@@ -279,7 +301,23 @@ impl Operations for AVX2SIMDUnit {
                     (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
                     (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)
             in
-            Classical.forall_intro pf"#
+            Classical.forall_intro pf;
+            // Discharge new array-level conjuncts (cherry-pick a331580ec).
+            // Lower-tier arithmetic free-fn proves `is_i32b (pow2 12)` per
+            // lane on `to_i32x8 t0_future`; convert to f_repr-level
+            // `is_i32b_array_opaque (pow2 12)`.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (pow2 12)
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}));
+            // t1 bound [0, pow2 10) via math lemma over Spec.MLDSA.Math.power2round.
+            let pf_t1 (k: nat{k < 8}) : Lemma
+                (ensures
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k) >= 0 /\
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k) < pow2 10) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_power2round_t1_bound
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+            in
+            Classical.forall_intro pf_t1"#
         );
     }
 
@@ -336,6 +374,9 @@ impl Operations for AVX2SIMDUnit {
     #[requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent"#))]
+    #[ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
+          (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize) {
         hax_lib::fstar!("admit ()");
         encoding::gamma1::deserialize(serialized, &mut out.value, gamma1_exponent);
@@ -399,13 +440,20 @@ impl Operations for AVX2SIMDUnit {
 
     #[inline(always)]
     #[requires(serialized.len() == 13)]
+    #[ensures(|_| fstar!(r#"
+        Spec.Utils.is_i32b_array_opaque (pow2 12)
+          (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self) {
         hax_lib::fstar!("admit ()");
         encoding::t0::deserialize(serialized, &mut out.value);
     }
 
     #[inline(always)]
-    #[requires(out.len() == 10)]
+    #[requires(fstar!(r#"
+        Seq.length $out == 10 /\
+        (forall (i: nat). i < 8 ==>
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i) >= 0 /\
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i) < pow2 10)"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
@@ -461,6 +509,8 @@ impl Operations for AVX2SIMDUnit {
                 (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} i)))"#))]
     #[ensures(|_| fstar!(r#"
         (forall (j:nat). j < 32 ==>
+          Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+            (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units}_future j)) /\
           Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
             Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
               (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) i)
@@ -489,10 +539,13 @@ impl Operations for AVX2SIMDUnit {
 
         hax_lib::fstar!(r#"
             let pf (j: nat{j < 32}) : Lemma
-                (ensures Spec.Utils.forall8 (fun (k: nat{k < 8}) ->
-                    Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
-                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
-                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k))) =
+                (ensures
+                    Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                        (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) /\
+                    Spec.Utils.forall8 (fun (k: nat{k < 8}) ->
+                        Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k))) =
                 reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                     (Spec.Utils.is_i32b_array_opaque 2143289343
                         (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)));
@@ -508,7 +561,24 @@ impl Operations for AVX2SIMDUnit {
                         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
                         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k)
                 in
-                Classical.forall_intro pfk
+                Classical.forall_intro pfk;
+                // Discharge new array-level conjunct (cherry-pick a331580ec):
+                // `is_i32b_array_opaque FIELD_MAX simd_units_future[j]`.
+                // Per-lane barrett_red bound from lemma_barrett_red_bound_and_mod_q
+                // gives `is_i32b 8380416 (to_i32x8 simd_units[j] k)`; the
+                // f_repr-level array bound follows from the per-lane bounds.
+                let pfk_bound (k: nat{k < 8}) : Lemma
+                    (ensures Spec.Utils.is_i32b 8380416
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k)) =
+                    Hacspec_ml_dsa.Commute.Chunk.lemma_barrett_red_bound_and_mod_q
+                        (Spec.Intrinsics.to_i32x8
+                            (Seq.index ${_orig} j).Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                            (mk_u64 k))
+                in
+                Classical.forall_intro pfk_bound;
+                reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                    (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                        (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)))
             in
             Classical.forall_intro pf
         "#);

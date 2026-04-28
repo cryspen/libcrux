@@ -66,8 +66,19 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
+    // FIXME(F-2 in lane-split-protocol.md): the `low_future` array bound
+    // was originally written `is_i32b_array_opaque (v $gamma2) low_future`
+    // but `v gamma2 :: int` doesn't typecheck against the `nat` first
+    // argument of `is_i32b_array_opaque`.  Below-trait lane workaround:
+    // split into the two GAMMA2 cases (consistent with `high_future`,
+    // `hint_future` shapes used elsewhere in this trait).  Above-trait
+    // lane should review and either accept this split or refine
+    // `Gamma2` to nat-bounded.
     #[hax_lib::ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (v $gamma2) (f_repr ${low}_future) /\
+        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future)) /\
+         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future))) /\
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
             Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>

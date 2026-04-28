@@ -103,6 +103,96 @@ let lemma_power2round_lane_commute (input future_t1 future_t0: i32)
                   (TS.power2round_lane_post input future_t1 future_t0)
 #pop-options
 
+(* Math lemma: for any i32 input, the t1 component of
+   `Spec.MLDSA.Math.power2round` lies in `[0, pow2 10)`.  The trait
+   post advertises this as an unconditional per-lane bound on
+   `t1_future` (cherry-pick a331580ec); the underlying arithmetic
+   free-fn only states `v t1 == snd (...power2round (v input))`, so
+   the bound has to come from the math spec.
+
+   Reasoning:
+     representative = (v input) % q  ∈ [0, q-1] = [0, 8380416]
+     m              = representative % (pow2 13)  ∈ [0, pow2 13)
+     t0             = if m > pow2 12 then m - pow2 13 else m
+                       ∈ (-pow2 12, pow2 12]
+     t1             = (representative - t0) / pow2 13
+
+   - If m ≤ pow2 12: t0 = m, so representative - t0 = (representative
+     / pow2 13) * pow2 13 (since m = representative % pow2 13).  Hence
+     t1 = representative / pow2 13.  Since representative < q,
+     t1 < q / pow2 13 = 1023 + 1/pow2 13, and as int floor:
+     t1 ≤ (q-1) / pow2 13 = 1023.  So t1 ∈ [0, 1024) = [0, pow2 10).
+   - If m > pow2 12: t0 = m - pow2 13, so representative - t0 =
+     representative - m + pow2 13.  Since representative - m is a
+     non-negative multiple of pow2 13, t1 = (representative / pow2 13) + 1.
+     Worst case t1 = 1024 would require representative / pow2 13 = 1023
+     and m > pow2 12.  But (q-1) / pow2 13 = 1023 only when
+     representative ≥ 1023 * pow2 13 = 8380416 = q-1, and at exactly
+     that value m = 0 (since (q-1) is divisible by pow2 13), which
+     contradicts m > pow2 12.  So t1 ≤ 1023 in this branch too. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 300"
+let lemma_power2round_t1_bound (input: i32)
+    : Lemma
+        (let (_, t1_s) = Spec.MLDSA.Math.power2round (v input) in
+         0 <= t1_s /\ t1_s < pow2 10)
+  = let q : pos = 8380417 in
+    let p : pos = pow2 13 in
+    assert (p == 8192);
+    assert (pow2 12 == 4096);
+    assert (pow2 10 == 1024);
+    let representative = (v input) % q in
+    L.lemma_mod_lt (v input) q;
+    L.lemma_mod_plus_distr_l (v input) 0 q;
+    assert (0 <= representative /\ representative <= q - 1);
+    let m = representative % p in
+    L.lemma_mod_lt representative p;
+    L.lemma_mod_plus_distr_l representative 0 p;
+    assert (0 <= m /\ m < p);
+    let t0 = if m > pow2 12 then m - p else m in
+    let t1 = (representative - t0) / p in
+    if m > pow2 12 then begin
+      assert (t0 == m - p);
+      assert (representative - t0 == representative - m + p);
+      L.lemma_div_mod representative p;
+      assert (representative - m == (representative / p) * p);
+      assert (representative - t0 == (representative / p + 1) * p);
+      L.cancel_mul_div (representative / p + 1) p;
+      assert (t1 == representative / p + 1);
+      // representative / p ≤ (q-1) / p = 1023, but if it equals 1023
+      // then representative ≥ 1023 * p = q - 1 and (q-1) % p = 0,
+      // contradicting m > pow2 12.
+      L.lemma_div_le representative (q - 1) p;
+      assert (representative / p <= (q - 1) / p);
+      assert ((q - 1) / p == 1023);
+      assert (representative / p <= 1023);
+      // Exclude representative/p = 1023 case under m > pow2 12.
+      if representative / p = 1023 then begin
+        L.lemma_div_mod representative p;
+        assert (representative == 1023 * p + m);
+        assert (representative <= q - 1);
+        assert (1023 * p + m <= q - 1);
+        // q - 1 = 1023 * p, so 1023 * p + m <= 1023 * p, thus m <= 0,
+        // contradicting m > pow2 12 > 0.
+        assert (1023 * p == q - 1);
+        assert (m <= 0);
+        ()
+      end
+      else assert (representative / p <= 1022);
+      assert (t1 <= 1023)
+    end
+    else begin
+      assert (t0 == m);
+      assert (representative - t0 == representative - m);
+      L.lemma_div_mod representative p;
+      assert (representative - m == (representative / p) * p);
+      L.cancel_mul_div (representative / p) p;
+      assert (t1 == representative / p);
+      L.lemma_div_le representative (q - 1) p;
+      assert ((q - 1) / p == 1023);
+      assert (t1 <= 1023)
+    end
+#pop-options
+
 (* Bridge: convert the AVX2 free fn post `barrett_red(shift_left_opaque
    input 13)` into the relaxed
    `shift_left_then_reduce_lane_post` (centered-Barrett bound + mod-q

@@ -68,4 +68,43 @@ body), record it here with:
   the trait pre alone.  Recoverable from the git history of branch
   `ml-dsa-proofs` if the pre tightens.
 
-(Append future findings above this line, numbered F-2, F-3, ...)
+#### F-2 (2026-04-28) — `decompose` post conjunct `is_i32b_array_opaque (v gamma2) low_future` fails type-check
+
+- **Conjunct that fails:** `traits.rs:70`, the cherry-picked decompose
+  post conjunct on `low_future` reads
+  `Spec.Utils.is_i32b_array_opaque (v $gamma2) (f_repr ${low}_future)`.
+  `is_i32b_array_opaque` has signature `(l: nat) -> ...` but `v gamma2`
+  has type `int` (not `nat`) since `Gamma2 = i32` with no positivity
+  refinement.  F\* error 19 at `Libcrux_ml_dsa.Simd.Traits.fst:158,44-54`:
+  "Expected type Prims.nat, got type Rust_primitives.Integers.range_t I32".
+- **Inconsistent with adjacent code:** the `high_future` post on the
+  same `decompose` method (`traits.rs:71-74`), and the `hint_future`
+  post on `use_hint` (`traits.rs:105-108`), use the explicit
+  `(v gamma2 == GAMMA2_V95_232 ==> is_i32b_array_opaque 95232 ...) /\
+   (v gamma2 == GAMMA2_V261_888 ==> is_i32b_array_opaque 16/44 ...)`
+  split pattern that does typecheck.  The `low_future` line was the
+  outlier — clearly an oversight in the cherry-picked commit.
+- **Recommended fix (above-trait side):** mirror the high/hint pattern
+  for low: split into the two GAMMA2 cases.  Since both gamma2 values
+  are positive, both branches of the split are type-correct.  Working
+  variant (matches the high-future shape):
+  ```rust
+  ((v $gamma2 == v ${...GAMMA2_V95_232} ==>
+      Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future)) /\
+   (v $gamma2 == v ${...GAMMA2_V261_888} ==>
+      Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future)))
+  ```
+  Or, alternatively, refine the `Gamma2` type to a nat-bounded i32
+  (also fixes the issue but propagates more widely).
+- **Below-trait artefact (this branch):** applied the split-pattern
+  workaround in `traits.rs:70` so the trait file compiles and Track A
+  / Track B can proceed.  Marked in code with `// FIXME(F-2)` comment.
+  Above-trait lane should review and either accept this exact split or
+  switch to a Gamma2 refinement.
+- **Cross-method scope:** none of the other cherry-picked posts use
+  `v gamma2` directly — `compute_hint`, `use_hint`, and `power2round`
+  all use either constant nat bounds (`pow2 12`, `pow2 10`,
+  `FIELD_MAX`) or the gamma2-split pattern.  F-2 is isolated to
+  `decompose` post.
+
+(Append future findings above this line, numbered F-3, F-4, ...)
