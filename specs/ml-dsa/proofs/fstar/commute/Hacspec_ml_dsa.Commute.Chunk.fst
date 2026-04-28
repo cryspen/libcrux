@@ -598,6 +598,38 @@ let lemma_compute_hint_lane_commute_conditional
                    high_bits changing under +z. *)
 #pop-options
 
+(* === Step 12 Track B: AVX2 decompose impl-side bridge === *)
+
+(* Bridge: AVX2 SIMD-shape `Spec.MLDSA.Math.decompose_spec` agrees in
+   v-image with the canonical `Spec.MLDSA.Math.decompose` for any
+   `v r` in i32-bounded trait range and valid gamma2.  The
+   decompose_spec body normalizes negatives via `if r < 0 then r + q`,
+   so r' = if v r >= 0 then v r else v r + q ∈ [0, q-1].  This is the
+   same value as `(v r) % q` (Euclidean), which is the input that
+   `Spec.MLDSA.Math.decompose` consumes.  So the two agree
+   unconditionally for v r ∈ [-(q-1), q-1].
+
+   Body: full proof requires showing the bit-trick approximation
+   `(r' * 11275 + 2^23) >> 24` (for gamma2 = 95232) and
+   `(r' * 1025 + 2^21) >> 22` (for gamma2 = 261888) compute exactly
+   `r' / (2*gamma2)` (with the special-case correction at boundary).
+   This is a non-trivial bit-trick / interval analysis (~150-200 lines).
+   Step 12 lands the structural template with `admit ()` body; the math
+   close is deferred to a USER-lane session matching Track 4 mont_mul's
+   depth.  Once closed, the AVX2 `Operations::decompose` impl-method
+   body (`src/simd/avx2.rs:376`) carries a real proof modulo this
+   admit. *)
+let lemma_decompose_spec_eq_decompose (gamma2 r: i32)
+    : Lemma
+        (requires
+          (v gamma2 == 95232 \/ v gamma2 == 261888) /\
+          Spec.Utils.is_i32b 8380416 r)
+        (ensures
+          (let (r0_s_avx, r1_s_avx) = Spec.MLDSA.Math.decompose_spec gamma2 r in
+           let (r0_int, r1_int, _) = Spec.MLDSA.Math.decompose (v gamma2) (v r) in
+           v r0_s_avx == r0_int /\ v r1_s_avx == r1_int))
+  = admit ()
+
 (* === Track 4 (Step 9.6 AVX2 montgomery_multiply) === *)
 
 (* Bound + mod-q congruence for `Spec.MLDSA.Math.mont_mul`.

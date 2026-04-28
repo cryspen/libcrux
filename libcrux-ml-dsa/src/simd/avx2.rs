@@ -374,8 +374,99 @@ impl Operations for AVX2SIMDUnit {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig = *simd_unit;
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
+        );
         arithmetic::decompose(gamma2, &simd_unit.value, &mut low.value, &mut high.value);
+        hax_lib::fstar!(
+            r#"
+            // Per-lane bridge: AVX2 free fn post (decompose_spec shape) →
+            // trait post (combined gamma2-conditional bound + lane post).
+            // Mirror of Step 11 Track 4 mont_mul template.
+            //
+            // The AVX2 free fn ensures, per-lane:
+            //   (to_i32x8 low.value k, to_i32x8 high.value k) == decompose_spec gamma2 r_k
+            // where r_k = to_i32x8 _orig.value k.
+            //
+            // To discharge `decompose_lane_post`, we need:
+            //   under v r_k ∈ [0, q):
+            //     let pair = Hacspec_ml_dsa.Arithmetic.decompose r_k gamma2 in
+            //     v low_k == v (snd pair) /\ v high_k == v (fst pair)
+            //
+            // Chain: decompose_spec ≡ Spec.MLDSA.Math.decompose (Track-B bridge)
+            //        ≡ Hacspec.decompose (lemma_decompose_lane_commute_conditional).
+            //
+            // For v r_k outside [0, q) (allowed by the trait pre's
+            // is_i32b_array_opaque FIELD_MAX), the lane post is vacuously
+            // true.
+            // pf_eq: per-lane equation conjunct of decompose_lane_post.
+            // The lane post is `==>`-conditional on v r ∈ [0, q); for r in
+            // that range, we chain the bridge and the existing
+            // lemma_decompose_lane_commute_conditional.  Outside [0, q),
+            // the implication is vacuously true.
+            let pf_eq (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) =
+                let r = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k in
+                let r0 = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k in
+                let r1 = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k in
+                if v r >= 0 && v r < 8380417 then begin
+                    Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_spec_eq_decompose
+                        $gamma2 r;
+                    let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v $gamma2) (v r) in
+                    assert (v r0 == r0_s /\ v r1 == r1_s);
+                    Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_lane_commute_conditional
+                        $gamma2 r r0 r1
+                end else
+                    reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post)
+                                  (Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
+                                      $gamma2 r r0 r1)
+            in
+            Classical.forall_intro pf_eq;
+            // pf_bound: per-lane gamma2-conditional bound.  The bridge lemma
+            // (under v r ∈ trait range = [-q+1, q-1]) plus lemma_decompose_bound
+            // gives the centered-r0 bound and the r1 ∈ [0, m) bound.  These
+            // unfold to `is_i32b gamma2 low_k` and `is_i32b m high_k` on the
+            // matching gamma2 branch.
+            let pf_bound (k: nat{k < 8}) : Lemma
+                (ensures
+                    (v $gamma2 == 95232 ==>
+                        Spec.Utils.is_i32b 95232
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k) /\
+                        Spec.Utils.is_i32b 44
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) /\
+                    (v $gamma2 == 261888 ==>
+                        Spec.Utils.is_i32b 261888
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k) /\
+                        Spec.Utils.is_i32b 16
+                            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) ) =
+                let r = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k in
+                Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_spec_eq_decompose
+                    $gamma2 r;
+                Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_bound $gamma2 r
+            in
+            Classical.forall_intro pf_bound;
+            // Fold per-lane bounds into array-level opaque on either branch.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 95232
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 44
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 261888
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 16
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#
+        );
     }
 
     #[inline(always)]
