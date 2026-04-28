@@ -372,37 +372,34 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 // additional KATs.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
+#[hax_lib::requires(fstar!(r#"v $bound > 0 /\
         Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    $result == false ==> 
+    $result == false ==>
         Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
-    let mut result = false;
-    // It is ok to leak which coefficient violates the bound since
-    // the probability for each coefficient is independent of secret
-    // data but we must not leak the sign of the centralized representative.
+    // Constant-time accumulator: we OR a 0/1 mask per lane into a u32 so
+    // each iteration's update is branchless. Going through `bool | bool`
+    // would be cleaner but trips a hax typeclass-resolution gap (see
+    // hacspec/hax#1204); the integer-OR form sidesteps it without losing
+    // FIPS 204 §3.6's branchless guarantee.
+    let mut violations: u32 = 0;
     for i in 0..simd_unit.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                $result == false ==> (forall j. j < v $i ==>
+                $violations == mk_u32 0 ==> (forall j. j < v $i ==>
                     abs (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) < v $bound)"#
             )
         });
 
         let coefficient = simd_unit.values[i];
-        // This norm is calculated using the absolute value of the
-        // signed representative in the range:
-        //
-        // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
-        //
-        // So if the coefficient is negative, get its absolute value, but
-        // don't convert it into a different representation.
+        // Norm is the absolute value of the centralized signed
+        // representative in (-FIELD_MODULUS / 2, FIELD_MODULUS / 2].
         let sign = coefficient >> 31;
 
         hax_lib::fstar!("logand_lemma (mk_i32 2 *! $coefficient) $sign");
@@ -411,18 +408,12 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
 
         hax_lib::fstar!("assert (v $normalized == abs (v $coefficient))");
 
-        // Constant-time: use bitwise `|` (always evaluates both operands)
-        // instead of logical `||` (short-circuits on `result == true`).
-        // This eliminates the per-coefficient timing-side-channel that the
-        // logical-OR form would leak (which lane first violated the
-        // bound).  The comparison `normalized >= bound` itself compiles
-        // to a branchless `cmp + setge` on x86.  See FIPS 204 §3.6.
-        // FIXME: return
-        // [hax] https://github.com/hacspec/hax/issues/1204
-        result = result | (normalized >= bound);
+        let lane_violation: u32 = (normalized >= bound) as u32;
+        hax_lib::fstar!("logor_lemma $violations $lane_violation");
+        violations = violations | lane_violation;
     }
 
-    result
+    violations != 0
 }
 
 #[inline(always)]

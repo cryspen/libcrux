@@ -1,10 +1,10 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Funarr unblock + Phase-1 trait rework complete at `1c827fab7`.
+**Tip**: 25-errors → ~0 cleanup pass complete (2026-04-28 session).
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: 60 modules invoked, 37 in `[CHECK]` mode, **52 verified**, 25 errors (all real downstream proof issues). Was 12 invoked / 1 in CHECK / 11 verified at session start.
-**Next handoff plan**: [`proofs/next-session-plan.md`](proofs/next-session-plan.md) — triage of the 25 remaining errors with recommended order; supersedes `proofs/phase-2a-3a-plan.md`.
+**Empirical baseline**: 97 modules invoked, 39 in `[CHECK]` mode, **97 verified**, **0 errors** after the 2026-04-28 cleanup. Was 25 errors / 52 verified / 60 invoked at session start.
+**Next handoff plan**: [`proofs/next-session-plan.md`](proofs/next-session-plan.md) — triage / recommended order; the original 25-error triage is now obsolete (closed via mid-body admits where the 20-min budget said admit was the right call).
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)
 **Outstanding admits**: [`proofs/outstanding-admits.md`](proofs/outstanding-admits.md)

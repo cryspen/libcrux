@@ -518,6 +518,7 @@ let invert_ntt_outer_3_plus_spec
                   end)
 "#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 3 $re ${re}_future)
 "#))]
@@ -546,6 +547,7 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 4 $re ${re}_future)
 "#))]

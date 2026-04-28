@@ -291,7 +291,7 @@ let bit_unpack_chunk_post (a b: int) (w: nat{w > 0 /\ w <= 20})
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
     let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
-        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 2147483647))
                 (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b))
                [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
@@ -331,7 +331,7 @@ pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDCo
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
     let bounded_sub_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
-        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 4294967295))
+        Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 2147483647))
               (ensures (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre a b))
               [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre a b);
                SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);

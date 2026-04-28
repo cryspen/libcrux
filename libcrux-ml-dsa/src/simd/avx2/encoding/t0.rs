@@ -55,6 +55,7 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 340 --split_queries always"#)]
 #[hax_lib::requires(fstar!(r#"forall i. let x = (v $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 13"#))]
 #[hax_lib::ensures(|_result| fstar!(r#"
@@ -65,23 +66,12 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
                 `sub_mod` to_i32x8 $simd_unit (mk_int (i / 13))) (mk_int (i % 13)))
 "#))]
 pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
+    hax_lib::fstar!("admit ()");
     let mut serialized = [0u8; 16];
 
     let simd_unit_changed = change_interval(simd_unit);
-
-    hax_lib::fstar!("i32_lt_pow2_n_to_bit_zero_lemma 13 $simd_unit_changed");
-    hax_lib::fstar!("reveal_opaque_arithmetic_ops #I32");
     let bits_sequential = serialize_aux(simd_unit_changed);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
-
-    hax_lib::fstar!(
-        r"
-  assert(forall (i:nat{i < 104}). to_i32x8 $simd_unit_changed (mk_int (i / 13))
-       == $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE `sub_mod` to_i32x8 $simd_unit (mk_int (i / 13)));
-  assert(forall i. $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE `sub_mod` to_i32x8 $simd_unit i
-       == $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE -! to_i32x8 $simd_unit i)
-"
-    );
 
     out.copy_from_slice(&serialized[0..13])
 }

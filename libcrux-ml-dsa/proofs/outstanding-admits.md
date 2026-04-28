@@ -36,10 +36,20 @@ so subsequent sessions don't burn budget retrying:
   into 4 per-zeta sub-functions to split the proof obligations; or
   await SIMD model unification (`libcrux-ml-kem/proofs/simd-model-unification-plan.md`).
 
-### Libcrux_ml_dsa.Simd.Avx2.Invntt.{layer_1, layer_2}
+### Libcrux_ml_dsa.Simd.Avx2.Invntt.{layer_3, layer_4}
+- **File / lines**: `libcrux-ml-dsa/src/simd/avx2/invntt.rs:524` (layer_3), `:552` (layer_4)
+- **Annotation**: `#[hax_lib::fstar::verification_status(panic_free)]`
 - **Phase**: 3E
-- **Diagnosis**: Analogous to NTT layers 1–2.
-- **Suggested mitigation**: USER lane. Same refactor approach.
+- **Diagnosis**: Both layers expand into 16 / 8 calls of `outer_3_plus`
+  carrying the wide `invert_ntt_outer_3_plus_spec` post. Z3 times out at
+  the function-level VC (12s with rlimit 80) on the conjunction across
+  iterations even at moderate normalization. Analogous to NTT layers 1–2.
+- **Suggested mitigation**: USER lane. Refactor each AVX2 layer body
+  into per-zeta sub-functions to split the proof obligations; or await
+  SIMD model unification.
+- **Note**: layer_3 admit unblocked layer_4's Z3 timeout (which was
+  hidden behind layer_3's earlier failure) — both admits land together
+  in the 2026-04-28 session.
 
 ### Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_full_commute
 - **Phase**: 2F
@@ -112,26 +122,84 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits/specs.rs:292-368`
   (the four `#[hax_lib::fstar::after]` SMTPat-bridge lemmas).
 - **Annotation**: `admit ()` in lemma body.
-- **Phase added**: pre-existing (predates Phase 1; surfaced once
-  `lemma_decompose_lane_lookup` cleared).
+- **Phase added**: pre-existing; bound tightened in 2026-04-28 session.
 - **Diagnosis**: The four lemmas claim
-  `is_i32b_array_opaque b1 a /\ is_i32b_array_opaque b2 b /\ b1+b2 ≤ u32::MAX`
-  implies `add_pre a b` (i.e. each lane sum fits in i32). But `b1+b2 ≤
-  u32::MAX = 2^32-1` allows the sum `v a[i] + v b[i]` to reach `2^32-1`,
-  which exceeds `i32::MAX = 2^31-1`. The bound is genuinely insufficient
-  to prove the conclusion. Correct constraint would be `b1+b2 ≤ i32::MAX`
-  (= `2^31-1`) for `add_pre`, or a similarly tighter constraint for
-  `add_post`/`sub_pre`/`sub_post`.
-- **Suggested mitigation**: USER lane / pre-Phase-1 owner. Tighten the
-  constraint on `b1+b2` to `2147483647` (i32::MAX) in the four lemmas.
-  Once tightened, the `reveal_opaque (\`%add_pre)` body should close.
-  Alternatively, weaken `add_pre`/`sub_pre`/`add_post`/`sub_post` to
-  not require i32-fit (using saturating semantics).
-- **Template value**: this is the canonical bounds-bridge SMTPat used by
-  every downstream caller of `add`/`subtract` to satisfy the trait pre.
-  Until tightened, downstream proofs that rely on this SMTPat are
-  effectively unsound (they admit a false lemma). NEEDS FIX before any
-  serious correctness claim against `add_pre`/`add_post`.
+  `is_i32b_array_opaque b1 a /\ is_i32b_array_opaque b2 b /\ b1+b2 ≤ <bound>`
+  implies `add_pre a b` (i.e. each lane sum fits in i32). The bound was
+  `4294967295` (u32::MAX) which is unsound (allows `v a[i] + v b[i]` to
+  reach 2^32-1, exceeding i32::MAX = 2^31-1). The 2026-04-28 session
+  tightened the bound to `2147483647` (i32::MAX = 2^31-1). The four
+  lemma bodies still carry `admit ()`; they should close mechanically
+  with the tighter bound via `reveal_opaque` plus int arithmetic.
+- **Suggested mitigation**: remove the four `admit ()` bodies and replace
+  with `reveal_opaque (\`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque); reveal_opaque (\`%add_pre) (add_pre)` (and analogously for sub/post). ~20 min.
+
+### Libcrux_ml_dsa.Simd.Avx2.Encoding.{Gamma1,T0,T1,Error} body admits
+- **File / lines**:
+  - `src/simd/avx2/encoding/gamma1.rs:50` (`serialize_when_gamma1_is_2_pow_17`)
+  - `src/simd/avx2/encoding/gamma1.rs:118` (`serialize_when_gamma1_is_2_pow_19`)
+  - `src/simd/avx2/encoding/gamma1.rs:211` (`deserialize_when_gamma1_is_2_pow_17_unsigned`)
+  - `src/simd/avx2/encoding/gamma1.rs:243` (`deserialize_when_gamma1_is_2_pow_19_unsigned`)
+  - `src/simd/avx2/encoding/t0.rs:67` (`serialize`)
+  - `src/simd/avx2/encoding/t1.rs:13` (`serialize`)
+  - `src/simd/avx2/encoding/error.rs:56` (`serialize_when_eta_is_2`)
+  - `src/simd/avx2/encoding/error.rs:111` (`serialize_when_eta_is_4`)
+- **Annotation**: `verification_status(panic_free)` plus
+  `hax_lib::fstar!("admit ()")` mid-body (prefix). The `admit ()` puts F\*
+  in a `False` context so all subsequent body assertions / out-of-bounds
+  checks / strong-post discharges trivially succeed.
+- **Phase added**: 2026-04-28 (Step 3 admit-parity path A from
+  `next-session-plan.md`).
+- **Diagnosis**: All eight encoding free functions carry strong
+  bit-vector posts (`u8_to_bv`/`i32_to_bv`-shaped) that timed out
+  individually under `--z3rlimit 140-800`. The dispatcher functions
+  (`Operations::error_serialize`, etc.) do not require a length on
+  `out`, so propagating `out.len() == N` upstream would have changed
+  trait pre — disallowed by the hard rules. Mid-body `admit ()` matches
+  the trait-side admit posture (T=🟡) without a trait-pre change.
+- **Suggested mitigation**: Phase 2D / 3A iv work — extend
+  `fstar-helpers/fstar-bitvec/BitVecEq.fst` for offset-encoded pack
+  shapes, then carry `BitVecEq.int_t_array_bitwise_eq` posts through
+  per-method to discharge the bit-vector identities. ML-KEM has the
+  template for non-offset variants; gamma1/t0 widths use offset packing.
+
+### Libcrux_ml_dsa.Arithmetic.power2round_vector body admit
+- **File / lines**: `libcrux-ml-dsa/src/arithmetic.rs:54-72`
+- **Annotation**: `verification_status(panic_free)` on
+  `power2round_vector` and inner helper `power2round_one_ring_element`,
+  plus `hax_lib::fstar!("admit ()")` at the top of the helper body.
+- **Phase added**: 2026-04-28.
+- **Diagnosis**: hax extracts the nested `for i in 0..t.len()` /
+  `for j in 0..t[i].simd_units.len()` loops as an outer fold whose
+  accumulator type is `(t_Slice, t_Slice)` with no length-preservation
+  invariant. After the outer fold rebinds `t` inside the closure, F\*
+  loses the refinement `i < t.len()` needed for `t[i]` and the inner
+  fold call to `SIMDUnit::power2round`. Function post is `Prims.l_True`
+  so the body admit has no upstream strength impact.
+- **Suggested mitigation**: add a hax loop_invariant that re-asserts
+  `Seq.length t == old_t_len` and `Seq.length t1 == old_t1_len`, or
+  refactor the helper to take a slice index pair instead of a `&mut
+  PolynomialRingElement`. ~20 min.
+
+### Libcrux_ml_dsa.Simd.Portable.infinity_norm_exceeds u32-mask refactor
+- **File / lines**: `libcrux-ml-dsa/src/simd/portable/arithmetic.rs:380-426`
+- **Annotation**: none — proof passes after refactor (no admit).
+- **Phase added**: 2026-04-28.
+- **Diagnosis**: previously used `result | (normalized >= bound)` on
+  `bool`s for FIPS 204 §3.6 constant-time semantics, but hax has no
+  `BitOr<bool, bool>` instance (hacspec/hax#1204). Refactored the
+  accumulator to `u32` (`violations | (normalized >= bound) as u32`)
+  with `logor_lemma` to discharge `violations == 0 ==> ...` invariant
+  preservation. Constant-time guarantee preserved.
+
+### Libcrux_ml_dsa.Sample.inside_out_shuffle cloop refactor
+- **File / lines**: `libcrux-ml-dsa/src/sample.rs:438-464`
+- **Annotation**: none — proof passes after refactor.
+- **Phase added**: 2026-04-28.
+- **Diagnosis**: `cloop! { for byte in randomness.iter() { ... } }`
+  extracted to `Iterator.f_fold` with a complex tuple-state closure,
+  triggering a typeclass-resolution failure on `t_FnOnce`. Refactored
+  to plain `for i in 0..randomness.len() { let byte = randomness[i]; ... }`.
 
 ### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)

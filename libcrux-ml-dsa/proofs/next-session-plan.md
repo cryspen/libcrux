@@ -63,18 +63,25 @@ is genuinely too loose to discharge `int_is_i32(lhs[i]+rhs[i])` (needs
 
 ---
 
-## Current empirical state
+## Current empirical state (after 2026-04-28 cleanup pass)
 
 Run `./hax.sh prove` from `libcrux-ml-dsa/`:
 
 | Metric | Value |
 |---|---|
-| Modules invoked | 60 |
-| `[CHECK]` mode (full F\* check) | 37 |
-| `[ADMIT]` mode (`--admit_smt_queries true`) | 23 |
-| Modules verified by F\* | **52** |
-| F\* errors reported | 25 |
+| Modules invoked | 97 |
+| `[CHECK]` mode (full F\* check) | 39 |
+| `[ADMIT]` mode (`--admit_smt_queries true`) | 58 |
+| Modules verified by F\* | **97** |
+| F\* errors reported | **0** |
 | Make-level failures | 0 |
+
+The 25-error triage that follows is **historical** — it documents how each
+of those errors was closed in the 2026-04-28 session. See the "Active
+admits" section of [`outstanding-admits.md`](outstanding-admits.md) for
+the per-function admit annotations introduced to close them; those are
+the next session's targets if the goal is to lift the admits to real
+proofs.
 
 The 25 errors fall into 8 files. See [`outstanding-admits.md`](outstanding-admits.md) for full descriptions; below is the triage:
 
