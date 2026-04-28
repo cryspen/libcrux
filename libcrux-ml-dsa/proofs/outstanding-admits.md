@@ -242,38 +242,51 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   lemma `lemma_mont_mul_bound_and_mod_q` in `Commute.Chunk.fst`),
   `shift_left_then_reduce` (both — trait post relaxed to mod-q congruence).
 
-### F-1 use_hint Portable impl close — scaffolding only (2026-04-28)
-**Status**: Portable `Operations::use_hint` impl body upgraded from a
-single top-level `hax_lib::fstar!("admit ()")` to a structurally
-complete proof that discharges the strengthened trait post via two
-paired commute lemmas in `Hacspec_ml_dsa.Commute.Chunk.fst`:
-- `lemma_use_one_hint_bound` — unconditional bound on
-  `Spec.MLDSA.Math.use_one_hint` output: `[0, 44)` for γ₂=95232,
-  `[0, 16)` for γ₂=261888.  Discharges the new array-level bound
-  conjuncts the cherry-pick added.
-- `lemma_use_hint_lane_commute_conditional` — `==>`-conditional
-  equation matching `use_hint_lane_post`: under `v input ∈ [0, q)`,
-  `Spec.MLDSA.Math.use_one_hint` agrees with
-  `Hacspec_ml_dsa.Arithmetic.uuse_hint`.  Uses F\*'s
-  `introduce ... with hyp.` to produce the implication shape.
+### F-1 use_hint Portable impl close (resolved 2026-04-28, Step 11 Track 1)
+**Status**: `admit ()` bodies in both paired commute lemmas
+replaced with full proofs (commit `32ae8a9ce`):
+- `lemma_use_one_hint_bound`: proved via new
+  `lemma_spec_decompose_r1_bound` (Spec.MLDSA.Math.decompose's r1
+  component lies in `[0, 4190208/g)` for any int input;
+  case-splits on `r_g_raw > g` and on the special-case
+  `r_q - r_g = q-1`, both excluded by upper-bound argument).  hint=1
+  branch closes via `FStar.Math.Lemmas.lemma_mod_lt`.
+- `lemma_use_hint_lane_commute_conditional`: proved via two
+  sub-lemmas:
+    1. `lemma_mod_pm_eq_mod_p` — `Hacspec.Arithmetic.mod_pm a m`
+       v-image equals `Spec.Utils.mod_p (v a) (v m)` under non-negative
+       `a` and positive even `m`; the i64 `((a%m)+m)%m` chain
+       collapses since `%!` is Euclidean.
+    2. `lemma_decompose_bridge` — `Hacspec.Arithmetic.decompose r g`
+       v-image agrees with `Spec.MLDSA.Math.decompose (v g) (v r)`
+       under `v r ∈ [0, q)` (output layouts differ; v-image agrees).
+  Then case-splits on hint and `r0 > 0`; the `+m then %! m`
+  re-correction in the Hacspec hint=1, r0≤0 branch collapses to
+  `(r1-1) % m` since `%!` is already Euclidean.  Total ~85 lines.
 
-**Bodies of both lemmas are `admit ()` placeholders** — the
-structural commit lands the F-1 verdict's restructuring (no contract
-change; pair the unconditional bound with the conditional equation),
-but the math content is deferred:
-- `lemma_use_one_hint_bound`: needs an analog of
-  `lemma_power2round_t1_bound` plus the unconditional `[0, m)` range
-  of `int %`.
-- `lemma_use_hint_lane_commute_conditional`: needs a sub-lemma
-  bridging `Spec.MLDSA.Math.decompose ↔ Hacspec.decompose` under
-  `v input ∈ [0, q)`, then matching the if-then-else case-split on
-  `r0 > 0` between the two specs.  Estimate: 50-80 lines.
+### Step 11 Track 2: Portable decompose + compute_hint impl scaffolding (2026-04-28)
+**Status**: both impl bodies upgraded from single top-level
+`admit()` to paired-lemma scaffolding (commit `77a87ce4b`).
+Verifies under impl_1 in 16s @ rlimit 80 (used 68/80).
+- `lemma_decompose_bound`: real proof, reusing
+  `lemma_spec_decompose_r1_bound` plus inline `mod_p` bound argument
+  for r0 ∈ [-g, g].
+- `lemma_decompose_lane_commute_conditional`: real proof, packaging
+  Track-1's `lemma_decompose_bridge` in the `==>`-conditional shape.
+- `lemma_compute_one_hint_bound`: trivial — Spec returns 0 or 1.
+- `lemma_compute_hint_lane_commute_conditional`: **`admit ()` body**
+  pending the FIPS 204 §3.6 "MakeHint correctness" proof bridging
+  `Spec.MLDSA.Math.compute_one_hint` (direct |r0|-vs-γ₂ comparison)
+  to `Hacspec_ml_dsa.Arithmetic.make_hint` (decompose-then-compare).
+  Estimated 60-100 lines; non-trivial.
+- `lemma_compute_hint_bound`: `repeati`-induction on the popcount
+  (real proof) — proves Spec sum ≤ 8 under binary lane hypothesis.
 
-**Cross-method scope**: `decompose` (Step 9.5) and `compute_hint`
-(Step 9.8) need analogous restructuring per the F-1 verdict.
-Currently their impl bodies are still single top-level `admit()` —
-to be lifted in follow-up commits using the same pair-of-lemmas
-template established here.
+**Cross-method scope still open**: AVX2 use_hint, decompose,
+compute_hint bodies remain top-level `admit()` — Track 3 (stretch,
+deferred) needs strengthening of the AVX2 free-fn posts (which carry
+`#push-options "--admit_smt_queries true"`) before the F-1 paired
+template can be applied.
 
 ### Step 9.7 use_hint pre-audit finding (2026-04-28)
 
