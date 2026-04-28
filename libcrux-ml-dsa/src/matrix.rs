@@ -182,20 +182,10 @@ pub(crate) fn add_vectors<SIMDUnit: Operations>(
 ) {
     hax_lib::fstar!("admit ()");
     for i in 0..dimension {
-        hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"v i <= v dimension /\
-              (forall (k:nat). k < v i ==>
-                  (forall (j:nat). j < 32 ==>
-                      Spec.Utils.is_i32b_array_opaque 16760832
-                          (i0._super_i2.f_repr (Seq.index (Seq.index lhs k).f_simd_units j)))) /\
-              (forall (k:nat). k >= v i /\ k < v dimension ==>
-                  (forall (j:nat). j < 32 ==>
-                      Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-                          (i0._super_i2.f_repr (Seq.index (Seq.index lhs k).f_simd_units j)) /\
-                      Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-                          (i0._super_i2.f_repr (Seq.index (Seq.index rhs k).f_simd_units j))))"#
-        ));
-        PolynomialRingElement::<SIMDUnit>::add(&mut lhs[i], &rhs[i]);
+        // The chain through add_bounded directly forwards a polynomial-level
+        // bound; the wrapper-level proof closure (post + loop_invariant)
+        // is a known follow-up — see outstanding-admits.md.
+        PolynomialRingElement::<SIMDUnit>::add_bounded(&mut lhs[i], 8380416, &rhs[i], 8380416);
     }
 }
 

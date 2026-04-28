@@ -216,6 +216,20 @@ these are local to the above-trait lane.
 `set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
 in `0d11b64a9` (no admit needed there).
 
+### Polynomial::add_bounded helper (no admit)
+- **File**: `src/polynomial.rs:93-127`
+- **Status**: proves clean (`bounded_add_post` SMTPat fires per simd-unit
+  in the body's loop_invariant; pre `is_i32b_array_opaque b1 self ∧
+  is_i32b_array_opaque b2 rhs ∧ b1+b2 ≤ i32::MAX` gives polynomial-level
+  post `is_i32b_array_opaque (b1+b2) self_future`).
+- **Mirrors**: ML-KEM's `add_to_ring_element(myself, rhs, _bound)` recipe
+  — ghost bound parameters thread the bound chain through composition
+  without forcing per-lane forall expansion at every call site.
+- **Use**: `add_vectors`, `subtract_vectors` (when `subtract_bounded` is
+  added) and any matrix wrapper that accumulates `j × FIELD_MAX` over
+  `j` iterations should call `Polynomial::add_bounded` instead of plain
+  `Polynomial::add`.
+
 ### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,vector_times_ring_element,add_vectors,subtract_vectors,compute_w_approx}
 - **File**: `src/matrix.rs`
 - **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix)
