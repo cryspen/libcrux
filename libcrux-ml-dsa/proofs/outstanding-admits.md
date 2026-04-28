@@ -288,18 +288,21 @@ deferred) needs strengthening of the AVX2 free-fn posts (which carry
 `#push-options "--admit_smt_queries true"`) before the F-1 paired
 template can be applied.
 
-### Step 11 Track 4: AVX2 montgomery_multiply impl scaffolding (2026-04-28)
-**Status**: AVX2 `Operations::montgomery_multiply` impl body
-upgraded from top-level `admit()` to paired-lemma scaffolding
-mirroring the AVX2 reduce template (Step 9).  `Simd.Avx2.fst`
-verifies in 12.5s; impl_1 in 4.5s @ rlimit 80 (used 8.4/80).
+### Step 11 Track 4: AVX2 montgomery_multiply impl close (2026-04-28, RESOLVED)
+**Status**: AVX2 `Operations::montgomery_multiply` impl body closes
+without admits.  `Simd.Avx2.fst` verifies in 12.5s; impl_1 in 4.5s
+@ rlimit 80 (used 8.4/80).
 - `lemma_mont_mul_bound_and_mod_q` (new in `Commute.Chunk.fst`):
   centered-bound + mod-q congruence on `Spec.MLDSA.Math.mont_mul`.
-  **`admit ()` body** — ~70-100-line ML-KEM-style i32/i64 Montgomery
-  correctness proof, USER lane.  Mirror of
-  `Spec.Utils.lemma_mont_mul_red_i16_int`
+  **Real proof** (no admit) — ~80-line i32/i64 Montgomery correctness
+  argument, mirror of `Spec.Utils.lemma_mont_mul_red_i16_int`
   (`libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fst:505`) adapted to
-  i32/i64 with shift 32 and q=8380417, q'=58728449, R^-1=8265825.
+  i32/i64 with shift 32, q=8380417, q'=58728449, R^-1=8265825.  Key
+  fact `(58728449 * 8380417) % pow2 32 == 1` discharged via
+  `assert_norm`; bound + mod-q split via `Spec.Utils.lemma_*_at_percent`
+  helpers and `FStar.Math.Lemmas.lemma_div_exact / lemma_mod_*`.
+  Cold first-verify takes ~330s without hints (heavy non-linear arith);
+  hint-cached re-verify <1s.
 - AVX2 `montgomery_multiply` impl: per-lane
   `lemma_mont_mul_bound_and_mod_q` on `to_i32x8` outputs, then
   `lemma_montgomery_multiply_lane_intro` to package into

@@ -604,20 +604,15 @@ let lemma_compute_hint_lane_commute_conditional
 
    Mirror of the ML-KEM template `lemma_mont_mul_red_i16_int`
    (`libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fst:505`) with
-   i16→i32, i32→i64, shift 16→32, q=3329→8380417, q'=3327→58728449,
-   R^-1=169→8265825.
+   i16→i32, i32→i64, shift 16→32, q=3329→8380417,
+   q'=−3327→58728449 (note: ML-DSA stores q' as positive,
+   58728449 = q^-1 mod 2^32; ML-KEM stored as -3327 ≡ q^-1 mod 2^16
+   due to negation convention), R^-1=169→8265825.
 
-   The proof unfolds `Spec.MLDSA.Math.mont_mul` and uses the standard
-   32-bit Montgomery correctness argument: writing prod = v x * v y
-   (i64), the result equals (prod / 2^32) - (k * q / 2^32) with
-   k = ((prod @% 2^32) * q') @% 2^32, which is congruent to
-   prod * 8265825 mod q (since 2^32 * 8265825 ≡ 1 mod q) and lies
-   in (-q, q).
-
-   Body is `admit ()` — pure-int Montgomery proof, ~70-100 lines,
-   USER lane.  Discharged structurally so the AVX2
-   `Operations::montgomery_multiply` impl body is no longer a
-   top-level `admit ()`. *)
+   The Montgomery property `q' * q ≡ 1 (mod R)`:
+     58728449 * 8380417 = 4294967296 * 114592 + 1, so the product
+     mod 2^32 = 1.  Verified via assert_norm. *)
+#push-options "--z3rlimit 600 --fuel 0 --ifuel 1"
 let lemma_mont_mul_bound_and_mod_q (x y: i32)
     : Lemma
         (requires Spec.Utils.is_i32b 8380416 y)
@@ -625,7 +620,103 @@ let lemma_mont_mul_bound_and_mod_q (x y: i32)
           Spec.Utils.is_i32b 8380416 (Spec.MLDSA.Math.mont_mul x y) /\
           (v (Spec.MLDSA.Math.mont_mul x y)) % 8380417 ==
           (v x * v y * 8265825) % 8380417)
-  = admit ()  (* USER lane: ML-KEM-style i32/i64 Montgomery proof,
-                 ~70-100 lines.  Mirror of
-                 `Spec.Utils.lemma_mont_mul_red_i16_int` adapted
-                 to i32/i64 with shift 32 and q=8380417. *)
+  = Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype;
+    Spec.Intrinsics.reveal_opaque_arithmetic_ops #i64_inttype;
+    Spec.Intrinsics.reveal_opaque_cast_ops #i32_inttype #i64_inttype;
+    reveal_opaque (`%Spec.MLDSA.Math.mont_mul) (Spec.MLDSA.Math.mont_mul x y);
+    reveal_opaque (`%Spec.MLDSA.Math.i32_mul) (Spec.MLDSA.Math.i32_mul);
+    let prod : int = v x * v y in
+    // Step 1: product = i32_mul x y (i64 with v == prod, since |prod| < pow2 63).
+    assert_norm (pow2 31 * 8380416 < pow2 63);
+    Spec.Utils.lemma_range_at_percent prod (pow2 64);
+    let cast_x : i64 = cast x <: i64 in
+    let cast_y : i64 = cast y <: i64 in
+    Spec.Utils.lemma_range_at_percent (v x) (pow2 64);
+    Spec.Utils.lemma_range_at_percent (v y) (pow2 64);
+    assert (v cast_x == v x /\ v cast_y == v y);
+    let product : i64 = Spec.MLDSA.Math.i32_mul x y in
+    assert (v product == prod);
+    // Step 2: hi = cast_mod (product >> 32) <: i32 = prod / 2^32.
+    let prod_shifted : i64 = product >>! mk_i32 32 in
+    assert (v prod_shifted == prod / pow2 32);
+    assert_norm (pow2 31 * 8380416 / pow2 32 < pow2 31);
+    assert_norm (- (pow2 31 * 8380416 / pow2 32) > - pow2 31);
+    Spec.Utils.lemma_range_at_percent (prod / pow2 32) (pow2 32);
+    let hi : i32 = cast prod_shifted <: i32 in
+    assert (v hi == prod / pow2 32);
+    // Step 3: low = cast_mod product <: i32 = prod @% 2^32.
+    let low : i32 = cast product <: i32 in
+    assert (v low == prod @% pow2 32);
+    // Step 4: k = cast_mod (low *! Q' as i64) <: i32 = (low * Q') @% 2^32.
+    let q'_i32 = mk_i32 58728449 in
+    let cast_low : i64 = cast low <: i64 in
+    let cast_qp : i64 = cast q'_i32 <: i64 in
+    Spec.Utils.lemma_range_at_percent (v low) (pow2 64);
+    Spec.Utils.lemma_range_at_percent 58728449 (pow2 64);
+    assert (v cast_low == v low /\ v cast_qp == 58728449);
+    let lq_product : i64 = Spec.MLDSA.Math.i32_mul low q'_i32 in
+    assert_norm (pow2 31 * 58728449 < pow2 63);
+    Spec.Utils.lemma_range_at_percent (v low * 58728449) (pow2 64);
+    assert (v lq_product == v low * 58728449);
+    let k : i32 = cast lq_product <: i32 in
+    assert (v k == (v low * 58728449) @% pow2 32);
+    // Step 5: c = cast_mod ((k * Q as i64) >> 32) <: i32 = (k*q)/2^32 (under bound).
+    let q_i32 = mk_i32 8380417 in
+    let cast_k : i64 = cast k <: i64 in
+    let cast_q : i64 = cast q_i32 <: i64 in
+    Spec.Utils.lemma_range_at_percent (v k) (pow2 64);
+    Spec.Utils.lemma_range_at_percent 8380417 (pow2 64);
+    assert (v cast_k == v k /\ v cast_q == 8380417);
+    let kq_product : i64 = Spec.MLDSA.Math.i32_mul k q_i32 in
+    assert_norm (pow2 31 * 8380417 < pow2 63);
+    Spec.Utils.lemma_range_at_percent (v k * 8380417) (pow2 64);
+    assert (v kq_product == v k * 8380417);
+    let kq_shifted : i64 = kq_product >>! mk_i32 32 in
+    assert (v kq_shifted == (v k * 8380417) / pow2 32);
+    assert_norm (pow2 31 * 8380417 / pow2 32 < pow2 31);
+    assert_norm (- (pow2 31 * 8380417 / pow2 32) > - pow2 31);
+    Spec.Utils.lemma_range_at_percent ((v k * 8380417) / pow2 32) (pow2 32);
+    let c : i32 = cast kq_shifted <: i32 in
+    assert (v c == (v k * 8380417) / pow2 32);
+    // Step 6: result = sub_mod hi c.  Bound preservation needs |hi - c| < 2^31.
+    assert_norm (pow2 22 + (pow2 31 * 8380417 / pow2 32) < pow2 31);
+    let result : i32 = hi -! c in
+    assert (v result == v hi - v c);
+    // === MOD-q PROOF (mirroring ML-KEM's calc chain) ===
+    // Show: (k * q) % 2^32 == prod % 2^32  (so prod - k*q is divisible by 2^32).
+    assert_norm ((58728449 * 8380417) % pow2 32 == 1);
+    Spec.Utils.lemma_at_percent_mod (v low * 58728449) (pow2 32);
+    // (v k) * 8380417 ≡ ((v low * 58728449) @% 2^32) * 8380417 (mod 2^32)
+    // Apply lemma_mod_mul_distr_l to push @% inside:
+    L.lemma_mod_mul_distr_l (v low * 58728449) 8380417 (pow2 32);
+    L.lemma_mod_mul_distr_l ((v low * 58728449) @% pow2 32) 8380417 (pow2 32);
+    Spec.Utils.lemma_at_percent_mod (v low * 58728449) (pow2 32);
+    // Now: (v k * 8380417) % 2^32 == (v low * 58728449 * 8380417) % 2^32
+    //                            == (v low * 1) % 2^32  (using q'*q ≡ 1 mod 2^32)
+    //                            == v low % 2^32
+    //                            == prod % 2^32
+    L.lemma_mod_mul_distr_r (v low) (58728449 * 8380417) (pow2 32);
+    Spec.Utils.lemma_at_percent_mod prod (pow2 32);
+    assert ((v k * 8380417) % pow2 32 == prod % pow2 32);
+    // (prod - k*q) % 2^32 == 0:
+    L.lemma_mod_sub_distr prod (v k * 8380417) (pow2 32);
+    assert ((prod - v k * 8380417) % pow2 32 == 0);
+    L.lemma_div_exact (prod - v k * 8380417) (pow2 32);
+    // hi - c = prod/2^32 - (k*q)/2^32 = (prod - k*q)/2^32 (using lemma_div_exact).
+    assert (v result == (prod - v k * 8380417) / pow2 32);
+    // Final step: ((prod - k*q)/2^32) % q == (prod * 8265825) % q.
+    assert_norm ((pow2 32 * 8265825) % 8380417 == 1);
+    L.lemma_mod_mul_distr_r ((prod - v k * 8380417) / pow2 32) (pow2 32 * 8265825) 8380417;
+    L.lemma_div_exact (prod - v k * 8380417) (pow2 32);
+    L.lemma_mod_sub (prod * 8265825) 8380417 (v k * 8265825);
+    // === BOUND PROOF: |v result| ≤ q-1 = 8380416 ===
+    // |hi| ≤ pow2 22 (since |prod| ≤ pow2 31 * 8380416 < pow2 54, /pow2 32 < pow2 22).
+    // |c| ≤ pow2 31 * 8380417 / pow2 32 ≈ 2^22.  Combined |hi - c| < q from Montgomery.
+    // The tight bound: |v result * pow2 32| = |prod - k*q|.
+    //   |prod| < pow2 31 * 8380416 < (pow2 31) * q
+    //   |v k| < pow2 31 (i32 range), |v k * q| < pow2 31 * q
+    //   |prod - k*q| < 2 * pow2 31 * q = pow2 32 * q
+    //   |v result| < pow2 32 * q / pow2 32 = q, i.e., |v result| ≤ q-1.
+    assert (v product == prod);  // anchor
+    assert_norm (pow2 31 * 8380417 + pow2 31 * 8380416 < pow2 32 * 8380417)
+#pop-options
