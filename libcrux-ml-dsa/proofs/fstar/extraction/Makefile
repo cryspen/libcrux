@@ -11,6 +11,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.fst \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.T0.fst \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.T1.fst \
+	Libcrux_ml_dsa.Simd.Portable.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
@@ -20,6 +21,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.fst \
+	Libcrux_ml_dsa.Simd.Avx2.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.Specs.fst \
 	Libcrux_ml_dsa.Simd.Traits.fst \

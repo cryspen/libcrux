@@ -3,7 +3,7 @@
 **Branch**: `ml-dsa-proofs`
 **Tip**: 25-errors → ~0 cleanup pass complete (2026-04-28 session).
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: 97 modules invoked, 39 in `[CHECK]` mode, **97 verified**, **0 errors** after the 2026-04-28 cleanup. Was 25 errors / 52 verified / 60 invoked at session start.
+**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors** after the 2026-04-28 session. Was 25 errors / 52 verified / 60 invoked at session start. The +2 CHECK comes from lifting `Simd.Portable.fst` and `Simd.Avx2.fst` (the impl-Operations files / Step 5 wave-2A + 3A i/ii deliverable).
 **Next handoff plan**: [`proofs/next-session-plan.md`](proofs/next-session-plan.md) — triage / recommended order; the original 25-error triage is now obsolete (closed via mid-body admits where the 20-min budget said admit was the right call).
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)
@@ -50,8 +50,8 @@ to the USER lane (math-heavy or Z3-blocked) for human follow-up.
 | **1** | Strengthen Operations trait posts | done | `ml-dsa-proofs` |
 | **1.5** | Phase-1 rework: fix Specs.fst lemmas, relax over-strong posts, fix AVX2 reduce loop | done at `04fd066f0` | `ml-dsa-proofs` |
 | **1.6** | Funarr/Bitvec source-level unblock (`from_fn` two-implicit fix in core-models) + traits.rs Eta/Seq.length fixes | done at `42d4a3347` and `1c827fab7` | `ml-dsa-proofs` |
-| **2** | Portable Operations proofs (waves 2A–2G) | empirically unblocked; underlying primitive proofs already pass; impl-Operations file (`Simd.Portable.fst`) in ADMIT mode pending wave 2A | handoff |
-| **3** | AVX2 Operations proofs (waves 3A–3E) | empirically unblocked; arithmetic primitive proofs pass; encoding waves 3A iii/iv have 7 errors; INVNTT wave 3E in pre-budgeted admit zone (15 errors) | handoff |
+| **2** | Portable Operations proofs (waves 2A–2G) | impl-Operations file `Simd.Portable.fst` in CHECK mode (Step 5 lift); thin-wrapper structure currently has `f_*_post = true` — downstream callers see a weak post. Per-method `#[requires]/[ensures]` to match trait pre/post is the next tightening pass. | partial |
+| **3** | AVX2 Operations proofs (waves 3A–3E) | impl-Operations file `Simd.Avx2.fst` in CHECK mode (Step 5 lift, same caveat as Portable). Encoding waves 3A iii/iv have admit-parity admits (Step 3); INVNTT wave 3E in pre-budgeted admit zone. | partial |
 | **4** | Spec migration & integration (waves 4A–4D) | pending | handoff |
 
 ## Modules empirically verified at session end (1c827fab7)
