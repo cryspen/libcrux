@@ -95,4 +95,79 @@ functions in 3 modules.  Partial; full snapshot pending end-of-cascade._
 
 ---
 
+## Snapshot 2026-04-28 (Step 9.3 close)
+
+Source: combined `/tmp/sltr-portable.log` + `/tmp/sltr-avx2.log` +
+`verification_result.txt` after Step 9.3 commit (`b20a993a6`).
+650 Query-stats lines / 197 s total Z3 / 45 functions in 10 modules.
+
+### Top-20 per-function totals
+
+| # | Function | Module | total (s) | max query (ms) | queries | flags |
+|---|---|---|---:|---:|---:|---|
+| 1 | `invert_ntt_at_layer_3_` | `L_md.Simd.Portable.Invntt` | 70.97 | 8533 | 36 | — |
+| 2 | `ntt_at_layer_3_` | `L_md.Simd.Portable.Ntt` | 68.33 | 8285 | 36 | — |
+| 3 | `impl_1` | `L_md.Simd.Portable` | 11.12 | 11116 | 1 | FAILED, rlimit-sat |
+| 4 | `impl_1` | `L_md.Simd.Avx2` | 9.52 | 9517 | 1 | rlimit-sat |
+| 5 | `ntt_at_layer_0_` | `L_md.Simd.Portable.Ntt` | 4.84 | 170 | 64 | — |
+| 6 | `ntt_at_layer_4_` | `L_md.Simd.Portable.Ntt` | 4.40 | 892 | 20 | — |
+| 7 | `invert_ntt_at_layer_0_` | `L_md.Simd.Portable.Invntt` | 4.39 | 156 | 64 | — |
+| 8 | `invert_ntt_at_layer_4_` | `L_md.Simd.Portable.Invntt` | 4.28 | 822 | 20 | — |
+| 9 | `decompose_element` | `L_md.Simd.Portable.Arithmetic` | 4.12 | 292 | 18 | — |
+| 10 | `ntt_at_layer_1_` | `L_md.Simd.Portable.Ntt` | 3.61 | 117 | 64 | — |
+| 11 | `invert_ntt_at_layer_1_` | `L_md.Simd.Portable.Invntt` | 3.39 | 120 | 64 | — |
+| 12 | `ntt_at_layer_2_` | `L_md.Simd.Portable.Ntt` | 2.87 | 99 | 64 | — |
+| 13 | `invert_ntt_at_layer_2_` | `L_md.Simd.Portable.Invntt` | 2.71 | 89 | 64 | — |
+| 14 | `outer_3_plus` | `L_md.Simd.Portable.Invntt` | 0.25 | 30 | 13 | — |
+| 15 | `invert_ntt_at_layer_5_` | `L_md.Simd.Portable.Invntt` | 0.25 | 39 | 11 | — |
+| 16 | `ntt_at_layer_5_` | `L_md.Simd.Portable.Ntt` | 0.23 | 35 | 11 | — |
+| 17 | `impl_2__to_i32_array` | `L_md.Polynomial` | 0.21 | 215 | 1 | — |
+| 18 | `power2round_element` | `L_md.Simd.Portable.Arithmetic` | 0.20 | 46 | 5 | — |
+| 19 | `invert_ntt_montgomery` | `L_md.Simd.Portable.Invntt` | 0.19 | 20 | 13 | — |
+| 20 | `get_n_least_significant_bits` | `L_md.Simd.Portable.Arithmetic` | 0.19 | 32 | 13 | — |
+
+### Top module totals
+
+| # | Module | total (s) | functions tracked |
+|---|---|---:|---:|
+| 1 | `L_md.Simd.Portable.Invntt` | 86.62 | 13 |
+| 2 | `L_md.Simd.Portable.Ntt` | 84.68 | 14 |
+| 3 | `L_md.Simd.Portable` | 11.12 | 1 |
+| 4 | `L_md.Simd.Avx2` | 9.52 | 1 |
+| 5 | `L_md.Simd.Portable.Arithmetic` | 4.61 | 4 |
+| 6 | `L_md.Polynomial` | 0.21 | 1 |
+| 7 | `H_md.Commute.Chunk` | 0.20 | 2 |
+| 8 | `L_md.Simd.Avx2.Invntt` | 0.14 | 1 |
+| 9 | `L_md.Simd.Avx2.Ntt` | 0.12 | 3 |
+| 10 | `L_md.Simd.Avx2.Arithmetic` | 0.09 | 5 |
+
+### Notes / actions
+
+1. **`invert_ntt_at_layer_3_` and `ntt_at_layer_3_` are the
+   undisputed culprits.** Together they consume 139 s of the 197 s
+   sampled budget (70%). Each has 36 split queries with single-query
+   max ~8.5 s. **Optimization candidates** (in increasing effort):
+   (a) drop `--fuel 1` to `--fuel 0` if not needed for the inductive
+   loop_invariant; (b) factor each layer's loop body into a separate
+   per-zeta lemma and `Classical.forall_intro` over zeta indices —
+   collapses 36 split queries into 8 lemma-call queries; (c) split
+   the function into 4 sub-functions matching the 4-zeta SIMD parallel
+   pattern (the same approach we already use for AVX2 NTT layer-1/2).
+2. **`impl_1` rlimit-sat (rows 3-4)** — these are the trait-method
+   `impl` definitions in `Simd.Portable.fst` and `Simd.Avx2.fst`,
+   which now have ~30 method bodies with proof bodies inline. Single
+   query, single `--fuel 0 --ifuel 1 --rlimit 80` — at 11 s and 9.5 s
+   each they're saturating. Per-method `#push-options` to localize
+   rlimit/fuel may help, but this is fundamentally because all 30
+   methods share one function-level VC. Splitting `Simd.Portable.fst`
+   per-method would help (one query per method = 30× shorter queries),
+   but is a larger refactor.
+3. **`decompose_element` (#9, 4.1 s)** — non-NTT, the bit-tricky
+   corner-case mask. Worth checking if the corner-case branch could
+   factor into a sub-lemma.
+4. **vs prior snapshot:** `ntt_at_layer_3_` stable at 68 s; new entry
+   `invert_ntt_at_layer_3_` at 71 s (now top culprit). Otherwise no
+   regressions — improvements would only show after layer-3
+   refactor.
+
 <!-- Append future snapshots above this comment. -->
