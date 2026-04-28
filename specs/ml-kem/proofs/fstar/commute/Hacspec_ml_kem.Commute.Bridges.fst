@@ -437,16 +437,300 @@ let lemma_inv_ntt_layer_3_step_to_hacspec
 
 #pop-options
 
-(* ───── Layer 2 forward NTT bridge and layer 2 inverse NTT bridge ─────
-   STATUS: layer 1 forward + inverse and layer 3 inverse bridges are done
-   above (track A, Phase 7a).  Layer 2 (forward and inverse) remains.
-   Same pattern as `lemma_ntt_layer_1_step_to_hacspec`: per-lane bridge
-   reveals the right branch post for `b = lane → branch` and matches
-   against the trait branch post's per-lane FE equations, plus a
-   `Classical.forall_intro` + `Seq.lemma_eq_intro` per-vector composition.
+(*** Phase 7a (track A) — Inverse NTT layer 2 hacspec bridge ***)
 
-   First-cut implementation of layer 2 forward (lanes-to-branches mapping
-   `b = (i / 8) * 2 + ((i % 4) / 2)`) ran Z3 past 2.7 minutes on a single
-   sub-query — case-splits on the layer-2 branch post's nested `if`-ladder
-   for `base`/`off`/`z`.  Mitigation: explicitly enumerate `i ∈ {0..15}`
-   to remove the symbolic `b = ...`. *)
+(* Per-lane unfold helper for `zetas_2`. *)
+let zetas_2_lane (z0 z1: i16) (i: usize { v i < 2 }) :
+    Lemma (Seq.index (zetas_2 z0 z1) (v i)
+           == (if v i = 0 then mont_i16_to_spec_fe z0
+               else mont_i16_to_spec_fe z1))
+  = P.createi_lemma #P.t_FieldElement (mk_usize 2)
+      #(usize -> P.t_FieldElement)
+      (fun (j: usize { j <. mk_usize 2 }) ->
+        (if v j = 0 then mont_i16_to_spec_fe z0
+         else mont_i16_to_spec_fe z1) <: P.t_FieldElement)
+      i
+
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
+
+(* Per-lane unfold for `IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 4) zs`
+   at concrete lane `i ∈ [0, 16)`.  Layer-2 form: 2 zetas, partner stride 4,
+   group selector `i / 8`.  Mirror of `lemma_ntt_inverse_layer_n_16_2_lane`
+   for layer-2 step parameters. *)
+let lemma_ntt_inverse_layer_n_16_4_lane
+    (p: t_Array P.t_FieldElement (mk_usize 16))
+    (zs: t_Array P.t_FieldElement (mk_usize 2))
+    (i: nat {i < 16}) :
+    Lemma
+      (let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 4)
+                                            (Rust_primitives.unsize zs) in
+       let group : nat = i / 8 in
+       let idx   : nat = i % 8 in
+       (idx < 4 ==>
+         i + 4 < 16 /\
+         Seq.index result i ==
+           (IN.inv_butterfly (Seq.index zs group)
+                              (Seq.index p i)
+                              (Seq.index p (i + 4)))._1) /\
+       (idx >= 4 ==>
+         i >= 4 /\
+         Seq.index result i ==
+           (IN.inv_butterfly (Seq.index zs group)
+                              (Seq.index p (i - 4))
+                              (Seq.index p i))._2))
+  = let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+    P.createi_lemma #P.t_FieldElement (mk_usize 16)
+      #(usize -> P.t_FieldElement)
+      (fun (j: usize { j <. mk_usize 16 }) ->
+        let group:usize = j /! (mk_usize 2 *! mk_usize 4 <: usize) in
+        let idx:usize = j %! (mk_usize 2 *! mk_usize 4 <: usize) in
+        (if idx <. mk_usize 4 then
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j))
+                             (Seq.index p (v j + 4)))._1
+        else
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j - 4))
+                             (Seq.index p (v j)))._2)
+        <: P.t_FieldElement)
+      (sz i)
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Layer-2 inverse: per-branch lane bridge for branch b ∈ {0,1,2,3}.
+   Each helper is at a CONCRETE b literal so the trait branch_post's
+   nested if-ladder (`z = b<2 ? zeta0 : zeta1`, `base = b<2 ? 0 : 8`,
+   `off = b∈{0,2} ? 0 : 2`) collapses to literal values, avoiding the
+   ~2.7-min Z3 timeout that hit the symbolic-b approach (per the
+   first-cut layer-2-forward attempt mitigation note).
+
+   Branch lane assignments:
+     b=0: lanes (0, 1, 4, 5),   z=zeta0, group=0
+     b=1: lanes (2, 3, 6, 7),   z=zeta0, group=0
+     b=2: lanes (8, 9, 12, 13), z=zeta1, group=1
+     b=3: lanes (10,11,14,15),  z=zeta1, group=1 *)
+
+private
+let lemma_inv_ntt_layer_2_step_branch_0_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
+    (ensures
+      (let zs = zetas_2 zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe 0 == Seq.index rhs 0 /\
+       Seq.index r_fe 1 == Seq.index rhs 1 /\
+       Seq.index r_fe 4 == Seq.index rhs 4 /\
+       Seq.index r_fe 5 == Seq.index rhs 5))
+  = let zs = zetas_2 zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
+                  (TS.inv_ntt_layer_2_step_branch_post 0 in_arr zeta0 zeta1 out_arr);
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 0;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 1;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 4;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 5;
+    zetas_2_lane zeta0 zeta1 (sz 0);
+    mont_array_lane out_arr (sz 0);
+    mont_array_lane out_arr (sz 1);
+    mont_array_lane out_arr (sz 4);
+    mont_array_lane out_arr (sz 5);
+    mont_array_lane in_arr (sz 0);
+    mont_array_lane in_arr (sz 1);
+    mont_array_lane in_arr (sz 4);
+    mont_array_lane in_arr (sz 5)
+
+private
+let lemma_inv_ntt_layer_2_step_branch_1_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
+    (ensures
+      (let zs = zetas_2 zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe 2 == Seq.index rhs 2 /\
+       Seq.index r_fe 3 == Seq.index rhs 3 /\
+       Seq.index r_fe 6 == Seq.index rhs 6 /\
+       Seq.index r_fe 7 == Seq.index rhs 7))
+  = let zs = zetas_2 zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
+                  (TS.inv_ntt_layer_2_step_branch_post 1 in_arr zeta0 zeta1 out_arr);
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 2;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 3;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 6;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 7;
+    zetas_2_lane zeta0 zeta1 (sz 0);
+    mont_array_lane out_arr (sz 2);
+    mont_array_lane out_arr (sz 3);
+    mont_array_lane out_arr (sz 6);
+    mont_array_lane out_arr (sz 7);
+    mont_array_lane in_arr (sz 2);
+    mont_array_lane in_arr (sz 3);
+    mont_array_lane in_arr (sz 6);
+    mont_array_lane in_arr (sz 7)
+
+private
+let lemma_inv_ntt_layer_2_step_branch_2_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
+    (ensures
+      (let zs = zetas_2 zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe 8 == Seq.index rhs 8 /\
+       Seq.index r_fe 9 == Seq.index rhs 9 /\
+       Seq.index r_fe 12 == Seq.index rhs 12 /\
+       Seq.index r_fe 13 == Seq.index rhs 13))
+  = let zs = zetas_2 zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
+                  (TS.inv_ntt_layer_2_step_branch_post 2 in_arr zeta0 zeta1 out_arr);
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 8;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 9;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 12;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 13;
+    zetas_2_lane zeta0 zeta1 (sz 1);
+    mont_array_lane out_arr (sz 8);
+    mont_array_lane out_arr (sz 9);
+    mont_array_lane out_arr (sz 12);
+    mont_array_lane out_arr (sz 13);
+    mont_array_lane in_arr (sz 8);
+    mont_array_lane in_arr (sz 9);
+    mont_array_lane in_arr (sz 12);
+    mont_array_lane in_arr (sz 13)
+
+private
+let lemma_inv_ntt_layer_2_step_branch_3_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
+    (ensures
+      (let zs = zetas_2 zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe 10 == Seq.index rhs 10 /\
+       Seq.index r_fe 11 == Seq.index rhs 11 /\
+       Seq.index r_fe 14 == Seq.index rhs 14 /\
+       Seq.index r_fe 15 == Seq.index rhs 15))
+  = let zs = zetas_2 zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
+                  (TS.inv_ntt_layer_2_step_branch_post 3 in_arr zeta0 zeta1 out_arr);
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 10;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 11;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 14;
+    lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 15;
+    zetas_2_lane zeta0 zeta1 (sz 1);
+    mont_array_lane out_arr (sz 10);
+    mont_array_lane out_arr (sz 11);
+    mont_array_lane out_arr (sz 14);
+    mont_array_lane out_arr (sz 15);
+    mont_array_lane in_arr (sz 10);
+    mont_array_lane in_arr (sz 11);
+    mont_array_lane in_arr (sz 14);
+    mont_array_lane in_arr (sz 15)
+
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Per-lane bridge (wrapper) for `f_inv_ntt_layer_2_step`.
+
+   Dispatches lane `i` to the appropriate per-branch helper.  Each
+   call site has only 4 facts in scope (one branch's worth), so the
+   SMT context stays small for `aux j` use in the per-vector bridge. *)
+private
+let lemma_inv_ntt_layer_2_step_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16)
+    (i: nat {i < 16}) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
+    (ensures
+      (let zs = zetas_2 zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe i == Seq.index rhs i))
+  = if i = 0 || i = 1 || i = 4 || i = 5 then
+      lemma_inv_ntt_layer_2_step_branch_0_lane_bridge in_arr out_arr zeta0 zeta1
+    else if i = 2 || i = 3 || i = 6 || i = 7 then
+      lemma_inv_ntt_layer_2_step_branch_1_lane_bridge in_arr out_arr zeta0 zeta1
+    else if i = 8 || i = 9 || i = 12 || i = 13 then
+      lemma_inv_ntt_layer_2_step_branch_2_lane_bridge in_arr out_arr zeta0 zeta1
+    else
+      lemma_inv_ntt_layer_2_step_branch_3_lane_bridge in_arr out_arr zeta0 zeta1
+
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1 --split_queries always"
+
+(* Per-vector hacspec bridge for `f_inv_ntt_layer_2_step`.
+
+   Composes the 16 per-lane bridges via `Classical.forall_intro` +
+   `Seq.lemma_eq_intro`.  Mirror of the layer-1/3 inverse structure;
+   each per-lane invocation has only 4 in-scope facts (one branch). *)
+let lemma_inv_ntt_layer_2_step_to_hacspec
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0 zeta1: i16) :
+  Lemma
+    (requires TS.inv_ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
+    (ensures
+       (let r = T.f_inv_ntt_layer_2_step vec zeta0 zeta1 in
+        mont_i16_to_spec_array (T.f_repr r) ==
+          IN.ntt_inverse_layer_n (mk_usize 16)
+            (mont_i16_to_spec_array (T.f_repr vec))
+            (mk_usize 4)
+            (Rust_primitives.unsize (zetas_2 zeta0 zeta1))))
+  = let r = T.f_inv_ntt_layer_2_step vec zeta0 zeta1 in
+    let in_arr = T.f_repr vec in
+    let out_arr = T.f_repr r in
+    let zs = zetas_2 zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
+                                       (Rust_primitives.unsize zs) in
+    assert (TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr);
+    let aux (j: nat) : Lemma (j < 16 ==> Seq.index r_fe j == Seq.index rhs j)
+      = if j < 16 then
+          lemma_inv_ntt_layer_2_step_lane_bridge in_arr out_arr zeta0 zeta1 j
+    in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro r_fe rhs
+
+#pop-options
+
+(* ───── Layer 2 forward NTT bridge ─────
+   STATUS: layer 1 forward + inverse, layer 2 inverse, and layer 3 inverse
+   bridges are done above (track A, Phase 7a).  Layer 2 forward remains.
+   Same pattern: 4 per-branch helper lemmas at concrete `b` to collapse
+   the nested if-ladder in the trait branch_post, plus a per-vector
+   composition via `Classical.forall_intro` + `Seq.lemma_eq_intro`. *)
