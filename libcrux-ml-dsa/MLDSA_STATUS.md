@@ -2,14 +2,101 @@
 
 **Branch**: `ml-dsa-above-trait` (above-trait verification lane;
 companion below-trait branch is `ml-dsa-proofs`).
-**Tip**: Above-trait Step C in progress (2026-04-28 session).
+**Tip**: `b097daf01` (2026-04-28 session, end of arithmetic admit pass).
 **Trait pre/post strengthened** (commits `94e933eb1`+`36fe89b18`).
-**7 above-trait modules promoted to CHECK** against the strengthened
-contract: `Ntt`, `Encoding.{T1,Commitment,Error,Gamma1,T0}`, `Pre_hash`.
-The dual below-trait branch verifies `Simd.{Portable,Avx2}.*` against
-the same trait contract. See `proofs/agent-status/lane-split-protocol.md`
-for the protocol; F-1 finding (use_hint pre vs lane post conditional)
-addressed via option (d) in the same file.
+**10 above-trait modules promoted to CHECK** against the strengthened
+contract: `Ntt`, `Encoding.{T1,Commitment,Error,Gamma1,T0,
+Verification_key,Signing_key,Signature}`, `Pre_hash`.
+
+Plus 4 pre-existing CHECK (`Constants`, `Types`, `Polynomial`,
+`Arithmetic`) and 3 trait-boundary (`Simd.Traits.{fsti,Specs.fst,fst}`)
+= **17 CHECK modules** on this branch.  All `Simd.{Portable,Avx2}.*`
+intentionally in ADMIT — the dual below-trait branch verifies them
+against the same trait contract.  See
+`proofs/agent-status/lane-split-protocol.md` for the protocol; F-1
+finding (use_hint/decompose/compute_hint pre vs lane post conditional)
+addressed via option (d) in the same file (no contract change;
+restructure impl-side commute lemma to match the lane post's `==>`
+shape).
+
+## Step A — trait pre/post strengthening (committed)
+
+| Method | Change | Commit |
+|---|---|---|
+| `decompose` | Post: γ₂-conditional `is_i32b_array_opaque {95232/261888} low_future` ∧ `{44/16} high_future` | `94e933eb1`+`36fe89b18` |
+| `compute_hint` | Pre: + FIELD_MAX bound on `low,high`. Post: + `is_binary_array_8_opaque hint_future` | `94e933eb1` |
+| `use_hint` | Post: γ₂-conditional `{44/16} hint_future` | `94e933eb1` |
+| `power2round` | Post: + `is_i32b_array_opaque (pow2 12) t0_future` ∧ `forall8 (t1_future ∈ [0, pow2 10))` | `94e933eb1` |
+| `reduce` | Post: + `forall j<32. is_i32b_array_opaque FIELD_MAX simd_units_future j` | `94e933eb1` |
+| `gamma1_deserialize` | Post: `is_i32b_array_opaque (pow2 gamma1_exponent) out_future` (was none) | `94e933eb1` |
+| `t0_deserialize` | Post: `is_i32b_array_opaque (pow2 12) out_future` (was none) | `94e933eb1` |
+| `t1_serialize` | Pre: + per-lane `[0, pow2 10)` on input | `94e933eb1` |
+
+`Arithmetic::make_hint` pre also strengthened with FIELD_MAX bound on
+`low,high` poly arrays, mirroring the trait change (`04dc965c6`).
+
+## Arithmetic admit pass (this session, `8d532957e`+`b097daf01`)
+
+| Function | State | Commit |
+|---|---|---|
+| `power2round_one_ring_element` | ✅ admit removed; strong post discharged via loop_invariant | `8d532957e` |
+| `power2round_vector` | 🟡 strong post; body admit kept (hax IndexMut quirk on `&mut t1[i]` — second `&mut` arg fails typeclass resolution while first works) | `8d532957e` |
+| `use_hint` | 🟡 strong post (γ₂-conditional bound on `re_vector_future`); body admit kept (would need `from_i32_array → is_binary_array_8_opaque` bridge) | `b097daf01` |
+
+Net: all 3 arithmetic admits now have strong wrapper pre/post — upstream
+callers get the bounds.  1/3 fully discharged.
+
+## Step C — above-trait promotions (committed)
+
+| Module | Commit | Body admits |
+|---|---|---|
+| `Libcrux_ml_dsa.Ntt.fst` | `13a60d039` | – (clean) |
+| `Libcrux_ml_dsa.Encoding.T1.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Encoding.Commitment.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Encoding.Error.fst` | `2eefebe43` | `deserialize_to_vector_then_ntt` |
+| `Libcrux_ml_dsa.Encoding.Gamma1.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Pre_hash.fst` | `b68738411` | – |
+| `Libcrux_ml_dsa.Encoding.T0.fst` | `9848dde7c` | `deserialize_to_vector_then_ntt` |
+| `Libcrux_ml_dsa.Encoding.Verification_key.fst` | `0d11b64a9` | `generate_serialized`, `deserialize` |
+| `Libcrux_ml_dsa.Encoding.Signing_key.fst` | `0d11b64a9` | `generate_serialized` |
+| `Libcrux_ml_dsa.Encoding.Signature.fst` | `0d11b64a9` | `serialize`, `deserialize` |
+
+## Promotion pattern (for next session)
+
+For each ADMIT-mode above-trait module:
+1. Add `#[hax_lib::requires]/[ensures]` to each wrapper, forwarding
+   the underlying trait method's pre/post lifted to the
+   `PolynomialRingElement` / poly-array level.
+2. Convert `cloop! { for ... in ....iter().enumerate() }` to plain
+   `for i in 0..n.len() { ... }` so `hax_lib::loop_invariant!`
+   attaches.  cloop's fold-of-tuple shape gives a `True` invariant
+   that loses length/bound facts.
+3. For functions with `&mut [u8]` arg: add
+   `#[ensures(|_| future(arg).len() == arg.len())]` (length
+   preservation).  Use literal lengths in the post (e.g. `== 32`
+   instead of `== arg.len()`) — hax may emit `true` for the post
+   when the body shape doesn't trivially preserve, in which case
+   the literal form propagates correctly.
+4. For trait declarations, `#[hax_lib::attributes]` is required on
+   both the trait AND the impl block for `requires/ensures` to
+   propagate to the extracted `f_*_pre`/`f_*_post`.
+5. Body admit (`#[hax_lib::fstar::verification_status(panic_free)]`
+   + `hax_lib::fstar!("admit ()")`) is acceptable when the body
+   has multi-step offset arithmetic, copy_from_slice, or other
+   shape that doesn't fit a simple loop_invariant.  The pre/post
+   carries the contract; the impl is the body lane's concern.
+
+## Next-session priority
+
+| # | Module | Risk | Notes |
+|---|---|---|---|
+| 1 | `Libcrux_ml_dsa.Matrix.fst` | high | Nested poly-array loops with chain-of-bounds (ntt_multiply → add → reduce → invert_ntt).  Needs substantial wrapper-level pre/post forwarding. ~30-60 min. |
+| 2 | `Libcrux_ml_dsa.Sample.fst` | medium | Uses `hash_functions::shake128/shake256` Xof traits which are still ADMIT.  May need length-preservation ensures on more Xof methods, plus loop_invariants on the rejection-sample state machine. |
+| 3 | `Libcrux_ml_dsa.Hash_functions.{Portable,Simd256,Neon}.fst` | low-medium | Once Sample needs them.  Add length-preservation ensures + admit body of Xof impls. |
+| 4 | `Libcrux_ml_dsa.Ml_dsa_generic.fst` and instantiations | high | The top-level orchestrator.  Largest blast radius. |
+
+Caller-side fix A.6 deferred (insert `reduce` before `ntt` in
+`matrix.rs::compute_w_approx:117`) — handle in #1 above.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
 **Empirical baseline**: **71 modules invoked (warm cache), [CHECK]=15, [ADMIT]=56, 71 verified, 0 errors, 0 make-level failures**. Cold-cache totals would still match the prior 98 invoked / 42 CHECK / 56 ADMIT (the 5 newly-discharged impl methods all live inside `Simd.Portable.fst` and `Simd.Avx2.fst`, already CHECK modules).
 

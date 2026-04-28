@@ -116,7 +116,107 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   doesn't typecheck without `i < Seq.length out_future`. Bound `i`
   in-forall to `i:nat{i < Seq.length ${out}_future}`.
 
-## Active admits
+## Active admits — above-trait branch (`ml-dsa-above-trait` lane)
+
+### Libcrux_ml_dsa.Arithmetic.power2round_vector
+- **File**: `src/arithmetic.rs:65-81` (post `8d532957e`)
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Diagnosis**: hax extraction quirk — `&mut t0[i]` resolves Index
+  typeclass cleanly but `&mut t1[i]` (the second `&mut` arg passed to
+  `power2round_one_ring_element`) fails with Error 228:
+  `Could not solve typeclass constraint Core_models.Ops.Index.t_Index
+  (FStar.Seq.Base.seq (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement ...))`.
+  Both args have the same type — asymmetric.
+- **Suggested mitigation**: rewrite the body without two simultaneous
+  `&mut` accesses, e.g. clone t0[i] and t1[i] into locals, call the
+  helper, then write back.  Or report as hax bug.
+
+### Libcrux_ml_dsa.Arithmetic.use_hint
+- **File**: `src/arithmetic.rs:155-185` (post `b097daf01`)
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Diagnosis**: body needs `from_i32_array(&hint[i], &mut tmp)` post
+  (`tmp.repr() == hint[i]`) bridged to per-simd-unit
+  `is_binary_array_8_opaque (f_repr tmp.simd_units[j])` so the inner
+  `Operations::use_hint` call's pre is satisfied.  The intro lemma
+  `lemma_is_binary_array_8_intro` exists; needs to be applied per-j
+  with hypotheses from the slice-level binary property.
+- **Suggested mitigation**: ~30 min — in the loop body, after
+  `from_i32_array`, add `Classical.forall_intro` over j applying the
+  intro lemma.  Then the inner `use_hint` call's pre discharges.
+
+### Libcrux_ml_dsa.Arithmetic.power2round_one_ring_element
+- **Status**: closed at `8d532957e` — admit removed, strong post
+  discharged via loop_invariant + Spec.Utils.forall8.
+
+### 
+
+Body admits added during Step C promotions (2026-04-28).  Each
+keeps the trait pre/post strong (the contract callers see) but
+admits the panic-free body.  Below-trait branch is unaffected;
+these are local to the above-trait lane.
+
+### Libcrux_ml_dsa.Encoding.{Error,T0}.deserialize_to_vector_then_ntt
+- **Files**: `src/encoding/{error,t0}.rs`, in `deserialize_to_vector_then_ntt`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.2/C.3 (`2eefebe43`, `9848dde7c`)
+- **Diagnosis**: each function loops over `serialized.chunks_exact(N)`,
+  calling `deserialize` then `ntt` per chunk.  The chain works
+  in principle (deserialize gives ≤ pow2 12 ≤ NTT_BASE_BOUND),
+  but the loop_invariant must track the partial-progress per-poly
+  bound across `ring_elements[0..i]` plus the FIELD_MAX bound that
+  `ntt`'s post establishes for indices already processed.
+- **Suggested mitigation**: loop_invariant of shape
+  `forall k<i. is_i32b_array_opaque FIELD_MAX (ring_elements[k].simd_units[*])`
+  with the deserialize/ntt chain preserving it per iteration. ~20 min.
+
+### Libcrux_ml_dsa.Encoding.Verification_key.{generate_serialized,deserialize}
+- **File**: `src/encoding/verification_key.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Diagnosis**: `generate_serialized` does
+  `verification_key_serialized[0..32].copy_from_slice(seed)` then
+  per-i loop with `offset = SEED_FOR_A_SIZE + i * RING_ELEMENT_OF_T1S_SIZE`.
+  The offset arithmetic (32 + i * 320) and the post-copy_from_slice
+  state confuse the fold-with-tuple-accumulator in extracted F*.
+  `deserialize` has the same shape minus the seed write.
+- **Suggested mitigation**: rewrite to use `i * RING_ELEMENT_OF_T1S_SIZE`
+  inline in the slice index without the `offset` variable; add
+  loop_invariant tracking length-preservation explicitly through
+  the slice update.  ~30 min.
+
+### Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized
+- **File**: `src/encoding/signing_key.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Diagnosis**: hardest of the C.5 batch.  Body has 5 sequential
+  slice writes with running `offset` variable: seed_matrix (32),
+  seed_signing (32), shake256-output verification_key_hash (64),
+  per-poly s1_2 errors (eta-conditional size), per-poly t0
+  serializations (416 each).  The Shake256 trait method's post
+  needs length-preservation ensures (added in `b68738411` for
+  shake128 and shake256 Xof; verify it covers `DsaXof::shake256`
+  too).
+- **Suggested mitigation**: add length-preservation ensures to
+  `shake256::DsaXof::shake256<OUT_LEN>` if missing.  Then split
+  the body into 3 sub-functions (seed-write block, error-loop, t0-loop)
+  with intermediate length post-conditions.  ~45 min.
+
+### Libcrux_ml_dsa.Encoding.Signature.{serialize,deserialize}
+- **File**: `src/encoding/signature.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Diagnosis**: most complex — `serialize` packs commitment_hash +
+  per-poly gamma1_serialize + hint-bit-pack with running
+  `true_hints_seen` counter and per-row written count.
+  `deserialize` does the inverse with malformed-hint detection
+  via `Result<(), VerificationError>` return.
+- **Suggested mitigation**: USER lane.  Same shape as ML-KEM
+  HintBitPack/HintBitUnpack analogs which were also USER-lane.
+
+`set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
+in `0d11b64a9` (no admit needed there).
+
+## Active admits — below-trait branch (`ml-dsa-proofs` lane)
 
 ### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}
 **Status**: closed (no admits) as of the 2026-04-28 final pass.
