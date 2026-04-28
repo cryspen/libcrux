@@ -20,6 +20,9 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Encoding.Gamma1.fst \
 	Libcrux_ml_dsa.Pre_hash.fst \
 	Libcrux_ml_dsa.Encoding.T0.fst \
+	Libcrux_ml_dsa.Encoding.Verification_key.fst \
+	Libcrux_ml_dsa.Encoding.Signing_key.fst \
+	Libcrux_ml_dsa.Encoding.Signature.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))

@@ -5,12 +5,12 @@ use crate::{
     },
     encoding,
     hash_functions::shake256,
-    helper::cloop,
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     eta: Eta,
     error_ring_element_size: usize,
@@ -21,6 +21,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
     t0: &[PolynomialRingElement<SIMDUnit>],
     signing_key_serialized: &mut [u8],
 ) {
+    hax_lib::fstar!("admit ()");
     let mut offset = 0;
 
     signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(seed_matrix);
@@ -47,13 +48,11 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
         offset += error_ring_element_size;
     }
 
-    cloop! {
-        for ring_element in t0.iter() {
-            encoding::t0::serialize::<SIMDUnit>(
-                ring_element,
-                &mut signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE],
-            );
-            offset += RING_ELEMENT_OF_T0S_SIZE;
-        }
+    for i in 0..t0.len() {
+        encoding::t0::serialize::<SIMDUnit>(
+            &t0[i],
+            &mut signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE],
+        );
+        offset += RING_ELEMENT_OF_T0S_SIZE;
     }
 }

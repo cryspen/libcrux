@@ -4,6 +4,7 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     commitment_hash: &[u8],
     signer_response: &[PolynomialRingElement<SIMDUnit>],
@@ -16,6 +17,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     max_ones_in_hint: usize,
     signature: &mut [u8],
 ) {
+    hax_lib::fstar!("admit ()");
     let mut offset = 0;
 
     signature[offset..offset + commitment_hash_size].copy_from_slice(commitment_hash);
@@ -60,6 +62,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn deserialize<SIMDUnit: Operations>(
     columns_in_a: usize,
     rows_in_a: usize,
@@ -73,6 +76,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     out_signer_response: &mut [PolynomialRingElement<SIMDUnit>],
     out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> Result<(), VerificationError> {
+    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == signature_size);
 
@@ -165,6 +169,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(i < out_hint.len() && j < 256)]
 fn set_hint(out_hint: &mut [[i32; 256]], i: usize, j: usize) {
     out_hint[i][j] = 1
 }
