@@ -67,8 +67,13 @@ impl Operations for Coefficients {
         Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result"#))]
     fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
-        hax_lib::fstar!("admit ()");
-        arithmetic::infinity_norm_exceeds(simd_unit, bound)
+        let result = arithmetic::infinity_norm_exceeds(simd_unit, bound);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post);
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"#
+        );
+        result
     }
 
     #[requires(fstar!(r#"

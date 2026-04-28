@@ -375,7 +375,7 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
         Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    $result == false ==>
+    $result == false <==>
         Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
     hax_lib::fstar!(
@@ -392,7 +392,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
         hax_lib::loop_invariant!(|i: usize| {
             fstar!(
                 r#"
-                $violations == mk_u32 0 ==> (forall j. j < v $i ==>
+                $violations == mk_u32 0 <==> (forall j. j < v $i ==>
                     abs (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) < v $bound)"#
             )
         });
