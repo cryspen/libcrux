@@ -25,6 +25,11 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Encoding.Signature.fst \
 	Libcrux_ml_dsa.Matrix.fst \
 	Libcrux_ml_dsa.Sample.fst \
+	Libcrux_ml_dsa.Hash_functions.Shake128.fst \
+	Libcrux_ml_dsa.Hash_functions.Shake256.fst \
+	Libcrux_ml_dsa.Hash_functions.Portable.fst \
+	Libcrux_ml_dsa.Hash_functions.Simd256.fst \
+	Libcrux_ml_dsa.Hash_functions.Neon.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))
