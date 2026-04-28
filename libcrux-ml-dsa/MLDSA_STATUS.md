@@ -114,7 +114,7 @@ mode under the thin-wrapper pattern.
 | `decompose` | ✅ | ✅ | 🟡 | `Arithmetic.decompose` × 8 lanes | portable verifies; AVX2 in lax/admit (wave 3C — already pre-existing) |
 | `compute_hint` | ✅ | ✅ | 🟡 | `Arithmetic.make_hint` × 8 + popcount | same |
 | `use_hint` | ✅ | ✅ | 🟡 | `Arithmetic.uuse_hint` × 8 lanes | same |
-| `montgomery_multiply` | ✅ (rewritten in `int` 04fd066f0) | ✅ | ✅ | per-lane `(v lhs * v rhs * 8265825) % q` | both verify |
+| `montgomery_multiply` | ✅ (rewritten in `int` 04fd066f0) | ✅ (impl closed; Step 9) | 🟡 | per-lane `(v lhs * v rhs * 8265825) % q` | Portable impl now discharges via `lemma_montgomery_multiply_lane_intro` after revealing `Spec.MLDSA.Math.mod_q`; AVX2 impl still admits (needs `lemma_mont_mul_bound_and_mod_q` deferred) |
 | `shift_left_then_reduce` | ✅ | ✅ | ✅ | `Arithmetic.shift_left_then_reduce` | both verify |
 | `power2round` | ✅ | ✅ (impl closed; Step 9) | ✅ (impl closed; Step 9) | `Spec.MLDSA.Math.power2round` (Tier-1) → `Arithmetic.power2round` (Tier-3) | both impls discharge via `lemma_power2round_lane_commute` |
 | `rejection_sample_<_field_modulus` | 🟡 (Seq.length 1c827fab7) | ✅ | ✅ | bounds-only post | both verify |

@@ -142,8 +142,23 @@ impl Operations for Coefficients {
             (Seq.index (${rhs.repr()}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) i))"#))]
     fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig_lhs = lhs.clone();
         arithmetic::montgomery_multiply(lhs, rhs);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
+            let pf (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_lhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)) =
+                Libcrux_ml_dsa.Simd.Traits.Specs.lemma_montgomery_multiply_lane_intro
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_lhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
+            in
+            Classical.forall_intro pf"#
+        );
     }
 
     #[requires(fstar!(r#"v $SHIFT_BY == 13 /\
