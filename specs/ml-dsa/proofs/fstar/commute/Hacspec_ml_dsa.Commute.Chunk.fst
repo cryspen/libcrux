@@ -102,3 +102,43 @@ let lemma_power2round_lane_commute (input future_t1 future_t0: i32)
   = reveal_opaque (`%TS.power2round_lane_post)
                   (TS.power2round_lane_post input future_t1 future_t0)
 #pop-options
+
+(* Bridge: convert the AVX2 free fn post `barrett_red(shift_left_opaque
+   input 13)` into the relaxed
+   `shift_left_then_reduce_lane_post` (centered-Barrett bound + mod-q
+   congruence with input * 8192).  The hypothesis `0 <= v input <= 261631`
+   bounds `input <<! 13 < 2^31 - 2^22` so `lemma_barrett_red_bound_and_mod_q`
+   applies and produces both halves of the post. *)
+#push-options "--z3rlimit 200"
+let lemma_shift_left_then_reduce_lane_commute (input future: i32)
+    : Lemma
+        (requires
+          v input >= 0 /\ v input <= 261631 /\
+          future == Spec.MLDSA.Math.barrett_red
+                      (Spec.Intrinsics.shift_left_opaque input (mk_i32 13)))
+        (ensures TS.shift_left_then_reduce_lane_post input future)
+  = Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype;
+    let shifted = Spec.Intrinsics.shift_left_opaque input (mk_i32 13) in
+    assert (v shifted == v input * 8192);
+    lemma_barrett_red_bound_and_mod_q shifted;
+    reveal_opaque (`%TS.shift_left_then_reduce_lane_post)
+                  (TS.shift_left_then_reduce_lane_post input future)
+#pop-options
+
+(* Bridge for the Portable side: the Portable `arithmetic::shift_left_then_reduce`
+   post advertises mod_q congruence with `input <<! 13` plus the
+   centered-Barrett bound.  This lemma converts that shape into the
+   relaxed lane post. *)
+let lemma_shift_left_then_reduce_lane_commute_mod_q
+    (input future: i32)
+    : Lemma
+        (requires
+          v input >= 0 /\ v input <= 261631 /\
+          Spec.Utils.is_i32b 8380416 future /\
+          Spec.MLDSA.Math.mod_q (v future) ==
+            Spec.MLDSA.Math.mod_q (v (input <<! mk_i32 13 <: i32)))
+        (ensures TS.shift_left_then_reduce_lane_post input future)
+  = reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
+    assert (v (input <<! mk_i32 13 <: i32) == v input * 8192);
+    reveal_opaque (`%TS.shift_left_then_reduce_lane_post)
+                  (TS.shift_left_then_reduce_lane_post input future)

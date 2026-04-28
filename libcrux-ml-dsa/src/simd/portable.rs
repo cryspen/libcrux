@@ -170,8 +170,27 @@ impl Operations for Coefficients {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}_future) i))"#))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig = simd_unit.clone();
+        hax_lib::fstar!(
+            r#"assert_norm (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}
+                == ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)"#
+        );
         shift_left_then_reduce::<SHIFT_BY>(simd_unit);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 8380416
+                    ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values);
+            let pf (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_shift_left_then_reduce_lane_commute_mod_q
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+            in
+            Classical.forall_intro pf"#
+        );
     }
 
     #[requires(fstar!(r#"

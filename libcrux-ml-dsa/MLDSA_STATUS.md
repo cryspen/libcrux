@@ -115,7 +115,7 @@ mode under the thin-wrapper pattern.
 | `compute_hint` | ✅ | ✅ | 🟡 | `Arithmetic.make_hint` × 8 + popcount | same |
 | `use_hint` | ✅ | ✅ | 🟡 | `Arithmetic.uuse_hint` × 8 lanes | same |
 | `montgomery_multiply` | ✅ (rewritten in `int` 04fd066f0) | ✅ (impl closed; Step 9) | 🟡 | per-lane `(v lhs * v rhs * 8265825) % q` | Portable impl now discharges via `lemma_montgomery_multiply_lane_intro` after revealing `Spec.MLDSA.Math.mod_q`; AVX2 impl still admits (needs `lemma_mont_mul_bound_and_mod_q` deferred) |
-| `shift_left_then_reduce` | ✅ | ✅ | ✅ | `Arithmetic.shift_left_then_reduce` | both verify |
+| `shift_left_then_reduce` | ✅ (relaxed Step 9.3) | ✅ (impl closed; Step 9.3) | ✅ (impl closed; Step 9.3) | centered-Barrett bound + mod-q congruence with `input * 2^13` | post relaxed from strict-equality with Hacspec's `[0,q-1]` form to mod-q congruence + bound (impls return Barrett `(-q,q)`); both impls discharge via the relaxed lane post and new commute lemmas |
 | `power2round` | ✅ | ✅ (impl closed; Step 9) | ✅ (impl closed; Step 9) | `Spec.MLDSA.Math.power2round` (Tier-1) → `Arithmetic.power2round` (Tier-3) | both impls discharge via `lemma_power2round_lane_commute` |
 | `rejection_sample_<_field_modulus` | 🟡 (Seq.length 1c827fab7) | ✅ | ✅ | bounds-only post | both verify |
 | `rejection_sample_<_eta_2` | 🟡 | ✅ | ✅ | bounds-only post | both verify |

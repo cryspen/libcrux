@@ -211,24 +211,37 @@ let lemma_montgomery_multiply_lane_intro (lhs rhs future_lhs: i32)
   reveal_opaque (`%montgomery_multiply_lane_post)
                 (montgomery_multiply_lane_post lhs rhs future_lhs)
 
-(* shift_left_then_reduce: per-lane future = mod_q(input * 2^13). The trait
-   pre constrains 0 <= input <= 261631. *)
+(* shift_left_then_reduce: post is centered-Barrett bound + mod-q
+   congruence with `input * 2^13`.  This is the natural shape both
+   impls actually compute — `barrett_red(input <<! 13)` lives in
+   `(-q, q)` (not in `[0, q-1]` like Hacspec's `mod_q`-normalised form),
+   so the previous strict-equality post against
+   `Hacspec_ml_dsa.Arithmetic.shift_left_then_reduce` was unsound for
+   the impl bodies.  Mirrors `reduce_lane_post`.
+
+   FUTURE SPEC AUDIT: this post talks about i32 representatives, not
+   Z/qZ field elements.  ML-KEM exposes a `t_FieldElement` type plus
+   `i16_to_spec_fe` / `mont_i16_to_spec_fe` lifts so the spec layer
+   talks only about field elements (no Barrett / Montgomery in the
+   post).  ML-DSA should grow a parallel `i32_to_spec_fe` and
+   reformulate this post (and `reduce_lane_post`,
+   `montgomery_multiply_lane_post`) at the field-element level. *)
 [@@ "opaque_to_smt"]
 let shift_left_then_reduce_lane_post (input future: i32) : prop =
-  v input >= 0 /\ v input <= 261631 ==>
-  v future == v (Hacspec_ml_dsa.Arithmetic.shift_left_then_reduce input)
+  Spec.Utils.is_i32b 8380416 future /\
+  (v future) % 8380417 == (v input * 8192) % 8380417
 
 let lemma_shift_left_then_reduce_lane_lookup (input future: i32)
-    : Lemma (requires shift_left_then_reduce_lane_post input future /\
-                      v input >= 0 /\ v input <= 261631)
-            (ensures v future == v (Hacspec_ml_dsa.Arithmetic.shift_left_then_reduce input))
+    : Lemma (requires shift_left_then_reduce_lane_post input future)
+            (ensures Spec.Utils.is_i32b 8380416 future /\
+                     (v future) % 8380417 == (v input * 8192) % 8380417)
             [SMTPat (shift_left_then_reduce_lane_post input future)] =
   reveal_opaque (`%shift_left_then_reduce_lane_post)
                 (shift_left_then_reduce_lane_post input future)
 
 let lemma_shift_left_then_reduce_lane_intro (input future: i32)
-    : Lemma (requires v input >= 0 /\ v input <= 261631 ==>
-                      v future == v (Hacspec_ml_dsa.Arithmetic.shift_left_then_reduce input))
+    : Lemma (requires Spec.Utils.is_i32b 8380416 future /\
+                      (v future) % 8380417 == (v input * 8192) % 8380417)
             (ensures shift_left_then_reduce_lane_post input future) =
   reveal_opaque (`%shift_left_then_reduce_lane_post)
                 (shift_left_then_reduce_lane_post input future)

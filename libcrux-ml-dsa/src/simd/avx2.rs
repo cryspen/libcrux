@@ -229,8 +229,20 @@ impl Operations for AVX2SIMDUnit {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}_future) i))"#))]
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self) {
-        hax_lib::fstar!("admit ()");
-        shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value)
+        #[cfg(hax)]
+        let _orig = *simd_unit;
+        shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value);
+        hax_lib::fstar!(
+            r#"let pf (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_shift_left_then_reduce_lane_commute
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+            in
+            Classical.forall_intro pf"#
+        );
     }
 
     #[inline(always)]
