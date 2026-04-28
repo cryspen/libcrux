@@ -44,32 +44,69 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"${t.len()} == ${t1.len()} /\
-    (forall i. forall j.
+#[hax_lib::requires(fstar!(r#"${t0.len()} == ${t1.len()} /\
+    (forall (i:nat). i < Seq.length t0 ==>
+      (forall (j:nat). j < 32 ==>
         Spec.Utils.is_i32b_array_opaque
-        (v ${crate::simd::traits::specs::FIELD_MAX})
-        (i0._super_i2.f_repr (Seq.index (Seq.index t i).f_simd_units j)))"#))]
+          (v ${crate::simd::traits::specs::FIELD_MAX})
+          (i0._super_i2.f_repr (Seq.index (Seq.index t0 i).f_simd_units j))))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${t0}_future == Seq.length t0 /\
+    Seq.length ${t1}_future == Seq.length t1 /\
+    (forall (i:nat). i < Seq.length ${t0}_future ==>
+      (forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (pow2 12)
+          (i0._super_i2.f_repr (Seq.index (Seq.index ${t0}_future i).f_simd_units j)) /\
+        Spec.Utils.forall8 (fun (k:nat{k < 8}) ->
+          let t1ij = Seq.index (Seq.index ${t1}_future i).Libcrux_ml_dsa.Polynomial.f_simd_units j in
+          v (Seq.index (i0._super_i2.f_repr t1ij) k) >= 0 /\
+          v (Seq.index (i0._super_i2.f_repr t1ij) k) < pow2 10)))"#))]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
-    t: &mut [PolynomialRingElement<SIMDUnit>],
+    t0: &mut [PolynomialRingElement<SIMDUnit>],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     hax_lib::fstar!("admit ()");
-    for i in 0..t.len() {
-        power2round_one_ring_element::<SIMDUnit>(&mut t[i], &mut t1[i]);
+    for i in 0..t0.len() {
+        power2round_one_ring_element::<SIMDUnit>(&mut t0[i], &mut t1[i]);
     }
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(fstar!(r#"
+    (forall (j:nat). j < 32 ==>
+      Spec.Utils.is_i32b_array_opaque
+        (v ${crate::simd::traits::specs::FIELD_MAX})
+        (i0._super_i2.f_repr (Seq.index t0.f_simd_units j)))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall (j:nat). j < 32 ==>
+      Spec.Utils.is_i32b_array_opaque (pow2 12)
+        (i0._super_i2.f_repr (Seq.index ${t0}_future.f_simd_units j)) /\
+      Spec.Utils.forall8 (fun (k:nat{k < 8}) ->
+        let t1j = Seq.index ${t1}_future.Libcrux_ml_dsa.Polynomial.f_simd_units j in
+        v (Seq.index (i0._super_i2.f_repr t1j) k) >= 0 /\
+        v (Seq.index (i0._super_i2.f_repr t1j) k) < pow2 10))"#))]
 fn power2round_one_ring_element<SIMDUnit: Operations>(
-    t: &mut PolynomialRingElement<SIMDUnit>,
+    t0: &mut PolynomialRingElement<SIMDUnit>,
     t1: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    hax_lib::fstar!("admit ()");
-    for j in 0..t.simd_units.len() {
-        SIMDUnit::power2round(&mut t.simd_units[j], &mut t1.simd_units[j]);
+    for j in 0..t0.simd_units.len() {
+        hax_lib::loop_invariant!(|j: usize| fstar!(
+            r#"v j <= 32 /\
+              (forall (k:nat{k < 32}). k >= v j ==>
+                Spec.Utils.is_i32b_array_opaque
+                  (v ${crate::simd::traits::specs::FIELD_MAX})
+                  (i0._super_i2.f_repr (Seq.index t0.f_simd_units k))) /\
+              (forall (k:nat{k < 32}). k < v j ==>
+                Spec.Utils.is_i32b_array_opaque (pow2 12)
+                  (i0._super_i2.f_repr (Seq.index t0.f_simd_units k)) /\
+                Spec.Utils.forall8 (fun (m:nat{m < 8}) ->
+                  let t1k = Seq.index t1.Libcrux_ml_dsa.Polynomial.f_simd_units k in
+                  v (Seq.index (i0._super_i2.f_repr t1k) m) >= 0 /\
+                  v (Seq.index (i0._super_i2.f_repr t1k) m) < pow2 10))"#
+        ));
+        SIMDUnit::power2round(&mut t0.simd_units[j], &mut t1.simd_units[j]);
     }
 }
 
