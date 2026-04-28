@@ -1,8 +1,54 @@
 # agent-trackA — session log
 
-**Session date:** 2026-04-28 (resumed afternoon, Step 4 added)
+**Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
 **Branch:** `trait-opacify`
-**Tip at end:** `8358b1093` (was `ba8681b38` at start of this resume)
+**Tip at end:** `fa2151ea8` (was `7bb7e1a81` at start of this evening resume)
+
+## 2026-04-28 evening resume — Phase 7a Step 2 layer 3
+
+Added the **inverse NTT layer 3 hacspec bridge** to
+`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Bridges.fst`.
+Mirror of the layer 1 inverse bridge (`8358b1093`-era).  Layer 3 is
+the easiest of the three remaining bridges: single zeta, partner
+stride 8, no nested if-ladder in the trait branch post.
+
+### What landed in `Bridges.fst` (4 new lemmas, ~165 LOC)
+
+| Lemma | Purpose | Verified | Heaviest query |
+|---|---|---|---|
+| `zetas_1_lane` | Per-lane unfold for `zetas_1` (single-zeta slice) | ✅ | 55ms (rlimit 80) |
+| `lemma_ntt_inverse_layer_n_16_8_lane` | Per-lane unfold for `IN.ntt_inverse_layer_n 16 p 8 zs` (layer 3 form: group=0 always, idx=i) | ✅ | 2.55s (rlimit 200) |
+| `lemma_inv_ntt_layer_3_step_lane_bridge` | Per-lane bridge: trait branch post → hacspec eq at lane `i` | ✅ | 43.4s (rlimit 400, used 124/400) |
+| `lemma_inv_ntt_layer_3_step_to_hacspec` | Per-vector function-form bridge; `Classical.forall_intro` + `Seq.lemma_eq_intro` over 16 lanes | ✅ | 742ms (rlimit 400) |
+
+Lane → branch mapping for layer 3: `b = (i mod 8) / 2`.  Branch `b`
+touches lanes `(2b, 2b+1, 2b+8, 2b+9) = (i1, i2, j1, j2)`.  Hacspec at
+lane `i`:
+- if `i < 8` (low half): `result[i] = vec[i] + vec[i+8]` — matches
+  `inv_butterfly._1` at `(i, i+8)`.
+- if `i ≥ 8` (high half): `result[i] = z·(vec[i] − vec[i-8])` —
+  matches `inv_butterfly._2` at `(i-8, i)`.
+
+### Verification
+
+- **fstar-mcp `create_session`** (initial verify, no fragments failed).
+  Session ID `6fd7fad0...`.  Sub-second feedback for follow-up
+  iterations.
+- **`make check/Hacspec_ml_kem.Commute.Bridges.fst`**:  exit 0,
+  "All verification conditions discharged successfully", 50.5 s wall
+  (cold; with hints, expected to drop to ~6 s as in prior snapshot).
+  No regression in Polynomial.fst or Invert_ntt.fst transitive context.
+
+### Next steps (this session)
+
+- (a) Step 2 — layer 2 inverse NTT bridge (Z3 trap on nested if-ladder
+  for `b → (z, base, off)`; mitigation: enumerate `i ∈ {0..15}`).
+- (b) Step 3 — cross-vector for `invert_ntt_at_layer_4_plus`.
+- (c) Step 4 — strengthen `_2`, `_3`, `_4_plus` posts via Option B
+  pattern (mechanical after their bridges land).
+- (d) Step 5 — `invert_ntt_montgomery` post chain.
+
+---
 
 ## 2026-04-28 afternoon resume — Phase 7a Step 4
 
