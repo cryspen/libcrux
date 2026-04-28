@@ -1,4 +1,4 @@
-# Next-session resume prompt — push Phase 7a Step 4/5 (after layer-2 Z3 unlock)
+# Next-session resume prompt — push Phase 7a Step 3 (cross-vector layer 4_plus bridge)
 
 Paste the block below into a fresh Claude Code session opened in
 `/Users/karthik/libcrux-trait-opacify/libcrux-ml-kem`.
@@ -7,207 +7,181 @@ Paste the block below into a fresh Claude Code session opened in
 
 ```
 You are continuing the multi-agent F* verification effort on
-libcrux-ml-kem trait-opacify branch.  Branch tip: `43c9d45d5`
-(2026-04-28 evening — Step 2 layers 2 & 3 bridges + Step 4 layer 3
-strengthening landed).
+libcrux-ml-kem trait-opacify branch.  Tip: `bcc3dc480` (2026-04-28
+end-of-evening — Step 2 layers 2 & 3 + Step 4 layer 3 done).
 
-WHAT'S DONE (Phase 7a, this session and earlier):
-  * Step 1: layer-1 inverse hacspec bridge (Bridges.fst)         ✅
-  * Step 2 layer 3 inverse bridge                                ✅ fa2151ea8
-  * Step 2 layer 2 inverse bridge (the Z3 trap, unlocked!)       ✅ b7b49c358
-  * Step 4 layer 1 strengthening (Option B template)             ✅ 8358b1093
-  * Step 4 layer 3 strengthening (Option B applied)              ✅ 43c9d45d5
-  * Step 7.1 + closed-form lane lemma (to_standard_domain)       ✅
-  * Step 9: scaling-chain doc comments                           ✅
-  * F* perf top-20 instrumentation seeded                        ✅
+═══════════════════════════════════════════════════════════════════
+WHAT'S DONE (Phase 7a)
+═══════════════════════════════════════════════════════════════════
+  Step 1: layer-1 inverse hacspec bridge                         ✅
+  Step 2 layer 3 inverse bridge                                  ✅ fa2151ea8
+  Step 2 layer 2 inverse bridge (Z3 trap unlocked)               ✅ b7b49c358
+  Step 4 layer 1 strengthening (Option B template)               ✅ 8358b1093
+  Step 4 layer 3 strengthening                                   ✅ 43c9d45d5
+  Step 7.1 + closed-form lane lemma                              ✅
+  Step 9: scaling-chain doc comments                             ✅
 
-WHAT'S HELD / DEFERRED:
-  * Step 4 layer 2 strengthening — first attempt this session failed
-    with 6 Z3 errors at rlimit 800 (subtyping + assertion).  REVERTED
-    to baseline.  Needs structured iteration.  See "Step 4 layer 2 —
-    failure trace" below.
-  * Step 7.2 (Rust integration for add_standard_error_reduce) — Z3
-    saturated rlimit 800 on 2 invariant approaches.  TODO at
+DEFERRED (do NOT touch this session unless you finish Step 3 early):
+  * Step 4 layer 2 — first attempt failed with 6 Z3 errors at rlimit
+    800; reverted; failure trace in agent-trackA.md.  Lower priority
+    than Step 3.
+  * Step 7.2 — Z3 wall on 2 invariant approaches; TODO at
     src/polynomial.rs:567.
 
-YOUR GOAL THIS SESSION: complete the critical path to **Step 5 —
-invert_ntt_montgomery's strengthened post**.  Dependency chain:
-
-  Step 4 layer 2 (held — diagnose the body Z3 failure)  ───┐
-  Step 4 layer 4_plus (after Step 3 lands)                 ─┤
-  Step 3 layer 4_plus cross-vector bridge (Bridges.fst)    ─┤
-                                                            ▼
-                                                          Step 5
-
-The Step 4 strengthenings each follow the **Option B pattern**:
-impl-level loop invariant only (`re.coef[j] == f_inv_ntt_layer_N_step
-_re_init[j] (zeta(...))`), post-loop `Classical.forall_intro` invoking
-the Bridges lemma 16 times per chunk.  Layer 1 + 3 are landed
-templates.  See `src/invert_ntt.rs:13-139` (layer 1) and `:165-304`
-(layer 3) for working examples.
-
 ═══════════════════════════════════════════════════════════════════
-KEY UNLOCK FROM THIS SESSION — propagate to similar walls
+YOUR GOAL: Phase 7a Step 3 — cross-vector layer 4_plus bridge
 ═══════════════════════════════════════════════════════════════════
 
-The layer 2 inverse Bridges.fst trait-post wall (3-way nested
-if-ladder for `z`/`base`/`off`) was unlocked with this combination:
+**Why it's harder than Steps 1/2**: layer_4_plus operates ACROSS
+chunks (chunk-pairs at distance `step_vec`), not within a single
+chunk.  Its core op is `inv_ntt_layer_int_vec_step_reduce` (above-
+trait, in `src/invert_ntt.rs:312-329`).  Its current post is
+bounds-only — no per-lane FE equations to bridge from.  You need
+to lay foundation BEFORE writing a Bridges.fst lemma.
 
-  1. **Per-branch decomposition with concrete `b`**: write 4 helper
-     lemmas (`_branch_0_lane_bridge`, …, `_branch_3_lane_bridge`),
-     each at a literal `b` so the trait branch_post's nested if-ladder
-     collapses pre-SMT.
-  2. **Per-lane wrapper** that dispatches lane `i` to the appropriate
-     per-branch helper.  Each call site has only ~4 in-scope facts.
-  3. **`--split_queries always`** on the per-vector composition lemma.
-     Z3 splits the `forall j ∈ [0,16). r_fe[j] == rhs[j]` into 16
-     cheap sub-queries (each <100 ms).
+### Step 3 sub-piece breakdown
 
-Failed approaches (do NOT retry):
-  * Symbolic-b lane bridge (predicted Z3-trap from layer-2-forward).
-  * 4 per-branch + aux body 4-way disjunction case-split: rlimit 400
-    saturated in 11 min.
-  * 4 per-branch + 16 explicit `assert (Seq.index r_fe j == ...)` +
-    `Seq.lemma_eq_intro`: asserts pass; the lemma_eq_intro forall
-    saturated 400 rlimit in 4 min.
+(1) **Strengthen `inv_ntt_layer_int_vec_step_reduce` post** [~60-90 min].
+    - File: `src/invert_ntt.rs:312-329`.
+    - Add per-lane FE equations for both output chunks:
+      - `forall i ∈ [0,16). mont_i16_to_spec_fe r0[i] == add (mont_i16_to_spec_fe a[i]) (mont_i16_to_spec_fe b[i])`
+      - `forall i ∈ [0,16). mont_i16_to_spec_fe r1[i] == mul (mont_i16_to_spec_fe zeta_r) (sub (mont_i16_to_spec_fe b[i]) (mont_i16_to_spec_fe a[i]))`
+    - Body proof: barrett_reduce preserves mod-q (lift unchanged);
+      mont mul gives the `· R⁻¹` cancellation for zeta_r.  Should be
+      analogous to the per-pair `lemma_inv_butterfly_pair_commute` in
+      Chunk.fst but operating on whole chunks.
+    - Verify: `python3 hax.py extract && make check/Libcrux_ml_kem.Invert_ntt.fst`.
+    - Apply iter-discipline TEMP admit on `invert_ntt_at_layer_4_plus`
+      itself (saves ~222 s) AND on layer_1/3 (the strengthened ones,
+      ~270 s combined) while iterating on `step_reduce`.
 
-Apply this pattern to layer 2 forward (USER-deferred), AVX2 layer 1/2
-bridges (USER-4), and any future trait branch_post with a 3-way ladder.
+(2) **Chunk-pair bridge in Bridges.fst** [~45 min].
+    - Add `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` (or
+      similar) lifting the strengthened (1) post to a function-form
+      equation citing `IN.inv_butterfly` lane-wise.
+    - This is structurally simpler than layers 1/2/3 (no branch_post,
+      no if-ladder).  Just per-lane add/mul-of-sub.  No `--split_queries
+      always` likely needed.
+    - Place in Bridges.fst alongside the layer 1/2/3 inverse bridges.
+    - Verify: `make check/Hacspec_ml_kem.Commute.Bridges.fst`.
 
-═══════════════════════════════════════════════════════════════════
-STEP 4 LAYER 2 — failure trace (start here)
-═══════════════════════════════════════════════════════════════════
+(3) **Per-polynomial composition** in `invert_ntt_at_layer_4_plus` [~60-90 min].
+    - Goal: strengthen `invert_ntt_at_layer_4_plus`'s post to cite
+      `IN.ntt_inverse_layer_n 256 p (mk_usize step) zs` at the
+      polynomial level.
+    - Loop structure: outer loop `0..(128>>layer)`, inner loop
+      `offset_vec..offset_vec + step_vec`.  Each iteration processes
+      a chunk pair `(re[j], re[j + step_vec])`.
+    - Option B pattern (same as Step 4 layers 1/3): impl-level loop
+      invariant only ("processed chunk pairs equal step_reduce of
+      original"), post-loop `Classical.forall_intro` per chunk pair
+      to lift to function-form via the (2) bridge.
+    - This sub-piece is what Step 4 layer 4_plus would have been if
+      Steps 1/2/3 had been clean.  Combined with the strengthened
+      bridge it directly becomes Step 4 layer 4_plus.
 
-Attempted: same Option B template as layer 1/3.  Strengthened post:
-```
-forall (i: usize). i <. mk_usize 16 ==>
-  mont_i16_to_spec_array (f_repr re_future.coefs[i]) ==
-  IN.ntt_inverse_layer_n 16
-    (mont_i16_to_spec_array (f_repr re.coefs[i]))
-    4
-    (Rust_primitives.unsize (zetas_2 (zeta(63 - 2*i)) (zeta(62 - 2*i))))
-```
+### Decision tree
 
-Errors at extracted Invert_ntt.fst:
-  * **Line 183**: Assertion failed — the hand-holding assert
-    `zeta_i == mk_usize 63 -! mk_usize 2 *! round` did not discharge.
-    Layer 1's analog asserts succeeded; investigate why layer 2 differs.
-  * **Line 184**: Subtyping — `zeta_i - 1` needs to fit in usize.
-    Layer 1's hand-holding assert chain (4 asserts) gives Z3 the bound.
-    Layer 2's chain (2 asserts) may be insufficient.
-  * **Line 206 (×3)**: Loop-invariant non-preservation across body.
-    Subtyping checks failed against the strengthened invariant.
-  * **Line 140-235**: outer body assertion failed (the loop body's
-    overall VC).
+If you finish (1) but not (2)+(3): commit (1), update trackers, and
+hand off to the next session.  (1) is meaningful progress.
 
-Hypotheses to investigate:
-  * Layer 2's zeta_i decrement pattern is `(-= 1; ...; -= 1)` (two
-    decrements) versus layer 1's `(-= 1; ...; -= 3)`.  Both decrement
-    by the same total per round but at different points.  May need
-    different hand-holding asserts.
-  * Layer 2's strengthening references `Vector::f_inv_ntt_layer_2_step
-    (Seq.index _re_init i) (zeta(63 - 2i)) (zeta(62 - 2i))`.  The
-    second zeta arg uses `zeta_i - 1` — F* needs to see that
-    `(63 - 2*round) - 1 = 62 - 2*round` is a valid usize.
-  * The `_re_init` vs `re.coefficients` invariant — for unprocessed
-    chunks, the layer 1 invariant says `Seq.index re.f_coefs i ==
-    Seq.index _re_init i` AND `is_bounded_vector(...)`.  Did I have
-    both conjuncts in layer 2's invariant?  Check the diff.
+If you finish (1) + (2) but not (3): commit both, update trackers,
+defer (3) to Step 4 layer 4_plus framing.
 
-The reverted layer 2 strengthening attempt is **NOT in the git history
-for this branch**.  It was discarded via `git checkout
-libcrux-ml-kem/src/invert_ntt.rs` after the failed make.
-
-To re-attempt: copy the layer 1 template structure exactly (using
-`src/invert_ntt.rs:13-139` as the model), substituting layer-2 specifics
-(bound trace 3328 → 2*3328, 2 zetas via zetas_2, post stride 4).  Use
-fstar-mcp `typecheck_buffer` for sub-second iteration on the strengthened
-invariant (after `python3 hax.py extract` to refresh the .fst).
+If you finish all 3: that's effectively Step 3 + Step 4 layer 4_plus
+combined.  Major progress.  Then Step 4 layer 2 (held) and Step 5
+remain.
 
 ═══════════════════════════════════════════════════════════════════
+KEY UNLOCK FROM PRIOR SESSION (apply if needed)
+═══════════════════════════════════════════════════════════════════
 
-DEPENDENCY ORDER FOR THIS SESSION:
+For F* trait branch_posts with nested if-ladders (Z3-traps on
+symbolic `b`):
+  1. 4 per-branch helper lemmas at concrete `b` literals.
+  2. Per-lane wrapper dispatching to right per-branch helper.
+  3. `--split_queries always` on the per-vector composition lemma.
 
-  1. **Step 4 layer 2** (held).  Hard cap 60 min.  If still blocked
-     after 60 min: escalate, document the wall like Step 7.2, move on.
-  2. **Step 3 layer 4_plus cross-vector bridge** (Bridges.fst).
-     Hardest of bridges — 2 chunks at once + Barrett in step_reduce.
-     Two variants per the plan.  May Z3-trap; mitigation per the
-     layer-2 unlock if needed.
-  3. **Step 4 layer 4_plus** (after Step 3).  Mechanical via Option B.
-  4. **Step 5 invert_ntt_montgomery** post.  Highest Z3 risk.  If
-     blocks: hand-decompose into 7 explicit `let`-bindings, one per
-     layer post.
+Layer 4_plus's `inv_ntt_layer_int_vec_step_reduce` does NOT have a
+nested-if-ladder branch post — but if Step 3 sub-piece (3) has
+trouble with the per-poly forall composition, apply
+`--split_queries always` to the strengthened `invert_ntt_at_layer_4_plus`
+options.  Memory entry: `feedback_layer2_branch_post_z3_unlock.md`.
 
-F* ITER-LOOP DISCIPLINE:
+═══════════════════════════════════════════════════════════════════
+ITER DISCIPLINE
+═══════════════════════════════════════════════════════════════════
 
-  α. **fstar-mcp typecheck_buffer** for inner-loop iteration on
-     Bridges.fst — sub-second feedback.  Server already at port 3001.
-     **Note**: the session dies if `make` runs concurrently.  Re-create
-     after each `make`.
+  α. fstar-mcp `typecheck_buffer` for inner-loop iteration on
+     Bridges.fst (sub-second).  Server at port 3001.  **Note**: the
+     session dies after `make` runs.  Recreate via `create_session`.
+     Skill at `~/.claude/skills/fstar-mcp/`.
+     Memory: `feedback_fstar_mcp_session_dies_after_make.md`.
 
-  β. When iterating Step 4 on layer N, **temporarily admit the OTHER
-     layers** in src/invert_ntt.rs via:
+  β. While iterating on (1), TEMP admit the unrelated layer fns:
        #[hax_lib::fstar::options("--admit_smt_queries true")] // TEMP
-     Apply specifically to invert_ntt_at_layer_4_plus (saves 222 s
-     per Invert_ntt rebuild).  **REMOVE before commit; re-extract;
-     full make to confirm.**
+     Apply on `invert_ntt_at_layer_4_plus` (saves 222 s) AND
+     `invert_ntt_at_layer_1` + `invert_ntt_at_layer_3` (saves ~470 s
+     combined).  REMOVE before commit; full make to confirm clean.
 
-  γ. Don't bulk-nuke .checked files.  hax.py prove + make handle stale
-     incrementally.
+  γ. Don't bulk-nuke .checked files.  hax.py prove + make handle
+     stale incrementally.
 
-VERIFICATION DISCIPLINE:
+═══════════════════════════════════════════════════════════════════
+HARD RULES
+═══════════════════════════════════════════════════════════════════
 
-  * After each Bridges.fst lemma lands: fstar-mcp on Bridges.fst,
-    then `make check/Hacspec_ml_kem.Commute.Bridges.fst` (~50s with
-    fresh hints, ~5s with cached hints).
-  * After each Step 4 layer Rust edit: `python3 hax.py extract`; then
-    `make check/Libcrux_ml_kem.Invert_ntt.fst`.  Use the per-fn admit
-    discipline (β) to keep iterations fast.
-  * After Step 5 lands: `python3 hax.py prove` for full regression.
-  * After all of Steps 2-5 land: refresh
-    `proofs/agent-status/fstar-perf-top20.md` with a new snapshot.
+  R1 No admits (except β temp-iter that revert before commit).
+  R5 No body assumes.
+  R6 ulimit -v 8388608, F* rlimit ≤ 800.
+  R7 fstar-mcp inner loop, make end-of-chunk.
+  R8 Eager commit log to agent-trackA.md.
+  R3 Hard cap 60 min per sub-piece.  Escalate per Step 7.2 pattern
+     if blocked: preserve infrastructure, document the wall, move on.
 
-HARD RULES R1-R10:
-  R1 No admits or admit-driven scaffolding (except β temp-iter admits
-     that revert before commit).  R5 No body assumes.  R6 ulimit -v
-     8388608, F* rlimit ≤ 800.  R7 fstar-mcp for inner loop, make for
-     end-of-chunk.  R8 Eager commit log to agent-trackA.md.
+═══════════════════════════════════════════════════════════════════
+RESUME PROTOCOL — load durable state in this order
+═══════════════════════════════════════════════════════════════════
 
-Resume protocol — load durable state in this order:
+  1. proofs/agent-status/agent-trackA.md       (latest session log
+                                                with layer 2 failure)
+  2. /Users/karthik/.claude/plans/replicated-beaming-pnueli.md
+                                                (THE PLAN, esp. Step 3)
+  3. proofs/agent-status/fstar-perf-top20.md   (perf data + admit guide)
+  4. proofs/proof-style-guide.md §12           (Mont-arith antipattern)
+  5. MLKEM_STATUS.md                           (phase + USER tasks)
+  6. src/invert_ntt.rs:312-329                 (the function to strengthen)
+  7. src/invert_ntt.rs:359-415                 (invert_ntt_at_layer_4_plus
+                                                — the consumer)
 
-  1. proofs/agent-status/fstar-perf-top20.md  (perf data + admit guide)
-  2. proofs/agent-status/agent-trackA.md      (latest session log)
-  3. /Users/karthik/.claude/plans/replicated-beaming-pnueli.md (THE PLAN)
-  4. proofs/proof-style-guide.md §12          (Mont-arith antipattern)
-  5. proofs/agent-status/dashboard.md         (state table)
-  6. MLKEM_STATUS.md                          (phase plan)
+═══════════════════════════════════════════════════════════════════
+ENVIRONMENT VERIFY
+═══════════════════════════════════════════════════════════════════
 
-ENVIRONMENT VERIFY:
   cd /Users/karthik/libcrux-trait-opacify
   git status              # should be clean on trait-opacify
   git log --oneline trait-opacify -7
-  pgrep -f fstar.exe      # ml-kem fstar-mcp at port 3001 (may need restart)
+  pgrep -f fstar.exe      # ml-kem fstar-mcp at port 3001 (recreate
+                          # session as needed)
 
-REPORT one paragraph state summary on entry, then:
-  * Re-attempt Step 4 layer 2 (study layer 1 template carefully).
-  * Or, if user chooses, jump to Step 3 layer 4_plus cross-vector
-    bridge (defer Step 4 layer 2 to user lane).
-
-If Step 4 layer 2 hits a Z3 wall: document and escalate per Step 7.2
-held-work pattern — preserve infrastructure, document the wall, move on.
+REPORT one paragraph state summary on entry, then dive into Step 3
+sub-piece (1).  After (1) lands, proceed to (2), then (3).  Stop and
+hand off after each sub-piece if you're at 60-min cap.
 ```
 
 ---
 
 ## Why this prompt is structured this way
 
-- **Z3 unlock prominent at top** — the layer 2 Bridges trick (per-branch
-  + per-lane wrapper + `--split_queries always`) is the key
-  transferable lesson from this session.  Apply to similar walls.
-- **Step 4 layer 2 failure trace** — captures the 6 errors with line
-  numbers + hypotheses so the next agent can start debugging
-  immediately, not rediscover.
-- **Failed approaches list** — explicit "do NOT retry" prevents
-  rediscovery of the 11-min and 4-min Z3 traps.
-- **Dependency graph + time estimates** — guides session pacing.
+- **Step 3's structural difference is foreground** — the next agent
+  needs to know layer 4_plus is cross-vector + above-trait BEFORE
+  diving into Bridges.fst, otherwise it'll waste time on the wrong
+  pattern.
+- **Sub-piece breakdown** — each is independently committable, so
+  even partial progress is meaningful.  Decision tree explicit.
+- **Z3 unlock kept brief** — saved in memory, prompt just points
+  to it.
+- **Step 4 layer 2 explicitly deferred** — so the next agent doesn't
+  context-switch into it mid-Step-3.
+- **Concrete file:line refs** — `src/invert_ntt.rs:312-329` for the
+  function to strengthen, and `:359-415` for its consumer.
