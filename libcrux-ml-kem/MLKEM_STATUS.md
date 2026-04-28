@@ -1,6 +1,24 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `1c47e3632` (pushed to origin)
+**Branch**: `trait-opacify`  **Tip**: `ba8681b38` (track A — Phase 7a Step 1 done, 2026-04-28)
+
+## Phase 7a status
+
+| Step | Description | Status |
+|---|---|---|
+| 7a-E1 | `lemma_poly_barrett_reduce_commute` (E2) | ✅ merged `f9e813cdc` |
+| 7a-E2 | `lemma_add_to_ring_element_commute` (E2) | ✅ merged `1d6cacc50` |
+| 7a Step 1 | inverse NTT layer 1 hacspec bridge (track A, Bridges.fst) | ✅ verified `ba8681b38` |
+| 7a Step 9 | scaling-chain doc comments (track A) | ✅ verified `8d92695bf` |
+| 7a Step 2 | layer 2/3 inverse NTT bridges | ⏸ pending |
+| 7a Step 3 | cross-vector layer_4_plus bridge | ⏸ pending |
+| 7a Step 4 | strengthen invert_ntt_at_layer_1 post (citing Bridges lemma) | ⏸ pending |
+| 7a Step 5 | strengthen invert_ntt_montgomery post | ⏸ pending |
+| 7a Step 6 | strengthen 3 INTT-consuming reduce fns | ⏸ pending |
+| 7a Step 7 | strengthen add_standard_error_reduce | ⏸ pending |
+| 7a Step 8 | verify call sites in matrix.rs | ⏸ pending |
+
+See `/Users/karthik/.claude/plans/replicated-beaming-pnueli.md` for the full Step 1-9 plan and `proofs/agent-status/handoff-2026-04-28-trackA.md` for the resume entry point.
 
 ## Spec hierarchy (DO NOT FORGET)
 

@@ -1,6 +1,6 @@
 # Agent dashboard — trait-opacify branch
 
-Updated: 2026-04-27 (parent session, pre-Wave-1).
+Updated: 2026-04-28 (post track A — Phase 7a Step 1 done).
 
 This dashboard is the resume entry point if the parent session or the
 machine crashes.  It tracks every background sub-agent: branch, brief,
@@ -18,6 +18,7 @@ progress eagerly to its branch (see "Resume protocol" below).
 | **F** | Phase 7b — NTT/Inv-NTT layers + INTT-Mont post foundation | merged via `2a8291431` | **Foundation done** — opaque `intt_mont_form_chunk` predicate + `lemma_intt_mont_finalize_fe` per-element bridge + Tier-0 numeric chain proving `1441 = mont²/128` (per pq-crystals/kyber/ref/ntt.c line 106).  Forward NTT layer 1 hacspec bridge committed (1/8 layer fns).  Layers 2-8 + full INTT-Mont post on invert_ntt_montgomery DEFERRED — Z3 timeout on layer-2 lane bridge, structural F* work needed. | `proofs/agent-status/agent-F-brief.md` | `proofs/agent-status/agent-F.md` |
 | **E3** | Phase 7a-finish (4 reduce fns) | ABANDONED 2026-04-28 | **Killed** — explored 5 paths to discharge the 4 held reduce fns via a strengthened invert_ntt_montgomery post: full Tier-3 (Z3-blocked, days), admit-bridge (policy-violating), caller-assumes (rejected), refactor (sacrifices fusion optimization), spec-extension-into-Mont (wrong-direction).  No clear winner; stopped to document antipattern.  Branch + worktree deleted. | `proofs/agent-status/agent-E3-brief.md` (kept for reference) | n/a |
 | **C** | Phase 6c — AVX2 Sampling/Compress | `agent/phase-6c-avx2-stragglers` | **C+C2 done & MERGED** (4/5 proven, 1/5 admit-with-comment; 2 SMTPat axioms in Avx2_extract); merge `2953fbf9c` | `proofs/agent-status/agent-C-brief.md` + `agent-C2-brief.md` | `proofs/agent-status/agent-C.md` (on agent branch + trait-opacify) |
+| **trackA** | Phase 7a Step 1 — inverse NTT layer 1 hacspec bridge + Step 9 scaling-chain doc comments + Bridges.fst split | trait-opacify direct (no agent branch) | **DONE & VERIFIED**, tip `ba8681b38`. Created `Hacspec_ml_kem.Commute.Bridges.fst` (sibling of Chunk.fst); contains forward + inverse layer 1 function-form per-vector hacspec bridges.  Bridges.fst verifies in 5.8s with hints.  Polynomial.fst regression encountered mid-session was traced to a stale .fst extraction (.fsti was newer); fixed via `python3 hax.py extract`.  All ml-kem modules verified post-fix, no regressions. | n/a (this dashboard + agent-trackA.md are the durable artifacts) | `proofs/agent-status/agent-trackA.md` |
 
 States: `not started` / `spawning` / `running` / `paused (user review)` / `done` / `escalated`.
 
