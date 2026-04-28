@@ -574,7 +574,6 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]) {
-        hax_lib::fstar!("admit ()");
         encoding::commitment::serialize(&simd_unit.value, serialized)
     }
 
