@@ -210,7 +210,7 @@ See `proofs/sprint-plan.md` for the full phase table with parallelism.
 - **`fstar-mcp` skill** — incremental F* typechecking via the fstar-mcp server. Default for proof iteration.
 - **`proofdebugging` skill** — systematic Z3 failure triage.
 - **`hax.sh extract` + `make -C proofs/fstar/extraction`** — full pipeline.
-- **Hint files** in `.fstar-cache/hints/` — speed up Z3 selection.
+- **Hint files** in `.fstar-cache/hints/` — speed up Z3 selection. Independent of `.checked` files; preserve both. See §9.1.
 
 ## 9. Cache-invalidation lessons
 
@@ -221,6 +221,62 @@ lookup, intro lemmas) into a separate hand-written F* file (e.g.,
 `proofs/fstar/spec/Libcrux_ml_dsa.Simd.Bounds.fst`) included via
 `FSTAR_INCLUDE_DIRS_EXTRA`. Helper additions then invalidate only that
 file + its direct importers.
+
+## 9.1 Maximize caching — pattern and anti-pattern
+
+F* keeps two independent caches that **must both be preserved**:
+
+- `.fstar-cache/checked/*.checked` — per-module verification cache.
+  If a source's mtime is unchanged, F* skips the module entirely.
+  This is the dominant cost saver.
+- `.fstar-cache/hints/*.hints` — per-query SMT replay cache. Hints
+  make individual queries faster but don't avoid module re-check.
+
+### Pattern: targeted-make iteration
+
+1. Edit file(s).
+2. Run `make $TARGET.fst.checked` from
+   `libcrux-ml-dsa/proofs/fstar/extraction/`. Make walks back
+   through deps and re-checks only what's stale. Warm cache is
+   typically ~1-30 sec; "cold but only your touched files
+   invalidated" is usually <2 min.
+3. Iterate — only step 2 each cycle.
+4. **Once per cohesive piece of work, before commit**:
+   `JOBS=2 ./hax.sh prove 2>&1 | tail -22`. With a warm cache this
+   is 2-3 min (the 56 ADMIT-mode modules always re-emit their
+   tag; the 42 CHECK-mode modules are cache hits).
+
+### Anti-pattern: blanket cache wipes
+
+Do **not** run `rm -rf .fstar-cache/checked/*` or
+`find .fstar-cache -delete` (or the same with broad globs like
+`Libcrux_ml_dsa.*` or `Hacspec_ml_dsa.*`). It looks innocuous but
+forces a 10-15 min cold re-prove. F*'s caching is reliable; if
+you genuinely suspect corruption (rare), delete only the one or
+two specific `.checked` files you suspect. Never delete `.hints`
+files — they replay correctly even after source edits, and a fresh
+hint can be substantially worse than a recorded one until you
+re-converge.
+
+### When you legitimately need to invalidate
+
+- Make says "nothing to do" but you know a transitive dep
+  changed: `touch path/to/file.fst` to bump mtime, then
+  re-make.
+- You changed an `.fsti` interface and want a fresh re-check:
+  `rm` only that one specific `.checked` file (and the `.checked`
+  files of any sources you can clearly identify as needing fresh
+  digests).
+
+### Anti-pattern that has bitten this project
+
+Two prior agent sessions cleared `Libcrux_ml_dsa.*` and
+`Hacspec_ml_dsa.*` from the cache before re-proving "to be safe".
+Each cost ~12 min of wall-clock for zero added confidence —
+F* would have re-checked exactly the same modules from a warm
+cache, just without the wait. Targeted `make $TARGET.checked`
+is the right cycle; full `./hax.sh prove` with warm cache is the
+right pre-commit gate.
 
 ## 10. Documentation cadence
 
