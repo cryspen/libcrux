@@ -325,6 +325,72 @@ cache, just without the wait. Targeted `make $TARGET.checked`
 is the right cycle; full `./hax.sh prove` with warm cache is the
 right pre-commit gate.
 
+## 9.2 Develop locally, upstream once (binding workflow)
+
+Touching a low-level shared module (`Libcrux_ml_dsa.Simd.Traits.Specs`,
+`Spec.MLDSA.Math`, `Spec.Intrinsics`, `Hacspec_ml_dsa.Parameters`)
+cascades a re-verify through every transitive dependent.  In Step 9.3
+a single change to `shift_left_then_reduce_lane_post`'s body forced
+re-verification of `Simd.Portable.Ntt`, `Simd.Portable.Invntt`, the
+AVX2 NTT/Invntt counterparts, and every encoding module — ~30+ min
+of build for a 5-line spec relax.
+
+**Binding rule: develop new lemmas standalone first; upstream after
+they verify.**
+
+### Iteration loop (use during exploration)
+
+1. **Start the lemma in the consumer file**, not in the shared spec.
+   - New per-lane bridge lemma → write it inline in
+     `Hacspec_ml_dsa.Commute.Chunk.fst` with a *local* relaxed-form
+     `prop` (don't touch `Specs.fst` yet).
+   - New `Spec.MLDSA.Math.*` helper → write it inline at the top of
+     the file that uses it (e.g. inside the impl-side `arithmetic.rs`'s
+     `hax_lib::fstar!(...)` block, or in a private F* aux).
+   - For very experimental lemmas, create a sibling file
+     `<Module>.Sandbox.fst` that imports just what's needed; nothing
+     depends on it, so it costs only the fresh-file verification.
+
+2. **Iterate with `fstar-mcp`'s `typecheck_buffer`** (sub-second
+   feedback) instead of `make` (50-100s+ even when warm-cached, since
+   F* still type-loads the world).  The fstar-mcp binary lives at
+   `/Users/karthik/fstar-mcp/target/release/fstar-mcp`; the project's
+   `.mcp.json` registers it on port 3001.  See the `fstar-mcp` skill.
+
+3. **Confirm against the consumer once** with a targeted
+   `make $CONSUMER.fst.checked` — typically <2 min when only one or
+   two impl files are stale.
+
+4. **Upstream in one batch** — once the lemma shape is final, move
+   the `prop` definition (and its `_lookup`/`_intro` SMTPats) into
+   the canonical home (`Specs.fst`, `Spec.MLDSA.Math.fst`, etc.), pay
+   the cascade cost ONCE, and commit.
+
+### Anti-pattern: edit-the-spec-then-iterate
+
+Editing `Specs.fst` *before* knowing the final lemma shape forces
+a 30-min cascade per edit.  In Step 9.3 the right move would have
+been to:
+  - Inline the relaxed `shift_left_then_reduce_lane_post` shape as a
+    local `prop` inside `Commute.Chunk.fst`'s commute lemma's
+    `(ensures ...)`, develop with `typecheck_buffer`, confirm against
+    the impl files (~3 min),
+  - Then upstream the relaxed `prop` definition + `_lookup`/`_intro`
+    lemmas into `Specs.fst` in one commit.
+
+The instinct to "fix the spec first, then iterate" is wrong when the
+spec lives in a high-fan-in module — fix the consumers and pin down
+the lemma shape first, then move the shape upstream.
+
+### Why this matters
+
+Cache-warm `make` of a single impl file is ~30s.  Cache-warm
+`make` after touching `Specs.fst` is ~30 min.  The 60× factor
+isn't iteration friction — it's the difference between a productive
+day and a stuck-on-cascade day.  Use `typecheck_buffer` and local
+specs as the default development surface; treat the upstream spec
+modules as commit targets, not edit targets.
+
 ## 10. Documentation cadence
 
 `MLDSA_STATUS.md` and `proofs/outstanding-admits.md` MUST be kept in sync
