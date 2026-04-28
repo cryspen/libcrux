@@ -2,8 +2,8 @@
 
 **Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
 **Branch:** `trait-opacify`
-**Tip at end:** TBD (was `7b4707227` at start of this resume — handoff prompt
-commit; effective code tip `bcc3dc480` at session start)
+**Tip at end:** `0784e3b72` (was `7b4707227` at start of this resume —
+handoff prompt commit; effective code tip `bcc3dc480` at session start)
 
 ## 2026-04-28 late evening — Phase 7a Step 3 (sub-pieces 1 + 2)
 

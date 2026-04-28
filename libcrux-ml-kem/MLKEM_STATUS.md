@@ -1,6 +1,6 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: TBD post-commit (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; 2026-04-28 late evening)
+**Branch**: `trait-opacify`  **Tip**: `0784e3b72` (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; layer 4_plus body TEMP-admitted pending Step 5 drive-to-the-top spike; 2026-04-28 late evening)
 
 ## Phase 7a status
 
@@ -18,8 +18,8 @@
 | 7a Step 7.2 | strengthen add_standard_error_reduce post (Rust integration) | ⏸ HELD — Z3 saturated on 2 invariant approaches; see TODO in `src/polynomial.rs` |
 | 7a Step 2 layer 3 | inverse NTT layer 3 bridge (Bridges.fst: zetas_1_lane, lemma_ntt_inverse_layer_n_16_8_lane, lemma_inv_ntt_layer_3_step_*) | ✅ verified `fa2151ea8` |
 | 7a Step 2 layer 2 | layer 2 inverse NTT bridge (4 per-branch + per-lane wrapper + `--split_queries always`) | ✅ verified `b7b49c358` |
-| 7a Step 3.1 | strengthen `inv_ntt_layer_int_vec_step_reduce` post (per-lane FE eqs) | ✅ verified TBD |
-| 7a Step 3.2 | chunk-pair hacspec bridge `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` (Bridges.fst) | ✅ verified TBD |
+| 7a Step 3.1 | strengthen `inv_ntt_layer_int_vec_step_reduce` post (per-lane FE eqs) | ✅ verified `0784e3b72` |
+| 7a Step 3.2 | chunk-pair hacspec bridge `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` (Bridges.fst) | ✅ verified `0784e3b72` |
 | 7a Step 3.3 | per-polynomial composition in `invert_ntt_at_layer_4_plus` (cite `IN.ntt_inverse_layer_n 256`) | ⏸ DEFERRED — needs new spec helpers (`mont_to_spec_poly_256`, `zetas_N_inv` for layer 4..7); naturally combines with Step 4 layer 4_plus.  See agent-trackA.md "Open work / Step 3.3 deferred" |
 | 7a Step 5 | strengthen invert_ntt_montgomery post | ⏸ pending |
 | 7a Step 6 | strengthen 3 INTT-consuming reduce fns | ⏸ pending |
