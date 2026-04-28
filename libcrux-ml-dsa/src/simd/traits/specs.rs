@@ -296,7 +296,8 @@ let bit_unpack_chunk_post (a b: int) (w: nat{w > 0 /\ w <= 20})
                [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre a b);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b2 b)] =
-        admit ()
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+        reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_pre) (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre)
     "#)]
 pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     forall(|i: usize| {
@@ -336,7 +337,8 @@ pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDCo
               [SMTPat (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre a b);
                SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                SMTPat (Spec.Utils.is_i32b_array_opaque b2 b)] =
-        admit ()
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+        reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre) (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre)
     "#)]
 pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
     forall(|i: usize| {

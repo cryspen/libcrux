@@ -23,6 +23,8 @@ pub(crate) fn from_coefficient_array(coefficient_array: &[i32], out: &mut Vec256
 
 /// Write out the coefficient to an `i32` array
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${out}_future == Seq.length ${out}"#))]
 pub(crate) fn to_coefficient_array(value: &Vec256, out: &mut [i32]) {
     libcrux_intrinsics::avx2::mm256_storeu_si256_i32(out, value.value);
 }
