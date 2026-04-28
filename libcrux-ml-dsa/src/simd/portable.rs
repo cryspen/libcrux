@@ -279,8 +279,50 @@ impl Operations for Coefficients {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
-        hax_lib::fstar!("admit ()");
-        arithmetic::decompose(gamma2, simd_unit, low, high)
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
+        );
+        arithmetic::decompose(gamma2, simd_unit, low, high);
+        hax_lib::fstar!(
+            r#"
+            // F-1 verdict (above-trait commit 7a4dc28df, option d):
+            // discharge per-lane decompose_lane_post via paired commute lemma.
+            // The arithmetic post gives `v low[k] == r0_s /\ v high[k] == r1_s`
+            // (per-lane Spec.MLDSA.Math.decompose match) which is exactly the
+            // commute lemma's precondition.  We help Z3 by extracting the
+            // per-lane post via the forall-i instantiation explicitly.
+            let pf_eq (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) =
+                let r = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k in
+                let r0 = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k in
+                let r1 = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k in
+                let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v $gamma2) (v r) in
+                assert (v r0 == r0_s /\ v r1 == r1_s);
+                Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_lane_commute_conditional
+                    $gamma2 r r0 r1
+            in
+            Classical.forall_intro pf_eq;
+            // Bound conjuncts: per-lane bounds from arithmetic post → array-level
+            // is_i32b_array opaque on both gamma2 branches.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 95232
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 44
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 261888
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 16
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#
+        );
     }
 
     #[requires(fstar!(r#"
@@ -303,8 +345,49 @@ impl Operations for Coefficients {
         gamma2: i32,
         hint: &mut Coefficients,
     ) -> usize {
-        hax_lib::fstar!("admit ()");
-        arithmetic::compute_hint(low, high, gamma2, hint)
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#
+        );
+        let result = arithmetic::compute_hint(low, high, gamma2, hint);
+        hax_lib::fstar!(
+            r#"
+            // F-1 verdict (above-trait commit 7a4dc28df, option d):
+            // discharge bound + conditional equation via paired commute lemmas.
+            let pf_eq (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.compute_hint_lane_post
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_compute_hint_lane_commute_conditional
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k)
+            in
+            Classical.forall_intro pf_eq;
+            // Bound conjunct: per-lane hint ∈ {0, 1} → array-level binary.
+            let pf_bound (k: nat{k < 8}) : Lemma
+                (ensures
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) == 0 \/
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) == 1) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_compute_one_hint_bound
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)
+                    $gamma2
+            in
+            Classical.forall_intro pf_bound;
+            reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}));
+            // Discharge `v result <= 8` from the spec popcount under binary
+            // hint (each lane ∈ {0, 1}, so total ≤ 8).
+            Hacspec_ml_dsa.Commute.Chunk.lemma_compute_hint_bound
+                (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#
+        );
+        result
     }
 
     #[requires(fstar!(r#"

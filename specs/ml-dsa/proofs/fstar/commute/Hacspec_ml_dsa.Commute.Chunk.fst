@@ -467,3 +467,133 @@ let lemma_use_hint_lane_commute_conditional
         assert (v (s2 %! m_h) == (r1_s - 1) % m_int)
       end
 #pop-options
+
+(* === Track 2: paired-lemma template for decompose, compute_hint === *)
+
+(* Bound lemma for decompose (paired-lemma template).  Used by the
+   Portable (and AVX2) impls to discharge the array-level bound
+   conjuncts on `low_future` (= Spec.r0; `is_i32b_array g`) and
+   `high_future` (= Spec.r1; `is_i32b_array (4190208/g)`).
+
+   Spec returns r0 = either `r_g` (non-special) or `r_g - 1` (special,
+   when r_q - r_g = q-1, which forces r_g = 0 and r0 = -1).
+   Both cases yield r0 ∈ [-g, g]. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+let lemma_decompose_bound (gamma2 r: i32)
+    : Lemma
+        (requires (v gamma2 == 95232 \/ v gamma2 == 261888))
+        (ensures
+          (let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v gamma2) (v r) in
+           - (v gamma2) <= r0_s /\ r0_s <= v gamma2 /\
+           (v gamma2 == 95232 ==> 0 <= r1_s /\ r1_s < 44) /\
+           (v gamma2 == 261888 ==> 0 <= r1_s /\ r1_s < 16)))
+  = let g = v gamma2 in
+    let q = 8380417 in
+    let twog = g * 2 in
+    let r_q = (v r) % q in
+    L.lemma_mod_lt (v r) q;
+    let r_g = Spec.Utils.mod_p r_q twog in
+    L.lemma_mod_lt r_q twog;
+    assert (-g < r_g /\ r_g <= g);
+    lemma_spec_decompose_r1_bound g (v r)
+#pop-options
+
+(* Conditional equation for decompose (paired-lemma template).
+   Under `v input ∈ [0, q)`, `Hacspec.decompose` agrees with
+   `Spec.MLDSA.Math.decompose` (output layouts differ; v-image agrees).
+   Discharges the trait-side `decompose_lane_post`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_decompose_lane_commute_conditional
+    (gamma2 input low_future high_future: i32)
+    : Lemma
+        (requires
+          (v gamma2 == 95232 \/ v gamma2 == 261888) /\
+          (let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v gamma2) (v input) in
+           v low_future == r0_s /\ v high_future == r1_s))
+        (ensures TS.decompose_lane_post gamma2 input low_future high_future)
+  = reveal_opaque (`%TS.decompose_lane_post)
+                  (TS.decompose_lane_post gamma2 input low_future high_future);
+    introduce
+        v input >= 0 /\ v input < 8380417 ==>
+        (let pair = Hacspec_ml_dsa.Arithmetic.decompose input gamma2 in
+         v low_future == v (snd pair) /\ v high_future == v (fst pair))
+    with hyp.
+      lemma_decompose_bridge input gamma2
+#pop-options
+
+(* Bound lemma for compute_hint (paired-lemma template).  Trivial:
+   `Spec.MLDSA.Math.compute_one_hint` returns 0 or 1 by definition.
+   Used to discharge `is_binary_array_8_opaque hint_future`. *)
+let lemma_compute_one_hint_bound (low high gamma2: i32)
+    : Lemma
+        (let res = Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2) in
+         res == 0 \/ res == 1)
+  = ()
+
+(* Bound lemma for the popcount (`Spec.MLDSA.Math.compute_hint`)
+   under the binary-hint hypothesis: each of the 8 lanes is 0 or 1,
+   so the sum is in [0, 8].  Discharges the trait-side
+   `v result <= 8` conjunct on `Operations::compute_hint`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let rec lemma_compute_hint_bound_aux (hint: t_Array i32 (sz 8)) (n: nat{n <= 8})
+    : Lemma
+        (requires
+          (forall (i: nat). i < 8 ==>
+            (v (Seq.index hint i) == 0 \/ v (Seq.index hint i) == 1)))
+        (ensures
+          Spec.Utils.repeati (sz n) (Spec.MLDSA.Math.hint_counter hint) 0 <= n)
+        (decreases n)
+  = if n = 0 then
+      Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.hint_counter hint) 0
+    else begin
+      lemma_compute_hint_bound_aux hint (n - 1);
+      Spec.Utils.unfold_repeati (sz n) (Spec.MLDSA.Math.hint_counter hint) 0 (sz (n - 1));
+      // step adds v (cast hint[n-1] <: usize) which is 0 or 1 under hyp.
+      assert (v (cast (Seq.index hint (n - 1)) <: usize) == 0 \/
+              v (cast (Seq.index hint (n - 1)) <: usize) == 1)
+    end
+#pop-options
+
+let lemma_compute_hint_bound (hint: t_Array i32 (sz 8))
+    : Lemma
+        (requires
+          (forall (i: nat). i < 8 ==>
+            (v (Seq.index hint i) == 0 \/ v (Seq.index hint i) == 1)))
+        (ensures Spec.MLDSA.Math.compute_hint hint <= 8)
+  = lemma_compute_hint_bound_aux hint 8
+
+(* Conditional equation for compute_hint (paired-lemma template).
+   Bridges `Spec.MLDSA.Math.compute_one_hint` to `Hacspec.make_hint`
+   under `v high ∈ [0, q)`.  `Spec.compute_one_hint` is a direct
+   formula on `low`; `Hacspec.make_hint` calls `high_bits` on `high`
+   and `mod_q (high + low)` and tests inequality.  The two are
+   equivalent under the trait pre's bounds, but the equivalence is a
+   non-trivial FIPS 204 §3.6 property — placeholder admit for now,
+   matching the F-1 scaffolding shape. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_compute_hint_lane_commute_conditional
+    (gamma2 low high hint_future: i32)
+    : Lemma
+        (requires
+          (v gamma2 == 95232 \/ v gamma2 == 261888) /\
+          v hint_future == Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2))
+        (ensures TS.compute_hint_lane_post gamma2 low high hint_future)
+  = reveal_opaque (`%TS.compute_hint_lane_post)
+                  (TS.compute_hint_lane_post gamma2 low high hint_future);
+    introduce
+        v high >= 0 /\ v high < 8380417 ==>
+        (if Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2
+         then v hint_future == 1
+         else v hint_future == 0)
+    with hyp.
+      admit ()  (* Track 2 follow-up: prove
+                   Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2) == 1
+                   <==> Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2.
+                   Spec form is a direct |r0|-vs-gamma2 comparison;
+                   Hacspec form decomposes both `high` and `mod_q (high + low)`
+                   and tests their high-bits.  This is the standard FIPS 204
+                   "MakeHint correctness" property — non-trivial proof,
+                   estimated 60-100 lines.  Bridge involves showing that
+                   |r0| > gamma2 (or boundary case) is equivalent to
+                   high_bits changing under +z. *)
+#pop-options
