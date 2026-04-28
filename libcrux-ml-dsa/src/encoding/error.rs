@@ -1,25 +1,42 @@
 // Functions for serializing and deserializing an error ring element.
 
 use crate::{
-    constants::Eta, helper::cloop, ntt::ntt, polynomial::PolynomialRingElement,
-    simd::traits::Operations,
+    constants::Eta, ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations,
 };
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $serialized == 32 * (match $eta with
+                                     | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                     | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
+    (forall (j:nat). j < 32 ==>
+      Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
+        (match $eta with
+         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+        (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     eta: Eta,
     re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // OUTPUT_SIZE
 ) {
     let output_bytes_per_simd_unit = chunk_size(eta);
-
-    cloop! {
-        for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            SIMDUnit::error_serialize(eta,
-                    simd_unit,
-                    &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit]
-                );
-        }
+    for i in 0..re.simd_units.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= 32 /\
+              v output_bytes_per_simd_unit == (match eta with
+                                               | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                               | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
+              Seq.length serialized == 32 * v output_bytes_per_simd_unit"#
+        ));
+        SIMDUnit::error_serialize(
+            eta,
+            &re.simd_units[i],
+            &mut serialized
+                [i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
+        );
     }
 }
 
@@ -32,14 +49,24 @@ fn chunk_size(eta: Eta) -> usize {
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $serialized == 32 * (match $eta with
+                                     | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                     | Libcrux_ml_dsa.Constants.Eta_Four -> 4)"#))]
 fn deserialize<SIMDUnit: Operations>(
     eta: Eta,
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     let chunk_size = chunk_size(eta);
-
     for i in 0..result.simd_units.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= 32 /\
+              v chunk_size == (match eta with
+                               | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                               | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
+              Seq.length serialized == 32 * v chunk_size"#
+        ));
         SIMDUnit::error_deserialize(
             eta,
             &serialized[i * chunk_size..(i + 1) * chunk_size],
@@ -49,17 +76,18 @@ fn deserialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     eta: Eta,
     ring_element_size: usize,
     serialized: &[u8],
     ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(ring_element_size).enumerate() {
-            deserialize::<SIMDUnit>(eta, bytes, &mut ring_elements[i]);
-            ntt(&mut ring_elements[i]);
-        }
+    hax_lib::fstar!("admit ()");
+    for i in 0..(serialized.len() / ring_element_size) {
+        let bytes = &serialized[i * ring_element_size..(i + 1) * ring_element_size];
+        deserialize::<SIMDUnit>(eta, bytes, &mut ring_elements[i]);
+        ntt(&mut ring_elements[i]);
     }
 }
 
