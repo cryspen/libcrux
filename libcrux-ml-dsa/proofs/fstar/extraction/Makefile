@@ -13,6 +13,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Types.fst \
 	Libcrux_ml_dsa.Arithmetic.fst \
 	Libcrux_ml_dsa.Polynomial.fst \
+	Libcrux_ml_dsa.Polynomial.Spec.fst \
 	Libcrux_ml_dsa.Ntt.fst \
 	Libcrux_ml_dsa.Encoding.T1.fst \
 	Libcrux_ml_dsa.Encoding.Commitment.fst \

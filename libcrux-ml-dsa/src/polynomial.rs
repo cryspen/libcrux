@@ -9,6 +9,31 @@ pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
 
+/// Spec helpers for stating bounds at the polynomial level (mirrors
+/// `Libcrux_ml_kem.Polynomial.spec`).  Use these in matrix/vector wrappers
+/// to avoid nested-forall trigger explosion in SMT search.
+#[cfg(hax)]
+pub(crate) mod spec {
+    use crate::polynomial::PolynomialRingElement;
+    use crate::simd::traits::Operations;
+
+    pub(crate) fn is_bounded_simd_unit<SIMDUnit: Operations>(b: usize, vec: &SIMDUnit) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Spec.Utils.is_i32b_array_opaque (v b) (i0._super_i2.f_repr vec)"#
+        )
+    }
+
+    pub(crate) fn is_bounded_poly<SIMDUnit: Operations>(
+        b: usize,
+        p: &PolynomialRingElement<SIMDUnit>,
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v b)
+                  (i0._super_i2.f_repr (p.f_simd_units.[ sz i ]))"#
+        )
+    }
+}
+
 #[hax_lib::attributes]
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     pub(crate) fn zero() -> Self {
