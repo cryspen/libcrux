@@ -58,3 +58,27 @@ let lemma_barrett_red_bound_and_mod_q (x: i32)
     assert (v r == v x - v q * 8380417);
     L.lemma_mod_sub (v x) 8380417 (v q)
 #pop-options
+
+(* Bridge: convert the AVX2 `arithmetic::add` post (per-lane
+   `to_i32x8 lhs_future i == add_mod_opaque lhs[i] rhs[i]`) into the
+   integer-equality shape consumed by `Libcrux_ml_dsa.Simd.Traits.Specs.add_post`.
+   The trait pre `add_pre` (per-lane sum is i32) makes `add_mod` non-wrapping.
+   `int_is_i32` from `Libcrux_ml_dsa.Simd.Traits.Specs` reduces (since
+   `Hax_lib.Int.t_Int` is `int` unfolded) to the bound `-2^31 <= x <= 2^31 - 1`
+   which is exactly `range x i32_inttype`. *)
+let lemma_add_lane_commute (lhs rhs lhs_future: i32)
+    : Lemma
+        (requires
+          Libcrux_ml_dsa.Simd.Traits.Specs.int_is_i32 (v lhs + v rhs) /\
+          lhs_future == Spec.Intrinsics.add_mod_opaque lhs rhs)
+        (ensures v lhs_future == v lhs + v rhs)
+  = Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype
+
+(* Bridge: same, for `arithmetic::subtract` / `sub_mod_opaque`. *)
+let lemma_sub_lane_commute (lhs rhs lhs_future: i32)
+    : Lemma
+        (requires
+          Libcrux_ml_dsa.Simd.Traits.Specs.int_is_i32 (v lhs - v rhs) /\
+          lhs_future == Spec.Intrinsics.sub_mod_opaque lhs rhs)
+        (ensures v lhs_future == v lhs - v rhs)
+  = Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype

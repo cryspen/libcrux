@@ -58,16 +58,70 @@ impl Operations for AVX2SIMDUnit {
     #[requires(specs::add_pre(&lhs.repr(), &rhs.repr()))]
     #[ensures(|_| specs::add_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn add(lhs: &mut Self, rhs: &Self) {
-        hax_lib::fstar!("admit ()");
-        arithmetic::add(&mut lhs.value, &rhs.value)
+        #[cfg(hax)]
+        let _orig = *lhs;
+        arithmetic::add(&mut lhs.value, &rhs.value);
+        hax_lib::fstar!(r#"
+            reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_pre)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}));
+            reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_post)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.add_post
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}));
+            let pfk (k: nat{k < 8}) : Lemma
+                (ensures
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k) ==
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k) +
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)) =
+                assert (mk_usize k <. Libcrux_ml_dsa.Simd.Traits.Specs.v_COEFFICIENTS_IN_SIMD_UNIT);
+                assert (Libcrux_ml_dsa.Simd.Traits.Specs.int_is_i32
+                    (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k) +
+                     v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)));
+                Hacspec_ml_dsa.Commute.Chunk.lemma_add_lane_commute
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
+            in
+            Classical.forall_intro pfk
+        "#);
     }
 
     #[inline(always)]
     #[requires(specs::sub_pre(&lhs.repr(), &rhs.repr()))]
     #[ensures(|_| specs::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self) {
-        hax_lib::fstar!("admit ()");
-        arithmetic::subtract(&mut lhs.value, &rhs.value)
+        #[cfg(hax)]
+        let _orig = *lhs;
+        arithmetic::subtract(&mut lhs.value, &rhs.value);
+        hax_lib::fstar!(r#"
+            reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}));
+            reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_post)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.sub_post
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}));
+            let pfk (k: nat{k < 8}) : Lemma
+                (ensures
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k) ==
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k) -
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)) =
+                assert (mk_usize k <. Libcrux_ml_dsa.Simd.Traits.Specs.v_COEFFICIENTS_IN_SIMD_UNIT);
+                assert (Libcrux_ml_dsa.Simd.Traits.Specs.int_is_i32
+                    (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k) -
+                     v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)));
+                Hacspec_ml_dsa.Commute.Chunk.lemma_sub_lane_commute
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
+            in
+            Classical.forall_intro pfk
+        "#);
     }
 
     #[inline(always)]

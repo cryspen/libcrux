@@ -1,14 +1,14 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 7 AVX2 closed (2026-04-28 session). Both Portable and AVX2 `Operations::reduce` discharge without body admits.
+**Tip**: Step 8 AVX2 closed (2026-04-28 session). AVX2 `Operations::add` and `Operations::subtract` discharge without body admits, on top of the Step 7 AVX2 reduce close.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Same totals as prior session — the AVX2 reduce body proof landed inside `Libcrux_ml_dsa.Simd.Avx2.fst` (already CHECK).
+**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Same totals as prior session — the AVX2 add/subtract body proofs land inside `Libcrux_ml_dsa.Simd.Avx2.fst` (already CHECK).
 
-**This session's deltas (Step 7 AVX2)**:
-1. **Piece 1 — intrinsic spec strengthening** (`libcrux-ml-dsa/proofs/fstar/spec/Spec.Intrinsics.fsti`, `libcrux-ml-dsa/src/simd/avx2/vector_type.rs`): added `mm256_storeu_si256_i32_lemma` + `mm256_storeu_si256_i32_len_lemma` (SMTPat axioms in `Spec.Intrinsics.fsti`) bridging `Seq.index (mm256_storeu_si256_i32 out vec) i` to `to_i32x8 vec (mk_u64 i)`. Lifted `to_coefficient_array`'s ensures to carry the per-lane content guarantee. Self-contained in mldsa-only spec — no change to the shared `Libcrux_intrinsics.Avx2.fst`, so ml-kem is unaffected.
-2. **Piece 2 — Barrett-reduction bridge** (`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`): proved `lemma_barrett_red_bound_and_mod_q (x: i32) : Lemma (requires is_i32b 2143289343 x) (ensures is_i32b 8380416 (barrett_red x) /\ ...)` via opacity reveals + `FStar.Math.Lemmas.lemma_mod_sub`. rlimit 200.
-3. **Piece 3 — AVX2 reduce body** (`libcrux-ml-dsa/src/simd/avx2.rs:363-368`): replaced `admit ()` with `_orig.clone()` + loop_invariant carrying the `to_i32x8 (...) == barrett_red (...)` shape that `arithmetic::reduce` proves + after-loop `Classical.forall_intro` over `j<32 / k<8` invoking both `lemma_barrett_red_bound_and_mod_q` and `lemma_reduce_lane_commute` to land `reduce_lane_post`. Mirrors the Portable Step-7 template (`c91f0b413`) but with Vec256 lanes via `Spec.Intrinsics.to_i32x8`.
+**This session's deltas (Step 8 AVX2)**:
+1. **Piece A — per-lane bridge lemmas** (`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`): proved `lemma_add_lane_commute` and `lemma_sub_lane_commute` — given `int_is_i32 (v lhs ± v rhs)` (from `add_pre`/`sub_pre`) and `lhs_future == add_mod_opaque lhs rhs` (from the strengthened AVX2 `arithmetic::{add,subtract}` post), conclude per-lane `v lhs_future == v lhs ± v rhs`. Body is just `Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype`.
+2. **Piece B — strengthen AVX2 free fns** (`libcrux-ml-dsa/src/simd/avx2/arithmetic.rs:40-52`): added `ensures` clauses to `add` and `subtract` advertising `forall i. to_i32x8 lhs_future i == add_mod_opaque (to_i32x8 lhs i) (to_i32x8 rhs i)` (resp. `sub_mod_opaque`). Discharged for free by the existing `mm256_{add,sub}_epi32_lemma` SMTPat axioms in `Spec.Intrinsics.fsti`. No body admit needed.
+3. **Piece C — replace AVX2 add/subtract body admits** (`libcrux-ml-dsa/src/simd/avx2.rs:60-122`): `admit ()` → `let _orig = *lhs; arithmetic::add(...); reveal_opaque add_pre/add_post; pfk forall k<8 → lemma_add_lane_commute; Classical.forall_intro pfk`. The `f_repr` content bridge (Step 7 Piece 1) plus `int_is_i32` instantiation per-k makes the chain go through. Same shape for subtract.
 
 **Operations trait pre-conditions audit (2026-04-28)**: every method's pre
 now matches what its Portable free fn requires for panic freedom — a
@@ -108,8 +108,8 @@ mode under the thin-wrapper pattern.
 | `zero` | ✅ | ✅ | ✅ | trivial (`repr() == [0;8]`) | trivial; both impls verify |
 | `from_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
 | `to_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
-| `add` | ✅ | ✅ | ✅ | `add_post` per-lane integer | both `*.Arithmetic.fst` verify the underlying primitive |
-| `subtract` | ✅ | ✅ | ✅ | `sub_post` per-lane integer | both verify |
+| `add` | ✅ | ✅ | ✅ (AVX2 impl closed; this session, Step 8) | `add_post` per-lane integer | both `*.Arithmetic.fst` verify the underlying primitive; AVX2 impl now uses `lemma_add_lane_commute` bridge |
+| `subtract` | ✅ | ✅ | ✅ (AVX2 impl closed; this session, Step 8) | `sub_post` per-lane integer | both verify; AVX2 impl uses `lemma_sub_lane_commute` bridge |
 | `infinity_norm_exceeds` | ✅ (relaxed 04fd066f0) | ❌ | ✅ | raw signed `abs` | portable: `Simd.Portable.Arithmetic.fst:738` errs in `assert (v normalized == abs (v coefficient))` after post relaxation; AVX2 verifies |
 | `decompose` | ✅ | ✅ | 🟡 | `Arithmetic.decompose` × 8 lanes | portable verifies; AVX2 in lax/admit (wave 3C — already pre-existing) |
 | `compute_hint` | ✅ | ✅ | 🟡 | `Arithmetic.make_hint` × 8 + popcount | same |

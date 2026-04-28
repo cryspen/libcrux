@@ -228,9 +228,15 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   `libcrux-ml-dsa/src/simd/avx2.rs:30-360` (Operations impl blocks).
 - **Annotation**: `#[hax_lib::attributes]` on impl block;
   `#[requires]/[ensures]` on each method matching trait pre/post; body
-  begins with `hax_lib::fstar!("admit ()")` (except for Portable add /
-  subtract, which discharge cleanly since the underlying free fn post is
-  identical to the trait's).
+  begins with `hax_lib::fstar!("admit ()")` for the methods listed below.
+  Resolved (no admit) so far: Portable add/subtract (free fn post identical
+  to trait), Portable reduce (Step 7 — `c91f0b413`), AVX2 reduce
+  (Step 7 — `aa51e5ef9`), AVX2 add/subtract (Step 8 — this session).
+- **Remaining methods with body admits** (AVX2 only — Portable mostly
+  closed already): `zero`, `from_coefficient_array`, `to_coefficient_array`,
+  `infinity_norm_exceeds`, `decompose`, `compute_hint`, `use_hint`,
+  `montgomery_multiply`, `shift_left_then_reduce`, `power2round`, all
+  `rejection_sample_*`, all encoding methods, `ntt`, `invert_ntt_montgomery`.
 - **Phase added**: 2026-04-28 (Step 5b extension).
 - **Diagnosis**: After lifting Simd.Portable.fst + Simd.Avx2.fst from
   ADMIT to CHECK (Step 5), the impl methods extracted with `f_*_pre =
@@ -241,10 +247,15 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   the trait (e.g. `infinity_norm_exceeds`); (2) all AVX2 free fns operate
   on Vec256 (the bitvec model) while the trait posts cite f_repr (i32x8
   view) — bridging the two needs per-method translation lemmas.
-- **Suggested mitigation**: per-method translation lemma library in
-  `specs/ml-dsa/proofs/fstar/commute/` linking Vec256 ↔ f_repr per
-  Operations method. Estimate 20-30 min per method × ~21 methods ×
-  2 impls (Portable rarely needs translation; AVX2 needs all 21).
+- **Template**: Step 7 + Step 8 established the AVX2 thin-wrapper template:
+  (1) strengthen the underlying AVX2 free fn post to mention `to_i32x8`
+  per lane (often free via existing `mm256_*_lemma` SMTPats);
+  (2) add a per-lane bridge lemma in `Hacspec_ml_dsa.Commute.Chunk.fst`
+  linking the intrinsic op shape to `Libcrux_ml_dsa.Simd.Traits.Specs.*_post`;
+  (3) in the impl method, save `_orig`, call the free fn, reveal opacity
+  of pre/post, and apply the bridge lemma per-lane via `Classical.forall_intro`.
+- **Suggested mitigation**: continue applying the Step 7+8 template
+  per-method. Estimate 15-25 min per method.
 
 ### Libcrux_ml_dsa.Simd.Avx2.f_reduce body admit (RESOLVED)
 - **Resolution**: closed in this session via three pieces:

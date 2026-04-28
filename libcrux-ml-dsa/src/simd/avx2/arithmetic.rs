@@ -38,11 +38,17 @@ fn to_unsigned_representatives(t: &mut Vec256) {
 }
 
 #[inline]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall i. to_i32x8 ${lhs}_future i ==
+        add_mod_opaque (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i))"#))]
 pub(super) fn add(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_add_epi32(*lhs, *rhs);
 }
 
 #[inline]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall i. to_i32x8 ${lhs}_future i ==
+        sub_mod_opaque (to_i32x8 ${lhs} i) (to_i32x8 ${rhs} i))"#))]
 pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
     *lhs = mm256_sub_epi32(*lhs, *rhs)
 }
