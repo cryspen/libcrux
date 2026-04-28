@@ -403,8 +403,46 @@ impl Operations for AVX2SIMDUnit {
             (Seq.index (${rhs.repr()}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) i))"#))]
     fn montgomery_multiply(lhs: &mut Self, rhs: &Self) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig_lhs = *lhs;
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}))"#
+        );
         arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
+        hax_lib::fstar!(
+            r#"
+            // Per-lane bridge: AVX2 free fn post (mont_mul shape) →
+            // trait post (centered-bound + mod-q congruence + lane post).
+            // Mirrors the Step 9 reduce template (avx2.rs:179-218).
+            reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
+            let pf (k: nat{k < 8}) : Lemma
+                (ensures
+                    Spec.Utils.is_i32b 8380416
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k) /\
+                    Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_lhs}) k)
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_mont_mul_bound_and_mod_q
+                    (Spec.Intrinsics.to_i32x8
+                        ${_orig_lhs}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                        (mk_u64 k))
+                    (Spec.Intrinsics.to_i32x8
+                        ${rhs}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                        (mk_u64 k));
+                Libcrux_ml_dsa.Simd.Traits.Specs.lemma_montgomery_multiply_lane_intro
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_lhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
+            in
+            Classical.forall_intro pf;
+            // Fold per-lane bound into array-level opaque on lhs_future.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}))"#
+        );
     }
 
     #[inline(always)]

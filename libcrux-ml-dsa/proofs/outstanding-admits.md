@@ -288,6 +288,25 @@ deferred) needs strengthening of the AVX2 free-fn posts (which carry
 `#push-options "--admit_smt_queries true"`) before the F-1 paired
 template can be applied.
 
+### Step 11 Track 4: AVX2 montgomery_multiply impl scaffolding (2026-04-28)
+**Status**: AVX2 `Operations::montgomery_multiply` impl body
+upgraded from top-level `admit()` to paired-lemma scaffolding
+mirroring the AVX2 reduce template (Step 9).  `Simd.Avx2.fst`
+verifies in 12.5s; impl_1 in 4.5s @ rlimit 80 (used 8.4/80).
+- `lemma_mont_mul_bound_and_mod_q` (new in `Commute.Chunk.fst`):
+  centered-bound + mod-q congruence on `Spec.MLDSA.Math.mont_mul`.
+  **`admit ()` body** — ~70-100-line ML-KEM-style i32/i64 Montgomery
+  correctness proof, USER lane.  Mirror of
+  `Spec.Utils.lemma_mont_mul_red_i16_int`
+  (`libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fst:505`) adapted to
+  i32/i64 with shift 32 and q=8380417, q'=58728449, R^-1=8265825.
+- AVX2 `montgomery_multiply` impl: per-lane
+  `lemma_mont_mul_bound_and_mod_q` on `to_i32x8` outputs, then
+  `lemma_montgomery_multiply_lane_intro` to package into
+  `montgomery_multiply_lane_post`.  Reveal `Spec.MLDSA.Math.mod_q`
+  for the `mod_q` congruence conjunct, reveal
+  `is_i32b_array_opaque` for the bound conjunct.
+
 ### Step 9.7 use_hint pre-audit finding (2026-04-28)
 
 `Operations::use_hint` trait pre is `is_i32b_array_opaque (FIELD_MAX) (f_repr simd_unit)`,

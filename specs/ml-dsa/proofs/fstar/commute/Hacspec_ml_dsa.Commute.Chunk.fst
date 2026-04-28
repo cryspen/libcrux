@@ -597,3 +597,35 @@ let lemma_compute_hint_lane_commute_conditional
                    |r0| > gamma2 (or boundary case) is equivalent to
                    high_bits changing under +z. *)
 #pop-options
+
+(* === Track 4 (Step 9.6 AVX2 montgomery_multiply) === *)
+
+(* Bound + mod-q congruence for `Spec.MLDSA.Math.mont_mul`.
+
+   Mirror of the ML-KEM template `lemma_mont_mul_red_i16_int`
+   (`libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fst:505`) with
+   i16→i32, i32→i64, shift 16→32, q=3329→8380417, q'=3327→58728449,
+   R^-1=169→8265825.
+
+   The proof unfolds `Spec.MLDSA.Math.mont_mul` and uses the standard
+   32-bit Montgomery correctness argument: writing prod = v x * v y
+   (i64), the result equals (prod / 2^32) - (k * q / 2^32) with
+   k = ((prod @% 2^32) * q') @% 2^32, which is congruent to
+   prod * 8265825 mod q (since 2^32 * 8265825 ≡ 1 mod q) and lies
+   in (-q, q).
+
+   Body is `admit ()` — pure-int Montgomery proof, ~70-100 lines,
+   USER lane.  Discharged structurally so the AVX2
+   `Operations::montgomery_multiply` impl body is no longer a
+   top-level `admit ()`. *)
+let lemma_mont_mul_bound_and_mod_q (x y: i32)
+    : Lemma
+        (requires Spec.Utils.is_i32b 8380416 y)
+        (ensures
+          Spec.Utils.is_i32b 8380416 (Spec.MLDSA.Math.mont_mul x y) /\
+          (v (Spec.MLDSA.Math.mont_mul x y)) % 8380417 ==
+          (v x * v y * 8265825) % 8380417)
+  = admit ()  (* USER lane: ML-KEM-style i32/i64 Montgomery proof,
+                 ~70-100 lines.  Mirror of
+                 `Spec.Utils.lemma_mont_mul_red_i16_int` adapted
+                 to i32/i64 with shift 32 and q=8380417. *)
