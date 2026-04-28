@@ -6,11 +6,42 @@
 **Style guide**: [`proof-style-guide.md`](proof-style-guide.md).
 **Outstanding admits**: [`outstanding-admits.md`](outstanding-admits.md).
 
-This doc is the resume entrypoint after the **2026-04-27/28 Funarr-unblock
-session**, which moved the empirical baseline from 11 modules verified
-(1 Funarr error) to **52 modules verified out of 60 invoked, 25 remaining
-errors**, all real downstream proof issues rather than infrastructure
-blockers.
+## Resume entrypoint (2026-04-28 audit + reduce-refactor session)
+
+**Latest tip**: `3faaff641`. Empirical baseline: **97 modules invoked,
+[CHECK]=41, [ADMIT]=56, 97 verified, 0 errors**. Was 25 errors / 52
+verified / 60 invoked at the previous session's start.
+
+This session's 15 commits, in order:
+
+| SHA | Subject |
+|---|---|
+| `b8710dfb2` | 25-error → 0-error cleanup (Steps 1-4: INVNTT admits, Portable.Arithmetic u32-mask refactor, Sample cloop refactor, Step 3 AVX2-encoding admit-parity, Step 4 bounded_* bound tightening) |
+| `c8b2a7ffd` | Step 5: lift `Simd.Portable.fst` + `Simd.Avx2.fst` from ADMIT to CHECK |
+| `33c7b813a` | Step 5b: tighten Portable impl-method posts with `#[hax_lib::attributes]` + per-method `#[requires]/[ensures]` |
+| `60f5a9fe9` | Step 5b/5c: AVX2 impl-method tightening + close `bounded_{add,sub}_pre` SMTPats with real proofs |
+| `3276f1f44` | Doc refresh after Steps 1-5 |
+| `32ba9d9b4` | Step 5c finish: close `bounded_{add,sub}_post` via `Classical.forall_intro` per-lane lemma |
+| `e289170ea` | Audit: strengthen Operations trait pre-conditions to match Portable free-fn requires for panic freedom |
+| `31975b030` | Verification snapshot confirming the trait pre-tightening propagates cleanly |
+| `1943e7f6e` | Add `reduce` pre-condition + relax `shift_left_then_reduce` for SHIFT_BY=0 |
+| `2c8e22798` | Docs: refresh status + outstanding-admits for the trait pre-condition audit |
+| `3faaff641` | Refactor: dedicated `reduce` primitive (no shift) + drop disjunctive pre |
+
+Major deliverables:
+
+1. **All 25 starting errors closed**.
+2. **`Simd.Portable.fst` and `Simd.Avx2.fst` lifted** from ADMIT to CHECK, with all 21 impl methods carrying the strong trait pre/post via `#[hax_lib::attributes]` + per-method `#[requires]/[ensures]`. Body admits remain on the methods whose underlying free fn proves a strictly weaker post than the trait — see `outstanding-admits.md`.
+3. **All four `bounded_{add,sub}_{pre,post}` SMTPat-bridge lemmas** in `src/simd/traits/specs.rs` now have real proofs (was 4 admits with an unsound bound at session start).
+4. **Operations trait pre-condition audit**: 13 methods strengthened to match the Portable free-fn requires for panic freedom — `use_hint`, all `rejection_sample_*`, all `gamma1_*`, `commitment_serialize`, all `error_*`, all `t0_*`, all `t1_*`, `reduce`. Bounds packaged in opaque-predicate form (reuse of `Spec.Utils.is_i32b_array_opaque`; new `is_binary_array_8_opaque` in specs.rs) following ML-KEM's `bounded_pos_i16_array` style. All Portable + AVX2 impls mirror.
+5. **`reduce` / `shift_left_then_reduce` mismatch resolved structurally**: dedicated `arithmetic::reduce` free fn in both Portable and AVX2 (Barrett-reduce only, no shift), `Operations::reduce` calls it directly, `shift_left_then_reduce` keeps its `SHIFT_BY == 13`-only pre. AVX2 dedups via `shift_left_then_reduce` calling `reduce` after `mm256_slli_epi32`.
+
+Historical context (earlier 2026-04-27/28 Funarr-unblock session):
+
+This doc was originally the resume entrypoint after the **2026-04-27/28
+Funarr-unblock session**, which moved the empirical baseline from 11
+modules verified (1 Funarr error) to **52 modules verified out of 60
+invoked, 25 remaining errors**.
 
 ---
 

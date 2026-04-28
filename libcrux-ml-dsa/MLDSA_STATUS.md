@@ -1,7 +1,7 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: trait-pre audit + reduce/shift_left_then_reduce mismatch fix complete (2026-04-28 session, tip `1943e7f6e`).
+**Tip**: trait-pre audit + dedicated `reduce` primitive refactor complete (2026-04-28 session, tip `3faaff641`).
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
 **Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors** after the 2026-04-28 session. Was 25 errors / 52 verified / 60 invoked at session start. The +4 CHECK comes from lifting `Simd.Portable.fst` and `Simd.Avx2.fst` (Step 5) plus tightened per-method annotations on both impls.
 

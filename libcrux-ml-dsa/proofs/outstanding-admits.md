@@ -201,24 +201,17 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   triggering a typeclass-resolution failure on `t_FnOnce`. Refactored
   to plain `for i in 0..randomness.len() { let byte = randomness[i]; ... }`.
 
-### Libcrux_ml_dsa.Simd.Portable.Arithmetic.shift_left_then_reduce SHIFT_BY=0 admit
-- **File / lines**: `libcrux-ml-dsa/src/simd/portable/arithmetic.rs:476`
-  (a `hax_lib::fstar!("admit ()")` inside the for-loop body).
-- **Phase added**: 2026-04-28 (audit follow-up).
-- **Diagnosis**: After relaxing the function pre to accept either
-  `SHIFT_BY == 13` (input bound 261631) OR `SHIFT_BY == 0` (input bound
-  2143289343), F* needs to discharge `is_i32b 2143289343 (x <<! SHIFT_BY)`
-  at the `reduce_element` call site for both branches. For SHIFT_BY=0,
-  `x <<! 0 == x` should be a no-op, but F* doesn't simplify the shift
-  literal automatically and the disjunction-form pre triggers
-  "incomplete quantifiers" on the SMT side. Body admit covers the
-  per-iteration discharge; the function's outer pre/post are still
-  enforced.
-- **Suggested mitigation**: split into per-branch case analysis with
-  `assert (v $SHIFT_BY == 0 \/ v $SHIFT_BY == 13)` followed by an
-  if/else on SHIFT_BY, each branch with its own lemma. Or add a
-  helper lemma `shift_left_zero (x: i32) : Lemma (x <<! mk_i32 0 == x)`
-  and call it before the loop. ~20 min.
+### Libcrux_ml_dsa.Simd.{Portable,Avx2}.Arithmetic.reduce dedicated primitive
+**Status**: refactored cleanly (no admits) at commit `3faaff641`.
+The previous disjunctive pre on `shift_left_then_reduce` (accepting
+either `SHIFT_BY == 13` with input ≤ 261631 or `SHIFT_BY == 0` with
+input as Barrett-bound) was replaced by a dedicated `reduce` free
+function in both Portable and AVX2 arithmetic modules, and
+`Operations::reduce` now calls `arithmetic::reduce` per simd-unit.
+`shift_left_then_reduce`'s pre is back to the simple `SHIFT_BY == 13`
+form. The body admit added inside the SHIFT_BY=0 branch (1943e7f6e)
+is gone. AVX2's `shift_left_then_reduce` is now a 2-line wrapper:
+SIMD slli, then call `reduce`.
 
 ### Per-method Operations trait pre-condition tightening (2026-04-28)
 **Status**: complete (no admits) — see `src/simd/traits.rs` for the
