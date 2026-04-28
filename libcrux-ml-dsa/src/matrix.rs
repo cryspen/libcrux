@@ -98,6 +98,10 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
     mask: &[PolynomialRingElement<SIMDUnit>],
     result: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
+    // Body admit — the recipe (Polynomial::add_bounded with j*FIELD_MAX
+    // ghost bound, snapshot-based frame, nested loop_invariants) was tried
+    // but query 106-121 time out at rlimit 800 due to quantifier explosion
+    // in the nested-loop SMT search.  Same shape as compute_as1_plus_s2.
     hax_lib::fstar!("admit ()");
     for i in 0..rows_in_a {
         for j in 0..columns_in_a {
@@ -118,6 +122,7 @@ pub(crate) fn compute_matrix_x_mask<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"
     (forall (k:nat). k < Seq.length $vector ==>
         (forall (j:nat). j < 32 ==>
@@ -138,10 +143,12 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
     vector: &mut [PolynomialRingElement<SIMDUnit>],
     ring_element: &PolynomialRingElement<SIMDUnit>,
 ) {
-    hax_lib::fstar!("admit ()");
+    #[cfg(hax)]
+    let e_vector_orig: &[PolynomialRingElement<SIMDUnit>] = vector.to_vec().as_slice();
     for i in 0..vector.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"v i <= Seq.length vector /\
+              Seq.length vector == Seq.length e_vector_orig /\
               (forall (j:nat). j < 32 ==>
                   Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
                       (i0._super_i2.f_repr (Seq.index ring_element.f_simd_units j))) /\
@@ -149,10 +156,8 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
                   (forall (j:nat). j < 32 ==>
                       Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
                           (i0._super_i2.f_repr (Seq.index (Seq.index vector k).f_simd_units j)))) /\
-              (forall (k:nat). k >= v i /\ k < Seq.length vector ==>
-                  (forall (j:nat). j < 32 ==>
-                      Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-                          (i0._super_i2.f_repr (Seq.index (Seq.index vector k).f_simd_units j))))"#
+              (forall (k:nat). v i <= k /\ k < Seq.length vector ==>
+                  Seq.index vector k == Seq.index e_vector_orig k)"#
         ));
         ntt_multiply_montgomery(&mut vector[i], ring_element);
         invert_ntt_montgomery(&mut vector[i]);

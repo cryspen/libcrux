@@ -251,12 +251,20 @@ temporary Vec is dropped at the end of the statement), but the
 binding only exists under `#[cfg(hax)]` and never compiles in
 non-hax builds.
 
-### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,vector_times_ring_element,compute_w_approx} (4 of 6 still admit)
-**Status update (this commit)**: `add_vectors` and `subtract_vectors`
-no longer admit their bodies — the proof closure is via
-`Polynomial::add_bounded`/`subtract_bounded` + the
+### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,compute_w_approx} (3 of 6 still admit)
+**Status update**: `add_vectors`, `subtract_vectors`, and
+`vector_times_ring_element` no longer admit their bodies — the proof
+closure is via `Polynomial::add_bounded`/`subtract_bounded` + the
 `lhs.to_vec().as_slice()` snapshot trick + `--z3rlimit 400-800
---split_queries always`.  4 of the 6 wrappers still admit: see below.
+--split_queries always`.
+
+`compute_matrix_x_mask` proof was attempted with strict 0-bounded `result`
+pre + nested loop_invariant tracking `j * FIELD_MAX` accumulating bound,
+but query 106-121 each timed out at rlimit 800 (127s, 102s, 73s, 128s
+each) due to quantifier explosion in the nested-loop SMT search.  The
+recipe is right; the loop_invariant just needs to be tighter (drop
+context-pruning-defeating conjuncts).  Reverted to body admit until a
+tighter loop_invariant or a refactor to single-flat-loop lands.
 
 
 - **File**: `src/matrix.rs`
