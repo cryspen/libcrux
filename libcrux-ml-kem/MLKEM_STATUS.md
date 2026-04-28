@@ -1,6 +1,6 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `ba8681b38` (track A — Phase 7a Step 1 done, 2026-04-28)
+**Branch**: `trait-opacify`  **Tip**: `8358b1093` (track A — Phase 7a Step 4 done, 2026-04-28)
 
 ## Phase 7a status
 
@@ -10,9 +10,9 @@
 | 7a-E2 | `lemma_add_to_ring_element_commute` (E2) | ✅ merged `1d6cacc50` |
 | 7a Step 1 | inverse NTT layer 1 hacspec bridge (track A, Bridges.fst) | ✅ verified `ba8681b38` |
 | 7a Step 9 | scaling-chain doc comments (track A) | ✅ verified `8d92695bf` |
+| 7a Step 4 | strengthen invert_ntt_at_layer_1 post (citing Bridges lemma) | ✅ verified `8358b1093` |
 | 7a Step 2 | layer 2/3 inverse NTT bridges | ⏸ pending |
 | 7a Step 3 | cross-vector layer_4_plus bridge | ⏸ pending |
-| 7a Step 4 | strengthen invert_ntt_at_layer_1 post (citing Bridges lemma) | ⏸ pending |
 | 7a Step 5 | strengthen invert_ntt_montgomery post | ⏸ pending |
 | 7a Step 6 | strengthen 3 INTT-consuming reduce fns | ⏸ pending |
 | 7a Step 7 | strengthen add_standard_error_reduce | ⏸ pending |

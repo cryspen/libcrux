@@ -1,8 +1,58 @@
 # agent-trackA — session log
 
-**Session date:** 2026-04-28
+**Session date:** 2026-04-28 (resumed afternoon, Step 4 added)
 **Branch:** `trait-opacify`
-**Tip at end:** `ba8681b38`
+**Tip at end:** `8358b1093` (was `ba8681b38` at start of this resume)
+
+## 2026-04-28 afternoon resume — Phase 7a Step 4
+
+Added per-chunk hacspec citation to `invert_ntt_at_layer_1`'s ensures
+in `src/invert_ntt.rs`.  The strengthened post (commit `8358b1093`):
+
+```
+forall i. i < 16 ==>
+  mont_i16_to_spec_array (T.f_repr (re_future.coef[i])) ==
+  IN.ntt_inverse_layer_n 16 (mont_i16_to_spec_array (T.f_repr (re.coef[i])))
+                            2 (zetas_4 (zeta(127-4i)) (zeta(126-4i))
+                                       (zeta(125-4i)) (zeta(124-4i)))
+```
+
+### Approach
+
+- **Option A (failed)**: function-form eq directly inside the loop
+  invariant.  Q353 of body subtyping check failed at rlimit 800 with
+  Z3 "unknown because " (used 131/800 — Z3 just gave up on the heavy
+  invariant).
+- **Option A + hand-holding asserts (also failed)**: 4 `assert`s
+  linking local `zeta_i` to parametric `127-4*round` form added 4 new
+  failures (the asserts themselves couldn't discharge under
+  `--ext context_pruning`).
+- **Option B (passed)**: keep loop invariant impl-level
+  (`re.coef[j] == f_inv_ntt_layer_1_step _re_init[j] (zeta(127-4j)) ...`),
+  lift to function-form via a single `Classical.forall_intro` after
+  the loop.  Each chunk j: reveal `is_i16b_array_opaque(4*3328)` from
+  the original `is_bounded_poly` precondition, then invoke
+  `Bridges.lemma_inv_ntt_layer_1_step_to_hacspec`.
+
+### Verification
+
+`make Libcrux_ml_kem.Invert_ntt.fst.checked` exit 0, "All verification
+conditions discharged successfully", **528 s wall** at rlimit 800
++ `--ext context_pruning --split_queries always`.
+
+### Next steps
+
+- (b) Step 2 — layer 2/3 inverse bridges in Bridges.fst.
+- (c) Step 3 — cross-vector for `invert_ntt_at_layer_4_plus`.
+- (d) Step 7 — `add_standard_error_reduce` (in flight via sub-agent
+  `agent/phase-7a-step-7` worktree, started afternoon resume).
+- Step 5 — strengthen `invert_ntt_montgomery` post (chains the 7
+  layer posts; this is the highest-risk Z3 point per the plan).
+- Step 6 — strengthen 3 INTT-consuming reduce fns.
+
+---
+
+
 
 ## Scope
 
