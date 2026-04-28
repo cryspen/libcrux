@@ -342,3 +342,78 @@ ML-KEM Phase 6 + 7 remaining work (post-trait-opacity-Phase-5):
 ML-DSA may be similar or less in shape but additional in scope (different
 operations, different spec module structure).  Aggressive parallelism
 across multiple agent sessions is required to hit the 48-hour goal.
+
+## 12. Antipattern: exposing Mont arithmetic in above-trait posts
+
+**Don't.** Above-trait post-conditions that expose Montgomery-domain
+constants or modular arithmetic constraints (e.g., `(v r * R) % q ==
+(hacspec_val * 128) % q`, or any post that requires callers to reason
+about implementation constants like `1441`, `1353`, `R²/128`) cause
+two compounding problems:
+
+1. **They corrupt the spec hierarchy.** Canonical hacspec
+   (`specs/ml-kem/src/`) is explicitly Mont-free.  See
+   `specs/ml-kem/src/ntt.rs` lines 5-36: `MONTGOMERY_R = 1`,
+   `to_standard_domain` is identity, `montgomery_multiply_by_constant`
+   is plain multiplication, `ZETAS_TIMES_MONTGOMERY_R == ZETAS`.  Posts
+   that introduce Mont scaling assume their callers will reason about
+   an algebraic structure that the spec denies.  Any new "Mont-form"
+   function in the canonical spec, or any post that references
+   libcrux-implementation constants (`1441`, `1353`, `R²/128`, `R⁻¹`)
+   is in the wrong place.
+
+2. **They scale the proof obligation past Z3's structural budget.**
+   Above-trait Mont-form claims tend to require Tier-3 composition
+   chains (per-vector → per-poly → per-layer → cumulative), each level
+   reasoning about per-branch conditional structures.  Empirically:
+   agent F's attempt at the forward NTT layer 2 per-poly commute lemma
+   timed out Z3 at >2.7 min on a single subquery, attributed to the
+   nested if-ladder in the layer-2 branch post.  Layer 3 untried;
+   inverse direction has 7+ layers in the chain.
+
+**Where Mont accounting belongs.** Implementation-correspondence facts
+about Mont scaling live in proof glue
+(`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`),
+inside opaque per-lane / per-chunk predicates whose body is the only
+place mod arithmetic appears.  Above-trait posts cite spec functions
+(e.g., `Hacspec_ml_kem.Polynomial.poly_barrett_reduce`,
+`Hacspec_ml_kem.Invert_ntt.ntt_inverse_butterflies`) and structural
+relationships (e.g., `to_spec_poly_plain result == hacspec_fn input`)
+— never raw mod equalities.
+
+**Concrete cautionary case (this session, 2026-04-28).**  The fusion
+of FIPS-203 INTT's `· 128⁻¹` finalization into the next per-element
+reduce operation (libcrux's `mont_mul(_, 1441)` where
+`1441 = R²/128 mod q`, per `pq-crystals/kyber/ref/ntt.c:106`) saves
+~80 SIMD ops per INTT call.  Connecting libcrux's
+`invert_ntt_montgomery` post to its hacspec image
+(`Hacspec_ml_kem.Invert_ntt.ntt_inverse_butterflies`) requires choosing
+between several real costs:
+
+- **Path 1**: chain 7 per-poly Tier-2 layer commute lemmas — likely
+  forces per-branch decomposition, rlimit engineering, and
+  hint-coaxing.  Estimated days; Z3-blocked when first attempted.
+- **Path 2/3**: localize the unproven assertion at the producer
+  (`verification_status(lax)`) or at the 4 consumer call sites
+  (`hax_lib::fstar!(r#"assume ..."#)`).  Both violate the project's
+  "no admits" stance and were rejected this session.
+- **Path 4**: refactor `invert_ntt_montgomery` to apply the `· 1441`
+  itself before returning, sacrificing the fusion optimization.  ~80-
+  160 SIMD ops/call cost; the proof becomes mechanical.
+
+The decision in this session was to STOP and document the situation
+rather than push any of these paths through under deadline pressure.
+The lesson is **not** "always do the proper thing" — it's that
+connecting implementation-Mont-form output through to hacspec requires
+a thoughtful strategic decision before writing the post.  The cost of
+doing it wrong (i.e., exposing the Mont arithmetic in the post) is
+multi-day Z3 rabbit holes followed by abandonment.
+
+**Smell test.** If you find yourself writing
+`v r * <some_constant> ≡ ... (mod q)` in an above-trait post, stop:
+either you're encoding a Mont-form correspondence that should be
+opaque (and live in `Hacspec_ml_kem.Commute.Chunk.fst` as an opaque
+predicate or function-form lift), or you're trying to derive an
+algebraic identity that should live there as a lemma rather than a
+post.  Either way, the post itself should cite a hacspec function and
+a structural relationship — not raw mod arithmetic.
