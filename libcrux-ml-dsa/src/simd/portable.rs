@@ -168,8 +168,22 @@ impl Operations for Coefficients {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) i))"#))]
     fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
-        hax_lib::fstar!("admit ()");
-        arithmetic::power2round(t0, t1)
+        #[cfg(hax)]
+        let _orig_t0 = t0.clone();
+        arithmetic::power2round(t0, t1);
+        hax_lib::fstar!(
+            r#"let pf (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_power2round_lane_commute
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)
+            in
+            Classical.forall_intro pf"#
+        );
     }
 
     #[requires(fstar!(r#"

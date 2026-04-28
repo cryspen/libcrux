@@ -243,8 +243,32 @@ impl Operations for AVX2SIMDUnit {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) i))"#))]
     fn power2round(t0: &mut Self, t1: &mut Self) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig_t0 = *t0;
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}));
+            let _r = Libcrux_ml_dsa.Simd.Traits.f_repr ${t0} in
+            assert (forall (i: u64). v i < 8 ==>
+                Spec.Utils.is_i32b 8380416
+                    (Spec.Intrinsics.to_i32x8
+                        ${t0}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i))"#
+        );
         arithmetic::power2round(&mut t0.value, &mut t1.value);
+        hax_lib::fstar!(
+            r#"let pf (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_power2round_lane_commute
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)
+            in
+            Classical.forall_intro pf"#
+        );
     }
 
     #[inline(always)]

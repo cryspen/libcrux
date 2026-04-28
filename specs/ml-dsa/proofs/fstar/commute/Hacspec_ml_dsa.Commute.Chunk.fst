@@ -82,3 +82,23 @@ let lemma_sub_lane_commute (lhs rhs lhs_future: i32)
           lhs_future == Spec.Intrinsics.sub_mod_opaque lhs rhs)
         (ensures v lhs_future == v lhs - v rhs)
   = Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype
+
+(* Bridge: convert the Tier-1 `Spec.MLDSA.Math.power2round` int-pair shape
+   into `power2round_lane_post`.  Both impls' `arithmetic::power2round`
+   posts state, per-lane:
+     let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v input)
+     v future_t0 == t0_s /\ v future_t1 == t1_s
+   The trait-side post `power2round_lane_post` cites
+   `Hacspec_ml_dsa.Arithmetic.power2round` (returning (r1, r0) i32 pair).
+   For input in [0, q), the two specs compute the same i32 values; this
+   lemma just unfolds both and lets Z3 match them. *)
+#push-options "--z3rlimit 200"
+let lemma_power2round_lane_commute (input future_t1 future_t0: i32)
+    : Lemma
+        (requires
+          (let pair = Spec.MLDSA.Math.power2round (v input) in
+           v future_t0 == fst pair /\ v future_t1 == snd pair))
+        (ensures TS.power2round_lane_post input future_t1 future_t0)
+  = reveal_opaque (`%TS.power2round_lane_post)
+                  (TS.power2round_lane_post input future_t1 future_t0)
+#pop-options

@@ -116,7 +116,7 @@ mode under the thin-wrapper pattern.
 | `use_hint` | ✅ | ✅ | 🟡 | `Arithmetic.uuse_hint` × 8 lanes | same |
 | `montgomery_multiply` | ✅ (rewritten in `int` 04fd066f0) | ✅ | ✅ | per-lane `(v lhs * v rhs * 8265825) % q` | both verify |
 | `shift_left_then_reduce` | ✅ | ✅ | ✅ | `Arithmetic.shift_left_then_reduce` | both verify |
-| `power2round` | ✅ | ✅ | ✅ | `Arithmetic.power2round` | both verify |
+| `power2round` | ✅ | ✅ (impl closed; Step 9) | ✅ (impl closed; Step 9) | `Spec.MLDSA.Math.power2round` (Tier-1) → `Arithmetic.power2round` (Tier-3) | both impls discharge via `lemma_power2round_lane_commute` |
 | `rejection_sample_<_field_modulus` | 🟡 (Seq.length 1c827fab7) | ✅ | ✅ | bounds-only post | both verify |
 | `rejection_sample_<_eta_2` | 🟡 | ✅ | ✅ | bounds-only post | both verify |
 | `rejection_sample_<_eta_4` | 🟡 | ✅ | ✅ | bounds-only post | both verify |
