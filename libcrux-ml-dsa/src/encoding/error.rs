@@ -10,9 +10,10 @@ use crate::{
                                      | Libcrux_ml_dsa.Constants.Eta_Two -> 3
                                      | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
     (forall (j:nat). j < 32 ==>
-      Spec.Utils.is_i32b_array_opaque (match $eta with
-                                       | Libcrux_ml_dsa.Constants.Eta_Two -> 2
-                                       | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+      Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
+        (match $eta with
+         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]

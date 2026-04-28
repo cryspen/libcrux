@@ -195,10 +195,13 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // Gamma1: serialized length is 8 * (gamma1_exponent + 1) / 8 = gamma1_exponent + 1 bytes
     // per 8-coefficient SIMD unit, but with each coefficient using w = gamma1_exponent + 1 bits
     // (w in {18, 20}). For 8 lanes that's 18 or 20 bytes.
+    // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
+    // since the impl operates on the shifted (non-negative) representation.
     #[hax_lib::requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent /\
-        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent)) (f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent))
+            (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize);
@@ -211,22 +214,29 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment: 4 bytes for gamma2 = 261888 (4-bit packing) or 6 for gamma2 = 95232 (6-bit).
+    // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
+    // since commitment values are the high half of decompose, in [0, 16) or [0, 44).
     #[hax_lib::requires(fstar!(r#"
         (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
-        Spec.Utils.is_i32b_array_opaque (pow2 (Seq.length $serialized)) (f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized))
+            (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error: 3 bytes for eta = 2 (3-bit), 4 bytes for eta = 4 (4-bit).
+    // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
+    // since the impl operates on the shifted (non-negative) representation
+    // of error values (eta - x).
     #[hax_lib::requires(fstar!(r#"
         Seq.length $serialized == (match $eta with
                                    | Libcrux_ml_dsa.Constants.Eta_Two -> 3
                                    | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
-        Spec.Utils.is_i32b_array_opaque (match $eta with
-                                         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
-                                         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
-                                        (f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
+            (match $eta with
+             | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+             | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+            (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]);
@@ -245,9 +255,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
     // t0: bit_pack with width 13.
+    // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
+    // since the impl operates on the shifted (non-negative) t0 representation.
     #[hax_lib::requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Spec.Utils.is_i32b_array_opaque (pow2 13) (f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+            (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13

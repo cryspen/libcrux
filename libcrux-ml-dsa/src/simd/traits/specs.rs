@@ -69,12 +69,32 @@ let lemma_is_binary_array_8_intro (x: t_Array i32 (mk_usize 8))
             (ensures is_binary_array_8_opaque x) =
   reveal_opaque (`%is_binary_array_8_opaque) (is_binary_array_8_opaque x)
 
-(* For the per-lane "absolute value bounded by pow2 d" patterns
-   appearing in gamma1_serialize / commitment_serialize / t0_serialize
-   / error_serialize trait pres, we reuse `Spec.Utils.is_i32b_array_opaque`
-   directly: `is_i32b_array_opaque (pow2 d) (f_repr simd_unit)` is the
-   same opaque form as ML-KEM's `bounded_pos_i16_array d v`. No new
-   predicate needed. *)
+(* F-3 (2026-04-28): the *_serialize trait pres need a non-negative
+   bound, not the centered `is_i32b_array_opaque b` (which allows
+   |x| <= b including negative).  The impls of commitment_serialize,
+   gamma1_serialize, t0_serialize, error_serialize require lane values
+   in [0, b].  Mirror ML-KEM's `bounded_pos_i16_array` with the
+   ml-dsa version below. *)
+
+let is_pos_array (l: nat) (x: t_Array i32 (mk_usize 8)) : prop =
+  forall (i: nat). i < 8 ==>
+    v (Seq.index x i) >= 0 /\ v (Seq.index x i) <= l
+
+[@@ "opaque_to_smt"]
+let is_pos_array_opaque (l: nat) (x: t_Array i32 (mk_usize 8)) : prop =
+  is_pos_array l x
+
+let lemma_is_pos_array_lookup (l: nat) (x: t_Array i32 (mk_usize 8)) (i: nat)
+    : Lemma (requires is_pos_array_opaque l x /\ i < 8)
+            (ensures v (Seq.index x i) >= 0 /\ v (Seq.index x i) <= l)
+            [SMTPat (Seq.index x i); SMTPat (is_pos_array_opaque l x)] =
+  reveal_opaque (`%is_pos_array_opaque) (is_pos_array_opaque l x)
+
+let lemma_is_pos_array_intro (l: nat) (x: t_Array i32 (mk_usize 8))
+    : Lemma (requires forall (i: nat). i < 8 ==>
+                       v (Seq.index x i) >= 0 /\ v (Seq.index x i) <= l)
+            (ensures is_pos_array_opaque l x) =
+  reveal_opaque (`%is_pos_array_opaque) (is_pos_array_opaque l x)
 
 (* infinity_norm_exceeds: result is true iff some lane's signed absolute
    value (the impl's actual computation) meets or exceeds bound. Compatible
@@ -139,23 +159,28 @@ let lemma_decompose_lane_intro (gamma2 input low high: i32)
             (ensures decompose_lane_post gamma2 input low high) =
   reveal_opaque (`%decompose_lane_post) (decompose_lane_post gamma2 input low high)
 
-(* compute_hint: hint[i] is 1 iff Hacspec.make_hint says so, else 0. The
-   spec returns bool, the impl returns 0/1. *)
+(* compute_hint: hint[i] = compute_one_hint low high gamma2 (Spec.MLDSA.Math).
+   F-4 (2026-04-28): switched from `Hacspec_ml_dsa.Arithmetic.make_hint`
+   (literal FIPS 204 algorithm 39) to `Spec.MLDSA.Math.compute_one_hint`
+   because the two disagree at the boundary `low = -gamma2, high != 0`:
+   compute_one_hint returns 1 there, make_hint computes via FIPS 204 high_bits
+   which evaluates differently.  The impl computes per compute_one_hint;
+   citing make_hint creates an unprovable equivalence at this boundary.
+   Trade-off: drops the cross-spec link to FIPS 204; recovered later if
+   a Hacspec helper that mirrors compute_one_hint's optimized boundary
+   handling lands. *)
 [@@ "opaque_to_smt"]
 let compute_hint_lane_post (gamma2 low high hint: i32) : prop =
   ((v gamma2 == 95232) \/ (v gamma2 == 261888)) /\
   (v high >= 0 /\ v high < 8380417 ==>
-    (if Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2
-     then v hint == 1
-     else v hint == 0))
+    v hint == Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2))
 
 let lemma_compute_hint_lane_lookup (gamma2 low high hint: i32)
     : Lemma (requires compute_hint_lane_post gamma2 low high hint /\
                       ((v gamma2 == 95232) \/ (v gamma2 == 261888)) /\
                       (v high >= 0 /\ v high < 8380417))
-            (ensures (if Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2
-                      then v hint == 1
-                      else v hint == 0))
+            (ensures v hint == Spec.MLDSA.Math.compute_one_hint
+                                  (v low) (v high) (v gamma2))
             [SMTPat (compute_hint_lane_post gamma2 low high hint)] =
   reveal_opaque (`%compute_hint_lane_post)
                 (compute_hint_lane_post gamma2 low high hint)
@@ -163,9 +188,8 @@ let lemma_compute_hint_lane_lookup (gamma2 low high hint: i32)
 let lemma_compute_hint_lane_intro (gamma2 low high hint: i32)
     : Lemma (requires ((v gamma2 == 95232) \/ (v gamma2 == 261888)) /\
                       (v high >= 0 /\ v high < 8380417 ==>
-                        (if Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2
-                         then v hint == 1
-                         else v hint == 0)))
+                        v hint == Spec.MLDSA.Math.compute_one_hint
+                                    (v low) (v high) (v gamma2)))
             (ensures compute_hint_lane_post gamma2 low high hint) =
   reveal_opaque (`%compute_hint_lane_post)
                 (compute_hint_lane_post gamma2 low high hint)

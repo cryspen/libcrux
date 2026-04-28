@@ -13,7 +13,7 @@ const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == 32 * 13 /\
     (forall (j:nat). j < 32 ==>
-      Spec.Utils.is_i32b_array_opaque (pow2 13)
+      Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
