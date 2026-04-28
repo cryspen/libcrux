@@ -212,6 +212,53 @@ See `proofs/sprint-plan.md` for the full phase table with parallelism.
 - **`hax.sh extract` + `make -C proofs/fstar/extraction`** — full pipeline.
 - **Hint files** in `.fstar-cache/hints/` — speed up Z3 selection. Independent of `.checked` files; preserve both. See §9.1.
 
+## 8.1 Reading verification output — what's not a failure
+
+F*'s logs show transient "failed" messages that look alarming but
+are **normal recovery behavior**. Don't conclude the proof is
+broken just because you see one. Patterns:
+
+### Hint replay miss → retry without hint succeeds
+
+```
+(Module.fn_name, 22) failed ... (with hint)   ← hint replay miss
+(Module.fn_name, 22) succeeded in 18 ms        ← retry without hint
+```
+
+Meaning: the recorded hint went stale (Z3 update, tiny proof
+context shift, etc.), F* retried the same query without it, and
+Z3 found a fresh proof. The query is healthy. The new proof
+overwrites the stale hint via `--record_hints`. Nothing to do.
+
+### Single-query failure → split queries succeeds
+
+A query reported as failed at the function level may then succeed
+once F* retries with `--split_queries`:
+
+```
+(Module.fn_name, 5) failed
+(Module.fn_name, 5.1) succeeded
+(Module.fn_name, 5.2) succeeded
+...
+```
+
+The function still verifies; F* just needed to break the VC into
+sub-queries. Module ends "verified". No action needed.
+
+### Decision rule
+
+Only treat a verification line as a real failure if **the module
+ends without "Verified module: ..." and a non-zero exit propagates
+to make.** Per-query "failed" lines without a corresponding module-
+level success are the real signal; per-query "failed" lines that
+are followed by a "succeeded" (with or without hint, with or without
+split) for the same query ID are recovery noise.
+
+When tail-grepping a log to triage, check for `\* Error [0-9]+ at`
+(F*'s typecheck-error format) and `\*\*\* \[.*\.checked\] Error`
+(make's signal of a failed target). Those are the real failure
+signals; "failed" alone is not.
+
 ## 9. Cache-invalidation lessons
 
 Every change to `traits.rs`'s `fstar::before` block invalidates
