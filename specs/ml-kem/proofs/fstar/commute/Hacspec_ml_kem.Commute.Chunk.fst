@@ -1818,6 +1818,55 @@ let lemma_add_standard_error_reduce_lane
     (* Step 3: lift the int sum to the FE-add equation. *)
     lemma_add_fe_commute_plain normal_lane error_lane sum_lane
 
+(* Closed-form variant of `lemma_add_standard_error_reduce_lane`.
+   Combines the 3 trait-post preconditions (mont_mul + add + barrett) into
+   a single composed mod-q identity:
+     `v red % q == (v myself_pre * 1353 * 169 + v error) % q`.
+
+   Used by `add_standard_error_reduce`'s loop invariant (Option B): track
+   only this closed form for processed chunks (no need to store
+   intermediate `normal`/`sum` values in the invariant via existentials).
+   Caller then invokes this lemma per lane in a post-loop forall_intro to
+   discharge the FE-add equation parameterized by ANY plain that has
+   `mont_form_lane` on the input. *)
+let lemma_add_standard_error_reduce_lane_closed
+    (myself_pre red error_lane: i16) (plain: P.t_FieldElement) :
+    Lemma (requires
+            mont_form_lane myself_pre plain /\
+            v red % 3329 ==
+              (v myself_pre * 1353 * 169 + v error_lane) % 3329)
+          (ensures
+            i16_to_spec_fe red
+              == P.impl_FieldElement__add plain
+                   (i16_to_spec_fe error_lane))
+  = let q : pos = 3329 in
+    reveal_opaque (`%mont_form_lane) (mont_form_lane myself_pre plain);
+    (* mont_form_lane: (v myself_pre * 2285) % q == v plain.f_val % q. *)
+    (* Bridge `1353 · 169 ≡ 2285 (mod q)` (already proved in lemma_1353_eq_R). *)
+    assert_norm ((1353 * 169) % q == 2285);
+    L.lemma_mod_mul_distr_r (v myself_pre) (1353 * 169) q;
+    assert (v myself_pre * 1353 * 169 == v myself_pre * (1353 * 169));
+    (* Hence (v myself_pre * 1353 * 169) % q == (v myself_pre * 2285) % q
+                                              == v plain.f_val % q. *)
+    assert ((v myself_pre * 1353 * 169) % q == v plain.P.f_val % q);
+    (* Now: v red % q == (v myself_pre * 1353 * 169 + v error_lane) % q
+                       == (v plain.f_val + v error_lane) % q  (by mod-add-compat) *)
+    L.lemma_mod_add_distr (v error_lane) (v myself_pre * 1353 * 169) q;
+    (* Apply the existing FE-add bridge to recover the spec form.  Use a
+       virtual sum_int = v plain.f_val + v error_lane to feed
+       lemma_add_fe_commute_plain via the impl_FieldElement__add unfold. *)
+    let p_v : nat = v plain.P.f_val in
+    let e_v : int = v error_lane in
+    assert (v red % q == (p_v + e_v) % q);
+    (* Goal: i16_to_spec_fe red == FE.add plain (i16_to_spec_fe error_lane).
+       i16_to_spec_fe red has f_val = (v red) % q.
+       FE.add plain (i16_to_spec_fe error_lane) has f_val =
+         ((v plain.f_val) + (v error_lane % q)) % q
+         = (v plain.f_val + v error_lane) % q  (by lemma_mod_add_distr).
+       So both sides have f_val ≡ (p_v + e_v) % q. *)
+    L.lemma_mod_add_distr (v plain.P.f_val) (v error_lane) q;
+    ()
+
 (* ----- Phase 7a Step 7: poly-level commute for `add_standard_error_reduce` -----
 
    Tier-1 lemma assembling the per-chunk FE-add equation (lifted by the

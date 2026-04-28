@@ -564,32 +564,49 @@ fn to_standard_domain<T: Operations>(vector: T) -> T {
 /// post-Barrett.  Note `1353 = R² mod q` ≠ `1441 = R²/128 mod q` — the
 /// distinction is the missing `· 128⁻¹` factor that ONLY applies to the
 /// INTT track (where `invert_ntt_montgomery` skips its FIPS-203 finalize).
-// Phase 7a Step 7 (agent-trackD, 2026-04-28): F* per-lane and poly-level
-// commute lemmas are landed in `Hacspec_ml_kem.Commute.Chunk` (verified):
+// Phase 7a Step 7 (agent-trackD F* infra + agent-trackA Option B
+// attempt, 2026-04-28).  F* per-lane and poly-level commute lemmas
+// landed in `Hacspec_ml_kem.Commute.Chunk` and verified:
 //   - `mont_form_lane`, `mont_form_chunk`: opaque per-lane/chunk
 //      standard-domain (`· R⁻¹`) form predicate.
 //   - `lemma_to_standard_domain_finalize_fe`: per-lane consumer mirror of
 //      `lemma_intt_mont_finalize_fe`.
-//   - `lemma_add_standard_error_reduce_lane`: full lane bridge
-//      (mont_mul + add + barrett ⟹ FE-add equation).
+//   - `lemma_add_standard_error_reduce_lane{,_closed}`: lane bridge
+//      (mont_mul + add + barrett ⟹ FE-add equation).  The `_closed`
+//      variant takes a single composed mod-q identity instead of three
+//      trait posts (designed for Option B's loop invariant).
 //   - `lemma_add_standard_error_reduce_commute`: poly-level Tier-1 commute
 //      assembling 256 lane equations into the hacspec function identity,
 //      parameterized by a ghost `ntt_product : array t_FieldElement 256`.
 //
-// TODO Step 7.2: The Rust-side `add_standard_error_reduce` body proof
-// strengthening was attempted but Z3 timed out at rlimit 800 on the
-// nested `forall l ntt_lane. mont_form_lane ==> FE-add` invariant —
-// specifically on the loop-accumulator subtyping check (~85 s per query
-// on canceled).  The infrastructure F* lemmas are in place and verified;
-// landing the Rust integration likely needs:
-//   - tighter loop invariant scope (drop the inner `forall ntt_lane`,
-//     keep only specialized per-lane FE-add eq with ntt_product slice
-//     supplied via a ghost param), or
-//   - splitting the body proof across an external Tier-1 helper that
-//     handles the parameterization off Z3's hot path, or
-//   - investigating why `Classical.move_requires` of the lane lemma
-//     incurs the ~85 s cost in this context.
-// Tracking the held work in `proofs/agent-status/agent-trackD.md`.
+// Step 7.2 (Rust ensures + body) STILL HELD.  Two attempts:
+//   - trackD's nested-forall invariant: Z3 timeout on outer
+//     `forall ntt_lane. mont_form_lane ==> FE-add` (~85 s/query).
+//   - trackA's Option B closed-form invariant
+//     (`forall l. v myself % q == (v _myself * 1353 * 169 + v error) % q`):
+//     Z3 timeout on the loop body subtyping check (~230 s and ~380 s
+//     per failed query at rlimit 800/800 saturated; Q79, Q108, Q109 of
+//     the body fail "canceled").  The closed form is structurally
+//     simpler than the nested-forall, but the per-iteration accumulator
+//     refinement check is still too heavy for Z3.
+//
+// Likely paths forward (try one of these in a future session):
+//   1. Add an explicit ghost `ntt_product` Rust parameter (specialize
+//      the post — drop the universal forall over ntt_product) and a
+//      precondition citing `mont_form_chunk` per chunk.  Loop invariant
+//      then carries specialized per-lane FE-add eq parameterized by
+//      `ntt_product[k*16+l]` directly (no inner forall, no closed-form
+//      mod arithmetic).  Post becomes a direct citation, no
+//      Classical.forall_intro at the boundary.
+//   2. Refactor to factor the body proof into an external lemma that
+//      reasons about the impl trace abstractly, keeping the loop body
+//      simple.  Requires F*-side scaffolding.
+//   3. Hand-decompose the body proof: replace `--split_queries always`
+//      with explicit per-iteration assert/`#push-options`, profiling
+//      each failed sub-query to find the actual hot spot.
+//
+// Tracking: see `proofs/agent-status/agent-trackD.md` for the original
+// hold context, and `agent-trackA.md` for the Option B failure.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &error))]
