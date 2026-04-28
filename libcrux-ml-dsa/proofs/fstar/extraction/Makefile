@@ -13,6 +13,7 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Types.fst \
 	Libcrux_ml_dsa.Arithmetic.fst \
 	Libcrux_ml_dsa.Polynomial.fst \
+	Libcrux_ml_dsa.Ntt.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))
