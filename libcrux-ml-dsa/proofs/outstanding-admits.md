@@ -253,6 +253,34 @@ in `0d11b64a9` (no admit needed there).
   the partial post-progress conjunct.  No body admit on Polynomial::add
   or subtract.
 
+### Libcrux_ml_dsa.Sample (all 9 functions)
+- **File**: `src/sample.rs`
+- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix) on
+  every `fn` and `pub(crate) fn` in the module, plus
+  `#[hax_lib::requires(slice.len() <= 32)]` on `add_domain_separator`
+  and `<= 64` on `add_error_domain_separator` (sized so the inner
+  copy_from_slice pre is panic-free), plus
+  `#[hax_lib::requires(width != 0)]` on the inner `xy` helper.
+- **Phase added**: above-trait C.7 (Sample.fst promotion)
+- **Diagnosis**: Sample.rs has 9 functions including 3 with `cloop!`
+  on chunks_exact and 1 with `inside_out_shuffle`; all interact with
+  Shake128/Shake256 Xof traits which are still in ADMIT mode in this
+  branch.  Strong pre/posts would need length-preservation ensures
+  on every `Xof::squeeze*` method, plus rejection-sample loop
+  invariants citing `coeff_from_three_bytes` / `coeff_from_half_byte`
+  per the Hacspec encoding helpers.  Mid-body `admit ()` is the
+  pragmatic shortcut: the module is in CHECK with bodies admitted,
+  but the wrapper signatures are intact for downstream typing.
+- **Suggested mitigation**: Phase 2 work, ~2-3 hours.  (1) Convert
+  the four `cloop!` invocations to plain `for i in 0..randomness.len()`
+  loops with `loop_invariant!` so partial-progress facts attach.
+  (2) Add length-preservation ensures on Xof methods (mirrors the
+  pattern in `b68738411` for shake128/shake256 already-touched).
+  (3) Prove the inner rejection-sample helpers' partial-acceptance
+  count invariant.  (4) Lift the `pub(crate)` posts to bounds-only
+  (matching the trait-side `rejection_sample_*` deferred per-byte
+  step).
+
 ## Active admits — below-trait branch (`ml-dsa-proofs` lane)
 
 ### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}

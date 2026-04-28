@@ -13,6 +13,7 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
+    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     cloop! {
@@ -40,6 +41,7 @@ fn generate_domain_separator((row, column): (u8, u8)) -> u16 {
 }
 
 #[inline(always)]
+#[hax_lib::requires(slice.len() <= 32)]
 pub(crate) fn add_domain_separator(slice: &[u8], indices: (u8, u8)) -> [u8; 34] {
     let mut out = [0u8; 34];
 
@@ -76,10 +78,12 @@ pub(crate) fn sample_up_to_four_ring_elements_flat<
     start_index: usize,
     elements_requested: usize,
 ) {
+    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(elements_requested <= 4);
 
     // Prepare the seeds
+    #[hax_lib::requires(width != 0)]
     fn xy(index: usize, width: usize) -> (u8, u8) {
         ((index / width) as u8, (index % width) as u8)
     }
@@ -173,6 +177,7 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
+    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     // Since each byte can be used to sample up to 2 coefficients, and since
@@ -202,6 +207,7 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
+    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     // Since each byte can be used to sample up to 2 coefficients, and since
@@ -232,6 +238,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations>(
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
+    hax_lib::fstar!("admit ()");
     match eta {
         Eta::Two => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
         Eta::Four => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
@@ -239,6 +246,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(slice.len() <= 64)]
 pub(crate) fn add_error_domain_separator(slice: &[u8], domain_separator: u16) -> [u8; 66] {
     let mut out = [0u8; 66];
 
@@ -256,6 +264,7 @@ pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: sh
     start_index: u16,
     re: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
+    hax_lib::fstar!("admit ()");
     // Prepare the seeds
     let seed0 = add_error_domain_separator(seed, start_index);
     let seed1 = add_error_domain_separator(seed, start_index + 1);
@@ -356,6 +365,7 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     result: &mut PolynomialRingElement<SIMDUnit>,
     gamma1_exponent: usize,
 ) {
+    hax_lib::fstar!("admit ()");
     match gamma1_exponent {
         17 => {
             let mut out = [0u8; 576];
@@ -383,6 +393,7 @@ pub(crate) fn sample_mask_vector<
     domain_separator: &mut u16,
     mask: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
+    hax_lib::fstar!("admit ()");
     // DIMENSION is COLUMNS_IN_A
     #[cfg(not(eurydice))]
     debug_assert!(dimension == 4 || dimension == 5 || dimension == 7);
@@ -441,6 +452,7 @@ fn inside_out_shuffle(
     signs: &mut u64,
     result: &mut [i32; 256],
 ) -> bool {
+    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     for i in 0..randomness.len() {
@@ -468,6 +480,7 @@ pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, Shake256: shak
     number_of_ones: usize,
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
+    hax_lib::fstar!("admit ()");
     let mut state = Shake256::init_absorb_final(seed);
     let randomness = state.squeeze_first_block();
 
