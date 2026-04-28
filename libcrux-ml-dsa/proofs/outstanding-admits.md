@@ -235,11 +235,32 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
 - **Remaining methods with body admits** (AVX2 only — Portable mostly
   closed already): `zero`, `from_coefficient_array`, `to_coefficient_array`,
   `decompose`, `compute_hint`, `use_hint`,
-  `montgomery_multiply`, `shift_left_then_reduce`, all
+  `montgomery_multiply`, all
   `rejection_sample_*`, all encoding methods, `ntt`, `invert_ntt_montgomery`.
   Cleared in Step 9: `infinity_norm_exceeds` (both), `power2round` (both),
   `montgomery_multiply` (Portable; AVX2 still admits — needs a bridging
-  lemma `lemma_mont_mul_bound_and_mod_q` in `Commute.Chunk.fst`).
+  lemma `lemma_mont_mul_bound_and_mod_q` in `Commute.Chunk.fst`),
+  `shift_left_then_reduce` (both — trait post relaxed to mod-q congruence).
+
+### Step 9.7 use_hint pre-audit finding (2026-04-28)
+
+`Operations::use_hint` trait pre is `is_i32b_array_opaque (FIELD_MAX) (f_repr simd_unit)`,
+which gives `-q+1 ≤ v input ≤ q-1` per lane.  But the trait post
+`use_hint_lane_post` is conditional on `v input >= 0 /\ v input < q`,
+and Hacspec/Spec.MLDSA.Math `use_one_hint` semantics agree only on
+`[0, q)` representatives.  An unconditional commute lemma
+(`lemma_use_hint_lane_commute`) was written and verified standalone in
+`Commute.Chunk.fst`, but its `requires v input >= 0 /\ v input < q`
+cannot be discharged from the trait pre alone — the impl side either
+needs to (a) normalise input via `if r < 0 then r + q else r` before
+delegating, or (b) the trait pre needs to tighten to require
+`is_i32b_array_opaque (q-1)/2` (or equivalent) plus a positivity or
+centred-rep tag.  Lemma reverted; impl admit retained.
+
+This is also a Tier-1.5 (bounds-completeness) audit finding: the
+use_hint pre is "FIELD_MAX-bounded" but use_hint actually needs
+"valid representative", which is strictly stronger.  The same gap
+likely affects `decompose` (whose post is also `[0, q)`-conditional).
 - **Phase added**: 2026-04-28 (Step 5b extension).
 - **Diagnosis**: After lifting Simd.Portable.fst + Simd.Avx2.fst from
   ADMIT to CHECK (Step 5), the impl methods extracted with `f_*_pre =
