@@ -293,10 +293,10 @@ pub(crate) fn compute_w_approx<SIMDUnit: Operations>(
         }
 
         shift_left_then_reduce::<SIMDUnit, { BITS_IN_LOWER_PART_OF_T as i32 }>(&mut t1[i]);
-        // A.6: shift_left_then_reduce post is FIELD_MAX-bounded, but ntt's
-        // pre is NTT_BASE_BOUND = FIELD_MID; an intermediate reduce keeps
-        // the value bounded for the subsequent forward NTT.
-        reduce(&mut t1[i]);
+        // shift_left_then_reduce post: is_i32b FIELD_MAX.  ntt pre is now
+        // NTT_BASE_BOUND = FIELD_MAX (widened from FIELD_MID by below-trait
+        // Option C, ml-dsa-proofs commit 686543e33), so the chain composes
+        // directly — no intermediate reduce needed.
         ntt(&mut t1[i]);
         ntt_multiply_montgomery(&mut t1[i], verifier_challenge_as_ntt);
         PolynomialRingElement::<SIMDUnit>::subtract(&mut inner_result, &t1[i]);
