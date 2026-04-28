@@ -1,9 +1,14 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: trait-pre audit + dedicated `reduce` primitive refactor complete (2026-04-28 session, tip `3faaff641`).
+**Tip**: Step 6 scaffolding + hints enabled + Step 7 attempt reverted (2026-04-28 session, tip `64ee7d51a`).
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors** after the 2026-04-28 session. Was 25 errors / 52 verified / 60 invoked at session start. The +4 CHECK comes from lifting `Simd.Portable.fst` and `Simd.Avx2.fst` (Step 5) plus tightened per-method annotations on both impls.
+**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors**. Was 25 errors / 52 verified / 60 invoked at the previous-previous session start.
+
+**This session's deltas (3faaff641 → 64ee7d51a)**:
+1. Step 6: created `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst` with module header + Hacspec imports + first lemma `lemma_reduce_lane_commute` (verified via fstar-mcp; reveals `reduce_lane_post` opacity to bridge centered-Barrett-bound + raw-mod congruence into trait shape).
+2. Makefile: enabled F* hints (`ENABLE_HINTS = --use_hints --record_hints`) matching ml-kem, plus added the new commute dir to `FSTAR_INCLUDE_DIRS_EXTRA`. First three hint files recorded (Commute.Chunk, Simd.Portable, Simd.Avx2 — others accumulate as cache invalidates).
+3. Step 7 attempt (Portable `Operations::reduce`): tried `loop_invariant!` carrying `reduce_lane_post` + per-iteration `Classical.forall_intro pf`. Z3 cancelled at rlimit 80 on the per-iteration subtyping check. Reverted per Hard Rule #3; obstacle documented in `outstanding-admits.md`.
 
 **Operations trait pre-conditions audit (2026-04-28)**: every method's pre
 now matches what its Portable free fn requires for panic freedom — a
