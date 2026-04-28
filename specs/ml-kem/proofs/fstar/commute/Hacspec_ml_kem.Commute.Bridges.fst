@@ -3,18 +3,25 @@ module Hacspec_ml_kem.Commute.Bridges
 open FStar.Mul
 open Core_models
 open Libcrux_ml_kem.Vector.Traits.Spec
+open Hacspec_ml_kem.Commute.Chunk
 
-(* Function-form per-vector hacspec bridges for the trait's NTT/INTT
-   step methods.  These lift the trait branch posts (per-lane FE
-   equations under `mont_i16_to_spec_fe`) to a single per-vector
-   function-form equation `mont_i16_to_spec_array(out) ==
-   <hacspec_layer_fn> (mont_i16_to_spec_array(in)) ...`.
+(* Function-form per-vector hacspec bridges (the slow ones — Z3 queries
+   take multi-minutes on first verification without hint replay) for
+   the trait's NTT/INTT step methods.  These lift the trait branch
+   posts (per-lane FE equations under `mont_i16_to_spec_fe`) to a
+   single per-vector function-form equation
+       `mont_i16_to_spec_array(out) ==
+         <hacspec_layer_fn> (mont_i16_to_spec_array(in)) ...`.
 
    Split out from `Hacspec_ml_kem.Commute.Chunk` to isolate the slow
-   Z3 queries (no hint replay yet for the lane bridges → multi-minute
-   Z3 search per query on first verification).  Future layer 2/3 and
-   layer-4_plus bridges go in this file, NOT in Chunk.fst, to keep
-   Chunk.fst's verification fast on each iteration. *)
+   queries: editing this file does not invalidate Chunk.fst.checked.
+   Helpers (`mont_array_lane`, `zetas_4_lane`,
+   `lemma_ntt_layer_n_16_2_lane`, `lemma_ntt_inverse_layer_n_16_2_lane`)
+   live in Chunk because Polynomial.fst/Invert_ntt.fst's proofs depend
+   on those axioms transitively.
+
+   Future layer 2/3 and layer-4_plus per-vector function-form bridges
+   go in this file, NOT in Chunk.fst. *)
 
 module P  = Hacspec_ml_kem.Parameters
 module T  = Libcrux_ml_kem.Vector.Traits
@@ -22,85 +29,56 @@ module TS = Libcrux_ml_kem.Vector.Traits.Spec
 module N  = Hacspec_ml_kem.Ntt
 module IN = Hacspec_ml_kem.Invert_ntt
 
-(*** Phase 7b — Forward NTT layer commute (target #1: ntt_at_layer_1) ***)
+(*** Phase 7a (track A) — Inverse spec function unfold helper ***)
 
-(* Per-lane unfold helper for `mont_i16_to_spec_array`.  Wraps
-   `createi_lemma` to surface the per-lane FE for an i16 array. *)
-let mont_array_lane (#n: usize)
-    (x: t_Array i16 n) (i: usize { v i < v n }) :
-    Lemma (Seq.index (mont_i16_to_spec_array x) (v i)
-           == mont_i16_to_spec_fe (Seq.index x (v i)))
-  = P.createi_lemma #P.t_FieldElement n
-      #(usize -> P.t_FieldElement)
-      (fun (j: usize { j <. n }) ->
-        (mont_i16_to_spec_fe (Seq.index x (v j)) <: P.t_FieldElement))
-      i
-
-(* Per-lane unfold helper for `zetas_4`. *)
-let zetas_4_lane (z0 z1 z2 z3: i16) (i: usize { v i < 4 }) :
-    Lemma (Seq.index (zetas_4 z0 z1 z2 z3) (v i)
-           == (if v i = 0 then mont_i16_to_spec_fe z0
-               else if v i = 1 then mont_i16_to_spec_fe z1
-               else if v i = 2 then mont_i16_to_spec_fe z2
-               else mont_i16_to_spec_fe z3))
-  = P.createi_lemma #P.t_FieldElement (mk_usize 4)
-      #(usize -> P.t_FieldElement)
-      (fun (j: usize { j <. mk_usize 4 }) ->
-        (if v j = 0 then mont_i16_to_spec_fe z0
-         else if v j = 1 then mont_i16_to_spec_fe z1
-         else if v j = 2 then mont_i16_to_spec_fe z2
-         else mont_i16_to_spec_fe z3) <: P.t_FieldElement)
-      i
-
+(* Per-lane unfold for `IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2) zs`
+   at concrete lane `i ∈ [0, 16)`.  Mirror of `lemma_ntt_layer_n_16_2_lane`
+   (in Chunk.fst) for the inverse direction.  Defined here in Bridges.fst
+   (NOT in Chunk.fst) so that introducing it to the codebase doesn't
+   change Polynomial.fst's transitive SMT context (which would regress
+   `add_to_ring_element` Q60 with "incomplete quantifiers"). *)
 #push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
-
-(* Per-lane unfold for `N.ntt_layer_n (mk_usize 16) p (mk_usize 2) zs`
-   at concrete lane `i ∈ [0, 16)`.  Computes the body of the createi at
-   index `i`: `group = i / 4`, `idx = i % 4`, then either
-   `butterfly._1` (if idx < 2: lanes i, i+2) or `_2` (else: lanes i-2, i).
-
-   Surfaces the result at lane `i` as a concrete `butterfly` expression
-   so per-lane matching against the trait branch post is reducible. *)
-let lemma_ntt_layer_n_16_2_lane
+let lemma_ntt_inverse_layer_n_16_2_lane
     (p: t_Array P.t_FieldElement (mk_usize 16))
     (zs: t_Array P.t_FieldElement (mk_usize 4))
     (i: nat {i < 16}) :
     Lemma
-      (let result = N.ntt_layer_n (mk_usize 16) p (mk_usize 2)
-                                  (Rust_primitives.unsize zs) in
+      (let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2)
+                                            (Rust_primitives.unsize zs) in
        let group : nat = i / 4 in
        let idx   : nat = i % 4 in
        (idx < 2 ==>
          i + 2 < 16 /\
          Seq.index result i ==
-           (N.butterfly (Seq.index zs group)
-                        (Seq.index p i)
-                        (Seq.index p (i + 2)))._1) /\
+           (IN.inv_butterfly (Seq.index zs group)
+                              (Seq.index p i)
+                              (Seq.index p (i + 2)))._1) /\
        (idx >= 2 ==>
          i >= 2 /\
          Seq.index result i ==
-           (N.butterfly (Seq.index zs group)
-                        (Seq.index p (i - 2))
-                        (Seq.index p i))._2))
-  = let result = N.ntt_layer_n (mk_usize 16) p (mk_usize 2)
-                                (Rust_primitives.unsize zs) in
+           (IN.inv_butterfly (Seq.index zs group)
+                              (Seq.index p (i - 2))
+                              (Seq.index p i))._2))
+  = let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2)
+                                         (Rust_primitives.unsize zs) in
     P.createi_lemma #P.t_FieldElement (mk_usize 16)
       #(usize -> P.t_FieldElement)
       (fun (j: usize { j <. mk_usize 16 }) ->
         let group:usize = j /! (mk_usize 2 *! mk_usize 2 <: usize) in
         let idx:usize = j %! (mk_usize 2 *! mk_usize 2 <: usize) in
         (if idx <. mk_usize 2 then
-          (N.butterfly (Seq.index zs (v group))
-                       (Seq.index p (v j))
-                       (Seq.index p (v j + 2)))._1
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j))
+                             (Seq.index p (v j + 2)))._1
         else
-          (N.butterfly (Seq.index zs (v group))
-                       (Seq.index p (v j - 2))
-                       (Seq.index p (v j)))._2)
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j - 2))
+                             (Seq.index p (v j)))._2)
         <: P.t_FieldElement)
       (sz i)
-
 #pop-options
+
+(*** Phase 7b — Forward NTT layer 1 hacspec bridge ***)
 
 #push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
 
@@ -201,59 +179,6 @@ let lemma_ntt_layer_1_step_to_hacspec
 #pop-options
 
 (*** Phase 7a (track A) — Inverse NTT layer 1 hacspec bridge ***)
-
-#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
-
-(* Per-lane unfold for `IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2) zs`
-   at concrete lane `i ∈ [0, 16)`.  Mirror of `lemma_ntt_layer_n_16_2_lane`
-   for the inverse direction.  Computes the body of the createi at index
-   `i`: `group = i / 4`, `idx = i % 4`, then either
-     - `inv_butterfly._1` (if idx < 2: SUM lanes i, i+2 ↦ `p[i] + p[i+2]`)
-     - `inv_butterfly._2` (else:   MUL lanes i-2, i ↦ `z·(p[i] − p[i−2])`).
-
-   Surfaces the result at lane `i` as a concrete `inv_butterfly`
-   expression so per-lane matching against the trait branch post is
-   reducible. *)
-let lemma_ntt_inverse_layer_n_16_2_lane
-    (p: t_Array P.t_FieldElement (mk_usize 16))
-    (zs: t_Array P.t_FieldElement (mk_usize 4))
-    (i: nat {i < 16}) :
-    Lemma
-      (let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2)
-                                            (Rust_primitives.unsize zs) in
-       let group : nat = i / 4 in
-       let idx   : nat = i % 4 in
-       (idx < 2 ==>
-         i + 2 < 16 /\
-         Seq.index result i ==
-           (IN.inv_butterfly (Seq.index zs group)
-                              (Seq.index p i)
-                              (Seq.index p (i + 2)))._1) /\
-       (idx >= 2 ==>
-         i >= 2 /\
-         Seq.index result i ==
-           (IN.inv_butterfly (Seq.index zs group)
-                              (Seq.index p (i - 2))
-                              (Seq.index p i))._2))
-  = let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 2)
-                                         (Rust_primitives.unsize zs) in
-    P.createi_lemma #P.t_FieldElement (mk_usize 16)
-      #(usize -> P.t_FieldElement)
-      (fun (j: usize { j <. mk_usize 16 }) ->
-        let group:usize = j /! (mk_usize 2 *! mk_usize 2 <: usize) in
-        let idx:usize = j %! (mk_usize 2 *! mk_usize 2 <: usize) in
-        (if idx <. mk_usize 2 then
-          (IN.inv_butterfly (Seq.index zs (v group))
-                             (Seq.index p (v j))
-                             (Seq.index p (v j + 2)))._1
-        else
-          (IN.inv_butterfly (Seq.index zs (v group))
-                             (Seq.index p (v j - 2))
-                             (Seq.index p (v j)))._2)
-        <: P.t_FieldElement)
-      (sz i)
-
-#pop-options
 
 #push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
 
@@ -356,30 +281,15 @@ let lemma_inv_ntt_layer_1_step_to_hacspec
 
 (* ───── Layer 2 / 3 forward NTT bridges and (layers 2/3) inverse NTT bridges ─────
    STATUS: layer 1 inverse-NTT bridge is done above (track A, Phase 7a).
-   Layer 2/3 forward and inverse remain.
-
-   Same pattern as `lemma_ntt_layer_1_step_to_hacspec` above; each layer
-   needs a `lemma_ntt_layer_n_16_<2*len>_lane` createi unfold, a
-   `zetas_<groups>_lane` zetas unfold, a per-lane bridge that reveals
-   the right branch post for `b = lane → branch` and matches against
-   the trait branch post's per-lane FE equations, and a top-level
-   `Classical.forall_intro` + `Seq.lemma_eq_intro` composition.
+   Layer 2/3 forward and inverse remain.  Same pattern as
+   `lemma_ntt_layer_1_step_to_hacspec`: each layer needs a per-lane
+   bridge revealing the right branch post for `b = lane → branch` and
+   matching against the trait branch post's per-lane FE equations,
+   plus a `Classical.forall_intro` + `Seq.lemma_eq_intro` per-vector
+   composition.
 
    First-cut implementation of layer 2 forward (lanes-to-branches
-   mapping `b = (i / 8) * 2 + ((i % 4) / 2)`) verified the per-lane
-   unfold and zetas helpers, but the lane bridge itself ran Z3 past
-   2.7 minutes on a single sub-query without reaching any failure or
-   success — likely because Z3 was case-splitting heavily on the
-   layer-2 branch post's nested `if`-ladder for `base`/`off`/`z`.
-
-   Recommended approach for follow-up:
-     (a) Profile via `--query_stats --split_queries always` to identify
-         which sub-query stalls;
-     (b) Either explicitly enumerate `i ∈ {0..15}` to remove the
-         nested arithmetic in `b = ...`, OR
-     (c) Restructure the trait branch post so `b` is consumed by a
-         flat case-split (no nested ifs).
-
-   Inverse NTT layers (`f_inv_ntt_layer_{2,3}_step`) follow the same
-   pattern with `IN.inv_butterfly` and `IN.ntt_inverse_layer_n` in
-   place of the forward equivalents. *)
+   mapping `b = (i / 8) * 2 + ((i % 4) / 2)`) ran Z3 past 2.7 minutes
+   on a single sub-query — case-splits on the layer-2 branch post's
+   nested `if`-ladder for `base`/`off`/`z`.  Mitigation: explicitly
+   enumerate `i ∈ {0..15}` to remove the symbolic `b = ...`. *)
