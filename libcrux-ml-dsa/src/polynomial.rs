@@ -126,6 +126,38 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         }
     }
 
+    /// `subtract` with explicit bound parameters; mirrors `add_bounded`.
+    #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"
+        v $_b1 + v $_b2 <= 2147483647 /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b1)
+                (i0._super_i2.f_repr (Seq.index self.f_simd_units j))) /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b2)
+                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j)))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+            (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
+    pub(crate) fn subtract_bounded(&mut self, _b1: usize, rhs: &Self, _b2: usize) {
+        #[cfg(hax)]
+        let old_self = self.clone();
+
+        for i in 0..self.simd_units.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                            Seq.index self.f_simd_units j ==
+                            Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                    Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+                      (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
+            ));
+
+            SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);
+        }
+    }
+
     #[inline(always)]
     #[hax_lib::requires(fstar!(r#"forall i.
         sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))

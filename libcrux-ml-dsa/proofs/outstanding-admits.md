@@ -216,21 +216,49 @@ these are local to the above-trait lane.
 `set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
 in `0d11b64a9` (no admit needed there).
 
-### Polynomial::add_bounded helper (no admit)
-- **File**: `src/polynomial.rs:93-127`
-- **Status**: proves clean (`bounded_add_post` SMTPat fires per simd-unit
-  in the body's loop_invariant; pre `is_i32b_array_opaque b1 self ∧
+### Polynomial::add_bounded / subtract_bounded helpers (no admit)
+- **File**: `src/polynomial.rs:93-160`
+- **Status**: both prove clean (`bounded_add_post` / `bounded_sub_post`
+  SMTPats fire per simd-unit; pre `is_i32b_array_opaque b1 self ∧
   is_i32b_array_opaque b2 rhs ∧ b1+b2 ≤ i32::MAX` gives polynomial-level
   post `is_i32b_array_opaque (b1+b2) self_future`).
 - **Mirrors**: ML-KEM's `add_to_ring_element(myself, rhs, _bound)` recipe
   — ghost bound parameters thread the bound chain through composition
   without forcing per-lane forall expansion at every call site.
-- **Use**: `add_vectors`, `subtract_vectors` (when `subtract_bounded` is
-  added) and any matrix wrapper that accumulates `j × FIELD_MAX` over
-  `j` iterations should call `Polynomial::add_bounded` instead of plain
-  `Polynomial::add`.
+- **Used by**: `add_vectors`, `subtract_vectors` (admit removed; see below).
 
-### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,vector_times_ring_element,add_vectors,subtract_vectors,compute_w_approx}
+### Slice snapshot trick: `lhs.to_vec().as_slice()`
+The frame-property invariant ML-KEM uses (`#[cfg(hax)] let _result = result`)
+relies on `result` being an owned fixed-size array (Copy).  ML-DSA matrix
+wrappers take `&mut [T]` slices, which can't be snapshot-cloned that way
+(hax HAX0003 error).  Workaround:
+```rust
+#[cfg(hax)]
+let e_lhs_orig: &[PolynomialRingElement<SIMDUnit>] = lhs.to_vec().as_slice();
+```
+The chain `to_vec` (allocates a Vec) `.as_slice()` (returns `&[T]`)
+extracts to F* as
+`Alloc.Vec.impl_1__as_slice (Alloc.Slice.impl__to_vec lhs)`.  Both
+functions are local-let-defined and F* unfolds them well enough at
+sufficient rlimit (400-800 with `--split_queries always`) to prove
+`Seq.length lhs == Seq.length e_lhs_orig` and
+`forall k. Seq.index lhs k == Seq.index e_lhs_orig k` initially.
+The `extern crate alloc;` under cfg(hax) makes `Vec` reachable in
+this no_std crate.
+
+In Rust, `let _orig = lhs.to_vec().as_slice()` would dangle (the
+temporary Vec is dropped at the end of the statement), but the
+binding only exists under `#[cfg(hax)]` and never compiles in
+non-hax builds.
+
+### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,vector_times_ring_element,compute_w_approx} (4 of 6 still admit)
+**Status update (this commit)**: `add_vectors` and `subtract_vectors`
+no longer admit their bodies — the proof closure is via
+`Polynomial::add_bounded`/`subtract_bounded` + the
+`lhs.to_vec().as_slice()` snapshot trick + `--z3rlimit 400-800
+--split_queries always`.  4 of the 6 wrappers still admit: see below.
+
+
 - **File**: `src/matrix.rs`
 - **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix)
 - **Phase added**: above-trait C.6 (Matrix.fst promotion)
