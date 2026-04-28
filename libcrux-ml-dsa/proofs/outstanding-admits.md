@@ -284,11 +284,14 @@ Reverted matrix.rs to admits for now; the opaque infra is the
 contributed deliverable and will accelerate the next attempt
 significantly.
 
-Cherry-pick request to below-trait branch: tighten `reduce_lane_post`
-from `is_i32b 8380416` (FIELD_MAX) to `is_i32b 4190208` (FIELD_MID)
-to match the actual centered-Barrett implementation.  This closes
-the spec gap in `compute_w_approx` (FIELD_MAX-bounded reduce output
-vs `ntt`'s NTT_BASE_BOUND = FIELD_MID pre).
+**Spec gap resolved (2026-04-28)**: cherry-picked Option C from
+`ml-dsa-proofs` 686543e33 (above-trait commit `8ea464a2d`).
+`NTT_BASE_BOUND` widened from `FIELD_MID` to `FIELD_MAX`, so the
+`shift_left_then_reduce → ntt` chain in `compute_w_approx` composes
+directly; the A.6 `reduce` insertion is no longer needed (removed in
+`0a1f1880f`).  `reduce_lane_post` unchanged (Option B was rejected by
+below-trait per F-5 finding).  The 3 remaining body admits are now
+purely SMT-trigger work, not spec gaps.
 
 
 - **File**: `src/matrix.rs`
