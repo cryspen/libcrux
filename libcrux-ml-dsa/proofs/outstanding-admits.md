@@ -258,13 +258,37 @@ closure is via `Polynomial::add_bounded`/`subtract_bounded` + the
 `lhs.to_vec().as_slice()` snapshot trick + `--z3rlimit 400-800
 --split_queries always`.
 
-`compute_matrix_x_mask` proof was attempted with strict 0-bounded `result`
-pre + nested loop_invariant tracking `j * FIELD_MAX` accumulating bound,
-but query 106-121 each timed out at rlimit 800 (127s, 102s, 73s, 128s
-each) due to quantifier explosion in the nested-loop SMT search.  The
-recipe is right; the loop_invariant just needs to be tighter (drop
-context-pruning-defeating conjuncts).  Reverted to body admit until a
-tighter loop_invariant or a refactor to single-flat-loop lands.
+**Opaque predicate infrastructure (this commit)**: introduced
+`Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly` as `opaque_to_smt`
+with three companion lemmas:
+- `lemma_is_bounded_poly_lookup` (SMTPat-driven — fires per simd-unit
+  when `is_i32b_array_opaque b (f_repr ...simd_units[j])` is needed).
+- `lemma_is_bounded_poly_intro` (manual call — re-establishes the
+  opaque atom from a per-simd-unit forall, e.g. after `add_bounded`
+  returns its post).
+- `lemma_is_bounded_poly_higher` (manual call — monotonicity, weakens
+  bound from `b1` to `b2 >= b1`, e.g. lifting the inner-loop `j *
+  FIELD_MAX` to reduce's `2143289343`-bound pre).
+
+Applying this to `compute_matrix_x_mask` made significant progress:
+queries dropped from 121 → ~115 and average per-query time fell from
+60-130s to under 10s.  Three failure points remain — at the inner
+ntt_multiply call (matrix bound lookup at index `i*c+j`), the reduce
+call (higher-lemma must be visible), and the outer-loop continuation
+(frame property + intro for next-iteration invariant).  Each is a
+trigger-instantiation issue rather than a complexity blowup.  Closing
+all three needs ~1-2 more iterations of bridging assertions or a
+slight restructuring to make instantiations more obvious.
+
+Reverted matrix.rs to admits for now; the opaque infra is the
+contributed deliverable and will accelerate the next attempt
+significantly.
+
+Cherry-pick request to below-trait branch: tighten `reduce_lane_post`
+from `is_i32b 8380416` (FIELD_MAX) to `is_i32b 4190208` (FIELD_MID)
+to match the actual centered-Barrett implementation.  This closes
+the spec gap in `compute_w_approx` (FIELD_MAX-bounded reduce output
+vs `ntt`'s NTT_BASE_BOUND = FIELD_MID pre).
 
 
 - **File**: `src/matrix.rs`

@@ -23,6 +23,63 @@ pub(crate) mod spec {
         )
     }
 
+    #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::after(
+            r#"
+let lemma_is_bounded_poly_lookup
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (j: nat{j < 32})
+    : Lemma
+      (requires is_bounded_poly b p)
+      (ensures Spec.Utils.is_i32b_array_opaque (v b)
+                 (i0._super_i2.f_repr (Seq.index p.f_simd_units j)))
+      [SMTPat (Spec.Utils.is_i32b_array_opaque (v b)
+                 (i0._super_i2.f_repr (Seq.index p.f_simd_units j)));
+       SMTPat (is_bounded_poly b p)]
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b p)
+
+let lemma_is_bounded_poly_intro
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Lemma
+      (requires forall (j: nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (v b)
+          (i0._super_i2.f_repr (Seq.index p.f_simd_units j)))
+      (ensures is_bounded_poly b p)
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b p)
+
+(* Monotonicity: tighter bound implies looser bound. *)
+let lemma_is_bounded_poly_higher
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b1 b2: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Lemma
+      (requires is_bounded_poly b1 p /\ v b1 <= v b2)
+      (ensures is_bounded_poly b2 p)
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b1 p);
+    reveal_opaque (`%is_bounded_poly) (is_bounded_poly b2 p);
+    let lemma_lane (j: nat{j < 32}) :
+      Lemma (Spec.Utils.is_i32b_array_opaque (v b2)
+               (i0._super_i2.f_repr (Seq.index p.f_simd_units j))) =
+      reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque in
+    Classical.forall_intro lemma_lane
+"#
+        )
+    )]
     pub(crate) fn is_bounded_poly<SIMDUnit: Operations>(
         b: usize,
         p: &PolynomialRingElement<SIMDUnit>,
