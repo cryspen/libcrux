@@ -61,6 +61,36 @@ Read in this order before doing anything else:
 
 ## Tracks (priority order)
 
+### Track 0 — `commitment_serialize/deserialize` quick wins (start here)
+
+The `commitment` encoding free fns (`src/simd/portable/encoding/commitment.rs`)
+already advertise `bit_vec_of_int_t_array` ensures clauses on
+`serialize_4` / `serialize_6` (and analogous on the deserialize side
+— check before starting), and Z3 verifies them.  But the trait
+methods `commitment_serialize` (Portable `src/simd/portable.rs:569`,
+AVX2 `src/simd/avx2.rs:545`) and `commitment_deserialize` still have
+top-level `hax_lib::fstar!("admit ()")` bodies — pure threading work.
+
+Pattern (mirror Track-4 mont_mul):
+1. Pre-call: reveal opacity of any opaque pres/posts (e.g.
+   `is_i32b_array_opaque (pow2 4)` for the simd_unit input).
+2. Call `encoding::commitment::serialize` / `::deserialize`.
+3. Post-call: thread the free fn's bit_vec post into the trait
+   post.  The trait post citing
+   `Hacspec_ml_dsa.Encoding.simple_bit_pack` is equivalent under
+   `bit_vec_of_int_t_array`'s SMTPats — should fold automatically
+   with `assert (Seq.equal ...)` if needed.
+
+If `commitment::deserialize` lacks an `ensures`, add one in the
+serialize template's mirror shape (`bit_vec_of_int_t_array` between
+the bytes input and the simd_unit output).  Z3 should chew it.
+
+**Scope:** 2 methods × 2 impls = 4 admit bodies.  ~30 min each, ~2
+hours total.  Low-risk warm-up before the harder math.
+
+**Acceptance:** all four `commitment_serialize`/`commitment_deserialize`
+admits replaced.  Commit.
+
 ### Track A — `lemma_compute_hint_lane_commute_conditional` math close
 
 The single math admit remaining in `Commute.Chunk.fst`.  Goal: under
@@ -142,11 +172,34 @@ close, EITHER:
 
 Skip if Tracks A + B fill the budget.
 
-### Track D — Phase 2D encoding methods
+### Track D — Phase 2D encoding methods (only after Track 0/A/B)
 
-The 10 Portable + 10 AVX2 encoding admits (gamma1, t0, t1, error
-serialize/deserialize and the rejection_sample_*) all share the same
-blocker:
+The encoding methods break into three buckets by blocker shape:
+
+**Bucket (a) — Easy bridge** (covered by Track 0 above): `commitment_*`
+free fns already advertise `bit_vec_of_int_t_array` posts; only the
+trait body admits remain.  Pure threading work.
+
+**Bucket (b) — Add ensures + bridge** (this Track D-1): `error_*`,
+`t1_*`, `t0_*` (4 + 4 + 4 = 12 trait admit bodies across both impls,
+plus the corresponding free-fn posts to add).  The free fns currently
+have `requires` but no `ensures`.  Mirror the `commitment::serialize_4`
+template: add `bit_vec_of_int_t_array` `ensures` clause citing the
+appropriate width (error w=3/4, t1 w=10, t0 w=13).  Z3 should verify
+each directly from the body; widths above 6 may need higher rlimit
+than commitment uses.  Then thread to trait body using the Track 0
+pattern.  Per-fn estimate: ~30 lines (free-fn ensures) + ~30 lines
+(trait body bridge).
+
+**Bucket (c) — Library + ensures + bridge** (Track D-2, blocked):
+`gamma1_*` packs `GAMMA1 - coefficient` (signed→unsigned offset),
+which `bit_vec_of_int_t_array` doesn't model.  Need either
+(a) an `offset_bit_vec_of_int_t_array` variant in
+`fstar-helpers/fstar-bitvec/BitVecEq.fst`, or (b) per-method ad-hoc
+post phrased in terms of the offset.  Per-fn estimate: helper
+extension ~40 lines + per-fn 30 + 30 lines (free-fn + trait).
+**DO NOT attempt in Step 12** — start by extending BitVecEq, which
+is its own session.
 
 **Why commitment is verified but gamma1/t0/t1/error are not:**
 
@@ -156,32 +209,11 @@ each carry a proper `#[hax_lib::ensures]` clause using
 `fstar-helpers/fstar-bitvec/BitVecEq.fst` — equating the input
 coefficients' bit-vector to the output bytes' bit-vector.  Z3 verifies
 the bit-equality directly from the body (no explicit proof needed).
-
 By contrast, `gamma1.rs::serialize_when_gamma1_is_2_pow_{17,19}`,
-`t0.rs::serialize`, `t1.rs::serialize`, `error.rs::serialize_when_eta_is_{2,4}`
-all have **only `requires` clauses, no `ensures`**.  The free fns
-prove panic-freedom but advertise no content correctness.  Hence the
-trait method bodies have nothing to thread through, and admit().
-
-The two work items:
-
-(D-1) **Width-only encodings** (error w=3/4, t1 w=10, t0 w=13):
-   add `bit_vec_of_int_t_array` ensures clauses mirroring commitment.
-   These are direct unsigned packing — should follow the commitment
-   template.  Z3 may need higher rlimit for wider widths.  Per-fn
-   estimate: 30 lines + verification.
-
-(D-2) **Offset-pack encodings** (gamma1 w=18/20, t0 partially):
-   gamma1 packs `GAMMA1 - coefficient` rather than `coefficient`
-   directly (signed→unsigned offset).  The existing
-   `bit_vec_of_int_t_array` doesn't model this.  Need either
-   (a) an `offset_bit_vec_of_int_t_array` variant in BitVecEq.fst,
-   or (b) per-method ad-hoc post phrased in terms of the offset.
-   Per-fn estimate: helper extension ~40 lines + per-fn 30 lines.
-
-These should NOT be tackled before Track A and B unless the math admit
-in compute_hint stays unproven and the impl body needs a different
-structure.
+`t0.rs::serialize`, `t1.rs::serialize`,
+`error.rs::serialize_when_eta_is_{2,4}` all have **only `requires`
+clauses, no `ensures`**.  Hence the trait method bodies have nothing
+to thread through, and admit().
 
 ## Pre-flight
 
@@ -197,17 +229,32 @@ JOBS=2 ./hax.sh prove 2>&1 | tail -22             # baseline 88/30/58/0
 
 ## What success looks like
 
-- End-of-session baseline still `0 errors / 0 make-level failures`.
-- Track A: `lemma_compute_hint_lane_commute_conditional` admit body
-  replaced with real proof.
-- Track B (stretch): AVX2 `decompose` impl body closed via the
-  decompose_spec-eq-decompose bridge lemma.
-- Track C, D: skip unless A+B finish under budget.
+Recommended priority (warm-up → math → encoding stretch):
+
+1. Track 0 (commitment quick wins): 4 trait admits replaced.  ✅
+2. Track B (AVX2 decompose): impl body closed via
+   decompose_spec-eq-decompose bridge.  ✅
+3. Track A (compute_hint math): `lemma_compute_hint_lane_commute_conditional`
+   body replaced with real proof.  ✅ → zero `admit ()` left in
+   `Commute.Chunk.fst`.
+4. Track D-1 (stretch): one or more of `error`/`t1`/`t0` free-fn
+   ensures added + trait body bridged.
+
+End-of-session baseline still `0 errors / 0 make-level failures`.
+Tracks C and D-2 are explicitly NOT for Step 12.
+
+Note on ordering: Track B is structurally easier than Track A
+(mechanical mirror of Track 4 mont_mul vs novel FIPS 204 §3.6 math),
+so doing Track 0 → B → A keeps risk monotonically increasing.  If A
+overruns the 20-min budget, leave the admit and document; B and Track
+0 work are independent and ship as separate commits.
 
 ## What this is NOT
 
 - Not a trait pre/post change.  Owned by above-trait lane.
 - Not a `Specs.fst` edit.  Cherry-pick only.
-- Not Phase 2D encoding work — that's the longest-tail item and
-  blocked on BitVecEq library extension; capture as Track D
-  for a future session.
+- Not Track C (AVX2 use_hint/compute_hint) — blocked on
+  `verification_status(lax)` and substantial Spec.Intrinsics SIMD
+  intrinsic models; future session.
+- Not Track D-2 (gamma1 offset-pack) — blocked on BitVecEq library
+  extension; future session.
