@@ -105,9 +105,9 @@ mode under the thin-wrapper pattern.
 
 | Method | T | P | A | Spec anchor | Notes |
 |---|---|---|---|---|---|
-| `zero` | ✅ | ✅ | ✅ | trivial (`repr() == [0;8]`) | trivial; both impls verify |
-| `from_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
-| `to_coefficient_array` | ✅ | ✅ | ✅ | trivial | trivial; both impls verify |
+| `zero` | ✅ | ✅ | ✅ (Step 11 close) | trivial (`repr() == [0;8]`) | both impls verify; AVX2 closed via new `mm256_setzero_si256_lemma` SMTPat in `Spec.Intrinsics.fsti` |
+| `from_coefficient_array` | ✅ | ✅ | ✅ (Step 11 close) | trivial | both impls verify; AVX2 closed via new `mm256_loadu_si256_i32_lemma` SMTPat |
+| `to_coefficient_array` | ✅ | ✅ | ✅ (Step 11 close) | trivial | both impls verify; AVX2 uses existing `mm256_storeu_si256_i32_lemma` |
 | `add` | ✅ | ✅ | ✅ (AVX2 impl closed; this session, Step 8) | `add_post` per-lane integer | both `*.Arithmetic.fst` verify the underlying primitive; AVX2 impl now uses `lemma_add_lane_commute` bridge |
 | `subtract` | ✅ | ✅ | ✅ (AVX2 impl closed; this session, Step 8) | `sub_post` per-lane integer | both verify; AVX2 impl uses `lemma_sub_lane_commute` bridge |
 | `infinity_norm_exceeds` | ✅ (relaxed 04fd066f0) | ✅ (Portable impl closed; Step 9) | ✅ (AVX2 impl closed; Step 9) | raw signed `abs` | both impls discharge: Portable arithmetic post strengthened to bidirectional `<==>` form; AVX2 trait impl bridges f_repr↔to_i32x8 via to_coefficient_array post |
