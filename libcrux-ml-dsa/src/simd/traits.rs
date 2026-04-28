@@ -67,10 +67,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (v $gamma2) (f_repr ${low}_future) /\
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
