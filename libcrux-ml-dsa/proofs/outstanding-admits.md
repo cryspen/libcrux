@@ -242,6 +242,39 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   lemma `lemma_mont_mul_bound_and_mod_q` in `Commute.Chunk.fst`),
   `shift_left_then_reduce` (both — trait post relaxed to mod-q congruence).
 
+### F-1 use_hint Portable impl close — scaffolding only (2026-04-28)
+**Status**: Portable `Operations::use_hint` impl body upgraded from a
+single top-level `hax_lib::fstar!("admit ()")` to a structurally
+complete proof that discharges the strengthened trait post via two
+paired commute lemmas in `Hacspec_ml_dsa.Commute.Chunk.fst`:
+- `lemma_use_one_hint_bound` — unconditional bound on
+  `Spec.MLDSA.Math.use_one_hint` output: `[0, 44)` for γ₂=95232,
+  `[0, 16)` for γ₂=261888.  Discharges the new array-level bound
+  conjuncts the cherry-pick added.
+- `lemma_use_hint_lane_commute_conditional` — `==>`-conditional
+  equation matching `use_hint_lane_post`: under `v input ∈ [0, q)`,
+  `Spec.MLDSA.Math.use_one_hint` agrees with
+  `Hacspec_ml_dsa.Arithmetic.uuse_hint`.  Uses F\*'s
+  `introduce ... with hyp.` to produce the implication shape.
+
+**Bodies of both lemmas are `admit ()` placeholders** — the
+structural commit lands the F-1 verdict's restructuring (no contract
+change; pair the unconditional bound with the conditional equation),
+but the math content is deferred:
+- `lemma_use_one_hint_bound`: needs an analog of
+  `lemma_power2round_t1_bound` plus the unconditional `[0, m)` range
+  of `int %`.
+- `lemma_use_hint_lane_commute_conditional`: needs a sub-lemma
+  bridging `Spec.MLDSA.Math.decompose ↔ Hacspec.decompose` under
+  `v input ∈ [0, q)`, then matching the if-then-else case-split on
+  `r0 > 0` between the two specs.  Estimate: 50-80 lines.
+
+**Cross-method scope**: `decompose` (Step 9.5) and `compute_hint`
+(Step 9.8) need analogous restructuring per the F-1 verdict.
+Currently their impl bodies are still single top-level `admit()` —
+to be lifted in follow-up commits using the same pair-of-lemmas
+template established here.
+
 ### Step 9.7 use_hint pre-audit finding (2026-04-28)
 
 `Operations::use_hint` trait pre is `is_i32b_array_opaque (FIELD_MAX) (f_repr simd_unit)`,

@@ -267,12 +267,10 @@ impl Operations for Coefficients {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future)) /\
-         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future))) /\
-        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -326,8 +324,58 @@ impl Operations for Coefficients {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i))"#))]
     fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
-        hax_lib::fstar!("admit ()");
-        arithmetic::use_hint(gamma2, simd_unit, hint)
+        #[cfg(hax)]
+        let _orig_hint = hint.clone();
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque)
+                (Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
+        );
+        arithmetic::use_hint(gamma2, simd_unit, hint);
+        hax_lib::fstar!(
+            r#"
+            // F-1 verdict (above-trait commit 7a4dc28df, option d):
+            // discharge bound + conditional equation via paired commute lemmas.
+            let pf_eq (k: nat{k < 8}) : Lemma
+                (ensures Libcrux_ml_dsa.Simd.Traits.Specs.use_hint_lane_post
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_hint}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_use_hint_lane_commute_conditional
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_hint}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k)
+            in
+            Classical.forall_intro pf_eq;
+            // Bound conjunct: per-lane [0, 44) or [0, 16) → array-level opaque.
+            let pf_bound (k: nat{k < 8}) : Lemma
+                (ensures
+                    (v $gamma2 == 95232 ==>
+                        0 <= v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) /\
+                        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) < 44) /\
+                    (v $gamma2 == 261888 ==>
+                        0 <= v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) /\
+                        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k) < 16)) =
+                Hacspec_ml_dsa.Commute.Chunk.lemma_use_one_hint_bound
+                    $gamma2
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) k)
+                    (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_hint}) k)
+            in
+            Classical.forall_intro pf_bound;
+            // Reveal both array-level bound predicates so F* can fold the
+            // per-lane bounds into the array-level form on either branch.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 44
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 16
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}))"#
+        );
     }
 
     #[requires(fstar!(r#"

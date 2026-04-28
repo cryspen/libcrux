@@ -331,12 +331,10 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future)) /\
-         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future))) /\
-        ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post

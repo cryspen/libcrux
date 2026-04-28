@@ -232,3 +232,69 @@ let lemma_shift_left_then_reduce_lane_commute_mod_q
     assert (v (input <<! mk_i32 13 <: i32) == v input * 8192);
     reveal_opaque (`%TS.shift_left_then_reduce_lane_post)
                   (TS.shift_left_then_reduce_lane_post input future)
+
+(* === F-1 restructuring (above-trait verdict 7a4dc28df, option d) ===
+   The trait pre `is_i32b_array_opaque FIELD_MAX` for use_hint /
+   decompose / compute_hint is intentionally weaker than the lane
+   posts' `[0, q)`-conditional `==>` shape.  Each impl-side commute
+   is split into two lemmas:
+   (1) Unconditional bound — discharges the new cherry-picked
+       array-level bound conjuncts (44 / 16 for use_hint, 95232 /
+       44 / 261888 / 16 for decompose, 44 / 16 for compute_hint
+       hint_future).  Proved over any input by inspection of the
+       impl's internal normalize / `% m` step.
+   (2) Conditional equation — uses `introduce ... with hyp.` to
+       produce the lane post's `==>` shape, discharging the
+       Spec-vs-Hacspec equivalence under `v input ∈ [0, q)`. *)
+
+(* Unconditional bound for `Spec.MLDSA.Math.use_one_hint`.  The Spec
+   computes either `r1` (hint=0) or `(r1 ± 1) % (4190208 / g)`
+   (hint=1).  In both cases the result lies in `[0, m)` where
+   m = 4190208 / g (= 44 for γ2=95232, = 16 for γ2=261888) — the `% m`
+   form is automatic for hint=1; the hint=0 case requires bounding
+   `r1` from `Spec.MLDSA.Math.decompose`'s output (analogous to
+   `lemma_power2round_t1_bound` in Track A). *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_use_one_hint_bound (g r hint: i32)
+    : Lemma
+        (requires
+          (v g == 95232 \/ v g == 261888) /\
+          (v hint == 0 \/ v hint == 1))
+        (ensures
+          (let res = Spec.MLDSA.Math.use_one_hint (v g) (v r) (v hint) in
+           (v g == 95232 ==> 0 <= res /\ res < 44) /\
+           (v g == 261888 ==> 0 <= res /\ res < 16)))
+  = admit ()  (* F-1 follow-up: prove via decompose r1 bound (analog to
+                 lemma_power2round_t1_bound) plus the unconditional
+                 [0, m) range of `int %` for hint=1. *)
+#pop-options
+
+(* Conditional equation: under `v input ∈ [0, q)`, the Spec.MLDSA.Math
+   and Hacspec computations of use_one_hint agree.  The lane post's
+   `==>` shape is discharged via `introduce ... with hyp`.  Outside
+   `[0, q)`, the lane post is vacuously true (the `==>` premise
+   fails). *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+let lemma_use_hint_lane_commute_conditional
+    (gamma2 input hint future_hint: i32)
+    : Lemma
+        (requires
+          (v gamma2 == 95232 \/ v gamma2 == 261888) /\
+          (v hint == 0 \/ v hint == 1) /\
+          v future_hint == Spec.MLDSA.Math.use_one_hint (v gamma2) (v input) (v hint))
+        (ensures TS.use_hint_lane_post gamma2 input hint future_hint)
+  = reveal_opaque (`%TS.use_hint_lane_post)
+                  (TS.use_hint_lane_post gamma2 input hint future_hint);
+    introduce
+        v input >= 0 /\ v input < 8380417 /\ (v hint == 0 \/ v hint == 1) ==>
+        v future_hint == v (Hacspec_ml_dsa.Arithmetic.uuse_hint (v hint = 1) input gamma2)
+    with hyp.
+      admit ()  (* F-1 follow-up: prove
+                   Spec.MLDSA.Math.use_one_hint (v gamma2) (v input) (v hint)
+                   == v (Hacspec_ml_dsa.Arithmetic.uuse_hint (v hint = 1) input gamma2)
+                   under hyp.  Both unfold to decompose-then-case-on-hint;
+                   needs a sub-lemma bridging
+                   Spec.MLDSA.Math.decompose ↔ Hacspec.decompose
+                   when v input ∈ [0, q), then matching the if-then-else
+                   branches.  Estimate: 50-80 lines. *)
+#pop-options
