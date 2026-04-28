@@ -247,13 +247,86 @@ let lemma_shift_left_then_reduce_lane_commute_mod_q
        produce the lane post's `==>` shape, discharging the
        Spec-vs-Hacspec equivalence under `v input ∈ [0, q)`. *)
 
+(* Math lemma: for `g ∈ {95232, 261888}` and any int `r`, the `r1`
+   component of `Spec.MLDSA.Math.decompose g r` lies in `[0, m)` where
+   m = 4190208 / g (= 44 for γ2=95232, = 16 for γ2=261888).
+
+   Reasoning (mirrors lemma_power2round_t1_bound):
+     r_q = r % q  ∈ [0, q-1] = [0, m*twog]   where twog = 2g, q-1 = m*twog
+     r_g = mod_p r_q twog  ∈ (-g, g]
+     - Special case r_q - r_g = q-1: spec returns r1 = 0 ∈ [0, m).
+     - Otherwise: r1 = (r_q - r_g) / twog.  Two sub-cases on r_g_raw =
+       r_q % twog ∈ [0, twog):
+       (A) r_g_raw ≤ g: r_g = r_g_raw, r_q - r_g = (r_q / twog) * twog,
+           r1 = r_q / twog ∈ [0, m].  r1 = m iff r_q = m*twog = q-1
+           and r_g_raw = 0, which gives r_q - r_g = q-1 → special case
+           (excluded).  So r1 ≤ m-1 in non-special.
+       (B) r_g_raw > g: r_g = r_g_raw - twog, r_q - r_g = (r_q/twog + 1)*twog,
+           r1 = r_q/twog + 1 ∈ [1, m+1].  r1 = m+1 would need r_q ≥
+           m*twog = q-1, but then r_g_raw = (q-1) % twog = 0 ≤ g
+           (case A), contradiction.  r1 = m iff r_q/twog = m-1, giving
+           r_q - r_g = m*twog = q-1 → special (excluded).  So r1 ≤ m-1
+           in non-special. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400"
+let lemma_spec_decompose_r1_bound (g: int) (r: int)
+    : Lemma
+        (requires (g == 95232 \/ g == 261888))
+        (ensures
+          (let r_q = r % 8380417 in
+           let r_g = Spec.Utils.mod_p r_q (g * 2) in
+           let m = 4190208 / g in
+           let r1 = if r_q - r_g = 8380416 then 0 else (r_q - r_g) / (g * 2) in
+           0 <= r1 /\ r1 < m))
+  = let q : pos = 8380417 in
+    let twog : pos = g * 2 in
+    let m : pos = 4190208 / g in
+    assert (m * twog == 8380416);
+    let r_q = r % q in
+    L.lemma_mod_lt r q;
+    assert (0 <= r_q /\ r_q <= q - 1);
+    let r_g_raw = r_q % twog in
+    L.lemma_mod_lt r_q twog;
+    assert (0 <= r_g_raw /\ r_g_raw < twog);
+    assert (twog / 2 == g);
+    let r_g = Spec.Utils.mod_p r_q twog in
+    assert (r_g == (if r_g_raw > g then r_g_raw - twog else r_g_raw));
+    L.lemma_div_mod r_q twog;
+    assert (r_q == (r_q / twog) * twog + r_g_raw);
+    if r_q - r_g = q - 1 then ()
+    else if r_g_raw > g then begin
+      assert (r_g == r_g_raw - twog);
+      assert (r_q - r_g == (r_q / twog) * twog + twog);
+      assert (r_q - r_g == (r_q / twog + 1) * twog);
+      L.cancel_mul_div (r_q / twog + 1) twog;
+      assert ((r_q - r_g) / twog == r_q / twog + 1);
+      // In non-special: r_q - r_g != q - 1 = m*twog, so r_q/twog + 1 != m.
+      // Upper bound: r_q ≤ q-1 = m*twog, but if r_q = q-1 then r_g_raw = 0,
+      // contradicting r_g_raw > g.  So r_q ≤ q-2, hence r_q/twog ≤ (q-2)/twog.
+      assert ((q - 2) / twog == m - 1);
+      L.lemma_div_le r_q (q - 2) twog;
+      // r_q/twog ≤ m-1, so r_q/twog + 1 ≤ m.  And ≠ m (non-special), so ≤ m-1.
+      ()
+    end
+    else begin
+      assert (r_g == r_g_raw);
+      assert (r_q - r_g == (r_q / twog) * twog);
+      L.cancel_mul_div (r_q / twog) twog;
+      assert ((r_q - r_g) / twog == r_q / twog);
+      // r_q ≤ q-1 = m*twog, so r_q/twog ≤ m.  If r_q/twog = m then
+      // r_q ≥ m*twog = q-1, hence r_q = q-1 and r_g_raw = (q-1) % twog = 0,
+      // r_g = 0, r_q - r_g = q - 1 → special case (excluded).  So in
+      // non-special r_q/twog ≤ m-1.
+      L.lemma_div_le r_q (q - 1) twog;
+      assert ((q - 1) / twog == m);
+      ()
+    end
+#pop-options
+
 (* Unconditional bound for `Spec.MLDSA.Math.use_one_hint`.  The Spec
    computes either `r1` (hint=0) or `(r1 ± 1) % (4190208 / g)`
    (hint=1).  In both cases the result lies in `[0, m)` where
-   m = 4190208 / g (= 44 for γ2=95232, = 16 for γ2=261888) — the `% m`
-   form is automatic for hint=1; the hint=0 case requires bounding
-   `r1` from `Spec.MLDSA.Math.decompose`'s output (analogous to
-   `lemma_power2round_t1_bound` in Track A). *)
+   m = 4190208 / g.  hint=1 follows from `lemma_mod_lt`; hint=0
+   reduces to `lemma_spec_decompose_r1_bound`. *)
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
 let lemma_use_one_hint_bound (g r hint: i32)
     : Lemma
@@ -264,9 +337,79 @@ let lemma_use_one_hint_bound (g r hint: i32)
           (let res = Spec.MLDSA.Math.use_one_hint (v g) (v r) (v hint) in
            (v g == 95232 ==> 0 <= res /\ res < 44) /\
            (v g == 261888 ==> 0 <= res /\ res < 16)))
-  = admit ()  (* F-1 follow-up: prove via decompose r1 bound (analog to
-                 lemma_power2round_t1_bound) plus the unconditional
-                 [0, m) range of `int %` for hint=1. *)
+  = let m : int = 4190208 / v g in
+    assert (m == 44 \/ m == 16);
+    let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v g) (v r) in
+    lemma_spec_decompose_r1_bound (v g) (v r);
+    if v hint = 0 then ()
+    else if r0_s > 0 then L.lemma_mod_lt (r1_s + 1) m
+    else L.lemma_mod_lt (r1_s - 1) m
+#pop-options
+
+(* Sub-lemma: `Hacspec_ml_dsa.Arithmetic.mod_pm` matches `Spec.Utils.mod_p`
+   in v-image, for non-negative `a` and positive even `m` fitting in i32.
+   The Hacspec version computes `((a%m)+m)%m` in i64 then folds the
+   half-shift; both produce the centered representative in `(-m/2, m/2]`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_mod_pm_eq_mod_p (a m: i32)
+    : Lemma
+        (requires v a >= 0 /\ v a < 8380417 /\
+                  v m > 0 /\ v m % 2 == 0 /\ v m <= 1000000)
+        (ensures
+          v (Hacspec_ml_dsa.Arithmetic.mod_pm a m) == Spec.Utils.mod_p (v a) (v m))
+  = let a64 : i64 = cast a <: i64 in
+    let m64 : i64 = cast m <: i64 in
+    assert (v a64 == v a /\ v m64 == v m);
+    let r1 = a64 %! m64 in
+    L.lemma_mod_lt (v a) (v m);
+    assert (v r1 == v a % v m);
+    let r2 = r1 +! m64 in
+    assert (v r2 == v a % v m + v m);
+    let r3 = r2 %! m64 in
+    L.lemma_mod_plus (v a % v m) 1 (v m);
+    L.modulo_lemma (v a % v m) (v m);
+    assert (v r3 == v a % v m);
+    let r32 : i32 = cast r3 <: i32 in
+    assert (v r32 == v a % v m);
+    let half = m /! mk_i32 2 in
+    assert (v half == v m / 2)
+#pop-options
+
+(* Bridge: under `v input ∈ [0, q)` and `v gamma2 ∈ {95232, 261888}`,
+   the i32 `Hacspec.decompose` agrees in v-image with the int-level
+   `Spec.MLDSA.Math.decompose` (note layouts differ: Spec returns
+   `(r0, r1, bool)`, Hacspec returns `(r1, r0)` i32 pair). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 600"
+let lemma_decompose_bridge (input gamma2: i32)
+    : Lemma
+        (requires
+          (v gamma2 == 95232 \/ v gamma2 == 261888) /\
+          v input >= 0 /\ v input < 8380417)
+        (ensures
+          (let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v gamma2) (v input) in
+           let (r1_h, r0_h) = Hacspec_ml_dsa.Arithmetic.decompose input gamma2 in
+           v r1_h == r1_s /\ v r0_h == r0_s))
+  = let q = 8380417 in
+    let twog = v gamma2 * 2 in
+    // Hacspec body: r_plus = input %! Q, fixup, alpha = 2*gamma2, r0 = mod_pm,
+    //               then if/else.
+    let r_plus0 = input %! Hacspec_ml_dsa.Parameters.v_Q in
+    L.small_mod (v input) q;
+    assert (v r_plus0 == v input);
+    // r_plus0 >= 0, so the fixup branch is unchanged.
+    let alpha = mk_i32 2 *! gamma2 in
+    assert (v alpha == twog);
+    let r0_h = Hacspec_ml_dsa.Arithmetic.mod_pm r_plus0 alpha in
+    lemma_mod_pm_eq_mod_p r_plus0 alpha;
+    assert (v r0_h == Spec.Utils.mod_p (v input) twog);
+    // Spec body: r_q = input % q, r_g = mod_p r_q twog, etc.
+    L.small_mod (v input) q;
+    assert ((v input) % q == v input);
+    // The branch comparisons match because v r_plus0 - v r0_h fits in i32.
+    let diff = r_plus0 -! r0_h in
+    assert (v r0_h > -(v gamma2) /\ v r0_h <= v gamma2);
+    assert (v diff == v input - v r0_h);
+    ()
 #pop-options
 
 (* Conditional equation: under `v input ∈ [0, q)`, the Spec.MLDSA.Math
@@ -274,7 +417,7 @@ let lemma_use_one_hint_bound (g r hint: i32)
    `==>` shape is discharged via `introduce ... with hyp`.  Outside
    `[0, q)`, the lane post is vacuously true (the `==>` premise
    fails). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 600"
 let lemma_use_hint_lane_commute_conditional
     (gamma2 input hint future_hint: i32)
     : Lemma
@@ -289,12 +432,38 @@ let lemma_use_hint_lane_commute_conditional
         v input >= 0 /\ v input < 8380417 /\ (v hint == 0 \/ v hint == 1) ==>
         v future_hint == v (Hacspec_ml_dsa.Arithmetic.uuse_hint (v hint = 1) input gamma2)
     with hyp.
-      admit ()  (* F-1 follow-up: prove
-                   Spec.MLDSA.Math.use_one_hint (v gamma2) (v input) (v hint)
-                   == v (Hacspec_ml_dsa.Arithmetic.uuse_hint (v hint = 1) input gamma2)
-                   under hyp.  Both unfold to decompose-then-case-on-hint;
-                   needs a sub-lemma bridging
-                   Spec.MLDSA.Math.decompose ↔ Hacspec.decompose
-                   when v input ∈ [0, q), then matching the if-then-else
-                   branches.  Estimate: 50-80 lines. *)
+      let m_int = 4190208 / v gamma2 in
+      assert (m_int == 44 \/ m_int == 16);
+      let (r0_s, r1_s, _) = Spec.MLDSA.Math.decompose (v gamma2) (v input) in
+      let (r1_h, r0_h) = Hacspec_ml_dsa.Arithmetic.decompose input gamma2 in
+      lemma_decompose_bridge input gamma2;
+      lemma_spec_decompose_r1_bound (v gamma2) (v input);
+      assert (v r1_h == r1_s /\ v r0_h == r0_s);
+      assert (0 <= r1_s /\ r1_s < m_int);
+      // Hacspec uses `m_h = (Q-1) /! (2 *! gamma2)` which equals m_int.
+      let m_h : i32 = (Hacspec_ml_dsa.Parameters.v_Q -! mk_i32 1) /! (mk_i32 2 *! gamma2) in
+      assert (v m_h == m_int);
+      // Note: in F*'s hax-lib, `%!` on machine ints is Euclidean (returns
+      // non-negative values strictly less than the modulus), the same as
+      // F*'s int `%`.  So the i32 expressions match the int expressions
+      // directly under v-image, modulo i32-range checks.
+      if v hint = 0 then ()
+      else if r0_s > 0 then begin
+        // Spec: (r1_s + 1) % m_int.  Hacspec: (r1_h +! 1) %! m_h.
+        let one_plus = r1_h +! mk_i32 1 in
+        assert (v one_plus == r1_s + 1)
+      end
+      else begin
+        // Spec: (r1_s - 1) % m_int.  Hacspec: (((r1_h -! 1) %! m_h) +! m_h) %! m_h.
+        let m1 = r1_h -! mk_i32 1 in
+        assert (v m1 == r1_s - 1);
+        let s1 = m1 %! m_h in
+        L.lemma_mod_lt (v m1) m_int;
+        assert (v s1 == (r1_s - 1) % m_int /\ 0 <= v s1 /\ v s1 < m_int);
+        let s2 = s1 +! m_h in
+        assert (v s2 == (r1_s - 1) % m_int + m_int);
+        L.lemma_mod_plus ((r1_s - 1) % m_int) 1 m_int;
+        L.small_mod ((r1_s - 1) % m_int) m_int;
+        assert (v (s2 %! m_h) == (r1_s - 1) % m_int)
+      end
 #pop-options
