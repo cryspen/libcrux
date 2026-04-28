@@ -1,14 +1,15 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 6 scaffolding + hints enabled + Step 7 attempt reverted (2026-04-28 session, tip `64ee7d51a`).
+**Tip**: Step 6 + hints enabled + Step 7 Portable closed (2026-04-28 session, tip `c91f0b413`). AVX2 deferred.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors**. Was 25 errors / 52 verified / 60 invoked at the previous-previous session start.
+**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Was 97/41/56/0; the +1 each is `Hacspec_ml_dsa.Commute.Chunk.fst` (new) which now hosts `lemma_reduce_lane_commute`.
 
-**This session's deltas (3faaff641 → 64ee7d51a)**:
-1. Step 6: created `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst` with module header + Hacspec imports + first lemma `lemma_reduce_lane_commute` (verified via fstar-mcp; reveals `reduce_lane_post` opacity to bridge centered-Barrett-bound + raw-mod congruence into trait shape).
-2. Makefile: enabled F* hints (`ENABLE_HINTS = --use_hints --record_hints`) matching ml-kem, plus added the new commute dir to `FSTAR_INCLUDE_DIRS_EXTRA`. First three hint files recorded (Commute.Chunk, Simd.Portable, Simd.Avx2 — others accumulate as cache invalidates).
-3. Step 7 attempt (Portable `Operations::reduce`): tried `loop_invariant!` carrying `reduce_lane_post` + per-iteration `Classical.forall_intro pf`. Z3 cancelled at rlimit 80 on the per-iteration subtyping check. Reverted per Hard Rule #3; obstacle documented in `outstanding-admits.md`.
+**This session's deltas (3faaff641 → c91f0b413)**:
+1. Step 6: created `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst` with module header + Hacspec imports + `lemma_reduce_lane_commute` (verified via fstar-mcp; reveals `reduce_lane_post` opacity to bridge centered-Barrett-bound + raw-mod congruence into trait shape).
+2. Makefile: enabled F* hints (`ENABLE_HINTS = --use_hints --record_hints`) matching ml-kem, plus added the new commute dir to `FSTAR_INCLUDE_DIRS_EXTRA`. Hints accumulate as cache invalidates (4+ files now recorded).
+3. Step 7 Portable: `Operations::reduce` body discharges without admit. Refined approach landed: loop_invariant carries the *free-fn post* shape (`is_i32b_array_opaque + Spec.MLDSA.Math.mod_q` congruence) that `arithmetic::reduce` directly proves; after-loop `Classical.forall_intro` over `j<32 / k<8` invokes the bridge to convert into `reduce_lane_post`. First Step-7 attempt with `reduce_lane_post` directly in the invariant Z3-cancelled at rlimit 80 — abandoned per Hard Rule #3 and the refined approach replaced it.
+4. Step 7 AVX2 deferred — cross-cutting Vec256↔f_repr translation gap (intrinsic `mm256_storeu_si256_i32` lacks a content post; `to_coefficient_array`'s post is length-only). Documented in `outstanding-admits.md`.
 
 **Operations trait pre-conditions audit (2026-04-28)**: every method's pre
 now matches what its Portable free fn requires for panic freedom — a
@@ -131,7 +132,7 @@ mode under the thin-wrapper pattern.
 | `t1_deserialize` | ✅ | ✅ | ❌ | `Encoding.simple_bit_unpack` width 10 | same file |
 | `ntt` | 🟡 | 🟡 | ✅ | `Ntt.ntt` flat-256 | portable in admit (Tier-3 USER); AVX2 verifies |
 | `invert_ntt_montgomery` | 🟡 | 🟡 | ❌ | `Ntt.intt` flat-256 | portable in admit; AVX2 has 15 errors in `Simd.Avx2.Invntt.fst:894-941` (wave 3E, **pre-budgeted admit**) |
-| `reduce` | ✅ (relaxed 04fd066f0; loop fixed) | ✅ | ✅ | per-lane centered Barrett `mod_q` | both verify |
+| `reduce` | ✅ (relaxed 04fd066f0; loop fixed) | ✅ (Portable impl closed `c91f0b413`) | 🟡 (AVX2 body admit; needs Vec256↔f_repr) | per-lane centered Barrett `mod_q` | Portable trait method has full proof; AVX2 admit pending model bridge |
 
 ## Pre-budgeted admits
 

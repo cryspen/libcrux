@@ -246,37 +246,34 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   Operations method. Estimate 20-30 min per method × ~21 methods ×
   2 impls (Portable rarely needs translation; AVX2 needs all 21).
 
-### Libcrux_ml_dsa.Simd.Portable.f_reduce loop_invariant attempt (2026-04-28)
-- **File / lines**: `libcrux-ml-dsa/src/simd/portable.rs:337-342`
-- **Annotation**: still `hax_lib::fstar!("admit ()")` after a
-  loop_invariant + Classical.forall_intro attempt was reverted at the
-  20-min wall-clock per Hard Rule #3.
-- **Phase added**: 2026-04-28 (Step 7 first attempt).
-- **Diagnosis**: Bridge lemma `lemma_reduce_lane_commute` lands cleanly
-  in `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`
-  (verified via fstar-mcp incremental typechecker).  Plumbing it
-  through the impl method's for-loop tried a `loop_invariant!` carrying
-  `reduce_lane_post` directly + a per-iteration `Classical.forall_intro pf`
-  to apply the bridge.  F* timed out (Z3 cancelled at rlimit 80) on the
-  per-iteration subtyping check (`Libcrux_ml_dsa.Simd.Portable.fst:942`),
-  with the closure-bound `simd_units` rebinding losing the connection
-  to the outside `_orig` clone.
-- **Suggested mitigation**: change the loop_invariant to thread the
-  *free-fn post shape* (i.e. `is_i32b_array_opaque 8380416` +
-  `Spec.MLDSA.Math.mod_q` congruence) instead of `reduce_lane_post`,
-  then run the bridge lemma after the loop via
-  `Classical.forall_intro_2` over both `j<32` and `k<8`.  This
-  decouples per-iteration sequence-update reasoning from the bridge
-  step; per-iteration step becomes a transparent
-  `Hax.Folds.fold_range`-style update where free-fn-post shape carries
-  through with a simpler refinement.  Alternative: factor a
-  `reduce_one : t_Coefficients -> t_Coefficients` wrapper at the impl
-  layer with the trait-shape post stated in the wrapper's `ensures`,
-  invoking the bridge lemma in the wrapper body — F* discharges
-  small functions more reliably than long impl-record bodies under
-  the global `--z3rlimit 80`.
-- **Bridge lemma kept** in `Hacspec_ml_dsa.Commute.Chunk.fst` for the
-  next attempt; no admit needed there.
+### Libcrux_ml_dsa.Simd.Avx2.f_reduce body admit (Step 7 deferred)
+- **File / lines**: `libcrux-ml-dsa/src/simd/avx2.rs:363-368`
+- **Annotation**: `hax_lib::fstar!("admit ()")` still in place.
+- **Phase added**: 2026-04-28 (Step 7 second-half deferral).
+- **Diagnosis**: The Portable side closes with the bridge lemma + the
+  free-fn-post-shape loop invariant (commit `c91f0b413`).  AVX2 is
+  blocked at a more fundamental level: the free fn
+  `arithmetic::reduce` proves
+  `forall i. to_i32x8 future i == Spec.MLDSA.Math.barrett_red (to_i32x8 input i)`,
+  but `f_repr` for AVX2 is implemented via
+  `vector_type::to_coefficient_array(self, &mut result)` whose post in
+  the extracted F* (`Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst:35-44`)
+  is **length-preservation only** — no link from `Seq.index out i` to
+  `(to_i32x8 value.f_value).[i]`.  Underlying intrinsic
+  `mm256_storeu_si256_i32` is an `assume val` with no spec.
+- **Suggested mitigation**: strengthen
+  `Libcrux_intrinsics.Avx2.mm256_storeu_si256_i32`'s post (or
+  `to_coefficient_array`'s post) so that
+  `Seq.index out_future i == (to_i32x8 value.f_value).[i]`.  Once
+  that lemma exists, the same loop-invariant + `Classical.forall_intro`
+  pattern Portable uses applies, with one extra per-lane reveal to
+  bridge `barrett_red` to `is_i32b 8380416 + (v r) % q == (v in) % q`.
+  AVX2 reduce closes once the Vec256 ↔ f_repr translation is in place;
+  same bridge unblocks all 21 AVX2 trait methods.
+- **Out of 20-min budget for this session**: cross-cutting AVX2 model
+  change — defer to its own session or to the SIMD-model unification
+  effort tracked in
+  `libcrux-ml-kem/proofs/simd-model-unification-plan.md`.
 
 ### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)
