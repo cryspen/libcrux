@@ -1803,21 +1803,17 @@ let lemma_add_standard_error_reduce_lane
     (plain: P.t_FieldElement) :
     Lemma (requires
             mont_form_lane myself_lane plain /\
-            (v normal_lane * 169) % 3329 == (v myself_lane * 1353 * 169) % 3329 /\
-            (* normal = mont_mul(myself, 1353) ⇒ v normal % q == v myself * 1353 * 169 % q *)
+            (* From `mont_mul(myself, 1353)` post: v normal % q == v myself * 1353 * 169 % q *)
             v normal_lane % 3329 == (v myself_lane * 1353 * 169) % 3329 /\
             v sum_lane == v normal_lane + v error_lane /\
             v red_lane % 3329 == v sum_lane % 3329)
           (ensures
             i16_to_spec_fe red_lane
-              == P.impl_FieldElement__add (i16_to_spec_fe normal_lane) (i16_to_spec_fe error_lane) /\
-            i16_to_spec_fe normal_lane == plain)
+              == P.impl_FieldElement__add plain
+                   (i16_to_spec_fe error_lane))
   = (* Step 1: per-lane to_standard_domain finalize: `i16_to_spec_fe normal_lane == plain`. *)
     lemma_to_standard_domain_finalize_fe myself_lane normal_lane plain;
-    (* Step 2: per-lane add commute: i16_to_spec_fe (normal + error) ==
-       FE.add (i16_to_spec_fe normal) (i16_to_spec_fe error).
-       But we have a Barrett-reduced result `red_lane`, so first show
-       i16_to_spec_fe red_lane == i16_to_spec_fe sum_lane. *)
+    (* Step 2: barrett: i16_to_spec_fe red == i16_to_spec_fe sum. *)
     lemma_barrett_fe_commute sum_lane red_lane;
     (* Step 3: lift the int sum to the FE-add equation. *)
     lemma_add_fe_commute_plain normal_lane error_lane sum_lane

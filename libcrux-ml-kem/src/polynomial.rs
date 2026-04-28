@@ -564,6 +564,32 @@ fn to_standard_domain<T: Operations>(vector: T) -> T {
 /// post-Barrett.  Note `1353 = R² mod q` ≠ `1441 = R²/128 mod q` — the
 /// distinction is the missing `· 128⁻¹` factor that ONLY applies to the
 /// INTT track (where `invert_ntt_montgomery` skips its FIPS-203 finalize).
+// Phase 7a Step 7 (agent-trackD, 2026-04-28): F* per-lane and poly-level
+// commute lemmas are landed in `Hacspec_ml_kem.Commute.Chunk` (verified):
+//   - `mont_form_lane`, `mont_form_chunk`: opaque per-lane/chunk
+//      standard-domain (`· R⁻¹`) form predicate.
+//   - `lemma_to_standard_domain_finalize_fe`: per-lane consumer mirror of
+//      `lemma_intt_mont_finalize_fe`.
+//   - `lemma_add_standard_error_reduce_lane`: full lane bridge
+//      (mont_mul + add + barrett ⟹ FE-add equation).
+//   - `lemma_add_standard_error_reduce_commute`: poly-level Tier-1 commute
+//      assembling 256 lane equations into the hacspec function identity,
+//      parameterized by a ghost `ntt_product : array t_FieldElement 256`.
+//
+// TODO Step 7.2: The Rust-side `add_standard_error_reduce` body proof
+// strengthening was attempted but Z3 timed out at rlimit 800 on the
+// nested `forall l ntt_lane. mont_form_lane ==> FE-add` invariant —
+// specifically on the loop-accumulator subtyping check (~85 s per query
+// on canceled).  The infrastructure F* lemmas are in place and verified;
+// landing the Rust integration likely needs:
+//   - tighter loop invariant scope (drop the inner `forall ntt_lane`,
+//     keep only specialized per-lane FE-add eq with ntt_product slice
+//     supplied via a ghost param), or
+//   - splitting the body proof across an external Tier-1 helper that
+//     handles the parameterization off Z3's hot path, or
+//   - investigating why `Classical.move_requires` of the lane lemma
+//     incurs the ~85 s cost in this context.
+// Tracking the held work in `proofs/agent-status/agent-trackD.md`.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &error))]
