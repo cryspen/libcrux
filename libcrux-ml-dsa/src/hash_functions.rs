@@ -46,6 +46,7 @@ pub(crate) mod shake256 {
     }
 
     /// A generic Xof trait
+    #[hax_lib::attributes]
     pub(crate) trait Xof {
         /// Initialize the state
         fn init() -> Self;
@@ -57,6 +58,7 @@ pub(crate) mod shake256 {
         fn absorb_final(&mut self, input: &[u8]);
 
         /// Squeeze output bytes
+        #[ensures(|_| future(out).len() == out.len())]
         fn squeeze(&mut self, out: &mut [u8]);
     }
 }
@@ -66,7 +68,10 @@ pub(crate) mod shake128 {
     pub(crate) const BLOCK_SIZE: usize = 168;
     pub(crate) const FIVE_BLOCKS_SIZE: usize = BLOCK_SIZE * 5;
 
+    #[hax_lib::attributes]
     pub(crate) trait Xof {
+        #[requires(true)]
+        #[ensures(|_| future(out).len() == out.len())]
         fn shake128(input: &[u8], out: &mut [u8]);
     }
 
