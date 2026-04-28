@@ -168,6 +168,16 @@ val mm_storeu_bytes_si128_lemma out vec (i:nat {i < 16})
           (ensures Seq.index (I.mm_storeu_bytes_si128 out vec) i == to_u8x16 vec (mk_int i))
           [SMTPat (Seq.index (I.mm_storeu_bytes_si128 out vec) i)]
 
+val mm256_storeu_si256_i32_lemma (out: t_Slice i32) (vec: bv256) (i: nat {i < 8})
+  : Lemma (requires Seq.length out == 8)
+          (ensures Seq.length (I.mm256_storeu_si256_i32 out vec) == 8 /\
+                   Seq.index (I.mm256_storeu_si256_i32 out vec) i == to_i32x8 vec (mk_u64 i))
+          [SMTPat (Seq.index (I.mm256_storeu_si256_i32 out vec) i)]
+
+val mm256_storeu_si256_i32_len_lemma (out: t_Slice i32) (vec: bv256)
+  : Lemma (Seq.length (I.mm256_storeu_si256_i32 out vec) == Seq.length out)
+          [SMTPat (Seq.length (I.mm256_storeu_si256_i32 out vec))]
+
 val update_at_range_bv_lemma
     (f_start: usize) (f_end: _ {v f_end == v f_start + 16})
     (bytes: t_Slice u8{Seq.length bytes >= v f_start + 16})

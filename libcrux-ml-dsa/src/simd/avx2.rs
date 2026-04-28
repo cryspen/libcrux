@@ -361,9 +361,51 @@ impl Operations for AVX2SIMDUnit {
               (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) i)
               (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units}_future j)) i)))"#))]
     fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]) {
-        hax_lib::fstar!("admit ()");
+        #[cfg(hax)]
+        let _orig = simd_units.clone();
+
         for i in 0..simd_units.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+                v $i <= 32 /\
+                (forall (j:nat{j < 32}). j < v $i ==>
+                    (forall (k:nat{k < 8}).
+                        Spec.Intrinsics.to_i32x8
+                            (Seq.index ${simd_units} j).Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                            (mk_u64 k) ==
+                        Spec.MLDSA.Math.barrett_red
+                            (Spec.Intrinsics.to_i32x8
+                                (Seq.index ${_orig} j).Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                                (mk_u64 k)))) /\
+                (forall (j:nat{j < 32}). j >= v $i ==>
+                    Seq.index ${simd_units} j == Seq.index ${_orig} j)"#));
+
             arithmetic::reduce(&mut simd_units[i].value);
         }
+
+        hax_lib::fstar!(r#"
+            let pf (j: nat{j < 32}) : Lemma
+                (ensures Spec.Utils.forall8 (fun (k: nat{k < 8}) ->
+                    Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k))) =
+                reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                    (Spec.Utils.is_i32b_array_opaque 2143289343
+                        (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)));
+                let pfk (k: nat{k < 8}) : Lemma
+                    (ensures Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k)) =
+                    Hacspec_ml_dsa.Commute.Chunk.lemma_barrett_red_bound_and_mod_q
+                        (Spec.Intrinsics.to_i32x8
+                            (Seq.index ${_orig} j).Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
+                            (mk_u64 k));
+                    Hacspec_ml_dsa.Commute.Chunk.lemma_reduce_lane_commute
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${_orig} j)) k)
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)) k)
+                in
+                Classical.forall_intro pfk
+            in
+            Classical.forall_intro pf
+        "#);
     }
 }

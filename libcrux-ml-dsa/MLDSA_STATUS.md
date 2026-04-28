@@ -1,15 +1,14 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 6 + hints enabled + Step 7 Portable closed (2026-04-28 session, tip `c91f0b413`). AVX2 deferred.
+**Tip**: Step 7 AVX2 closed (2026-04-28 session). Both Portable and AVX2 `Operations::reduce` discharge without body admits.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Was 97/41/56/0; the +1 each is `Hacspec_ml_dsa.Commute.Chunk.fst` (new) which now hosts `lemma_reduce_lane_commute`.
+**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Same totals as prior session — the AVX2 reduce body proof landed inside `Libcrux_ml_dsa.Simd.Avx2.fst` (already CHECK).
 
-**This session's deltas (3faaff641 → c91f0b413)**:
-1. Step 6: created `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst` with module header + Hacspec imports + `lemma_reduce_lane_commute` (verified via fstar-mcp; reveals `reduce_lane_post` opacity to bridge centered-Barrett-bound + raw-mod congruence into trait shape).
-2. Makefile: enabled F* hints (`ENABLE_HINTS = --use_hints --record_hints`) matching ml-kem, plus added the new commute dir to `FSTAR_INCLUDE_DIRS_EXTRA`. Hints accumulate as cache invalidates (4+ files now recorded).
-3. Step 7 Portable: `Operations::reduce` body discharges without admit. Refined approach landed: loop_invariant carries the *free-fn post* shape (`is_i32b_array_opaque + Spec.MLDSA.Math.mod_q` congruence) that `arithmetic::reduce` directly proves; after-loop `Classical.forall_intro` over `j<32 / k<8` invokes the bridge to convert into `reduce_lane_post`. First Step-7 attempt with `reduce_lane_post` directly in the invariant Z3-cancelled at rlimit 80 — abandoned per Hard Rule #3 and the refined approach replaced it.
-4. Step 7 AVX2 deferred — cross-cutting Vec256↔f_repr translation gap (intrinsic `mm256_storeu_si256_i32` lacks a content post; `to_coefficient_array`'s post is length-only). Documented in `outstanding-admits.md`.
+**This session's deltas (Step 7 AVX2)**:
+1. **Piece 1 — intrinsic spec strengthening** (`libcrux-ml-dsa/proofs/fstar/spec/Spec.Intrinsics.fsti`, `libcrux-ml-dsa/src/simd/avx2/vector_type.rs`): added `mm256_storeu_si256_i32_lemma` + `mm256_storeu_si256_i32_len_lemma` (SMTPat axioms in `Spec.Intrinsics.fsti`) bridging `Seq.index (mm256_storeu_si256_i32 out vec) i` to `to_i32x8 vec (mk_u64 i)`. Lifted `to_coefficient_array`'s ensures to carry the per-lane content guarantee. Self-contained in mldsa-only spec — no change to the shared `Libcrux_intrinsics.Avx2.fst`, so ml-kem is unaffected.
+2. **Piece 2 — Barrett-reduction bridge** (`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`): proved `lemma_barrett_red_bound_and_mod_q (x: i32) : Lemma (requires is_i32b 2143289343 x) (ensures is_i32b 8380416 (barrett_red x) /\ ...)` via opacity reveals + `FStar.Math.Lemmas.lemma_mod_sub`. rlimit 200.
+3. **Piece 3 — AVX2 reduce body** (`libcrux-ml-dsa/src/simd/avx2.rs:363-368`): replaced `admit ()` with `_orig.clone()` + loop_invariant carrying the `to_i32x8 (...) == barrett_red (...)` shape that `arithmetic::reduce` proves + after-loop `Classical.forall_intro` over `j<32 / k<8` invoking both `lemma_barrett_red_bound_and_mod_q` and `lemma_reduce_lane_commute` to land `reduce_lane_post`. Mirrors the Portable Step-7 template (`c91f0b413`) but with Vec256 lanes via `Spec.Intrinsics.to_i32x8`.
 
 **Operations trait pre-conditions audit (2026-04-28)**: every method's pre
 now matches what its Portable free fn requires for panic freedom — a
@@ -132,7 +131,7 @@ mode under the thin-wrapper pattern.
 | `t1_deserialize` | ✅ | ✅ | ❌ | `Encoding.simple_bit_unpack` width 10 | same file |
 | `ntt` | 🟡 | 🟡 | ✅ | `Ntt.ntt` flat-256 | portable in admit (Tier-3 USER); AVX2 verifies |
 | `invert_ntt_montgomery` | 🟡 | 🟡 | ❌ | `Ntt.intt` flat-256 | portable in admit; AVX2 has 15 errors in `Simd.Avx2.Invntt.fst:894-941` (wave 3E, **pre-budgeted admit**) |
-| `reduce` | ✅ (relaxed 04fd066f0; loop fixed) | ✅ (Portable impl closed `c91f0b413`) | 🟡 (AVX2 body admit; needs Vec256↔f_repr) | per-lane centered Barrett `mod_q` | Portable trait method has full proof; AVX2 admit pending model bridge |
+| `reduce` | ✅ (relaxed 04fd066f0; loop fixed) | ✅ (Portable impl closed `c91f0b413`) | ✅ (AVX2 impl closed; this session) | per-lane centered Barrett `mod_q` | Both Portable and AVX2 trait methods have full proofs |
 
 ## Pre-budgeted admits
 

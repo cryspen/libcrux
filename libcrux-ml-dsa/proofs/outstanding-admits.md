@@ -246,34 +246,31 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
   Operations method. Estimate 20-30 min per method × ~21 methods ×
   2 impls (Portable rarely needs translation; AVX2 needs all 21).
 
-### Libcrux_ml_dsa.Simd.Avx2.f_reduce body admit (Step 7 deferred)
-- **File / lines**: `libcrux-ml-dsa/src/simd/avx2.rs:363-368`
-- **Annotation**: `hax_lib::fstar!("admit ()")` still in place.
-- **Phase added**: 2026-04-28 (Step 7 second-half deferral).
-- **Diagnosis**: The Portable side closes with the bridge lemma + the
-  free-fn-post-shape loop invariant (commit `c91f0b413`).  AVX2 is
-  blocked at a more fundamental level: the free fn
-  `arithmetic::reduce` proves
-  `forall i. to_i32x8 future i == Spec.MLDSA.Math.barrett_red (to_i32x8 input i)`,
-  but `f_repr` for AVX2 is implemented via
-  `vector_type::to_coefficient_array(self, &mut result)` whose post in
-  the extracted F* (`Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst:35-44`)
-  is **length-preservation only** — no link from `Seq.index out i` to
-  `(to_i32x8 value.f_value).[i]`.  Underlying intrinsic
-  `mm256_storeu_si256_i32` is an `assume val` with no spec.
-- **Suggested mitigation**: strengthen
-  `Libcrux_intrinsics.Avx2.mm256_storeu_si256_i32`'s post (or
-  `to_coefficient_array`'s post) so that
-  `Seq.index out_future i == (to_i32x8 value.f_value).[i]`.  Once
-  that lemma exists, the same loop-invariant + `Classical.forall_intro`
-  pattern Portable uses applies, with one extra per-lane reveal to
-  bridge `barrett_red` to `is_i32b 8380416 + (v r) % q == (v in) % q`.
-  AVX2 reduce closes once the Vec256 ↔ f_repr translation is in place;
-  same bridge unblocks all 21 AVX2 trait methods.
-- **Out of 20-min budget for this session**: cross-cutting AVX2 model
-  change — defer to its own session or to the SIMD-model unification
-  effort tracked in
-  `libcrux-ml-kem/proofs/simd-model-unification-plan.md`.
+### Libcrux_ml_dsa.Simd.Avx2.f_reduce body admit (RESOLVED)
+- **Resolution**: closed in this session via three pieces:
+  1. `Spec.Intrinsics.fsti` — added `mm256_storeu_si256_i32_lemma` (and
+     length lemma) as SMTPat axioms bridging `Seq.index ... i` to
+     `to_i32x8 vec (mk_u64 i)`.  Self-contained in mldsa-only spec; no
+     change to the shared `Libcrux_intrinsics.Avx2.fst`, so ml-kem is
+     unaffected.
+  2. `to_coefficient_array` ensures lifted (Rust source +
+     `Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst`) to carry per-lane
+     content guarantee `Seq.index out_future i == to_i32x8 value.f_value (mk_u64 i)`.
+  3. `Hacspec_ml_dsa.Commute.Chunk.fst` — proved
+     `lemma_barrett_red_bound_and_mod_q` bridging the raw
+     `Spec.MLDSA.Math.barrett_red` shape to (centered Barrett bound) +
+     (raw `% q` congruence).  rlimit 200, opacity reveals +
+     `FStar.Math.Lemmas.lemma_mod_sub`.
+  4. `src/simd/avx2.rs:363-368` reduce body now uses the
+     loop_invariant + after-loop `Classical.forall_intro` (over
+     `j<32 / k<8`) pattern matching the Portable template
+     (`c91f0b413`).  No admits.
+- **Template value**: Pieces 1+2 unblock all 21 AVX2 trait methods
+  whose posts cite `f_repr`.  Step 8/9 (`add` / `subtract` /
+  `montgomery_multiply` / `shift_left_then_reduce` / `power2round` /
+  `decompose` / `compute_hint` / `use_hint` / `infinity_norm_exceeds`)
+  in subsequent sessions: the Vec256↔f_repr bridge from Piece 1 is
+  now in place; only per-method commute lemmas remain.
 
 ### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)
