@@ -110,7 +110,8 @@ impl Operations for Coefficients {
     #[requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) /\
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#))]
     #[ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.use_hint_lane_post
@@ -166,6 +167,9 @@ impl Operations for Coefficients {
         arithmetic::power2round(t0, t1)
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $randomness / 3 <= 4294967295 /\
+        Seq.length $randomness / 3 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= 0 /\
@@ -175,6 +179,9 @@ impl Operations for Coefficients {
         sample::rejection_sample_less_than_field_modulus(randomness, out)
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $randomness * 2 <= 4294967295 /\
+        Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -2 /\ v (Seq.index ${out}_future i) <= 2)"#))]
@@ -183,6 +190,9 @@ impl Operations for Coefficients {
         sample::rejection_sample_less_than_eta_equals_2(randomness, out)
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $randomness * 2 <= 4294967295 /\
+        Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -4 /\ v (Seq.index ${out}_future i) <= 4)"#))]
@@ -191,7 +201,10 @@ impl Operations for Coefficients {
         sample::rejection_sample_less_than_eta_equals_4(randomness, out)
     }
 
-    #[requires(fstar!(r#"v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19"#))]
+    #[requires(fstar!(r#"
+        (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+        Seq.length $serialized == 1 + v $gamma1_exponent /\
+        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent)) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_exponent: usize) {
@@ -199,13 +212,17 @@ impl Operations for Coefficients {
         encoding::gamma1::serialize(simd_unit, serialized, gamma1_exponent)
     }
 
-    #[requires(fstar!(r#"v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19"#))]
+    #[requires(fstar!(r#"
+        (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+        Seq.length $serialized == 1 + v $gamma1_exponent"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
         hax_lib::fstar!("admit ()");
         encoding::gamma1::deserialize(serialized, out, gamma1_exponent)
     }
 
-    #[requires(serialized.len() == 4 || serialized.len() == 6)]
+    #[requires(fstar!(r#"
+        (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
+        Spec.Utils.is_i32b_array_opaque (pow2 (Seq.length $serialized)) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
@@ -213,6 +230,14 @@ impl Operations for Coefficients {
         encoding::commitment::serialize(simd_unit, serialized)
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $serialized == (match $eta with
+                                   | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                   | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
+        Spec.Utils.is_i32b_array_opaque (match $eta with
+                                         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+                                         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+                                        (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn error_serialize(eta: Eta, simd_unit: &Coefficients, serialized: &mut [u8]) {
@@ -220,6 +245,10 @@ impl Operations for Coefficients {
         encoding::error::serialize(eta, simd_unit, serialized)
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $serialized == (match $eta with
+                                   | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                   | Libcrux_ml_dsa.Constants.Eta_Four -> 4)"#))]
     #[ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
@@ -233,6 +262,9 @@ impl Operations for Coefficients {
         encoding::error::deserialize(eta, serialized, out);
     }
 
+    #[requires(fstar!(r#"
+        Seq.length $out == 13 /\
+        Spec.Utils.is_i32b_array_opaque (pow2 13) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
@@ -240,11 +272,13 @@ impl Operations for Coefficients {
         encoding::t0::serialize(simd_unit, out)
     }
 
+    #[requires(serialized.len() == 13)]
     fn t0_deserialize(serialized: &[u8], out: &mut Coefficients) {
         hax_lib::fstar!("admit ()");
         encoding::t0::deserialize(serialized, out)
     }
 
+    #[requires(out.len() == 10)]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
@@ -252,6 +286,7 @@ impl Operations for Coefficients {
         encoding::t1::serialize(simd_unit, out);
     }
 
+    #[requires(serialized.len() == 10)]
     #[ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= 0 /\

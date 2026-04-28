@@ -30,6 +30,44 @@ pub(crate) fn int_is_i32(i: Int) -> bool {
         r#"
 (* ----- per-lane opaque posts citing Hacspec_ml_dsa.* ----- *)
 
+(* ----- per-method panic-freedom pre-condition packages -----
+   The trait posts cite per-lane atomic predicates (above); the trait
+   pre-conditions for the encoding/sample methods need an analogous
+   opaque packaging of "all 8 lanes are bounded" / "hint is binary"
+   so consumer modules can pass the obligation around without paying
+   the cost of expanding a per-lane `forall` at every call site.
+   Pattern mirrors `bounded_pos_i16_array` in
+   `libcrux-ml-kem/src/vector/traits.rs::spec`. *)
+
+(* hint array of 8 lanes where each lane is 0 or 1. Used by use_hint
+   trait pre. *)
+let is_binary_array_8 (x: t_Array i32 (mk_usize 8)) : prop =
+  forall (i: nat). i < 8 ==>
+    (v (Seq.index x i) == 0 \/ v (Seq.index x i) == 1)
+
+[@@ "opaque_to_smt"]
+let is_binary_array_8_opaque (x: t_Array i32 (mk_usize 8)) : prop =
+  is_binary_array_8 x
+
+let lemma_is_binary_array_8_lookup (x: t_Array i32 (mk_usize 8)) (i: nat)
+    : Lemma (requires is_binary_array_8_opaque x /\ i < 8)
+            (ensures v (Seq.index x i) == 0 \/ v (Seq.index x i) == 1)
+            [SMTPat (Seq.index x i); SMTPat (is_binary_array_8_opaque x)] =
+  reveal_opaque (`%is_binary_array_8_opaque) (is_binary_array_8_opaque x)
+
+let lemma_is_binary_array_8_intro (x: t_Array i32 (mk_usize 8))
+    : Lemma (requires forall (i: nat). i < 8 ==>
+                       (v (Seq.index x i) == 0 \/ v (Seq.index x i) == 1))
+            (ensures is_binary_array_8_opaque x) =
+  reveal_opaque (`%is_binary_array_8_opaque) (is_binary_array_8_opaque x)
+
+(* For the per-lane "absolute value bounded by pow2 d" patterns
+   appearing in gamma1_serialize / commitment_serialize / t0_serialize
+   / error_serialize trait pres, we reuse `Spec.Utils.is_i32b_array_opaque`
+   directly: `is_i32b_array_opaque (pow2 d) (f_repr simd_unit)` is the
+   same opaque form as ML-KEM's `bounded_pos_i16_array d v`. No new
+   predicate needed. *)
+
 (* infinity_norm_exceeds: result is true iff some lane's signed absolute
    value (the impl's actual computation) meets or exceeds bound. Compatible
    with the trait pre `is_i32b_array_opaque FIELD_MAX simd_unit` (no

@@ -90,7 +90,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
+        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit}) /\
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque (f_repr ${hint})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.use_hint_lane_post
@@ -144,7 +145,9 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     // Since each coefficient could potentially be sampled with 3 bytes, we expect
     // `randomness` to hold 24 bytes.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $randomness / 3 <= 4294967295 /\
+        Seq.length $randomness / 3 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= 0 /\
@@ -153,13 +156,17 @@ pub(crate) trait Operations: Copy + Clone + Repr {
 
     // Since each coefficient could potentially be sampled with half a byte,
     // we expect `randomness` to hold 4 bytes.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $randomness * 2 <= 4294967295 /\
+        Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -2 /\ v (Seq.index ${out}_future i) <= 2)"#))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
 
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $randomness * 2 <= 4294967295 /\
+        Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -4 /\ v (Seq.index ${out}_future i) <= 4)"#))]
@@ -170,25 +177,42 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // Gamma1: serialized length is 8 * (gamma1_exponent + 1) / 8 = gamma1_exponent + 1 bytes
     // per 8-coefficient SIMD unit, but with each coefficient using w = gamma1_exponent + 1 bits
     // (w in {18, 20}). For 8 lanes that's 18 or 20 bytes.
-    #[hax_lib::requires(fstar!(r#"v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19"#))]
+    #[hax_lib::requires(fstar!(r#"
+        (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+        Seq.length $serialized == 1 + v $gamma1_exponent /\
+        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent)) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize);
-    #[hax_lib::requires(fstar!(r#"v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19"#))]
+    #[hax_lib::requires(fstar!(r#"
+        (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+        Seq.length $serialized == 1 + v $gamma1_exponent"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize);
 
     // Commitment: 4 bytes for gamma2 = 261888 (4-bit packing) or 6 for gamma2 = 95232 (6-bit).
-    #[hax_lib::requires(serialized.len() == 4 || serialized.len() == 6)]
+    #[hax_lib::requires(fstar!(r#"
+        (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
+        Spec.Utils.is_i32b_array_opaque (pow2 (Seq.length $serialized)) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]);
 
     // Error: 3 bytes for eta = 2 (3-bit), 4 bytes for eta = 4 (4-bit).
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $serialized == (match $eta with
+                                   | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                   | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
+        Spec.Utils.is_i32b_array_opaque (match $eta with
+                                         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+                                         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+                                        (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]);
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $serialized == (match $eta with
+                                   | Libcrux_ml_dsa.Constants.Eta_Two -> 3
+                                   | Libcrux_ml_dsa.Constants.Eta_Four -> 4)"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
@@ -200,19 +224,21 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 
     // t0: bit_pack with width 13.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(fstar!(r#"
+        Seq.length $out == 13 /\
+        Spec.Utils.is_i32b_array_opaque (pow2 13) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(serialized.len() == 13)]
     fn t0_deserialize(serialized: &[u8], out: &mut Self);
 
     // t1: simple_bit_pack with width 10.
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(out.len() == 10)]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]); // out len 10
-    #[hax_lib::requires(true)]
+    #[hax_lib::requires(serialized.len() == 10)]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (f_repr ${out}_future) i) >= 0 /\
