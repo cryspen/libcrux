@@ -1,6 +1,6 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `8358b1093` (track A — Phase 7a Step 4 done, 2026-04-28)
+**Branch**: `trait-opacify`  **Tip**: `8ff3ac14c` (track A — Phase 7a Step 4 + Step 7.1 closed-form lemma done; Step 7.2 held, 2026-04-28)
 
 ## Phase 7a status
 
@@ -11,6 +11,9 @@
 | 7a Step 1 | inverse NTT layer 1 hacspec bridge (track A, Bridges.fst) | ✅ verified `ba8681b38` |
 | 7a Step 9 | scaling-chain doc comments (track A) | ✅ verified `8d92695bf` |
 | 7a Step 4 | strengthen invert_ntt_at_layer_1 post (citing Bridges lemma) | ✅ verified `8358b1093` |
+| 7a Step 7.1 | F* lemmas for to_standard_domain track (Chunk.fst) | ✅ verified `c07feb91c` (merge of trackD) |
+| 7a Step 7.1+ | closed-form lane lemma (Option B infra) | ✅ verified `8ff3ac14c` |
+| 7a Step 7.2 | strengthen add_standard_error_reduce post (Rust integration) | ⏸ HELD — Z3 saturated on 2 invariant approaches; see TODO in `src/polynomial.rs` |
 | 7a Step 2 | layer 2/3 inverse NTT bridges | ⏸ pending |
 | 7a Step 3 | cross-vector layer_4_plus bridge | ⏸ pending |
 | 7a Step 5 | strengthen invert_ntt_montgomery post | ⏸ pending |
