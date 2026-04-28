@@ -8,7 +8,15 @@ pub(crate) const FIELD_MAX: u32 = 8380416;
 
 pub(crate) const FIELD_MID: u32 = 4190208;
 
-pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MID;
+// Option C (above-trait request 2026-04-28): widened from FIELD_MID
+// (q/2) to FIELD_MAX (q-1) so the `reduce → ntt` chain composes
+// directly.  `Operations::reduce`'s post is `is_i32b_array_opaque
+// FIELD_MAX`, which now matches `Operations::ntt`'s pre.  Existing
+// callers passing FIELD_MID-bounded inputs still satisfy the wider
+// bound (FIELD_MID < FIELD_MAX).  Internal NTT peak rises from
+// FIELD_MID + 8q ≈ 71M to FIELD_MAX + 8q ≈ 75M — still ~28× under
+// i32::MAX, so panic-free proofs hold.
+pub(crate) const NTT_BASE_BOUND: u32 = FIELD_MAX;
 
 const COEFFICIENTS_IN_SIMD_UNIT: usize = 8;
 
