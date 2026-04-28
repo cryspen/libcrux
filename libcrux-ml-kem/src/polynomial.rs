@@ -346,6 +346,30 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
     );
 }
 
+/// Compute `myself - InvNTT(b)` lane-wise, with the `· 128⁻¹` finalize of
+/// the inverse NTT fused into the per-lane `mont_mul(_, 1441)` here (saving
+/// ~80 SIMD ops per call vs running invert_ntt_montgomery's finalize +
+/// a separate scale).
+///
+/// Scaling on entry:
+/// - `myself` is **plain** (`v c ≡ α mod q`) — caller deserialized v from
+///   the ciphertext via `decompress_then_deserialize_ring_element_v`,
+///   which produces plain coefficients.
+/// - `b` is in libcrux's **`·R⁻¹` form** (`v c ≡ β · R⁻¹ mod q`) — output
+///   of `invert_ntt_montgomery`, which preserves the `·R⁻¹` form set by
+///   `ntt_multiply` (each `mont_mul` carries one `·R⁻¹` factor through).
+///
+/// The fused `mont_mul(b, 1441)` step:
+///   `mont_mul(b, 1441) = (β · R⁻¹) · 1441 · R⁻¹ = β · R²/128 · R⁻²
+///                       = β · 1/128 (mod q)`
+/// where `1441 = R²/128 mod q` per `pq-crystals/kyber/main/ref/ntt.c:106`.
+/// This simultaneously discharges the missing `· 128⁻¹` from
+/// `invert_ntt_montgomery`'s 7-layer GS chain AND brings the lane back
+/// to plain form (`v r ≡ β · 128⁻¹ mod q`), so `myself - mont_mul(b, 1441)`
+/// is plain-form arithmetic.  Result is plain post-Barrett.
+///
+/// See `src/invert_ntt.rs` (above `invert_ntt_montgomery`) for the
+/// upstream chain doc.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(4095, &myself))]
@@ -396,6 +420,18 @@ fn subtract_reduce<Vector: Operations>(
     b
 }
 
+/// Compute `myself + message + InvNTT(result)` lane-wise — same fused
+/// `mont_mul(result, 1441)` pattern as `subtract_reduce`.
+///
+/// Scaling on entry:
+/// - `myself` (= `error_2` at the call site `compute_ring_element_v` in
+///   matrix.rs): plain (`v ≡ α mod q`).
+/// - `message`: plain (output of `deserialize_then_decompress_message`).
+/// - `result`: `·R⁻¹` form (output of `invert_ntt_montgomery`).
+///
+/// `mont_mul(result, 1441)` brings `result` to plain (per the fused-finalize
+/// algebra documented above `subtract_reduce`), then plain + plain + plain
+/// → plain, Barrett-reduced into `[0, q)`.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &myself) & (spec::is_bounded_poly(3328, &message)))]
@@ -451,6 +487,17 @@ fn add_message_error_reduce<Vector: Operations>(
     result
 }
 
+/// Compute `InvNTT(myself) + error` lane-wise — fused `mont_mul(myself, 1441)`
+/// pattern as `subtract_reduce`.
+///
+/// Scaling on entry:
+/// - `myself`: `·R⁻¹` form (output of `invert_ntt_montgomery` at the call
+///   site `compute_vector_u` in matrix.rs).
+/// - `error` (= `error_1[i]`): plain, small (`is_bounded_poly(7)` — direct
+///   from CBD sampling).
+///
+/// `mont_mul(myself, 1441)` brings `myself` to plain (fused finalize), then
+/// `plain + plain → plain`, Barrett-reduced.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(7, &error))]
@@ -499,6 +546,24 @@ fn to_standard_domain<T: Operations>(vector: T) -> T {
     T::montgomery_multiply_by_constant(vector, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
+/// Compute `to_standard_domain(myself) + error` lane-wise — different
+/// fused-finalize pattern from the three INTT-track reduce fns above.
+///
+/// Scaling on entry:
+/// - `myself` (= `t_as_ntt[i]` at the call site `compute_As_plus_e` in
+///   matrix.rs): `·R⁻¹` form (output of accumulated `ntt_multiply` chain).
+///   This is the **post-matrix-multiply** path — there is NO inverse NTT
+///   upstream here; `myself` is in the NTT domain still.
+/// - `error` (= `error_as_ntt[i]`): plain (sampled CBD then NTT'd; NTT
+///   preserves plain input scaling — see `src/ntt.rs` cross-spec test
+///   `ntt_matches_spec`).
+///
+/// `to_standard_domain(myself) = mont_mul(myself, R²) = mont_mul(myself, 1353)`
+/// applies a single `· R²` factor: `(α · R⁻¹) · 1353 · R⁻¹ = α · R² · R⁻²
+/// = α (mod q)`, bringing `myself` to plain form.  Result is plain
+/// post-Barrett.  Note `1353 = R² mod q` ≠ `1441 = R²/128 mod q` — the
+/// distinction is the missing `· 128⁻¹` factor that ONLY applies to the
+/// INTT track (where `invert_ntt_montgomery` skips its FIPS-203 finalize).
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, &error))]

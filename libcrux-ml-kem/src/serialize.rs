@@ -434,6 +434,10 @@ fn deserialize_then_decompress_11<Vector: Operations>(
     fstar!(r#"Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $result == 
         Spec.MLKEM.byte_decode_then_decompress (v $COMPRESSION_FACTOR) $serialized"#)
 )]
+/// Decompress + decode the ciphertext-u ring element.  Output lanes are
+/// in **plain** form (`v c ≡ decompress_d(byte_decode(input)) mod q`).
+/// This is fed into `ntt_vector_u` which preserves plain form (Mont-form
+/// zetas cancel with `mont_mul`'s `·R⁻¹`).
 pub(super) fn deserialize_then_decompress_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     Vector: Operations,
@@ -513,6 +517,10 @@ fn deserialize_then_decompress_5<Vector: Operations>(
     fstar!(r#"Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $result == 
         Spec.MLKEM.decode_then_decompress_v #${K} $serialized"#)
 )]
+/// Decompress + decode the ciphertext-v ring element.  Output lanes are
+/// in **plain** form (`v c ≡ decompress_d(byte_decode(input)) mod q`).
+/// This is consumed by `subtract_reduce` (in polynomial.rs) as `myself`,
+/// the LHS in `v - InvNTT(s · u)` per FIPS-203 Algorithm 14.
 pub(super) fn deserialize_then_decompress_ring_element_v<
     const K: usize,
     const COMPRESSION_FACTOR: usize,

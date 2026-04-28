@@ -325,6 +325,11 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 #[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 7) ${result} /\
     Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector $result ==
         Spec.MLKEM.sample_poly_cbd $ETA $randomness"#))]
+/// CBD sampling.  Output lanes are in **plain** form (`v c ≡ α mod q`)
+/// where α is a small CBD-distributed integer (η ∈ {2, 3}).  No Montgomery
+/// scaling is applied — sampled values feed directly into NTT, and
+/// `ntt_binomially_sampled_ring_element` preserves plain form (see
+/// `src/ntt.rs` and the `ntt_matches_spec` cross-spec test).
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {

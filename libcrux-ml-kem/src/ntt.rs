@@ -258,6 +258,18 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
     }
 }
 
+/// Forward NTT of a CBD-sampled polynomial.
+///
+/// **Scaling**: input lane `v c ≡ α (mod q)` is in **plain** form (sample
+/// output is plain — small CBD ints, no Montgomery scaling). NTT preserves
+/// the input scaling: zetas are stored in Mont form (`v ζ_M ≡ ζ · R mod q`),
+/// and each butterfly does `mont_mul(b, ζ_M) = b · ζ · R · R⁻¹ = b · ζ`
+/// — the `· R` of zeta cancels with `mont_mul`'s built-in `· R⁻¹` factor.
+/// So output is plain too.
+///
+/// Cross-spec runtime evidence: `ntt_matches_spec` test in this file
+/// `assert_eq!`s `lift_poly(impl_after_ntt) == hacspec_ntt(plain_input)`,
+/// confirming the impl preserves plain form through the full forward NTT.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(spec::is_bounded_poly(3, re))]
@@ -295,6 +307,10 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     re.poly_barrett_reduce()
 }
 
+/// Forward NTT of a decompressed ciphertext-u polynomial.  Same scaling
+/// invariant as `ntt_binomially_sampled_ring_element`: input plain
+/// (decompress output), output plain (NTT preserves form because Mont-form
+/// zetas cancel with `mont_mul`'s `·R⁻¹`).
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, re))]

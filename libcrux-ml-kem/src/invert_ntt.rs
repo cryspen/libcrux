@@ -263,6 +263,34 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     }
 }
 
+/// Run the seven Gentleman-Sande inverse-NTT layers (Montgomery zetas, no
+/// per-layer finalize).  The lane-storage convention here is libcrux's
+/// `·R⁻¹` form: callers (matrix-vector products composed of `ntt_multiply`
+/// + `add_to_ring_element`) hand us coefficients whose i16 value `v c`
+/// satisfies `v c ≡ value · R⁻¹ (mod q)`, where `value` is the FIPS-203
+/// "real" spec value.  Each GS butterfly uses `montgomery_multiply(b, ζ·R)
+/// = b · ζ · R · R⁻¹ = b · ζ`, so the Montgomery scalar of `ζ` cancels
+/// with `mont_mul`'s built-in `· R⁻¹` and the `·R⁻¹` form is preserved.
+///
+/// On exit, `re` represents `ntt_inverse_butterflies(input_real)` still
+/// in `·R⁻¹` form — the missing `· 128⁻¹` finalize that turns the 7-layer
+/// butterfly chain into FIPS-203 `ntt_inverse` is **fused into the next
+/// per-element op** by the caller.  Specifically, the three INTT-track
+/// reduce fns in `polynomial.rs` (`subtract_reduce`,
+/// `add_message_error_reduce`, `add_error_reduce`) immediately follow
+/// `invert_ntt_montgomery` with a single `mont_mul(_, 1441)` step.  The
+/// constant `1441 = R²/128 mod q` (per `pq-crystals/kyber/main/ref/ntt.c`
+/// line 106: `const int16_t f = 1441; // mont^2/128`); on a `·R⁻¹` lane,
+/// `mont_mul(_, 1441) = (·R⁻¹) · 1441 · R⁻¹ = · (R²/128) · R⁻² = · 1/128`,
+/// which simultaneously
+///   (a) discharges the missing `· 128⁻¹` from the 7 GS layers, and
+///   (b) brings the lane back to plain form (`v c ≡ value · 1`).
+///
+/// Cross-spec runtime evidence: `ntt_matches_spec`,
+/// `ntt_multiply_matches_spec`, and `full_ntt_multiply_chain_matches_spec`
+/// in `src/ntt.rs` execute the entire pipeline and `assert_eq!` against
+/// the hacspec reference, confirming that all Montgomery factors cancel
+/// through this chain.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::requires((K <= 4).to_prop() & (spec::is_bounded_poly(K * 3328, re)))]
