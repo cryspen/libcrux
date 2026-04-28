@@ -270,6 +270,10 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn invert_ntt_montgomery(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]);
 
     // Barrett reduce all coefficients
+    #[hax_lib::requires(fstar!(r#"
+        (forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque 2143289343
+                (f_repr (Seq.index ${simd_units} i)))"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         (forall (j:nat). j < 32 ==>
           Spec.Utils.forall8 (fun (i: nat{i < 8}) ->

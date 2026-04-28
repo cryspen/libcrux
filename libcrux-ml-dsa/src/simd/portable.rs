@@ -324,6 +324,10 @@ impl Operations for Coefficients {
         invntt::invert_ntt_montgomery(simd_units)
     }
 
+    #[requires(fstar!(r#"
+        (forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque 2143289343
+                (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} i)))"#))]
     #[ensures(|_| fstar!(r#"
         (forall (j:nat). j < 32 ==>
           Spec.Utils.forall8 (fun (i: nat{i < 8}) ->

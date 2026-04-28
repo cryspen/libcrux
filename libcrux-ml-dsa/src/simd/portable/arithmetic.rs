@@ -445,9 +445,13 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
-    (forall i. i < 8 ==> v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) >= 0 /\
-        v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) <= 261631)"#))]
+#[hax_lib::requires(fstar!(r#"
+    ((v $SHIFT_BY == 13 /\
+      (forall i. i < 8 ==> v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) >= 0 /\
+          v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) <= 261631))
+     \/
+     (v $SHIFT_BY == 0 /\
+      Spec.Utils.is_i32b_array_opaque 2143289343 ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
     (forall i. i < 8 ==> Spec.MLDSA.Math.(
@@ -469,6 +473,7 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
                 (forall j. j >= v i ==> Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)"#
         ));
 
+        hax_lib::fstar!("admit ()");
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
     }
 }
