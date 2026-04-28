@@ -108,3 +108,82 @@ Total wall time: 528 s (8.8 min).
   the hint was recorded) or the borderline rlimit doesn't tolerate
   hint cost.  Worth investigating once Phase 7a is closed —
   re-recording hints might recover the savings.
+
+---
+
+## Reducing F* iter-loop turnaround — proven techniques
+
+Three orthogonal mechanisms.  Use them in this order of preference
+(fastest first):
+
+### α. fstar-mcp `typecheck_buffer` — sub-second feedback
+
+Skip `make` entirely during inner-loop iteration on a single .fst file.
+The fstar-mcp server (port 3001) holds a long-running F* session with
+the file's deps already loaded; `typecheck_buffer` re-verifies the
+buffer in sub-second wall time.  See memory `feedback_use_fstar_mcp.md`
+and skill at `~/.claude/skills/fstar-mcp/`.
+
+**When to use**: editing F* lemma bodies in `Hacspec_ml_kem.Commute.Chunk`
+or `Hacspec_ml_kem.Commute.Bridges`; iterating on the body proof of a
+single `.fst` after re-extracting once.
+
+**When NOT to use**: after `python3 hax.py extract`, the .fst is
+regenerated from Rust source — the fstar-mcp session's view of the .fst
+becomes stale.  Need to `update_buffer` or re-create session.  For
+edit-Rust-then-verify cycles, either still use fstar-mcp (refresh
+buffer after each extract) or fall back to `make` (slower but clean).
+
+### β. Per-function admit during iteration — `#[hax_lib::fstar::options("--admit_smt_queries true")]`
+
+Apply on Rust-side functions you're NOT actively editing.  This injects
+`#push-options "--admit_smt_queries true"` around that function's body
+in the extracted .fst, so its proof obligations pass trivially.
+
+**Saves ~222s per Invert_ntt rebuild** if applied to
+`invert_ntt_at_layer_4_plus` while iterating on `_1`/`_2`/`_3` (per
+Snapshot 2 above: 4_plus is half the wall cost when hint replay fails
+on its borderline Q2).
+
+**Pattern** (do NOT commit; revert before end-of-step verify):
+```rust
+#[hax_lib::fstar::options("--admit_smt_queries true")]  // TEMP — see Step 2 iter notes
+pub(crate) fn invert_ntt_at_layer_4_plus<...>(...) { ... }
+```
+
+**Workflow**:
+1. Add the attribute to the irrelevant fn(s) in `src/invert_ntt.rs`.
+2. `python3 hax.py extract` (re-renders .fst).
+3. Iterate via `make`/fstar-mcp on your target fn.
+4. **Before commit**: remove the attribute, re-extract, run a clean
+   `make` to confirm regression-clean.
+
+### γ. Whole-module admit via `ADMIT_MODULES` Makefile var
+
+Already used for `Libcrux_ml_kem.Ind_cpa.fst`, `Libcrux_ml_kem.Ind_cca.Unpacked.fst`,
+and all `Vector.Neon.*` modules (per `Makefile:5-13`).
+
+**When to consider adding more**: end-of-step regression checks where
+a heavy module dirty-rebuilds despite not being on the active proof
+path.  Likely candidates if needed:
+
+- `Libcrux_ml_kem.Sampling.fst` (~1056 stats-lines in last full prove,
+  one of the heaviest).  Not on the INTT critical path.
+- `Libcrux_ml_kem.Serialize.fst` (~246 stats-lines).  Not on INTT path.
+- `Libcrux_ml_kem.Ntt.fst` (forward NTT, ~630 stats-lines).  Not on
+  the inverse-NTT path.
+
+**Don't admit** on the active critical path (`Polynomial.fst`,
+`Invert_ntt.fst`, `Vector.{Avx2,Portable}.fst`,
+`Hacspec_ml_kem.Commute.{Chunk,Bridges}.fst`, `Vector.Traits.fst`).
+Admit-during-debugging hides regressions in those.
+
+### Recommended discipline for the INTT critical path (Steps 2-5)
+
+| Phase | Best tool | Bypass |
+|---|---|---|
+| Step 2 layer 3 / 2 (Bridges.fst lemma writing) | fstar-mcp typecheck_buffer | n/a — Bridges.fst doesn't need Invert_ntt rebuilt |
+| Step 3 layer 4_plus bridge (Bridges.fst) | fstar-mcp | n/a |
+| Step 4 layer 2/3/4_plus Rust strengthening | `make Invert_ntt.fst.checked` | per-fn admit on the OTHER layers + `_montgomery` |
+| Step 5 `invert_ntt_montgomery` post chain | `make` (no shortcuts; needs all layers) | none |
+| End of each step | full `make` regression | remove all temp admits |
