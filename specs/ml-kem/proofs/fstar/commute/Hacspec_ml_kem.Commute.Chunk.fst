@@ -1772,6 +1772,112 @@ let lemma_subtract_reduce_iter
     Classical.forall_intro aux;
     lemma_subtract_reduce_finalize_chunk_intro myself_chunk red_chunk b_chunk_in
 
+(* Helper form of HP.subtract_reduce that avoids the heavy createi-with-
+   inline-cast-arithmetic body.  Each lane is `impl_FE__sub a[j] b[j]`
+   directly.  This and HP.subtract_reduce produce the same array (the
+   bodies unfold equally), captured by `lemma_subtract_reduce_eq_helper`
+   below.  Working through the helper bypasses Z3's struggle with
+   createi_lemma on HP.subtract_reduce's body. *)
+let subtract_reduce_helper
+    (a b: t_Array P.t_FieldElement (mk_usize 256))
+    : t_Array P.t_FieldElement (mk_usize 256) =
+  P.createi #P.t_FieldElement (mk_usize 256)
+    #(usize -> P.t_FieldElement)
+    (fun (j: usize {j <. mk_usize 256}) ->
+      P.impl_FieldElement__sub (Seq.index a (v j)) (Seq.index b (v j)))
+
+#push-options "--z3rlimit 200 --ext context_pruning"
+let lemma_subtract_reduce_eq_helper
+    (a b: t_Array P.t_FieldElement (mk_usize 256)) :
+    Lemma (HP.subtract_reduce a b == subtract_reduce_helper a b)
+  = let lhs = HP.subtract_reduce a b in
+    let rhs = subtract_reduce_helper a b in
+    let aux (j: nat) : Lemma (j < 256 ==> Seq.index lhs j == Seq.index rhs j)
+      = if j < 256 then begin
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize {jj <. mk_usize 256}) ->
+              P.impl_FieldElement__sub (Seq.index a (v jj)) (Seq.index b (v jj)))
+            (sz j);
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__new
+                (cast ((((cast ((Seq.index a (v jj)).P.f_val <: u16) <: u32) +!
+                         (cast P.v_FIELD_MODULUS <: u32)
+                         <: u32) -!
+                        (cast ((Seq.index b (v jj)).P.f_val <: u16) <: u32)
+                        <: u32) %!
+                       (cast P.v_FIELD_MODULUS <: u32)
+                       <: u32)
+                 <: u16)
+              <: P.t_FieldElement)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs rhs
+#pop-options
+
+(* Per-poly commute lemma for subtract_reduce.  Produces the polynomial-
+   level equation in helper-form.  Pair with `lemma_subtract_reduce_eq_helper`
+   to chain to the `HP.subtract_reduce` form when needed. *)
+#push-options "--z3rlimit 200 --ext context_pruning --split_queries always"
+let lemma_subtract_reduce_commute
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (myself b_input b_post: V.t_PolynomialRingElement vV) :
+    Lemma
+      (requires
+        forall (k: nat). k < 16 ==>
+          subtract_reduce_finalize_chunk
+            (T.f_repr (Seq.index myself.V.f_coefficients k))
+            (T.f_repr (Seq.index b_post.V.f_coefficients k))
+            (T.f_repr (Seq.index b_input.V.f_coefficients k)))
+      (ensures
+        to_spec_poly_plain b_post ==
+        subtract_reduce_helper
+          (to_spec_poly_plain myself)
+          (P.createi #P.t_FieldElement (mk_usize 256)
+             #(usize -> P.t_FieldElement)
+             (fun (j: usize {j <. mk_usize 256}) ->
+               P.impl_FieldElement__mul
+                 (Seq.index (to_spec_poly_mont b_input) (v j))
+                 fe_1441)))
+  = let myself_lift = to_spec_poly_plain myself in
+    let mont_b = to_spec_poly_mont b_input in
+    let scaled_b : t_Array P.t_FieldElement (mk_usize 256) =
+      P.createi #P.t_FieldElement (mk_usize 256)
+        #(usize -> P.t_FieldElement)
+        (fun (j: usize {j <. mk_usize 256}) ->
+          P.impl_FieldElement__mul (Seq.index mont_b (v j)) fe_1441) in
+    let r_poly = to_spec_poly_plain b_post in
+    let hp = subtract_reduce_helper myself_lift scaled_b in
+    let aux (j: nat) : Lemma (j < 256 ==>
+        Seq.index r_poly j == Seq.index hp j)
+      = if j < 256 then begin
+          let chunk : nat = j / 16 in
+          let lane  : nat = j % 16 in
+          let m_arr = T.f_repr (Seq.index myself.V.f_coefficients chunk) in
+          let bin_arr = T.f_repr (Seq.index b_input.V.f_coefficients chunk) in
+          let bp_arr = T.f_repr (Seq.index b_post.V.f_coefficients chunk) in
+          lemma_subtract_reduce_finalize_chunk_reveal m_arr bp_arr bin_arr;
+          poly_lane_plain b_post j;
+          poly_lane_plain myself j;
+          poly_lane_mont b_input j;
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__mul (Seq.index mont_b (v jj)) fe_1441)
+            (sz j);
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__sub (Seq.index myself_lift (v jj)) (Seq.index scaled_b (v jj)))
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro r_poly hp
+#pop-options
+
 (*** Phase 7a Step 7 — to_standard_domain finalization (matrix-mul track) ***)
 
 (* The standard-domain track is the post-matrix-multiply analogue of the

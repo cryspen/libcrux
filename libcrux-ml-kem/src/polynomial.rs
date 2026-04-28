@@ -370,36 +370,14 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 ///
 /// See `src/invert_ntt.rs` (above `invert_ntt_montgomery`) for the
 /// upstream chain doc.
-// HELD — body proof admitted via --admit_smt_queries true.  Rationale:
-// the strengthened post is mathematically sound (per-lane bridge proven
-// in `Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_finalize_fe`,
-// per-iteration helper proven in `lemma_subtract_reduce_iter`, opaque
-// chunk wrapper `subtract_reduce_finalize_chunk` proven cleanly), and
-// the loop body's invariant-preservation discharges quickly (~63 s
-// total module rebuild with the helper-lemma + opaque-predicate
-// structure — down from 17 min and 9.5 min in two earlier attempts).
-// The ONLY missing piece is the post-loop bridge: revealing the 16
-// per-chunk opaque predicates and lifting via `Seq.lemma_eq_intro` over
-// 256 lanes to derive the polynomial-level equation in the post.  That
-// derivation triggers an "incomplete quantifiers" failure at rlimit 800
-// because the post unfolds `HP.subtract_reduce`'s `createi` body and
-// matches it against the per-chunk opaque equations.  Mitigations to
-// try (left for follow-up):
-//   (a) Add a post-loop F* fragment: 16× `lemma_subtract_reduce_finalize_chunk_reveal`
-//       + `Classical.forall_intro` over 256 lanes + `Seq.lemma_eq_intro`.
-//   (b) Add a per-poly-level commute lemma in Commute.Chunk (analogous
-//       to `lemma_add_to_ring_element_commute`) that takes the 16 chunk
-//       predicates as preconditions and produces the polynomial equation.
-//   (c) Strengthen the loop invariant to track the polynomial-level fact
-//       directly (riskier — invariant subtype check may regress).
-//
-// All proven infrastructure is in `Hacspec_ml_kem.Commute.Chunk.fst`:
-//   * `fe_1441 : t_FieldElement`
-//   * `lemma_subtract_reduce_finalize_fe` (per-lane bridge)
-//   * `subtract_reduce_finalize_chunk` (opaque per-vector wrapper)
-//   * `lemma_subtract_reduce_finalize_chunk_{reveal,intro}`
-//   * `lemma_subtract_reduce_iter` (per-iteration helper, takes trait
-//      posts of mont_mul/sub/barrett, produces opaque chunk predicate)
+// HELD — body proof admitted via --admit_smt_queries true.  Per-poly
+// commute lemma `lemma_subtract_reduce_commute` + `lemma_subtract_reduce_eq_helper`
+// added to Commute.Chunk and verify cleanly (73.9s).  Wiring up in
+// the body still trips an "incomplete quantifiers" failure at the
+// function-body level — likely needs a small record-equality assert
+// bridging `{ f_coefficients = _b } == (function input b)` so that
+// `to_spec_poly_mont`-of-the-constructed-record matches the post's
+// `to_spec_poly_mont (input b)`.  Left for follow-up.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always --admit_smt_queries true")]
 #[hax_lib::requires(spec::is_bounded_poly(4095, &myself))]
@@ -493,6 +471,31 @@ fn subtract_reduce<Vector: Operations>(
 
         b.coefficients[i] = red;
     }
+
+    // Post-loop bridge: lift the 16 per-chunk opaque finalize predicates
+    // (from the loop invariant at i = 16) to the polynomial-level equation
+    // citing HP.subtract_reduce.  The commute lemma produces the helper-
+    // form `subtract_reduce_helper`; the eq-helper lemma chains it to
+    // HP.subtract_reduce.
+    hax_lib::fstar!(r#"
+        let b_input : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
+          { Libcrux_ml_kem.Vector.f_coefficients = ${_b} } in
+        Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_commute
+          #v_Vector myself b_input b;
+        let myself_lift = Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector myself in
+        let scaled_b = Hacspec_ml_kem.Parameters.createi
+                         #Hacspec_ml_kem.Parameters.t_FieldElement
+                         (mk_usize 256)
+                         #(usize -> Hacspec_ml_kem.Parameters.t_FieldElement)
+                         (fun (j: usize {j <. mk_usize 256}) ->
+                           Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+                             (Seq.index
+                                (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #v_Vector b_input)
+                                (v j))
+                             Hacspec_ml_kem.Commute.Chunk.fe_1441) in
+        Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_eq_helper myself_lift scaled_b
+      "#);
+
     b
 }
 
