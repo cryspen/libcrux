@@ -1837,3 +1837,35 @@ let lemma_ntt_layer_1_step_to_hacspec
     Seq.lemma_eq_intro r_fe rhs
 
 #pop-options
+
+(* ───── Layer 2 / 3 forward NTT bridges and inverse NTT bridges ─────
+   STATUS: not delivered in this session.
+
+   Same pattern as `lemma_ntt_layer_1_step_to_hacspec` above; each layer
+   needs a `lemma_ntt_layer_n_16_<2*len>_lane` createi unfold, a
+   `zetas_<groups>_lane` zetas unfold, a per-lane bridge that reveals
+   the right branch post for `b = lane → branch` and matches against
+   the trait branch post's per-lane FE equations, and a top-level
+   `Classical.forall_intro` + `Seq.lemma_eq_intro` composition.
+
+   First-cut implementation of layer 2 forward (lanes-to-branches
+   mapping `b = (i / 8) * 2 + ((i % 4) / 2)`) verified the per-lane
+   unfold and zetas helpers, but the lane bridge itself ran Z3 past
+   2.7 minutes on a single sub-query without reaching any failure or
+   success — likely because Z3 was case-splitting heavily on the
+   layer-2 branch post's nested `if`-ladder for `base`/`off`/`z`.
+
+   Recommended approach for follow-up:
+     (a) Profile via `--query_stats --split_queries always` to identify
+         which sub-query stalls;
+     (b) Either explicitly enumerate `i ∈ {0..15}` to remove the
+         nested arithmetic in `b = ...`, OR
+     (c) Restructure the trait branch post so `b` is consumed by a
+         flat case-split (no nested ifs).
+
+   Inverse NTT layers (`f_inv_ntt_layer_{1,2,3}_step`) follow the same
+   pattern with `IN.inv_butterfly` and `IN.ntt_inverse_layer_n` in
+   place of the forward equivalents.
+
+   Estimated remaining work: 1-2 hours per layer × 5 remaining layers
+   = 5-10 hours.  Out of scope for this session. *)

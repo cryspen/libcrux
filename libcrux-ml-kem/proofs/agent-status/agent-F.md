@@ -163,5 +163,170 @@ challenges in Deliverable A.  ABORT per R3 / brief-line-178.
 
 ## Final commit
 
-Pending — see "Final deliverable" below.
+Done at commit `89506ade9`:
+`agent-F: Phase 7b — INTT-Mont post foundation`.
 
+## Verification summary (post-commit)
+
+- `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst.checked`:
+  PASSES in 39s (8 new lemmas/predicates verified).
+- `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.Invert_ntt.fst.checked`:
+  PASSES in 5.3s (with `ntt_inverse_butterflies` addition; 17 ms query).
+- `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Polynomial.fst.checked`:
+  PASSES in 135s (E2's existing post-strengthening intact, no regression).
+- `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Ntt.fst.checked`:
+  PASSES in 4 min.
+- `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Invert_ntt.fst.checked`:
+  PASSES in 4:32 min (after copying hints from baseline trait-opacify
+  worktree — fresh F worktree had no hint cache; root cause is
+  worktree-specific; NO REGRESSION introduced).
+
+## Audit-correction note (preserve for future agents)
+
+The held-E doc claimed `1441 * 169 ≡ 1 (mod 3329)` as the underlying
+Montgomery cancellation needed by `subtract_reduce` et al.  This is
+INCORRECT: `1441 * 169 mod 3329 == 512`, not 1.
+
+The CORRECT identity (per pq-crystals/kyber/ref/ntt.c line 106) is
+`1441 = R²/128 (mod q)`, i.e., `(128 * 1441) mod q == R² mod q == 1353`.
+This means `mont_mul(b, 1441) (≡ b * 1441 * R⁻¹ (mod q))` does NOT
+cancel `b` to identity — instead, it converts an INTT-Mont-form value
+`v b * R ≡ b_real * 128 (mod q)` to the plain `b_real (mod q)` value,
+fusing the missing FIPS-203 INTT `· 128⁻¹` finalization with the
+Mont-domain conversion.
+
+`lemma_intt_mont_form_post` in this branch's Chunk.fst is the rigorous
+proof of this fact, with `assert_norm`s of three intermediate modular
+identities (`1441·169 ≡ 512`, `2285·169 ≡ 1`, `128·169·512 ≡ 1`).
+
+## Recommendations for follow-up agents
+
+1. **Phase 7a-finish** (4 reduce functions): can now use
+   `lemma_intt_mont_finalize_fe` to discharge the per-lane chain
+   `mont_mul(b, 1441) → b_real` once a Mont-form precondition is added
+   to the relevant impl functions (likely as a `requires`-only addition
+   citing `intt_mont_form_chunk` over the input poly chunks).  The
+   precondition would be discharged by callers of `subtract_reduce`,
+   etc. that have just called `invert_ntt_montgomery`.
+
+2. **Full Deliverable A** (`invert_ntt_montgomery` post): requires
+   Tier-3 composition over 7 layers of inverse butterflies, which
+   amounts to:
+   - Per-vector hacspec bridges for each of `inv_ntt_layer_{1,2,3}_step`
+     and `inv_ntt_layer_int_vec_step_reduce`.  The forward NTT's
+     equivalent (target #1) faces the same structural challenge.
+   - Per-poly compositions of these into per-layer poly equations.
+   - Chaining 7 per-poly layer equations into the cumulative
+     `ntt_inverse_butterflies` post.
+   - A fresh hand-written F* helper file (analogous to
+     `Hacspec_ml_kem.Commute.Chunk.fst`) is the right location.
+
+3. **Deliverable B target #1** (`ntt_at_layer_1`): the per-vector
+   hacspec bridge for `f_ntt_layer_1_step` is the prerequisite.  It
+   does NOT exist in `Chunk.fst` today (only the trait-post pass-through
+   `lemma_ntt_layer_1_step_chunk_commutes` exists).  Writing it requires
+   `createi_lemma` over the 16 lanes plus 4 instances of
+   `lemma_ntt_layer_1_butterfly_to_fe` (one per branch, already exists
+   at line 1108 of Chunk.fst).  Estimated 1-2 hours per layer.
+
+# Continuation session 2026-04-28
+
+## First action — uncommitted Chunk.fst WIP
+
+Restored from previous session (105 lines):
+- Helpers `mont_array_lane`, `zetas_4_lane` (verified)
+- Stub `lemma_ntt_layer_1_step_to_hacspec` (failed at lane case-split,
+  rlimit 200 timeout on `Seq.lemma_eq_intro` close)
+
+Decision: REWRITE the failing lemma — the helpers were sound, but
+the lane bridge needed an explicit `N.ntt_layer_n` createi unfold
+helper to match the trait branch post.
+
+## Deliverable B target #1 — CLOSED
+
+Added (replacing the WIP stub):
+
+- **`lemma_ntt_layer_n_16_2_lane`** (Tier-1 helper): per-lane unfold
+  for `N.ntt_layer_n` at `N=16, len=2`.  Returns the concrete
+  `N.butterfly._{1,2}` expression for lane `i`.  Verified at rlimit
+  200 in 1031 ms.
+- **`lemma_ntt_layer_1_step_lane_bridge`** (private, Tier-1): per-lane
+  bridge consuming the trait branch post (revealed for `b = i / 4`)
+  + the unfold helper above.  Verified at rlimit 400 in 64.3 s
+  (used 171/400 — tight but safe).
+- **`lemma_ntt_layer_1_step_to_hacspec`** (Tier-2): top-level
+  per-vector hacspec bridge.  Composes 16 per-lane bridges via
+  `Classical.forall_intro` + `Seq.lemma_eq_intro`.  Verified at
+  rlimit 400 in 771 ms (used 5.5/400).
+
+Final ensures clause:
+```fstar
+mont_i16_to_spec_array (T.f_repr result) ==
+  N.ntt_layer_n (mk_usize 16)
+    (mont_i16_to_spec_array (T.f_repr vec))
+    (mk_usize 2)
+    (Rust_primitives.unsize (zetas_4 z0 z1 z2 z3))
+```
+
+This is the per-vector hacspec bridge that the brief Priority 1 calls
+for.  Committed at `0eb1793e2`.
+
+The remaining steps for full target #1 closure (Tier-2 commute lemma
+`lemma_ntt_at_layer_1_commute` + strengthen `ntt_at_layer_1`'s ensures
++ loop invariant) follow the same `Classical.forall_intro` + `Seq.lemma_eq_intro`
+pattern Phase 7a target #1 used (see `lemma_add_to_ring_element_commute`
+at line 1429).
+
+## Deliverable B targets 2-8 — ATTEMPTED, SKIPPED
+
+### Forward layer 2 — TIMEOUT, REVERTED
+
+Wrote analog (`lemma_ntt_layer_n_16_4_lane`, `zetas_2_lane`,
+`lemma_ntt_layer_2_step_lane_bridge`, `lemma_ntt_layer_2_step_to_hacspec`).
+The first two helpers verified (rlimit 19 / 0.2 respectively).  The
+lane bridge ran Z3 past 2.7 minutes on a single sub-query without
+making progress, so killed and reverted.
+
+Root cause hypothesis: the layer-2 branch post's `b → (base, off, z)`
+has nested `if`-ladders (`if b<2 ... if b=0||b=2 ...`).  When revealed
+under `b = (i / 8) * 2 + ((i % 4) / 2)`, Z3 must compute the right
+concrete arithmetic for 16 cases of `i`, each involving the nested
+ladder's case-split, plus the `lemma_ntt_layer_n_16_4_lane` `idx<4`
+case-split.  The first sub-query — closing the lane equation — likely
+exhausted z3's quantifier instantiation budget.
+
+Recommended fix for follow-up agents:
+- Try `--query_stats --split_queries always` to identify the stalling
+  sub-query.
+- Consider explicitly enumerating `i ∈ {0, 1, ..., 15}` via a sequence
+  of `assert (i = 0 \/ i = 1 \/ ...)`-style discharges.
+- Alternative: refactor the trait branch post to split the if-ladder
+  into a flat 4-way case-match pattern (out of scope for this brief
+  per R9: no spec redesign).
+
+### Forward layer 3, inverse layers 1/2/3 — NOT ATTEMPTED
+
+Time budget exhausted at the layer 2 attempt.  Pattern is identical
+to layer 1 modulo:
+- forward layer 3: `len=8, 1 zeta, b ∈ {0..3} mapped via b = (i % 8) / 2`,
+  uses `zetas_1`.
+- inverse layer 1: same mapping as forward layer 1 but uses
+  `IN.inv_butterfly` and `IN.ntt_inverse_layer_n`; relations differ
+  (Gentleman–Sande: `result[i1] = vec[i1] + vec[j1]`, `result[j1] = z*(vec[j1] - vec[i1])`).
+- inverse layers 2/3: parallel to forward 2/3 with inv_butterfly.
+
+## Deliverable A — UNCHANGED FROM PRIOR SESSION
+
+Foundation pieces (`intt_mont_form_lane`, `intt_mont_form_chunk`,
+`lemma_intt_mont_form_post`, `lemma_intt_mont_finalize_fe`) remain
+as committed in `89506ade9`.  Heavy Tier-3 composition over 7 layers
+deferred per the brief's note that Phase 7a-finish doesn't need it.
+
+## Final commit summary
+
+- `89506ade9`: prior-session foundation (intt_mont_form_*).
+- `0eb1793e2`: continuation — target #1 per-vector bridge for
+  forward layer 1 (helpers + 3 new lemmas, +178 lines, all real
+  proofs, no admits).
+- `<this commit>`: layer-2 attempt + comment-block recording the
+  remaining work and the timeout root-cause analysis.
