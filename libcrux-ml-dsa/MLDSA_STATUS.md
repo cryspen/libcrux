@@ -1,7 +1,15 @@
 # MLDSA Verification Status
 
-**Branch**: `ml-dsa-proofs`
-**Tip**: Step 9 partial (2026-04-28 session). Both `Operations::infinity_norm_exceeds` and `Operations::power2round` impl bodies discharge for both Portable and AVX2; Portable `Operations::montgomery_multiply` body discharges. Spec.MLDSA.Math reframed as the Tier-1 shared-spec layer.
+**Branch**: `ml-dsa-above-trait` (above-trait verification lane;
+companion below-trait branch is `ml-dsa-proofs`).
+**Tip**: Above-trait Step C in progress (2026-04-28 session).
+**Trait pre/post strengthened** (commits `94e933eb1`+`36fe89b18`).
+**7 above-trait modules promoted to CHECK** against the strengthened
+contract: `Ntt`, `Encoding.{T1,Commitment,Error,Gamma1,T0}`, `Pre_hash`.
+The dual below-trait branch verifies `Simd.{Portable,Avx2}.*` against
+the same trait contract. See `proofs/agent-status/lane-split-protocol.md`
+for the protocol; F-1 finding (use_hint pre vs lane post conditional)
+addressed via option (d) in the same file.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
 **Empirical baseline**: **71 modules invoked (warm cache), [CHECK]=15, [ADMIT]=56, 71 verified, 0 errors, 0 make-level failures**. Cold-cache totals would still match the prior 98 invoked / 42 CHECK / 56 ADMIT (the 5 newly-discharged impl methods all live inside `Simd.Portable.fst` and `Simd.Avx2.fst`, already CHECK modules).
 
