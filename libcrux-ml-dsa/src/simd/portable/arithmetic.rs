@@ -445,13 +445,9 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"
-    ((v $SHIFT_BY == 13 /\
-      (forall i. i < 8 ==> v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) >= 0 /\
-          v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) <= 261631))
-     \/
-     (v $SHIFT_BY == 0 /\
-      Spec.Utils.is_i32b_array_opaque 2143289343 ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values))"#))]
+#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\
+    (forall i. i < 8 ==> v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) >= 0 /\
+        v (Seq.index (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) i) <= 261631)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
     (forall i. i < 8 ==> Spec.MLDSA.Math.(
@@ -468,13 +464,46 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"
                 (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) /\
-                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) == 
+                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) ==
                     Spec.MLDSA.Math.mod_q (v ((Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) <<! v_SHIFT_BY)))) /\
                 (forall j. j >= v i ==> Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)"#
         ));
 
-        hax_lib::fstar!("admit ()");
         simd_unit.values[i] = reduce_element(simd_unit.values[i] << SHIFT_BY);
+    }
+}
+
+/// Per-lane Barrett reduce on all 8 coefficients in a `Coefficients`.
+///
+/// Companion of `shift_left_then_reduce` for the case where no left-shift
+/// is needed — used by `Operations::reduce` to bring each coefficient into
+/// the centered Barrett range `(-FIELD_MODULUS, FIELD_MODULUS)`.
+#[inline(always)]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::requires(fstar!(r#"
+    Spec.Utils.is_i32b_array_opaque 2143289343 ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
+    (forall i. i < 8 ==> Spec.MLDSA.Math.(
+        mod_q (v (Seq.index ${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i)) ==
+        mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i))))"#))]
+pub(super) fn reduce(simd_unit: &mut Coefficients) {
+    #[cfg(hax)]
+    let _simd_unit0 = simd_unit.clone();
+    hax_lib::fstar!(
+        "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
+    );
+
+    for i in 0..simd_unit.values.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+                (forall j. j < v i ==> (Spec.Utils.is_i32b 8380416 (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) /\
+                    Spec.MLDSA.Math.mod_q (v (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)) ==
+                    Spec.MLDSA.Math.mod_q (v (Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)))) /\
+                (forall j. j >= v i ==> Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j == Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j)"#
+        ));
+
+        simd_unit.values[i] = reduce_element(simd_unit.values[i]);
     }
 }
 

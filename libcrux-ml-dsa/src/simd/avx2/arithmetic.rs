@@ -133,6 +133,28 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     montgomery_multiply_aux(field_modulus, inverse_of_modulus_mod_montgomery_r, lhs, rhs);
 }
 
+/// Per-lane Barrett reduce on all 8 coefficients in a `Vec256`.
+///
+/// Brings each coefficient into the centered Barrett range
+/// `(-FIELD_MODULUS, FIELD_MODULUS)`. Shared by `Operations::reduce` and
+/// `shift_left_then_reduce` (which prepends a SIMD left-shift).
+#[inline]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall i. to_i32x8 ${simd_unit}_future i ==
+        Spec.MLDSA.Math.barrett_red (to_i32x8 ${simd_unit} i))"#))]
+pub(super) fn reduce(simd_unit: &mut Vec256) {
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
+
+    let quotient = mm256_add_epi32(*simd_unit, mm256_set1_epi32(1 << 22));
+    let quotient = mm256_srai_epi32::<23>(quotient);
+
+    let quotient_times_field_modulus =
+        mm256_mullo_epi32(quotient, mm256_set1_epi32(FIELD_MODULUS as i32));
+
+    *simd_unit = mm256_sub_epi32(*simd_unit, quotient_times_field_modulus);
+}
+
 #[inline]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13"#))]
@@ -140,17 +162,8 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     (forall i. to_i32x8 ${simd_unit}_future i ==
         Spec.MLDSA.Math.barrett_red (shift_left_opaque (to_i32x8 ${simd_unit} i) v_SHIFT_BY))"#))]
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
-    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
-
-    let shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
-
-    let quotient = mm256_add_epi32(shifted, mm256_set1_epi32(1 << 22));
-    let quotient = mm256_srai_epi32::<23>(quotient);
-
-    let quotient_times_field_modulus =
-        mm256_mullo_epi32(quotient, mm256_set1_epi32(FIELD_MODULUS as i32));
-
-    *simd_unit = mm256_sub_epi32(shifted, quotient_times_field_modulus);
+    *simd_unit = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
+    reduce(simd_unit);
 }
 
 #[inline]

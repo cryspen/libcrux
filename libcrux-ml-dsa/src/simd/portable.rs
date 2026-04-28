@@ -337,7 +337,7 @@ impl Operations for Coefficients {
     fn reduce(simd_units: &mut [Self; SIMD_UNITS_IN_RING_ELEMENT]) {
         hax_lib::fstar!("admit ()");
         for i in 0..simd_units.len() {
-            shift_left_then_reduce::<0>(&mut simd_units[i]);
+            arithmetic::reduce(&mut simd_units[i]);
         }
     }
 }
