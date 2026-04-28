@@ -1,27 +1,11 @@
 SLOW_MODULES +=
+# Above-trait verification lane (branch ml-dsa-above-trait).
+# All Libcrux_ml_dsa.Simd.{Portable,Avx2}.* modules are deliberately
+# left in ADMIT mode here — the dual below-trait agent's branch verifies
+# them against the SAME strengthened trait pre/post defined in
+# Libcrux_ml_dsa.Simd.Traits.{fsti,fst} and Libcrux_ml_dsa.Simd.Traits.Specs.
+# The two lanes meet at the trait contract.
 VERIFIED_MODULES = \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
-	Libcrux_ml_dsa.Simd.Portable.Vector_type.fst \
-	Libcrux_ml_dsa.Simd.Portable.Sample.fst \
-	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
-	Libcrux_ml_dsa.Simd.Portable.Ntt.fst \
-	Libcrux_ml_dsa.Simd.Portable.Invntt.fst \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Error.fst \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Gamma1.fst \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.T0.fst \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.T1.fst \
-	Libcrux_ml_dsa.Simd.Portable.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Vector_type.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Arithmetic.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Ntt.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Invntt.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Encoding.Error.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Encoding.T1.fst \
-	Libcrux_ml_dsa.Simd.Avx2.fst \
 	Libcrux_ml_dsa.Simd.Traits.fsti \
 	Libcrux_ml_dsa.Simd.Traits.Specs.fst \
 	Libcrux_ml_dsa.Simd.Traits.fst \
