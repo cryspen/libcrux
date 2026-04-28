@@ -64,6 +64,7 @@ callers get the bounds.  1/3 fully discharged.
 | `Libcrux_ml_dsa.Polynomial.fst` (re-verified) | (this commit) | `Polynomial::add` and `Polynomial::subtract` posts strengthened with per-simd-unit `add_post`/`sub_post` chain — discharged via loop_invariant. No body admits. |
 | `Libcrux_ml_dsa.Sample.fst` | (this commit) | all 9 functions body-admit; only minimal pres added (length bounds on `add_*_domain_separator`, divisor-not-zero on inner `xy`). Posts deferred — Xof traits are still ADMIT. |
 | `Libcrux_ml_dsa.Hash_functions.{Shake128,Shake256,Portable,Simd256,Neon}.fst` | (this commit) | trait declarations + opaque-body Xof impls; all 5 modules verify out of the box (no source changes). |
+| `Libcrux_ml_dsa.Ml_dsa_generic.fst` + 3 per-param + 9 instantiations + 3 multiplexing (16 modules total) | (this commit) | All 10 functions in `src/ml_dsa_generic.rs` body-admit; the per-param + instantiation + multiplexing modules verify automatically (they only re-export and dispatch). |
 
 ## Promotion pattern (for next session)
 

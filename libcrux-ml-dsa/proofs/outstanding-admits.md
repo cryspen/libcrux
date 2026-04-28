@@ -253,6 +253,33 @@ in `0d11b64a9` (no admit needed there).
   the partial post-progress conjunct.  No body admit on Polynomial::add
   or subtract.
 
+### Libcrux_ml_dsa.Ml_dsa_generic (all 10 functions)
+- **File**: `src/ml_dsa_generic.rs`
+- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix) on
+  `generate_key_pair`, `sign_internal`, `verify_internal`,
+  `sign_pre_hashed_mut`, `sign_pre_hashed`, `sign_mut`, `sign`,
+  `verify`, `verify_pre_hashed`, and the free fn
+  `derive_message_representative`.
+- **Phase added**: above-trait C.9 (Ml_dsa_generic.fst promotion;
+  16 modules total — 1 generic + 3 per-param + 9 platform-instantiations
+  + 3 multiplexing).
+- **Diagnosis**: top-level orchestrator chains every below-and-above-trait
+  primitive (sample → matrix-multiply → reduce/invert → encode → hash).
+  Discharging panic-freedom requires posts on all transitively-called
+  modules — most below-trait Xof methods are still ADMIT, the encoding
+  serialize/deserialize methods carry length-only posts, and the
+  rejection-sample partial-acceptance count is not in the trait post.
+  Body admit makes the function callable from the public API while
+  the wrapper signatures sit ready for downstream typing.
+- **Suggested mitigation**: Phase 4 work, ~6-10 hours.  Touchpoints:
+  (1) Length-preservation ensures on Xof methods (mirrors `b68738411`).
+  (2) Trait-level rejection-sample partial-acceptance count post.
+  (3) Per-function precondition (signing key length, message length,
+      randomness length, signature buffer length) sized by the
+      param-set constants.
+  (4) Per-function post: sign returns Ok with valid-length output,
+      verify returns Ok on a self-consistent signature.
+
 ### Libcrux_ml_dsa.Sample (all 9 functions)
 - **File**: `src/sample.rs`
 - **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix) on

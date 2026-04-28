@@ -30,6 +30,22 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Hash_functions.Portable.fst \
 	Libcrux_ml_dsa.Hash_functions.Simd256.fst \
 	Libcrux_ml_dsa.Hash_functions.Neon.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_87_.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))
