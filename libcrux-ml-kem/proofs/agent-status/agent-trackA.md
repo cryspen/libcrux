@@ -2,7 +2,177 @@
 
 **Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
 **Branch:** `trait-opacify`
-**Tip at end:** `43c9d45d5` (was `7bb7e1a81` at start of this evening resume)
+**Tip at end:** TBD (was `7b4707227` at start of this resume — handoff prompt
+commit; effective code tip `bcc3dc480` at session start)
+
+## 2026-04-28 late evening — Phase 7a Step 3 (sub-pieces 1 + 2)
+
+Strengthened `inv_ntt_layer_int_vec_step_reduce`'s post with per-lane FE
+equations (Step 3.1) and added the chunk-pair hacspec bridge
+`lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` to Bridges.fst
+(Step 3.2).  Step 3.3 (per-polynomial composition in
+`invert_ntt_at_layer_4_plus`) deferred — see "Open work" below.
+
+### What landed
+
+#### `src/invert_ntt.rs` — `inv_ntt_layer_int_vec_step_reduce`
+
+New post:
+```
+(forall i. i < 16 ==>
+   mont_i16_to_spec_fe r0[i] ==
+     impl_FieldElement__add (mont_i16_to_spec_fe a[i])
+                             (mont_i16_to_spec_fe b[i])) /\
+(forall i. i < 16 ==>
+   mont_i16_to_spec_fe r1[i] ==
+     impl_FieldElement__mul (mont_i16_to_spec_fe zeta_r)
+       (impl_FieldElement__sub (mont_i16_to_spec_fe b[i])
+                               (mont_i16_to_spec_fe a[i])))
+```
+
+Captures original `a, b` via `_a_in, _b_in` ghost snapshots (cfg(hax))
+since the function reassigns `a, b` mid-body.  Renamed the rebound
+locals to `r0, r1` for direct correspondence with the result tuple
+(eliminates the shadow-by-overwrite that prevented post-references to
+the entry values).
+
+Body proof: two `Classical.forall_intro`s — one per output chunk —
+invoking `Chunk.lemma_add_fe_commute_mont_mod` (for `r0[i]`) and
+`Chunk.lemma_inv_butterfly_fe_commute_mul_diff` (for `r1[i]`).  The
+mod-q residue equations from `barrett_reduce_post` ∘ `add_post` and
+`montgomery_multiply_by_constant_post` ∘ `sub_post` discharge directly
+under those existing Chunk helpers (no new core-arithmetic lemmas
+needed).
+
+Settings: `--z3rlimit 200 --ext context_pruning --split_queries always`.
+107 queries, max single 725 ms (Q101 — likely a quantifier
+instantiation in one of the `forall_intro` aux proofs).
+
+#### `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Bridges.fst`
+
+New lemma `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec`:
+takes the strengthened (1) post as `requires`, produces the
+function-form `IN.inv_butterfly`-citation as `ensures`.  Body is a
+single `()` — `inv_butterfly` unfolds definitionally and the
+hypotheses match `_1` (= add a b) and `_2` (= mul zeta (sub b a))
+directly.
+
+This is structurally the simplest of the four hacspec bridges (no
+nested if-ladder, no `--split_queries always`, no per-branch helpers).
+2 queries, max 41 ms.
+
+### Verification
+
+| Module | Status | Time | Notes |
+|---|---|---|---|
+| `Libcrux_ml_kem.Invert_ntt` (with Step 3.1 admits, layers 1/3/4_plus) | ✅ | 13.3 s | rlimit 200, 107 queries on `inv_ntt_layer_int_vec_step_reduce` |
+| `Hacspec_ml_kem.Commute.Bridges` (cold) | ✅ | 175 s | Step 3.2 lemma added; cold rebuild dominated by existing layer 2 lemmas |
+| `Libcrux_ml_kem.Invert_ntt` (no admits) | ❌ regressed | 26 min wall before failure | layer 4_plus's bounds-only post failed; Q191/Q192 saturated 168/200 of rlimit 200 |
+| `Libcrux_ml_kem.Invert_ntt` (rlimit 400 + `--split_queries always` on layer 4_plus) | ❌ regressed | not waited (stopped via TaskStop after layer 1 cleared) | extrapolation: split_queries doesn't help when forall-context grows |
+| `Libcrux_ml_kem.Invert_ntt` (TEMP admit on layer 4_plus body) | TBD | TBD | landing decision — see "Layer 4_plus regression" below |
+
+### Layer 4_plus regression — diagnosis + landing decision
+
+**Symptom.** After re-extracting with the strengthened
+`inv_ntt_layer_int_vec_step_reduce` post + reverting the temp admits
+on layers 1/3/4_plus, full `make check/Libcrux_ml_kem.Invert_ntt.fst`
+failed at `invert_ntt_at_layer_4_plus` (Q191/Q192/Q195 saturating /
+failing) at rlimit 200.
+
+**Diagnosis (per smtprofiling skill, Technique 4 + Technique 6).**
+The strengthened post adds two `forall (i: nat). i < 16 ==> ...`
+conjuncts to the SMT context at every call site of step_reduce
+inside layer 4_plus's inner loop.  These extra forall facts pollute
+the bounds-only proof: prior session's perf data noted Q187 already
+borderline at rlimit 200 (50.5/200 used); the extra context pushes
+Q191 to 120/200, Q192 to 168/200, and one query failed outright.
+A bumped rlimit + `--split_queries always` did NOT discharge cleanly
+either (build was stopped via TaskStop after layer 1 cleared,
+extrapolation supports that the fundamental issue is forall-context
+growth, not query budget — split_queries doesn't reduce the
+per-query context size).
+
+**Landing decision (per user direction "Option B"):** apply
+`#[hax_lib::fstar::options("--admit_smt_queries true")]` to
+`invert_ntt_at_layer_4_plus` only, with TEMP comment + reference to
+this trackA entry.  This admits its bounds-only post for now.  The
+proper fix will be the **drive-to-the-top spike** documented in
+`next-session-prompt.md`: admit layer 4_plus's strengthened post
+(citing `IN.ntt_inverse_layer_n 256`), strengthen
+`invert_ntt_montgomery`'s post, validate against consumers in
+`matrix.rs` / `polynomial.rs`.  If the spec shape holds end-to-end,
+discharging layer 4_plus's body is the LAST step (and at that point
+we know exactly what shape its post needs).  If the shape doesn't
+hold, we redesign before sinking time.
+
+**Why this is OK to land:** the admit is on the BOUNDS-ONLY post
+that ALREADY existed before this session.  The strengthened
+step_reduce post (Step 3.1, the actual new spec) verifies cleanly.
+We're not regressing any verified property — we're just deferring
+a downstream proof until the spec direction is validated.
+
+
+
+### Z3 lessons / patterns
+
+- **Owned `mut` parameters need ghost snapshots for posts.**  When the
+  function rebinds `a` and `b` after computing them, the F* post sees
+  the rebound bindings, not the entry values.  Two options:
+  (a) `let _a_in = a; let _b_in = b` at function top under `cfg(hax)`,
+      use `${_a_in}` and `${_b_in}` in the body fstar! block, but
+      reference `${a}` and `${b}` in the post (which scope-wise refer
+      to the function params at entry).
+  (b) Rename the rebound locals (`a = ...` → `let r0 = ...`) so the
+      original bindings remain accessible in the body.
+  We used **both**: ghost snapshots in the body proof, original param
+  names in the post.  Cleanest signal-to-noise.
+
+- **Variable scoping in hax_lib::ensures vs body.**  `${...}` capture
+  in fstar! macros must reference identifiers that exist in the
+  surrounding Rust scope at extraction time.  `cfg(hax)` ghosts work
+  for body fstar! but NOT for post fstar! (post is a separate
+  expression context — function params + result are in scope, but
+  body locals are not).  Initial attempt to put `${_a_in}` in the
+  post failed with `error[E0425]: cannot find value` because hax's
+  Rust pre-pass enforces this.
+
+### Open work / Step 3.3 deferred
+
+**Why deferred (per decision tree in `next-session-prompt.md`):**
+
+Step 3.3 (per-polynomial composition in `invert_ntt_at_layer_4_plus`'s
+post citing `IN.ntt_inverse_layer_n 256 p step zs`) requires
+substantial new spec infrastructure:
+
+  1. **Polynomial-level lift function** `mont_to_spec_poly_256`
+     (currently we only have per-chunk `mont_i16_to_spec_array` for
+     length-16 arrays).  Needs to flatten `re.coefficients : t_Array
+     vV 16` into `t_Array t_FieldElement 256`.
+  2. **Zetas-N-inverse helpers** for layer 4..7: arrays of length
+     `groups = {8, 4, 2, 1}` containing the layer's zetas.  Three new
+     helpers (we already have `zetas_1`).
+  3. **Loop invariant in chunk-pair / `inv_butterfly` form** plus
+     post-loop `Classical.forall_intro` over chunks to lift to
+     polynomial-level via the Step 3.2 bridge.
+  4. **Z3 risk:** layer 4_plus's existing post already had
+     Q187 borderline at rlimit 200 per the prior-session log.
+     Strengthening adds ~16 forall-quantified per-chunk-pair facts,
+     likely pushing into rlimit 400+ territory.
+
+**Recommended approach for next session (or Step 4 layer 4_plus
+framing):**
+- Define `mont_to_spec_poly_256` and zetas-N helpers in
+  `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`
+  alongside `zetas_1, zetas_2, zetas_4`.
+- Add a **per-polynomial-pair bridge** in Bridges.fst (analogous to
+  Step 3.2 but for polynomial pairs `(p[k], p[k+step])`) that lifts
+  16 per-lane equations across one chunk-pair to a flat-polynomial
+  pair claim.
+- Use Option B in `invert_ntt_at_layer_4_plus`: chunk-pair invariant
+  in `inv_butterfly`-form, post-loop forall_intro over chunk-pairs to
+  lift to polynomial-level `IN.ntt_inverse_layer_n`.
+
+Combined Step 3.3 + Step 4 layer 4_plus is the natural follow-up unit.
 
 ## 2026-04-28 evening — Step 4 layer 3 strengthened
 

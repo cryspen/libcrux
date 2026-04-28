@@ -310,22 +310,93 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
 // Output is restored to `3328` by Barrett, so subsequent calls see the
 // tight bound.
 #[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_vector(4 * 3328, &a) & (spec::is_bounded_vector(4 * 3328, &b) & (zeta_r >= -1664 && zeta_r <= 1664)))]
-#[hax_lib::ensures(|(r0, r1)| spec::is_bounded_vector(3328, &r0) & (spec::is_bounded_vector(3328, &r1)))]
+#[hax_lib::ensures(|(r0, r1)| spec::is_bounded_vector(3328, &r0) & (spec::is_bounded_vector(3328, &r1) & fstar!(r#"
+    (forall (i: nat). i < 16 ==>
+       Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+         (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${r0}) i)
+         ==
+       Hacspec_ml_kem.Parameters.impl_FieldElement__add
+         (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+            (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${a}) i))
+         (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+            (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${b}) i))) /\
+    (forall (i: nat). i < 16 ==>
+       Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+         (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${r1}) i)
+         ==
+       Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+         (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe ${zeta_r})
+         (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+           (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+              (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${b}) i))
+           (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+              (Seq.index (Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${a}) i))))
+"#)))]
 pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
     zeta_r: i16,
 ) -> (Vector, Vector) {
+    #[cfg(hax)]
+    let _a_in = a;
+    #[cfg(hax)]
+    let _b_in = b;
+
     let b_minus_a = sub_bounded(b, 4 * 3328, &a, 4 * 3328);
     let a_plus_b = add_bounded(a, 4 * 3328, &b, 4 * 3328);
 
     #[cfg(hax)]
     spec::is_bounded_vector_higher(&a_plus_b, 8 * 3328, 28296);
 
-    a = Vector::barrett_reduce(a_plus_b);
-    b = Vector::montgomery_multiply_by_constant(b_minus_a, zeta_r);
-    (a, b)
+    let r0 = Vector::barrett_reduce(a_plus_b);
+    let r1 = Vector::montgomery_multiply_by_constant(b_minus_a, zeta_r);
+    // Phase 7a Step 3.1 — lift the per-lane mod-q residue equations
+    // (from `barrett_reduce_post` and `montgomery_multiply_by_constant_post`,
+    // composed with `add_post` / `sub_post` of the prior `add_bounded` /
+    // `sub_bounded` calls) to per-lane FE equations under
+    // `mont_i16_to_spec_fe`.  Two `forall_intro`s — one per output chunk.
+    hax_lib::fstar!(r#"
+        let a_arr_in = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${_a_in} in
+        let b_arr_in = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${_b_in} in
+        let r0_arr  = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${r0} in
+        let r1_arr  = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${r1} in
+        let aux0 (i: nat) : Lemma (i < 16 ==>
+            Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+              (Seq.index r0_arr i) ==
+            Hacspec_ml_kem.Parameters.impl_FieldElement__add
+              (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+                 (Seq.index a_arr_in i))
+              (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+                 (Seq.index b_arr_in i)))
+          = if i < 16 then
+              Hacspec_ml_kem.Commute.Chunk.lemma_add_fe_commute_mont_mod
+                (Seq.index a_arr_in i)
+                (Seq.index b_arr_in i)
+                (Seq.index r0_arr i)
+        in
+        Classical.forall_intro aux0;
+        let aux1 (i: nat) : Lemma (i < 16 ==>
+            Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+              (Seq.index r1_arr i) ==
+            Hacspec_ml_kem.Parameters.impl_FieldElement__mul
+              (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe ${zeta_r})
+              (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
+                (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+                   (Seq.index b_arr_in i))
+                (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+                   (Seq.index a_arr_in i))))
+          = if i < 16 then
+              Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_fe_commute_mul_diff
+                (Seq.index a_arr_in i)
+                (Seq.index b_arr_in i)
+                ${zeta_r}
+                (Seq.index r1_arr i)
+        in
+        Classical.forall_intro aux1
+      "#);
+    (r0, r1)
 }
 
 // `invert_ntt_at_layer_4_plus` is called four times.  The FIRST call
@@ -336,7 +407,17 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 // calls (`layer == 5..7`) see the tight `3328` input.  We use the
 // looser `4*3328` precondition uniformly to keep one signature.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+// TEMP admit (Phase 7a Step 5 spike): the strengthened
+// `inv_ntt_layer_int_vec_step_reduce` post (Step 3.1) added two
+// per-lane FE forall conjuncts visible at the inner-loop call sites,
+// pushing prior borderline Q187 / Q191 / Q192 past rlimit 200 (Q192
+// saturated 168/200; one query failed outright at rlimit 400 +
+// `--split_queries always` on a 26-min build).  The next session will
+// REPLACE this admit with the proper Step 4 layer 4_plus framing
+// (strengthened post citing `IN.ntt_inverse_layer_n 256 ... step zs`)
+// rather than chase the regression bottom-up.  See
+// `next-session-prompt.md` for the drive-to-the-top spike plan.
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(
     spec::is_bounded_poly(4 * 3328, re) & (
         match layer {

@@ -728,6 +728,50 @@ let lemma_inv_ntt_layer_2_step_to_hacspec
 
 #pop-options
 
+(*** Phase 7a (track A) — Layer 4_plus chunk-pair hacspec bridge ***)
+
+(* `inv_ntt_layer_int_vec_step_reduce` (above the trait, in
+   `src/invert_ntt.rs`) operates on a CHUNK-PAIR (two `vV`-vectors) rather
+   than within a single chunk.  Its strengthened post (Step 3.1) gives
+   per-lane FE equations matching `IN.inv_butterfly`.  This bridge lifts
+   those per-lane equations to the function-form `IN.inv_butterfly`
+   citation lane-wise — a pure unfold of `inv_butterfly`.
+
+   Structurally simpler than layers 1/2/3: no nested if-ladder branch_post,
+   no per-branch helpers, no `--split_queries always`.  Caller chains 16
+   per-lane uses across each chunk pair to build the polynomial-level
+   `IN.ntt_inverse_layer_n 256` claim in
+   `invert_ntt_at_layer_4_plus`'s post (Step 3.3 / Step 4 layer 4_plus). *)
+let lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec
+    (a_arr b_arr r0_arr r1_arr: t_Array i16 (mk_usize 16))
+    (zeta_r: i16) :
+  Lemma
+    (requires
+       (forall (i: nat). i < 16 ==>
+          mont_i16_to_spec_fe (Seq.index r0_arr i) ==
+          P.impl_FieldElement__add
+            (mont_i16_to_spec_fe (Seq.index a_arr i))
+            (mont_i16_to_spec_fe (Seq.index b_arr i))) /\
+       (forall (i: nat). i < 16 ==>
+          mont_i16_to_spec_fe (Seq.index r1_arr i) ==
+          P.impl_FieldElement__mul
+            (mont_i16_to_spec_fe zeta_r)
+            (P.impl_FieldElement__sub
+              (mont_i16_to_spec_fe (Seq.index b_arr i))
+              (mont_i16_to_spec_fe (Seq.index a_arr i)))))
+    (ensures
+       (forall (i: nat). i < 16 ==>
+          mont_i16_to_spec_fe (Seq.index r0_arr i) ==
+          (IN.inv_butterfly (mont_i16_to_spec_fe zeta_r)
+                             (mont_i16_to_spec_fe (Seq.index a_arr i))
+                             (mont_i16_to_spec_fe (Seq.index b_arr i)))._1) /\
+       (forall (i: nat). i < 16 ==>
+          mont_i16_to_spec_fe (Seq.index r1_arr i) ==
+          (IN.inv_butterfly (mont_i16_to_spec_fe zeta_r)
+                             (mont_i16_to_spec_fe (Seq.index a_arr i))
+                             (mont_i16_to_spec_fe (Seq.index b_arr i)))._2))
+  = ()
+
 (* ───── Layer 2 forward NTT bridge ─────
    STATUS: layer 1 forward + inverse, layer 2 inverse, and layer 3 inverse
    bridges are done above (track A, Phase 7a).  Layer 2 forward remains.
