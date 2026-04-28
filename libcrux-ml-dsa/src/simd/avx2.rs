@@ -224,24 +224,55 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[ensures(|result| result.repr() == [0i32; COEFFICIENTS_IN_SIMD_UNIT])]
     fn zero() -> Self {
-        hax_lib::fstar!("admit ()");
-        vector_type::zero()
+        let result = vector_type::zero();
+        hax_lib::fstar!(
+            r#"
+            // f_repr result == [0;8]: the SIMD setzero intrinsic gives all-zero
+            // lanes per `Spec.Intrinsics.mm256_setzero_si256_lemma`, and
+            // f_repr extracts via to_coefficient_array.
+            assert (forall (i: nat). i < 8 ==>
+                Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr result) i == mk_i32 0);
+            assert (forall (i: nat). i < 8 ==>
+                Seq.index (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8)) i == mk_i32 0);
+            assert (Seq.equal (Libcrux_ml_dsa.Simd.Traits.f_repr result)
+                              (Rust_primitives.Hax.repeat (mk_i32 0) (mk_usize 8)))"#
+        );
+        result
     }
 
     #[inline(always)]
     #[requires(coefficient_array.len() == COEFFICIENTS_IN_SIMD_UNIT)]
     #[ensures(|_| future(out).repr() == coefficient_array)]
     fn from_coefficient_array(coefficient_array: &[i32], out: &mut Self) {
-        hax_lib::fstar!("admit ()");
-        vector_type::from_coefficient_array(coefficient_array, out)
+        vector_type::from_coefficient_array(coefficient_array, out);
+        hax_lib::fstar!(
+            r#"
+            // f_repr out_future == coefficient_array: the SIMD loadu intrinsic
+            // preserves per-lane content per `Spec.Intrinsics.mm256_loadu_si256_i32_lemma`,
+            // and f_repr extracts via to_coefficient_array.
+            assert (forall (i: nat). i < 8 ==>
+                Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i ==
+                Seq.index ${coefficient_array} i);
+            assert (Seq.equal (Libcrux_ml_dsa.Simd.Traits.f_repr ${out})
+                              ${coefficient_array})"#
+        );
     }
 
     #[inline(always)]
     #[requires(out.len() == COEFFICIENTS_IN_SIMD_UNIT)]
     #[ensures(|_| future(out) == value.repr())]
     fn to_coefficient_array(value: &Self, out: &mut [i32]) {
-        hax_lib::fstar!("admit ()");
-        vector_type::to_coefficient_array(value, out)
+        vector_type::to_coefficient_array(value, out);
+        hax_lib::fstar!(
+            r#"
+            // out_future == f_repr value: per-lane content from
+            // `Spec.Intrinsics.mm256_storeu_si256_i32_lemma` matches the
+            // f_repr definition (which itself goes through to_coefficient_array).
+            assert (forall (i: nat). i < 8 ==>
+                Seq.index ${out} i ==
+                Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${value}) i);
+            assert (Seq.equal ${out} (Libcrux_ml_dsa.Simd.Traits.f_repr ${value}))"#
+        );
     }
 
     #[inline(always)]

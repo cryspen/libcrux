@@ -178,6 +178,15 @@ val mm256_storeu_si256_i32_len_lemma (out: t_Slice i32) (vec: bv256)
   : Lemma (Seq.length (I.mm256_storeu_si256_i32 out vec) == Seq.length out)
           [SMTPat (Seq.length (I.mm256_storeu_si256_i32 out vec))]
 
+val mm256_setzero_si256_lemma (i: u64 {v i < 8})
+  : Lemma (to_i32x8 (I.mm256_setzero_si256 ()) i == mk_i32 0)
+          [SMTPat (to_i32x8 (I.mm256_setzero_si256 ()) i)]
+
+val mm256_loadu_si256_i32_lemma (input: t_Slice i32) (i: u64 {v i < 8})
+  : Lemma (requires Seq.length input == 8)
+          (ensures to_i32x8 (I.mm256_loadu_si256_i32 input) i == Seq.index input (v i))
+          [SMTPat (to_i32x8 (I.mm256_loadu_si256_i32 input) i)]
+
 val update_at_range_bv_lemma
     (f_start: usize) (f_end: _ {v f_end == v f_start + 16})
     (bytes: t_Slice u8{Seq.length bytes >= v f_start + 16})
