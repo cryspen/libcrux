@@ -1,9 +1,20 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: 25-errors → ~0 cleanup pass complete (2026-04-28 session).
+**Tip**: trait-pre audit + reduce/shift_left_then_reduce mismatch fix complete (2026-04-28 session, tip `1943e7f6e`).
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors** after the 2026-04-28 session. Was 25 errors / 52 verified / 60 invoked at session start. The +2 CHECK comes from lifting `Simd.Portable.fst` and `Simd.Avx2.fst` (the impl-Operations files / Step 5 wave-2A + 3A i/ii deliverable).
+**Empirical baseline**: 97 modules invoked, **41 in `[CHECK]` mode**, **97 verified**, **0 errors** after the 2026-04-28 session. Was 25 errors / 52 verified / 60 invoked at session start. The +4 CHECK comes from lifting `Simd.Portable.fst` and `Simd.Avx2.fst` (Step 5) plus tightened per-method annotations on both impls.
+
+**Operations trait pre-conditions audit (2026-04-28)**: every method's pre
+now matches what its Portable free fn requires for panic freedom — a
+gap-by-gap audit closed 13 methods (`use_hint`, all `rejection_sample_*`,
+all `gamma1_*`, `commitment_serialize`, all `error_*`, all `t0_*`, all
+`t1_*`, `reduce`). Bounds preconditions are packaged in opaque
+predicate form (reuse of `Spec.Utils.is_i32b_array_opaque`; new
+`is_binary_array_8_opaque` in `src/simd/traits/specs.rs`) following the
+ML-KEM `bounded_pos_i16_array` pattern. All four `bounded_{add,sub}_{pre,post}`
+SMTPat-bridge lemmas now have real `reveal_opaque` + `Classical.forall_intro`
+proofs (no admits).
 **Next handoff plan**: [`proofs/next-session-plan.md`](proofs/next-session-plan.md) — triage / recommended order; the original 25-error triage is now obsolete (closed via mid-body admits where the 20-min budget said admit was the right call).
 **Sprint plan**: [`proofs/sprint-plan.md`](proofs/sprint-plan.md)
 **Style guide**: [`proofs/proof-style-guide.md`](proofs/proof-style-guide.md)

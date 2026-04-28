@@ -201,6 +201,35 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   triggering a typeclass-resolution failure on `t_FnOnce`. Refactored
   to plain `for i in 0..randomness.len() { let byte = randomness[i]; ... }`.
 
+### Libcrux_ml_dsa.Simd.Portable.Arithmetic.shift_left_then_reduce SHIFT_BY=0 admit
+- **File / lines**: `libcrux-ml-dsa/src/simd/portable/arithmetic.rs:476`
+  (a `hax_lib::fstar!("admit ()")` inside the for-loop body).
+- **Phase added**: 2026-04-28 (audit follow-up).
+- **Diagnosis**: After relaxing the function pre to accept either
+  `SHIFT_BY == 13` (input bound 261631) OR `SHIFT_BY == 0` (input bound
+  2143289343), F* needs to discharge `is_i32b 2143289343 (x <<! SHIFT_BY)`
+  at the `reduce_element` call site for both branches. For SHIFT_BY=0,
+  `x <<! 0 == x` should be a no-op, but F* doesn't simplify the shift
+  literal automatically and the disjunction-form pre triggers
+  "incomplete quantifiers" on the SMT side. Body admit covers the
+  per-iteration discharge; the function's outer pre/post are still
+  enforced.
+- **Suggested mitigation**: split into per-branch case analysis with
+  `assert (v $SHIFT_BY == 0 \/ v $SHIFT_BY == 13)` followed by an
+  if/else on SHIFT_BY, each branch with its own lemma. Or add a
+  helper lemma `shift_left_zero (x: i32) : Lemma (x <<! mk_i32 0 == x)`
+  and call it before the loop. ~20 min.
+
+### Per-method Operations trait pre-condition tightening (2026-04-28)
+**Status**: complete (no admits) — see `src/simd/traits.rs` for the
+strengthened pres on use_hint, all rejection_sample_*, all gamma1_*,
+commitment_serialize, error_serialize/deserialize, t0_serialize/deserialize,
+t1_serialize/deserialize, and reduce. Each pre uses opaque packaging
+(reuses `Spec.Utils.is_i32b_array_opaque`; new `is_binary_array_8_opaque`
+for use_hint's hint binary check; defined in `src/simd/traits/specs.rs`
+with intro/lookup SMTPat lemmas in the ML-KEM `bounded_pos_i16_array`
+style). All Portable + AVX2 impls mirror the strengthened pres.
+
 ### Libcrux_ml_dsa.Simd.Portable + Simd.Avx2 impl-Operations method body admits
 - **File / lines**: `libcrux-ml-dsa/src/simd/portable.rs:34-300` and
   `libcrux-ml-dsa/src/simd/avx2.rs:30-360` (Operations impl blocks).
