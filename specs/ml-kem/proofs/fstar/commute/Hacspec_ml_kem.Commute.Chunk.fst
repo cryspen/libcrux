@@ -1822,6 +1822,86 @@ let lemma_add_standard_error_reduce_lane
     (* Step 3: lift the int sum to the FE-add equation. *)
     lemma_add_fe_commute_plain normal_lane error_lane sum_lane
 
+(* ----- Phase 7a Step 7: poly-level commute for `add_standard_error_reduce` -----
+
+   Tier-1 lemma assembling the per-chunk FE-add equation (lifted by the
+   caller via `lemma_add_standard_error_reduce_lane` per processed chunk)
+   into the hacspec function equation, parameterized by a ghost
+   `ntt_product` array.
+
+   The caller (Rust `add_standard_error_reduce`) discharges the per-chunk
+   FE-add equation in its loop invariant.  The lemma below composes 16
+   per-chunk × 16 per-lane = 256 lane-level FE equations into the
+   `to_spec_poly_plain (future_myself) == HP.add_standard_error_reduce ...`
+   identity. *)
+
+#push-options "--z3rlimit 400 --split_queries always"
+
+(* Tier-1 commute for `add_standard_error_reduce`.  The caller is expected
+   to discharge per-lane FE-add equations specialized to the per-chunk
+   slice of `ntt_product` (via `lemma_add_standard_error_reduce_lane`
+   inside the loop body); this lemma assembles 256 such equations into
+   the hacspec polynomial-level identity. *)
+let lemma_add_standard_error_reduce_commute
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (myself error result: V.t_PolynomialRingElement vV)
+    (ntt_product: t_Array P.t_FieldElement (mk_usize 256)) :
+  Lemma
+    (requires
+      (* Per-lane FE-add equation specialized to the slice of ntt_product
+         at chunk k.  The caller's loop body proves this directly via
+         `lemma_add_standard_error_reduce_lane` after each iteration. *)
+      forall (k: nat) (l: nat). k < 16 /\ l < 16 ==>
+        i16_to_spec_fe
+          (Seq.index (T.f_repr (Seq.index result.V.f_coefficients k)) l)
+          == P.impl_FieldElement__add
+               (Seq.index
+                 (Seq.slice ntt_product (k * 16) (k * 16 + 16)) l)
+               (i16_to_spec_fe
+                 (Seq.index (T.f_repr (Seq.index error.V.f_coefficients k)) l)))
+    (ensures
+       to_spec_poly_plain result
+         == HP.add_standard_error_reduce ntt_product (to_spec_poly_plain error))
+  = let lhs_poly = to_spec_poly_plain result in
+    let err_poly = to_spec_poly_plain error in
+    let hp = HP.add_standard_error_reduce ntt_product err_poly in
+    let aux (j: nat) : Lemma (j < 256 ==>
+        Seq.index lhs_poly j == Seq.index hp j)
+      = if j < 256 then begin
+          let k : nat = j / 16 in
+          let l : nat = j % 16 in
+          let e_arr  = T.f_repr (Seq.index error.V.f_coefficients k) in
+          let r_arr  = T.f_repr (Seq.index result.V.f_coefficients k) in
+          let np_slice = Seq.slice ntt_product (k * 16) (k * 16 + 16) in
+          (* Apply the FE-add equation at (k, l). *)
+          assert (i16_to_spec_fe (Seq.index r_arr l)
+                    == P.impl_FieldElement__add
+                         (Seq.index np_slice l)
+                         (i16_to_spec_fe (Seq.index e_arr l)));
+          (* Slice index: `np_slice.[l] == ntt_product.[j]`. *)
+          Seq.lemma_index_slice ntt_product (k * 16) (k * 16 + 16) l;
+          (* Unfold to_spec_poly_plain at index j. *)
+          poly_lane_plain result j;
+          poly_lane_plain error j;
+          (* Unfold the createi in HP.add_standard_error_reduce at j. *)
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__new
+                (cast (((cast ((Seq.index ntt_product (v jj)).P.f_val <: u16) <: u32) +!
+                        (cast ((Seq.index err_poly (v jj)).P.f_val <: u16) <: u32)
+                        <: u32)
+                      %! (cast (P.v_FIELD_MODULUS <: u16) <: u32)
+                      <: u32)
+                <: u16)
+              <: P.t_FieldElement)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs_poly hp
+
+#pop-options
+
 (*** Phase 7b — Forward NTT layer commute (target #1: ntt_at_layer_1) ***)
 
 (* Per-lane unfold helper for `mont_i16_to_spec_array`.  Wraps
