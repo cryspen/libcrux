@@ -279,17 +279,174 @@ let lemma_inv_ntt_layer_1_step_to_hacspec
 
 #pop-options
 
-(* ───── Layer 2 / 3 forward NTT bridges and (layers 2/3) inverse NTT bridges ─────
-   STATUS: layer 1 inverse-NTT bridge is done above (track A, Phase 7a).
-   Layer 2/3 forward and inverse remain.  Same pattern as
-   `lemma_ntt_layer_1_step_to_hacspec`: each layer needs a per-lane
-   bridge revealing the right branch post for `b = lane → branch` and
-   matching against the trait branch post's per-lane FE equations,
-   plus a `Classical.forall_intro` + `Seq.lemma_eq_intro` per-vector
-   composition.
+(*** Phase 7a (track A) — Inverse NTT layer 3 hacspec bridge ***)
 
-   First-cut implementation of layer 2 forward (lanes-to-branches
-   mapping `b = (i / 8) * 2 + ((i % 4) / 2)`) ran Z3 past 2.7 minutes
-   on a single sub-query — case-splits on the layer-2 branch post's
-   nested `if`-ladder for `base`/`off`/`z`.  Mitigation: explicitly
-   enumerate `i ∈ {0..15}` to remove the symbolic `b = ...`. *)
+(* Per-lane unfold helper for `zetas_1`.  Layer-3 inverse uses a single
+   zeta, so `Seq.index (zetas_1 z0) 0 == mont_i16_to_spec_fe z0`. *)
+let zetas_1_lane (z0: i16) (i: usize { v i < 1 }) :
+    Lemma (Seq.index (zetas_1 z0) (v i) == mont_i16_to_spec_fe z0)
+  = P.createi_lemma #P.t_FieldElement (mk_usize 1)
+      #(usize -> P.t_FieldElement)
+      (fun (_: usize { _ <. mk_usize 1 }) ->
+        (mont_i16_to_spec_fe z0 <: P.t_FieldElement))
+      i
+
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
+
+(* Per-lane unfold for `IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 8) zs`
+   at concrete lane `i ∈ [0, 16)`.  Mirror of
+   `lemma_ntt_inverse_layer_n_16_2_lane` for layer-3 step parameters
+   (`len = 8`, `groups = 1`).  Since `2 * len = 16` and `i < 16`, the
+   `group = i / 16 = 0` always, and `idx = i % 16 = i`.  Result:
+   - if `i < 8`: result[i] = inv_butterfly._1 at (i, i+8)
+   - if `i ≥ 8`: result[i] = inv_butterfly._2 at (i-8, i)
+   Defined here in Bridges.fst (NOT in Chunk.fst) for the same Polynomial.fst
+   transitive-context reason as `lemma_ntt_inverse_layer_n_16_2_lane` above. *)
+let lemma_ntt_inverse_layer_n_16_8_lane
+    (p: t_Array P.t_FieldElement (mk_usize 16))
+    (zs: t_Array P.t_FieldElement (mk_usize 1))
+    (i: nat {i < 16}) :
+    Lemma
+      (let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 8)
+                                            (Rust_primitives.unsize zs) in
+       (i < 8 ==>
+         i + 8 < 16 /\
+         Seq.index result i ==
+           (IN.inv_butterfly (Seq.index zs 0)
+                              (Seq.index p i)
+                              (Seq.index p (i + 8)))._1) /\
+       (i >= 8 ==>
+         i >= 8 /\
+         Seq.index result i ==
+           (IN.inv_butterfly (Seq.index zs 0)
+                              (Seq.index p (i - 8))
+                              (Seq.index p i))._2))
+  = let result = IN.ntt_inverse_layer_n (mk_usize 16) p (mk_usize 8)
+                                         (Rust_primitives.unsize zs) in
+    P.createi_lemma #P.t_FieldElement (mk_usize 16)
+      #(usize -> P.t_FieldElement)
+      (fun (j: usize { j <. mk_usize 16 }) ->
+        let group:usize = j /! (mk_usize 2 *! mk_usize 8 <: usize) in
+        let idx:usize = j %! (mk_usize 2 *! mk_usize 8 <: usize) in
+        (if idx <. mk_usize 8 then
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j))
+                             (Seq.index p (v j + 8)))._1
+        else
+          (IN.inv_butterfly (Seq.index zs (v group))
+                             (Seq.index p (v j - 8))
+                             (Seq.index p (v j)))._2)
+        <: P.t_FieldElement)
+      (sz i)
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Per-lane bridge for `f_inv_ntt_layer_3_step`: produces the per-lane FE
+   equation `out_fe.[i] == rhs.[i]` from the trait branch post and the
+   `lemma_ntt_inverse_layer_n_16_8_lane` unfold helper.
+
+   Layer-3 lane → branch mapping: lane `i ∈ [0, 16)` belongs to branch
+   `b = (i mod 8) / 2`.  Branch `b` touches the four lanes
+   `(2b, 2b+1, 2b+8, 2b+9) = (i1, i2, j1, j2)`.  Hacspec lane `i`:
+     - if i < 8 (low half): `result[i] = vec[i] + vec[i+8]` — matches
+       `inv_butterfly._1` at `(i, i+8)`.  Lane is `i1` if `i` even, `i2`
+       if `i` odd.
+     - if i ≥ 8 (high half): `result[i] = z·(vec[i] − vec[i-8])` —
+       matches `inv_butterfly._2` at `(i-8, i)`.  Lane is `j1` if `i`
+       even, `j2` if `i` odd.
+   Single zeta for the whole vector — `zetas_1_lane` collapses
+   `Seq.index zs 0` to `mont_i16_to_spec_fe zeta0`. *)
+private
+let lemma_inv_ntt_layer_3_step_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0: i16)
+    (i: nat {i < 16}) :
+  Lemma
+    (requires
+      TS.inv_ntt_layer_3_step_post in_arr zeta0 out_arr)
+    (ensures
+      (let zs = zetas_1 zeta0 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 8)
+                                         (Rust_primitives.unsize zs) in
+       Seq.index r_fe i == Seq.index rhs i))
+  = let zs = zetas_1 zeta0 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    let b : nat = (i % 8) / 2 in
+    assert (b < 4);
+    assert (Spec.Utils.forall4 (fun (bb: nat{bb < 4}) ->
+              TS.inv_ntt_layer_3_step_branch_post bb in_arr zeta0 out_arr));
+    assert (TS.inv_ntt_layer_3_step_branch_post b in_arr zeta0 out_arr);
+    reveal_opaque (`%TS.inv_ntt_layer_3_step_branch_post)
+                  (TS.inv_ntt_layer_3_step_branch_post b in_arr zeta0 out_arr);
+    lemma_ntt_inverse_layer_n_16_8_lane p_fe zs i;
+    zetas_1_lane zeta0 (sz 0);
+    mont_array_lane out_arr (sz i);
+    mont_array_lane in_arr (sz i);
+    if i < 8 then begin
+      assert (i + 8 < 16);
+      mont_array_lane in_arr (sz (i + 8))
+    end else begin
+      assert (i >= 8);
+      mont_array_lane in_arr (sz (i - 8))
+    end
+
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Per-vector hacspec bridge for `f_inv_ntt_layer_3_step`.
+
+   Mirror of `lemma_inv_ntt_layer_1_step_to_hacspec` for layer 3.
+   Composes the 16 per-lane bridges via `Classical.forall_intro` +
+   `Seq.lemma_eq_intro`.
+
+   Caller chains 16 of these (one per chunk) to lift to a poly-level
+   equation for `invert_ntt_at_layer_3`'s post (Step 4 layer 3 of the
+   Phase 7a plan). *)
+let lemma_inv_ntt_layer_3_step_to_hacspec
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0: i16) :
+  Lemma
+    (requires TS.inv_ntt_layer_3_step_pre (T.f_repr vec) zeta0)
+    (ensures
+       (let r = T.f_inv_ntt_layer_3_step vec zeta0 in
+        mont_i16_to_spec_array (T.f_repr r) ==
+          IN.ntt_inverse_layer_n (mk_usize 16)
+            (mont_i16_to_spec_array (T.f_repr vec))
+            (mk_usize 8)
+            (Rust_primitives.unsize (zetas_1 zeta0))))
+  = let r = T.f_inv_ntt_layer_3_step vec zeta0 in
+    let in_arr = T.f_repr vec in
+    let out_arr = T.f_repr r in
+    let zs = zetas_1 zeta0 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 8)
+                                       (Rust_primitives.unsize zs) in
+    assert (TS.inv_ntt_layer_3_step_post in_arr zeta0 out_arr);
+    let aux (j: nat) : Lemma (j < 16 ==> Seq.index r_fe j == Seq.index rhs j)
+      = if j < 16 then
+          lemma_inv_ntt_layer_3_step_lane_bridge in_arr out_arr zeta0 j
+    in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro r_fe rhs
+
+#pop-options
+
+(* ───── Layer 2 forward NTT bridge and layer 2 inverse NTT bridge ─────
+   STATUS: layer 1 forward + inverse and layer 3 inverse bridges are done
+   above (track A, Phase 7a).  Layer 2 (forward and inverse) remains.
+   Same pattern as `lemma_ntt_layer_1_step_to_hacspec`: per-lane bridge
+   reveals the right branch post for `b = lane → branch` and matches
+   against the trait branch post's per-lane FE equations, plus a
+   `Classical.forall_intro` + `Seq.lemma_eq_intro` per-vector composition.
+
+   First-cut implementation of layer 2 forward (lanes-to-branches mapping
+   `b = (i / 8) * 2 + ((i % 4) / 2)`) ran Z3 past 2.7 minutes on a single
+   sub-query — case-splits on the layer-2 branch post's nested `if`-ladder
+   for `base`/`off`/`z`.  Mitigation: explicitly enumerate `i ∈ {0..15}`
+   to remove the symbolic `b = ...`. *)
