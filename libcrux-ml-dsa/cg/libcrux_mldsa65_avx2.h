@@ -8,7 +8,7 @@
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: unset
- * Libcrux: d3ed1c47cd34e327523d0f5444286676b7f7abe1
+ * Libcrux: dirty
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -5459,14 +5459,8 @@ libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
   bool result = false;
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
     size_t i0 = i;
-    bool uu____0;
-    if (result) {
-      uu____0 = true;
-    } else {
-      uu____0 = libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
-          &self->data[i0], bound);
-    }
-    result = uu____0;
+    result = result || libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
+                           &self->data[i0], bound);
   }
   return result;
 }
@@ -5484,17 +5478,27 @@ libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
   bool result = false;
   for (size_t i = (size_t)0U; i < vector.meta; i++) {
     size_t i0 = i;
-    bool uu____0;
-    if (result) {
-      uu____0 = true;
-    } else {
-      uu____0 = libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
-          &vector.ptr[i0], bound);
-    }
-    result = uu____0;
+    bool uu____0 = result;
+    result = uu____0 || libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
+                            &vector.ptr[i0], bound);
   }
   return result;
 }
+
+/**
+ Declassify secret memory.
+
+ No-op if `valgrind_ct_test` cfg is not enabled.
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.ct_test.ct_declassify
+with types Eurydice_arr libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_avx2_vector_type_Vec256[[$6size_t]]
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline void libcrux_ml_dsa_ct_test_ct_declassify_040(
+    const Eurydice_arr_b50 *val) {}
 
 /**
 This function found in impl
@@ -5820,15 +5824,19 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
         Eurydice_array_to_slice_mut_716(&w0),
         Eurydice_array_to_slice_shared_715(&challenge_times_s2));
-    if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
+    bool mask_invalid =
+        libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
             Eurydice_array_to_slice_shared_713(&mask),
             ((int32_t)1 << (uint32_t)
                  LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
-                LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
-      if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
+                LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA);
+    if (!mask_invalid) {
+      bool w0_invalid =
+          libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
               Eurydice_array_to_slice_shared_715(&w0),
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2 -
-                  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
+                  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA);
+      if (!w0_invalid) {
         Eurydice_arr_b50 challenge_times_t0 =
             core_array__core__clone__Clone_for__Array_T__N___clone(
                 (size_t)6U, &t0_as_ntt, Eurydice_arr_cd0, Eurydice_arr_b50);
