@@ -95,6 +95,72 @@ functions in 3 modules.  Partial; full snapshot pending end-of-cascade._
 
 ---
 
+## Snapshot 2026-04-28 (Step 10 Track A+B close)
+
+Source: `verification_result.txt` after the Step 10 sweep:
+- Track A (impl post lifts) commit `202686c56`
+- Track B (one-line wrapper refactor) commit (this one)
+- F-2 trait fix (`v gamma2` cast) included in Track A.
+
+Cache mostly warm; Query-stats reflect re-checked Simd.{Portable,Avx2}.fst
+modules plus their newly-extracted `*_with_proof` wrapper functions.
+
+### Top-10 per-function totals
+
+| # | Function | Module | total (s) | max query (ms) | queries | flags |
+|---|---|---|---:|---:|---:|---|
+| 1 | `reduce_with_proof` | `L_md.Simd.Portable` | 18.86 | 16499 | 106 | FAILED, rlimit-sat |
+| 2 | `impl_1` | `L_md.Simd.Avx2` | 4.47 | 4468 | 1 | — |
+| 3 | `reduce_with_proof` | `L_md.Simd.Avx2` | 1.15 | 1125 | 2 | — |
+| 4 | `power2round_with_proof` | `L_md.Simd.Avx2` | 0.81 | 812 | 1 | — |
+| 5 | `power2round_with_proof` | `L_md.Simd.Portable` | 0.46 | 462 | 1 | — |
+| 6 | `infinity_norm_exceeds_with_proof` | `L_md.Simd.Avx2` | 0.32 | 317 | 1 | — |
+| 7 | `shift_left_then_reduce_with_proof` | `L_md.Simd.Portable` | 0.22 | 218 | 1 | — |
+| 8 | `shift_left_then_reduce_with_proof` | `L_md.Simd.Avx2` | 0.12 | 122 | 1 | — |
+| 9 | `infinity_norm_exceeds_with_proof` | `L_md.Simd.Portable` | 0.10 | 101 | 1 | — |
+| 10 | `montgomery_multiply_with_proof` | `L_md.Simd.Portable` | 0.10 | 95 | 1 | — |
+
+### Top module totals
+
+| # | Module | total (s) | functions tracked |
+|---|---|---:|---:|
+| 1 | `L_md.Simd.Portable` | 19.74 | 5 |
+| 2 | `L_md.Simd.Avx2` | 6.87 | 5 |
+
+_Sample size: 116 Query-stats lines, 27s total Z3 time, across 10 functions in 2 modules.  Note: the prove was warm-cache so NTT/Invntt sub-modules don't appear in this slice._
+
+### Notes / actions
+
+1. **Track B effect on `impl_1`:** Portable `impl_1` dropped out of the
+   top-10 entirely (was #3 at 9.24s in the Track A baseline; now
+   absorbed by per-method wrapper VCs).  AVX2 `impl_1` dropped from
+   46.42s/637q (Track A, before splitting) to 4.47s/1q (Track B).
+   The 21 method bodies are now one-liner dispatches, so the
+   record-level VC just checks signatures and trivially-implied
+   posts — fast.
+2. **Portable `reduce_with_proof` at #1 (18.86s, FAILED, rlimit-sat):**
+   query #1 (the unsplit single-query attempt) failed at rlimit 80
+   in 16.5s, but F\*'s `--split_queries always` retried as 105 split
+   queries that all succeeded (max 70ms each, none rlimit-sat).
+   Total verification passes (0 errors).  Future optimization:
+   factor the after-loop `Classical.forall_intro pf` into a
+   standalone lemma, or drop fuel/ifuel.  Not blocking.
+3. **AVX2 `impl_1` still rank #2 at 4.47s:** this is the
+   record-level VC for the 21 methods.  Most of the work moved
+   to per-method wrappers (good); the residual is checking that
+   the impl record's pred-fields satisfy the trait refinements.
+   To drop further, would need to factor more of the per-record
+   subtyping into per-method lemmas.  Not currently a bottleneck.
+4. **`shift_left_then_reduce_with_proof` 0.22s/0.12s, 1 query each:**
+   the wrapper extraction kept these tiny.  Same pattern for
+   `infinity_norm_exceeds`, `montgomery_multiply`, `power2round`.
+5. **NTT/Invntt sub-modules absent from this slice:** the prove
+   was incremental, so NTT layers (which dominated the Step 9.3
+   snapshot at 70+ s each) didn't re-run.  A cold-cache full prove
+   would still surface them at the top.
+
+---
+
 ## Snapshot 2026-04-28 (Step 9.3 close)
 
 Source: combined `/tmp/sltr-portable.log` + `/tmp/sltr-avx2.log` +
