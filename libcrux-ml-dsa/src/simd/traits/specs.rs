@@ -310,6 +310,7 @@ pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
+#push-options "--z3rlimit 200 --fuel 1 --ifuel 1"
     let bounded_add_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
         Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\
                     b1 + b2 <= b3 /\ Libcrux_ml_dsa.Simd.Traits.Specs.add_post a b a_future))
@@ -318,7 +319,15 @@ pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
             SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
             SMTPat (Spec.Utils.is_i32b_array_opaque b2 b);
             SMTPat (Spec.Utils.is_i32b_array_opaque b3 a_future)] =
-        admit ()
+        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+        reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_post) (Libcrux_ml_dsa.Simd.Traits.Specs.add_post);
+        let lemma_lane (i: nat{i < 8}) :
+              Lemma (-b3 <= v (Seq.index a_future i) /\ v (Seq.index a_future i) <= b3) =
+            assert (v (mk_usize i) == i);
+            assert (v (Seq.index a_future i) == v (Seq.index a i) + v (Seq.index b i))
+        in
+        Classical.forall_intro lemma_lane
+#pop-options
     "#)]
 pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     forall(|i: usize| {
@@ -351,6 +360,7 @@ pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::after(r#"
+#push-options "--z3rlimit 200 --fuel 1 --ifuel 1"
     let bounded_sub_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
         Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\
                         b1 + b2 <= b3 /\ Libcrux_ml_dsa.Simd.Traits.Specs.sub_post a b a_future))
@@ -359,7 +369,15 @@ pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
                 SMTPat (Spec.Utils.is_i32b_array_opaque b1 a);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b2 b);
                 SMTPat (Spec.Utils.is_i32b_array_opaque b3 a_future)] =
-                admit ()
+                reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque);
+                reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_post) (Libcrux_ml_dsa.Simd.Traits.Specs.sub_post);
+                let lemma_lane (i: nat{i < 8}) :
+                      Lemma (-b3 <= v (Seq.index a_future i) /\ v (Seq.index a_future i) <= b3) =
+                    assert (v (mk_usize i) == i);
+                    assert (v (Seq.index a_future i) == v (Seq.index a i) - v (Seq.index b i))
+                in
+                Classical.forall_intro lemma_lane
+#pop-options
     "#)]
 pub(crate) fn sub_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDContent) -> Prop {
     forall(|i: usize| {

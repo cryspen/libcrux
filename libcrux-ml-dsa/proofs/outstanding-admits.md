@@ -118,27 +118,21 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
 
 ## Active admits
 
-### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_post
-- **File / lines**: `libcrux-ml-dsa/src/simd/traits/specs.rs:312-368`
-  (the two `_post` SMTPat-bridge lemmas; the matching `_pre` lemmas now
-  carry real proofs as of commit `60f5a9fe9`).
-- **Annotation**: `admit ()` in lemma body.
-- **Phase added**: pre-existing.
-- **Diagnosis**: lemma is shape "given `add_post a b a_future` and
-  `is_i32b_array_opaque b1 a` and `is_i32b_array_opaque b2 b` and
-  `b1+b2 ≤ b3`, conclude `is_i32b_array_opaque b3 a_future`". The `_pre`
-  variant closed cleanly with two `reveal_opaque` calls. The `_post`
-  variant fails with "incomplete quantifiers": the unfolded `add_post`
-  is `forall (i: usize). i < 8 ==> v a_future[i] = v a[i] + v b[i]` while
-  the conclusion's `is_i32b_array_opaque b3 a_future` after unfolding is
-  `forall (i: nat). i < Seq.length a_future ==> -b3 ≤ v a_future[i] ≤ b3`.
-  Z3 has trouble matching the `usize` quantifier against the `nat`
-  one. An `introduce forall (i: nat{i < 8}) ... with assert (...)`
-  attempt failed because Z3 couldn't bridge the per-i:nat assertion to
-  the `usize`-quantified hypothesis automatically.
-- **Suggested mitigation**: rewrite as `Classical.forall_intro
-  (fun (i:usize{v i < 8}) -> ...)` to bind the quantifier in `usize`,
-  or use `Spec.Utils.lemma_intb_le` to directly bound each lane. ~30 min.
+### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}
+**Status**: closed (no admits) as of the 2026-04-28 final pass.
+- All four SMTPat-bridge lemmas in `src/simd/traits/specs.rs:292-380` now
+  carry real proofs:
+  - `_pre` lemmas: two `reveal_opaque` calls (one for
+    `Spec.Utils.is_i32b_array_opaque`, one for the relevant
+    `add_pre`/`sub_pre`).
+  - `_post` lemmas: same two reveals plus a per-lane lemma threaded via
+    `Classical.forall_intro` to bridge the `forall (i: usize)` (from
+    the unfolded `add_post`/`sub_post`) to the `forall (i: nat{i < 8})`
+    quantifier needed by `is_i32b_array_opaque`. Wrapped in
+    `#push-options "--z3rlimit 200 --fuel 1 --ifuel 1"`.
+- The original soundness gap (constraint `b1+b2 ≤ u32::MAX` was looser
+  than the conclusion's `i32::MAX`) is fully closed: bound is now
+  `2147483647` (i32::MAX) and the proof actually goes through.
 
 ### Libcrux_ml_dsa.Simd.Avx2.Encoding.{Gamma1,T0,T1,Error} body admits
 - **File / lines**:
