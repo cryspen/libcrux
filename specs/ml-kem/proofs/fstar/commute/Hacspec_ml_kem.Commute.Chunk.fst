@@ -1660,6 +1660,118 @@ let lemma_intt_mont_finalize_fe
     (* `i16_to_spec_fe r` has `f_val = (v r) % 3329`. *)
     ()
 
+(* ----- Per-lane bridge for `subtract_reduce`-family fused finalize -----
+   Given the trait posts of `mont_mul(b, 1441)` (giving `cnf`), `sub`
+   (giving `diff = myself - cnf`), and `barrett` (giving `red ≡ diff
+   mod q`), conclude:
+     i16_to_spec_fe red == myself_lift `sub_FE` (mont_lift_b `mul_FE` 1441)
+   where `1441 = R²/128 mod q` is the impl's mont-mul-by constant.
+   This is consumed in poly-level form by `subtract_reduce`,
+   `add_message_error_reduce`, `add_error_reduce` after composing 256
+   lanes via `Seq.lemma_eq_intro`. *)
+
+let fe_1441 : P.t_FieldElement = P.impl_FieldElement__new (mk_u16 1441)
+
+(* Opaque per-vector wrapper for the per-lane FE finalize relation.  Bundles
+   16 per-lane equations into a single opaque atom; without opacity the
+   inner forall pollutes loop-invariant subtyping checks (Z3 instantiates
+   at every (j, k) pair, blowing rlimit). *)
+[@@ "opaque_to_smt"]
+let subtract_reduce_finalize_chunk
+    (myself_chunk b_chunk _b_chunk: t_Array i16 (mk_usize 16)) : prop =
+  forall (k: nat). k < 16 ==>
+    i16_to_spec_fe (Seq.index b_chunk k) ==
+      P.impl_FieldElement__sub
+        (i16_to_spec_fe (Seq.index myself_chunk k))
+        (P.impl_FieldElement__mul (mont_i16_to_spec_fe (Seq.index _b_chunk k)) fe_1441)
+
+let lemma_subtract_reduce_finalize_chunk_reveal
+    (myself_chunk b_chunk _b_chunk: t_Array i16 (mk_usize 16)) :
+    Lemma (requires subtract_reduce_finalize_chunk myself_chunk b_chunk _b_chunk)
+          (ensures
+            forall (k: nat). k < 16 ==>
+              i16_to_spec_fe (Seq.index b_chunk k) ==
+                P.impl_FieldElement__sub
+                  (i16_to_spec_fe (Seq.index myself_chunk k))
+                  (P.impl_FieldElement__mul (mont_i16_to_spec_fe (Seq.index _b_chunk k)) fe_1441))
+  = reveal_opaque (`%subtract_reduce_finalize_chunk)
+                  (subtract_reduce_finalize_chunk myself_chunk b_chunk _b_chunk)
+
+let lemma_subtract_reduce_finalize_chunk_intro
+    (myself_chunk b_chunk _b_chunk: t_Array i16 (mk_usize 16)) :
+    Lemma (requires
+            forall (k: nat). k < 16 ==>
+              i16_to_spec_fe (Seq.index b_chunk k) ==
+                P.impl_FieldElement__sub
+                  (i16_to_spec_fe (Seq.index myself_chunk k))
+                  (P.impl_FieldElement__mul (mont_i16_to_spec_fe (Seq.index _b_chunk k)) fe_1441))
+          (ensures subtract_reduce_finalize_chunk myself_chunk b_chunk _b_chunk)
+  = reveal_opaque (`%subtract_reduce_finalize_chunk)
+                  (subtract_reduce_finalize_chunk myself_chunk b_chunk _b_chunk)
+
+let lemma_subtract_reduce_finalize_fe
+    (myself b cnf diff red: i16) :
+    Lemma
+      (requires
+        v cnf % 3329 == (v b * 1441 * 169) % 3329 /\
+        v diff == v myself - v cnf /\
+        v red % 3329 == v diff % 3329)
+      (ensures
+        i16_to_spec_fe red ==
+          P.impl_FieldElement__sub
+            (i16_to_spec_fe myself)
+            (P.impl_FieldElement__mul (mont_i16_to_spec_fe b) fe_1441))
+  = let q : pos = 3329 in
+    let myself_lift = i16_to_spec_fe myself in
+    let b_lift = mont_i16_to_spec_fe b in
+    let mul = P.impl_FieldElement__mul b_lift fe_1441 in
+    let res = P.impl_FieldElement__sub myself_lift mul in
+    (* Step 1: v mul.f_val == (v b * 1441 * 169) % q *)
+    lemma_impl_mul_v_val b_lift fe_1441;
+    assert (v fe_1441.P.f_val == 1441);
+    assert (v b_lift.P.f_val == (v b * 169) % q);
+    L.lemma_mod_mul_distr_l (v b * 169) 1441 q;
+    assert (v mul.P.f_val == (v b * 169 * 1441) % q);
+    assert (v b * 169 * 1441 == v b * 1441 * 169);
+    assert (v mul.P.f_val == v cnf % q);
+    (* Step 2: v res.f_val == (v myself - v cnf) % q *)
+    lemma_impl_sub_v_val myself_lift mul;
+    L.lemma_mod_add_distr (v myself % q) (- v cnf) q;
+    L.lemma_mod_add_distr (- v cnf) (v myself) q;
+    assert (v res.P.f_val == (v myself - v cnf) % q);
+    (* Step 3: that's v diff % q == v red % q == (i16_to_spec_fe red).f_val *)
+    ()
+
+(* Per-iteration helper for subtract_reduce body proof.  Takes the three
+   trait posts (mont_mul, sub, barrett) at the i16-array (chunk) level and
+   produces the opaque chunk-level finalize predicate.  Encapsulates the
+   per-lane Classical.forall_intro + chunk-intro into one call so the
+   subtract_reduce loop body's Z3 context stays small. *)
+let lemma_subtract_reduce_iter
+    (myself_chunk b_chunk_in cnf_chunk diff_chunk red_chunk: t_Array i16 (mk_usize 16)) :
+    Lemma
+      (requires
+        TS.montgomery_multiply_by_constant_post b_chunk_in (mk_i16 1441) cnf_chunk /\
+        TS.sub_post myself_chunk cnf_chunk diff_chunk /\
+        TS.barrett_reduce_post diff_chunk red_chunk)
+      (ensures
+        subtract_reduce_finalize_chunk myself_chunk red_chunk b_chunk_in)
+  = let aux (k: nat) : Lemma (k < 16 ==>
+        i16_to_spec_fe (Seq.index red_chunk k) ==
+          P.impl_FieldElement__sub
+            (i16_to_spec_fe (Seq.index myself_chunk k))
+            (P.impl_FieldElement__mul (mont_i16_to_spec_fe (Seq.index b_chunk_in k)) fe_1441))
+      = if k < 16 then
+          lemma_subtract_reduce_finalize_fe
+            (Seq.index myself_chunk k)
+            (Seq.index b_chunk_in k)
+            (Seq.index cnf_chunk k)
+            (Seq.index diff_chunk k)
+            (Seq.index red_chunk k)
+    in
+    Classical.forall_intro aux;
+    lemma_subtract_reduce_finalize_chunk_intro myself_chunk red_chunk b_chunk_in
+
 (*** Phase 7a Step 7 — to_standard_domain finalization (matrix-mul track) ***)
 
 (* The standard-domain track is the post-matrix-multiply analogue of the

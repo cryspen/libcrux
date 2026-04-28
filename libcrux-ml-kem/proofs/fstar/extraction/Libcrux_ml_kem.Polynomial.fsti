@@ -263,7 +263,20 @@ val subtract_reduce
       (ensures
         fun result ->
           let result:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector = result in
-          Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) result)
+          Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) result /\
+          Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector result ==
+          Hacspec_ml_kem.Polynomial.subtract_reduce (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain
+                #v_Vector
+                myself)
+            (Hacspec_ml_kem.Parameters.createi #Hacspec_ml_kem.Parameters.t_FieldElement
+                (mk_usize 256)
+                #(usize -> Hacspec_ml_kem.Parameters.t_FieldElement)
+                (fun (j: usize{j <. mk_usize 256}) ->
+                    Hacspec_ml_kem.Parameters.impl_FieldElement__mul (Seq.index (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont
+                              #v_Vector
+                              b)
+                          (v j))
+                      Hacspec_ml_kem.Commute.Chunk.fe_1441)))
 
 /// Compute `myself + message + InvNTT(result)` lane-wise — same fused
 /// `mont_mul(result, 1441)` pattern as `subtract_reduce`.
