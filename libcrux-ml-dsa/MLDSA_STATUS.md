@@ -1,7 +1,26 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 11 close (2026-04-28).  Track 1 (F-1 use_hint math): both `admit ()` bodies in `Hacspec_ml_dsa.Commute.Chunk.fst`'s use_hint paired commute lemmas replaced with full proofs.  `lemma_use_one_hint_bound` proved via new `lemma_spec_decompose_r1_bound` (Spec.MLDSA.Math.decompose r1 ∈ [0, 4190208/g)).  `lemma_use_hint_lane_commute_conditional` proved via `lemma_mod_pm_eq_mod_p` (i64 mod_pm bridges to centered mod_p) + `lemma_decompose_bridge` (Hacspec.decompose ↔ Spec.MLDSA.Math.decompose under v input ∈ [0, q)).  Track 2 (paired-lemma template): Portable `decompose` and `compute_hint` impl bodies upgraded from single `admit()` to paired-lemma scaffolding.  New commute lemmas `lemma_decompose_bound` (real proof; reuses Track-1 r1 bound), `lemma_decompose_lane_commute_conditional` (real proof; reuses Track-1 bridge), `lemma_compute_one_hint_bound` (trivial), `lemma_compute_hint_lane_commute_conditional` (admit() body — FIPS 204 §3.6 MakeHint correctness pending), and `lemma_compute_hint_bound` (`repeati`-induction on the popcount).  Step 10 deltas remain: Track A impl posts hardened, Track B 5 non-trivial wrappers extracted; AVX2 `impl_1` 4.5s/1q.
+**Tip**: Step 12 partial (2026-04-28).  Track 0c closed AVX2
+`commitment_serialize` (`87a71ccc4`).  Track B scaffolded AVX2
+`decompose` impl body via new `lemma_decompose_spec_eq_decompose`
+bridge in `Commute.Chunk.fst` (`937adc57b`); bridge body is `admit ()`
+pending the bit-trick proof for the magic constants.  F-3, F-4, F-5
+filed in `lane-split-protocol.md` (`a9388d5a9`):
+- F-3: encoding `*_serialize` trait pres (commitment, gamma1, t0,
+  error) use signed `is_i32b_array_opaque` where free fns require
+  non-negative `bounded`.  Blocks Portable `commitment_serialize`
+  Track 0a until above-trait fix.
+- F-4: `compute_hint_lane_post` claims `make_hint <==> hint == 1` but
+  the two diverge at `low = -gamma2, high != 0` boundary.  Spec uses
+  FIPS 204 optimized form; Hacspec uses canonical algorithm.  Blocks
+  Track A.
+- F-5: above-trait request to tighten `reduce_lane_post` to FIELD_MID
+  (q/2) is unprovable from existing Barrett — actual output bound is
+  `2^22` (4194304), ~4096 above q/2.  Option A/B both require impl
+  changes (final-correction step or pre-tightening); see open finding.
+
+Track 1 (F-1 use_hint math): both `admit ()` bodies in `Hacspec_ml_dsa.Commute.Chunk.fst`'s use_hint paired commute lemmas replaced with full proofs.  `lemma_use_one_hint_bound` proved via new `lemma_spec_decompose_r1_bound` (Spec.MLDSA.Math.decompose r1 ∈ [0, 4190208/g)).  `lemma_use_hint_lane_commute_conditional` proved via `lemma_mod_pm_eq_mod_p` (i64 mod_pm bridges to centered mod_p) + `lemma_decompose_bridge` (Hacspec.decompose ↔ Spec.MLDSA.Math.decompose under v input ∈ [0, q)).  Track 2 (paired-lemma template): Portable `decompose` and `compute_hint` impl bodies upgraded from single `admit()` to paired-lemma scaffolding.  New commute lemmas `lemma_decompose_bound` (real proof; reuses Track-1 r1 bound), `lemma_decompose_lane_commute_conditional` (real proof; reuses Track-1 bridge), `lemma_compute_one_hint_bound` (trivial), `lemma_compute_hint_lane_commute_conditional` (admit() body — FIPS 204 §3.6 MakeHint correctness pending), and `lemma_compute_hint_bound` (`repeati`-induction on the popcount).  Step 10 deltas remain: Track A impl posts hardened, Track B 5 non-trivial wrappers extracted; AVX2 `impl_1` 4.5s/1q.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
 **Empirical baseline (Step 11)**: **88 modules invoked, [CHECK]=30, [ADMIT]=58, 0 errors, 0 make-level failures** (verified via touch-all + ./hax.sh prove).  `Libcrux_ml_dsa.Simd.Portable.fst` impl_1 verifies in ~16s @ rlimit 80 (used 68/80) with the new decompose/compute_hint scaffolding.  Note: the previously-recorded 98/40/58 figure in this file appears to have been counting hax-lib core / extracted-but-not-VERIFIED modules; the actual VERIFIED_MODULES list is 26 entries, plus 5 Hacspec_ml_dsa.* and 1 Spec.MLDSA.Math, giving the 30 [CHECK] now observed under the same Makefile.
 
