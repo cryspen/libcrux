@@ -1,4 +1,13 @@
 SLOW_MODULES +=
+# Below-trait verification lane (branch ml-dsa-proofs).
+# This lane verifies the trait contract + all impl modules.  Modules
+# *above* `Libcrux_ml_dsa.Simd.Traits` (Arithmetic, Polynomial, Matrix,
+# Sample, Encoding.*, Ml_dsa_generic.*, Ntt top-level, etc.) are
+# deliberately left in ADMIT mode here — the dual above-trait agent's
+# branch verifies them against the SAME trait pre/post defined in
+# `Libcrux_ml_dsa.Simd.Traits.{fsti,fst}` and
+# `Libcrux_ml_dsa.Simd.Traits.Specs`.  The two lanes meet at the trait
+# contract.
 VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Portable.Vector_type.fst \
@@ -27,8 +36,6 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	Libcrux_ml_dsa.Constants.fst \
 	Libcrux_ml_dsa.Types.fst \
-	Libcrux_ml_dsa.Arithmetic.fst \
-	Libcrux_ml_dsa.Polynomial.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))
