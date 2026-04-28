@@ -36,6 +36,147 @@ Major deliverables:
 4. **Operations trait pre-condition audit**: 13 methods strengthened to match the Portable free-fn requires for panic freedom — `use_hint`, all `rejection_sample_*`, all `gamma1_*`, `commitment_serialize`, all `error_*`, all `t0_*`, all `t1_*`, `reduce`. Bounds packaged in opaque-predicate form (reuse of `Spec.Utils.is_i32b_array_opaque`; new `is_binary_array_8_opaque` in specs.rs) following ML-KEM's `bounded_pos_i16_array` style. All Portable + AVX2 impls mirror.
 5. **`reduce` / `shift_left_then_reduce` mismatch resolved structurally**: dedicated `arithmetic::reduce` free fn in both Portable and AVX2 (Barrett-reduce only, no shift), `Operations::reduce` calls it directly, `shift_left_then_reduce` keeps its `SHIFT_BY == 13`-only pre. AVX2 dedups via `shift_left_then_reduce` calling `reduce` after `mm256_slli_epi32`.
 
+---
+
+## Hard rule: every function we touch leaves in final form
+
+**Going forward, do not remove a body admit without also bringing the
+function's post to its final shape.** A "weak post + admit-removed"
+pass is a foot-gun: it leaves the proof obligation indistinguishable
+from before, but consumers think the function is done.
+
+Concretely, when picking a function to work on:
+
+1. **Strengthen the post** to its target form (canonical
+   `Hacspec_ml_dsa.*` cite, full functional correctness, not just a
+   bound). Mark the trait/free-fn posts as final — no admits.
+2. **State the necessary intermediate lemmas** in the
+   commute / spec module (`Hacspec_ml_dsa.Commute.Chunk.fst`,
+   `Spec.Utils.fsti`, etc.) **before** touching the function body.
+3. **Add loop invariants** that thread the per-iteration shape of the
+   strong post through the function body. Don't accept a loop
+   invariant that's just `True`.
+4. **Discharge the body** with no `hax_lib::fstar!("admit ()")` and
+   no `verification_status(panic_free)` on free functions — those are
+   only allowed for pre-budgeted USER-lane items already documented
+   in `outstanding-admits.md`.
+5. **Run `./hax.sh prove` clean** before moving on. If you hit a
+   20-minute wall on a single function, fully revert your edits to
+   that function (so the next session starts from a known-good
+   state), document the obstacle in `outstanding-admits.md`, and
+   pick a different function.
+
+The thin-wrapper rule on impl methods is unchanged: each impl method
+mirrors the trait pre/post and forwards to a free function. The
+strengthening work happens at the free-function level — once the free
+function proves the strong post, the impl method auto-discharges
+through the thin-wrapper pattern (no body admit needed).
+
+## Recommended next-session work order
+
+The order optimizes for the rule above: each item is "pick a method
+or method group, finish it end-to-end, no admit residue." Cite
+`Hacspec_ml_dsa.*` exclusively per Hard Rule #3.
+
+### Step 6 — Create the commute scaffolding (~20 min)
+
+`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`
+does not exist yet. Per the hard rules, per-element commute lemmas
+land here. Create the file with the right module header + Hacspec
+imports; leave it empty otherwise. The next 4-5 functions that need
+strengthening will populate it.
+
+### Step 7 — `Operations::reduce` end-to-end (~1 hr)
+
+The dedicated `arithmetic::reduce` free fn (Portable + AVX2) is in
+place at `3faaff641` but the impl methods still have a body admit.
+Target: prove the impls without admit.
+
+- Portable: `arithmetic::reduce` already has the strong post
+  (`is_i32b_array_opaque 8380416` + per-lane `mod_q` congruence).
+  The impl method's post is `forall j i. reduce_lane_post …` per
+  `Libcrux_ml_dsa.Simd.Traits.Specs`. Bridge: a single per-lane
+  lemma in `Commute.Chunk.fst` that says `reduce_lane_post input
+  result <==> (centered Barrett bound) ∧ (mod_q congruence)` — both
+  shapes are already in spec form.
+- AVX2: same target. The free `arithmetic::reduce` post is
+  `barrett_red(input)` per i32x8 lane; needs a translation lemma to
+  `reduce_lane_post (f_repr v).[i] (f_repr v_future).[i]`.
+
+### Step 8 — `Operations::add` / `subtract` end-to-end (~1 hr)
+
+These already have strong posts at the trait level (`add_post` /
+`sub_post` over the `f_repr` view) and the underlying Portable free
+fns prove exactly that. AVX2 needs the Vec256 ↔ f_repr translation
+lemma. Should mirror Step 7's structure; pair them since the lemmas
+are nearly identical.
+
+### Step 9 — Per-method commute lemmas for the rest of the arithmetic
+trait methods (~3-4 hr total, one method at a time)
+
+`infinity_norm_exceeds`, `decompose`, `compute_hint`, `use_hint`,
+`montgomery_multiply`, `shift_left_then_reduce`, `power2round`. Each
+gets:
+- Final post in `Hacspec_ml_dsa.*` cite (most are already in this
+  shape — see `Simd.Traits.Specs.*_lane_post` predicates).
+- Per-method translation lemma in `Commute.Chunk.fst` for the AVX2
+  side (Vec256 ↔ f_repr).
+- Free-fn bodies discharged. Portable's free fns currently cite
+  `Spec.MLDSA.Math.*` (obsolete) — migrate to `Hacspec_ml_dsa.*` as
+  part of finishing each method.
+
+After Step 9 the Simd.Portable + Simd.Avx2 impl methods on
+arithmetic primitives should all be admit-free. The encoding +
+sample methods are deferred to later steps.
+
+### Step 10 — `Libcrux_ml_dsa.Arithmetic.power2round_vector` /
+`use_hint` end-to-end (~1 hr)
+
+These wrappers in `src/arithmetic.rs` currently have body admits and
+empty (`l_True`) posts. Target: state the proper per-vector post —
+each `re_vector[i]` has `Hacspec_ml_dsa.Arithmetic.power2round`
+applied to it (or `use_one_hint` for `use_hint`), the rest is
+unchanged. Loop invariants thread the partial result through.
+
+### Step 11 — Encoding methods, two waves
+
+**Wave 11A** (~3-4 hr): extend `fstar-helpers/fstar-bitvec/BitVecEq.fst`
+with offset-encoded `bit_pack` / `bit_unpack` variants needed for
+`gamma1_*` and `t0_*` (each value `v` is packed as `b - v` over a
+signed range — ML-KEM's existing helpers don't cover this).
+
+**Wave 11B** (~6-8 hr): one method at a time, take each of
+`gamma1_serialize`, `gamma1_deserialize`, `t0_serialize`,
+`t0_deserialize`, `t1_serialize`, `t1_deserialize`,
+`commitment_serialize`, `error_serialize`, `error_deserialize` and
+finish it end-to-end:
+- Trait post strengthened to `BitVecEq.int_t_array_bitwise_eq`
+  against `Hacspec_ml_dsa.Encoding.{simple_bit_pack, bit_pack, …}`.
+- Portable free fn's existing strong post (it already cites
+  `bit_vec_of_int_t_array`) carried through.
+- AVX2 free fn's strong post added (currently mid-body admit at
+  prefix).
+- Both impl methods discharge cleanly.
+
+The mid-body admits in `src/simd/avx2/encoding/{gamma1,t0,t1,error}.rs`
+get removed as we go.
+
+### Step 12 — `Operations::ntt` / `invert_ntt_montgomery` per-poly post (USER lane)
+
+Tier-3 chain of 8 layer-step lemmas with BitRev₈ zeta indexing in
+`Hacspec_ml_dsa.Commute.Chunk.fst::lemma_ntt_full_commute`. Wait for
+ML-KEM's analog (`libcrux-ml-kem/proofs/manual-proof-targets.md`
+USER-2) to land as a template. Once `ntt` is finished, `invert_ntt`
+and the AVX2 INVNTT layers are direct adaptations.
+
+### Step 13 — Phase 4: spec migration & cross-spec test activation
+
+Per `sprint-plan.md` Phase 4 (hours 44-48):
+- Delete `Spec.MLDSA.Math`, `Spec.MLDSA.Ntt`, `Spec.Intrinsics`.
+  Anything still citing them at this point is a Step 9/10/11 bug.
+- Activate cross-spec tests per `MLDSA_STATUS.md` "Cross-spec test
+  activation checklist" (~30 min).
+
 Historical context (earlier 2026-04-27/28 Funarr-unblock session):
 
 This doc was originally the resume entrypoint after the **2026-04-27/28
@@ -260,18 +401,33 @@ Allowed admit shapes: `#[hax_lib::fstar::verification_status::panic_free]`
 
 ## Hard rules carried forward from previous sessions
 
-1. **Pre-conditions never change** in `traits.rs` or `traits/specs.rs`.
-   Posts may be conjunctively strengthened; never weakened in a way
-   that would break a downstream caller's reliance.
-2. **20-minute wall-clock per proof attempt.** On overrun, admit (per
-   the allowed shapes above) and document.
-3. **Cite `Hacspec_ml_dsa.*` only** in new posts; never
+1. **Pre-conditions** in `traits.rs` and `traits/specs.rs` may be
+   conjunctively strengthened to match what the impls actually need
+   for panic freedom (audit landed at `e289170ea`); never weakened in
+   a way that would break a downstream caller's reliance. Posts may be
+   conjunctively strengthened.
+2. **Every function we touch leaves in final form.** Do not remove a
+   body admit without simultaneously bringing the function's post to
+   its target shape (canonical `Hacspec_ml_dsa.*` cite, full functional
+   correctness, loop invariants threading the strong post). A
+   "weak-post + admit-removed" pass is forbidden — it leaves the proof
+   obligation unchanged but consumers see the function as done.
+3. **20-minute wall-clock per proof attempt.** On overrun, **revert
+   your edits to the function** so the next session starts from a
+   known-good state, document the obstacle in `outstanding-admits.md`,
+   and pick a different function. Do NOT leave a body admit and call
+   it "in progress."
+4. **Cite `Hacspec_ml_dsa.*` only** in new posts; never
    `Spec.MLDSA.Math` or `Spec.MLDSA.Ntt` (obsolete, deleted in Phase 4).
-4. **Per-element commute lemmas** go in
+5. **Per-element commute lemmas** go in
    `specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`
-   (create if absent — it doesn't yet exist).
-5. **Never `verification_status(lax)`** anywhere. Only `panic_free` on
-   free functions, or `admit()` in free function bodies.
+   (create if absent — it doesn't yet exist; Step 6 in the work order).
+6. **Never `verification_status(lax)`** anywhere. The only allowed
+   admit shapes are `panic_free` on free functions and
+   `hax_lib::fstar!("admit ()")` in free-function bodies, and only for
+   pre-budgeted USER-lane items already documented in
+   `outstanding-admits.md`. Anything outside that set is a Hard Rule
+   #2 violation.
 6. **impls are thin one-line wrappers** with `#[requires]+#[ensures]`
    identical to the underlying free function's; the free function
    carries the proof body / admit / panic\_free.
