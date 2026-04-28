@@ -233,6 +233,27 @@ val poly_barrett_reduce
                 #v_Vector
                 myself))
 
+/// Compute `myself - InvNTT(b)` lane-wise, with the `· 128⁻¹` finalize of
+/// the inverse NTT fused into the per-lane `mont_mul(_, 1441)` here (saving
+/// ~80 SIMD ops per call vs running invert_ntt_montgomery\'s finalize +
+/// a separate scale).
+/// Scaling on entry:
+/// - `myself` is **plain** (`v c ≡ α mod q`) — caller deserialized v from
+///   the ciphertext via `decompress_then_deserialize_ring_element_v`,
+///   which produces plain coefficients.
+/// - `b` is in libcrux\'s **`·R⁻¹` form** (`v c ≡ β · R⁻¹ mod q`) — output
+///   of `invert_ntt_montgomery`, which preserves the `·R⁻¹` form set by
+///   `ntt_multiply` (each `mont_mul` carries one `·R⁻¹` factor through).
+/// The fused `mont_mul(b, 1441)` step:
+///   `mont_mul(b, 1441) = (β · R⁻¹) · 1441 · R⁻¹ = β · R²/128 · R⁻²
+///                       = β · 1/128 (mod q)`
+/// where `1441 = R²/128 mod q` per `pq-crystals/kyber/main/ref/ntt.c:106`.
+/// This simultaneously discharges the missing `· 128⁻¹` from
+/// `invert_ntt_montgomery`\'s 7-layer GS chain AND brings the lane back
+/// to plain form (`v r ≡ β · 128⁻¹ mod q`), so `myself - mont_mul(b, 1441)`
+/// is plain-form arithmetic.  Result is plain post-Barrett.
+/// See `src/invert_ntt.rs` (above `invert_ntt_montgomery`) for the
+/// upstream chain doc.
 val subtract_reduce
       (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -244,6 +265,16 @@ val subtract_reduce
           let result:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector = result in
           Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) result)
 
+/// Compute `myself + message + InvNTT(result)` lane-wise — same fused
+/// `mont_mul(result, 1441)` pattern as `subtract_reduce`.
+/// Scaling on entry:
+/// - `myself` (= `error_2` at the call site `compute_ring_element_v` in
+///   matrix.rs): plain (`v ≡ α mod q`).
+/// - `message`: plain (output of `deserialize_then_decompress_message`).
+/// - `result`: `·R⁻¹` form (output of `invert_ntt_montgomery`).
+/// `mont_mul(result, 1441)` brings `result` to plain (per the fused-finalize
+/// algebra documented above `subtract_reduce`), then plain + plain + plain
+/// → plain, Barrett-reduced into `[0, q)`.
 val add_message_error_reduce
       (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -257,6 +288,15 @@ val add_message_error_reduce
           let output:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector = output in
           Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly #v_Vector (mk_usize 3328) output)
 
+/// Compute `InvNTT(myself) + error` lane-wise — fused `mont_mul(myself, 1441)`
+/// pattern as `subtract_reduce`.
+/// Scaling on entry:
+/// - `myself`: `·R⁻¹` form (output of `invert_ntt_montgomery` at the call
+///   site `compute_vector_u` in matrix.rs).
+/// - `error` (= `error_1[i]`): plain, small (`is_bounded_poly(7)` — direct
+///   from CBD sampling).
+/// `mont_mul(myself, 1441)` brings `myself` to plain (fused finalize), then
+/// `plain + plain → plain`, Barrett-reduced.
 val add_error_reduce
       (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
@@ -317,6 +357,22 @@ val to_standard_domain
                 <:
                 bool)))
 
+/// Compute `to_standard_domain(myself) + error` lane-wise — different
+/// fused-finalize pattern from the three INTT-track reduce fns above.
+/// Scaling on entry:
+/// - `myself` (= `t_as_ntt[i]` at the call site `compute_As_plus_e` in
+///   matrix.rs): `·R⁻¹` form (output of accumulated `ntt_multiply` chain).
+///   This is the **post-matrix-multiply** path — there is NO inverse NTT
+///   upstream here; `myself` is in the NTT domain still.
+/// - `error` (= `error_as_ntt[i]`): plain (sampled CBD then NTT\'d; NTT
+///   preserves plain input scaling — see `src/ntt.rs` cross-spec test
+///   `ntt_matches_spec`).
+/// `to_standard_domain(myself) = mont_mul(myself, R²) = mont_mul(myself, 1353)`
+/// applies a single `· R²` factor: `(α · R⁻¹) · 1353 · R⁻¹ = α · R² · R⁻²
+/// = α (mod q)`, bringing `myself` to plain form.  Result is plain
+/// post-Barrett.  Note `1353 = R² mod q` ≠ `1441 = R²/128 mod q` — the
+/// distinction is the missing `· 128⁻¹` factor that ONLY applies to the
+/// INTT track (where `invert_ntt_montgomery` skips its FIPS-203 finalize).
 val add_standard_error_reduce
       (#v_Vector: Type0)
       {| i0: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}

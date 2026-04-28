@@ -1660,6 +1660,244 @@ let lemma_intt_mont_finalize_fe
     (* `i16_to_spec_fe r` has `f_val = (v r) % 3329`. *)
     ()
 
+(*** Phase 7a Step 7 — to_standard_domain finalization (matrix-mul track) ***)
+
+(* The standard-domain track is the post-matrix-multiply analogue of the
+   INTT-Mont finalize.  After `t_as_ntt[i] = add_to_ring_element ∘
+   ntt_multiply` (over k accumulators), each lane stores `α · R⁻¹ mod q`
+   where α is the FIPS-203 plain spec value.  `to_standard_domain` =
+   `mont_mul(_, 1353)` with `1353 = R² mod q` produces a single `· R²`
+   factor: lane stores `(α · R⁻¹) · 1353 · R⁻¹ = α · R² · R⁻² = α (mod q)`.
+
+   Note `1353 = R² mod q ≠ 1441 = R²/128 mod q` — the distinction is the
+   missing `· 128⁻¹` factor that ONLY applies to the INTT track (where
+   `invert_ntt_montgomery` skips the FIPS-203 `· 128⁻¹` finalize).
+
+   The keystone numeric identity: `1353 · 169 ≡ R · R⁻¹ · R ≡ R ≡ 2285 (mod q)`.
+   So `mont_mul(myself, 1353) ≡ v myself · 2285 ≡ α · R⁻¹ · R ≡ α (mod q)` ✓. *)
+
+let lemma_1353_eq_R () :
+    Lemma ((1353 * 169) % 3329 == 2285 /\
+           (2285 * 169) % 3329 == 1)
+  = assert_norm ((1353 * 169) % 3329 == 2285);
+    assert_norm ((2285 * 169) % 3329 == 1)
+
+(* Per-element standard-domain finalization core.
+
+   Given the standard-domain form precondition on `myself` (the impl's
+   pre-`to_standard_domain` i16 coefficient lane):
+     `(v myself * 2285) mod q == plain_real_val mod q`
+   (i.e., the impl's `myself` represents `α · R⁻¹` with α = plain_real_val).
+
+   And given the trait's `mont_mul(myself, 1353)` post:
+     `v r mod q == (v myself * 1353 * 169) mod q`.
+
+   Conclusion: `v r mod q == plain_real_val mod q`, i.e., `r` carries the
+   plain abstract value at the int level. *)
+
+let lemma_mont_form_post (myself r: i16) (plain_real_val: int) :
+    Lemma
+    (requires
+      (v myself * 2285) % 3329 == plain_real_val % 3329 /\
+      v r % 3329 == (v myself * 1353 * 169) % 3329)
+    (ensures v r % 3329 == plain_real_val % 3329)
+  = let q : pos = 3329 in
+    (* Step 1: `1353 * 169 ≡ 2285 (mod q)`. *)
+    assert_norm ((1353 * 169) % 3329 == 2285);
+    (* Step 2: factor `v myself * 1353 * 169 == v myself * (1353 * 169)`. *)
+    assert (v myself * 1353 * 169 == v myself * (1353 * 169));
+    L.lemma_mod_mul_distr_r (v myself) (1353 * 169) q;
+    (* Now: `(v myself * 1353 * 169) % q == (v myself * 2285) % q`. *)
+    assert ((v myself * (1353 * 169)) % q
+            == (v myself * ((1353 * 169) % q)) % q);
+    assert ((v myself * 1353 * 169) % q == (v myself * 2285) % q);
+    (* Combine with the precondition:
+         `(v myself * 2285) % q == plain_real_val % q`. *)
+    assert ((v myself * 1353 * 169) % q == plain_real_val % q);
+    (* And `v r % q == (v myself * 1353 * 169) % q`. *)
+    assert (v r % q == plain_real_val % q)
+
+(* Standard-domain (matrix-mul track) opaque per-lane predicate.
+
+   Input lane: the i16 stored in the impl's polynomial after the
+   `add_to_ring_element ∘ ntt_multiply` chain (e.g., `t_as_ntt[i]` at
+   the call site `compute_As_plus_e` in matrix.rs).
+   `plain_lane`: the corresponding spec FE value, i.e., the lane of
+   `α` plain (the value `to_standard_domain(myself)` is meant to recover).
+
+   Body: `(v input_lane * 2285) mod q == plain_lane.f_val mod q`,
+   capturing that the impl coefficient is in `α · R⁻¹` form.
+
+   Marked opaque so callers see only the structural per-lane predicate;
+   the raw mod arithmetic stays hidden. *)
+
+[@@ "opaque_to_smt"]
+let mont_form_lane
+    (input_lane: i16) (plain_lane: P.t_FieldElement) : prop =
+  (v input_lane * 2285) % 3329 == v plain_lane.P.f_val % 3329
+
+(* Reveal-on-demand helper.  No SMTPat — call explicitly inside Tier-2
+   lemmas that need the unfolded form. *)
+let lemma_mont_form_lane_reveal
+    (input_lane: i16) (plain_lane: P.t_FieldElement) :
+    Lemma (requires mont_form_lane input_lane plain_lane)
+          (ensures
+            (v input_lane * 2285) % 3329 == v plain_lane.P.f_val % 3329)
+  = reveal_opaque (`%mont_form_lane)
+                  (mont_form_lane input_lane plain_lane)
+
+(* Intro direction. *)
+let lemma_mont_form_lane_intro
+    (input_lane: i16) (plain_lane: P.t_FieldElement) :
+    Lemma (requires
+            (v input_lane * 2285) % 3329 == v plain_lane.P.f_val % 3329)
+          (ensures mont_form_lane input_lane plain_lane)
+  = reveal_opaque (`%mont_form_lane)
+                  (mont_form_lane input_lane plain_lane)
+
+(* Per-chunk wrap (matches `forall16` pattern in trait posts). *)
+let mont_form_chunk
+    (input_chunk: t_Array i16 (mk_usize 16))
+    (plain_chunk: t_Array P.t_FieldElement (mk_usize 16)) : prop =
+  Spec.Utils.forall16 (fun (i: nat {i < 16}) ->
+    mont_form_lane (Seq.index input_chunk i)
+                   (Seq.index plain_chunk i))
+
+(* Per-lane consumer lemma: given the standard-domain form on lane
+   `myself` and the trait's `montgomery_multiply_by_constant(myself, 1353)`
+   post, conclude that `r` carries the plain abstract value `plain`.
+
+   This is the per-element bridge for `add_standard_error_reduce`: after
+   the `mont_mul(coefficient, 1353)` step (= `to_standard_domain`), the
+   lane is in plain form. *)
+
+let lemma_to_standard_domain_finalize_fe
+    (myself r: i16) (plain: P.t_FieldElement) :
+    Lemma (requires
+            mont_form_lane myself plain /\
+            v r % 3329 == (v myself * 1353 * 169) % 3329)
+          (ensures i16_to_spec_fe r == plain)
+  = reveal_opaque (`%mont_form_lane) (mont_form_lane myself plain);
+    lemma_mont_form_post myself r (v plain.P.f_val);
+    assert (v r % 3329 == v plain.P.f_val % 3329);
+    assert (v plain.P.f_val % 3329 == v plain.P.f_val);
+    (* `i16_to_spec_fe r` has `f_val = (v r) % 3329`. *)
+    ()
+
+(* Per-lane bridge for the loop body of `add_standard_error_reduce`.
+
+   Given:
+     - `mont_form_lane myself plain` — standard-domain form of `myself`
+     - `montgomery_multiply_by_constant_post(myself_arr, 1353, normal_arr)` at lane `l`
+     - `add_post(normal_arr, error_arr, sum_arr)` at lane `l`
+     - `barrett_reduce_post(sum_arr, red_arr)` at lane `l`
+
+   Conclude:
+     `i16_to_spec_fe red_arr.[l]
+        == FE.new ((plain.f_val + i16_to_spec_fe error_arr.[l]).f_val) mod q)`,
+   i.e., the impl chain produces the lane-wise plain spec
+   `(plain.f_val + error_lane.f_val) mod q`. *)
+
+let lemma_add_standard_error_reduce_lane
+    (myself_lane normal_lane error_lane sum_lane red_lane: i16)
+    (plain: P.t_FieldElement) :
+    Lemma (requires
+            mont_form_lane myself_lane plain /\
+            (* From `mont_mul(myself, 1353)` post: v normal % q == v myself * 1353 * 169 % q *)
+            v normal_lane % 3329 == (v myself_lane * 1353 * 169) % 3329 /\
+            v sum_lane == v normal_lane + v error_lane /\
+            v red_lane % 3329 == v sum_lane % 3329)
+          (ensures
+            i16_to_spec_fe red_lane
+              == P.impl_FieldElement__add plain
+                   (i16_to_spec_fe error_lane))
+  = (* Step 1: per-lane to_standard_domain finalize: `i16_to_spec_fe normal_lane == plain`. *)
+    lemma_to_standard_domain_finalize_fe myself_lane normal_lane plain;
+    (* Step 2: barrett: i16_to_spec_fe red == i16_to_spec_fe sum. *)
+    lemma_barrett_fe_commute sum_lane red_lane;
+    (* Step 3: lift the int sum to the FE-add equation. *)
+    lemma_add_fe_commute_plain normal_lane error_lane sum_lane
+
+(* ----- Phase 7a Step 7: poly-level commute for `add_standard_error_reduce` -----
+
+   Tier-1 lemma assembling the per-chunk FE-add equation (lifted by the
+   caller via `lemma_add_standard_error_reduce_lane` per processed chunk)
+   into the hacspec function equation, parameterized by a ghost
+   `ntt_product` array.
+
+   The caller (Rust `add_standard_error_reduce`) discharges the per-chunk
+   FE-add equation in its loop invariant.  The lemma below composes 16
+   per-chunk × 16 per-lane = 256 lane-level FE equations into the
+   `to_spec_poly_plain (future_myself) == HP.add_standard_error_reduce ...`
+   identity. *)
+
+#push-options "--z3rlimit 400 --split_queries always"
+
+(* Tier-1 commute for `add_standard_error_reduce`.  The caller is expected
+   to discharge per-lane FE-add equations specialized to the per-chunk
+   slice of `ntt_product` (via `lemma_add_standard_error_reduce_lane`
+   inside the loop body); this lemma assembles 256 such equations into
+   the hacspec polynomial-level identity. *)
+let lemma_add_standard_error_reduce_commute
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (myself error result: V.t_PolynomialRingElement vV)
+    (ntt_product: t_Array P.t_FieldElement (mk_usize 256)) :
+  Lemma
+    (requires
+      (* Per-lane FE-add equation specialized to the slice of ntt_product
+         at chunk k.  The caller's loop body proves this directly via
+         `lemma_add_standard_error_reduce_lane` after each iteration. *)
+      forall (k: nat) (l: nat). k < 16 /\ l < 16 ==>
+        i16_to_spec_fe
+          (Seq.index (T.f_repr (Seq.index result.V.f_coefficients k)) l)
+          == P.impl_FieldElement__add
+               (Seq.index
+                 (Seq.slice ntt_product (k * 16) (k * 16 + 16)) l)
+               (i16_to_spec_fe
+                 (Seq.index (T.f_repr (Seq.index error.V.f_coefficients k)) l)))
+    (ensures
+       to_spec_poly_plain result
+         == HP.add_standard_error_reduce ntt_product (to_spec_poly_plain error))
+  = let lhs_poly = to_spec_poly_plain result in
+    let err_poly = to_spec_poly_plain error in
+    let hp = HP.add_standard_error_reduce ntt_product err_poly in
+    let aux (j: nat) : Lemma (j < 256 ==>
+        Seq.index lhs_poly j == Seq.index hp j)
+      = if j < 256 then begin
+          let k : nat = j / 16 in
+          let l : nat = j % 16 in
+          let e_arr  = T.f_repr (Seq.index error.V.f_coefficients k) in
+          let r_arr  = T.f_repr (Seq.index result.V.f_coefficients k) in
+          let np_slice = Seq.slice ntt_product (k * 16) (k * 16 + 16) in
+          (* Apply the FE-add equation at (k, l). *)
+          assert (i16_to_spec_fe (Seq.index r_arr l)
+                    == P.impl_FieldElement__add
+                         (Seq.index np_slice l)
+                         (i16_to_spec_fe (Seq.index e_arr l)));
+          (* Slice index: `np_slice.[l] == ntt_product.[j]`. *)
+          Seq.lemma_index_slice ntt_product (k * 16) (k * 16 + 16) l;
+          (* Unfold to_spec_poly_plain at index j. *)
+          poly_lane_plain result j;
+          poly_lane_plain error j;
+          (* Unfold the createi in HP.add_standard_error_reduce at j. *)
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (jj: usize { jj <. mk_usize 256 }) ->
+              P.impl_FieldElement__new
+                (cast (((cast ((Seq.index ntt_product (v jj)).P.f_val <: u16) <: u32) +!
+                        (cast ((Seq.index err_poly (v jj)).P.f_val <: u16) <: u32)
+                        <: u32)
+                      %! (cast (P.v_FIELD_MODULUS <: u16) <: u32)
+                      <: u32)
+                <: u16)
+              <: P.t_FieldElement)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs_poly hp
+
+#pop-options
+
 (*** Phase 7b — Forward NTT layer commute (target #1: ntt_at_layer_1) ***)
 
 (* Per-lane unfold helper for `mont_i16_to_spec_array`.  Wraps
