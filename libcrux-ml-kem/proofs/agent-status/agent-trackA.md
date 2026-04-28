@@ -2,7 +2,62 @@
 
 **Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
 **Branch:** `trait-opacify`
-**Tip at end:** `fa2151ea8` (was `7bb7e1a81` at start of this evening resume)
+**Tip at end:** `b7b49c358` (was `7bb7e1a81` at start of this evening resume)
+
+## 2026-04-28 evening — Phase 7a Step 2 layer 2 (the Z3 trap)
+
+Added the **layer 2 inverse hacspec bridge** to Bridges.fst.  The
+trait's layer-2 branch_post has a 3-way nested if-ladder
+(`z = b<2 ? zeta0 : zeta1`, `base = b<2 ? 0 : 8`, `off = b∈{0,2} ? 0 : 2`)
+which previously caused Z3 timeouts >2.7 min for forward layer 2 in
+prior session.
+
+### Decomposition (8 new lemmas, ~310 LOC)
+
+| Lemma | Purpose |
+|---|---|
+| `zetas_2_lane` | per-lane unfold for `zetas_2` |
+| `lemma_ntt_inverse_layer_n_16_4_lane` | per-lane unfold for `IN.ntt_inverse_layer_n 16 p 4 zs` |
+| `lemma_inv_ntt_layer_2_step_branch_{0,1,2,3}_lane_bridge` | 4 per-branch helpers at CONCRETE `b` literals |
+| `lemma_inv_ntt_layer_2_step_lane_bridge` | per-lane wrapper dispatching to the right per-branch helper |
+| `lemma_inv_ntt_layer_2_step_to_hacspec` | per-vector bridge under `--split_queries always` |
+
+### Z3 wall — three failed attempts before the unlock
+
+1. **Symbolic-b in lane bridge** — predicted Z3-trap per the existing
+   forward-layer-2 attempt comment.  Skipped.
+2. **4 per-branch + aux 4-way disjunction case-split**:
+   `if j = 0 || j = 1 || j = 4 || j = 5 then () else if ...`.  Z3
+   saturated rlimit 400 in **11 min** on one sub-query.
+3. **4 per-branch + 16 individual `assert`s + `Seq.lemma_eq_intro`**:
+   asserts passed individually (each <100 ms), but `lemma_eq_intro`'s
+   forall precondition saturated rlimit 400 in **4 min**.
+
+### The unlock
+
+Per-lane wrapper (each call has only 4 in-scope facts — one branch's
+worth) + `--split_queries always` on the per-vector bridge.  Z3
+splits the forall into 16 separate per-j sub-queries; each closes
+in <100 ms.  Total cold rebuild: **188 s wall**.
+
+### Pattern lessons for similar walls
+
+- **Per-branch decomposition with concrete `b`** is the structural fix
+  for nested-if-ladder branch_posts.  The 4 helpers each have
+  literal `b` so the if-ladder collapses pre-SMT.
+- **Per-lane wrapper** keeps each VC's in-scope facts minimal.
+- **`--split_queries always`** is the Z3 setting that turns a
+  forall over 16 lanes into 16 cheap sub-queries.  Apply it to the
+  per-vector bridge that does `Classical.forall_intro` +
+  `Seq.lemma_eq_intro`.
+
+This lifts the layer 2 trap.  The same pattern can be applied to
+layer 2 forward (USER-deferred earlier) and AVX2 layer 1/2 (USER-4)
+if those become target.
+
+---
+
+
 
 ## 2026-04-28 evening resume — Phase 7a Step 2 layer 3
 
