@@ -1,22 +1,21 @@
 module Spec.MLDSA.Math
 (*
-  ⚠️  DELETION-PENDING (scheduled for Phase 4 of the ML-DSA proof sprint).
+  Tier-1 shared integer spec for SIMD arithmetic operations.
 
-  This module is the OBSOLETE hand-written tier of the ML-DSA spec
-  hierarchy.  The CANONICAL spec is in
-  `specs/ml-dsa/proofs/fstar/extraction/Hacspec_ml_dsa.*.fst`, in
-  particular `Hacspec_ml_dsa.Arithmetic.fst` (which contains the
-  authoritative `mod_q`, `decompose`, `power2round`, `make_hint`,
-  `uuse_hint`, etc.).
+  This module holds the *integer-form* specs that both the Portable
+  and AVX2 `Operations` impls cite as their underlying free-fn post.
+  Everything here is stated in plain integer arithmetic plus the
+  opaque ops from `Spec.Intrinsics` — no `mod_q`, no field-modulus
+  opacity in the spec body.
 
-  DO NOT add new citations to anything in this module.  Existing
-  citations (currently from `montgomery_multiply` post in
-  `traits.rs`, and AVX2 NTT proofs) are scheduled to migrate to
-  `Hacspec_ml_dsa.Arithmetic` / `Hacspec_ml_dsa.Ntt` in Phase 4A,
-  and then this file is deleted in Phase 4B.
+  The companion Tier-2 layer
+  (`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`)
+  proves the hacspec-lift property for each spec here — i.e., what
+  the integer-level definition means after lifting modulo q.
 
-  See `libcrux-ml-dsa/proofs/sprint-plan.md` for the migration plan
-  and `libcrux-ml-dsa/MLDSA_STATUS.md` for current status.
+  Eventual relocation into `specs/ml-dsa/proofs/fstar/commute/` (or
+  a sibling) is fine for cleanliness but is *not* a deletion.  This
+  is the shared-spec layer of the proof.
 *)
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
 open FStar.Mul
