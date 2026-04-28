@@ -11,15 +11,36 @@ use hax_lib::prop::ToProp;
 use crate::polynomial::spec;
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning")]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(4 * 3328, re) & (*zeta_i == 128))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)) & (*future(zeta_i) == 64))]
+#[hax_lib::ensures(|result|
+    spec::is_bounded_poly(3328, future(re))
+    & (*future(zeta_i) == 64)
+    & fstar!(r#"
+        forall (i: usize). i <. mk_usize 16 ==>
+          Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array
+            (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+              (Seq.index ${re}_future.f_coefficients (v i))) ==
+          Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
+            (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array
+              (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
+                (Seq.index ${re}.f_coefficients (v i))))
+            (mk_usize 2)
+            (Rust_primitives.unsize
+              (Libcrux_ml_kem.Vector.Traits.Spec.zetas_4
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 127 -! mk_usize 4 *! i))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 126 -! mk_usize 4 *! i))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 125 -! mk_usize 4 *! i))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 124 -! mk_usize 4 *! i))))
+      "#))]
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
 ) {
     #[cfg(hax)]
     let _zeta_i_init = *zeta_i;
+    #[cfg(hax)]
+    let _re_init = re.coefficients;
 
     for round in 0..16 {
         hax_lib::loop_invariant!(|round: usize| {
@@ -28,8 +49,24 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
                     if i < 16 {
                         if i >= round {
                             spec::is_bounded_vector(4 * 3328, &re.coefficients[i])
+                                & fstar!(r#"
+                                    Seq.index ${re}.f_coefficients (v $i) ==
+                                    Seq.index ${_re_init} (v $i)
+                                  "#)
                         } else {
+                            // Impl-level (Option B): record only the relationship
+                            // re.coefficients[j] == f_inv_ntt_layer_1_step _re_init[j] (parametric zetas).
+                            // The function-form lift to IN.ntt_inverse_layer_n is done once after the loop.
                             spec::is_bounded_vector(3328, &re.coefficients[i])
+                                & fstar!(r#"
+                                    Seq.index ${re}.f_coefficients (v $i) ==
+                                    Libcrux_ml_kem.Vector.Traits.f_inv_ntt_layer_1_step #$:Vector
+                                      (Seq.index ${_re_init} (v $i))
+                                      (Libcrux_ml_kem.Polynomial.zeta (mk_usize 127 -! mk_usize 4 *! $i))
+                                      (Libcrux_ml_kem.Polynomial.zeta (mk_usize 126 -! mk_usize 4 *! $i))
+                                      (Libcrux_ml_kem.Polynomial.zeta (mk_usize 125 -! mk_usize 4 *! $i))
+                                      (Libcrux_ml_kem.Polynomial.zeta (mk_usize 124 -! mk_usize 4 *! $i))
+                                  "#)
                         }
                     } else {
                         true.to_prop()
@@ -39,10 +76,19 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 
         *zeta_i -= 1;
         hax_lib::fstar!(
-            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) 
-                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328) 
+            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328)
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
         );
+        // Hand-holding for the impl-level loop invariant: link local
+        // `zeta_i` to the parametric form `127 - 4*round` so the
+        // assignment's call substitutes into the j=round branch cleanly.
+        hax_lib::fstar!(r#"
+            assert (zeta_i == mk_usize 127 -! mk_usize 4 *! round);
+            assert (zeta_i -! mk_usize 1 == mk_usize 126 -! mk_usize 4 *! round);
+            assert (zeta_i -! mk_usize 2 == mk_usize 125 -! mk_usize 4 *! round);
+            assert (zeta_i -! mk_usize 3 == mk_usize 124 -! mk_usize 4 *! round)
+          "#);
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
             zeta(*zeta_i),
@@ -52,6 +98,44 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         );
         *zeta_i -= 3;
     }
+    // Phase 7a (track A) Step 4 — Option B: lift the impl-level loop
+    // invariant to the function-form citation in the ensures via a
+    // post-loop forall_intro over the bridge lemma.  Each chunk j: reveal
+    // its `is_i16b_array_opaque (4*3328)` (from the original
+    // `is_bounded_poly` precondition on _re_init), then invoke the bridge
+    // to lift the impl equation to the spec function-form equation.
+    hax_lib::fstar!(r#"
+        let aux (j: nat) : Lemma (j < 16 ==>
+            Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array
+              (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector
+                (Seq.index re.f_coefficients j)) ==
+            Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n (mk_usize 16)
+              (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array
+                (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector
+                  (Seq.index ${_re_init} j)))
+              (mk_usize 2)
+              (Rust_primitives.unsize
+                (Libcrux_ml_kem.Vector.Traits.Spec.zetas_4
+                  (Libcrux_ml_kem.Polynomial.zeta (mk_usize 127 -! mk_usize 4 *! sz j))
+                  (Libcrux_ml_kem.Polynomial.zeta (mk_usize 126 -! mk_usize 4 *! sz j))
+                  (Libcrux_ml_kem.Polynomial.zeta (mk_usize 125 -! mk_usize 4 *! sz j))
+                  (Libcrux_ml_kem.Polynomial.zeta (mk_usize 124 -! mk_usize 4 *! sz j)))))
+          = if j < 16 then begin
+              reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array
+                    (Seq.index ${_re_init} j)));
+              Hacspec_ml_kem.Commute.Bridges.lemma_inv_ntt_layer_1_step_to_hacspec
+                #v_Vector
+                (Seq.index ${_re_init} j)
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 127 -! mk_usize 4 *! sz j))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 126 -! mk_usize 4 *! sz j))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 125 -! mk_usize 4 *! sz j))
+                (Libcrux_ml_kem.Polynomial.zeta (mk_usize 124 -! mk_usize 4 *! sz j))
+            end
+        in
+        Classical.forall_intro aux
+      "#);
 }
 
 // `invert_ntt_at_layer_2` and `invert_ntt_at_layer_3` deliberately omit
