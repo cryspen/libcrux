@@ -118,21 +118,27 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
 
 ## Active admits
 
-### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}
-- **File / lines**: `libcrux-ml-dsa/src/simd/traits/specs.rs:292-368`
-  (the four `#[hax_lib::fstar::after]` SMTPat-bridge lemmas).
+### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_post
+- **File / lines**: `libcrux-ml-dsa/src/simd/traits/specs.rs:312-368`
+  (the two `_post` SMTPat-bridge lemmas; the matching `_pre` lemmas now
+  carry real proofs as of commit `60f5a9fe9`).
 - **Annotation**: `admit ()` in lemma body.
-- **Phase added**: pre-existing; bound tightened in 2026-04-28 session.
-- **Diagnosis**: The four lemmas claim
-  `is_i32b_array_opaque b1 a /\ is_i32b_array_opaque b2 b /\ b1+b2 ≤ <bound>`
-  implies `add_pre a b` (i.e. each lane sum fits in i32). The bound was
-  `4294967295` (u32::MAX) which is unsound (allows `v a[i] + v b[i]` to
-  reach 2^32-1, exceeding i32::MAX = 2^31-1). The 2026-04-28 session
-  tightened the bound to `2147483647` (i32::MAX = 2^31-1). The four
-  lemma bodies still carry `admit ()`; they should close mechanically
-  with the tighter bound via `reveal_opaque` plus int arithmetic.
-- **Suggested mitigation**: remove the four `admit ()` bodies and replace
-  with `reveal_opaque (\`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque); reveal_opaque (\`%add_pre) (add_pre)` (and analogously for sub/post). ~20 min.
+- **Phase added**: pre-existing.
+- **Diagnosis**: lemma is shape "given `add_post a b a_future` and
+  `is_i32b_array_opaque b1 a` and `is_i32b_array_opaque b2 b` and
+  `b1+b2 ≤ b3`, conclude `is_i32b_array_opaque b3 a_future`". The `_pre`
+  variant closed cleanly with two `reveal_opaque` calls. The `_post`
+  variant fails with "incomplete quantifiers": the unfolded `add_post`
+  is `forall (i: usize). i < 8 ==> v a_future[i] = v a[i] + v b[i]` while
+  the conclusion's `is_i32b_array_opaque b3 a_future` after unfolding is
+  `forall (i: nat). i < Seq.length a_future ==> -b3 ≤ v a_future[i] ≤ b3`.
+  Z3 has trouble matching the `usize` quantifier against the `nat`
+  one. An `introduce forall (i: nat{i < 8}) ... with assert (...)`
+  attempt failed because Z3 couldn't bridge the per-i:nat assertion to
+  the `usize`-quantified hypothesis automatically.
+- **Suggested mitigation**: rewrite as `Classical.forall_intro
+  (fun (i:usize{v i < 8}) -> ...)` to bind the quantifier in `usize`,
+  or use `Spec.Utils.lemma_intb_le` to directly bound each lane. ~30 min.
 
 ### Libcrux_ml_dsa.Simd.Avx2.Encoding.{Gamma1,T0,T1,Error} body admits
 - **File / lines**:
@@ -200,6 +206,29 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   extracted to `Iterator.f_fold` with a complex tuple-state closure,
   triggering a typeclass-resolution failure on `t_FnOnce`. Refactored
   to plain `for i in 0..randomness.len() { let byte = randomness[i]; ... }`.
+
+### Libcrux_ml_dsa.Simd.Portable + Simd.Avx2 impl-Operations method body admits
+- **File / lines**: `libcrux-ml-dsa/src/simd/portable.rs:34-300` and
+  `libcrux-ml-dsa/src/simd/avx2.rs:30-360` (Operations impl blocks).
+- **Annotation**: `#[hax_lib::attributes]` on impl block;
+  `#[requires]/[ensures]` on each method matching trait pre/post; body
+  begins with `hax_lib::fstar!("admit ()")` (except for Portable add /
+  subtract, which discharge cleanly since the underlying free fn post is
+  identical to the trait's).
+- **Phase added**: 2026-04-28 (Step 5b extension).
+- **Diagnosis**: After lifting Simd.Portable.fst + Simd.Avx2.fst from
+  ADMIT to CHECK (Step 5), the impl methods extracted with `f_*_pre =
+  true; f_*_post = true`. To carry strong trait posts to downstream
+  callers (the thin-wrapper rule), the impl methods now declare exact
+  trait-side `#[requires]/[ensures]`. The body admits are needed because:
+  (1) some Portable underlying free fns prove a strictly weaker post than
+  the trait (e.g. `infinity_norm_exceeds`); (2) all AVX2 free fns operate
+  on Vec256 (the bitvec model) while the trait posts cite f_repr (i32x8
+  view) — bridging the two needs per-method translation lemmas.
+- **Suggested mitigation**: per-method translation lemma library in
+  `specs/ml-dsa/proofs/fstar/commute/` linking Vec256 ↔ f_repr per
+  Operations method. Estimate 20-30 min per method × ~21 methods ×
+  2 impls (Portable rarely needs translation; AVX2 needs all 21).
 
 ### Libcrux_ml_dsa.Simd.Traits.ntt (per-poly post)
 - **File / lines**: `libcrux-ml-dsa/src/simd/traits.rs:158-172` (Operations::ntt)
