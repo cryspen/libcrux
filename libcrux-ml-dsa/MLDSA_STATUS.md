@@ -1,9 +1,9 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 8 AVX2 closed (2026-04-28 session). AVX2 `Operations::add` and `Operations::subtract` discharge without body admits, on top of the Step 7 AVX2 reduce close.
+**Tip**: Step 9 partial (2026-04-28 session). Both `Operations::infinity_norm_exceeds` and `Operations::power2round` impl bodies discharge for both Portable and AVX2; Portable `Operations::montgomery_multiply` body discharges. Spec.MLDSA.Math reframed as the Tier-1 shared-spec layer.
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
-**Empirical baseline**: **98 modules invoked, [CHECK]=42, [ADMIT]=56, 98 verified, 0 errors**. Same totals as prior session — the AVX2 add/subtract body proofs land inside `Libcrux_ml_dsa.Simd.Avx2.fst` (already CHECK).
+**Empirical baseline**: **71 modules invoked (warm cache), [CHECK]=15, [ADMIT]=56, 71 verified, 0 errors, 0 make-level failures**. Cold-cache totals would still match the prior 98 invoked / 42 CHECK / 56 ADMIT (the 5 newly-discharged impl methods all live inside `Simd.Portable.fst` and `Simd.Avx2.fst`, already CHECK modules).
 
 **This session's deltas (Step 8 AVX2)**:
 1. **Piece A — per-lane bridge lemmas** (`specs/ml-dsa/proofs/fstar/commute/Hacspec_ml_dsa.Commute.Chunk.fst`): proved `lemma_add_lane_commute` and `lemma_sub_lane_commute` — given `int_is_i32 (v lhs ± v rhs)` (from `add_pre`/`sub_pre`) and `lhs_future == add_mod_opaque lhs rhs` (from the strengthened AVX2 `arithmetic::{add,subtract}` post), conclude per-lane `v lhs_future == v lhs ± v rhs`. Body is just `Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype`.

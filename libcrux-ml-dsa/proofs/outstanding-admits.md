@@ -235,9 +235,11 @@ style). All Portable + AVX2 impls mirror the strengthened pres.
 - **Remaining methods with body admits** (AVX2 only — Portable mostly
   closed already): `zero`, `from_coefficient_array`, `to_coefficient_array`,
   `decompose`, `compute_hint`, `use_hint`,
-  `montgomery_multiply`, `shift_left_then_reduce`, `power2round`, all
+  `montgomery_multiply`, `shift_left_then_reduce`, all
   `rejection_sample_*`, all encoding methods, `ntt`, `invert_ntt_montgomery`.
-  (`infinity_norm_exceeds` cleared in Step 9 for both impls.)
+  Cleared in Step 9: `infinity_norm_exceeds` (both), `power2round` (both),
+  `montgomery_multiply` (Portable; AVX2 still admits — needs a bridging
+  lemma `lemma_mont_mul_bound_and_mod_q` in `Commute.Chunk.fst`).
 - **Phase added**: 2026-04-28 (Step 5b extension).
 - **Diagnosis**: After lifting Simd.Portable.fst + Simd.Avx2.fst from
   ADMIT to CHECK (Step 5), the impl methods extracted with `f_*_pre =
