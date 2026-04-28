@@ -60,6 +60,8 @@ callers get the bounds.  1/3 fully discharged.
 | `Libcrux_ml_dsa.Encoding.Verification_key.fst` | `0d11b64a9` | `generate_serialized`, `deserialize` |
 | `Libcrux_ml_dsa.Encoding.Signing_key.fst` | `0d11b64a9` | `generate_serialized` |
 | `Libcrux_ml_dsa.Encoding.Signature.fst` | `0d11b64a9` | `serialize`, `deserialize` |
+| `Libcrux_ml_dsa.Matrix.fst` | (this commit) | all 6 wrappers (`compute_as1_plus_s2`, `compute_matrix_x_mask`, `vector_times_ring_element`, `add_vectors`, `subtract_vectors`, `compute_w_approx`) — pre/post strong; bodies admit |
+| `Libcrux_ml_dsa.Polynomial.fst` (re-verified) | (this commit) | `Polynomial::add` and `Polynomial::subtract` posts strengthened with per-simd-unit `add_post`/`sub_post` chain — discharged via loop_invariant. No body admits. |
 
 ## Promotion pattern (for next session)
 

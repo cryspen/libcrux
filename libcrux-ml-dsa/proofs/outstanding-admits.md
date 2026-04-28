@@ -216,6 +216,43 @@ these are local to the above-trait lane.
 `set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
 in `0d11b64a9` (no admit needed there).
 
+### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,vector_times_ring_element,add_vectors,subtract_vectors,compute_w_approx}
+- **File**: `src/matrix.rs`
+- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix)
+- **Phase added**: above-trait C.6 (Matrix.fst promotion)
+- **Diagnosis**: each of the six wrappers chains trait calls
+  (`ntt_multiply_montgomery → add → reduce → invert_ntt_montgomery`
+  with possible variations).  Wrapper pre/post is strong (FIELD_MAX-bounded
+  inputs, FIELD_MAX-bounded or 2*FIELD_MAX-bounded outputs).  The body
+  needs nested loop-invariants that simultaneously track partial
+  bound-progress across `result[0..i]` for the outer loop AND across
+  the inner-j accumulating sum.  Each wrapper individually was tried
+  but the loop-invariant shape (forall over slice elements + per-poly
+  bounds) timed out at rlimit 80 across 6+ subqueries even with body-only
+  proof attempts.  The hax-extraction shape with `verification_status(panic_free)`
+  also generated a non-linear `(result, result: Prims.unit)` pattern
+  due to the parameter name clash (worked around by reverting to plain
+  body admit).
+- **Suggested mitigation**: per-wrapper, ~30-45 min each.  Pattern:
+  add `lhs_bound: usize{lhs_bound + (cols+1)*FIELD_MAX <= i32::MAX}`
+  ghost parameter to the inner loop_invariant; track per-iteration
+  bound growth.  OR weaken the post to bounds-only without an
+  equation chain so the SMT search space shrinks.  Caller-side fix
+  A.6 (insert reduce before ntt at compute_w_approx) is applied;
+  the residual gap is `reduce` post (FIELD_MAX) vs `ntt` pre
+  (NTT_BASE_BOUND = FIELD_MID = FIELD_MAX/2) — the actual implementation
+  produces FIELD_MID-bounded values but the spec post is loose at FIELD_MAX,
+  so even with reduce inserted the chain doesn't close at the spec level
+  without strengthening reduce's post (which is not in this branch's
+  scope per the lane-split protocol).
+- **Polynomial::add / subtract strengthening (this commit)**: both
+  wrappers in `src/polynomial.rs:65-101` now carry a per-simd-unit
+  ensures `forall (j:nat). j < 32 ==> add_post|sub_post old[j] rhs[j] future[j]`,
+  which is what callers (Matrix and downstream) need to chain bounds.
+  The body proof works via the existing loop_invariant extended with
+  the partial post-progress conjunct.  No body admit on Polynomial::add
+  or subtract.
+
 ## Active admits — below-trait branch (`ml-dsa-proofs` lane)
 
 ### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}

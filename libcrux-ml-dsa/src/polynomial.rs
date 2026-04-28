@@ -63,18 +63,27 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"forall i. 
-        add_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+    #[hax_lib::requires(fstar!(r#"forall i.
+        add_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        add_post (i0._super_i2.f_repr (Seq.index self.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
     pub(crate) fn add(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
             hax_lib::loop_invariant!(|i: usize| fstar!(
-                r#"forall j. j >= v i ==> 
-                            Seq.index self.f_simd_units j == 
-                            Seq.index old_self.f_simd_units j"#
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                            Seq.index self.f_simd_units j ==
+                            Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                            add_post (i0._super_i2.f_repr (Seq.index old_self.f_simd_units j))
+                                     (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                                     (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
             ));
 
             SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
@@ -82,18 +91,27 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"forall i. 
-        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+    #[hax_lib::requires(fstar!(r#"forall i.
+        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        sub_post (i0._super_i2.f_repr (Seq.index self.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
     pub(crate) fn subtract(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
             hax_lib::loop_invariant!(|i: usize| fstar!(
-                r#"forall j. j >= v i ==> 
-                        Seq.index self.f_simd_units j == 
-                        Seq.index old_self.f_simd_units j"#
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                        Seq.index self.f_simd_units j ==
+                        Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                        sub_post (i0._super_i2.f_repr (Seq.index old_self.f_simd_units j))
+                                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                                 (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
             ));
 
             SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);
