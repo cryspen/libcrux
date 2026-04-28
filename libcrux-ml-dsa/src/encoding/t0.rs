@@ -3,30 +3,53 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE, helper::cloop, ntt::ntt,
+    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt,
     polynomial::PolynomialRingElement, simd::traits::Operations,
 };
 
 const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $serialized == 32 * 13 /\
+    (forall (j:nat). j < 32 ==>
+      Spec.Utils.is_i32b_array_opaque (pow2 13)
+        (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     re: &PolynomialRingElement<SIMDUnit>,
     serialized: &mut [u8], // RING_ELEMENT_OF_T0S_SIZE
 ) {
-    cloop! {
-        for (i, simd_unit) in re.simd_units.iter().enumerate() {
-            SIMDUnit::t0_serialize(simd_unit, &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]);
-        }
+    for i in 0..re.simd_units.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= 32 /\ Seq.length serialized == 32 * 13"#
+        ));
+        SIMDUnit::t0_serialize(
+            &re.simd_units[i],
+            &mut serialized
+                [i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
+        );
     }
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"Seq.length $serialized == 32 * 13"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall (j:nat). j < 32 ==>
+      Spec.Utils.is_i32b_array_opaque (pow2 12)
+        (i0._super_i2.f_repr (Seq.index ${result}_future.f_simd_units j)))"#))]
 fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     result: &mut PolynomialRingElement<SIMDUnit>,
 ) {
     for i in 0..result.simd_units.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= 32 /\ Seq.length serialized == 32 * 13 /\
+              (forall (j:nat). j < v i ==>
+                Spec.Utils.is_i32b_array_opaque (pow2 12)
+                  (i0._super_i2.f_repr (Seq.index result.f_simd_units j)))"#
+        ));
         SIMDUnit::t0_deserialize(
             &serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
             &mut result.simd_units[i],
@@ -35,15 +58,20 @@ fn deserialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $serialized == v $RING_ELEMENT_OF_T0S_SIZE * Seq.length ring_elements /\
+    Seq.length ring_elements <= 8"#))]
+#[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
     ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
-            deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
-            ntt(&mut ring_elements[i]);
-        }
+    hax_lib::fstar!("admit ()");
+    for i in 0..(serialized.len() / RING_ELEMENT_OF_T0S_SIZE) {
+        let bytes =
+            &serialized[i * RING_ELEMENT_OF_T0S_SIZE..(i + 1) * RING_ELEMENT_OF_T0S_SIZE];
+        deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
+        ntt(&mut ring_elements[i]);
     }
 }
 
