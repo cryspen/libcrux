@@ -1,6 +1,6 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `b7b49c358` (track A — Phase 7a Step 2 layer 2 bridge added with `--split_queries always` unlock; 2026-04-28 evening)
+**Branch**: `trait-opacify`  **Tip**: `43c9d45d5` (track A — Phase 7a Step 4 layer 3 strengthening; layer 2 strengthening attempted + reverted; 2026-04-28 evening)
 
 ## Phase 7a status
 
@@ -10,7 +10,9 @@
 | 7a-E2 | `lemma_add_to_ring_element_commute` (E2) | ✅ merged `1d6cacc50` |
 | 7a Step 1 | inverse NTT layer 1 hacspec bridge (track A, Bridges.fst) | ✅ verified `ba8681b38` |
 | 7a Step 9 | scaling-chain doc comments (track A) | ✅ verified `8d92695bf` |
-| 7a Step 4 | strengthen invert_ntt_at_layer_1 post (citing Bridges lemma) | ✅ verified `8358b1093` |
+| 7a Step 4 layer 1 | strengthen invert_ntt_at_layer_1 post (Option B citing Bridges lemma) | ✅ verified `8358b1093` |
+| 7a Step 4 layer 3 | strengthen invert_ntt_at_layer_3 post (Option B) | ✅ verified `43c9d45d5` |
+| 7a Step 4 layer 2 | strengthen invert_ntt_at_layer_2 post | ⏸ DEFERRED — first attempt failed with 6 Z3 errors at rlimit 800; see next-session-prompt.md for hypotheses + failure trace |
 | 7a Step 7.1 | F* lemmas for to_standard_domain track (Chunk.fst) | ✅ verified `c07feb91c` (merge of trackD) |
 | 7a Step 7.1+ | closed-form lane lemma (Option B infra) | ✅ verified `8ff3ac14c` |
 | 7a Step 7.2 | strengthen add_standard_error_reduce post (Rust integration) | ⏸ HELD — Z3 saturated on 2 invariant approaches; see TODO in `src/polynomial.rs` |

@@ -2,7 +2,41 @@
 
 **Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
 **Branch:** `trait-opacify`
-**Tip at end:** `b7b49c358` (was `7bb7e1a81` at start of this evening resume)
+**Tip at end:** `43c9d45d5` (was `7bb7e1a81` at start of this evening resume)
+
+## 2026-04-28 evening — Step 4 layer 3 strengthened
+
+Applied Option B template to `invert_ntt_at_layer_3` mirroring layer 1.
+Verified: `make check/Libcrux_ml_kem.Invert_ntt.fst`, exit 0, **333 s
+wall** with no temp admits.  Heaviest queries on layer 1 strengthened
+(~270 s wall portion) and layer 4_plus (Q187 borderline at rlimit 200).
+
+## 2026-04-28 evening — Step 4 layer 2 attempted, REVERTED
+
+Same Option B template applied to `invert_ntt_at_layer_2`, but Z3
+returned 6 errors at rlimit 800.  Errors at extracted Invert_ntt.fst
+lines 183, 184, 206 (×3), 140-235:
+  * Line 183: hand-holding `assert (zeta_i == 63 - 2*round)` failed.
+  * Line 184: subtyping on `zeta_i - 1` (call to `inv_ntt_layer_2_step`
+    second zeta arg).
+  * Line 206 (×3): loop invariant non-preservation across body.
+  * Lines 140-235: outer body assertion failed.
+
+Total wall before failure: 18:32 min.  Reverted via
+`git checkout libcrux-ml-kem/src/invert_ntt.rs` so the working tree
+matches `43c9d45d5`.
+
+Hypotheses for next-session retry (see `next-session-prompt.md`):
+  * Layer 2's decrement pattern `(-= 1; ...; -= 1)` differs from layer
+    1's `(-= 1; ...; -= 3)`; hand-holding asserts may need adjustment.
+  * Layer 1 has 4 hand-holding asserts (one per zeta_i offset); layer
+    2 has 2.  Z3 may need more bound information.
+  * The strengthened invariant + bound conjuncts may need tighter
+    structure than what I had.
+
+---
+
+
 
 ## 2026-04-28 evening — Phase 7a Step 2 layer 2 (the Z3 trap)
 
