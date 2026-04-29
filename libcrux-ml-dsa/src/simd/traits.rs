@@ -62,16 +62,21 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             (f_repr ${simd_unit}) $bound $result"#))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
 
+    // F-11 (2026-04-29): `low_future` post tightened from closed
+    // `is_i32b_array_opaque γ2` to half-open `is_i32b_strict_lower_array_opaque γ2`
+    // matching FIPS 204 Algorithm 36 (Decompose), where r0 ∈ (-γ2, γ2].
+    // The SMTPat `lemma_is_i32b_strict_lower_implies_array_opaque` keeps existing
+    // closed-form callers discharging automatically.
     #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -142,10 +147,15 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Self);
 
     // Decomposition operations
+    // F-9 (2026-04-29): `t0_future` post tightened from closed
+    // `is_i32b_array_opaque (pow2 12)` to half-open
+    // `is_i32b_strict_lower_array_opaque (pow2 12)` matching FIPS 204
+    // Algorithm 35 (Power2Round), where t0 ∈ (-2^12, 2^12].  Chain-critical
+    // with F-8: `power2round → t0_serialize` flow now lines up.
     #[hax_lib::requires(fstar!(r#"
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${t0})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${t0}_future) /\
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12) (f_repr ${t0}_future) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (f_repr ${t1}_future) i) >= 0 /\
           v (Seq.index (f_repr ${t1}_future) i) < pow2 10) /\
@@ -269,16 +279,22 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // i.e. lane in (-4095, 4096], which is the centered semantic of t0 inputs (lower 13 signed
     // bits of t centered around 0). The non-negative `is_pos_array_opaque (pow2 13)` allowed
     // boundary `lane == 8192`, which made the AVX2 pre fail (`4096 - 8192 = -4096 < 0`).
+    // F-8 (2026-04-29): tighten further to half-open `is_i32b_strict_lower_array_opaque (pow2 12)`
+    // = (-pow2 12, pow2 12], because the AVX2 free fn requires `(POW_2_..._MINUS_ONE - lane) < pow2 13`
+    // which solves to `lane > -pow2 12` (strict).  At the closed-form boundary `lane == -4096`,
+    // the AVX2 free fn pre fails (4096 - (-4096) = 8192 = pow2 13, not strictly less).
     #[hax_lib::requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Spec.Utils.is_i32b_array_opaque (pow2 12)
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
             (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13
+    // F-10 (2026-04-29): post tightened to half-open `is_i32b_strict_lower_array_opaque (pow2 12)`
+    // for round-trip symmetry with `t0_serialize`.
     #[hax_lib::requires(serialized.len() == 13)]
     #[hax_lib::ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${out}_future)"#))]
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12) (f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self);
 
     // t1: simple_bit_pack with width 10.

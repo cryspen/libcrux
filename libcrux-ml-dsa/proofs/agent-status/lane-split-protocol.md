@@ -439,4 +439,83 @@ breaks `*_serialize` discharge — RESOLVED
 - **Status:** above-trait closed; below-trait cherry-pick produced as a
   standalone commit on the `ml-dsa-proofs` branch (see integration message).
 
+#### F-8 / F-9 / F-10 / F-11 (2026-04-29) — half-open `(-l, l]` predicate batch — RESOLVED above-trait
+
+- **Source:** filed below-trait at the end of Step 12 / Step 13.  Four
+  related trait pres/posts on `Operations` were closed
+  `is_i32b_array_opaque l` (`[-l, l]`) but the underlying mathematical
+  truth (FIPS 204 Algorithms 35 / 36 + AVX2 free-fn pres) is half-open
+  `(-l, l]`.  Closed-form caused a boundary failure at `x = -l` for the
+  AVX2 `t0_serialize` free fn; the chain `power2round → t0_serialize`
+  could not discharge after F-6.
+  - **F-8** — `t0_serialize` pre.
+  - **F-9** — `power2round` `t0_future` post (chain-critical with F-8).
+  - **F-10** — `t0_deserialize` post (round-trip symmetry).
+  - **F-11** — `decompose` `low_future` post (FIPS 204 Algorithm 36
+    is half-open by `mod^±`).
+- **Above-trait fix (this commit batch):**
+  1. Added a sibling `is_i32b_strict_lower_array_opaque (l: nat)` predicate
+     in `libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fsti` next to the
+     existing `is_i32b_array_opaque`.  Definition: `forall i. i < Seq.length s
+     ==> -l < v s[i] /\ v s[i] <= l`.  Marked `[@ "opaque_to_smt"]`,
+     mirroring the closed-form predicate's shape.
+  2. Added an SMTPat implication lemma
+     `lemma_is_i32b_strict_lower_implies_array_opaque` so callers expecting
+     the closed form keep discharging when given the new strict-lower form
+     (the strict-lower form is strictly stronger).  Plus a sibling
+     `is_i32b_strict_lower_array_larger` lemma mirroring the closed-form
+     `_larger` weakening lemma.
+  3. Swapped the four trait sites in `libcrux-ml-dsa/src/simd/traits.rs`:
+     - `decompose` post: `is_i32b_array_opaque γ2` → `is_i32b_strict_lower_array_opaque γ2`
+       for both `low_future` branches (γ2 = 95232 and 261888).
+     - `power2round` post: `is_i32b_array_opaque (pow2 12)` →
+       `is_i32b_strict_lower_array_opaque (pow2 12)` on `t0_future`.
+     - `t0_serialize` pre: same swap on `simd_unit`.
+     - `t0_deserialize` post: same swap on `out_future`.
+  4. Tightened the wrapper at `libcrux-ml-dsa/src/encoding/t0.rs` (both
+     `serialize` and `deserialize` pres/posts + loop invariants) to use
+     the new strict-lower predicate, since the trait pres/posts both line
+     up at `(-pow2 12, pow2 12]` after the swap.
+- **Verified targets:**
+  - `Libcrux_ml_dsa.Simd.Traits.fst.checked` — verified clean (~70 s).
+  - `Libcrux_ml_dsa.Encoding.T0.fst.checked` — verified clean (~3 s).
+  - `Libcrux_ml_dsa.Encoding.Commitment.fst.checked` — verified clean (sanity).
+  - `Libcrux_ml_dsa.Encoding.Gamma1.fst.checked` — verified clean (sanity).
+  - `Libcrux_ml_dsa.Encoding.Signing_key.fst.checked` — verified clean.
+  - `Spec.Utils.fsti.checked` — verified clean (~7 s).
+  - `Libcrux_ml_dsa.Arithmetic.fst.checked` — `power2round_vector` and
+    `decompose_vector` discharge clean.  Pre-existing `make_hint` Z3
+    failures (3 errors at lines 620 / 661 / 662, all about `true_hints +!
+    one_hints_count` usize-overflow) are unrelated to this batch
+    (`make_hint` uses `compute_hint`, not `power2round` / `decompose` /
+    `t0_*`).  Filed as a separate follow-up.
+- **Caller fallout (above-trait):**
+  - `arithmetic.rs::power2round_vector` is `panic_free` + body-admitted —
+    its closed-form post is automatically refined by the SMTPat
+    implication lemma.  No edit required.
+  - `arithmetic.rs::power2round_one_ring_element` (NOT body-admitted)
+    consumes the trait `power2round` post.  The SMTPat implication
+    lemma fires on the trait's strict-lower post and yields the
+    closed-form post that `power2round_one_ring_element`'s
+    closed-form ensures expects — discharges automatically (verified
+    clean in the build).
+  - `encoding/signing_key.rs::generate_serialized` is
+    `panic_free` + body-admitted; the chain `power2round → t0_serialize`
+    is no longer a chain-break risk because both endpoints now line up
+    at half-open `(-pow2 12, pow2 12]`.  No edit required.
+- **Below-trait mirror (cherry-pick TODO):**
+  - The same predicate addition (`is_i32b_strict_lower_array_opaque` +
+    SMTPat implication lemma + `_larger` lemma) needs to land in
+    `libcrux-ml-kem/proofs/fstar/spec/Spec.Utils.fsti` on the
+    `ml-dsa-proofs` branch.  Same diff.
+  - The matching `f_repr`-side swaps in the impl signatures of
+    `simd/portable.rs` + `simd/avx2.rs` for the four methods
+    (`decompose`, `power2round`, `t0_serialize`, `t0_deserialize`)
+    need to mirror the trait diff.  The body-discharge gain: the
+    AVX2 `t0_serialize` boundary failure at `lane == -4096` now
+    discharges, since the impl pre also rejects that boundary.
+  - The wrapper `simd/portable/encoding/t0.rs` (or its impl-side
+    analog) likewise needs the strict-lower swap for round-trip.
+- **Status:** above-trait CLOSED; below-trait cherry-pick PENDING.
+
 (Append future findings above this line, numbered F-3, F-4, ...)
