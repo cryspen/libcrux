@@ -206,7 +206,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(spec::is_bounded_poly(2 * 3328, re) & (*zeta_i == 32))]
 #[hax_lib::ensures(|result|
     spec::is_bounded_poly(4 * 3328, future(re))
@@ -264,16 +264,25 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
         });
 
         *zeta_i -= 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
-        );
         // Hand-holding for the impl-level loop invariant: link local
         // `zeta_i` to the parametric form `31 - round` so the assignment's
         // call substitutes into the j=round branch cleanly.
         hax_lib::fstar!(r#"assert (zeta_i == mk_usize 31 -! round)"#);
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], zeta(*zeta_i));
+        // Per Rule SD4: targeted asserts of the two facts the iter-end
+        // loop invariant subtyping needs (bound + spec-function equation
+        // for the just-updated chunk), instead of a global reveal that
+        // would unfold every prior chunk's bound atom universally.
+        hax_lib::fstar!(
+            r#"assert (Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector
+                         (mk_usize 4 *! mk_usize 3328)
+                         (re.Libcrux_ml_kem.Vector.f_coefficients.[round] <: v_Vector));
+               assert (Seq.index re.Libcrux_ml_kem.Vector.f_coefficients (v round) ==
+                       Libcrux_ml_kem.Vector.Traits.f_inv_ntt_layer_3_step #v_Vector
+                         (Seq.index ${_re_init} (v round))
+                         (Libcrux_ml_kem.Polynomial.zeta (mk_usize 31 -! round)))"#
+        );
     }
     // Phase 7a (track A) Step 4 layer 3 — Option B: lift the impl-level
     // loop invariant to the function-form citation in the ensures via a
