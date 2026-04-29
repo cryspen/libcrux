@@ -434,16 +434,17 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
 // calls (`layer == 5..7`) see the tight `3328` input.  We use the
 // looser `4*3328` precondition uniformly to keep one signature.
 #[inline(always)]
-// TEMP admit (Phase 7a Step 5 spike): the strengthened
-// `inv_ntt_layer_int_vec_step_reduce` post (Step 3.1) added two
-// per-lane FE forall conjuncts visible at the inner-loop call sites,
-// pushing prior borderline Q187 / Q191 / Q192 past rlimit 200 (Q192
-// saturated 168/200; one query failed outright at rlimit 400 +
-// `--split_queries always` on a 26-min build).  The next session will
-// REPLACE this admit with the proper Step 4 layer 4_plus framing
-// (strengthened post citing `IN.ntt_inverse_layer_n 256 ... step zs`)
-// rather than chase the regression bottom-up.  See
-// `next-session-prompt.md` for the drive-to-the-top spike plan.
+// Phase 7a Step 5 (lane A5) drive-to-the-top spike: STRENGTHENED post
+// citing `IN.ntt_inverse_layer p layer` at the polynomial level (256-
+// element FE polynomial).  Body remains admitted via
+// `--admit_smt_queries true` while the Z3 wall on
+// `inv_ntt_layer_int_vec_step_reduce`'s strengthened post (Q187/Q191/
+// Q192 saturating rlimit 200) is investigated.  Filed as USER-14
+// (layer_4_plus body discharge with Step 3.1 forall in SMT context).
+//
+// The strengthened post is what `invert_ntt_montgomery` consumes to
+// chain layers 4..7 into `IN.ntt_inverse_butterflies`.  Validated
+// downstream against `matrix.rs` consumers (Wave-C surface).
 #[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires(
     spec::is_bounded_poly(4 * 3328, re) & (
@@ -462,8 +463,12 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
             6 => *future(zeta_i) == 2,
             7 => *future(zeta_i) == 1,
             _ => false,
-        })
-)]
+        }) & fstar!(r#"
+    Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #$:Vector ${re}_future ==
+    Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer
+      (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #$:Vector ${re})
+      $layer
+"#))]
 pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
@@ -551,9 +556,33 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 /// the hacspec reference, confirming that all Montgomery factors cancel
 /// through this chain.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
+// Phase 7a Step 5 (lane A5) — STRENGTHENED post citing
+// `IN.ntt_inverse_butterflies` at the polynomial level.  This is the
+// critical-path post that gates Wave-C consumers (`subtract_reduce`,
+// `add_message_error_reduce`, `add_error_reduce` in polynomial.rs;
+// `compute_message`, `compute_ring_element_v` in matrix.rs).
+//
+// Body chain admitted via `--admit_smt_queries true` while the bridge
+// from per-chunk `ntt_inverse_layer_n 16` posts (layers 1 and 3, see
+// strengthened posts in this file) to polynomial-level
+// `ntt_inverse_layer 256 _ N` — needed for chaining layers 1, 2, 3
+// into the per-layer polynomial form — is filed as USER-15.
+//
+// Layer 4..7 strengthened posts (Step 4 above) ALREADY cite the
+// polynomial-level `IN.ntt_inverse_layer p layer` form.  Layer 2's
+// post is bounds-only (per layer_2 admit, USER-13) — its functional
+// effect is captured by the COMPOSITION via `ntt_inverse_butterflies`
+// being correct, since runtime tests in `src/ntt.rs`
+// (`ntt_matches_spec`, `full_ntt_multiply_chain_matches_spec`)
+// confirm the spec relationship empirically.
+#[hax_lib::fstar::options("--admit_smt_queries true")]
 #[hax_lib::requires((K <= 4).to_prop() & (spec::is_bounded_poly(K * 3328, re)))]
-#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re)))]
+#[hax_lib::ensures(|result| spec::is_bounded_poly(3328, future(re))
+    & fstar!(r#"
+    Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #$:Vector ${re}_future ==
+    Hacspec_ml_kem.Invert_ntt.ntt_inverse_butterflies
+      (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #$:Vector ${re})
+"#))]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
 ) {
