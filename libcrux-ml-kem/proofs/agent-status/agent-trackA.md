@@ -1308,4 +1308,6 @@ None.
 
 ### Commits
 
-(filled in by the commit step)
+| SHA | Message |
+|---|---|
+| `1d39f6d60` | USER-9b: AVX2 5-bit serialize/deserialize SIMD↔BitVec bridge |
