@@ -7,16 +7,26 @@ pub(crate) mod shake256 {
     /// An ML-DSA specific Xof trait
     /// This trait is not actually a full Xof implementation but opererates only
     /// on multiple of blocks. The only real Xof API for SHAKE256 is [`Xof`].
+    #[hax_lib::attributes]
     pub(crate) trait DsaXof {
+        #[ensures(|_| fstar!(r#"Seq.length ${out}_future == v $OUTPUT_LENGTH"#))]
         fn shake256<const OUTPUT_LENGTH: usize>(input: &[u8], out: &mut [u8; OUTPUT_LENGTH]);
         fn init_absorb_final(input: &[u8]) -> Self;
         // TODO: There should only be a `squeeze_block`
+        #[ensures(|out| fstar!(r#"Seq.length $out == 136"#))]
         fn squeeze_first_block(&mut self) -> [u8; BLOCK_SIZE];
+        #[ensures(|out| fstar!(r#"Seq.length $out == 136"#))]
         fn squeeze_next_block(&mut self) -> [u8; BLOCK_SIZE];
     }
 
+    #[hax_lib::attributes]
     pub(crate) trait XofX4 {
         fn init_absorb_x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
+        #[ensures(|out| fstar!(r#"
+            Seq.length (out._1 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._2 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._3 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._4 <: t_Array u8 (mk_usize 136)) == 136"#))]
         fn squeeze_first_block_x4(
             &mut self,
         ) -> (
@@ -25,6 +35,11 @@ pub(crate) mod shake256 {
             [u8; BLOCK_SIZE],
             [u8; BLOCK_SIZE],
         );
+        #[ensures(|out| fstar!(r#"
+            Seq.length (out._1 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._2 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._3 <: t_Array u8 (mk_usize 136)) == 136 /\
+            Seq.length (out._4 <: t_Array u8 (mk_usize 136)) == 136"#))]
         fn squeeze_next_block_x4(
             &mut self,
         ) -> (
@@ -33,6 +48,11 @@ pub(crate) mod shake256 {
             [u8; BLOCK_SIZE],
             [u8; BLOCK_SIZE],
         );
+        #[ensures(|_| fstar!(r#"
+            Seq.length ${out0}_future == v $OUT_LEN /\
+            Seq.length ${out1}_future == v $OUT_LEN /\
+            Seq.length ${out2}_future == v $OUT_LEN /\
+            Seq.length ${out3}_future == v $OUT_LEN"#))]
         fn shake256_x4<const OUT_LEN: usize>(
             input0: &[u8],
             input1: &[u8],
@@ -77,8 +97,14 @@ pub(crate) mod shake128 {
 
     /// When sampling matrix A we always want to do 4 absorb/squeeze calls in
     /// parallel.
+    #[hax_lib::attributes]
     pub(crate) trait XofX4 {
         fn init_absorb(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) -> Self;
+        #[ensures(|_| fstar!(r#"
+            Seq.length ${out0}_future == 840 /\
+            Seq.length ${out1}_future == 840 /\
+            Seq.length ${out2}_future == 840 /\
+            Seq.length ${out3}_future == 840"#))]
         fn squeeze_first_five_blocks(
             &mut self,
             out0: &mut [u8; FIVE_BLOCKS_SIZE],
@@ -86,6 +112,11 @@ pub(crate) mod shake128 {
             out2: &mut [u8; FIVE_BLOCKS_SIZE],
             out3: &mut [u8; FIVE_BLOCKS_SIZE],
         );
+        #[ensures(|out| fstar!(r#"
+            Seq.length (out._1 <: t_Array u8 (mk_usize 168)) == 168 /\
+            Seq.length (out._2 <: t_Array u8 (mk_usize 168)) == 168 /\
+            Seq.length (out._3 <: t_Array u8 (mk_usize 168)) == 168 /\
+            Seq.length (out._4 <: t_Array u8 (mk_usize 168)) == 168"#))]
         fn squeeze_next_block(
             &mut self,
         ) -> (
