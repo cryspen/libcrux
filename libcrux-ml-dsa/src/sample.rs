@@ -8,26 +8,31 @@ use crate::{
 };
 
 #[inline(always)]
+#[hax_lib::requires(*sampled_coefficients < 256)]
+#[hax_lib::ensures(|_| fstar!(r#"v ${sampled_coefficients}_future <= 263"#))]
 fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    hax_lib::fstar!("admit ()");
     let mut done = false;
 
-    cloop! {
-        for random_bytes in randomness.chunks_exact(24) {
-            if !done {
-                let sampled = SIMDUnit::rejection_sample_less_than_field_modulus(
-                    random_bytes,
-                    &mut out[*sampled_coefficients..],
-                );
-                *sampled_coefficients += sampled;
+    let n_chunks = randomness.len() / 24;
+    for i in 0..n_chunks {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v ${sampled_coefficients} <= 263 /\
+               (${done} \/ v ${sampled_coefficients} < 256)"#
+        ));
+        let random_bytes = &randomness[i * 24..(i + 1) * 24];
+        if !done {
+            let sampled = SIMDUnit::rejection_sample_less_than_field_modulus(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                    done = true;
-                }
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
             }
         }
     }
@@ -172,28 +177,33 @@ pub(crate) fn sample_up_to_four_ring_elements_flat<
 }
 
 #[inline(always)]
+#[hax_lib::requires(*sampled_coefficients < 256)]
+#[hax_lib::ensures(|_| fstar!(r#"v ${sampled_coefficients}_future <= 263"#))]
 fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     // Since each byte can be used to sample up to 2 coefficients, and since
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
-    cloop! {
-        for random_bytes in randomness.chunks_exact(4) {
-            if !done {
-                let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
-                    random_bytes,
-                    &mut out[*sampled_coefficients..],
-                );
-                *sampled_coefficients += sampled;
+    let n_chunks = randomness.len() / 4;
+    for i in 0..n_chunks {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v ${sampled_coefficients} <= 263 /\
+               (${done} \/ v ${sampled_coefficients} < 256)"#
+        ));
+        let random_bytes = &randomness[i * 4..(i + 1) * 4];
+        if !done {
+            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                    done = true;
-                }
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
             }
         }
     }
@@ -202,28 +212,33 @@ fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(*sampled_coefficients < 256)]
+#[hax_lib::ensures(|_| fstar!(r#"v ${sampled_coefficients}_future <= 263"#))]
 fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     // Since each byte can be used to sample up to 2 coefficients, and since
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
-    cloop! {
-        for random_bytes in randomness.chunks_exact(4) {
-            if !done {
-                let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
-                    random_bytes,
-                    &mut out[*sampled_coefficients..],
-                );
-                *sampled_coefficients += sampled;
+    let n_chunks = randomness.len() / 4;
+    for i in 0..n_chunks {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v ${sampled_coefficients} <= 263 /\
+               (${done} \/ v ${sampled_coefficients} < 256)"#
+        ));
+        let random_bytes = &randomness[i * 4..(i + 1) * 4];
+        if !done {
+            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-                if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
-                    done = true;
-                }
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
             }
         }
     }
@@ -232,13 +247,14 @@ fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
+#[hax_lib::requires(*sampled < 256)]
+#[hax_lib::ensures(|_| fstar!(r#"v ${sampled}_future <= 263"#))]
 pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations>(
     eta: Eta,
     randomness: &[u8],
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
-    hax_lib::fstar!("admit ()");
     match eta {
         Eta::Two => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
         Eta::Four => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
@@ -446,16 +462,21 @@ pub(crate) fn sample_mask_vector<
 }
 
 #[inline(always)]
+#[hax_lib::requires(*out_index < 256)]
+#[hax_lib::ensures(|_| fstar!(r#"v ${out_index}_future <= 256"#))]
 fn inside_out_shuffle(
     randomness: &[u8],
     out_index: &mut usize,
     signs: &mut u64,
     result: &mut [i32; 256],
 ) -> bool {
-    hax_lib::fstar!("admit ()");
     let mut done = false;
 
     for i in 0..randomness.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v ${out_index} <= 256 /\
+               (${done} \/ v ${out_index} < 256)"#
+        ));
         let byte = randomness[i];
         if !done {
             let sample_at = byte as usize;
@@ -463,7 +484,7 @@ fn inside_out_shuffle(
                 result[*out_index] = result[sample_at];
                 *out_index += 1;
 
-                result[sample_at] = 1 - 2 * ((*signs & 1) as i32);
+                result[sample_at] = if (*signs & 1) == 0 { 1 } else { -1 };
                 *signs >>= 1;
             }
 

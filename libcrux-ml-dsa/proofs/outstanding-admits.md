@@ -418,33 +418,42 @@ benefit from these.  The three wrappers remain admitted.
   (4) Per-function post: sign returns Ok with valid-length output,
       verify returns Ok on a self-consistent signature.
 
-### Libcrux_ml_dsa.Sample (all 9 functions)
+### Libcrux_ml_dsa.Sample (5 of 10 functions still admit)
 - **File**: `src/sample.rs`
-- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix) on
-  every `fn` and `pub(crate) fn` in the module, plus
-  `#[hax_lib::requires(slice.len() <= 32)]` on `add_domain_separator`
-  and `<= 64` on `add_error_domain_separator` (sized so the inner
-  copy_from_slice pre is panic-free), plus
-  `#[hax_lib::requires(width != 0)]` on the inner `xy` helper.
-- **Phase added**: above-trait C.7 (Sample.fst promotion)
-- **Diagnosis**: Sample.rs has 9 functions including 3 with `cloop!`
-  on chunks_exact and 1 with `inside_out_shuffle`; all interact with
-  Shake128/Shake256 Xof traits which are still in ADMIT mode in this
-  branch.  Strong pre/posts would need length-preservation ensures
-  on every `Xof::squeeze*` method, plus rejection-sample loop
-  invariants citing `coeff_from_three_bytes` / `coeff_from_half_byte`
-  per the Hacspec encoding helpers.  Mid-body `admit ()` is the
-  pragmatic shortcut: the module is in CHECK with bodies admitted,
-  but the wrapper signatures are intact for downstream typing.
-- **Suggested mitigation**: Phase 2 work, ~2-3 hours.  (1) Convert
-  the four `cloop!` invocations to plain `for i in 0..randomness.len()`
-  loops with `loop_invariant!` so partial-progress facts attach.
-  (2) Add length-preservation ensures on Xof methods (mirrors the
-  pattern in `b68738411` for shake128/shake256 already-touched).
-  (3) Prove the inner rejection-sample helpers' partial-acceptance
-  count invariant.  (4) Lift the `pub(crate)` posts to bounds-only
-  (matching the trait-side `rejection_sample_*` deferred per-byte
-  step).
+- **Status update (2026-04-29)**: 5 of 10 functions closed.
+  - **Closed (no admit)**: `rejection_sample_less_than_field_modulus`,
+    `rejection_sample_less_than_eta_equals_2`,
+    `rejection_sample_less_than_eta_equals_4`,
+    `rejection_sample_less_than_eta`, `inside_out_shuffle`.
+    Closure recipe:
+    (a) Refactor `cloop! { for ... in ....chunks_exact(N) }` to plain
+        `for i in 0..randomness.len()/N { let chunk = &randomness[i*N..(i+1)*N]; ... }`.
+    (b) Pre `*sampled_coefficients < 256` (or `*out_index < 256`
+        for `inside_out_shuffle`).
+    (c) Loop invariant
+        `v sampled_coefficients <= 263 /\ (done \/ v sampled_coefficients < 256)`
+        — this carries the trait pre `8 <= 263 - sampled_coefficients`
+        through each iteration and propagates the post `v sampled_future <= 263`.
+    (d) Bounds-only post: `v sampled_future <= 263` (matching the
+        trait-side bounds-only convention).
+    (e) For `inside_out_shuffle`, replaced
+        `result[sample_at] = 1 - 2 * ((*signs & 1) as i32)` with
+        `if (*signs & 1) == 0 { 1 } else { -1 }` — equivalent value,
+        but avoids the u64→i32 cast that loses the [0,1] bound and
+        triggers a spurious overflow check on the `2 * b` step.
+    (f) Required `Seq.length out_future == Seq.length out`
+        length-preservation conjunct on the three trait
+        `rejection_sample_*` posts (see lane-split-protocol F-6 for
+        below-trait cherry-pick action).
+- **Remaining body admits (5)**: `sample_up_to_four_ring_elements_flat`,
+  `sample_four_error_ring_elements`, `sample_mask_ring_element`,
+  `sample_mask_vector`, `sample_challenge_ring_element` — all use
+  `Shake128`/`Shake256` Xof methods.  The Xof method posts now carry
+  length-preservation (commit before this), so these bodies should
+  close once the per-function pre is sized appropriately
+  (`re.len() >= dimension` / matching wrapper-buffer lengths) and
+  the trait-helper-call shape is propagated through the loop. Phase
+  2 work, ~2-3 hours.
 
 ## Active admits — below-trait branch (`ml-dsa-proofs` lane)
 
