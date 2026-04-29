@@ -164,6 +164,77 @@ SHOULD be wrapped in `[@@ "opaque_to_smt"]` per-branch predicates
 (e.g., `inv_ntt_layer_2_step_branch_post`). Established Phase 2 pattern;
 proved decisive on layer 2 (which had a 2.7-min Z3 timeout pre-opacity).
 
+### Rule SD4 — `reveal_opaque` MUST be targeted, never global, inside loop bodies
+
+**Established 2026-04-29 (USER-13 closure, commit `ee69454dd`).** This
+is the most important style discipline rule for impl-side bodies that
+manipulate opaque-bounded vectors.
+
+#### The two reveal forms
+
+| Form | Shape | Effect |
+|---|---|---|
+| **TARGETED** ✅ | `reveal_opaque (\`%X.foo) (X.foo arg1 arg2 ...)` | Unfolds `foo` only at THAT specific instance; one fact added to context. |
+| **GLOBAL** ❌ | `reveal_opaque (\`%X.foo) (X.foo)` | Unfolds the predicate UNIVERSALLY; every appearance of `foo` in scope becomes its underlying definition. Inside a loop body this fires *every iteration* over *every prior chunk's* opaque atom. |
+
+#### Why the GLOBAL form is a Z3 saturation trap
+
+The just-closed USER-13 wall (`Libcrux_ml_kem.Invert_ntt.invert_ntt_at_layer_2_`)
+had
+
+```rust
+hax_lib::fstar!(
+    r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
+);
+```
+
+(GLOBAL form) inside a `for round in 0..16` loop. `is_i16b_array_opaque
+n a` is defined as `forall i. i < Seq.length a ==> is_i16b n a.[i]`.
+The global reveal substitutes that definition into EVERY appearance of
+`is_i16b_array_opaque` in scope — i.e., 16 chunks worth of bound facts
+turned into 16 universal forall facts, *each iteration*. Q108 (the
+iter-end loop-invariant subtyping) saturated rlimit 200 in 42 s, 400
+in 75-110 s, 800 hung past 12 min. The fix was to **delete the global
+reveal entirely** and replace it with a single targeted `assert (...)`
+of the per-iteration bound, which the trait post already carries
+opaquely.
+
+#### When you actually need a reveal
+
+You need a reveal ONLY when the goal mentions the opaque predicate AND
+Z3 needs the underlying definition to discharge that specific
+instance. In practice for `is_i16b_array_opaque` and similar bound
+predicates, this is almost never inside a loop body — the loop
+invariant carries the bound atoms opaquely and the trait posts
+produce them opaquely.
+
+#### Operational checklist when writing impl-side bodies
+
+1. Default to NO `reveal_opaque` calls in loop bodies. Add one only
+   when verification fails.
+2. If verification fails inside a loop, FIRST try a targeted
+   `assert (P specific-args)` to inject the needed atom. Only if that
+   doesn't suffice, add a **targeted** `reveal_opaque (\`%P) (P
+   specific-args)`.
+3. Reach for the GLOBAL form **only at top-level** in lemma proofs
+   that intend to operate on the predicate's definition (e.g.,
+   `is_bounded_vector_higher` in `Polynomial.Spec.fst`). Even then,
+   keep the lemma small.
+4. When you see an existing global reveal inside a loop body — even
+   if the function currently passes — flag it as a candidate for
+   removal. The current pass may rely on a brute-force
+   `--z3rlimit 800 --split_queries always`. Removing the reveal
+   often lets you drop to `--z3rlimit 100`.
+
+#### Audit-time signature to look for
+
+Any line that matches the regex `reveal_opaque\s*\([`%][^)]+\)\s*\(\s*[A-Z][\w.]+\s*\)`
+inside a `hax_lib::fstar!` block in `*.rs` or inside a `let` body
+in an extracted `.fst` is the GLOBAL form and is suspect. The
+specific case of `(X.foo)` (no arguments) at the second position is
+the smoking gun.
+
 ## Coordination conventions
 
 - **Single-direction trait edits**: above-trait lane edits, below-trait

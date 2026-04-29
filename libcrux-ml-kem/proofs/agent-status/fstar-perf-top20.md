@@ -477,3 +477,36 @@ full make.)
   * Critical-path forward: USER-15 (`invert_ntt_montgomery`) and USER-14
     (`invert_ntt_at_layer_4_plus` body) remain the next bodies to
     discharge.
+
+### USER-13 lesson — Rule SD4 added to lane-split-protocol
+
+The closure mechanism is now codified as **Rule SD4** in
+`lane-split-protocol.md` and as a top-of-page banner in
+`handoff-2026-04-29-end-of-day.md`.  TL;DR: never use the GLOBAL
+`reveal_opaque (\`%P) (P)` form inside a loop body — it unfolds the
+opaque predicate universally and pollutes Z3 every iteration with the
+underlying forall.  Prefer a targeted `assert (P specific-args)`
+first; if you need a reveal, use `reveal_opaque (\`%P) (P arg1 arg2)`
+with full arguments.
+
+### Reveal-opaque audit (2026-04-29 evening, post-USER-13 closure)
+
+Audit ran across all `*.rs` (inside `hax_lib::fstar!` blocks) and
+`proofs/fstar/extraction/*.fst[i]` looking for the GLOBAL form
+`reveal_opaque (\`%X.foo) (X.foo)` (no instance arguments) inside loop
+bodies or hot subtyping checks.  Findings:
+
+| Risk | File | Line | Form | Context | Recommendation |
+|---|---|---|---|---|---|
+| **HIGH** | `src/invert_ntt.rs` | 268–269 | GLOBAL | `invert_ntt_at_layer_3` body, inside `for round in 0..16` | Same shape as the just-fixed Q108 wall.  Currently passes only at `--z3rlimit 800 --ext context_pruning --split_queries always`.  Try the SD4 fix: delete the global reveal, add targeted `assert (Seq.index re.f_coefficients (v $i) == ...)` for whichever invariant atom the iter-end subtyping needs.  Likely drops rlimit to 100. |
+| MEDIUM | `src/invert_ntt.rs` | 79 | TARGETED | `invert_ntt_at_layer_1` body, inside `for round in 0..16` | Already targeted (full args).  Low risk; leave alone unless that fn becomes a perf hot-spot. |
+| MEDIUM | `src/serialize.rs` | 153 | TARGETED | `deserialize_12_short`, inside `cloop chunks` | Already targeted (`is_i16b_array_opaque 4095`).  Low risk; leave alone. |
+| LOW | `src/polynomial.rs` | 59, 71, 86, 101, 120, 133 | GLOBAL | Top-level helper functions (`is_bounded_vector_higher`, `add_bounded`, `sub_bounded`, etc.) — no loop | Once-per-call.  Structural; correct. |
+| LOW | `src/ind_cpa.rs` | 908, 1170 | GLOBAL | Top-level entry of `encrypt`/`decrypt`, no loop | Once-per-call.  Structural; correct. |
+| LOW | `Hacspec_ml_kem.Commute.{Bridges,Chunk}.fst` | various | GLOBAL | Inside lemma proofs that DEFINE the unfolded form | By design.  Don't change. |
+
+**Action item for next session (NOT this lane's scope):**
+  - Test the SD4 fix on `invert_ntt_at_layer_3` (`src/invert_ntt.rs:268-269`).
+    Expected: rlimit drops from 800 to ~100, no functional change.
+    Worth ~30 min to try; high probability of success given the same
+    code shape just yielded a 70× perf win on layer_2.

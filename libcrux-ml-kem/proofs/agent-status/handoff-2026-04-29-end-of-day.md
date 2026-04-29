@@ -11,6 +11,56 @@ user's call — no test gating it.
 
 ---
 
+## ⚠️  TOP-PRIORITY LESSON (USER-13 closure, 2026-04-29 evening) — `reveal_opaque` MUST be targeted, never global, inside loop bodies
+
+**Read this before writing or reviewing any impl-side body that
+manipulates opaque-bounded vectors.**  Codified as **Rule SD4** in
+`lane-split-protocol.md` (immediately after SD3).
+
+The `invert_ntt_at_layer_2_` body wall (153 s top-1 in Snapshot 3, 12+
+min hangs at rlimit 800 + split_queries) was caused by a single line:
+
+```rust
+hax_lib::fstar!(
+    r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+                (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
+);
+```
+
+inside a `for round in 0..16` loop.  This is the **GLOBAL** reveal
+form — second arg is the predicate name with NO instance.  It unfolds
+every `is_i16b_array_opaque` in scope into a 16-lane `forall i.
+is_i16b n a.[i]` *every iteration*, polluting Z3's context until the
+iter-end loop-invariant subtyping (Q108) saturates.
+
+**Fix:** delete the global reveal; replace with a single targeted
+`assert (is_bounded_vector 6656 re.coefficients.[round])` after the
+trait method call.  Result: 153 s admit → 2.1 s clean verification
+(rlimit 100, no split_queries, no context_pruning).  Commit
+`ee69454dd` on `agent/lane-A5`.
+
+**Audit completed** (see `fstar-perf-top20.md` Snapshot 4 + the
+"reveal-opaque audit" section): one other suspect global reveal lives
+in `invert_ntt_at_layer_3` (`src/invert_ntt.rs:268-269`) — currently
+passing at `--z3rlimit 800 --ext context_pruning --split_queries
+always`, but the same fix pattern likely lets it drop to rlimit 100.
+Two MEDIUM cases (line 79 in layer_1, line 153 in serialize.rs) use
+the targeted form already and are lower-risk.
+
+**Operational rule going forward** (per SD4):
+
+  1. Default to **no `reveal_opaque` in loop bodies.**
+  2. If verification fails inside a loop, first try a **targeted
+     `assert (P specific-args)`** to inject the needed atom.
+  3. Use `reveal_opaque` only when an assert doesn't suffice — and
+     pass the **fully-applied** predicate as the second argument
+     (`reveal_opaque (\`%P) (P arg1 arg2 ...)`), not the bare
+     predicate name.
+  4. The GLOBAL form (`reveal_opaque (\`%P) (P)`) belongs at top-level
+     in lemma proofs, never in impl bodies.
+
+---
+
 ## What's done (✅)
 
 ### Phase 0 / H / 1 / 2 (Waves before today)
