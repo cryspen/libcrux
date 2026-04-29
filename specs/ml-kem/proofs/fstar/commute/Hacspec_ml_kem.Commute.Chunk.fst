@@ -2581,3 +2581,88 @@ let lemma_subtract_reduce_scaled_eq
     Classical.forall_intro aux;
     Seq.lemma_eq_intro lhs rhs
 #pop-options
+
+(* ===================================================================== *)
+(* Phase 7a / lane A5 additions — polynomial-level lift + zetas helpers   *)
+(* for `invert_ntt_montgomery` Step 5 strengthening.                       *)
+(*                                                                         *)
+(* `mont_to_spec_poly_256`: flattens a 16-chunk × 16-lane impl polynomial  *)
+(* into a 256-element abstract FE polynomial, the canonical input shape    *)
+(* of `Hacspec_ml_kem.Invert_ntt.ntt_inverse_butterflies`.                  *)
+(*                                                                         *)
+(* `zetas_8 / zetas_4_inv / zetas_2_inv / zetas_1_inv`: layer-N zetas      *)
+(* slices for layers 4..7 (inverse direction).  Layer 4 has 8 zetas,       *)
+(* layer 5 has 4, layer 6 has 2, layer 7 has 1.  Lifted via                 *)
+(* `mont_i16_to_spec_fe` so the slice operates on plain abstract zetas      *)
+(* (matching `IN.ntt_inverse_layer_n`'s zetas argument convention).        *)
+(* ===================================================================== *)
+
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
+
+(* Helper: for `idx: usize` with `v idx < 256`, the body of the createi
+   uses `coeffs.[v idx / 16]` (chunk) then `chunk.[v idx % 16]` (lane).
+   Factored out so the createi body is a single direct expression. *)
+let mont_to_spec_poly_256_body
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (coeffs: t_Array vV (mk_usize 16))
+    (idx: usize { v idx < 256 })
+    : P.t_FieldElement =
+  let ci : nat = v idx / 16 in
+  let li : nat = v idx % 16 in
+  assert (ci < 16);
+  assert (li < 16);
+  let chunk_arr : t_Array i16 (mk_usize 16) =
+    T.f_repr (Seq.index coeffs ci) in
+  mont_i16_to_spec_fe (Seq.index chunk_arr li)
+
+let mont_to_spec_poly_256
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (coeffs: t_Array vV (mk_usize 16))
+    : t_Array P.t_FieldElement (mk_usize 256) =
+  P.createi #P.t_FieldElement (mk_usize 256)
+    #(usize -> P.t_FieldElement)
+    (fun (idx: usize { idx <. mk_usize 256 }) ->
+      (mont_to_spec_poly_256_body #vV coeffs idx
+        <: P.t_FieldElement))
+
+(* Per-lane unfold helper for `mont_to_spec_poly_256`.  The createi body
+   reduces the index to (chunk = i/16, lane = i%16) and projects through
+   `mont_i16_to_spec_fe`.  Mirrors `mont_array_lane`'s shape. *)
+let mont_to_spec_poly_256_lane
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (coeffs: t_Array vV (mk_usize 16))
+    (idx: usize { v idx < 256 }) :
+    Lemma (Seq.index (mont_to_spec_poly_256 #vV coeffs) (v idx)
+           == mont_i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index coeffs (v idx / 16)))
+                            (v idx % 16)))
+  = P.createi_lemma #P.t_FieldElement (mk_usize 256)
+      #(usize -> P.t_FieldElement)
+      (fun (j: usize { j <. mk_usize 256 }) ->
+        (mont_to_spec_poly_256_body #vV coeffs j
+          <: P.t_FieldElement))
+      idx
+
+#pop-options
+
+(* Layer 4 inverse zetas: 8 i16 zetas → 8 abstract FEs lifted via
+   `mont_i16_to_spec_fe`.  Matches `IN.ntt_inverse_layer 256 p 4`'s
+   internal `groups = 128/16 = 8` zetas slice. *)
+let zetas_8 (z0 z1 z2 z3 z4 z5 z6 z7: i16)
+    : t_Array P.t_FieldElement (mk_usize 8) =
+  P.createi #P.t_FieldElement (mk_usize 8)
+    #(usize -> P.t_FieldElement)
+    (fun (i: usize) ->
+      ((if v i = 0 then mont_i16_to_spec_fe z0
+        else if v i = 1 then mont_i16_to_spec_fe z1
+        else if v i = 2 then mont_i16_to_spec_fe z2
+        else if v i = 3 then mont_i16_to_spec_fe z3
+        else if v i = 4 then mont_i16_to_spec_fe z4
+        else if v i = 5 then mont_i16_to_spec_fe z5
+        else if v i = 6 then mont_i16_to_spec_fe z6
+        else mont_i16_to_spec_fe z7)
+        <: P.t_FieldElement))
+
+(* Layer 5..7 inverse: shared shapes with the existing `zetas_1/2/4`
+   in `Vector.Traits.Spec`.  Layer 5: 4 zetas (zetas_4); Layer 6: 2
+   (zetas_2); Layer 7: 1 (zetas_1).  Provided by Spec module already.    *)
