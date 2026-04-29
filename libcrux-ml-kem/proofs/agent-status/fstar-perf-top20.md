@@ -266,3 +266,97 @@ wave-B-prompt §"WAVE-B SCOPE").
   failed query at rlimit 200) — currently bypassed via
   `--admit_smt_queries true` per `agent-trackA.md` "Layer 4_plus
   regression — diagnosis + landing decision".
+
+---
+
+## Snapshot 3 — 2026-04-29 — Wave-B 4-lane parallel merge (`tip TBD post-push`)
+
+**Source:** `/tmp/wave-b-merged-baseline-take5.log` (full make from
+`~/libcrux-ml-kem-above-trait/libcrux-ml-kem/proofs/fstar/extraction/`
+post-merge of all 4 Wave-B lane branches + Makefile cleanup +
+Phase 6d Neon `.fsti` admit + duplicate-`noeq` workaround on
+regenerated Vector.Neon.Vector_type.fsti).
+**Wall:** ~10 min cold.  **Errors:** 0.
+
+### Wave-B parallel-fanout outcome
+
+Lanes closed: A1 (-1, `to_unsigned_field_modulus`), A3 (-1 via
+`subtract_reduce` body discharge with USER-7 array-form bridge fix
++ unshadowing trick).  Filed: A2 (USER-10 with smtprofiling-grade
+4-path diagnostic), A5 (Steps 3.3/4/5 strengthened with USER-13/14/15
+on bodies; layer_2 newly admitted as USER-13).  **Net admit-count
+delta: -2 PROGRESS, +3 USER-N filings, 0 SIDEWAYS.**
+
+### Top-20 culprits (post-merge)
+
+| # | Total (s) | Max query (ms) | Queries | Failed | rlimit-sat | Module | Function |
+|---|---|---|---|---|---|---|---|
+| 1 | **153.6** | **153301** | 26 | 1 | 1 | Hacspec_ml_kem.Commute.Bridges | lemma_inv_ntt_layer_2_step_lane_bridge |
+| 2 | 22.1 | 22139 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Portable.Arithmetic | to_unsigned_representative |
+| 3 |  8.8 |  2592 | 110 |  0 |  0 | Libcrux_ml_kem.Polynomial | subtract_reduce |
+| 4 |  8.7 |  2714 |  22 |  0 |  0 | Libcrux_ml_kem.Vector.Portable.Compress | decompress_1_ |
+| 5 |  4.8 |  4804 |   1 |  0 |  0 | Libcrux_ml_kem.Serialize | compress_then_serialize_message |
+| 6 |  4.0 |  4028 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | op_serialize_4_post_bridge |
+| 7 |  3.9 |   142 | 121 |  0 |  0 | Libcrux_ml_kem.Invert_ntt | invert_ntt_at_layer_1_ |
+| 8 |  3.0 |  3037 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | impl_3 |
+| 9 |  2.2 |   736 |  43 |  0 |  0 | Libcrux_ml_kem.Invert_ntt | inv_ntt_layer_int_vec_step_reduce |
+| 10 | 1.5 | 1546 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Portable | impl_1 |
+| 11 | 1.4 | 1383 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Portable.Arithmetic | multiply_by_constant |
+| 12 | 1.2 |  145 |  42 |  0 |  0 | Libcrux_ml_kem.Ntt | ntt_at_layer_4_plus |
+| 13 | 1.2 | 1174 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | op_serialize_4_pre_bridge |
+| 14 | 1.1 | 1099 |   1 |  0 |  0 | Libcrux_ml_kem.Serialize | deserialize_to_reduced_ring_element |
+| 15 | 0.9 |   33 |  38 |  0 |  0 | Libcrux_ml_kem.Invert_ntt | invert_ntt_at_layer_3_ |
+| 16 | 0.9 |  897 |   2 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | op_serialize_11_post_bridge |
+| 17 | 0.9 |  876 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Portable.Compress | compress_message_coefficient |
+| 18 | 0.9 |  875 |   1 |  0 |  0 | Libcrux_ml_kem.Serialize | deserialize_then_decompress_message |
+| 19 | 0.6 |  645 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | op_deserialize_4_post_bridge |
+| 20 | 0.6 |  622 |   1 |  0 |  0 | Libcrux_ml_kem.Vector.Avx2 | op_serialize_10_post_bridge |
+
+### Major regression — needs investigation
+
+**`lemma_inv_ntt_layer_2_step_lane_bridge` jumped 3.4 s → 153.6 s**
+(Snapshot 1 → Snapshot 3, 45×).  1 query failed (presumably hint
+replay miss → without-hint retry succeeded after 153 s); 1 query
+saturated rlimit.  Likely cause: A5's new helpers in `Chunk.fst`
+(Phase 7a / lane A5 additions section + parameter unshadowing) plus
+A3's array-form lemmas changed the dependency graph hashes, so the
+old `Bridges.fst` hint cache no longer replays.
+
+**Recommendation for next session:** re-record hints for Bridges.fst
+(`make check/Hacspec_ml_kem.Commute.Bridges.fst` once with
+`--record_hints`, then commit hints).  This should drop the 153 s
+back to ~3-5 s.
+
+### Other notable changes vs Snapshot 1
+
+- `to_unsigned_representative` 8.5 s → 22.1 s (2.6×) — same hint
+  cache invalidation pattern; A1's removal of `panic_free` from its
+  caller `to_unsigned_field_modulus` means the caller now propagates
+  the trait post into Serialize, which routes through this fn.
+- `subtract_reduce` 5.1 s → 8.8 s — A3's body now actually verifies
+  (was admitted in Snapshot 1).  Net benefit: -1 admit; 1.7× cost is
+  acceptable.
+- `compress_then_serialize_message` 4.9 s → 4.8 s — flat, A1's
+  closure didn't perturb this consumer.
+- `Vector.Avx2.op_serialize_*_bridge` family appears for the first
+  time at 0.5-4.0 s — these are the bridges B3 closed in the
+  parallel below-trait session at `e5c4a6f49`.  Genuine new
+  verification work, not regressions.
+
+### Wave-B local Makefile workaround (2026-04-29)
+
+Wave-B's local Makefile in `~/libcrux-ml-kem-above-trait/` was
+accidentally committed by lane A5 (`aae3046a9`) and reverted by the
+coordinator (`7e75d3d7c`).  The local Makefile remains in the
+worktree (uncommitted) for future sessions to reuse.  Phase 6d
+`.fsti` admit (`22b5c016e`) is upstream-clean and committed.
+
+### hax codegen bug — duplicate `noeq` on Vector_type.fsti
+
+`hax extract` regenerates `Libcrux_ml_kem.Vector.Neon.Vector_type.fsti`
+with TWO `noeq` qualifiers on `t_SIMD128Vector` (Error 162 at line
+10-13 — "Duplicate qualifiers").  Workaround applied LOCALLY in
+above-trait's gitignored .fsti via `sed`.  Source worktree avoids
+this because its `src/vector/neon/vector_type.rs` has uncommitted
+edits that produce a different .fsti shape.  **File as USER-N:**
+hax codegen bug; track separately from the F* verification work.
