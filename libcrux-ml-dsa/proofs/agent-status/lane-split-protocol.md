@@ -39,7 +39,7 @@ body), record it here with:
 
 ### Open findings
 
-#### F-14 (2026-04-29) — `error_deserialize` is partial w.r.t. trait post
+#### F-14 (2026-04-29) — `error_deserialize` trait post over-tight vs FIPS 204 / Hacspec spec
 
 - **Affected method:** `error_deserialize` post
   (`src/simd/traits.rs` ensures clause):
@@ -48,41 +48,111 @@ body), record it here with:
     ($eta == Eta_Two ==> v out[i] >= -2 /\ v out[i] <= 2) /\
     ($eta == Eta_Four ==> v out[i] >= -4 /\ v out[i] <= 4))
   ```
-- **Gap:** the impl bodies (`src/simd/portable/encoding/error.rs::
-  deserialize_when_eta_is_2/4` and AVX2 analogs) compute
-  `simd_unit.values[i] = ETA - (byte_chunk & MASK)` where
-  - `eta=2`: `MASK=7`, so `byte_chunk & 7 ∈ [0, 7]`, hence
-    `2 - x ∈ [-5, 2]` — trait post wants `[-2, 2]`.
-  - `eta=4`: `MASK=0xF`, so `byte_chunk & 15 ∈ [0, 15]`, hence
-    `4 - x ∈ [-11, 4]` — trait post wants `[-4, 4]`.
-- **Why this matters:** the function is **partial** with respect to
-  the trait post.  For arbitrary input bytes (no pre on byte
-  contents), the impl can produce values outside `[-eta, eta]`.  The
-  post holds only on bytes produced by a corresponding
-  `error_serialize` (round-trip).  External callers (signature
-  verification consuming untrusted bytes) would receive
-  out-of-range values for adversarial inputs.
-- **Concrete counter-example (eta=2):**
-  - Input: `byte0 = 0xFF` (all bits set).
+- **Audit conclusion (2026-04-29):** the **trait post is wrong**
+  w.r.t. FIPS 204 and the Hacspec spec.  The impl is correct.
+  Recommended fix is to relax the trait post to match FIPS 204
+  Algorithm 19 (BitUnpack) — see Recommended fix below.
+
+- **FIPS 204 spec reference:** Algorithm 19 (BitUnpack) defines the
+  output range as
+  ```
+  w[i] ∈ [b - 2^c + 1, b]   where c = bitlen(a + b)
+  ```
+  For ML-DSA error encoding `a = b = eta`:
+  - eta = 2: `c = bitlen(4) = 3`, output ∈ `[2 - 7, 2] = [-5, 2]`.
+  - eta = 4: `c = bitlen(8) = 4`, output ∈ `[4 - 15, 4] = [-11, 4]`.
+
+  The canonical `[-eta, eta]` shape only holds when `a + b + 1` is a
+  power of 2 — for ML-DSA values 5 and 9, neither is.
+
+  **Hacspec** (`specs/ml-dsa/src/encoding.rs::bit_unpack`, doc
+  comment lines 82-83) makes the same observation explicitly:
+  > "Unpacks bytes into a polynomial with coefficients in
+  > `[b - 2^c + 1, b]` where `c = bitlen(a + b)`. When `a + b + 1`
+  > is a power of 2, coefficients are in `[-a, b]`."
+
+  The Hacspec `bit_unpack` ensures clause is `Prims.l_True`
+  (no value bound), consistent with the FIPS-mandated wider
+  range.
+
+- **Impl behavior (matches FIPS):** Portable
+  `src/simd/portable/encoding/error.rs::deserialize_when_eta_is_*`
+  computes `simd_unit.values[i] = ETA - (byte_chunk & MASK)` where
+  - eta = 2: `MASK = 7`, `byte_chunk & 7 ∈ [0, 7]` → `2 - x ∈ [-5, 2]`.
+  - eta = 4: `MASK = 0xF`, `byte_chunk & 15 ∈ [0, 15]` → `4 - x ∈ [-11, 4]`.
+
+  The AVX2 `src/simd/avx2/encoding/error.rs::deserialize` body uses
+  the same `ETA - byte_chunk` shift.  Both impls satisfy the FIPS
+  output range exactly.
+
+- **Concrete counter-example to the current `[-eta, eta]` post
+  (eta = 2):**
+  - Input: `serialized[0] = 0xFF`.
   - `byte0 & 7 = 7`.
-  - `simd_unit.values[0] = 2 - 7 = -5`, violates `>= -2`.
-- **Recommended fix on the above-trait side:** three options.
-  (a) Strengthen the trait pre to require valid-encoding bytes:
-      `forall i. (byte i) % 8 ∈ [0, 5)` (eta=2) and
-      `forall i. (byte i) % 16 ∈ [0, 9)` (eta=4).  Awkward to
-      express but matches the partial spec.
-  (b) Add an impl-side validation step that rejects (or saturates)
-      invalid byte chunks before subtracting `ETA`.  Behavior
-      change for callers consuming untrusted bytes.
-  (c) Relax the trait post to the actual range produced by the
-      impl: `[-5, 2]` for eta=2, `[-11, 4]` for eta=4.  Loses the
-      cleaner FIPS 204 spec connection but matches reality.
-  Option (b) is closest to the FIPS 204 spec intent (signature
-  verification should reject malformed signatures), but requires an
-  impl change.  Option (a) is the cheapest above-trait-only fix.
+  - `simd_unit.values[0] = 2 - 7 = -5`, violates the trait post's
+    `>= -2` but **satisfies the FIPS spec's `>= -5`**.
+
+- **Caller audit above traits.rs:** no caller above the trait
+  consumes the `[-eta, eta]` form.
+  - `src/encoding/error.rs::deserialize` wrapper has no
+    `#[ensures]`; only carries length-pres.
+  - `src/encoding/error.rs::deserialize_to_vector_then_ntt` is
+    `verification_status(panic_free)` + body `admit ()`.  No
+    upstream consumption of the output bound.
+  - `src/ml_dsa_generic.rs::sign_internal` calls the wrapper for
+    `s1_serialized` / `s2_serialized` deserialization.
+    `sign_internal` is body-admitted upstream of these calls.
+  - AVX2 `rejection_sample::less_than_eta::sample` does NOT use
+    `error_deserialize`; it uses a *different* free fn
+    `error::deserialize_to_unsigned` (no shift) followed by an
+    explicit `< interval_boundary` validation step — independent
+    of the F-14 trait post.
+
+  Conclusion: the current `[-eta, eta]` post is **purely
+  aspirational** — no caller benefits from the (false) tightening.
+
+- **Recommended fix on the above-trait side: relax the trait post
+  to the actual FIPS 204 BitUnpack range.**  Concretely, in
+  `src/simd/traits.rs`:
+  ```
+  Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+    ($eta == Eta_Two ==> v out[i] >= -5 /\ v out[i] <= 2) /\
+    ($eta == Eta_Four ==> v out[i] >= -11 /\ v out[i] <= 4))
+  ```
+  Why this is the right fix:
+  (a) Matches FIPS 204 Algorithm 19 exactly.
+  (b) Matches Hacspec `bit_unpack` semantics.
+  (c) Provable from the current impl with no source change
+      (`logand_mask_lemma` SMTPat fires on `byte_chunk & MASK` to
+      give `[0, 2^c)`, then subtraction from `ETA` gives the
+      asymmetric range).
+  (d) Resolves F-14 cleanly — both Portable and AVX2 trait body
+      admits become removable.
+  (e) Doesn't break any caller (no one observes the bound; all
+      relevant upstream wrappers are body-admitted).
+
+  If the canonical `[-eta, eta]` bound is ever needed (e.g., for
+  signing-key validity per FIPS 204 §6.2), it should be a
+  **separate, explicit validation step** at the API boundary, not
+  silently pretended-true in the trait post.
+
+  **Alternative options considered and rejected:**
+  - Strengthen the trait pre to require valid-encoding bytes
+    (e.g., `forall i. byte_chunk[i] < 2*eta + 1`).  Awkward to
+    express across the bit-packed layout, and wouldn't match
+    Hacspec which has no such pre.
+  - Add an impl-side validation step that rejects malformed bytes.
+    Real behavior change with runtime cost; FIPS 204 §3.6.1
+    explicitly delegates validation to the caller.
+
 - **Below-trait posture:** Portable and AVX2 `Operations::error_deserialize`
-  trait method bodies retain their `hax_lib::fstar!("admit ()")` until
-  F-14 lands.  No commute-lemma work below-trait is possible.
+  trait method bodies retain their `hax_lib::fstar!("admit ()")`
+  until F-14 lands.  Once the trait post is relaxed above-trait,
+  the below-trait close should follow the same template as the
+  Track D-2 t1/t0/gamma1 deserialize closes (commits `62a50deeb`,
+  `10b15d325`, `4ec0e9f50`): add per-eta ensures to the wrapper
+  free fn matching the new trait post, drop the trait body admit.
+  No commute-lemma work required.
 
 #### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE — RESOLVED via above-trait revert `341a93d4d`
 
