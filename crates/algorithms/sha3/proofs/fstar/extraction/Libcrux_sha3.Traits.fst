@@ -31,13 +31,8 @@ class t_KeccakItem (v_Self: Type0) (v_N: usize) = {
   f_xor_and_rotate_pre:v_LEFT: i32 -> v_RIGHT: i32 -> a: v_Self -> b: v_Self
     -> pred:
       Type0
-        { ((Rust_primitives.Hax.Int.from_machine v_LEFT <: Hax_lib.Int.t_Int) +
-            (Rust_primitives.Hax.Int.from_machine v_RIGHT <: Hax_lib.Int.t_Int)
-            <:
-            Hax_lib.Int.t_Int) =
-          (Rust_primitives.Hax.Int.from_machine (mk_i32 64) <: Hax_lib.Int.t_Int) &&
-          v_RIGHT >. mk_i32 0 &&
-          v_RIGHT <. mk_i32 64 ==>
+        { v_LEFT >. mk_i32 0 && v_LEFT <. mk_i32 64 && v_RIGHT >. mk_i32 0 && v_RIGHT <. mk_i32 64 &&
+          (v_LEFT +! v_RIGHT <: i32) =. mk_i32 64 ==>
           pred };
   f_xor_and_rotate_post:v_LEFT: i32 -> v_RIGHT: i32 -> v_Self -> v_Self -> v_Self -> Type0;
   f_xor_and_rotate:v_LEFT: i32 -> v_RIGHT: i32 -> x0: v_Self -> x1: v_Self

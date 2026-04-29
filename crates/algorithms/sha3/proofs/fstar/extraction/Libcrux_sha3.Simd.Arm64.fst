@@ -23,8 +23,11 @@ let e_vrax1q_u64 (a b: Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t)
   Libcrux_intrinsics.Arm64_extract.e_vrax1q_u64 a b
 
 let e_vxarq_u64 (v_LEFT v_RIGHT: i32) (a b: Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t)
-    : Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
-  Libcrux_intrinsics.Arm64_extract.e_vxarq_u64 v_LEFT v_RIGHT a b
+    : Prims.Pure Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t
+      (requires
+        mk_i32 0 <. v_LEFT && v_LEFT <. mk_i32 64 && mk_i32 0 <. v_RIGHT && v_RIGHT <. mk_i32 64 &&
+        (v_LEFT +! v_RIGHT <: i32) =. mk_i32 64)
+      (fun _ -> Prims.l_True) = Libcrux_intrinsics.Arm64_extract.e_vxarq_u64 v_LEFT v_RIGHT a b
 
 let e_vbcaxq_u64 (a b c: Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t)
     : Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t =
@@ -359,7 +362,8 @@ let impl: Libcrux_sha3.Traits.t_KeccakItem Libcrux_intrinsics.Arm64_extract.t_e_
         (a: Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t)
         (b: Libcrux_intrinsics.Arm64_extract.t_e_uint64x2_t)
         ->
-        true);
+        mk_i32 0 <. v_LEFT && v_LEFT <. mk_i32 64 && mk_i32 0 <. v_RIGHT && v_RIGHT <. mk_i32 64 &&
+        (v_LEFT +! v_RIGHT <: i32) =. mk_i32 64);
     f_xor_and_rotate_post
     =
     (fun
