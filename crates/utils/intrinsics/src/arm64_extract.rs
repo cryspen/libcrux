@@ -404,12 +404,12 @@ pub fn _vbicq_u64(a: _uint64x2_t, b: _uint64x2_t) -> _uint64x2_t {
     unimplemented!()
 }
 
+// Real fallback body — composition of `_veorq_u64` and `_vbicq_u64`.
 #[inline(always)]
-#[hax_lib::lean::replace_body("sorry")]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
     (get_lane_u64x2 $a i ^. (get_lane_u64x2 $b i &. (~. (get_lane_u64x2 $c i))))"))]
 pub fn _vbcaxq_u64(a: _uint64x2_t, b: _uint64x2_t, c: _uint64x2_t) -> _uint64x2_t {
-    unimplemented!()
+    _veorq_u64(a, _vbicq_u64(b, c))
 }
 
 #[inline(always)]
@@ -448,20 +448,27 @@ pub fn _veorq_u64(mask: _uint64x2_t, shifted: _uint64x2_t) -> _uint64x2_t {
     unimplemented!()
 }
 
+// Real fallback body — XOR-and-rotate-left-by-1.  The rotate is
+// decomposed via `Bitvec.U64Rotate.lemma_u64_rotate_left_decomp`
+// (SMTPat already in scope from `_vxarq_u64`'s before-block).
 #[inline(always)]
-#[hax_lib::lean::replace_body("sorry")]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
     (get_lane_u64x2 $a i ^. Core_models.Num.impl_u64__rotate_left (get_lane_u64x2 $b i) (mk_u32 1))"))]
 pub fn _vrax1q_u64(a: _uint64x2_t, b: _uint64x2_t) -> _uint64x2_t {
-    unimplemented!()
+    _veorq_u64(a, _veorq_u64(_vshlq_n_u64::<1>(b), _vshrq_n_u64::<63>(b)))
 }
 
+// Real fallback body — triple XOR via two _veorq_u64 calls.
+// Body is left-associative `(a XOR b) XOR c` to match the spec's parens
+// (and the downstream `arm64_lc_xor5` equivalence lemma).  The libcrux
+// arm64.rs fallback uses the right-associative form `a XOR (b XOR c)`;
+// both are equivalent at runtime by XOR associativity, but the
+// left-associative form lets F* discharge the post definitionally.
 #[inline(always)]
-#[hax_lib::lean::replace_body("sorry")]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
     ((get_lane_u64x2 $a i ^. get_lane_u64x2 $b i) ^. get_lane_u64x2 $c i)"))]
 pub fn _veor3q_u64(a: _uint64x2_t, b: _uint64x2_t, c: _uint64x2_t) -> _uint64x2_t {
-    unimplemented!()
+    _veorq_u64(_veorq_u64(a, b), c)
 }
 
 #[inline(always)]
