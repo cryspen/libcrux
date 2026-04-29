@@ -370,14 +370,15 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 ///
 /// See `src/invert_ntt.rs` (above `invert_ntt_montgomery`) for the
 /// upstream chain doc.
-// HELD — body proof admitted via --admit_smt_queries true.  Per-poly
-// commute lemma `lemma_subtract_reduce_commute` + `lemma_subtract_reduce_eq_helper`
-// added to Commute.Chunk and verify cleanly (73.9s).  Wiring up in
-// the body still trips an "incomplete quantifiers" failure at the
-// function-body level — likely needs a small record-equality assert
-// bridging `{ f_coefficients = _b } == (function input b)` so that
-// `to_spec_poly_mont`-of-the-constructed-record matches the post's
-// `to_spec_poly_mont (input b)`.  Left for follow-up.
+// HELD — body proof admitted via --admit_smt_queries true.  See USER-7
+// in `MLKEM_STATUS.md` for the full handoff: all algebra + commute
+// lemmas are proven in `Hacspec_ml_kem.Commute.Chunk` (commits
+// `c698908ba`, `0a8c7289d`); the only outstanding gap is the post-loop
+// record-equality bridge from `to_spec_poly_mont (param b)` to
+// `mont_i16_to_spec_fe ((T.f_repr _b[j/16])[j%16])`.  Three attempts
+// in 2026-04-28 session hit Z3 ceiling — see USER-7 for hypotheses on
+// the fix.  Once this lands, `add_message_error_reduce` and
+// `add_error_reduce` follow mechanically.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always --admit_smt_queries true")]
 #[hax_lib::requires(spec::is_bounded_poly(4095, &myself))]

@@ -163,6 +163,54 @@ agent can copy the style to extend the pattern to similar admits.
 - **Math**: 7-layer inverse composition + Montgomery scale.
 - **Why after USER-2**: same Tier-3 template.
 
+### USER-7 — `subtract_reduce` body discharge (post-loop record-equality bridge)
+
+**`Polynomial.subtract_reduce`** body; the strengthened post landed in
+commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
+
+- **Status**: post strengthened, body admitted via `--admit_smt_queries true`.
+  All math + commute lemmas proven:
+  * `fe_1441`, `lemma_subtract_reduce_finalize_fe`, opaque
+    `subtract_reduce_finalize_chunk`, `lemma_subtract_reduce_iter`,
+    `subtract_reduce_helper`, `lemma_subtract_reduce_eq_helper`,
+    `lemma_subtract_reduce_commute`.
+- **Outstanding gap**: bridging `to_spec_poly_mont (param b)` (post-form,
+  record-based) to `mont_i16_to_spec_fe ((T.f_repr _b[j/16])[j%16])`
+  (lemma-form, array-based).
+- **Math**: trivial — `_b == (param b).f_coefficients` from let binding,
+  `to_spec_poly_mont` only uses `.f_coefficients`, so the two forms
+  are equal lane-wise.  The wiring is what's stuck.
+- **Three failed attempts logged** (none made it through):
+  1. Owned `b: PolynomialRingElement<Vector>` + record construction
+     `{ f_coefficients = _b }` → "incomplete quantifiers" at function-body.
+  2. `&mut b: &mut PolynomialRingElement<Vector>` + array-form lemma
+     (passing `_b` directly) → same.
+  3. Above + explicit `_b_init` ghost record + `Seq.lemma_eq_intro`
+     bridge inside body F* fragment → Q143 saturated rlimit 800
+     in 162 s.
+- **Hypotheses for the fix** (in priority order):
+  (a) `assert (Seq.index e_b k == Seq.index (param b).f_coefficients k)`
+      explicitly per chunk, instead of relying on F* to derive it.
+  (b) Define `to_spec_poly_mont_arr (a: t_Array vV 16) : ...` and add
+      `lemma_to_spec_poly_mont_unfold p == to_spec_poly_mont_arr p.f_coefficients`,
+      use array form throughout the lemma + post.  Avoids the record
+      bridge entirely.
+  (c) Restate the post WITHOUT `to_spec_poly_mont ${b}` — directly use
+      `mont_i16_to_spec_fe` per lane in a forall.  Less elegant but
+      sidesteps the createi-of-record-field issue.
+  (d) Refactor: split the lemma into stages — one stage per
+      `lemma_subtract_reduce_finalize_chunk_reveal` + one stage per
+      `Seq.lemma_eq_intro` — and chain them in the body.  Smaller per-
+      stage Z3 context.
+- **Why USER-lane**: each attempt costs 5–17 min of build + careful
+  diagnosis.  Three rounds in this session didn't close.  Worth a
+  fresh look with the smtprofiling skill.
+- **Once closed**: `add_message_error_reduce` (3-way add) and
+  `add_error_reduce` (2-way add) follow the same pattern mechanically.
+  Then upstream chain test in `matrix.rs::compute_message` validates
+  `invert_ntt_montgomery`'s strengthened post (the original spike's
+  question).
+
 ---
 
 ## AGENT TASKS — parallelizable mechanical work
