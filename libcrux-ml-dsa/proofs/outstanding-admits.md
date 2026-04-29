@@ -303,8 +303,6 @@ purely SMT-trigger work, not spec gaps.
 3. Add length-preservation ensures to Hash_functions Xof methods
    (Shake128, Shake256, Portable, Simd256, Neon) so Sample's posts
    can chain.
-
-*Stretch (work if time)*:
 4. Show `Libcrux_ml_dsa.Ml_dsa_generic.fst` is **panic-free**.
    Remove the `admit ()` body markers on the 10 functions in
    `src/ml_dsa_generic.rs` and add the pres / loop_invariants /
