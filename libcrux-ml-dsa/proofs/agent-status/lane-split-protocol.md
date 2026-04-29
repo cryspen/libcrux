@@ -408,3 +408,35 @@ breaks `*_serialize` discharge — RESOLVED
   impl body should now be dischargeable (admit-removable on the
   below-trait branch).
 - **Status:** above-trait closed.
+
+#### F-12 (2026-04-29) — `rejection_sample_*` trait posts add length-preservation — RESOLVED above-trait, below-trait cherry-pick pending
+
+- **Numbering note:** filed during integration of three parallel agents.
+  This finding originally landed in commit `9c8d8ba55` labeled "F-6", but
+  F-6 was already taken by the `t0_serialize` centered-bound finding
+  (resolved above).  Renumbered to F-12 here to leave F-8 — F-11 free for
+  the half-open `(-l, l]` predicate batch flagged separately by below-trait.
+- **Files**: `src/simd/traits.rs` (~166-191),
+  `src/simd/portable.rs` (~223-256), `src/simd/avx2.rs` (~286-321).
+- **Change**: added `Seq.length ${out}_future == Seq.length $out` to the
+  ensures of `rejection_sample_less_than_field_modulus`,
+  `rejection_sample_less_than_eta_equals_2`,
+  `rejection_sample_less_than_eta_equals_4` (trait + Portable impl + AVX2 impl).
+- **Why**: needed to prove panic-freedom of the upstream
+  `Sample::rejection_sample_*` wrappers in `src/sample.rs`.  The
+  wrappers slice `out[*sampled_coefficients..]`, pass to the trait
+  method, then `update_at_range_from out RangeFrom tmp0`. Without
+  length-preservation on the trait return, F* can't discharge the
+  update's pre `Seq.length tmp0 <= Seq.length out - sampled_coefficients`.
+- **Above-trait status:** trait + (above-trait portion of) impl signatures
+  landed in commit `9c8d8ba55` (this cherry-pick); split during integration
+  so above-trait carries the `traits.rs` change, below-trait owns the
+  matching `portable.rs` + `avx2.rs` ensures.
+- **Below-trait posture:** trivially preserved by the impls (in-place
+  mutation; underlying free fns preserve length).  Cherry-pick the
+  `portable.rs` + `avx2.rs` diff; bodies stay admitted.  No commute-lemma
+  work required.
+- **Status:** above-trait closed; below-trait cherry-pick produced as a
+  standalone commit on the `ml-dsa-proofs` branch (see integration message).
+
+(Append future findings above this line, numbered F-3, F-4, ...)
