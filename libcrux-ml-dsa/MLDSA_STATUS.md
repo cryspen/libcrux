@@ -1,5 +1,48 @@
 # MLDSA Verification Status
 
+**Branch**: `ml-dsa-proofs` (post-merge of `ml-dsa-above-trait`,
+2026-04-29).  The two parallel lanes that worked the trait
+contract from above (Encoding, Arithmetic, Matrix, Sample,
+Ml_dsa_generic) and below (Simd.{Portable,Avx2}.*) have been
+merged here.  See `proofs/agent-status/lane-split-protocol.md`
+for the F-N findings ledger that drove the cross-lane handshake;
+see `proofs/outstanding-admits.md` for the current admit catalog.
+
+**Verification scope (post-merge)**:
+- ~63 modules in `VERIFIED_MODULES` (`proofs/fstar/extraction/Makefile`):
+  `Simd.Traits`, `Simd.Traits.Specs`, all `Simd.{Portable,Avx2}.*`,
+  `Constants`, `Types`, `Arithmetic`, `Polynomial`, `Polynomial.Spec`,
+  `Ntt`, all `Encoding.*` (T0, T1, Commitment, Error, Gamma1,
+  Verification_key, Signing_key, Signature), `Matrix`, `Sample`,
+  `Pre_hash`, all `Hash_functions.*`, `Ml_dsa_generic.*`,
+  `Ml_dsa_generic.Multiplexing.*`, `Ml_dsa_generic.Instantiations.{Portable,Avx2,Neon}.Ml_dsa_*_`.
+- Pre-budgeted admits remain: `Ml_dsa_*_{,Portable,Avx2,Neon}` top-level
+  variants, `Constants.Ml_dsa_*_`, `Samplex4*`, AVX2
+  `Rejection_sample.{Less_than_eta,Less_than_field_modulus,Shuffle_table}`,
+  `Specs.Simd.Portable.Sample` (see `outstanding-admits.md`).
+- Hacspec / spec modules (`Hacspec_ml_dsa.Commute.Chunk`,
+  `Spec.Intrinsics`, `Spec.MLDSA.Math`, `Spec.MLDSA.Ntt`)
+  also CHECKed via the `commute/` include.
+
+**Last clean baselines (per-lane, pre-merge)**:
+- Below-trait (`4db9af42b`): 75 modules invoked, [CHECK]=27,
+  [ADMIT]=48, 0 F\* errors.  All 8 `*_deserialize` trait body
+  admits closed (Track D-2).
+- Above-trait (`a499ef61a`): 99 modules invoked, [CHECK]=55,
+  [ADMIT]=44, 0 F\* errors.  Verification_key.deserialize +
+  generate_serialized closures landed; F-13/F-14/F-15 closed.
+
+**Post-merge baseline**: pending — first full `JOBS=2 ./hax.sh prove`
+after merge needs to be run; expected CHECK count ≥ 63 (union of
+both lanes), 0 errors target.  See `proofs/post-merge-handoff.md`
+for the next-session entry point.
+
+---
+
+## History (pre-merge, retained for reference)
+
+### Below-trait lane (was branch `ml-dsa-proofs`)
+
 **Branch**: `ml-dsa-proofs`
 **Tip**: Step 14 Track D-2 closed (2026-04-29).  All four
 `*_deserialize` trait bodies are admit-free on both Portable and
@@ -50,6 +93,115 @@ filed in `lane-split-protocol.md` (`a9388d5a9`):
   changes (final-correction step or pre-tightening); see open finding.
 
 Track 1 (F-1 use_hint math): both `admit ()` bodies in `Hacspec_ml_dsa.Commute.Chunk.fst`'s use_hint paired commute lemmas replaced with full proofs.  `lemma_use_one_hint_bound` proved via new `lemma_spec_decompose_r1_bound` (Spec.MLDSA.Math.decompose r1 ∈ [0, 4190208/g)).  `lemma_use_hint_lane_commute_conditional` proved via `lemma_mod_pm_eq_mod_p` (i64 mod_pm bridges to centered mod_p) + `lemma_decompose_bridge` (Hacspec.decompose ↔ Spec.MLDSA.Math.decompose under v input ∈ [0, q)).  Track 2 (paired-lemma template): Portable `decompose` and `compute_hint` impl bodies upgraded from single `admit()` to paired-lemma scaffolding.  New commute lemmas `lemma_decompose_bound` (real proof; reuses Track-1 r1 bound), `lemma_decompose_lane_commute_conditional` (real proof; reuses Track-1 bridge), `lemma_compute_one_hint_bound` (trivial), `lemma_compute_hint_lane_commute_conditional` (admit() body — FIPS 204 §3.6 MakeHint correctness pending), and `lemma_compute_hint_bound` (`repeati`-induction on the popcount).  Step 10 deltas remain: Track A impl posts hardened, Track B 5 non-trivial wrappers extracted; AVX2 `impl_1` 4.5s/1q.
+
+### Above-trait lane (was branch `ml-dsa-above-trait`)
+
+**Tip pre-merge**: `a499ef61a` (2026-04-29 session).
+**Trait pre/post strengthened** in pre-split commits
+(`94e933eb1` + `36fe89b18`); see also F-3 / F-6 / F-7 / F-8-F-11 /
+F-12 / F-14 in `proofs/agent-status/lane-split-protocol.md` for
+the cross-lane handshake.
+**10 above-trait modules promoted to CHECK** against the strengthened
+contract: `Ntt`, `Encoding.{T1,Commitment,Error,Gamma1,T0,
+Verification_key,Signing_key,Signature}`, `Pre_hash`.
+
+Plus 4 pre-existing CHECK (`Constants`, `Types`, `Polynomial`,
+`Arithmetic`) and 3 trait-boundary (`Simd.Traits.{fsti,Specs.fst,fst}`)
+= **17 CHECK modules** on this branch.  All `Simd.{Portable,Avx2}.*`
+intentionally in ADMIT — the dual below-trait branch verifies them
+against the same trait contract.  See
+`proofs/agent-status/lane-split-protocol.md` for the protocol; F-1
+finding (use_hint/decompose/compute_hint pre vs lane post conditional)
+addressed via option (d) in the same file (no contract change;
+restructure impl-side commute lemma to match the lane post's `==>`
+shape).
+
+## Step A — trait pre/post strengthening (committed)
+
+| Method | Change | Commit |
+|---|---|---|
+| `decompose` | Post: γ₂-conditional `is_i32b_array_opaque {95232/261888} low_future` ∧ `{44/16} high_future` | `94e933eb1`+`36fe89b18` |
+| `compute_hint` | Pre: + FIELD_MAX bound on `low,high`. Post: + `is_binary_array_8_opaque hint_future` | `94e933eb1` |
+| `use_hint` | Post: γ₂-conditional `{44/16} hint_future` | `94e933eb1` |
+| `power2round` | Post: + `is_i32b_array_opaque (pow2 12) t0_future` ∧ `forall8 (t1_future ∈ [0, pow2 10))` | `94e933eb1` |
+| `reduce` | Post: + `forall j<32. is_i32b_array_opaque FIELD_MAX simd_units_future j` | `94e933eb1` |
+| `gamma1_deserialize` | Post: `is_i32b_array_opaque (pow2 gamma1_exponent) out_future` (was none) | `94e933eb1` |
+| `t0_deserialize` | Post: `is_i32b_array_opaque (pow2 12) out_future` (was none) | `94e933eb1` |
+| `t1_serialize` | Pre: + per-lane `[0, pow2 10)` on input | `94e933eb1` |
+
+`Arithmetic::make_hint` pre also strengthened with FIELD_MAX bound on
+`low,high` poly arrays, mirroring the trait change (`04dc965c6`).
+
+## Arithmetic admit pass (this session, `8d532957e`+`b097daf01`)
+
+| Function | State | Commit |
+|---|---|---|
+| `power2round_one_ring_element` | ✅ admit removed; strong post discharged via loop_invariant | `8d532957e` |
+| `power2round_vector` | 🟡 strong post; body admit kept (hax IndexMut quirk on `&mut t1[i]` — second `&mut` arg fails typeclass resolution while first works) | `8d532957e` |
+| `use_hint` | 🟡 strong post (γ₂-conditional bound on `re_vector_future`); body admit kept (would need `from_i32_array → is_binary_array_8_opaque` bridge) | `b097daf01` |
+
+Net: all 3 arithmetic admits now have strong wrapper pre/post — upstream
+callers get the bounds.  1/3 fully discharged.
+
+## Step C — above-trait promotions (committed)
+
+| Module | Commit | Body admits |
+|---|---|---|
+| `Libcrux_ml_dsa.Ntt.fst` | `13a60d039` | – (clean) |
+| `Libcrux_ml_dsa.Encoding.T1.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Encoding.Commitment.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Encoding.Error.fst` | `2eefebe43` | `deserialize_to_vector_then_ntt` |
+| `Libcrux_ml_dsa.Encoding.Gamma1.fst` | `2eefebe43` | – |
+| `Libcrux_ml_dsa.Pre_hash.fst` | `b68738411` | – |
+| `Libcrux_ml_dsa.Encoding.T0.fst` | `9848dde7c` | `deserialize_to_vector_then_ntt` |
+| `Libcrux_ml_dsa.Encoding.Verification_key.fst` | `0d11b64a9` | `generate_serialized`, `deserialize` |
+| `Libcrux_ml_dsa.Encoding.Signing_key.fst` | `0d11b64a9` | `generate_serialized` |
+| `Libcrux_ml_dsa.Encoding.Signature.fst` | `0d11b64a9` | `serialize`, `deserialize` |
+| `Libcrux_ml_dsa.Matrix.fst` | (this commit) | all 6 wrappers (`compute_as1_plus_s2`, `compute_matrix_x_mask`, `vector_times_ring_element`, `add_vectors`, `subtract_vectors`, `compute_w_approx`) — pre/post strong; bodies admit |
+| `Libcrux_ml_dsa.Polynomial.fst` (re-verified) | (this commit) | `Polynomial::add` and `Polynomial::subtract` posts strengthened with per-simd-unit `add_post`/`sub_post` chain — discharged via loop_invariant. No body admits. |
+| `Libcrux_ml_dsa.Sample.fst` | (this commit) | all 9 functions body-admit; only minimal pres added (length bounds on `add_*_domain_separator`, divisor-not-zero on inner `xy`). Posts deferred — Xof traits are still ADMIT. |
+| `Libcrux_ml_dsa.Hash_functions.{Shake128,Shake256,Portable,Simd256,Neon}.fst` | (this commit) | trait declarations + opaque-body Xof impls; all 5 modules verify out of the box (no source changes). |
+| `Libcrux_ml_dsa.Ml_dsa_generic.fst` + 3 per-param + 9 instantiations + 3 multiplexing (16 modules total) | (this commit) | All 10 functions in `src/ml_dsa_generic.rs` body-admit; the per-param + instantiation + multiplexing modules verify automatically (they only re-export and dispatch). |
+
+## Promotion pattern (for next session)
+
+For each ADMIT-mode above-trait module:
+1. Add `#[hax_lib::requires]/[ensures]` to each wrapper, forwarding
+   the underlying trait method's pre/post lifted to the
+   `PolynomialRingElement` / poly-array level.
+2. Convert `cloop! { for ... in ....iter().enumerate() }` to plain
+   `for i in 0..n.len() { ... }` so `hax_lib::loop_invariant!`
+   attaches.  cloop's fold-of-tuple shape gives a `True` invariant
+   that loses length/bound facts.
+3. For functions with `&mut [u8]` arg: add
+   `#[ensures(|_| future(arg).len() == arg.len())]` (length
+   preservation).  Use literal lengths in the post (e.g. `== 32`
+   instead of `== arg.len()`) — hax may emit `true` for the post
+   when the body shape doesn't trivially preserve, in which case
+   the literal form propagates correctly.
+4. For trait declarations, `#[hax_lib::attributes]` is required on
+   both the trait AND the impl block for `requires/ensures` to
+   propagate to the extracted `f_*_pre`/`f_*_post`.
+5. Body admit (`#[hax_lib::fstar::verification_status(panic_free)]`
+   + `hax_lib::fstar!("admit ()")`) is acceptable when the body
+   has multi-step offset arithmetic, copy_from_slice, or other
+   shape that doesn't fit a simple loop_invariant.  The pre/post
+   carries the contract; the impl is the body lane's concern.
+
+## Next-session priority
+
+| # | Module | Risk | Notes |
+|---|---|---|---|
+| 1 | `Libcrux_ml_dsa.Matrix.fst` | high | Nested poly-array loops with chain-of-bounds (ntt_multiply → add → reduce → invert_ntt).  Needs substantial wrapper-level pre/post forwarding. ~30-60 min. |
+| 2 | `Libcrux_ml_dsa.Sample.fst` | medium | Uses `hash_functions::shake128/shake256` Xof traits which are still ADMIT.  May need length-preservation ensures on more Xof methods, plus loop_invariants on the rejection-sample state machine. |
+| 3 | `Libcrux_ml_dsa.Hash_functions.{Portable,Simd256,Neon}.fst` | low-medium | Once Sample needs them.  Add length-preservation ensures + admit body of Xof impls. |
+| 4 | `Libcrux_ml_dsa.Ml_dsa_generic.fst` and instantiations | high | The top-level orchestrator.  Largest blast radius. |
+
+Caller-side fix A.6 deferred (insert `reduce` before `ntt` in
+`matrix.rs::compute_w_approx:117`) — handle in #1 above.
+
+---
+
 **Funarr blocker**: **resolved** (commit `42d4a3347`) — fixed at source in `crates/utils/core-models/src/abstractions/{funarr,bitvec}.rs`; persistent across `cargo hax` runs.
 **Empirical baseline (Step 11)**: **88 modules invoked, [CHECK]=30, [ADMIT]=58, 0 errors, 0 make-level failures** (verified via touch-all + ./hax.sh prove).  `Libcrux_ml_dsa.Simd.Portable.fst` impl_1 verifies in ~16s @ rlimit 80 (used 68/80) with the new decompose/compute_hint scaffolding.  Note: the previously-recorded 98/40/58 figure in this file appears to have been counting hax-lib core / extracted-but-not-VERIFIED modules; the actual VERIFIED_MODULES list is 26 entries, plus 5 Hacspec_ml_dsa.* and 1 Spec.MLDSA.Math, giving the 30 [CHECK] now observed under the same Makefile.
 

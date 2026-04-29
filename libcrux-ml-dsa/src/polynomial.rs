@@ -9,12 +9,106 @@ pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
 
+/// Spec helpers for stating bounds at the polynomial level (mirrors
+/// `Libcrux_ml_kem.Polynomial.spec`).  Use these in matrix/vector wrappers
+/// to avoid nested-forall trigger explosion in SMT search.
+#[cfg(hax)]
+pub(crate) mod spec {
+    use crate::polynomial::PolynomialRingElement;
+    use crate::simd::traits::Operations;
+
+    pub(crate) fn is_bounded_simd_unit<SIMDUnit: Operations>(b: usize, vec: &SIMDUnit) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"Spec.Utils.is_i32b_array_opaque (v b) (i0._super_i2.f_repr vec)"#
+        )
+    }
+
+    #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::after(
+            r#"
+let lemma_is_bounded_poly_lookup
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+      (j: nat{j < 32})
+    : Lemma
+      (requires is_bounded_poly b p)
+      (ensures Spec.Utils.is_i32b_array_opaque (v b)
+                 (i0._super_i2.f_repr (Seq.index p.f_simd_units j)))
+      [SMTPat (Spec.Utils.is_i32b_array_opaque (v b)
+                 (i0._super_i2.f_repr (Seq.index p.f_simd_units j)));
+       SMTPat (is_bounded_poly b p)]
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b p)
+
+let lemma_is_bounded_poly_intro
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Lemma
+      (requires forall (j: nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (v b)
+          (i0._super_i2.f_repr (Seq.index p.f_simd_units j)))
+      (ensures is_bounded_poly b p)
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b p)
+
+(* Monotonicity: tighter bound implies looser bound. *)
+let lemma_is_bounded_poly_higher
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b1 b2: usize)
+      (p: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
+    : Lemma
+      (requires is_bounded_poly b1 p /\ v b1 <= v b2)
+      (ensures is_bounded_poly b2 p)
+  = reveal_opaque (`%is_bounded_poly) (is_bounded_poly b1 p);
+    reveal_opaque (`%is_bounded_poly) (is_bounded_poly b2 p);
+    let lemma_lane (j: nat{j < 32}) :
+      Lemma (Spec.Utils.is_i32b_array_opaque (v b2)
+               (i0._super_i2.f_repr (Seq.index p.f_simd_units j))) =
+      reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque in
+    Classical.forall_intro lemma_lane
+"#
+        )
+    )]
+    pub(crate) fn is_bounded_poly<SIMDUnit: Operations>(
+        b: usize,
+        p: &PolynomialRingElement<SIMDUnit>,
+    ) -> hax_lib::Prop {
+        hax_lib::fstar_prop_expr!(
+            r#"forall (i:nat). i < 32 ==> Spec.Utils.is_i32b_array_opaque (v b)
+                  (i0._super_i2.f_repr (p.f_simd_units.[ sz i ]))"#
+        )
+    }
+}
+
 #[hax_lib::attributes]
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
+    #[hax_lib::ensures(|result| fstar!(r#"forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque 0
+            (i0._super_i2.f_repr (Seq.index ${result}.f_simd_units j))"#))]
     pub(crate) fn zero() -> Self {
-        Self {
+        let s = Self {
             simd_units: [SIMDUnit::zero(); SIMD_UNITS_IN_RING_ELEMENT],
-        }
+        };
+        hax_lib::fstar!(r#"
+          let lemma_lane (j:nat{j < 32}) :
+            Lemma (Spec.Utils.is_i32b_array_opaque 0
+                     (i0._super_i2.f_repr (Seq.index ${s}.f_simd_units j))) =
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque
+          in
+          Classical.forall_intro lemma_lane
+        "#);
+        s
     }
 
     // This is used in `make_hint` and for tests
@@ -63,37 +157,123 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"forall i. 
-        add_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+    #[hax_lib::requires(fstar!(r#"forall i.
+        add_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        add_post (i0._super_i2.f_repr (Seq.index self.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
     pub(crate) fn add(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
             hax_lib::loop_invariant!(|i: usize| fstar!(
-                r#"forall j. j >= v i ==> 
-                            Seq.index self.f_simd_units j == 
-                            Seq.index old_self.f_simd_units j"#
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                            Seq.index self.f_simd_units j ==
+                            Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                            add_post (i0._super_i2.f_repr (Seq.index old_self.f_simd_units j))
+                                     (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                                     (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
             ));
 
             SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
         }
     }
 
+    /// `add` with explicit bound parameters. Lifts `bounded_add_post` (the
+    /// per-simd-unit SMTPat in `Specs.fst`) to the polynomial level so callers
+    /// can chain bounds across nested loops without paying the cost of the
+    /// per-lane forall expansion at every call site. Mirrors ML-KEM's
+    /// `add_to_ring_element`/`add_bounded` recipe.
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"forall i. 
-        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i)) 
+    #[hax_lib::requires(fstar!(r#"
+        v $_b1 + v $_b2 <= 2147483647 /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b1)
+                (i0._super_i2.f_repr (Seq.index self.f_simd_units j))) /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b2)
+                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j)))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+            (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
+    pub(crate) fn add_bounded(&mut self, _b1: usize, rhs: &Self, _b2: usize) {
+        #[cfg(hax)]
+        let old_self = self.clone();
+
+        for i in 0..self.simd_units.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                            Seq.index self.f_simd_units j ==
+                            Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                    Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+                      (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
+            ));
+
+            SIMDUnit::add(&mut self.simd_units[i], &rhs.simd_units[i]);
+        }
+    }
+
+    /// `subtract` with explicit bound parameters; mirrors `add_bounded`.
+    #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"
+        v $_b1 + v $_b2 <= 2147483647 /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b1)
+                (i0._super_i2.f_repr (Seq.index self.f_simd_units j))) /\
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $_b2)
+                (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j)))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+            (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
+    pub(crate) fn subtract_bounded(&mut self, _b1: usize, rhs: &Self, _b2: usize) {
+        #[cfg(hax)]
+        let old_self = self.clone();
+
+        for i in 0..self.simd_units.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                            Seq.index self.f_simd_units j ==
+                            Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                    Spec.Utils.is_i32b_array_opaque (v $_b1 + v $_b2)
+                      (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
+            ));
+
+            SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);
+        }
+    }
+
+    #[inline(always)]
+    #[hax_lib::requires(fstar!(r#"forall i.
+        sub_pre (i0._super_i2.f_repr (Seq.index self.f_simd_units i))
                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i))"#))]
+    #[hax_lib::ensures(|_| fstar!(r#"forall (j:nat). j < 32 ==>
+        sub_post (i0._super_i2.f_repr (Seq.index self.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                 (i0._super_i2.f_repr (Seq.index self_e_future.f_simd_units j))"#))]
     pub(crate) fn subtract(&mut self, rhs: &Self) {
         #[cfg(hax)]
         let old_self = self.clone();
 
         for i in 0..self.simd_units.len() {
             hax_lib::loop_invariant!(|i: usize| fstar!(
-                r#"forall j. j >= v i ==> 
-                        Seq.index self.f_simd_units j == 
-                        Seq.index old_self.f_simd_units j"#
+                r#"v i <= 32 /\
+                  (forall (j:nat). j >= v i /\ j < 32 ==>
+                        Seq.index self.f_simd_units j ==
+                        Seq.index old_self.f_simd_units j) /\
+                  (forall (j:nat). j < v i ==>
+                        sub_post (i0._super_i2.f_repr (Seq.index old_self.f_simd_units j))
+                                 (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))
+                                 (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#
             ));
 
             SIMDUnit::subtract(&mut self.simd_units[i], &rhs.simd_units[i]);

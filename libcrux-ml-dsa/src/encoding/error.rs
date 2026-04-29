@@ -75,8 +75,17 @@ fn deserialize<SIMDUnit: Operations>(
     }
 }
 
+// F-15 (2026-04-29): pragmatic length-preservation post + admit body.  The
+// strong-bound shape (forall k<i. is_i32b_array_opaque NTT_BASE_BOUND ...)
+// requires bridging the eta-conditional `forall8` trait post on
+// `error_deserialize` — there is no SMTPat lemma analogous to t0's
+// `lemma_is_i32b_strict_lower_implies_array_opaque`, so the lift is manual
+// and exhausted the 20-min budget.  Length-pres alone is enough to chain
+// through callers in `Ml_dsa_generic`.  See `proofs/outstanding-admits.md`.
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${ring_elements}_future == Seq.length $ring_elements"#))]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     eta: Eta,
     ring_element_size: usize,

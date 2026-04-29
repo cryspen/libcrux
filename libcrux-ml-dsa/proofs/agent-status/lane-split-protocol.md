@@ -604,6 +604,7 @@ breaks Portable `commitment_serialize` discharge
   ensures).
 
 
+#### F-6 (2026-04-28) — `t0_serialize` trait pre uses
 non-negative bound where impl requires centered (|x| ≤ pow2 12)
 
 - **Affected method:** `t0_serialize` (trait at

@@ -116,7 +116,418 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   doesn't typecheck without `i < Seq.length out_future`. Bound `i`
   in-forall to `i:nat{i < Seq.length ${out}_future}`.
 
-## Active admits
+## Active admits — above-trait branch (`ml-dsa-above-trait` lane)
+
+### Libcrux_ml_dsa.Arithmetic.power2round_vector
+- **File**: `src/arithmetic.rs:65-81` (post `8d532957e`)
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Diagnosis**: hax extraction quirk — `&mut t0[i]` resolves Index
+  typeclass cleanly but `&mut t1[i]` (the second `&mut` arg passed to
+  `power2round_one_ring_element`) fails with Error 228:
+  `Could not solve typeclass constraint Core_models.Ops.Index.t_Index
+  (FStar.Seq.Base.seq (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement ...))`.
+  Both args have the same type — asymmetric.
+- **Closure attempt (2026-04-29, ~22 min)**: tried three restructurings —
+  (1) loop_invariant + helper kept; (2) local-clone of `t0[i]`/`t1[i]` to
+  mutable locals + `power2round_one_ring_element(&mut local_t0, &mut local_t1)`
+  + write-back; (3) inline helper body so the call site passes
+  `&mut t0[i].simd_units[j]` and `&mut t1[i].simd_units[j]` to
+  `SIMDUnit::power2round` (a trait method, not a local fn).
+  All three hit Error 228 on the SECOND slice access (`t1.[i]` or
+  `t1[i].simd_units.[j]`) regardless of restructure.
+  Notably `decompose_vector` extracts cleanly with the parallel
+  `(low.[i], high.[i])` shape — difference unclear; possibly fold
+  accumulator naming (`(high, low)` alphabetical vs `(t0, t1)`),
+  loop_invariant content, or context-pruning of the typeclass
+  instance set.  This appears to be a hax-extraction asymmetry rather
+  than something fixable from arithmetic.rs alone.
+- **Suggested mitigation**: rename the slice arguments so the fold
+  accumulator is alphabetized, e.g. `(t0, t1)` → `(low, high)` or
+  `(a, b)`, and re-test.  Or factor into a single fold with a
+  combined `(t0_slice, t1_slice)` tuple-typed parameter passed to
+  helper that accepts both as values and returns a tuple.  Or report
+  as hax bug.
+
+### Libcrux_ml_dsa.Arithmetic.use_hint
+- **File**: `src/arithmetic.rs:155-185` (post `b097daf01`)
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Diagnosis**: body needs `from_i32_array(&hint[i], &mut tmp)` post
+  (`tmp.repr() == hint[i]`) bridged to per-simd-unit
+  `is_binary_array_8_opaque (f_repr tmp.simd_units[j])` so the inner
+  `Operations::use_hint` call's pre is satisfied.  The intro lemma
+  `lemma_is_binary_array_8_intro` exists; needs to be applied per-j
+  with hypotheses from the slice-level binary property.
+- **Closure attempt (2026-04-29)**: investigation showed
+  `from_i32_array` in `src/polynomial.rs:128-136` has NO ensures
+  (extracted post is `Prims.l_True`).  The intro lemma cannot fire
+  because the per-simd-unit `repr()` equality is not visible at the
+  call site without inlining.  The recipe ("Classical.forall_intro
+  applying lemma_is_binary_array_8_intro after from_i32_array") relied
+  on `from_i32_array` having a strong post — which it does not.
+- **Suggested mitigation (Option A, in arithmetic.rs only)**: replace
+  the `from_i32_array(&hint[i], &mut tmp)` call with an inline
+  per-simd-unit fold calling `SIMDUnit::from_coefficient_array`
+  directly.  `from_coefficient_array` has the trait post
+  `future(out).repr() == array`, so a loop_invariant of shape
+  `forall kk < k. is_binary_array_8_opaque (f_repr tmp.simd_units[kk])`
+  carries the binary property forward (via `lemma_is_binary_array_8_intro`
+  applied per-iteration after the `from_coefficient_array` call).
+  Estimated effort: 30-45 min (uncertain — first iteration would still
+  need the loop-invariant for the outer i-loop to thread the hint binary
+  property + the inner loop's accumulated post + the j-loop after; non-trivial).
+- **Suggested mitigation (Option B)**: add an `ensures` to
+  `Polynomial::from_i32_array` exposing
+  `forall kk < 32. (future(result).simd_units[kk]).repr() == array[kk*8..(kk+1)*8]`.
+  Then the original recipe works directly.  Out of scope for the
+  arithmetic.rs lane but is the cleaner fix and unblocks any other
+  call site needing a per-simd-unit post.
+
+### Libcrux_ml_dsa.Arithmetic.power2round_one_ring_element
+- **Status**: closed at `8d532957e` — admit removed, strong post
+  discharged via loop_invariant + Spec.Utils.forall8.
+
+### 
+
+Body admits added during Step C promotions (2026-04-28).  Each
+keeps the trait pre/post strong (the contract callers see) but
+admits the panic-free body.  Below-trait branch is unaffected;
+these are local to the above-trait lane.
+
+### Libcrux_ml_dsa.Encoding.{Error,T0}.deserialize_to_vector_then_ntt
+- **Files**: `src/encoding/{error,t0}.rs`, in `deserialize_to_vector_then_ntt`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.2/C.3 (`2eefebe43`, `9848dde7c`)
+- **Status update (2026-04-29)**:
+  - **T0**: CLOSED at `577a112cf` — body admit replaced with real proof.
+    Loop invariant `forall k<i. forall j<32. is_i32b_array_opaque FIELD_MAX
+    (ring_elements[k].simd_units[j].repr)`; `pow2 12 → NTT_BASE_BOUND` lift via
+    per-j `Spec.Utils.is_i32b_array_larger` invoked by `Classical.forall_intro`
+    after the local `deserialize` (which propagates the trait's
+    `is_i32b_strict_lower_array_opaque (pow2 12)` post via the existing SMTPat
+    `lemma_is_i32b_strict_lower_implies_array_opaque`).  Verified 2.5s @ rlimit 21.
+  - **Error**: BODY ADMIT RETAINED, length-preservation ensures added at
+    `(this commit)`.  Strong-bound shape is harder than T0's because the
+    `Operations::error_deserialize` trait post is in eta-conditional `forall8`
+    form (raw bound, not `is_i32b_strict_lower_array_opaque` with SMTPat
+    support), so the lift to `is_i32b_array_opaque eta_value` is manual
+    (would need `reveal_opaque (`%is_i32b_array_opaque)` plus a case-split
+    on `eta` between `Eta_Two` and `Eta_Four`).  A prior agent attempt
+    (`8601b2420` on `agent-error-rs-deserialize-ntt`) reported all individual
+    sub-goals (deserialize ensures, ntt pre, index pre) verifying under
+    `assert`, but the composite loop-invariant *preservation* step (extending
+    `forall k<i ...` to `forall k<i+1 ...` through `update_at_usize` + `ntt`'s
+    post) timed out at `--z3rlimit 14-15s` with `reason-unknown=canceled`.
+    Likely fix path: pivot to polynomial-level
+    `Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly` (already defined; SMTPat
+    + intro lemmas in place) instead of the nested-forall shape, to avoid
+    quantifier-trigger explosion.
+- **Suggested mitigation (closing the body)**: as above — try is_bounded_poly
+  factoring to avoid nested-forall blowup; or write a manual bridge lemma in
+  `Spec.Utils` converting eta-conditional `forall8` to `is_i32b_array_opaque`,
+  then mirror T0's pattern.  ~30-45 min once the bridge is in place.
+
+### Libcrux_ml_dsa.Encoding.Verification_key.{generate_serialized,deserialize}
+- **File**: `src/encoding/verification_key.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Status update (2026-04-29)**:
+  - **deserialize**: CLOSED at `743956689` — inline `320` literal in slice
+    index + minimal `loop_invariant` (`i <= rows_in_a /\ rows_in_a <= 8 /\
+    rows_in_a == Seq.length t1 /\ Seq.length serialized == rows_in_a * 320`)
+    + `--z3rlimit 200`.  Verifies in ~2s.
+  - **generate_serialized**: BODY ADMIT RETAINED.  The `+ SEED_FOR_A_SIZE`
+    (= 32) offset in the per-iteration slice index compounds with the
+    multiplicative-bound check on `i * 320` and the function's triple-forall
+    precondition (`forall k j i. v >= 0 /\ ... < pow2 10`) to exhaust Z3
+    even at `--z3rlimit 800 --split_queries always`.  Quantifier-instantiation
+    explosion.  Compare `commitment.serialize_vector` which uses the OPAQUE
+    `is_pos_array_opaque (pow2 N - 1)` predicate inside the forall and
+    verifies cleanly.  Closure path: either (a) tighten `T1.serialize`'s
+    precondition in `t1.rs` to use `is_pos_array_opaque (pow2 10 - 1)`
+    (cascades to re-verify T1.fst), or (b) inline `lemma_is_pos_array_intro`
+    calls per (k, j) pair via `hax_lib::fstar!(...)`.  ~45-60 min;
+    cross-file scope.
+
+### Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized
+- **File**: `src/encoding/signing_key.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Diagnosis**: hardest of the C.5 batch.  Body has 5 sequential
+  slice writes with running `offset` variable: seed_matrix (32),
+  seed_signing (32), shake256-output verification_key_hash (64),
+  per-poly s1_2 errors (eta-conditional size), per-poly t0
+  serializations (416 each).  The Shake256 trait method's post
+  needs length-preservation ensures (added in `b68738411` for
+  shake128 and shake256 Xof; verify it covers `DsaXof::shake256`
+  too).
+- **Suggested mitigation**: add length-preservation ensures to
+  `shake256::DsaXof::shake256<OUT_LEN>` if missing.  Then split
+  the body into 3 sub-functions (seed-write block, error-loop, t0-loop)
+  with intermediate length post-conditions.  ~45 min.
+
+### Libcrux_ml_dsa.Encoding.Signature.{serialize,deserialize}
+- **File**: `src/encoding/signature.rs`
+- **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
+- **Phase added**: above-trait C.5 (`0d11b64a9`)
+- **Diagnosis**: most complex — `serialize` packs commitment_hash +
+  per-poly gamma1_serialize + hint-bit-pack with running
+  `true_hints_seen` counter and per-row written count.
+  `deserialize` does the inverse with malformed-hint detection
+  via `Result<(), VerificationError>` return.
+- **Suggested mitigation**: USER lane.  Same shape as ML-KEM
+  HintBitPack/HintBitUnpack analogs which were also USER-lane.
+
+`set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
+in `0d11b64a9` (no admit needed there).
+
+### Polynomial::add_bounded / subtract_bounded helpers (no admit)
+- **File**: `src/polynomial.rs:93-160`
+- **Status**: both prove clean (`bounded_add_post` / `bounded_sub_post`
+  SMTPats fire per simd-unit; pre `is_i32b_array_opaque b1 self ∧
+  is_i32b_array_opaque b2 rhs ∧ b1+b2 ≤ i32::MAX` gives polynomial-level
+  post `is_i32b_array_opaque (b1+b2) self_future`).
+- **Mirrors**: ML-KEM's `add_to_ring_element(myself, rhs, _bound)` recipe
+  — ghost bound parameters thread the bound chain through composition
+  without forcing per-lane forall expansion at every call site.
+- **Used by**: `add_vectors`, `subtract_vectors` (admit removed; see below).
+
+### Slice snapshot trick: `lhs.to_vec().as_slice()`
+The frame-property invariant ML-KEM uses (`#[cfg(hax)] let _result = result`)
+relies on `result` being an owned fixed-size array (Copy).  ML-DSA matrix
+wrappers take `&mut [T]` slices, which can't be snapshot-cloned that way
+(hax HAX0003 error).  Workaround:
+```rust
+#[cfg(hax)]
+let e_lhs_orig: &[PolynomialRingElement<SIMDUnit>] = lhs.to_vec().as_slice();
+```
+The chain `to_vec` (allocates a Vec) `.as_slice()` (returns `&[T]`)
+extracts to F* as
+`Alloc.Vec.impl_1__as_slice (Alloc.Slice.impl__to_vec lhs)`.  Both
+functions are local-let-defined and F* unfolds them well enough at
+sufficient rlimit (400-800 with `--split_queries always`) to prove
+`Seq.length lhs == Seq.length e_lhs_orig` and
+`forall k. Seq.index lhs k == Seq.index e_lhs_orig k` initially.
+The `extern crate alloc;` under cfg(hax) makes `Vec` reachable in
+this no_std crate.
+
+In Rust, `let _orig = lhs.to_vec().as_slice()` would dangle (the
+temporary Vec is dropped at the end of the statement), but the
+binding only exists under `#[cfg(hax)]` and never compiles in
+non-hax builds.
+
+### Libcrux_ml_dsa.Matrix.{compute_as1_plus_s2,compute_matrix_x_mask,compute_w_approx} (3 of 6 still admit)
+**Status update**: `add_vectors`, `subtract_vectors`, and
+`vector_times_ring_element` no longer admit their bodies — the proof
+closure is via `Polynomial::add_bounded`/`subtract_bounded` + the
+`lhs.to_vec().as_slice()` snapshot trick + `--z3rlimit 400-800
+--split_queries always`.
+
+**Opaque predicate infrastructure (this commit)**: introduced
+`Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly` as `opaque_to_smt`
+with three companion lemmas:
+- `lemma_is_bounded_poly_lookup` (SMTPat-driven — fires per simd-unit
+  when `is_i32b_array_opaque b (f_repr ...simd_units[j])` is needed).
+- `lemma_is_bounded_poly_intro` (manual call — re-establishes the
+  opaque atom from a per-simd-unit forall, e.g. after `add_bounded`
+  returns its post).
+- `lemma_is_bounded_poly_higher` (manual call — monotonicity, weakens
+  bound from `b1` to `b2 >= b1`, e.g. lifting the inner-loop `j *
+  FIELD_MAX` to reduce's `2143289343`-bound pre).
+
+Applying this to `compute_matrix_x_mask` made significant progress:
+queries dropped from 121 → ~115 and average per-query time fell from
+60-130s to under 10s.  Three failure points remain — at the inner
+ntt_multiply call (matrix bound lookup at index `i*c+j`), the reduce
+call (higher-lemma must be visible), and the outer-loop continuation
+(frame property + intro for next-iteration invariant).  Each is a
+trigger-instantiation issue rather than a complexity blowup.  Closing
+all three needs ~1-2 more iterations of bridging assertions or a
+slight restructuring to make instantiations more obvious.
+
+Reverted matrix.rs to admits for now; the opaque infra is the
+contributed deliverable and will accelerate the next attempt
+significantly.
+
+**Spec gap resolved (2026-04-28)**: cherry-picked Option C from
+`ml-dsa-proofs` 686543e33 (above-trait commit `8ea464a2d`).
+`NTT_BASE_BOUND` widened from `FIELD_MID` to `FIELD_MAX`, so the
+`shift_left_then_reduce → ntt` chain in `compute_w_approx` composes
+directly; the A.6 `reduce` insertion is no longer needed (removed in
+`0a1f1880f`).  `reduce_lane_post` unchanged (Option B was rejected by
+below-trait per F-5 finding).  The 3 remaining body admits are now
+purely SMT-trigger work, not spec gaps.
+
+**Closure attempt (2026-04-29)**: deeper investigation of the
+remaining 3 wrappers surfaced two infrastructure shortfalls and one
+hax extraction quirk:
+
+1. *`shift_left_then_reduce` had no `ensures`.*  The wrapper's
+   per-simd-unit post (`shift_left_then_reduce_lane_post`) lifts to
+   `is_i32b_array_opaque FIELD_MAX re_future`, but the polynomial
+   wrapper exposed nothing — the chain `shift_left_then_reduce →
+   ntt` couldn't compose at the wrapper level.  Added an `ensures`
+   producing the polynomial-level FIELD_MAX bound + per-simd-unit
+   `Classical.forall_intro` lifting (commit infra in this session).
+2. *`Polynomial::zero()` had no `ensures`.*  `compute_w_approx` does
+   `let mut inner_result = PolynomialRingElement::zero();` then adds
+   into it; without a post on `zero()` the inner accumulator started
+   with `Prims.l_True` instead of `is_i32b_array_opaque 0`.  Added
+   an `ensures` producing the per-simd-unit zero bound (commit infra
+   in this session).
+3. *Hax typeclass-resolution quirk on tuple-folded slice access.*
+   When the outer fold accumulator is a tuple of slices (`(a_as_ntt,
+   result)`), nested-fold body `result.[i]` access fails with
+   `Error 228: Could not solve typeclass constraint
+   Core_models.Ops.Index.t_Index (FStar.Seq.Base.seq ...) usize`
+   even though the same shape works for single-slice accumulators
+   (e.g. `add_vectors`).  Worked around by changing
+   `compute_as1_plus_s2`'s `a_as_ntt: &mut [T]` parameter to
+   `&[T]` (so the outer fold is single-slice), with the body cloning
+   matrix entries into a `let mut product = ...` local.  The
+   workaround DID extract cleanly but the SMT proof did not close in
+   the 20-min budget — query 92 of `compute_w_approx` (the simplest
+   of the three, post = length only) timed out at rlimit 800 with
+   `--retry 3`.  Most queries (~85 of ~92) discharged in <100ms;
+   one inner-loop preservation query at line 728-913 took 72s rlimit
+   396.  The dominant cost is the outer-loop frame-property
+   reasoning interacting with the per-simd-unit unfolds inside
+   each wrapper's `--split_queries always` discharge.
+
+The infrastructure (`shift_left_then_reduce` ensures + `zero()`
+ensures) is committed in this session; future closure attempts will
+benefit from these.  The three wrappers remain admitted.
+
+**Sprint scope (recorded 2026-04-29)**:
+
+*Core (must achieve)*:
+1. Close the 3 remaining Matrix.fst body admits (compute_as1_plus_s2,
+   compute_matrix_x_mask, compute_w_approx) using slice API +
+   Polynomial.Spec opaque infra.
+2. Strengthen Sample.fst posts beyond the current body-admit state.
+3. Add length-preservation ensures to Hash_functions Xof methods
+   (Shake128, Shake256, Portable, Simd256, Neon) so Sample's posts
+   can chain.
+4. Show `Libcrux_ml_dsa.Ml_dsa_generic.fst` is **panic-free**.
+   Remove the `admit ()` body markers on the 10 functions in
+   `src/ml_dsa_generic.rs` and add the pres / loop_invariants /
+   bridging assertions for F* to discharge panic-freedom.
+   Functional posts can stay weak — goal is panic-free, not
+   functional correctness.
+
+*Rejected (do not pursue)*:
+- Refactoring matrix wrappers to fixed-size arrays.  Closure work
+  must stay within the slice API.
+
+
+- **File**: `src/matrix.rs`
+- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix)
+- **Phase added**: above-trait C.6 (Matrix.fst promotion)
+- **Diagnosis**: each of the six wrappers chains trait calls
+  (`ntt_multiply_montgomery → add → reduce → invert_ntt_montgomery`
+  with possible variations).  Wrapper pre/post is strong (FIELD_MAX-bounded
+  inputs, FIELD_MAX-bounded or 2*FIELD_MAX-bounded outputs).  The body
+  needs nested loop-invariants that simultaneously track partial
+  bound-progress across `result[0..i]` for the outer loop AND across
+  the inner-j accumulating sum.  Each wrapper individually was tried
+  but the loop-invariant shape (forall over slice elements + per-poly
+  bounds) timed out at rlimit 80 across 6+ subqueries even with body-only
+  proof attempts.  The hax-extraction shape with `verification_status(panic_free)`
+  also generated a non-linear `(result, result: Prims.unit)` pattern
+  due to the parameter name clash (worked around by reverting to plain
+  body admit).
+- **Suggested mitigation**: per-wrapper, ~30-45 min each.  Pattern:
+  add `lhs_bound: usize{lhs_bound + (cols+1)*FIELD_MAX <= i32::MAX}`
+  ghost parameter to the inner loop_invariant; track per-iteration
+  bound growth.  OR weaken the post to bounds-only without an
+  equation chain so the SMT search space shrinks.  Caller-side fix
+  A.6 (insert reduce before ntt at compute_w_approx) is applied;
+  the residual gap is `reduce` post (FIELD_MAX) vs `ntt` pre
+  (NTT_BASE_BOUND = FIELD_MID = FIELD_MAX/2) — the actual implementation
+  produces FIELD_MID-bounded values but the spec post is loose at FIELD_MAX,
+  so even with reduce inserted the chain doesn't close at the spec level
+  without strengthening reduce's post (which is not in this branch's
+  scope per the lane-split protocol).
+- **Polynomial::add / subtract strengthening (this commit)**: both
+  wrappers in `src/polynomial.rs:65-101` now carry a per-simd-unit
+  ensures `forall (j:nat). j < 32 ==> add_post|sub_post old[j] rhs[j] future[j]`,
+  which is what callers (Matrix and downstream) need to chain bounds.
+  The body proof works via the existing loop_invariant extended with
+  the partial post-progress conjunct.  No body admit on Polynomial::add
+  or subtract.
+
+### Libcrux_ml_dsa.Ml_dsa_generic (all 10 functions)
+- **File**: `src/ml_dsa_generic.rs`
+- **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix) on
+  `generate_key_pair`, `sign_internal`, `verify_internal`,
+  `sign_pre_hashed_mut`, `sign_pre_hashed`, `sign_mut`, `sign`,
+  `verify`, `verify_pre_hashed`, and the free fn
+  `derive_message_representative`.
+- **Length-preservation ensures (2026-04-29)**: `generate_key_pair`
+  carries `Seq.length ${signing_key}_future == Seq.length ${signing_key}
+  /\ Seq.length ${verification_key}_future == Seq.length ${verification_key}`,
+  established via the body admit.  This unblocks the
+  `Instantiations.{Portable,Avx2,Neon}.Ml_dsa_{44,65,87}_` subtype
+  coercion (slice-typed inner return → array-typed outer signature)
+  for all 9 platform-instantiation modules and all 3 multiplexing
+  modules.
+- **Phase added**: above-trait C.9 (Ml_dsa_generic.fst promotion;
+  16 modules total — 1 generic + 3 per-param + 9 platform-instantiations
+  + 3 multiplexing).
+- **Diagnosis**: top-level orchestrator chains every below-and-above-trait
+  primitive (sample → matrix-multiply → reduce/invert → encode → hash).
+  Discharging panic-freedom requires posts on all transitively-called
+  modules — most below-trait Xof methods are still ADMIT, the encoding
+  serialize/deserialize methods carry length-only posts, and the
+  rejection-sample partial-acceptance count is not in the trait post.
+  Body admit makes the function callable from the public API while
+  the wrapper signatures sit ready for downstream typing.
+- **Suggested mitigation**: Phase 4 work, ~6-10 hours.  Touchpoints:
+  (1) Length-preservation ensures on Xof methods (mirrors `b68738411`).
+  (2) Trait-level rejection-sample partial-acceptance count post.
+  (3) Per-function precondition (signing key length, message length,
+      randomness length, signature buffer length) sized by the
+      param-set constants.
+  (4) Per-function post: sign returns Ok with valid-length output,
+      verify returns Ok on a self-consistent signature.
+
+### Libcrux_ml_dsa.Sample (5 of 10 functions still admit)
+- **File**: `src/sample.rs`
+- **Status update (2026-04-29)**: 5 of 10 functions closed.
+  - **Closed (no admit)**: `rejection_sample_less_than_field_modulus`,
+    `rejection_sample_less_than_eta_equals_2`,
+    `rejection_sample_less_than_eta_equals_4`,
+    `rejection_sample_less_than_eta`, `inside_out_shuffle`.
+    Closure recipe:
+    (a) Refactor `cloop! { for ... in ....chunks_exact(N) }` to plain
+        `for i in 0..randomness.len()/N { let chunk = &randomness[i*N..(i+1)*N]; ... }`.
+    (b) Pre `*sampled_coefficients < 256` (or `*out_index < 256`
+        for `inside_out_shuffle`).
+    (c) Loop invariant
+        `v sampled_coefficients <= 263 /\ (done \/ v sampled_coefficients < 256)`
+        — this carries the trait pre `8 <= 263 - sampled_coefficients`
+        through each iteration and propagates the post `v sampled_future <= 263`.
+    (d) Bounds-only post: `v sampled_future <= 263` (matching the
+        trait-side bounds-only convention).
+    (e) For `inside_out_shuffle`, replaced
+        `result[sample_at] = 1 - 2 * ((*signs & 1) as i32)` with
+        `if (*signs & 1) == 0 { 1 } else { -1 }` — equivalent value,
+        but avoids the u64→i32 cast that loses the [0,1] bound and
+        triggers a spurious overflow check on the `2 * b` step.
+    (f) Required `Seq.length out_future == Seq.length out`
+        length-preservation conjunct on the three trait
+        `rejection_sample_*` posts (see lane-split-protocol F-6 for
+        below-trait cherry-pick action).
+- **Remaining body admits (5)**: `sample_up_to_four_ring_elements_flat`,
+  `sample_four_error_ring_elements`, `sample_mask_ring_element`,
+  `sample_mask_vector`, `sample_challenge_ring_element` — all use
+  `Shake128`/`Shake256` Xof methods.  The Xof method posts now carry
+  length-preservation (commit before this), so these bodies should
+  close once the per-function pre is sized appropriately
+  (`re.len() >= dimension` / matching wrapper-buffer lengths) and
+  the trait-helper-call shape is propagated through the loop. Phase
+  2 work, ~2-3 hours.
+
+## Active admits — below-trait branch (`ml-dsa-proofs` lane)
 
 ### Libcrux_ml_dsa.Simd.Traits.Specs.bounded_{add,sub}_{pre,post}
 **Status**: closed (no admits) as of the 2026-04-28 final pass.

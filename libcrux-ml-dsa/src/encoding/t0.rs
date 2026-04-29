@@ -7,6 +7,9 @@ use crate::{
     polynomial::PolynomialRingElement, simd::traits::Operations,
 };
 
+#[cfg(hax)]
+use crate::simd::traits::specs::*;
+
 const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
 // F-6 (2026-04-29): caller pre uses centered `is_i32b_array_opaque (pow2 12)` to
@@ -70,6 +73,13 @@ fn deserialize<SIMDUnit: Operations>(
     }
 }
 
+// F-13 (2026-04-29): close body admit.  The loop processes one polynomial per
+// iteration: deserialize gives `is_i32b_strict_lower_array_opaque (pow2 12)`
+// per simd_unit (lifted to `is_i32b_array_opaque (pow2 12)` via the
+// strict_lower SMTPat), `pow2 12 ≤ NTT_BASE_BOUND` lets `ntt`'s pre fire (we
+// invoke `is_i32b_array_larger` to do the manual lift), and `ntt`'s post then
+// gives `is_i32b_array_opaque FIELD_MAX` for that index.  The loop_invariant
+// tracks the partial-progress FIELD_MAX bound across `ring_elements[0..i]`.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == v $RING_ELEMENT_OF_T0S_SIZE * Seq.length ring_elements /\
@@ -79,11 +89,38 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
     ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    hax_lib::fstar!("admit ()");
-    for i in 0..(serialized.len() / RING_ELEMENT_OF_T0S_SIZE) {
+    let n = serialized.len() / RING_ELEMENT_OF_T0S_SIZE;
+    for i in 0..n {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= v n /\
+              v n == Seq.length ring_elements /\
+              Seq.length serialized == v $RING_ELEMENT_OF_T0S_SIZE * Seq.length ring_elements /\
+              Seq.length ring_elements <= 8 /\
+              (forall (k:nat). k < v i ==>
+                (forall (j:nat). j < 32 ==>
+                  Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
+                    (i0._super_i2.f_repr (Seq.index (Seq.index ring_elements k).f_simd_units j))))"#
+        ));
         let bytes =
             &serialized[i * RING_ELEMENT_OF_T0S_SIZE..(i + 1) * RING_ELEMENT_OF_T0S_SIZE];
         deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
+        // Lift `pow2 12` to `NTT_BASE_BOUND` so `ntt`'s pre discharges.
+        // The strict_lower SMTPat gives `is_i32b_array_opaque (pow2 12)`; we
+        // then invoke `is_i32b_array_larger` per `j` to reach `NTT_BASE_BOUND`.
+        hax_lib::fstar!(
+            r#"
+            let lemma_lift (j:nat{j < 32}) :
+              Lemma (Spec.Utils.is_i32b_array_opaque
+                       (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND)
+                       (i0._super_i2.f_repr
+                         (Seq.index (Seq.index ring_elements (v i)).f_simd_units j))) =
+              Spec.Utils.is_i32b_array_larger (pow2 12)
+                (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND)
+                (i0._super_i2.f_repr
+                  (Seq.index (Seq.index ring_elements (v i)).f_simd_units j))
+            in
+            Classical.forall_intro lemma_lift"#
+        );
         ntt(&mut ring_elements[i]);
     }
 }

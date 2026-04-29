@@ -1,15 +1,14 @@
 SLOW_MODULES +=
-# Below-trait verification lane (branch ml-dsa-proofs).
-# This lane verifies the trait contract + all impl modules.  Modules
-# *above* `Libcrux_ml_dsa.Simd.Traits` (Arithmetic, Polynomial, Matrix,
-# Sample, Encoding.*, Ml_dsa_generic.*, Ntt top-level, etc.) are
-# deliberately left in ADMIT mode here — the dual above-trait agent's
-# branch verifies them against the SAME trait pre/post defined in
-# `Libcrux_ml_dsa.Simd.Traits.{fsti,fst}` and
-# `Libcrux_ml_dsa.Simd.Traits.Specs`.  The two lanes meet at the trait
-# contract.
+# ML-DSA verification scope (post-merge of `ml-dsa-above-trait` into
+# `ml-dsa-proofs`).  This Makefile lists modules that are verified
+# (CHECK), not those that are admitted.  The two lanes formerly split
+# the work at the `Libcrux_ml_dsa.Simd.Traits.{fsti,fst}` +
+# `…Specs.fst` contract — below-trait verified `Simd.{Portable,Avx2}.*`,
+# above-trait verified `Arithmetic`, `Polynomial`, `Matrix`, `Sample`,
+# `Encoding.*`, `Ml_dsa_generic.*`, `Hash_functions.*`, `Pre_hash`,
+# top-level `Ntt`.  After the merge the union of both lanes' CHECK
+# scopes is verified together.
 VERIFIED_MODULES = \
-	Libcrux_ml_dsa.Simd.Portable.Encoding.Commitment.fst \
 	Libcrux_ml_dsa.Simd.Portable.Vector_type.fst \
 	Libcrux_ml_dsa.Simd.Portable.Sample.fst \
 	Libcrux_ml_dsa.Simd.Portable.Arithmetic.fst \
@@ -36,6 +35,42 @@ VERIFIED_MODULES = \
 	Libcrux_ml_dsa.Simd.Traits.fst \
 	Libcrux_ml_dsa.Constants.fst \
 	Libcrux_ml_dsa.Types.fst \
+	Libcrux_ml_dsa.Arithmetic.fst \
+	Libcrux_ml_dsa.Polynomial.fst \
+	Libcrux_ml_dsa.Polynomial.Spec.fst \
+	Libcrux_ml_dsa.Ntt.fst \
+	Libcrux_ml_dsa.Encoding.T1.fst \
+	Libcrux_ml_dsa.Encoding.Commitment.fst \
+	Libcrux_ml_dsa.Encoding.Error.fst \
+	Libcrux_ml_dsa.Encoding.Gamma1.fst \
+	Libcrux_ml_dsa.Pre_hash.fst \
+	Libcrux_ml_dsa.Encoding.T0.fst \
+	Libcrux_ml_dsa.Encoding.Verification_key.fst \
+	Libcrux_ml_dsa.Encoding.Signing_key.fst \
+	Libcrux_ml_dsa.Encoding.Signature.fst \
+	Libcrux_ml_dsa.Matrix.fst \
+	Libcrux_ml_dsa.Sample.fst \
+	Libcrux_ml_dsa.Hash_functions.Shake128.fst \
+	Libcrux_ml_dsa.Hash_functions.Shake256.fst \
+	Libcrux_ml_dsa.Hash_functions.Portable.fst \
+	Libcrux_ml_dsa.Hash_functions.Simd256.fst \
+	Libcrux_ml_dsa.Hash_functions.Neon.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Multiplexing.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Portable.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_44_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_65_.fst \
+	Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Neon.Ml_dsa_87_.fst \
 	end_of_verified_modules
 
 VERIFIED_OR_SLOW_MODULES = $(sort $(SLOW_MODULES) $(VERIFIED_MODULES))

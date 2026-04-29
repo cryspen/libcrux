@@ -51,6 +51,9 @@ pub(crate) mod generic {
     );
 
     #[inline(always)]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Seq.length ${signing_key}_future == Seq.length ${signing_key} /\
+        Seq.length ${verification_key}_future == Seq.length ${verification_key}"#))]
     pub(crate) fn generate_key_pair<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -63,6 +66,7 @@ pub(crate) mod generic {
         signing_key: &mut [u8],
         verification_key: &mut [u8],
     ) {
+        hax_lib::fstar!("admit ()");
         // Check key sizes
         #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
@@ -141,6 +145,7 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
+        hax_lib::fstar!("admit ()");
         // Split the signing key into its parts.
         let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
         let (seed_for_signing, remaining_serialized) =
@@ -368,6 +373,7 @@ pub(crate) mod generic {
         domain_separation_context: Option<DomainSeparationContext>,
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
+        hax_lib::fstar!("admit ()");
         // Per FIPS 204 §3.6.2, an implementation that accepts inputs for σ
         // or pk of any other length than specified shall return false.  The
         // typed arguments enforce this at compile time for direct Rust
@@ -495,6 +501,7 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
+        hax_lib::fstar!("admit ()");
         if context.len() > CONTEXT_MAX_LEN {
             return Err(SigningError::ContextTooLongError);
         }
@@ -530,6 +537,7 @@ pub(crate) mod generic {
         pre_hash_buffer: &mut [u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+        hax_lib::fstar!("admit ()");
         let mut signature = MLDSASignature::zero();
 
         // [eurydice] doesn't support ?
@@ -571,6 +579,7 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
+        hax_lib::fstar!("admit ()");
         let domain_separation_context = match DomainSeparationContext::new(context, None) {
             Ok(dsc) => dsc,
             Err(_) => return Err(SigningError::ContextTooLongError),
@@ -598,6 +607,7 @@ pub(crate) mod generic {
         context: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
+        hax_lib::fstar!("admit ()");
         let mut signature = MLDSASignature::zero();
 
         // [eurydice] doesn't support ?
@@ -627,6 +637,7 @@ pub(crate) mod generic {
         context: &[u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
+        hax_lib::fstar!("admit ()");
         // We manually do the matching here to make Eurydice happy.
         let domain_separation_context = match DomainSeparationContext::new(context, None) {
             Ok(dsc) => dsc,
@@ -656,6 +667,7 @@ pub(crate) mod generic {
         pre_hash_buffer: &mut [u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
+        hax_lib::fstar!("admit ()");
         PH::hash::<Shake128>(message, pre_hash_buffer);
         let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
         {
@@ -698,6 +710,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
+    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(verification_key_hash.len() == 64);
 
