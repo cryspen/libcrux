@@ -775,8 +775,14 @@ impl Operations for AVX2SIMDUnit {
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= 0 /\
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) < pow2 10)"#))]
     fn t1_deserialize(serialized: &[u8], out: &mut Self) {
-        hax_lib::fstar!("admit ()");
         encoding::t1::deserialize(serialized, &mut out.value);
+        hax_lib::fstar!(
+            r#"Spec.Intrinsics.i32_bit_zero_lemma_to_lt_pow2_n_weak 10
+                ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value;
+            assert (forall (i: nat). i < 8 ==>
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i) ==
+                v (Spec.Intrinsics.to_i32x8 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 i)))"#
+        );
     }
 
     #[inline(always)]

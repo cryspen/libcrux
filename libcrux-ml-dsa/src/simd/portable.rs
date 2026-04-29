@@ -659,7 +659,6 @@ impl Operations for Coefficients {
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= 0 /\
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) < pow2 10)"#))]
     fn t1_deserialize(serialized: &[u8], out: &mut Self) {
-        hax_lib::fstar!("admit ()");
         encoding::t1::deserialize(serialized, out);
     }
 
