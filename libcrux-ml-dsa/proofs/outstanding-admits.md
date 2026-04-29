@@ -293,6 +293,29 @@ directly; the A.6 `reduce` insertion is no longer needed (removed in
 below-trait per F-5 finding).  The 3 remaining body admits are now
 purely SMT-trigger work, not spec gaps.
 
+**Sprint scope (recorded 2026-04-29)**:
+
+*Core (must achieve)*:
+1. Close the 3 remaining Matrix.fst body admits (compute_as1_plus_s2,
+   compute_matrix_x_mask, compute_w_approx) using slice API +
+   Polynomial.Spec opaque infra.
+2. Strengthen Sample.fst posts beyond the current body-admit state.
+3. Add length-preservation ensures to Hash_functions Xof methods
+   (Shake128, Shake256, Portable, Simd256, Neon) so Sample's posts
+   can chain.
+
+*Stretch (work if time)*:
+4. Show `Libcrux_ml_dsa.Ml_dsa_generic.fst` is **panic-free**.
+   Remove the `admit ()` body markers on the 10 functions in
+   `src/ml_dsa_generic.rs` and add the pres / loop_invariants /
+   bridging assertions for F* to discharge panic-freedom.
+   Functional posts can stay weak — goal is panic-free, not
+   functional correctness.
+
+*Rejected (do not pursue)*:
+- Refactoring matrix wrappers to fixed-size arrays.  Closure work
+  must stay within the slice API.
+
 
 - **File**: `src/matrix.rs`
 - **Annotation**: `hax_lib::fstar!("admit ()")` mid-body (prefix)
