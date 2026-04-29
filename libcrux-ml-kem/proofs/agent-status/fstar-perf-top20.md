@@ -378,3 +378,102 @@ above-trait's gitignored .fsti via `sed`.  Source worktree avoids
 this because its `src/vector/neon/vector_type.rs` has uncommitted
 edits that produce a different .fsti shape.  **File as USER-N:**
 hax codegen bug; track separately from the F* verification work.
+
+---
+
+## Snapshot 4 — 2026-04-29 evening — USER-13 closed (lane A5, post-rebase)
+
+Source: lane `agent/lane-A5` rebased onto `trait-opacify`
+(`8bf91ca56`) + USER-13 fix.  Full-tree make EXIT=0 in `~659 s`
+(replay; Bridges.fst and Invert_ntt cached during full-tree run).
+Per-module cold rebuilds for the affected modules:
+
+  * `Libcrux_ml_kem.Invert_ntt.fst`: cold record-hints, 126.4 s.
+
+### USER-13 closure — `invert_ntt_at_layer_2_`
+
+| Metric | Snapshot 3 | Snapshot 4 |
+|---|---|---|
+| Function pragma | `--admit_smt_queries true` | `--z3rlimit 100` |
+| Total wall | n/a (admit) | **2.1 s** |
+| Max single query | n/a | 2.0 s |
+| Queries | 0 | 2 |
+| Failed | 0 | 0 |
+| rlimit-saturated | 0 | 0 |
+
+Closure mechanism: the prior body emitted a global
+`reveal_opaque (\`%is_i16b_array_opaque) (is_i16b_array_opaque)` that
+unfolded the opaque bound predicate into a 16-lane forall — pollution
+that the iter-end loop-invariant subtyping check (Q108) ran into,
+saturating rlimit 200/400/800 from 42 s through hangs past 12 min.
+Replacing the global reveal with a single targeted post-call assert
+of the per-iteration chunk bound (`assert (is_bounded_vector 6656
+re.coefficients.[round])`) gives Z3 the bound atom directly, avoiding
+the `forall4 inv_ntt_layer_2_step_branch_post` FE-algebra conjunct
+that the trait post still carries alongside the bound.  No new opaque
+wrapper or Bridges/Chunk lemma was needed — the proven `b7b49c358`
+machinery (4 per-branch + per-lane wrapper + per-vector bridge) is
+not on this code path; the wall was purely in the impl-side body.
+
+### Layer_2 lemma in Bridges.fst — perf carry-over
+
+`lemma_inv_ntt_layer_2_step_lane_bridge` is unchanged
+(`Hacspec_ml_kem.Commute.Bridges.fst` not edited).  Per Snapshot 3
+this lemma was **146.2 s post-hint-record**.  It remains the top-1
+single-fn perf consumer in the full tree — recommend a separate
+follow-up (USER-N: persistent quantifier wall, not USER-13 path).
+
+### Invert_ntt.fst per-fn (cold rebuild, 2026-04-29 18:43)
+
+| # | Total (s) | Max (ms) | Queries | Function |
+|---|---|---|---|---|
+| 1 | 41.1 | 138 | 585 | `invert_ntt_at_layer_1_` |
+| 2 | 22.9 | 572 | 298 | `invert_ntt_at_layer_3_` |
+| 3 | 10.2 | 114 | 121 | `inv_ntt_layer_int_vec_step_reduce` |
+| 4 | **2.1** | 2028 | 2 | **`invert_ntt_at_layer_2_` (USER-13 closed)** |
+| n/a | (admitted) | — | — | `invert_ntt_at_layer_4_plus` (USER-14 carry-over) |
+| n/a | (admitted) | — | — | `invert_ntt_montgomery` (USER-15 carry-over) |
+
+Note: `invert_ntt_at_layer_1_` 41 s vs Snapshot 3's 3.9 s is a
+hint-replay vs cold-record artifact; run was without prior hint
+cache hits (will replay cleanly on next warm rebuild).
+
+### Top-20 (full-tree, partial — Bridges/Chunk/Invert_ntt cached)
+
+| # | Total (s) | Max (ms) | Queries | Function |
+|---|---|---|---|---|
+| 1 | 24.7 | 20718 | 3 | `Vector.Portable.Arithmetic.to_unsigned_representative` |
+| 2 | 23.9 | 1490 | 267 | `Ntt.ntt_at_layer_4_plus` |
+| 3 | 10.8 | 2719 | 49 | `Vector.Portable.Compress.decompress_1_` |
+| 4 |  9.7 |  128 | 104 | `Vector.Avx2.Serialize.serialize_4_` |
+| 5 |  8.6 | 8503 |   2 | `Vector.Portable.Arithmetic.montgomery_reduce_element` |
+| 6 |  7.8 |  443 |  75 | `Vector.Avx2.op_ntt_layer_3_step` |
+| 7 |  7.8 |  103 | 102 | `Polynomial.add_to_ring_element` |
+| 8 |  7.7 |  127 |  80 | `Vector.Avx2.Serialize.serialize_10___serialize_10_vec` |
+| 9 |  7.7 |  121 |  80 | `Vector.Avx2.Serialize.serialize_12___serialize_12_vec` |
+| 10 | 7.6 |  128 |  77 | `Vector.Avx2.op_inv_ntt_layer_3_step` |
+| 11 | 7.6 | 1977 | 110 | `Polynomial.subtract_reduce` |
+| 12 | 6.9 |  109 |  96 | `Ntt.ntt_at_layer_7_` |
+| 13 | 6.6 |   94 |  86 | `Polynomial.add_message_error_reduce` |
+| 14 | 6.4 | 2630 |  47 | `Vector.Avx2.Ntt.ntt_layer_3_step` |
+| 15 | 6.2 |  279 |  67 | `Vector.Avx2.Serialize.serialize_10_` |
+| 16 | 6.1 |  191 |  70 | `Vector.Portable.op_inv_ntt_layer_3_step` |
+| 17 | 6.1 |  111 |  70 | `Vector.Portable.op_ntt_layer_3_step` |
+| 18 | 6.0 |  159 |  67 | `Vector.Avx2.Serialize.serialize_12_` |
+| 19 | 5.9 |  158 |  81 | `Vector.Portable.Arithmetic.get_n_least_significant_bits` |
+| 20 | 5.1 |  131 |  71 | `Polynomial.ntt_multiply` |
+
+(`Bridges.lemma_inv_ntt_layer_2_step_lane_bridge` would still place
+top-1 at 146 s if Bridges.fst weren't .checked-cached during the
+full make.)
+
+### Summary delta vs Snapshot 3
+
+  * **USER-13 admit removed** — net `-1` admit, `-1` SIDEWAYS conversion.
+  * `invert_ntt_at_layer_2_` body verifies in 2.1 s vs admitted before.
+  * No regressions in the full-tree make (`EXIT=0`, all VC discharged).
+  * `lemma_inv_ntt_layer_2_step_lane_bridge` still at 146 s (no change,
+    no fix attempted by this lane — separate follow-up needed).
+  * Critical-path forward: USER-15 (`invert_ntt_montgomery`) and USER-14
+    (`invert_ntt_at_layer_4_plus` body) remain the next bodies to
+    discharge.
