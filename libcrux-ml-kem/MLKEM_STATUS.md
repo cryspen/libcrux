@@ -240,12 +240,21 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
 - **Status**: 4 portable BitVec lemmas landed in
   `src/vector/portable/serialize.rs` at commit `a51ddbfc3` —
   `serialize_5_lemma`, `serialize_11_lemma`, `deserialize_5_lemma`,
-  `deserialize_11_lemma` all discharge via
+  `deserialize_11_lemma`.  All 4 discharge via
   `Tactics.GetBit.prove_bit_vector_equality' ()`.  Spike on
-  `serialize_5_bit_vec_lemma` closed in 744 ms cold; tactic generalises
-  cleanly to non-byte-aligned bit-widths.  Trait helpers
-  (`spec::serialize_5_pre/post`, etc.) defined.
-- **Why deferred**: AVX2 side
+  `serialize_5_bit_vec_lemma` (80 bits) closed in 744 ms cold.
+- **Verification status**: NOT yet confirmed clean for all 4 with
+  `VERIFY_SLOW_MODULES=yes`.  Two runs in the parent agent (35 + 42
+  min wall) progressed through `serialize_11_bit_vec_lemma` query 93
+  and `deserialize_10_bit_vec_lemma` query 136 before being killed.
+  Tactic IS working but slow at 11-bit (176-bit) widths.  Strategies
+  for scale-up documented in `proofs/agent-status/serialize-prompt.md`.
+- **Independent agent**: `proofs/agent-status/serialize-prompt.md`
+  drives the scale-up; runs in parallel with Wave-A in this same
+  worktree but on a file-disjoint surface
+  (`src/vector/portable/serialize.rs` only).  Does NOT touch the
+  trait or any Wave-A B-lane surface.
+- **Why deferred (trait wire-up)**: AVX2 side
   (`src/vector/avx2/serialize.rs:351-700`) has a real SIMD
   implementation for `serialize_5/deserialize_5` and `lax` on
   `serialize_11/deserialize_11`.  Wiring the trait post would force

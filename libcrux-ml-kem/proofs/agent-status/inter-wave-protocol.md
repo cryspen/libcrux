@@ -1,4 +1,4 @@
-# Inter-wave protocol — Wave-A / Wave-B / Wave-C
+# Inter-wave protocol — Wave-A / Wave-B / Wave-C + independent agents
 
 This document defines how the three coordinator sessions hand off
 work without stepping on each other's toes.  Each wave has its own
@@ -8,6 +8,15 @@ prompt file:
   - `wave-B-prompt.md` — Phase 3 parallel lanes (A1/A2/A3/A5).
   - `wave-C-prompt.md` — Phase 3 critical chain (A6 → A7 → A8).
     (Skeletal; recalibrated at end of Wave-B.)
+
+**Independent agents** (run alongside any wave on a file-disjoint
+surface — they don't fit the wave model because they're not lanes
+in the dependency graph):
+
+  - `serialize-prompt.md` — Cluster 3 / USER-9 lemma scale-up.
+    Operates in the same worktree as Wave-A but only touches
+    `src/vector/portable/serialize.rs`.  Does not interact with
+    Wave-A's B-lane surface or any other wave.
 
 ---
 
