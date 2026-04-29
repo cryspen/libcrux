@@ -279,10 +279,10 @@ impl Operations for Coefficients {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -321,23 +321,16 @@ impl Operations for Coefficients {
             in
             Classical.forall_intro pf_eq;
             // Bound conjuncts: per-lane bounds from arithmetic post → array-level
-            // is_i32b_array opaque on the high-side gamma2 branches.  For low,
-            // the trait post requires `is_i32b_strict_lower_array_opaque γ2`
-            // (cherry-pick c6c68bbca, F-11), which is mathematically FALSE at
-            // the decompose special case (r = q - γ2 yields r0 = -γ2; see F-13
-            // in lane-split-protocol.md).  Until the above-trait revert lands,
-            // we locally admit the strict-lower conjunct via a helper lemma.
-            let strict_lower_admit_F13 (l: nat) (x: t_Slice i32) : Lemma
-                (ensures Spec.Utils.is_i32b_strict_lower_array_opaque l x) =
-                admit ()
-            in
-            strict_lower_admit_F13 95232
-                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
-            strict_lower_admit_F13 261888
-                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
+            // is_i32b_array opaque on both gamma2 branches.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 95232
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 44
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 261888
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 16
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#

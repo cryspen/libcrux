@@ -62,21 +62,25 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             (f_repr ${simd_unit}) $bound $result"#))]
     fn infinity_norm_exceeds(simd_unit: &Self, bound: i32) -> bool;
 
-    // F-11 (2026-04-29): `low_future` post tightened from closed
-    // `is_i32b_array_opaque γ2` to half-open `is_i32b_strict_lower_array_opaque γ2`
-    // matching FIPS 204 Algorithm 36 (Decompose), where r0 ∈ (-γ2, γ2].
-    // The SMTPat `lemma_is_i32b_strict_lower_implies_array_opaque` keeps existing
-    // closed-form callers discharging automatically.
+    // F-11 (2026-04-29): originally tightened `low_future` post to
+    // `is_i32b_strict_lower_array_opaque γ2`.  REVERTED 2026-04-29
+    // (F-13): FIPS 204 Algorithm 36's special-case adjustment
+    // `r0 ← r0 - 1` (when `r_q - r_g == q - 1`) drives `r0` to exactly
+    // `-γ2` at the boundary, breaking the strict-lower bound.  Concrete
+    // counter-example: γ2=95232, r=8285185 → r0=-95232.  Closed
+    // `is_i32b_array_opaque γ2` is the correct bound for `decompose`'s
+    // `low_future`.  F-8 / F-9 / F-10 retain strict-lower (those are
+    // pure `mod^±` outputs without the special-case adjustment).
     #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -177,6 +181,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Seq.length $randomness / 3 <= 4294967295 /\
         Seq.length $randomness / 3 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= 0 /\
           v (Seq.index ${out}_future i) < 8380417)"#))]
@@ -188,6 +193,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Seq.length $randomness * 2 <= 4294967295 /\
         Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -2 /\ v (Seq.index ${out}_future i) <= 2)"#))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
@@ -196,6 +202,7 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         Seq.length $randomness * 2 <= 4294967295 /\
         Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[hax_lib::ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -4 /\ v (Seq.index ${out}_future i) <= 4)"#))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;

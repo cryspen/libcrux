@@ -374,10 +374,10 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -465,23 +465,16 @@ impl Operations for AVX2SIMDUnit {
                 Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_bound $gamma2 r
             in
             Classical.forall_intro pf_bound;
-            // Fold per-lane bounds into array-level opaque on the high-side
-            // gamma2 branches.  For low, the trait post requires
-            // `is_i32b_strict_lower_array_opaque γ2` (cherry-pick c6c68bbca,
-            // F-11) which is mathematically FALSE at the special case
-            // (r = q - γ2 yields r0 = -γ2; see F-13).  Locally admit until
-            // the above-trait revert lands.
-            let strict_lower_admit_F13 (l: nat) (x: t_Slice i32) : Lemma
-                (ensures Spec.Utils.is_i32b_strict_lower_array_opaque l x) =
-                admit ()
-            in
-            strict_lower_admit_F13 95232
-                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
-            strict_lower_admit_F13 261888
-                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
+            // Fold per-lane bounds into array-level opaque on either branch.
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 95232
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 44
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}));
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque 261888
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 16
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#

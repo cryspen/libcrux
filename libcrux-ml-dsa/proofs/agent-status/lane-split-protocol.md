@@ -39,7 +39,19 @@ body), record it here with:
 
 ### Open findings
 
-#### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE at the special case
+#### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE — RESOLVED via above-trait revert `341a93d4d`
+
+Above-trait commit `341a93d4d` reverted just the `decompose` portion of
+c6c68bbca, restoring closed `is_i32b_array_opaque γ2` for both γ2
+branches' `low_future` conjuncts.  Below-trait cherry-picked the
+`traits.rs` change, restored the closed-bound `reveal_opaque` block in
+both Portable and AVX2 `decompose` trait method bodies, and dropped the
+`strict_lower_admit_F13` helper.  F-8 / F-9 / F-10 remain RESOLVED via
+strict-lower (no special-case adjustment in those flows).
+
+Original finding follows for record:
+
+
 
 - **Affected method:** `decompose` post (`src/simd/traits.rs:76,79`),
   cherry-picked at `c6c68bbca` as part of the F-8 / F-9 / F-10 / F-11

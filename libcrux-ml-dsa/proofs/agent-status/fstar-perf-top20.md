@@ -28,9 +28,84 @@ be moved to `fstar-perf-top20.archive.md` if the file gets long.
 
 ---
 
-## Snapshot 2026-04-29 (Step 14 Track 0 close, post-cascade-skip)
+## Snapshot 2026-04-29b (Step 14 Track 0 final, full NTT/Invntt cascade)
 
-Source: `/tmp/track0-attempt1.log` after Track 0 c6c68bbca propagation
+Source: `/tmp/track0-final.log` after F-13 revert cherry-pick from
+above-trait `341a93d4d`.  `Simd.Traits.fst` regenerated → full
+NTT/Invntt cascade re-verified (snapshot is **complete**, not partial
+like 2026-04-29a).
+
+Build: 74 modules invoked, [CHECK]=27, [ADMIT]=47, 0 F\* errors,
+0 make-level failures.  ([ADMIT] dropped from 48 → 47: the F-13
+helper-lemma admit was removed, and below-trait `decompose` body now
+discharges fully.)
+
+### Top-20 per-function totals
+
+| # | Function | Module | total (s) | max query (ms) | queries | flags |
+|---|---|---|---:|---:|---:|---|
+| 1 | `invert_ntt_at_layer_3_` | `L_md.Simd.Portable.Invntt` | 132.42 | 8893 | 684 | FAILED-then-OK |
+| 2 | `ntt_at_layer_3_` | `L_md.Simd.Portable.Ntt` | 130.61 | 8390 | 684 | FAILED-then-OK |
+| 3 | `impl_1` | `L_md.Simd.Avx2` | 50.35 | 12764 | 603 | FAILED-then-OK |
+| 4 | `ntt_at_layer_0_` | `L_md.Simd.Portable.Ntt` | 46.20 | 562 | 456 | FAILED-then-OK |
+| 5 | `invert_ntt_at_layer_0_` | `L_md.Simd.Portable.Invntt` | 45.86 | 547 | 456 | FAILED-then-OK |
+| 6 | `impl_1` | `L_md.Simd.Portable` | 35.66 | 9488 | 541 | FAILED-then-OK |
+| 7 | `invert_ntt_at_layer_4_` | `L_md.Simd.Portable.Invntt` | 33.49 | 892 | 348 | FAILED-then-OK |
+| 8 | `ntt_at_layer_1_` | `L_md.Simd.Portable.Ntt` | 32.80 | 552 | 328 | FAILED-then-OK |
+| 9 | `ntt_at_layer_4_` | `L_md.Simd.Portable.Ntt` | 32.68 | 864 | 348 | FAILED-then-OK |
+| 10 | `invert_ntt_at_layer_1_` | `L_md.Simd.Portable.Invntt` | 32.54 | 548 | 328 | FAILED-then-OK |
+| 11 | `outer_3_plus` | `L_md.Simd.Portable.Invntt` | 32.19 | 2414 | 175 | FAILED-then-OK |
+| 12 | `ntt_at_layer_2_` | `L_md.Simd.Portable.Ntt` | 26.21 | 548 | 264 | FAILED-then-OK |
+| 13 | `invert_ntt_at_layer_2_` | `L_md.Simd.Portable.Invntt` | 26.09 | 540 | 264 | FAILED-then-OK |
+| 14 | `reduce_with_proof` | `L_md.Simd.Portable` | 20.84 | 18585 | 106 | FAILED-then-OK |
+| 15 | `decompose_element` | `L_md.Simd.Portable.Arithmetic` | 16.66 | 1899 | 100 | FAILED-then-OK |
+| 16 | `ntt_at_layer_5_` | `L_md.Simd.Portable.Ntt` | 14.85 | 108 | 179 | FAILED-then-OK |
+| 17 | `invert_ntt_at_layer_5_` | `L_md.Simd.Portable.Invntt` | 14.63 | 106 | 179 | FAILED-then-OK |
+| 18 | `montgomery_reduce_element` | `L_md.Simd.Portable.Arithmetic` | 13.49 | 266 | 144 | — |
+| 19 | `outer_3_plus` | `L_md.Simd.Portable.Ntt` | 13.08 | 700 | 136 | FAILED-then-OK |
+| 20 | `ntt_at_layer_6_` | `L_md.Simd.Portable.Ntt` | 7.80 | 100 | 93 | FAILED-then-OK |
+
+### Top module totals
+
+| # | Module | total (s) | functions tracked |
+|---|---|---:|---:|
+| 1 | `L_md.Simd.Portable.Invntt` | 349.94 | 27 |
+| 2 | `L_md.Simd.Portable.Ntt` | 332.79 | 29 |
+| 3 | `L_md.Simd.Portable` | 57.12 | 7 |
+| 4 | `L_md.Simd.Avx2` | 51.99 | 6 |
+| 5 | `L_md.Simd.Portable.Arithmetic` | 50.81 | 20 |
+| 6 | `L_md.Simd.Avx2.Ntt` | 20.56 | 24 |
+| 7 | `L_md.Simd.Traits` | 15.81 | 98 |
+| 8 | `L_md.Simd.Avx2.Invntt` | 12.51 | 30 |
+| 9 | `L_md.Simd.Avx2.Arithmetic` | 11.41 | 12 |
+| 10 | `L_md.Simd.Portable.Encoding.Gamma1` | 10.37 | 12 |
+
+_Sample size: 7654 Query-stats lines, 928s total Z3 time, across 289
+functions in 15 modules.  Note: this snapshot does NOT include
+`H_md.Commute.Chunk` (lemma_mont_mul_bound_and_mod_q dominated 2026-04-29a
+at 283 s) — that module did not need to re-verify in this build because
+its checked file remained valid through the traits.fst regen._
+
+### Notes / actions
+
+1. **NTT/Invntt cascade is the dominant cost** (~683 s combined across
+   the two modules — 73% of total Z3 time).  This is the cost of
+   re-verifying the ring-element-level proofs after touching
+   `traits.fst`.  The `touch-unchanged-checked.sh` workflow normally
+   skips this; here the F-13 cherry-pick was the *intended* trigger
+   and the cascade is unavoidable.
+2. **`reduce_with_proof` Portable max single query 18.5 s** (up from
+   17.5 s in 2026-04-29a, +6%) — within noise for this rlimit.
+3. **`decompose_element` 100 queries / 16.7 s** appears high but is
+   `--split_queries always` per its existing options, so the count is
+   inflated by design.  Per-query max 1.9 s.
+
+---
+
+## Snapshot 2026-04-29a (Step 14 Track 0 partial, post-cascade-skip)
+
+Source: `/tmp/track0-attempt1.log` (intermediate, before F-13 revert).
+After Track 0 c6c68bbca propagation
 (F-13 filed, power2round + AVX2 t0_serialize closed strict-lower,
 decompose strict-lower locally admitted).  `touch-unchanged-checked.sh`
 skipped 102 unchanged modules (NTT/Invntt cascade not re-verified);
