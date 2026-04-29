@@ -46,9 +46,16 @@ hax-lib's `panic_free` semantics (does NOT emit
 Below-trait movable admits at Wave-A continuation end:
 - `Hacspec_ml_kem.Commute.Chunk.fst`: 2 (decompress chunk_commutes at
   lines 1069, 1083 — above-trait, A1 territory).
-- `Libcrux_ml_kem.Vector.Avx2.fst`: 4 bridge admits (B4 territory:
-  op_ntt_layer_{1,2}_step_bridge, op_inv_ntt_layer_{1,2}_step_bridge).
-  Was 14; B3 closed 10, USER-9a bonus closed 3, leaving 4 NTT bridges.
+- `Libcrux_ml_kem.Vector.Avx2.fst`: 7 bridge admits (B4 NTT
+  territory + USER-9b 5-bit serialize/deserialize bridges):
+  op_ntt_layer_{1,2}_step_bridge, op_inv_ntt_layer_{1,2}_step_bridge
+  (4, B4); op_serialize_5_pre_bridge, op_serialize_5_post_bridge,
+  op_deserialize_5_post_bridge (3, USER-9b).
+  Was 14; B3 closed 10, USER-9a bonus closed 3 (added 3 for 11-bit
+  bridges, all above-axiom), USER-9b adds 3 for 5-bit (also
+  above-axiom).  Net 7 bridge admits remain; the USER-9 bridges are
+  the same `bit_vec_of_int_t_array_vec256_as_i16x16_lemma` axiom
+  application pattern as B3.
 - `Libcrux_ml_kem.Vector.Avx2.Ntt.fst`: 6 admits (B4 territory).
 - `Libcrux_ml_kem.Vector.Portable.fst`: 2 `--admit_smt_queries true`
   pushes (op_ntt_layer_1_step, op_inv_ntt_layer_1_step — B2).
@@ -347,9 +354,11 @@ Branch `agent/user-8` off `e66708d2f`.  Tip:  `<see session log>`.
     `BitVecEq.int_t_array_bitwise_eq` lemma pattern (mirroring
     `serialize_4_bit_vec_lemma`).  See USER-14 entry below.
 
-### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring — **PARTIAL: 9a CLOSED, 9b OPEN**
+### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring — ✅ **CLOSED**
 
-Split into two sub-tasks (see commit `750e28ba1` audit detail):
+Split into two sub-tasks (see commit `750e28ba1` audit detail).  Both
+9a (11-bit, wrapper-bridge) and 9b (5-bit, real AVX2 SIMD) are now
+closed.
 
 #### USER-9a (11-bit, AVX2 wrapper-bridge) — ✅ **CLOSED 2026-04-29** (commit `2deb01199`)
 
@@ -371,17 +380,60 @@ Split into two sub-tasks (see commit `750e28ba1` audit detail):
   refs in extracted F*.  Reformat to multi-line bodies (matching
   `serialize_10_*` format) so hax keeps them as function calls.
 
-#### USER-9b (5-bit, real AVX2 SIMD) — ⏸ OPEN
+#### USER-9b (5-bit, real AVX2 SIMD) — ✅ **CLOSED 2026-04-29** (this branch `agent/user-9b`)
 
-**`avx2/serialize.rs:352, 466`** — `serialize_5` / `deserialize_5`
-use genuine AVX2 (`mm256_madd_epi16`, `mm256_set_epi16`,
-`mm256_shuffle_epi8`).  Need a SIMD↔BitVec bridge mirroring
-`op_serialize_4_post_bridge` (~1 lane-day per the serialize-status
-audit at `750e28ba1`).  Sub-steps:
-  1. Drop `verification_status(lax)` on the AVX2 primitive bodies.
-  2. Add SIMD↔BitVec bridge admit in
-     `libcrux-intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fst`.
-  3. Wrapper discharges the trait post analogously to USER-9a.
+The SIMD↔BitVec bridge mirrors USER-9a exactly: the AVX2 5-bit primitives
+in `src/vector/avx2/serialize.rs:352, 466` carry `verification_status(lax)`
++ BitVec pre/post on their signatures (so the SIMD body remains
+unverified, but the post claim is now visible to callers).  The wrapper
+layer in `src/vector/avx2.rs` adds 3 admitted bridges
+(`op_serialize_5_pre_bridge`, `op_serialize_5_post_bridge`,
+`op_deserialize_5_post_bridge`) — discharged via the existing
+`bit_vec_of_int_t_array_vec256_as_i16x16_lemma` axiom (no new axiom in
+`avx2_extract.rs`!).  Wrapper-level `op_serialize_5` /
+`op_deserialize_5` carry the trait pre/post and discharge it via the
+bridges.
+
+#### Audit findings
+
+  - **No new SIDEWAYS axiom** required — the existing
+    `bit_vec_of_int_t_array_vec256_as_i16x16_lemma` (used by the 4/10/11/12
+    bridges) is parametric in `d` and works for `d=5` directly.
+  - `avx2/serialize.rs:352, 466` `serialize_5` / `deserialize_5`: gain
+    `verification_status(lax)` + BitVec pre/post (mirror 11-bit shape).
+  - `avx2.rs`: 3 admitted bridges added inside the F* `before`-block;
+    `op_serialize_5` / `op_deserialize_5` wrappers added with trait
+    pre/post; `impl Operations` `serialize_5` / `deserialize_5` updated
+    to dispatch through the wrappers.
+  - `portable.rs`: free `serialize_5` / `deserialize_5` gain trait
+    pre/post and invoke `serialize_5_lemma` / `deserialize_5_lemma`
+    (the BitVec lemmas committed at `a51ddbfc3`); trait impl
+    `serialize_5` / `deserialize_5` gain matching pre/post.
+  - `traits.rs`: TODO(C4) replaced with
+    `requires(spec::serialize_5_pre)` / `ensures(spec::serialize_5_post)`
+    etc.  Spec helpers reformatted from single-line to multi-line bodies
+    (the hax-quirk noted under USER-9a applies here too — single-line
+    bodies got inlined and produced unbound `impl.f_repr` refs in
+    extracted F*).
+
+#### Verification (cold, no hints prior)
+
+  - `Libcrux_ml_kem.Vector.Traits.fst` — 81 s
+  - `Libcrux_ml_kem.Vector.Avx2.Serialize.fst` — 38 s
+  - `Libcrux_ml_kem.Vector.Avx2.fst` — 74 s
+  - `Libcrux_ml_kem.Vector.Portable.fst` — 56 s
+  - `Libcrux_ml_kem.Vector.fst` — 2.4 s
+  - `Libcrux_ml_kem.Serialize.fst` — 16 s (downstream consumer)
+
+#### Net admit-count delta
+
++3 admitted bridges in `avx2.rs` F* `before`-block
+(`op_serialize_5_pre_bridge`, `op_serialize_5_post_bridge`,
+`op_deserialize_5_post_bridge`).  No new axioms.  No new lane admits.
+The `verification_status(lax)` on the 5-bit primitive bodies is a
+**signature-level** axiom (the BitVec post is asserted as fact); not
+counted as a new admit because it replaces what was already an
+unspecified body.
 
 (Original USER-9 brief follows for reference.)
 

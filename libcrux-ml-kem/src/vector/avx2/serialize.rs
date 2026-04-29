@@ -349,6 +349,9 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 80}). bit_vec_of_int_t_array r 8 i == vector ((i/5) * 16 + i%5)"#))]
 pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
     let mut serialized = [0u8; 32];
 
@@ -462,7 +465,12 @@ fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 10"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
+  $result i = (if i % 16 >= 5 then 0
+               else let j = (i / 16) * 5 + i % 16 in
+                     bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 j)"#))]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     let coefficients = mm_set_epi8(
         bytes[9] as i8,

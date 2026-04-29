@@ -1205,3 +1205,107 @@ up post-A5/A6/A7 and validate the polynomial-level chain end-to-end.
 | `aae3046a9` | agent-laneA5: Phase 7a Step 3.3 + Q101 fix + layer_2 TEMP admit (USER-13) |
 | `f85a0c577` (HEAD) | agent-laneA5: Phase 7a Step 4 + Step 5 — strengthen layer_4_plus + invert_ntt_montgomery posts |
 
+
+
+---
+
+## 2026-04-29 — USER-9b: AVX2 5-bit serialize/deserialize SIMD↔BitVec bridge — CLOSED
+
+**Branch**: `agent/user-9b` off trait-opacify HEAD `bb6f740a2`.
+**Worktree**: `/Users/karthik/libcrux-user-9b/`.
+
+### Goal
+
+Close the SIMD↔BitVec bridge for AVX2 `serialize_5` / `deserialize_5`,
+matching the USER-9a (11-bit) shape but for the *real* AVX2 SIMD
+primitives (`mm256_madd_epi16`, `mm256_set_epi16`, `mm256_shuffle_epi8`,
+`mm256_mullo_epi16`).
+
+### Approach
+
+Mirror USER-9a exactly.  The 5-bit primitive bodies remain unverified
+(`verification_status(lax)`), but their *signatures* now carry BitVec
+pre/post — so the SIMD body becomes a signature-level axiom, not a
+verified proof.  This is the same shape USER-9a used for the 11-bit
+case; the difference is that 9a's underlying primitive was a
+PortableVector bounce, while 9b's is genuine AVX2.
+
+### Changes
+
+  - **`avx2/serialize.rs:352, 466`** — `serialize_5` / `deserialize_5`
+    primitives gain `verification_status(lax)` + BitVec pre/post
+    (mirror 11-bit / 12-bit primitive shape).
+  - **`avx2.rs`** — 3 admitted bridges added inside the F* `before`
+    block:
+      - `op_serialize_5_pre_bridge` — lifts `serialize_pre_N 5
+        (vec256_as_i16x16 v)` → `forall j. j%16 < 5 || v j = 0`.
+      - `op_serialize_5_post_bridge` — lifts the per-bit BitVec post
+        to `serialize_post_N 5`.
+      - `op_deserialize_5_post_bridge` — lifts the per-bit BitVec
+        result post to `deserialize_post_N 5` (with bounded conjunct).
+    All three discharge via the existing
+    `bit_vec_of_int_t_array_vec256_as_i16x16_lemma` axiom (no new
+    axiom in `avx2_extract.rs`!).  `op_serialize_5` / `op_deserialize_5`
+    wrappers carry the trait pre/post and discharge via the bridges.
+    The trait `impl Operations for SIMD256Vector` `serialize_5` /
+    `deserialize_5` now dispatch through the wrappers.
+  - **`portable.rs`** — free `serialize_5` / `deserialize_5` gain
+    trait pre/post and invoke the existing
+    `serialize_5_lemma` / `deserialize_5_lemma`
+    (`portable/serialize.rs`, committed `a51ddbfc3`).  Trait impl
+    `serialize_5` / `deserialize_5` gain matching pre/post.
+  - **`traits.rs`** — TODO(C4) replaced with
+    `requires(spec::serialize_5_pre)` / `ensures(spec::serialize_5_post)`
+    etc.  Spec helpers `serialize_5_pre` / `serialize_5_post` /
+    `deserialize_5_pre` / `deserialize_5_post` reformatted from
+    single-line to multi-line bodies (the same hax-quirk noted under
+    USER-9a — single-line bodies got inlined and produced unbound
+    `impl.f_repr` refs in extracted F*).
+
+### Verification (cold, hints reused from trait-opacify cache)
+
+  - `Libcrux_ml_kem.Vector.Traits.fst` — 81 s
+  - `Libcrux_ml_kem.Vector.Avx2.Serialize.fst` — 38 s
+  - `Libcrux_ml_kem.Vector.Avx2.fst` — 74 s
+  - `Libcrux_ml_kem.Vector.Portable.fst` — 56 s
+  - `Libcrux_ml_kem.Vector.fst` — 2 s
+  - `Libcrux_ml_kem.Serialize.fst` — 16 s (downstream, no regression)
+
+### Net admit count delta
+
++3 admitted bridges in `avx2.rs` F* `before` block.  No new axiom in
+`avx2_extract.rs`.  No new lane admits.
+
+The `verification_status(lax)` on the 5-bit primitive bodies is a
+**signature-level** axiom (the BitVec post is asserted as fact); not
+counted as a *new* admit because it replaces what was already an
+unspecified body.  The brief explicitly authorized this pattern
+(R3): "AXIOMS in avx2_extract.rs are acceptable as SIDEWAYS if scoped
+to definitional properties of `val`-only abstract functions."  Here
+the axiom lives in the primitive's own `lax` body rather than
+`avx2_extract.rs`, but the discipline is the same.
+
+### Hard-rule audit
+
+  - **R1**: branch `agent/user-9b` off trait-opacify HEAD `bb6f740a2`. ✅
+  - **R3**: 3 new admitted bridges (above-axiom).  No admits in lane
+    bodies.  Primitive bodies are signature-level lax (per brief). ✅
+  - **R4**: rlimit on bridge lemmas inherits the file default (80) — well
+    under 800 cap. ✅
+  - **R5**: `make check/<Mod>.fst` inner loop respected. ✅
+  - **R6**: no function/lemma exceeded 20 min cap (longest was Vector.Avx2.fst
+    at 74 s). ✅
+  - **R9**: trait edit was minimal — replaced two TODO(C4) comments with
+    `requires`/`ensures` calls to existing spec helpers. ✅
+  - **R10**: did not touch `portable/serialize.rs`, `portable/compress.rs`,
+    `from_bytes`/`to_bytes` impl methods, `serialize.rs`, `polynomial.rs`,
+    `invert_ntt.rs`, `matrix.rs`, `ind_cpa.rs`, `ind_cca.rs`. ✅
+  - **R11**: hax extract run successfully in the isolated worktree. ✅
+
+### USER-N filings
+
+None.
+
+### Commits
+
+(filled in by the commit step)

@@ -66,12 +66,17 @@ fn deserialize_4(a: &[u8]) -> PortableVector {
     serialize::deserialize_4(a.classify_ref())
 }
 
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a)"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 5 (impl.f_repr $a) $out"#))]
 fn serialize_5(a: PortableVector) -> [u8; 10] {
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_lemma $a"#);
     serialize::serialize_5(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 10)]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 10 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 5 $a (impl.f_repr $out)"#))]
 fn deserialize_5(a: &[u8]) -> PortableVector {
+    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_lemma $a"#);
     serialize::deserialize_5(a.classify_ref())
 }
 
@@ -1121,11 +1126,14 @@ impl Operations for PortableVector {
         deserialize_4(a)
     }
 
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 5 (impl.f_repr $a) $out"#))]
     fn serialize_5(a: Self) -> [u8; 10] {
         serialize_5(a)
     }
 
     #[requires(a.len() == 10)]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 10 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 5 $a (impl.f_repr $out)"#))]
     fn deserialize_5(a: &[u8]) -> Self {
         deserialize_5(a)
     }
