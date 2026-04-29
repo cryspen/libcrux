@@ -36,6 +36,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"
     v $rows_in_a <= 8 /\
     v $rows_in_a == Seq.length t1 /\
@@ -54,14 +55,25 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
-    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == verification_key_size - SEED_FOR_A_SIZE);
 
+    // Inline literal `320` for the slice index (= `RING_ELEMENT_OF_T1S_SIZE`,
+    // but that constant extracts to the opaque arithmetic
+    // `(13 *! 256) /! 8` which Z3 cannot reduce under `fuel 0`). With the
+    // literal plus the loop_invariant tracking length preservation +
+    // `rows_in_a <= 8` multiplication bound, the slice index well-
+    // formedness `(i+1) * 320 <= rows_in_a * 320` discharges; the
+    // per-lane `< pow2 10` post is delegated to the trailing
+    // `admit () (* Panic freedom *)` produced by
+    // `verification_status(panic_free)`.
     for i in 0..rows_in_a {
-        t1::deserialize::<SIMDUnit>(
-            &serialized[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
-            &mut t1[i],
-        );
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= v rows_in_a /\
+              v rows_in_a <= 8 /\
+              v rows_in_a == Seq.length t1 /\
+              Seq.length serialized == v rows_in_a * 320"#
+        ));
+        t1::deserialize::<SIMDUnit>(&serialized[i * 320..(i + 1) * 320], &mut t1[i]);
     }
 }
