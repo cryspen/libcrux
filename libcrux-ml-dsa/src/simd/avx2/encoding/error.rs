@@ -241,7 +241,15 @@ let deserialize_post (eta: C.t_Eta)
     Eta::Two => 3,
     Eta::Four => 4,
 })]
-#[hax_lib::ensures(|result| fstar!("deserialize_post $eta $serialized ${out}_future"))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    deserialize_post $eta $serialized ${out}_future /\
+    (forall (i: u64). v i < 8 ==>
+      ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
+          v (to_i32x8 ${out}_future i) >= -5 /\
+          v (to_i32x8 ${out}_future i) <= 2) /\
+      ($eta == Libcrux_ml_dsa.Constants.Eta_Four ==>
+          v (to_i32x8 ${out}_future i) >= -11 /\
+          v (to_i32x8 ${out}_future i) <= 4))"#))]
 pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     let unsigned = deserialize_to_unsigned(eta, serialized);
 
@@ -259,7 +267,10 @@ pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     introduce forall i. neg (to_i32x8 out i) `add_mod` $eta_v == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) $eta_v (to_i32x8 $unsigned i);
     to_i32x8_eq_to_bv_eq $unsigned out_reverted;
-    assert_norm (deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $eta $serialized out_reverted))
+    assert_norm (deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $eta $serialized out_reverted));
+    (match $eta with
+     | Libcrux_ml_dsa.Constants.Eta_Two -> i32_bit_zero_lemma_to_lt_pow2_n_weak 3 $unsigned
+     | Libcrux_ml_dsa.Constants.Eta_Four -> ())
     "
     );
 }

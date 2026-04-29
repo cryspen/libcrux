@@ -268,10 +268,10 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
-              v (Seq.index (f_repr ${out}_future) i) >= -2 /\
+              v (Seq.index (f_repr ${out}_future) i) >= -5 /\
               v (Seq.index (f_repr ${out}_future) i) <= 2) /\
           ($eta == Libcrux_ml_dsa.Constants.Eta_Four ==>
-              v (Seq.index (f_repr ${out}_future) i) >= -4 /\
+              v (Seq.index (f_repr ${out}_future) i) >= -11 /\
               v (Seq.index (f_repr ${out}_future) i) <= 4))"#))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self);
 

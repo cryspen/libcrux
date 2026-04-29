@@ -715,14 +715,19 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| fstar!(r#"
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
-              v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= -2 /\
+              v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= -5 /\
               v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) <= 2) /\
           ($eta == Libcrux_ml_dsa.Constants.Eta_Four ==>
-              v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= -4 /\
+              v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) >= -11 /\
               v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) <= 4))"#))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self) {
-        hax_lib::fstar!("admit ()");
         encoding::error::deserialize(eta, serialized, &mut out.value);
+        hax_lib::fstar!(
+            r#"assert (forall (i: nat). i < 8 ==>
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i) ==
+                v (Spec.Intrinsics.to_i32x8 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 i)));
+            assert ($eta == Libcrux_ml_dsa.Constants.Eta_Two \/ $eta == Libcrux_ml_dsa.Constants.Eta_Four)"#
+        );
     }
 
     #[inline(always)]
