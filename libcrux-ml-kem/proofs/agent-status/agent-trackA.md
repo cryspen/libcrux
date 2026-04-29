@@ -997,3 +997,105 @@ hint-replay misses that F* successfully retried.
 - **Steps 5-8**: chain `invert_ntt_at_layer_N` posts → `invert_ntt_montgomery` post → 3 INTT-consuming reduce fns + `add_standard_error_reduce` → matrix.rs call sites.
 
 The plan at `/Users/karthik/.claude/plans/replicated-beaming-pnueli.md` is the source of truth for this work; this session implemented Step 1 + Step 9 + the Bridges.fst split refactor.
+
+## 2026-04-29 afternoon — lane A5 (USER-6 closure: Phase 7a Steps 3.3/4/5)
+
+Worktree `~/libcrux-ml-kem-lane-A5/`, branch `agent/lane-A5`.
+
+### What landed
+
+**Step 3.3 helpers** (in
+`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`,
+new `(* Phase 7a / lane A5 additions *)` section after line 2403):
+- `mont_to_spec_poly_256` + `mont_to_spec_poly_256_body` (factored
+  helper at refined `usize{v idx < 256}` to dodge createi-callback
+  bound propagation issues) + `mont_to_spec_poly_256_lane`.
+- `zetas_8` (8-zeta layer-4-inverse slice helper).
+- Uses existing `to_spec_poly_mont` for the polynomial-level form
+  (already proven in Chunk.fst, takes `t_PolynomialRingElement`
+  directly — `mont_to_spec_poly_256` is the parallel array-of-vector
+  form, kept for future bridge work but not used in the strengthened
+  posts below).
+- Verified: `make check/Hacspec_ml_kem.Commute.Chunk.fst`, exit 0,
+  82 s cold.
+
+**Q101 fix** (in `inv_ntt_layer_int_vec_step_reduce` body proof,
+`src/invert_ntt.rs`): explicit `lemma_mod_q_eq_unfold` calls in aux0
+and aux1 to convert the trait posts' `mod_q_eq` to raw `% 3329 ==`
+form before invoking `lemma_add_fe_commute_mont_mod` /
+`lemma_inv_butterfly_fe_commute_mul_diff`.  Without these, hint
+replay reports "incomplete quantifiers" and the without-hint path
+times out at any rlimit (verified: rlimit 400 also failed, 132 s).
+Bumped rlimit 200 → 400 as margin.  After fix: Q101 succeeds via
+hint replay in 92 ms.
+
+**Step 4 layer_4_plus strengthened post** (admit body):
+`Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont re_future ==
+ IN.ntt_inverse_layer (to_spec_poly_mont re) layer`.
+Body kept under `--admit_smt_queries true` (filed as USER-14).
+
+**Step 5 invert_ntt_montgomery strengthened post** (admit body):
+`to_spec_poly_mont re_future ==
+ IN.ntt_inverse_butterflies (to_spec_poly_mont re)`.
+Body kept under `--admit_smt_queries true` (filed as USER-15 — the
+per-chunk-to-polynomial bridge for layers 1/3 needed to discharge
+the chain).
+
+**Layer 2 TEMP admit (NEW; USER-13)**: pre-existing Z3 wall on the
+loop-accumulator subtyping (Q2/Q96, saturates rlimit 400 in 75-110 s
+per sub-query).  Wave-A baseline already noted this; the strengthening
+of layers 1/3 in earlier sessions did not introduce it.  Bumping
+rlimit to 800 + `--split_queries always` hung past 12 min.  Reverted
+to rlimit 400 + admitted body to unblock A5's drive-to-the-top spike.
+
+**Local Makefile**: removed Wave-B's TEMP admit on
+`Libcrux_ml_kem.Invert_ntt.fst` (lane A5 owns this module).
+
+### Verification
+
+| Module | Status | Time | Notes |
+|---|---|---|---|
+| `Hacspec_ml_kem.Commute.Chunk` (with Step 3.3 helpers) | ✅ | 82 s cold | all queries pass |
+| `Libcrux_ml_kem.Invert_ntt` (with strengthened layer_4_plus + montgomery + layer_2 admit) | ✅ | 134 s cold | `inv_ntt_layer_int_vec_step_reduce` Q101 succeeds with hint, layer_2 / layer_4_plus / montgomery admitted bodies |
+| `Libcrux_ml_kem.Polynomial` (downstream — INTT-track reduce fns) | ✅ | 77 s cold | strengthened `invert_ntt_montgomery` post is additive; consumers (`subtract_reduce`, `add_message_error_reduce`, `add_error_reduce`) verify unchanged |
+
+### Critical-path validation: NO consumer regressions
+
+The strengthened posts ADD a `to_spec_poly_mont == ntt_inverse_*`
+conjunct to the ensures.  They do NOT remove or weaken any prior
+guarantee (`is_bounded_poly(3328)` retained, `zeta_i` final values
+retained).  Polynomial.fst's clean verify confirms that callers do
+not pattern-match the post structure to break — they just consume
+the bounds and ignore the new functional fact.
+
+Wave-C's `Libcrux_ml_kem.Matrix.fst` is still admitted via SLOW_MODULES
+in the Wave-B local Makefile; Wave-C will UNADMIT it when it picks
+up post-A5/A6/A7 and validate the polynomial-level chain end-to-end.
+
+### Filed USER-N items
+
+- **USER-13**: layer_2 loop-accumulator subtyping wall.  Pre-existing
+  per Wave-A baseline.  Z3 wall on `--z3rlimit 400 --ext context_pruning`
+  (Q2 saturates in 75 s, Q96 retry saturates in 110 s).  Strategy:
+  needs smtprofiling-driven decomposition, perhaps the per-branch
+  helper unlock pattern (commit `b7b49c358`).
+- **USER-14**: layer_4_plus body discharge with the Step 3.1
+  strengthened `inv_ntt_layer_int_vec_step_reduce` post (per-lane FE
+  forall conjuncts) in the SMT context.  Original rlimit 400 +
+  `--split_queries always` saturated Q187/Q191/Q192.  Strategy:
+  per-iteration `Classical.forall_intro` + `lemma_eq_intro` factoring
+  with explicit `mont_to_spec_poly_256_lane` opens.
+- **USER-15**: per-chunk-to-polynomial bridge for layers 1/3.  Needs
+  a lemma that lifts 16 per-chunk
+  `ntt_inverse_layer_n 16 ... 2 (zetas_4 ...)` facts to one
+  polynomial-level `ntt_inverse_layer 256 ... 1`.  Cleanly typed in
+  Bridges.fst alongside the existing per-vector bridges; the
+  challenge is the createi-of-createi reduction.
+
+### Commits
+
+| SHA | Message |
+|---|---|
+| `aae3046a9` | agent-laneA5: Phase 7a Step 3.3 + Q101 fix + layer_2 TEMP admit (USER-13) |
+| `f85a0c577` (HEAD) | agent-laneA5: Phase 7a Step 4 + Step 5 — strengthen layer_4_plus + invert_ntt_montgomery posts |
+
