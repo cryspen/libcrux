@@ -93,10 +93,22 @@ let lemma_is_bounded_poly_higher
 
 #[hax_lib::attributes]
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
+    #[hax_lib::ensures(|result| fstar!(r#"forall (j:nat). j < 32 ==>
+        Spec.Utils.is_i32b_array_opaque 0
+            (i0._super_i2.f_repr (Seq.index ${result}.f_simd_units j))"#))]
     pub(crate) fn zero() -> Self {
-        Self {
+        let s = Self {
             simd_units: [SIMDUnit::zero(); SIMD_UNITS_IN_RING_ELEMENT],
-        }
+        };
+        hax_lib::fstar!(r#"
+          let lemma_lane (j:nat{j < 32}) :
+            Lemma (Spec.Utils.is_i32b_array_opaque 0
+                     (i0._super_i2.f_repr (Seq.index ${s}.f_simd_units j))) =
+            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque
+          in
+          Classical.forall_intro lemma_lane
+        "#);
+        s
     }
 
     // This is used in `make_hint` and for tests
