@@ -126,6 +126,46 @@ unchanged.
 
 ---
 
+## 2026-04-29 — Wave-C lane A2 re-attempt (Phase 7n; reverted at 4-attempt cap)
+
+Single-agent re-attempt on lane A2 per `proofs/agent-status/wave-C-prompt-A2.md`.
+Goal: drop `verification_status(lax)` on
+`sample_from_uniform_distribution_next` in `src/sampling.rs:51`.
+
+### Outcome — DEFERRED to USER-10
+
+All four fix paths walled at "incomplete quantifiers" SMT failures.
+Reverted to baseline `lax`; only `MLKEM_STATUS.md` and this log
+carry forward.  See `MLKEM_STATUS.md` USER-10 for the full reproducer
++ Z3-finding + recommended next steps.
+
+### Sampling.fst Query-stats summary (per fix path)
+
+| Path | Function | Worst query | Time | Reason |
+|---|---|---|---|---|
+| baseline (lax) | `sample_from_uniform_distribution_next` | — | (lax, 0 SMT) | n/a |
+| (a) `--split_queries always` rlimit 400 | inner-loop body subtype | Q531 | 35 s, canceled | rlimit saturated |
+| (a) split + outer queries | ditto | Q390/391 | 1.8 s ea | incomplete quantifiers |
+| (c) split + rlimit 800 | ditto | Q531 | 39 s, fail | incomplete quantifiers (rlimit not the wall) |
+| (d) uniform inv `<= K+16 /\ (j>=i \/ <=K)` | ditto | Q381/382 | 2.9 s ea | incomplete quantifiers (better — only inner-loop fails) |
+| (b) `Classical.forall_intro` aux | inside `aux` lemma | Q418 | 4.5 s | incomplete quantifiers in lemma body |
+
+**Z3 finding**: rlimit is NOT the wall.  Failures are uniformly
+"incomplete quantifiers" (Z3 gives up trying to instantiate the
+2-level outer/inner forall over `K`).  Path (d) is the closest to
+working — only the inner-loop's array-update step preserves
+the difficult invariant.  Path (b) confirmed that splitting via
+`Classical.forall_intro` alone doesn't break the wall: the per-`j`
+lemma body itself fails because Z3 still needs to instantiate the
+loop-precondition forall at the local `j`.
+
+### Inter-wave handoff
+
+USER-10 expanded with the 4-path log.  No code change committed
+to `agent/lane-A2` from this session beyond MLKEM_STATUS / agent-log
+documentation.  Final lane-A2 tip: same as parent commit (no extract
+changes carried forward; `src/sampling.rs` reverted via `git checkout`).
+
 ## 2026-04-29 11:00–11:30 — Wave-B coordinator (Phase 3 setup-only)
 
 Single-agent coordinator role per `wave-B-prompt.md`.  Worktree

@@ -371,19 +371,86 @@ audit at `750e28ba1`).  Sub-steps:
   posts; downstream `Serialize.fst` migration (Phase 7c / A1) gains
   hacspec citations for these widths.
 
-### USER-10 — trait `rej_sample` post strengthening (Cluster 4 deferred) — **IN FLIGHT (Wave-B A2)**
+### USER-10 — trait `rej_sample` post strengthening + drop `lax` on `sample_from_uniform_distribution_next` — **IN FLIGHT (Wave-B A2; Wave-C re-attempt 2026-04-29)**
 
 **`Operations::rej_sample`** in
-`libcrux-ml-kem/src/vector/traits.rs:1352-1360`.
+`libcrux-ml-kem/src/vector/traits.rs:1352-1360`, plus
+**`sample_from_uniform_distribution_next`** in
+`libcrux-ml-kem/src/sampling.rs:51` (carries `verification_status(lax)`).
 
-- **Status**: bounds-only post in place; `spec::rej_sample_post` helper
-  (lines 1184-1198) defined with `Hacspec_ml_kem.Sampling.rej_sample_step`
-  citation.
+- **Status**: bounds-only post in place on `rej_sample`;
+  `spec::rej_sample_post` helper (lines 1184-1198) defined with
+  `Hacspec_ml_kem.Sampling.rej_sample_step` citation.  The caller
+  `sample_from_uniform_distribution_next` retains
+  `verification_status(lax)` because removing it triggers full SMT
+  on a 2-level forall over `K` that Z3 cannot instantiate.
 - **Why deferred**: Phase 1 Cluster 4 explicit defer.  Discharging
   `rej_sample_step` equation from the impl bodies (portable + AVX2)
   requires non-trivial annotation on the rejection-sampling loop —
   see `Phase 7n` brief for the analogous `sample_from_uniform_distribution_next`
-  pattern.  Best done in lane B-something or as part of A2.
+  pattern.
+
+#### Wave-C 2026-04-29 spike (lane A2 re-attempt) — REVERTED at 4-attempt cap
+
+Tried four fix paths against the bare `lax` removal at
+`src/sampling.rs:51` (rlimit 400 baseline):
+
+  1. **Path (a)** `--split_queries always` alone: SMT picks up but
+     splits the failure into ~3 sub-queries.  Q381/382 ("incomplete
+     quantifiers" in 1.8 s each) at the inner-loop body's
+     subtyping check (`out[j][k]` bounds for `j != i`); Q531 canceled
+     at rlimit 400 (35 s, "unknown because canceled") on outer-loop
+     post.
+  2. **Path (c)** `--z3rlimit 800` (combined with split): Q531 turns
+     from "canceled" into "incomplete quantifiers" at rlimit 452 —
+     confirms the wall is a quantifier-instantiation problem, not
+     rlimit exhaustion.  More rlimit doesn't help.
+  3. **Path (d)** Tighten invariant by dropping the `if j < i` ladder
+     and using a uniform `forall j. sampled_coefficients[j] <= K + 16`
+     (plus a separate `forall j < i. <= K` for the second outer loop):
+     Initial attempt with two `loop_invariant!` calls failed at
+     extraction (hax emits `Hax_lib.e_internal_loop_invariant` for the
+     second invariant, which F* doesn't recognize — `loop_invariant!`
+     must be invoked at most once per loop).  Combined the two
+     invariants into one disjunctive form (`<= K + 16 /\ (j >= i || <= K)`).
+     Result: now only 2 inner-loop "incomplete quantifiers" failures
+     (Q381/382) plus 1 outer-loop failure (Q525).  Closer than path (a)
+     but still walled.
+  4. **Path (b)** `Classical.forall_intro (Classical.move_requires aux)`
+     placed after the if-body modification, with `aux j : Lemma
+     (requires j <. v_K) (ensures invariant_at j) = ()`: the `aux`
+     body itself fails ("incomplete quantifiers" inside the lemma
+     proof) because Z3 still has to instantiate the loop-precondition
+     forall at j.  Adding a second `inv_at` block BEFORE the if-body
+     to materialise the entry-state invariant didn't break the wall
+     either.  An `if j = i then () else ()` case-split shape was
+     extracted but didn't change the failure mode.
+
+Reverted to baseline `lax` at the 4-attempt cap (R6 of the lane-A2
+prompt).  Final commit on `agent/lane-A2`: working tree restored to
+`fa31480cd` HEAD content for `src/sampling.rs`; only the
+`MLKEM_STATUS.md` and `agent-trackA.md` updates carry forward.
+
+**Z3 finding**: rlimit isn't the wall; Z3 cannot instantiate the
+2-level forall `forall j < K. (sampled_coefficients[j] <= K + 16) /\
+(forall k < sampled_coefficients[j]. out[j][k] in [0, 3328])` when
+the body updates `sampled_coefficients[i]` and `out[i]` via
+`update_at_usize`.  Even a uniform invariant + `Classical.forall_intro`
+hint doesn't break the wall — the `aux` lemma's body is itself an
+"incomplete quantifiers" failure.  Likely needs:
+  * Splitting the inner forall into a non-array-quantified shape
+    (e.g. extracting a per-`j` predicate to a top-level `let` so the
+    update_at can be normalised symbolically); OR
+  * `--smtencoding.elim_box true` / `--smtencoding.l_arith_repr native`
+    tweaks; OR
+  * `--using_facts_from` to prune the search space; OR
+  * Refactoring the loop body so update happens through a function
+    with a per-index post (so `update_at_usize` is opaque to the
+    invariant proof).
+
+**Recommendation**: keep `lax` until a user with `smtprofiling`
+expertise drives the quantifier instantiation problem to ground
+(probably 1-2 hr of focused Z3-encoding work).
 
 ### USER-11 — drop `op_ntt_multiply` `panic_free` (Wave-A B5; Z3-walled) — **USER LANE** (NTT-related)
 
