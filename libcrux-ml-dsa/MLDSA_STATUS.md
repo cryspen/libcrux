@@ -1,8 +1,9 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 14 Track D-2 (2026-04-29).  Three `*_deserialize`
-trait bodies closed admit-free on both Portable and AVX2:
+**Tip**: Step 14 Track D-2 closed (2026-04-29).  All four
+`*_deserialize` trait bodies are admit-free on both Portable and
+AVX2:
 - `t1_deserialize` (commit `62a50deeb`): free fn ensures + bit-vec
   bridge via `i32_bit_zero_lemma_to_lt_pow2_n_weak 10` for AVX2.
 - `t0_deserialize` (commit `10b15d325`): per-lane half-open
@@ -12,16 +13,22 @@ trait bodies closed admit-free on both Portable and AVX2:
   helpers + closed bound `[-pow2 d, pow2 d]` via opaque reveal.
   Defensive `coefficient1 &= GAMMA1_TIMES_2_BITMASK` for γ₁=2^19
   (mathematical no-op; needed for SMT discharge).
-- `error_deserialize` retained as admit; filed F-14 — function is
-  partial w.r.t. trait post (body produces `[-5, 2]` for eta=2 but
-  trait wants `[-2, 2]`).  Above-trait fix needed.
+- `error_deserialize` (commit `c1e8e2883`): cherry-pick of
+  above-trait `e055bf9c0` (F-14 audit fix relaxing trait post to
+  FIPS 204 BitUnpack range `[-5, 2]` / `[-11, 4]` — symmetric
+  `[-eta, eta]` was wrong, only valid when `a + b + 1` is a power
+  of 2 which fails for ML-DSA's eta values).  Per-eta free fn
+  ensures + `logand_mask_lemma` mask-normalization tactic for
+  Portable; per-eta `i32_bit_zero_lemma_to_lt_pow2_n_weak` bridge
+  for AVX2.
 
 Step 13 deltas inherited (Track A closed; Track D-1 t1/error
 `*_serialize` admit-free; F-3/F-6/F-7 mirror sync).
 
-**Empirical baseline (Step 14 Track D-2)**: **77 modules invoked,
-[CHECK]=27, [ADMIT]=50, 0 F* errors, 0 make-level failures**.  Six
-trait body admits removed across `t1`, `t0`, `gamma1` deserialize.
+**Empirical baseline (Step 14 Track D-2 final)**: **75 modules
+invoked, [CHECK]=27, [ADMIT]=48, 0 F* errors, 0 make-level
+failures**.  Eight trait body admits removed across `t1`, `t0`,
+`gamma1`, `error` deserialize on both impls.
 
 **Tip (prior)**: Step 12 partial (2026-04-28).  Track 0c closed AVX2
 `commitment_serialize` (`87a71ccc4`).  Track B scaffolded AVX2

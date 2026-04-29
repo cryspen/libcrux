@@ -39,7 +39,18 @@ body), record it here with:
 
 ### Open findings
 
-#### F-14 (2026-04-29) — `error_deserialize` trait post over-tight vs FIPS 204 / Hacspec spec
+#### F-14 (2026-04-29) — `error_deserialize` trait post over-tight vs FIPS 204 / Hacspec spec — RESOLVED
+
+Above-trait commit `e055bf9c0` (cherry-picked into below-trait
+commit `c1e8e2883`) swaps the trait post lower bounds to the FIPS
+204 BitUnpack range: `[-5, 2]` for eta=2, `[-11, 4]` for eta=4.
+Below-trait closed both Portable and AVX2 `error_deserialize` trait
+body admits using the same template as the Track D-2 t1/t0/gamma1
+deserialize closes.
+
+Original finding follows for record.
+
+
 
 - **Affected method:** `error_deserialize` post
   (`src/simd/traits.rs` ensures clause):

@@ -308,18 +308,20 @@ Verifies under impl_1 in 16s @ rlimit 80 (used 68/80).
   per-lane closed bound conjunct to existing `deserialize_post`,
   same template as t0_deserialize AVX2.
 
-**Blocked (admit retained):**
+**Resolved (admit removed) — additional after F-14 trait post relax:**
 - Portable `Operations::error_deserialize`,
-  AVX2 `Operations::error_deserialize` trait bodies — F-14: function
-  is **partial** w.r.t. trait post.  Body computes `ETA - (byte & MASK)`
-  where `byte & MASK ∈ [0, 7]` (eta=2) or `[0, 15]` (eta=4); for
-  arbitrary input bytes this exceeds the trait post's `[-eta, eta]`
-  range.  Concrete counter-example: `byte0 = 0xFF`, `byte0 & 7 = 7`,
-  `simd_unit.values[0] = 2 - 7 = -5` violates `>= -2`.  Trait pre
-  has no constraint on byte contents.  Awaiting above-trait fix:
-  either tighten trait pre to require valid-encoding bytes, or
-  add an impl-side validation step that rejects malformed bytes.
-  See lane-split-protocol.md F-14 for full analysis.
+  AVX2 `Operations::error_deserialize` (commit `c1e8e2883`) —
+  cherry-picked above-trait `e055bf9c0` (F-14 audit), which relaxes
+  the trait post from canonical-symmetric `[-eta, eta]` to FIPS 204
+  BitUnpack range `[-5, 2]` (eta=2) and `[-11, 4]` (eta=4).
+  Per-eta free fn ensures added to
+  `src/simd/portable/encoding/error.rs::deserialize_when_eta_is_*`
+  + dispatcher; logand mask normalized via
+  `assert (mk_i32 7 == mk_i32 (pow2 3) -! mk_i32 1) by ...` tactic
+  to fire `logand_mask_lemma` SMTPat.  AVX2 deserialize ensures
+  strengthened with per-lane `to_i32x8` value bound; per-eta
+  `i32_bit_zero_lemma_to_lt_pow2_n_weak n` bridge invoked
+  (n=3 for eta=2, n=4 already called for eta=4).
 
 ### Step 13 Track D-1: encoding `*_serialize` impl bodies (2026-04-29)
 **Resolved (admit removed):**
