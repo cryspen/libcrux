@@ -1,9 +1,136 @@
 # agent-trackA — session log
 
-**Session date:** 2026-04-28 (resumed evening, Step 2 layer 3 added)
+**Session date:** 2026-04-29 (Phase 1 — trait pre/post fixes)
 **Branch:** `trait-opacify`
-**Tip at end:** `0784e3b72` (was `7b4707227` at start of this resume —
-handoff prompt commit; effective code tip `bcc3dc480` at session start)
+**Tip at end:** `a51ddbfc3` (Cluster 3 partial — 4 portable BitVec
+lemmas).  Cluster 1 lands at `05967b8fe`.
+
+## 2026-04-29 — Phase 1 (post-Phase-H trait pre/post fixes)
+
+Single-agent serial through 4 clusters per
+`~/.claude/plans/immutable-snacking-dewdrop.md` §"Phase 1".
+
+### Cluster 1 — output bounds + docs on add/sub/mul/negate posts ✅ (commit `05967b8fe`)
+
+Added `is_intb (pow2 15 - 1) (v result[i])` conjunct to the four basic-
+arithmetic trait posts (`add_post`, `sub_post`, `multiply_by_constant_post`,
+`negate_post`) in `src/vector/traits.rs`.  Bound is bundled with the
+elementwise equation under a single `forall i`:
+
+```
+forall i.
+  v result[i] == v lhs[i] + v rhs[i] /\
+  is_intb (pow2 15 - 1) (v result[i])
+```
+
+**Z3 lesson (incomplete-quantifiers trap).**  First attempt split the
+two facts into separate foralls:
+
+```
+(forall i. v result[i] == v lhs[i] + v rhs[i]) /\
+(forall i. is_intb (pow2 15 - 1) (v result[i]))
+```
+
+This failed at the impl-side typeclass implication check
+(`Vector.Portable.fst:1075`, `multiply_by_constant_post`) with
+"incomplete quantifiers" — Z3 needed to instantiate both foralls at
+the same `i` and didn't.  Bundling into one forall lets a single
+instantiation establish both facts.  Same pattern as the layer-2
+inverse NTT branch_post fix (commit `b7b49c358`): when Z3 needs two
+related forall facts, prefer one bundled forall over two separate.
+
+**Impl-side wrapper alignment.**  `multiply_by_constant`'s wrapper in
+`src/vector/portable.rs` and primitive in
+`src/vector/portable/arithmetic.rs` had been using inline equation-
+only posts (vs `add`/`sub`'s `${spec::*_post}` form).  Aligned both
+to `${spec::multiply_by_constant_post}` so the bundled bound flows
+through cleanly.
+
+**Doc additions** (per Phase 1 prompt):
+- `add_pre`/`sub_pre` sum-form rationale (callers establish elementwise
+  sum-bound, not separate input bounds).
+- `montgomery_multiply_by_constant_pre` asymmetry (only `c` is bounded
+  — `vec` is unconstrained because i32 product never overflows).
+- `to_unsigned_representative_post` algebraic-int intentional shape
+  (callers consume residue via `mod_q_eq`, not via hacspec).
+
+**Verification.**
+| Module | Time | Notes |
+|---|---|---|
+| `Vector.Traits.Spec.fst` | ~19 s | post helpers re-extract clean |
+| `Vector.Portable.fst` | ~48 s | impl_1 used 9.85/80 rlimit |
+| `Vector.Avx2.fst` | ~41 s | impl_3 used 30.4/80 rlimit |
+| `Polynomial.fst` (regression) | 80 s | clean — no above-trait regression |
+
+### Cluster 2 — from_bytes / to_bytes ⏸ DEFERRED → USER-8
+
+Hidden complexity discovered during scoping:
+
+- Portable's `from_bytes` / `to_bytes` (in
+  `src/vector/portable/vector_type.rs:42-62`) use raw bit-shift body
+  (`elements[i] = (array[2*i+1].as_i16()) << 8 | array[2*i].as_i16()`).
+  Discharging `from_le_bytes_post_N` requires a new
+  `from_bytes_bit_vec_lemma` + `from_bytes_lemma` mirroring the
+  serialize-side BitVec pattern.  Estimated 30-60 min.
+- AVX2 side (`src/vector/avx2.rs:53-70`): `to_bytes` is `lax`;
+  removing it AND building the intrinsic↔BitVec bridge for
+  `mm256_loadu_si256_u8` / `mm256_storeu_si256_u8` is 60+ min.
+
+Combined cost exceeds 90 min cap.  Tracked as USER-8.  Per Phase 1
+hard rule R3 (no new admits), cannot ship the trait post strengthen
+unilaterally.
+
+### Cluster 3 — serialize_5/11 + deserialize_5/11 BitVec lemmas 🔶 PARTIAL (commit `a51ddbfc3`)
+
+**Spike outcome.**  `serialize_5_bit_vec_lemma` discharged via
+`Tactics.GetBit.prove_bit_vector_equality' ()` in **744 ms cold** (no
+hints).  Tactic generalises cleanly to 80-bit / 176-bit equalities at
+non-byte-aligned bit-widths (5, 11) — confirms it's not specialised to
+power-of-2 widths.
+
+**Landed.**  4 BitVec lemmas in `src/vector/portable/serialize.rs`,
+verified with `VERIFY_SLOW_MODULES=yes`:
+
+| Lemma | Bits | Pattern |
+|---|---|---|
+| `serialize_5_lemma` | 80 | `Tactics.GetBit.prove_bit_vector_equality' ()` |
+| `serialize_11_lemma` | 176 | same |
+| `deserialize_5_lemma` (+ `_bounded`) | 80 + bound | mirror of `deserialize_10` |
+| `deserialize_11_lemma` (+ `_bounded`) | 176 + bound | mirror of `deserialize_10` |
+
+**NOT landed.**  Trait method declarations
+(`src/vector/traits.rs:1320-1342`) still carry `// TODO(C4)` markers.
+Reason: AVX2 wrappers (`src/vector/avx2.rs:996-1035`) currently have
+no trait post; strengthening them requires a SIMD↔BitVec bridge.
+Per R3, cannot land unilaterally.  Tracked as USER-9.
+
+**Per user direction (this session):** keep the 4 lemmas as a
+free-standing preparation; the lemmas verify in their own SMT scope
+without affecting any existing proof.  Trait pre/post strengthening
+to be done by USER-9 once the AVX2 SIMD-BitVec bridge lands.
+
+### Cluster 4 — rej_sample ⏸ DEFERRED → USER-10
+
+Explicit defer per Phase 1 prompt.  Trait helper
+`spec::rej_sample_post` already defined with hacspec
+`Hacspec_ml_kem.Sampling.rej_sample_step` citation.  Wiring requires
+rejection-loop invariant tightening on impl bodies — combine with
+A2 (Phase 7n) sampling lane.
+
+### Phase 1 deliverable summary
+
+| Cluster | Status | Commit | Notes |
+|---|---|---|---|
+| 1 | ✅ landed | `05967b8fe` | bound + docs on add/sub/mul/negate |
+| 2 | ⏸ deferred | — | USER-8 (from_bytes/to_bytes) |
+| 3 | 🔶 partial | `a51ddbfc3` | 4 portable BitVec lemmas; trait wiring → USER-9 |
+| 4 | ⏸ deferred | — | USER-10 (rej_sample) |
+
+**Trait contract is now stable enough for Phase 2 fan-out.**  No
+existing modules regressed.  Phase 2 lanes can branch from
+`a51ddbfc3` (or `05967b8fe` if they don't need the BitVec lemmas).
+
+---
 
 ## 2026-04-28 late evening — Phase 7a Step 3 (sub-pieces 1 + 2)
 

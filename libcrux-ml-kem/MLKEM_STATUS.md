@@ -211,6 +211,65 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   `invert_ntt_montgomery`'s strengthened post (the original spike's
   question).
 
+### USER-8 — trait `from_bytes` / `to_bytes` post strengthening (Cluster 2 deferred)
+
+**`Operations::from_bytes` / `Operations::to_bytes`** in
+`libcrux-ml-kem/src/vector/traits.rs:1217-1224`.
+
+- **Status**: TODOs in place; trait posts (`spec::from_bytes_post`,
+  `spec::to_bytes_post`) and helper predicates
+  (`from_le_bytes_post_N`, `to_le_bytes_post_N`) defined.  Method
+  declarations not yet wired.
+- **Why deferred**: Phase 1 Cluster 2.  Portable's `from_bytes` /
+  `to_bytes` (in `src/vector/portable/vector_type.rs:42-62`) use raw
+  bit-shift body (`elements[i] = (array[2*i+1].as_i16()) << 8 |
+  array[2*i].as_i16()`); discharging `from_le_bytes_post_N` requires a
+  new `from_bytes_lemma` mirroring the existing
+  `serialize_4_lemma` / `serialize_10_lemma` BitVec pattern.  AVX2 side
+  (`src/vector/avx2.rs:53-70`): `to_bytes` is currently `lax`;
+  strengthening requires removing `lax` AND building an
+  intrinsic↔BitVec bridge.  Per Phase 1 hard rule R3 (no new admits),
+  cannot land until both sides discharge cleanly.  Estimated 60-90 min
+  per side.
+
+### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring (Cluster 3 partial)
+
+**Trait method declarations** in
+`libcrux-ml-kem/src/vector/traits.rs:1320-1342`.
+
+- **Status**: 4 portable BitVec lemmas landed in
+  `src/vector/portable/serialize.rs` at commit `a51ddbfc3` —
+  `serialize_5_lemma`, `serialize_11_lemma`, `deserialize_5_lemma`,
+  `deserialize_11_lemma` all discharge via
+  `Tactics.GetBit.prove_bit_vector_equality' ()`.  Spike on
+  `serialize_5_bit_vec_lemma` closed in 744 ms cold; tactic generalises
+  cleanly to non-byte-aligned bit-widths.  Trait helpers
+  (`spec::serialize_5_pre/post`, etc.) defined.
+- **Why deferred**: AVX2 side
+  (`src/vector/avx2/serialize.rs:351-700`) has a real SIMD
+  implementation for `serialize_5/deserialize_5` and `lax` on
+  `serialize_11/deserialize_11`.  Wiring the trait post would force
+  AVX2 to discharge a SIMD↔BitVec bridge.  Per R3 cannot land
+  unilaterally.  The portable lemmas are PREP for whoever builds the
+  AVX2 bridge.
+- **Once closed**: 4 trait methods get strong serialize/deserialize
+  posts; downstream `Serialize.fst` migration (Phase 7c / A1) gains
+  hacspec citations for these widths.
+
+### USER-10 — trait `rej_sample` post strengthening (Cluster 4 deferred)
+
+**`Operations::rej_sample`** in
+`libcrux-ml-kem/src/vector/traits.rs:1352-1360`.
+
+- **Status**: bounds-only post in place; `spec::rej_sample_post` helper
+  (lines 1184-1198) defined with `Hacspec_ml_kem.Sampling.rej_sample_step`
+  citation.
+- **Why deferred**: Phase 1 Cluster 4 explicit defer.  Discharging
+  `rej_sample_step` equation from the impl bodies (portable + AVX2)
+  requires non-trivial annotation on the rejection-sampling loop —
+  see `Phase 7n` brief for the analogous `sample_from_uniform_distribution_next`
+  pattern.  Best done in lane B-something or as part of A2.
+
 ---
 
 ## AGENT TASKS — parallelizable mechanical work

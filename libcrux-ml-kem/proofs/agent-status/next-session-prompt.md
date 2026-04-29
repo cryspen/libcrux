@@ -1,8 +1,21 @@
-# Next-session resume prompt — Post-Phase H, ready for Phase 1
+# Next-session resume prompt — Post-Phase-1, ready to fan out Phase 2 + Phase 3
 
-Phase H (opaque mod_q at trait boundary) committed at `08dedde99`.
-The end-to-end sprint plan is consolidated at
+Phase 1 (trait pre/post fixes) is now substantially complete on
+`trait-opacify`:
+
+- Cluster 1 (output bounds + docs on add/sub/mul/negate posts) — ✅
+  `05967b8fe`.
+- Cluster 2 (from_bytes / to_bytes) — ⏸ deferred → USER-8.
+- Cluster 3 (serialize_5/11, deserialize_5/11) — 🔶 PARTIAL: 4 portable
+  BitVec lemmas landed at `a51ddbfc3`; trait wiring deferred → USER-9
+  (gated on AVX2 SIMD↔BitVec bridge).
+- Cluster 4 (rej_sample) — ⏸ deferred → USER-10.
+
+The end-to-end sprint plan is at
 `~/.claude/plans/immutable-snacking-dewdrop.md`.
+
+The trait contract is now stable enough to fan out Phase 2 (below-trait
+closure) and Phase 3 (above-trait closure) to parallel agents.
 
 Paste the block below into a fresh Claude Code session opened in
 `/Users/karthik/libcrux-trait-opacify/libcrux-ml-kem`.
@@ -11,138 +24,72 @@ Paste the block below into a fresh Claude Code session opened in
 
 ```
 You are picking up the libcrux-ml-kem F* verification sprint after
-Phase H landed (commit `08dedde99` on `trait-opacify`).
+Phase 1 landed.  The trait contract on `trait-opacify` is FROZEN; you
+are spawning Phase 2 (below-trait) and/or Phase 3 (above-trait) lanes.
 
 ═══════════════════════════════════════════════════════════════════
 SPRINT STATUS
 ═══════════════════════════════════════════════════════════════════
 
-✅ Phase 0 (canonical edit-check loop empirical study) — verdict:
-   plain `make check/<Mod>.fst` from `proofs/fstar/extraction/`.
-   Report: `proofs/agent-status/edit-check-loop-comparison.md`.
+✅ Phase 0 — canonical edit-check loop study; verdict
+   `make check/<Mod>.fst` from `proofs/fstar/extraction/`.
+✅ Phase H (2026-04-29) — opaque mod_q at trait boundary; commit
+   `08dedde99`.  `Hacspec_ml_kem.ModQ.fst` defines `mod_q_eq`; trait
+   posts use `mod_q_eq` form.
+✅ Phase 1 (2026-04-29) — trait pre/post fixes, 2 of 4 clusters
+   landed:
+   - Cluster 1 (commit `05967b8fe`): output bounds + docs on
+     add/sub/mul/negate.  Bundled forall pattern; impl wrapper
+     alignment for multiply_by_constant.
+   - Cluster 3 partial (commit `a51ddbfc3`): 4 portable BitVec lemmas
+     for serialize_5/11 + deserialize_5/11.  Trait wiring deferred.
 
-✅ Phase H (opaque mod_q at trait boundary) — DONE 2026-04-29.
-   `Hacspec_ml_kem.ModQ.fst` defines opaque `mod_q` and `mod_q_eq`.
-   4 trait posts (barrett_reduce, mont_mul_by_constant, cond_subtract,
-   to_unsigned_representative) now use `mod_q_eq` form.  Above-trait
-   Z3 contexts no longer see raw `% 3329`.  All verifies clean:
-   ModQ.fst (8s), Commute.Chunk.fst (70s), Vector.Portable.fst (59s),
-   Vector.Avx2.fst (63s), Polynomial.fst, Invert_ntt.fst.
-
-⏸ Phase 1 (trait pre/post fixes) — NEXT.  ~1 session, single-agent.
-⏸ Phase 2 (below-trait closure, 7 lanes parallel) — gated on Phase 1.
-⏸ Phase 3 (above-trait closure, 8 lanes parallel) — gated on Phase 2.
-
-Critical path: Phase 1 → A5 (3 sess) → A6 (2) → A7 (2) → A8 (2)
-≈ 10-11 total sessions.
+⏸ USER-8 — Cluster 2 deferred (from_bytes / to_bytes BitVec bridge,
+   needs portable bit-shift→BitVec lemma + AVX2 intrinsic→BitVec
+   bridge; ~90 min total).
+⏸ USER-9 — Cluster 3 trait wiring deferred (gated on AVX2
+   SIMD→BitVec bridge for serialize_5/11/deserialize_5/11).
+⏸ USER-10 — Cluster 4 deferred (rej_sample post, combine with A2
+   Phase 7n).
 
 ═══════════════════════════════════════════════════════════════════
 ENVIRONMENT VERIFY (do this first)
 ═══════════════════════════════════════════════════════════════════
 
   cd /Users/karthik/libcrux-trait-opacify
-  git status              # clean on trait-opacify (mod unrelated diffs)
-  git log --oneline trait-opacify -3
+  git log --oneline trait-opacify -6
   # Should show:
+  #   a51ddbfc3 agent-trackA: Phase 1 Cluster 3 (partial) — portable serialize_5/11 + deserialize_5/11 BitVec lemmas
+  #   05967b8fe agent-trackA: Phase 1 Cluster 1 — output bounds + docs on add/sub/mul/negate posts
+  #   13d603c01 agent-trackA: handoff prompt — add Phase 2 + 3 parallel/sequential breakdown
+  #   d0929f8a5 agent-trackA: handoff prompt for Phase 1 (post-Phase-H)
   #   08dedde99 agent-trackA: Phase H — opaque mod_q at trait boundary + lane-split protocol
-  #   a62dd9ce0 agent-trackA: USER-7 — handoff for subtract_reduce body discharge
-  #   0a8c7289d agent-trackA: add per-poly commute lemma for subtract_reduce (mitigation b)
 
 ═══════════════════════════════════════════════════════════════════
 RESUME PROTOCOL — read these in order
 ═══════════════════════════════════════════════════════════════════
 
   1. ~/.claude/plans/immutable-snacking-dewdrop.md
-     (the consolidated sprint plan; Phase 1 details are in §"Phase 1")
+     (consolidated sprint plan; Phase 2/3 details in §"Phase 2/3")
   2. proofs/agent-status/lane-split-protocol.md
      (worktree split, cherry-pick discipline, style rules SD1-SD3)
   3. proofs/agent-status/edit-check-loop-comparison.md
      (canonical inner loop verdict)
   4. MLKEM_STATUS.md
-     (USER-1 through USER-7 task list, especially USER-7 for the
-      currently-admitted subtract_reduce body)
+     (USER-1..USER-10 task list; USER-7 is the next user-track work,
+      USER-8/9/10 are Phase-1-deferred items)
   5. proofs/agent-status/agent-trackA.md
-     (recent-session log)
+     (recent-session log; 2026-04-29 entry covers Phase 1)
 
 ═══════════════════════════════════════════════════════════════════
-PHASE 1 SCOPE — what this session does
+PHASE 2 SCOPE — below-trait closure (7 lanes, parallel)
 ═══════════════════════════════════════════════════════════════════
 
-Modify `src/vector/traits.rs` and re-extract `Vector.Traits.Spec.fst`.
-Batch into clusters; one trait commit per cluster.
-
-CLUSTER 1 (low-risk, post-only conjuncts):
-  • Add output bounds to `add_post`, `sub_post`, `multiply_by_constant_post`,
-    `negate_post`.  Derivable from existing `is_intb` pre.
-  • Documentation comments on `to_unsigned_representative` (kept algebraic-
-    int intentionally), `montgomery_multiply_by_constant` pre asymmetry,
-    `add`/`sub` pre on sums.
-
-CLUSTER 2 (modest impl-side proof):
-  • `from_bytes`, `to_bytes`: pull in existing `from_le_bytes_post_N` /
-    `to_le_bytes_post_N` helpers.  Portable-side discharge via existing
-    BitVecEq pattern; AVX2 may need an intrinsic↔BitVec bridge (defer
-    if heavy).
-
-CLUSTER 3 (gated on 30-min spike):
-  • `serialize_5/11`, `deserialize_5/11`: replace TODO with existing
-    pre/post helpers.  Requires 4 new lemmas in `src/vector/portable/
-    serialize.rs` mirroring `serialize_10_lemma`.  SPIKE: write
-    `serialize_5_int_lemma`. If closes <30 min, land all 4. Else defer.
-
-CLUSTER 4 (defer):
-  • `rej_sample`: leave weak with sharpened TODO.
-
-Each cluster:
-  1. Edit `traits.rs` (one cluster's worth).
-  2. `python3 hax.py extract`.
-  3. `make check/Libcrux_ml_kem.Vector.Traits.Spec.fst`.
-  4. `make check/Libcrux_ml_kem.Vector.Portable.fst` — must pass.
-  5. `make check/Libcrux_ml_kem.Vector.Avx2.fst` — must pass.
-  6. Commit cluster (single commit per cluster — keep `git bisect`
-     useful).
-
-═══════════════════════════════════════════════════════════════════
-HARD RULES
-═══════════════════════════════════════════════════════════════════
-
-R1 Phase 1 is single-agent serial.  Don't fan out to multiple lanes
-   yet — Stage 2/3 fan out once trait is frozen.
-R2 Maintain SD1 (mod-q opacity), SD2 (forall<N> over generic forall),
-   SD3 (opaque per-branch wrappers) per lane-split-protocol.md.
-R3 No new admits anywhere.  If Cluster N's impl-side discharge fails,
-   roll back the cluster and document.
-R4 ulimit -v 8388608, F* rlimit ≤ 800.
-R5 Inner loop: plain `make check/<Mod>.fst`.  Don't reach for
-   fstar-mcp or admit-everything-else (per Phase 0 verdict).
-R6 Hard cap 90 min per cluster.  If a cluster doesn't close in 90,
-   STOP, document the gap, hand off.
-
-═══════════════════════════════════════════════════════════════════
-DELIVERABLES (this session)
-═══════════════════════════════════════════════════════════════════
-
-  • 2-4 commits (one per cluster that lands).
-  • Updated `MLKEM_STATUS.md` with new Phase 1 entries.
-  • New entry in `proofs/agent-status/agent-trackA.md`.
-  • If Cluster 4 (rej_sample) deferred: explicit USER-N entry added
-    to MLKEM_STATUS.md.
-
-REPORT one paragraph entry summary at end-of-session.
-
-═══════════════════════════════════════════════════════════════════
-AFTER PHASE 1 — Phase 2 + 3 parallel/sequential breakdown
-═══════════════════════════════════════════════════════════════════
-
-Once Phase 1 lands, the trait contract is FROZEN.  Phases 2 (below-trait
-closure) and 3 (above-trait closure) fan out to parallel agents.
-
-PHASE 2 (below-trait, 7 lanes, parallel after Phase 1):
-
-  Each lane works in its own worktree off `trait-opacify` HEAD post-
-  Phase-1.  Per-lane Makefile admits all OTHER lanes' modules — see
-  lane-split-protocol.md.  Lanes touching `Commute.Chunk.fst` must
-  serialize through B6 (sequential); the rest are file-disjoint.
+  Each lane works on its own worktree off `trait-opacify` HEAD post-
+  Phase-1 (`a51ddbfc3`).  Per-lane Makefile admits all OTHER lanes'
+  modules — see lane-split-protocol.md.  Lanes touching
+  `Commute.Chunk.fst` must serialize through B6 (sequential); the rest
+  are file-disjoint.
 
   Lane | Files | Effort | Risk | Sequential constraint
   -----|-------|--------|------|---------------------
@@ -158,13 +105,15 @@ PHASE 2 (below-trait, 7 lanes, parallel after Phase 1):
   Parallel: B1 ‖ B2 ‖ B3 ‖ B5 (no shared files).
   B4 is high-risk; 1-session spike then defer if blocked.
 
-PHASE 3 (above-trait, 8 lanes, parallel after Phase 2):
+═══════════════════════════════════════════════════════════════════
+PHASE 3 SCOPE — above-trait closure (8 lanes, parallel)
+═══════════════════════════════════════════════════════════════════
 
   Lane | Files | Effort | Depends on | Critical path?
   -----|-------|--------|------------|---------------
   A1   | src/serialize.rs, Chunk.fst (Phase 7c migration) | 1-2 sess | B6 | no
-  A2   | src/sampling.rs (Phase 7n migration)             | 1 sess   | none | no
-  A3   | src/polynomial.rs, Chunk.fst (USER-7 + 2 add fns)| 2 sess   | Phase 1 trait | no
+  A2   | src/sampling.rs (Phase 7n migration; combine with USER-10) | 1 sess | none | no
+  A3   | src/polynomial.rs, Chunk.fst (USER-7 + 2 add fns)| 2 sess | Phase 1 trait | no
   A4   | src/polynomial.rs (Phase 7.2 std_error_reduce)   | 1-2 sess | A3 templates | OFF (may stay admitted)
   A5   | src/invert_ntt.rs, Bridges.fst, Chunk.fst (USER-6) | 3 sess | Phase 2 trait stable | **YES**
   A6   | src/matrix.rs, Chunk.fst (compute_message etc.)   | 2 sess  | A3 + A5 | **YES**
@@ -174,51 +123,115 @@ PHASE 3 (above-trait, 8 lanes, parallel after Phase 2):
   Sequential: A5 → A6 → A7 → A8 (the critical path; ~9 sessions wall).
   Parallel with critical path: A1, A2, A3 can run alongside A5.
   Risk-tier: A4 may not converge — leave admitted if blocked, doesn't gate ind_cpa/ind_cca.
-  Sequential within parallel: A1 depends on B6; A3 depends on Phase 1 trait stability.
 
-COORDINATION:
+  Note: A2 should fold in USER-10 (rej_sample post wiring) since
+  the sampling lane is already touching the impl-side rejection loop.
 
-  • `Hacspec_ml_kem.Commute.Chunk.fst` is the hot file (touched by B6,
-    A1, A3, A5, A6).  Convention: each lane appends to a clearly-
-    marked `(* Phase 7X additions *)` section.  Never edit existing
-    lemma bodies.
-  • `Hacspec_ml_kem.Commute.Bridges.fst` is touched by A5 (and B4).
-    Sequence A5 after B4 if both run.
-  • Makefile is edited by A7 then A8 sequentially.
+═══════════════════════════════════════════════════════════════════
+USER-LANE WORK (parallel to all phases)
+═══════════════════════════════════════════════════════════════════
 
-MERGE ORDER back to `trait-opacify`:
+USER-1 — `lemma_compress_ciphertext_coefficient_fe_commute` (a.k.a. A8)
+  4-case Barrett-exactness enumeration; templated by USER-A5/A7 prior
+  work.  Anytime; gates Phase 7c (lane A1).
+
+USER-2 — `lemma_ntt_full_commute` (Tier-3 forward NTT composition)
+  Depends on Wave 3 / Phase 7b lemmas.
+
+USER-3 — `to_standard_domain` Montgomery inverse identity
+  Standalone modular arithmetic; anytime.
+
+USER-4 — AVX2 NTT-layer 1/2 SIMD bridges (Z3-blocked)
+  Mitigation paths in MLKEM_STATUS.md; high risk.
+
+USER-5 — `ntt_multiply` Tier-3 wrap (after USER-2).
+
+USER-6 — `invert_ntt_montgomery` strengthened post (after USER-2;
+  this is essentially lane A5).
+
+USER-7 — `subtract_reduce` body discharge (post-loop record-equality
+  bridge); 4 hypotheses (a)-(d) in MLKEM_STATUS.md; this is lane A3.
+
+USER-8 — Cluster 2 from_bytes / to_bytes BitVec wire-up (Phase 1
+  deferred; ~90 min).
+
+USER-9 — Cluster 3 serialize_5/11 + deserialize_5/11 trait post wire-up
+  (Phase 1 deferred; gated on AVX2 SIMD→BitVec bridge).
+  The 4 portable lemmas already exist (`a51ddbfc3`).
+
+USER-10 — Cluster 4 rej_sample post wire-up (Phase 1 deferred;
+  combine with lane A2).
+
+═══════════════════════════════════════════════════════════════════
+HARD RULES (carried over from Phase 1)
+═══════════════════════════════════════════════════════════════════
+
+R1 Phases 2 and 3 fan out across worktrees per lane-split-protocol.
+   Use `agent/<lane>` branch convention.
+R2 Maintain SD1 (mod-q opacity), SD2 (forall<N> over generic forall),
+   SD3 (opaque per-branch wrappers) per lane-split-protocol.md.
+R3 No new admits anywhere.  If a lane's discharge fails, roll back
+   the lane's commits and document.
+R4 ulimit -v 8388608, F* rlimit ≤ 800.
+R5 Inner loop: plain `make check/<Mod>.fst` from
+   `proofs/fstar/extraction/`.
+R6 Hard cap 1 session per lane (B-lanes) / 2-3 sessions per A-lane
+   (per the table above).  If a lane exceeds budget, STOP and document.
+R7 Don't bulk-delete `.checked` files — `make` handles staleness.
+   Surgical `rm` only the target's `.checked` when iterating, and even
+   then prefer `touch <file>.fst` to invalidate downstream.
+R8 fstar-mcp is unreliable on this branch (per Phase 0 study); use
+   plain `make` for the inner loop.
+
+═══════════════════════════════════════════════════════════════════
+COORDINATION CONVENTIONS
+═══════════════════════════════════════════════════════════════════
+
+`Hacspec_ml_kem.Commute.Chunk.fst` is the hot file (touched by B6,
+A1, A3, A5, A6).  Each lane appends to a clearly-marked `(* Phase 7X
+additions *)` section; never edit existing lemma bodies.
+
+`Hacspec_ml_kem.Commute.Bridges.fst` is touched by A5 (and B4).
+Sequence A5 after B4 if both run.
+
+Makefile is edited by A7 then A8 sequentially.
+
+Trait edits (`src/vector/traits.rs`) are FROZEN in Phase 2/3.  If you
+discover a finding, log it in `proofs/agent-status/lane-split-protocol.md`
+under "Open findings" — do NOT edit traits.rs.
+
+═══════════════════════════════════════════════════════════════════
+MERGE ORDER back to `trait-opacify`
+═══════════════════════════════════════════════════════════════════
 
   1. B1, B5 (low-risk file-disjoint) — clear backlog
   2. B6 (Chunk.fst foundation; gates Phase 3)
   3. B3, B2 (medium effort, fan out)
-  4. A2, A1 (Phase 3 disjoint pair)
+  4. A2, A1 (Phase 3 disjoint pair; A2 absorbs USER-10)
   5. A3 (sequential after B6 to serialize Chunk merges)
   6. A5 (sequential after A3)
   7. A6 → A7 → A8 (strictly sequential consumer chain)
   8. B4 (or descoped) — last, lowest priority
   9. A4 — opportunistic; can land any time after A3 if it converges
+  USER-8, USER-9 — anytime, low-priority cleanup.
 
 CRITICAL PATH WALL TIME (max-parallel):
-  Phase 1 (1 sess) → A5 (3) → A6 (2) → A7 (2) → A8 (2) ≈ 10 sessions
-
-For full lane briefs (40-word starter prompts), see
-`~/.claude/plans/immutable-snacking-dewdrop.md` §"Phase 2/3".
+  Phase 1 (✅ done) → A5 (3) → A6 (2) → A7 (2) → A8 (2) ≈ 9 sessions
 ```
 
 ---
 
 ## Why this prompt is structured this way
 
-- **Sprint state foreground**: every fresh agent needs to know what
-  phases are done and which is next.  Phase H is non-obvious (it's a
-  hygiene phase, not a feature) so its verdict is summarized.
-- **Resume protocol order matters**: plan file first (high-level), then
-  protocol (rules), then experiment (canonical loop), then status, then
-  log.  Each layer adds more detail.
-- **Clusters are explicitly staged**: Cluster 1 is do-immediately,
-  Cluster 3 is gated on a spike, Cluster 4 is "defer with intent".
-  This prevents the agent from sinking session time into Cluster 3 if
-  the spike fails.
-- **Hard caps at 90 min/cluster**: Phase 1's whole budget is ~1 session;
-  if a cluster runs over, the right move is to STOP rather than push
-  through.  This protects critical-path time for Phases 2-3.
+- **Sprint state foreground**: every fresh agent needs Phase 1's
+  partial outcome (what landed, what's deferred) up front.  Cluster 3's
+  partial state is non-obvious — the 4 lemmas exist as preparation but
+  the trait wiring is held.
+- **USER-8 / USER-9 / USER-10 are NEW**: Phase 1 deferrals get explicit
+  USER-N entries so they don't get lost in the agent-trackA log.
+- **Trait is FROZEN**: Phase 2/3 lanes must NOT touch traits.rs; any
+  trait gap they find goes to lane-split-protocol "Open findings" so
+  the trait owner can decide.
+- **Phase 2 ordering preserved**: B6 (Chunk.fst foundation) lands first
+  — same gate as before; Phase 1 doesn't change the inter-lane
+  ordering.
