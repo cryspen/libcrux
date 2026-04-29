@@ -6,7 +6,7 @@ use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
     Seq.length $serialized == 32 * (1 + v $gamma1_exponent) /\
     (forall (j:nat). j < 32 ==>
       Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
-        (pow2 (v $gamma1_exponent))
+        (pow2 (v $gamma1_exponent) - 1)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]

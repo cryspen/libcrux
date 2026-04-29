@@ -197,10 +197,12 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // (w in {18, 20}). For 8 lanes that's 18 or 20 bytes.
     // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
     // since the impl operates on the shifted (non-negative) representation.
+    // F-7 (2026-04-29): tighten upper bound to `pow2 d - 1` (strict `< pow2 d`)
+    // so the trait pre matches the free fns' `bounded x d` (= `< pow2 d`) exactly.
     #[hax_lib::requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent) - 1)
             (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -216,9 +218,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // Commitment: 4 bytes for gamma2 = 261888 (4-bit packing) or 6 for gamma2 = 95232 (6-bit).
     // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
     // since commitment values are the high half of decompose, in [0, 16) or [0, 44).
+    // F-7 (2026-04-29): tighten upper bound to `pow2 d - 1` (strict `< pow2 d`)
+    // so the trait pre matches the free fns' `bounded x d` (= `< pow2 d`) exactly.
     #[hax_lib::requires(fstar!(r#"
         (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized) - 1)
             (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]

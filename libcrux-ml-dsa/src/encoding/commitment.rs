@@ -5,7 +5,7 @@ use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
     (Seq.length $serialized == 128 \/ Seq.length $serialized == 192) /\
     (forall (j:nat). j < 32 ==>
       Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
-        (pow2 (Seq.length $serialized / 32))
+        (pow2 (Seq.length $serialized / 32) - 1)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -34,7 +34,7 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
     (forall (k:nat). k < Seq.length vector ==>
       (forall (j:nat). j < 32 ==>
         Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
-          (pow2 (v $ring_element_size / 32))
+          (pow2 (v $ring_element_size / 32) - 1)
           (i0._super_i2.f_repr (Seq.index (Seq.index vector k).f_simd_units j))))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -52,7 +52,7 @@ pub(crate) fn serialize_vector<SIMDUnit: Operations>(
               (forall (m:nat). m < Seq.length vector ==>
                 (forall (j:nat). j < 32 ==>
                   Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
-                    (pow2 (v ring_element_size / 32))
+                    (pow2 (v ring_element_size / 32) - 1)
                     (i0._super_i2.f_repr (Seq.index (Seq.index vector m).f_simd_units j))))"#
         ));
         serialize::<SIMDUnit>(
