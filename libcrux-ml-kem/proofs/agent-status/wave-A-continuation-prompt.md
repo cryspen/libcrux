@@ -1,9 +1,17 @@
-# Wave-A continuation prompt — close deferred lanes (B1, B2, B3, B5)
+# Wave-A continuation prompt — close deferred lanes (B1, B3) — agent-tractable subset
 
-Wave-A's first session (2026-04-29) landed B6 only.  Five lanes are
-deferred for admit-count cleanup.  Wave-B has launched in
-`~/libcrux-ml-kem-above-trait/`; this continuation runs in parallel
-in the original below-trait worktree.
+Wave-A's first session (2026-04-29) landed B6 only.  Of the 5
+deferred lanes, the user triaged 3 to USER-N (NTT-related Z3 walls
+best handled by user with smtprofiling): **B2 → USER-12**, **B5 → USER-11**,
+**B4 → USER-4** (already filed, descoped).  This continuation
+prompt covers the 2 remaining agent-tractable lanes (B1, B3).
+
+USER-8 and USER-9 are also agent-tractable (separate lanes, not
+covered by this prompt — USER-9 is already in flight by another
+agent per `serialize-prompt.md`; USER-8 is open for any agent).
+
+Wave-B has launched in `~/libcrux-ml-kem-above-trait/`; this
+continuation runs in parallel in the original below-trait worktree.
 
 **Worktree:** `/Users/karthik/libcrux-trait-opacify/`
 **Branch family:** `agent/lane-B<N>` per lane; merge to `trait-opacify`.
@@ -26,21 +34,36 @@ original below-trait worktree to close admit cleanup lanes that did
 not fit in the first session.
 
 ═══════════════════════════════════════════════════════════════════
-SCOPE — 4 deferred lanes (B6 already done; B4 descoped)
+SCOPE — 2 agent-tractable deferred lanes
 ═══════════════════════════════════════════════════════════════════
 
   Lane | Files | Effort | Risk | Status
   -----|-------|--------|------|--------
-  B5   | src/vector/portable.rs (op_ntt_multiply), src/vector/avx2.rs | 1-2 sess | medium (Z3) | spiked + reverted; see "B5 finding" below
   B1   | src/vector/portable/compress.rs (4 chunk wrappers + 1 primitive) | 2 sess | medium | not attempted
   B3   | src/vector/avx2.rs (7 admitted bridge lemmas), libcrux-intrinsics/...Avx2_extract.fst | 2 sess | low-med | not attempted
-  B2   | src/vector/portable.rs (op_ntt_layer_1_step + op_inv_ntt_layer_1_step) | 2 sess | medium-high | not attempted (4-zeta wall analog)
 
-  Recommended order:  B5 → B1 → B3 → B2.
+  Recommended order:  B1 → B3 (B1 has clearer cost-reward; B3 needs
+  a new decomposition lemma in Avx2_extract.fsti that's more invasive).
+
+  USER-LANE (excluded from this prompt; do NOT touch):
+    B5  → USER-11 (op_ntt_multiply panic_free; Z3 wall documented)
+    B2  → USER-12 (portable NTT layer 1 panic_free; 4-zeta wall)
+    B4  → USER-4  (AVX2 NTT layer 1/2 bridges; Z3 wall, descoped)
+
+  RELATED AGENT-LANE TASKS (separate prompts, not in scope here):
+    USER-8 — trait from_bytes/to_bytes (separate prompt or this session
+             can pick up after B1/B3).
+    USER-9 — serialize_5/11 trait wire-up (in flight by independent
+             agent per serialize-prompt.md).
 
 ═══════════════════════════════════════════════════════════════════
-B5 FINDING (from 2026-04-29 spike) — READ FIRST
+B5 FINDING (from 2026-04-29 spike) — REFERENCE ONLY (B5 → USER-11)
 ═══════════════════════════════════════════════════════════════════
+
+B5 was spiked + reverted; it is now USER-11.  This section is kept
+for cross-reference (especially the per-conjunct decomposition
+strategy, which may be applicable if B1's chunk wrappers exhibit
+similar Z3 saturation under split_queries).
 
 The first Wave-A session spiked B5 with the structurally-correct body
 proof and reverted at the 20-min cap.  The body proof shape that was
@@ -166,26 +189,6 @@ Discharge via:
 Pattern: each bridge connects the AVX2 primitive's BitVec lane post
 (`bit_vec_of_int_t_array r 8 i == vector ((i/N)*16 + i%N)`) to the
 trait's array-form post (`BitVecEq.int_t_array_bitwise_eq` at depth N).
-
-═══════════════════════════════════════════════════════════════════
-B2 SCOPE (Portable NTT layer 1)
-═══════════════════════════════════════════════════════════════════
-
-`src/vector/portable.rs:422` and `:661` — `op_ntt_layer_1_step` and
-`op_inv_ntt_layer_1_step` carry `--admit_smt_queries true`.  Body
-proofs are already written (8 `lemma_butterfly_pair_commute` calls
-+ per-group asserts + `forall4` intro).
-
-The Z3 4-zeta wall caused these to be admitted: at rlimit 800 +
-split_queries, sub-query #17 hung >10 min.  Hypothesis: the per-branch
-`p_layer_1` body uses a 4-way if-ladder for zeta selection that Z3
-case-splits per FE fact.
-
-UNLOCK PATTERN (from layer-2 inverse, commit `b7b49c358`): refactor
-to 4 per-branch lemmas with literal `b`, plus a per-lane wrapper
-under `--split_queries always`.  Mirror `lemma_inv_ntt_layer_2_step_branch_{0,1,2,3}_lane_bridge`
-+ `lemma_inv_ntt_layer_2_step_lane_bridge` + `lemma_inv_ntt_layer_2_step_to_hacspec`.
-Apply the same shape for forward layer 1 + inverse layer 1.
 
 ═══════════════════════════════════════════════════════════════════
 HARD RULES (carried over from wave-A-prompt)

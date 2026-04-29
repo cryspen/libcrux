@@ -182,7 +182,7 @@ agent can copy the style to extend the pattern to similar admits.
   composed into hacspec's `multiply_ntts`.
 - **Why after USER-2**: requires the Tier-3 layer-composition pattern.
 
-### USER-6 — `invert_ntt_montgomery` (after USER-2)
+### USER-6 — `invert_ntt_montgomery` (after USER-2) — **IN FLIGHT (Wave-B A5, critical path)**
 
 **`Invert_ntt.invert_ntt_montgomery`** post strengthening.
 
@@ -191,7 +191,7 @@ agent can copy the style to extend the pattern to similar admits.
 - **Math**: 7-layer inverse composition + Montgomery scale.
 - **Why after USER-2**: same Tier-3 template.
 
-### USER-7 — `subtract_reduce` body discharge (post-loop record-equality bridge)
+### USER-7 — `subtract_reduce` body discharge (post-loop record-equality bridge) — **IN FLIGHT (Wave-B A3)**
 
 **`Polynomial.subtract_reduce`** body; the strengthened post landed in
 commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
@@ -239,7 +239,7 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   `invert_ntt_montgomery`'s strengthened post (the original spike's
   question).
 
-### USER-8 — trait `from_bytes` / `to_bytes` post strengthening (Cluster 2 deferred)
+### USER-8 — trait `from_bytes` / `to_bytes` post strengthening (Cluster 2 deferred) — **AGENT-TRACTABLE**
 
 **`Operations::from_bytes` / `Operations::to_bytes`** in
 `libcrux-ml-kem/src/vector/traits.rs:1217-1224`.
@@ -260,7 +260,12 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   cannot land until both sides discharge cleanly.  Estimated 60-90 min
   per side.
 
-### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring (Cluster 3 partial)
+### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring (Cluster 3 partial) — **IN FLIGHT (agent)**
+
+(Independent agent operates per `proofs/agent-status/serialize-prompt.md`,
+running in this same below-trait worktree on a file-disjoint surface
+— `src/vector/portable/serialize.rs`.  Started by user
+post-`749b0136c`.  Original USER-9 brief follows for reference.)
 
 **Trait method declarations** in
 `libcrux-ml-kem/src/vector/traits.rs:1320-1342`.
@@ -293,7 +298,7 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   posts; downstream `Serialize.fst` migration (Phase 7c / A1) gains
   hacspec citations for these widths.
 
-### USER-10 — trait `rej_sample` post strengthening (Cluster 4 deferred)
+### USER-10 — trait `rej_sample` post strengthening (Cluster 4 deferred) — **IN FLIGHT (Wave-B A2)**
 
 **`Operations::rej_sample`** in
 `libcrux-ml-kem/src/vector/traits.rs:1352-1360`.
@@ -307,7 +312,11 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   see `Phase 7n` brief for the analogous `sample_from_uniform_distribution_next`
   pattern.  Best done in lane B-something or as part of A2.
 
-### USER-11 — drop `op_ntt_multiply` `panic_free` (Wave-A B5; Z3-walled)
+### USER-11 — drop `op_ntt_multiply` `panic_free` (Wave-A B5; Z3-walled) — **USER LANE** (NTT-related)
+
+(Reproducer + 3 path-forward strategies in original B5 finding below.
+Body proof shape is validated — math holds, Z3 saturation is the
+blocker.  Best handled by a user with smtprofiling.)
 
 **Wrappers**: `op_ntt_multiply` in `libcrux-ml-kem/src/vector/portable.rs:899`
 and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
@@ -342,6 +351,41 @@ and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
 - **Why USER-N**: 20-min cap exceeded; Z3 tuning is the bottleneck,
   not math.  A user with smtprofiling can pick the right strategy
   faster than agent-iteration on rlimit knob.
+
+### USER-12 — drop `--admit_smt_queries true` on portable NTT layer 1 (Wave-A B2; Z3-walled) — **USER LANE** (NTT-related)
+
+**Wrappers**: `op_ntt_layer_1_step` and `op_inv_ntt_layer_1_step` in
+`libcrux-ml-kem/src/vector/portable.rs:422` and `:661`.
+
+- **Status**: not attempted in Wave-A (deferred per 1-session budget +
+  documented Z3 wall).  Body proofs are already written (8
+  `lemma_butterfly_pair_commute` calls + per-group asserts +
+  `forall4` intro), but the 4-zeta-parallel wall causes Z3 to hang.
+- **Wall reproducer (per `portable.rs:397-421` admit comment, Phase 6
+  agent A 2026-04-27)**: at rlimit 800 + `--split_queries always`,
+  60 sub-queries closed in ~16 ms each, then a single sub-query
+  (one of the 4 per-branch `p_layer_1 b` asserts, b ∈ {0..3}) ran
+  >10 min without resolving before manual cancel.  Earlier rlimit
+  400 run failed cleanly with Error 19 in 4 min.
+- **Hypothesis**: per-branch `p_layer_1` body uses 4-way conditional
+  `if b=0 then zeta0 else if b=1 ...` to pick zeta, which Z3
+  case-splits on every per-lane FE-algebra fact.  Same shape as the
+  layer-2 inverse wall that was unlocked at commit `b7b49c358`.
+- **Path forward (RECOMMENDED)**: apply the layer-2-inverse unlock
+  pattern (commit `b7b49c358`) to forward layer 1 + inverse layer 1.
+  Refactor:
+  1. 4 per-branch lemmas in `Hacspec_ml_kem.Commute.Chunk.fst`,
+     each with literal `b ∈ {0..3}` so the if-ladder collapses
+     pre-SMT; each lemma calls 2 `lemma_butterfly_pair_commute` and
+     reveals the opaque branch_post for its concrete `b`.
+  2. Per-lane wrapper that dispatches to the right per-branch helper.
+  3. Per-vector composition under `--split_queries always` — Z3
+     splits the forall over 16 lanes into 16 cheap sub-queries.
+- **Sister issue**: USER-4 is the AVX2 mirror of this wall.  Both
+  may benefit from the same per-branch decomposition pattern.
+- **Why USER-N**: 4-zeta wall is Z3-saturation, not math.  Pattern is
+  proven (`b7b49c358`); applying it to layers 1 (forward + inverse)
+  is mechanical but ~2 sessions and best done with smtprofiling.
 
 ---
 
