@@ -39,6 +39,43 @@ body), record it here with:
 
 ### Open findings
 
+#### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE — RESOLVED above-trait via partial revert of c6c68bbca
+
+- **Filed by:** below-trait, after attempting Track 0 closure of the
+  `c6c68bbca` propagation gap.  Below-trait's commute-lemma extension
+  (`lemma_decompose_low_strict_lower_bound`) failed to discharge — the
+  strict-lower bound is not provable, because the bound is FALSE.
+- **Math:** FIPS 204 Algorithm 36 (Decompose) computes
+  `r_g = r_q mod^± (2γ2)` (in `(-γ2, γ2]`), then if `r_q - r_g == q - 1`
+  performs the special-case adjustment `r0 ← r_g - 1`.  In that branch
+  `r_g ∈ (-γ2, 0]` (forced by `r_q ≤ q - 1`), so `r0 ∈ [-γ2, -1]` —
+  **closed at the lower end**, including exactly `-γ2`.
+- **Concrete counter-example (γ2 = 95232):** `r_q = 8285185` →
+  `r_g_raw = 8285185 % 190464 = 95233 > γ2` → `r_g = -95231 = -γ2 + 1` →
+  `r_q - r_g = 8380416 = q - 1` (special case fires) → `r0 = r_g - 1 = -95232 = -γ2`.
+  The strict-lower predicate `-γ2 < r0` reduces to `-95232 < -95232`, FALSE.
+- **Why F-9 / F-10 / F-8 are unaffected:** `power2round` is pure
+  `mod^± (pow2 13)` with no special-case adjustment, so its `t0`
+  output stays in `(-pow2 12, pow2 12]` strictly.  `t0_serialize`
+  and `t0_deserialize` round-trip with that same range.  Only
+  `decompose` has the special-case adjustment that breaks
+  strict-lower.
+- **Above-trait fix (this commit):** revert ONLY the `decompose` portion
+  of `c6c68bbca`.  Restore closed `is_i32b_array_opaque γ2` for both
+  γ2 branches' `low_future` conjuncts in `src/simd/traits.rs`.
+  Strict-lower stays for `power2round` t0_future, `t0_serialize` pre,
+  `t0_deserialize` post — those three are mathematically correct.
+- **Below-trait posture:** the impl-side post in
+  `src/simd/portable/arithmetic.rs::decompose_element` already
+  carries the closed `r0 >= -γ2` bound (per below-trait's analysis,
+  line 593-600 there).  After this revert lands, below-trait can
+  remove its `decompose` strict-lower admit and re-enable the
+  closed-bound proof body that's already written.
+- **F-11 status:** the original F-11 RESOLVED entry below remains
+  RESOLVED for power2round/t0_serialize/t0_deserialize.  The
+  `decompose` portion of F-11 was incorrect and is now reverted via
+  F-13; the F-11 entry has been amended to note this.
+
 #### F-3 (2026-04-28) — encoding `*_serialize` trait pres use signed
 bound where free fns require non-negative
 
@@ -439,7 +476,17 @@ breaks `*_serialize` discharge — RESOLVED
 - **Status:** above-trait closed; below-trait cherry-pick produced as a
   standalone commit on the `ml-dsa-proofs` branch (see integration message).
 
-#### F-8 / F-9 / F-10 / F-11 (2026-04-29) — half-open `(-l, l]` predicate batch — RESOLVED above-trait
+#### F-8 / F-9 / F-10 / F-11 (2026-04-29) — half-open `(-l, l]` predicate batch — F-8/F-9/F-10 RESOLVED above-trait, F-11 PARTIALLY REVERTED (see F-13)
+
+> **Update 2026-04-29 (F-13):** the `decompose` portion of this batch
+> (F-11) was REVERTED.  FIPS 204 Algorithm 36's special-case
+> adjustment `r0 ← r0 - 1` allows `r0 = -γ2` exactly, which violates
+> the strict-lower bound.  Below-trait verified the counter-example
+> while attempting Track 0 closure.  See F-13 above for the math + the
+> revert commit.  F-11 below describes the originally-attempted fix
+> for historical context; the actual current state has `decompose`
+> back on the closed `is_i32b_array_opaque γ2` bound.  F-8 / F-9 / F-10
+> remain RESOLVED as described.
 
 - **Source:** filed below-trait at the end of Step 12 / Step 13.  Four
   related trait pres/posts on `Operations` were closed
