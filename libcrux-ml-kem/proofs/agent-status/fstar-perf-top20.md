@@ -327,6 +327,24 @@ old `Bridges.fst` hint cache no longer replays.
 `--record_hints`, then commit hints).  This should drop the 153 s
 back to ~3-5 s.
 
+**Update 2026-04-29 15:55 (post-merge):** hint re-record was attempted.
+Outcome was partial:
+
+| Lemma | Pre-record | Post-record | Notes |
+|---|---|---|---|
+| `lemma_ntt_layer_1_step_lane_bridge` | 35.6 s (Snap 1) | 224.7 s recording / TBD replay | 2 queries, 0 fail — hint replay should drop it |
+| `lemma_inv_ntt_layer_1_step_lane_bridge` | 57.9 s (history) | 29.3 s | 2 queries, hint-replay clean |
+| `lemma_inv_ntt_layer_2_step_lane_bridge` | 153.6 s (Snap 3) | **146.2 s** | 27 queries, **1 fail + 1 rlimit-sat** — hint replay does NOT fix |
+| `lemma_inv_ntt_layer_3_step_lane_bridge` | 43.4 s (history) | 31.5 s | 2 queries, hint-replay clean |
+
+The layer_2 lemma's slowness is NOT a hint-cache problem — Z3 has a
+persistent quantifier wall.  This matches A5's filing of layer_2 as
+USER-13.  The proper fix is the SD3 opaque-wrapper pattern (per
+`feedback_layer2_branch_post_z3_unlock`): wrap the per-chunk post in
+`[@@ "opaque_to_smt"]` and use 4 per-branch helpers + per-lane wrapper
++ `--split_queries always`.  This is the same pattern that closed the
+forward layer_2 in commit `b7b49c358`.
+
 ### Other notable changes vs Snapshot 1
 
 - `to_unsigned_representative` 8.5 s → 22.1 s (2.6×) — same hint
