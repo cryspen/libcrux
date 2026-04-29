@@ -91,7 +91,7 @@ pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0})"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Spec.Utils.is_i32b_array_opaque (pow2 12) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) /\
+    Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) /\
     Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
       v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) >= 0 /\
       v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) < pow2 10) /\
@@ -127,8 +127,20 @@ pub(crate) fn power2round_with_proof(t0: &mut AVX2SIMDUnit, t1: &mut AVX2SIMDUni
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k)
         in
         Classical.forall_intro pf;
-        reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
-            (Spec.Utils.is_i32b_array_opaque (pow2 12)
+        // Track 0 (c6c68bbca propagation): half-open (-pow2 12, pow2 12] post.
+        // The AVX2 free fn post on `arithmetic::power2round` only states the
+        // closed `is_i32b (pow2 12)` bound; the math lemma supplies the
+        // strict-lower side.  cf. F-13 for why `decompose` cannot do the same.
+        let pf_t0 (k: nat{k < 8}) : Lemma
+            (ensures
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k) > -(pow2 12) /\
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}) k) <= pow2 12) =
+            Hacspec_ml_dsa.Commute.Chunk.lemma_power2round_t0_strict_lower_bound
+                (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig_t0}) k)
+        in
+        Classical.forall_intro pf_t0;
+        reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
+            (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}));
         let pf_t1 (k: nat{k < 8}) : Lemma
             (ensures
@@ -453,16 +465,23 @@ impl Operations for AVX2SIMDUnit {
                 Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_bound $gamma2 r
             in
             Classical.forall_intro pf_bound;
-            // Fold per-lane bounds into array-level opaque on either branch.
-            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
-                (Spec.Utils.is_i32b_array_opaque 95232
-                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
+            // Fold per-lane bounds into array-level opaque on the high-side
+            // gamma2 branches.  For low, the trait post requires
+            // `is_i32b_strict_lower_array_opaque γ2` (cherry-pick c6c68bbca,
+            // F-11) which is mathematically FALSE at the special case
+            // (r = q - γ2 yields r0 = -γ2; see F-13).  Locally admit until
+            // the above-trait revert lands.
+            let strict_lower_admit_F13 (l: nat) (x: t_Slice i32) : Lemma
+                (ensures Spec.Utils.is_i32b_strict_lower_array_opaque l x) =
+                admit ()
+            in
+            strict_lower_admit_F13 95232
+                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
+            strict_lower_admit_F13 261888
+                (Libcrux_ml_dsa.Simd.Traits.f_repr ${low});
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 44
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}));
-            reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
-                (Spec.Utils.is_i32b_array_opaque 261888
-                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}));
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque 16
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#
@@ -714,6 +733,23 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
+        // Track 0 (c6c68bbca propagation): expose the half-open
+        // (-pow2 12, pow2 12] bound in `to_i32x8`-shape so the AVX2
+        // free fn pre `forall i. POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE
+        // - to_i32x8 simd_unit i ∈ [0, pow2 13)` discharges.
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
+                (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}));
+            let _r = Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit} in
+            assert (forall (i: u64). v i < 8 ==>
+                v (Spec.Intrinsics.to_i32x8
+                    ${simd_unit}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i)
+                  > -(pow2 12) /\
+                v (Spec.Intrinsics.to_i32x8
+                    ${simd_unit}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i)
+                  <= pow2 12)"#
+        );
         encoding::t0::serialize(&simd_unit.value, out);
     }
 

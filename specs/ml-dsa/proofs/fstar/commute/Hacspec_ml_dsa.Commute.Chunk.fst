@@ -193,6 +193,34 @@ let lemma_power2round_t1_bound (input: i32)
     end
 #pop-options
 
+(* Math lemma: for any i32 input, the t0 component of
+   `Spec.MLDSA.Math.power2round` lies in `(-pow2 12, pow2 12]` (half-open).
+   Used by `power2round_with_proof` to discharge the trait post's
+   `is_i32b_strict_lower_array_opaque (pow2 12) t0_future` conjunct.
+
+   Reasoning: representative = (v input) % q ∈ [0, q-1].
+     t0 = mod_p representative (pow2 13).
+     mod_p sets m = representative % (pow2 13) ∈ [0, pow2 13);
+     if m > pow2 12 then t0 = m - pow2 13 ∈ (-pow2 12, 0)
+     else (m <= pow2 12) t0 = m ∈ [0, pow2 12].
+   Combined: t0 ∈ (-pow2 12, pow2 12].  Unlike `decompose`, there is
+   no special-case adjustment, so the half-open bound holds (cf. F-13). *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_power2round_t0_strict_lower_bound (input: i32)
+    : Lemma
+        (let (t0_s, _) = Spec.MLDSA.Math.power2round (v input) in
+         -pow2 12 < t0_s /\ t0_s <= pow2 12)
+  = let q : pos = 8380417 in
+    let p : pos = pow2 13 in
+    assert (p == 8192);
+    assert (pow2 12 == 4096);
+    let representative = (v input) % q in
+    L.lemma_mod_lt (v input) q;
+    let m = representative % p in
+    L.lemma_mod_lt representative p;
+    assert (0 <= m /\ m < p)
+#pop-options
+
 (* Bridge: convert the AVX2 free fn post `barrett_red(shift_left_opaque
    input 13)` into the relaxed
    `shift_left_then_reduce_lane_post` (centered-Barrett bound + mod-q

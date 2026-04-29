@@ -28,6 +28,74 @@ be moved to `fstar-perf-top20.archive.md` if the file gets long.
 
 ---
 
+## Snapshot 2026-04-29 (Step 14 Track 0 close, post-cascade-skip)
+
+Source: `/tmp/track0-attempt1.log` after Track 0 c6c68bbca propagation
+(F-13 filed, power2round + AVX2 t0_serialize closed strict-lower,
+decompose strict-lower locally admitted).  `touch-unchanged-checked.sh`
+skipped 102 unchanged modules (NTT/Invntt cascade not re-verified);
+sample is the 35 functions across 3 modules that DID re-verify.
+
+Build: 75 modules invoked, [CHECK]=27, [ADMIT]=48, 0 F\* errors,
+0 make-level failures.
+
+### Top-20 per-function totals
+
+| # | Function | Module | total (s) | max query (ms) | queries | flags |
+|---|---|---|---:|---:|---:|---|
+| 1 | `lemma_mont_mul_bound_and_mod_q` | `H_md.Commute.Chunk` | 283.24 | 283235 | 1 | — |
+| 2 | `impl_1` | `L_md.Simd.Avx2` | 56.18 | 13964 | 600 | FAILED-then-OK |
+| 3 | `impl_1` | `L_md.Simd.Portable` | 35.49 | 9198 | 538 | FAILED-then-OK |
+| 4 | `reduce_with_proof` | `L_md.Simd.Portable` | 19.95 | 17531 | 106 | FAILED-then-OK |
+| 5 | `power2round_with_proof` | `L_md.Simd.Avx2` | 2.50 | 2364 | 2 | FAILED-then-OK |
+| 6 | `lemma_use_hint_lane_commute_conditional` | `H_md.Commute.Chunk` | 2.47 | 2472 | 1 | — |
+| 7 | `lemma_power2round_lane_commute` | `H_md.Commute.Chunk` | 1.04 | 1044 | 1 | — |
+| 8 | `reduce_with_proof` | `L_md.Simd.Avx2` | 0.81 | 718 | 2 | — |
+| 9 | `power2round_with_proof` | `L_md.Simd.Portable` | 0.61 | 313 | 2 | FAILED-then-OK |
+| 10 | `lemma_barrett_red_bound_and_mod_q` | `H_md.Commute.Chunk` | 0.46 | 456 | 1 | — |
+| 11 | `lemma_decompose_bridge` | `H_md.Commute.Chunk` | 0.33 | 332 | 1 | — |
+| 12 | `lemma_spec_decompose_r1_bound` | `H_md.Commute.Chunk` | 0.24 | 238 | 1 | — |
+| 13 | `lemma_compute_hint_bound_aux` | `H_md.Commute.Chunk` | 0.23 | 141 | 2 | — |
+| 14 | `lemma_shift_left_then_reduce_lane_commute` | `H_md.Commute.Chunk` | 0.21 | 214 | 1 | — |
+| 15 | `lemma_mod_pm_eq_mod_p` | `H_md.Commute.Chunk` | 0.21 | 211 | 1 | — |
+| 16 | `lemma_shift_left_then_reduce_lane_commute_mod_q` | `H_md.Commute.Chunk` | 0.21 | 209 | 1 | — |
+| 17 | `lemma_power2round_t1_bound` | `H_md.Commute.Chunk` | 0.17 | 175 | 1 | — |
+| 18 | `lemma_compute_hint_bound` | `H_md.Commute.Chunk` | 0.17 | 87 | 2 | — |
+| 19 | `infinity_norm_exceeds_with_proof` | `L_md.Simd.Avx2` | 0.16 | 163 | 1 | — |
+| 20 | `infinity_norm_exceeds_with_proof` | `L_md.Simd.Portable` | 0.15 | 151 | 1 | — |
+
+### Top module totals
+
+| # | Module | total (s) | functions tracked |
+|---|---|---:|---:|
+| 1 | `H_md.Commute.Chunk` | 289.89 | 22 |
+| 2 | `L_md.Simd.Avx2` | 59.87 | 6 |
+| 3 | `L_md.Simd.Portable` | 56.53 | 7 |
+
+_Sample size: 1281 Query-stats lines, 406s total Z3 time, across 35
+functions in 3 modules.  The new lemma
+`lemma_power2round_t0_strict_lower_bound` ran in 0.11 s with 1 query —
+not in top 20.  Power2round_with_proof on AVX2 split into 2 queries
+(was 1 prior to Track 0); first sub-query failed with "incomplete
+quantifiers" then the split succeeded — 2.5 s total, used rlimit
+21.6/80, safe margin._
+
+### Notes / actions
+
+1. **`lemma_mont_mul_bound_and_mod_q` is the single biggest cost
+   (283 s, 1 query, max 283 s).**  This lemma has been at the top
+   for several snapshots; remains the priority for future
+   optimization (factor sub-lemmas, lower fuel/ifuel, or move to
+   a hint-cached separate query).  Track 0 did not change this.
+2. **AVX2 power2round_with_proof split-query overhead** (1 → 2
+   queries for a +0.5 s cost) is the price of adding the strict-lower
+   derivation via the new math lemma.  Acceptable.
+3. **`reduce_with_proof` Portable max single query 17.5 s** is the
+   second hot spot after mont_mul.  If this regresses, the mont_mul
+   factor approach (separate lemma + single SMTPat) likely applies.
+
+---
+
 ## Snapshot 2026-04-28 (Step 9 mid-cascade, partial)
 
 Source: `/tmp/sltr-portable.log` (in-flight Portable rebuild for

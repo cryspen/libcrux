@@ -39,6 +39,70 @@ body), record it here with:
 
 ### Open findings
 
+#### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE at the special case
+
+- **Affected method:** `decompose` post (`src/simd/traits.rs:76,79`),
+  cherry-picked at `c6c68bbca` as part of the F-8 / F-9 / F-10 / F-11
+  half-open `(-l, l]` predicate batch:
+  ```
+  ((v $gamma2 == v GAMMA2_V95_232 ==>
+      Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (f_repr ${low}_future) /\ ...) /\
+   (v $gamma2 == v GAMMA2_V261_888 ==>
+      Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (f_repr ${low}_future) /\ ...))
+  ```
+  After revealing the opaque, this requires
+  `forall i. -γ2 < v low[i] /\ v low[i] <= γ2` (strict on lower).
+- **Gap:** FIPS 204 Algorithm 36 (Decompose) computes
+  ```
+  r_q = r mod q;  r_g = r_q mod^± (2γ2);  // (-γ2, γ2]
+  if r_q - r_g == q - 1 then return (0, r_g - 1)   // SPECIAL CASE
+  else return ((r_q - r_g) / (2γ2), r_g)
+  ```
+  In the special case, `r0 = r_g - 1` with `r_g ∈ (-γ2, 0]` (forced by
+  `r_q ≤ q - 1`).  Thus `r0 ∈ [-γ2, -1]` — closed at the lower end.
+  The strict-lower bound `-γ2 < r0` is FALSE when `r_g = -γ2 + 1`.
+- **Concrete counter-example (γ2 = 95232):** with `r_q = 8285185`:
+  - `twog = 190464`, `r_g_raw = 8285185 % 190464 = 95233 > γ2 = 95232`.
+  - `r_g = 95233 - 190464 = -95231 = -γ2 + 1`.
+  - `r_q - r_g = 8285185 + 95231 = 8380416 = q - 1` → SPECIAL CASE.
+  - `r0 = r_g - 1 = -95232 = -γ2`.
+  - Strict-lower predicate: `-γ2 < r0` ⇔ `-95232 < -95232`, **FALSE**.
+- **Impl-side post agrees with closed bound:**
+  `src/simd/portable/arithmetic.rs::decompose_element` (line 593-600)
+  has explicit ensures that admits `r0 = -γ2` in the special case:
+  ```
+  (if cond then (v $r0 >= -(v $gamma2) /\ v $r0 < 0)
+   else (v $r0 > -(v $gamma2) /\ v $r0 <= v $gamma2))
+  ```
+  i.e. closed lower in the special branch.  The impl is correct; the
+  trait post over-tightened.
+- **Why F-11's recommendation was wrong:** the F-11 finding (resolved
+  via c6c68bbca) claimed FIPS 204 Algorithm 36 produces `r0 ∈ (-γ2, γ2]`
+  half-open.  This conflated the *intermediate* `r_g = mod^±(r_q, 2γ2)`
+  (which is in `(-γ2, γ2]`) with the *final* `r0`, which is `r_g - 1` in
+  the special branch and so reaches `-γ2`.
+- **Why F-8 (t0_serialize), F-9 (power2round t0), F-10 (t0_deserialize)
+  are unaffected:** `power2round` is just `mod^± representative (pow2 13)`
+  with no special-case adjustment, so `t0 ∈ (-pow2 12, pow2 12]` strict.
+  `t0_serialize` / `t0_deserialize` round-trip with this same range.
+  Only `decompose`'s post inherited the special-case adjustment, which
+  breaks strict-lower.
+- **Recommended fix on the above-trait side:** revert *just* the
+  `decompose` portion of `c6c68bbca`, restoring closed
+  `is_i32b_array_opaque γ2` for both gamma2 branches' `low_future`
+  conjuncts.  Keep the strict-lower swap for `power2round`,
+  `t0_serialize`, `t0_deserialize` — those three are mathematically
+  correct.
+- **Below-trait posture (this commit):** Track 0 closes power2round +
+  t0_serialize cleanly under strict-lower.  The decompose trait method
+  body in `src/simd/portable.rs` and `src/simd/avx2.rs` cannot
+  discharge the strict-lower conjunct; the body uses
+  `hax_lib::fstar!("admit ()")` on the strict-lower part of the post,
+  with a comment pointing at this finding.  Once the above-trait
+  revert lands, the admit can be removed and the existing
+  closed-bound proof body (already written, currently dead-coded
+  alongside the admit) re-enabled.
+
 #### F-3 (2026-04-28) — encoding `*_serialize` trait pres use signed
 bound where free fns require non-negative
 
