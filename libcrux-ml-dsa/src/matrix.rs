@@ -165,7 +165,7 @@ pub(crate) fn vector_times_ring_element<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"
     Seq.length $lhs >= v $dimension /\
     Seq.length $rhs >= v $dimension /\
