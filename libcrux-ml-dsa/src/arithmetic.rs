@@ -23,10 +23,14 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\ 
+#[hax_lib::requires(fstar!(r#"v $SHIFT_BY == 13 /\
         (forall i. forall j.
             v (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) j) >= 0 /\
             v (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) j) <= 261631)"#))]
+#[hax_lib::ensures(|_| fstar!(r#"
+        (forall (i:nat). i < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v ${crate::simd::traits::specs::FIELD_MAX})
+                (i0._super_i2.f_repr (Seq.index ${re}_future.f_simd_units i)))"#))]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
@@ -35,11 +39,26 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
 
     for i in 0..re.simd_units.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"
-            forall j. j >= v i ==> Seq.index re.f_simd_units j == Seq.index old_re.f_simd_units j"#
+            r#"v i <= 32 /\
+              (forall (j:nat). j >= v i /\ j < 32 ==>
+                  Seq.index re.f_simd_units j == Seq.index old_re.f_simd_units j) /\
+              (forall (j:nat). j < v i ==>
+                  Spec.Utils.is_i32b_array_opaque (v ${crate::simd::traits::specs::FIELD_MAX})
+                      (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#
         ));
 
         SIMDUnit::shift_left_then_reduce::<SHIFT_BY>(&mut re.simd_units[i]);
+        hax_lib::fstar!(r#"
+          let lane_post (j:nat{j < 8}) :
+            Lemma (Spec.Utils.is_i32b 8380416
+                     (Seq.index (i0._super_i2.f_repr (Seq.index ${re}.f_simd_units (v ${i}))) j)) =
+            assert (Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
+                      (Seq.index (i0._super_i2.f_repr (Seq.index ${old_re}.f_simd_units (v ${i}))) j)
+                      (Seq.index (i0._super_i2.f_repr (Seq.index ${re}.f_simd_units (v ${i}))) j))
+          in
+          Classical.forall_intro lane_post;
+          reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque
+        "#);
     }
 }
 
