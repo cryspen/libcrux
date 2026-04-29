@@ -674,12 +674,14 @@ let ntt_multiply_branch_post
         // lane either stays put or drops by q, preserving the residue
         // class mod q.  This lets Layer-1 commutativity proofs cite the
         // residue equation directly (the same shape barrett_reduce uses).
+        // Mod-q residue is wrapped in the opaque `mod_q_eq` to keep raw
+        // `% 3329` from leaking above the trait — see Hacspec_ml_kem.ModQ.
         hax_lib::fstar_prop_expr!(
             r#"forall i.
                 let x = Seq.index $vec i in
                 let y = Seq.index $result i in
                 ((v y == v x - 3329 \/ v y == v x) /\
-                 (v y % 3329 == v x % 3329))"#
+                 Hacspec_ml_kem.ModQ.mod_q_eq (v y) (v x))"#
         )
     }
 
@@ -690,8 +692,9 @@ let ntt_multiply_branch_post
     pub(crate) fn barrett_reduce_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-                (forall i. (v (Seq.index ${result} i) % 3329) == 
-                           (v (Seq.index ${vec} i) % 3329))"#
+                (forall i. Hacspec_ml_kem.ModQ.mod_q_eq
+                             (v (Seq.index ${result} i))
+                             (v (Seq.index ${vec} i)))"#
         )
     }
 
@@ -706,8 +709,9 @@ let ntt_multiply_branch_post
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"is_i16b_array_opaque 3328 ${result} /\
-                (forall i. ((v (Seq.index ${result} i) % 3329)==
-                            (v (Seq.index ${vec} i) * v ${c} * 169) % 3329))"#
+                (forall i. Hacspec_ml_kem.ModQ.mod_q_eq
+                             (v (Seq.index ${result} i))
+                             (v (Seq.index ${vec} i) * v ${c} * 169))"#
         )
     }
 
@@ -723,7 +727,7 @@ let ntt_multiply_branch_post
             r#"forall i.
                 let x = Seq.index ${vec} i in
                 let y = Seq.index ${result} i in
-                (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329))"#
+                (v y >= 0 /\ v y <= 3328 /\ Hacspec_ml_kem.ModQ.mod_q_eq (v y) (v x))"#
         )
     }
 

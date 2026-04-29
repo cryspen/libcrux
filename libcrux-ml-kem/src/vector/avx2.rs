@@ -127,6 +127,22 @@ fn op_cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
                      (fun (x:i16) -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
                      (repr ${vector}))"#
     );
+    // Fold `v y % 3329 == v x % 3329` (provided by the underlying primitive)
+    // into the opaque `mod_q_eq` form expected by the trait post.
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vector}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
     result
 }
 
@@ -138,9 +154,24 @@ fn op_barrett_reduce(vector: SIMD256Vector) -> SIMD256Vector {
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
-    SIMD256Vector {
+    let result = SIMD256Vector {
         elements: arithmetic::barrett_reduce(vector.elements),
-    }
+    };
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vector}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[inline(always)]
@@ -151,9 +182,24 @@ fn op_montgomery_multiply_by_constant(vector: SIMD256Vector, constant: i16) -> S
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
-    SIMD256Vector {
+    let result = SIMD256Vector {
         elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
-    }
+    };
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169)
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[inline(always)]
@@ -164,9 +210,24 @@ fn op_to_unsigned_representative(a: SIMD256Vector) -> SIMD256Vector {
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
-    SIMD256Vector {
+    let result = SIMD256Vector {
         elements: arithmetic::to_unsigned_representative(a.elements),
-    }
+    };
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${a}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${a}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[inline(always)]

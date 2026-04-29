@@ -139,13 +139,31 @@ fn op_cond_subtract_3329(vec: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
-    cond_subtract_3329(vec)
+    let result = cond_subtract_3329(vec);
+    // Underlying primitive provides `v y % 3329 == v x % 3329`; fold to
+    // the opaque `mod_q_eq` form expected by the trait post.
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vec}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vec}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
-            (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) ==
-                       (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
+            (forall i. Hacspec_ml_kem.ModQ.mod_q_eq
+                         (v (Seq.index (impl.f_repr ${result}) i))
+                         (v (Seq.index (impl.f_repr ${vector}) i)))"#))]
 fn op_barrett_reduce(vector: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
@@ -155,32 +173,79 @@ fn op_barrett_reduce(vector: PortableVector) -> PortableVector {
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
-    barrett_reduce(vector)
+    let result = barrett_reduce(vector);
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vector}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
-            (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
-                                   (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
+            (forall i. i < 16 ==>
+              Hacspec_ml_kem.ModQ.mod_q_eq
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169))"#))]
 fn op_montgomery_multiply_by_constant(vector: PortableVector, constant: i16) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
-    montgomery_multiply_by_constant(vector, constant.classify())
+    let result = montgomery_multiply_by_constant(vector, constant.classify());
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169)
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
                             (let x = Seq.index (impl.f_repr ${a}) i in
                              let y = Seq.index (impl.f_repr ${result}) i in
-                             (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+                             (v y >= 0 /\ v y <= 3328 /\ Hacspec_ml_kem.ModQ.mod_q_eq (v y) (v x)))"#))]
 fn op_to_unsigned_representative(a: PortableVector) -> PortableVector {
     hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
-    to_unsigned_representative(a)
+    let result = to_unsigned_representative(a);
+    hax_lib::fstar!(
+        r#"
+        let aux (i: nat) : Lemma (i < 16 ==>
+            Hacspec_ml_kem.ModQ.mod_q_eq
+              (v (Seq.index (impl.f_repr ${result}) i))
+              (v (Seq.index (impl.f_repr ${a}) i)))
+          = if i < 16 then
+              Hacspec_ml_kem.ModQ.lemma_mod_q_eq_intro
+                (v (Seq.index (impl.f_repr ${result}) i))
+                (v (Seq.index (impl.f_repr ${a}) i))
+        in
+        Classical.forall_intro aux
+        "#
+    );
+    result
 }
 
 // Compress / decompress.  Wrappers bridge the underlying primitive's
@@ -923,27 +988,20 @@ impl Operations for PortableVector {
         op_cond_subtract_3329(vec)
     }
 
-    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296 (impl.f_repr ${vector})"#))]
-    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
-                (forall i. (v (Seq.index (impl.f_repr ${result}) i) % 3329) ==
-                           (v (Seq.index (impl.f_repr ${vector})i) % 3329))"#))]
+    #[requires(spec::barrett_reduce_pre(&vector.repr()))]
+    #[ensures(|result| spec::barrett_reduce_post(&vector.repr(), &result.repr()))]
     fn barrett_reduce(vector: Self) -> Self {
         op_barrett_reduce(vector)
     }
 
-    #[requires(fstar!(r#"Spec.Utils.is_i16b 1664 $constant"#))]
-    #[ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr ${result}) /\
-                (forall i. i < 16 ==> ((v (Seq.index (impl.f_repr ${result}) i) % 3329)==
-                                       (v (Seq.index (impl.f_repr ${vector}) i) * v ${constant} * 169) % 3329))"#))]
+    #[requires(spec::montgomery_multiply_by_constant_pre(&vector.repr(), constant))]
+    #[ensures(|result| spec::montgomery_multiply_by_constant_post(&vector.repr(), constant, &result.repr()))]
     fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
         op_montgomery_multiply_by_constant(vector, constant)
     }
 
-    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328 (impl.f_repr $a)"#))]
-    #[ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
-                                (let x = Seq.index (impl.f_repr ${a}) i in
-                                 let y = Seq.index (impl.f_repr ${result}) i in
-                                 (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
+    #[requires(spec::to_unsigned_representative_pre(&a.repr()))]
+    #[ensures(|result| spec::to_unsigned_representative_post(&a.repr(), &result.repr()))]
     fn to_unsigned_representative(a: Self) -> Self {
         op_to_unsigned_representative(a)
     }

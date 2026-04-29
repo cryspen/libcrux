@@ -333,42 +333,12 @@ val to_standard_domain
         fun result ->
           let result:v_T = result in
           Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_T (mk_usize 3328) result /\
-          (forall (i: usize).
-              b2t (i <. mk_usize 16 <: bool) ==>
-              b2t
-              ((Rust_primitives.Hax.Int.from_machine (((Libcrux_ml_kem.Vector.Traits.f_repr #v_T
-                            #FStar.Tactics.Typeclasses.solve
-                            result
-                          <:
-                          t_Array i16 (mk_usize 16)).[ i ]
-                        <:
-                        i16) %!
-                      mk_i16 3329
-                      <:
-                      i16)
-                  <:
-                  Hax_lib.Int.t_Int) =
-                (Hax_lib.Int.impl_Int__rem_euclid (((Rust_primitives.Hax.Int.from_machine ((Libcrux_ml_kem.Vector.Traits.f_repr
-                                  #v_T
-                                  #FStar.Tactics.Typeclasses.solve
-                                  vector
-                                <:
-                                t_Array i16 (mk_usize 16)).[ i ]
-                              <:
-                              i16)
-                          <:
-                          Hax_lib.Int.t_Int) *
-                        (Rust_primitives.Hax.Int.from_machine (mk_i32 1353) <: Hax_lib.Int.t_Int)
-                        <:
-                        Hax_lib.Int.t_Int) *
-                      (Rust_primitives.Hax.Int.from_machine (mk_i32 169) <: Hax_lib.Int.t_Int)
-                      <:
-                      Hax_lib.Int.t_Int)
-                    (Rust_primitives.Hax.Int.from_machine (mk_i32 3329) <: Hax_lib.Int.t_Int)
-                  <:
-                  Hax_lib.Int.t_Int)
-                <:
-                bool)))
+          (forall (i: nat).
+              i < 16 ==>
+              Hacspec_ml_kem.ModQ.mod_q_eq (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr #v_T
+                            result)
+                        i))
+                (v (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr #v_T vector) i) * 1353 * 169)))
 
 /// Compute `to_standard_domain(myself) + error` lane-wise — different
 /// fused-finalize pattern from the three INTT-track reduce fns above.

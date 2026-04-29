@@ -3,6 +3,7 @@ module Hacspec_ml_kem.Commute.Chunk
 open FStar.Mul
 open Core_models
 open Libcrux_ml_kem.Vector.Traits.Spec
+open Hacspec_ml_kem.ModQ
 
 (* Layer 0 — field-element scalar commute lemmas.
    Each consumes an existing impl post of the form `v r % 3329 == <eqn>`
@@ -17,6 +18,7 @@ module TS = Libcrux_ml_kem.Vector.Traits.Spec
 module N  = Hacspec_ml_kem.Ntt
 module IN = Hacspec_ml_kem.Invert_ntt
 module CP = Hacspec_ml_kem.Compress
+module MQ = Hacspec_ml_kem.ModQ
 
 (* Basic sanity: the two lifts produce valid FEs by construction. *)
 let lemma_i16_to_spec_fe_bounded (x: i16) :
@@ -835,6 +837,7 @@ let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
       = if j < 16 then begin
           lane_mont r_arr j;
           lane_mont vec_arr j;
+          lemma_mod_q_eq_unfold (v (Seq.index r_arr j)) (v (Seq.index vec_arr j) * v c * 169);
           lemma_mont_mul_fe_commute_mont_mont (Seq.index vec_arr j) c (Seq.index r_arr j)
         end in
     Classical.forall_intro aux
@@ -862,6 +865,7 @@ let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_mont vec_arr j;
+          lemma_mod_q_eq_unfold (v (Seq.index r_arr j)) (v (Seq.index vec_arr j) * v c * 169);
           lemma_mont_mul_fe_commute_mont_plain (Seq.index vec_arr j) c (Seq.index r_arr j)
         end in
     Classical.forall_intro aux
@@ -888,6 +892,7 @@ let lemma_barrett_reduce_chunk_commutes
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain vec_arr j;
+          lemma_mod_q_eq_unfold (v (Seq.index r_arr j)) (v (Seq.index vec_arr j));
           lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
         end in
     Classical.forall_intro aux;
@@ -910,6 +915,7 @@ let lemma_cond_subtract_3329_chunk_commutes
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain vec_arr j;
+          lemma_mod_q_eq_unfold (v (Seq.index r_arr j)) (v (Seq.index vec_arr j));
           lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
         end in
     Classical.forall_intro aux;
@@ -933,6 +939,7 @@ let lemma_to_unsigned_representative_chunk_commutes
       = if j < 16 then begin
           let x = Seq.index vec_arr j in
           let y = Seq.index r_arr j in
+          lemma_mod_q_eq_unfold (v y) (v x);
           assert (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329));
           lane_plain r_arr j;
           lane_plain vec_arr j;
@@ -1405,6 +1412,7 @@ let lemma_poly_barrett_reduce_commute
           (* From requires (instantiated at k): `barrett_reduce_post m_arr r_arr`,
              which gives `v r_arr.[l] % 3329 == v m_arr.[l] % 3329`. *)
           assert (TS.barrett_reduce_post m_arr r_arr);
+          lemma_mod_q_eq_unfold (v (Seq.index r_arr l)) (v (Seq.index m_arr l));
           assert (v (Seq.index r_arr l) % 3329 == v (Seq.index m_arr l) % 3329);
           lemma_barrett_fe_commute (Seq.index m_arr l) (Seq.index r_arr l);
           poly_lane_plain myself j;
@@ -1761,13 +1769,22 @@ let lemma_subtract_reduce_iter
           P.impl_FieldElement__sub
             (i16_to_spec_fe (Seq.index myself_chunk k))
             (P.impl_FieldElement__mul (mont_i16_to_spec_fe (Seq.index b_chunk_in k)) fe_1441))
-      = if k < 16 then
+      = if k < 16 then begin
+          (* Unfold mod_q_eq from the trait posts into raw `% 3329` so the
+             inner finalize lemma's preconditions match. *)
+          lemma_mod_q_eq_unfold
+            (v (Seq.index cnf_chunk k))
+            (v (Seq.index b_chunk_in k) * v (mk_i16 1441) * 169);
+          lemma_mod_q_eq_unfold
+            (v (Seq.index red_chunk k))
+            (v (Seq.index diff_chunk k));
           lemma_subtract_reduce_finalize_fe
             (Seq.index myself_chunk k)
             (Seq.index b_chunk_in k)
             (Seq.index cnf_chunk k)
             (Seq.index diff_chunk k)
             (Seq.index red_chunk k)
+        end
     in
     Classical.forall_intro aux;
     lemma_subtract_reduce_finalize_chunk_intro myself_chunk red_chunk b_chunk_in
