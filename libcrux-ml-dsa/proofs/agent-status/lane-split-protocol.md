@@ -179,6 +179,133 @@ FIELD_MID without an extra correction step in the impl
   diff; option (b) keeps the impl as-is at the cost of a slightly
   looser bound (4194303 vs 4190208).
 
+#### F-11 (2026-04-29) — `decompose` low_future post is closed
+`is_i32b_array_opaque γ2` but FIPS 204 produces half-open `(-γ2, γ2]`
+
+- **Affected method:** `decompose` post (`src/simd/traits.rs:71,74`):
+  ```
+  ((v $gamma2 == v GAMMA2_V95_232 ==>
+      Spec.Utils.is_i32b_array_opaque 95232 (f_repr ${low}_future) /\
+      Spec.Utils.is_i32b_array_opaque 44 (f_repr ${high}_future)) /\
+   (v $gamma2 == v GAMMA2_V261_888 ==>
+      Spec.Utils.is_i32b_array_opaque 261888 (f_repr ${low}_future) /\
+      Spec.Utils.is_i32b_array_opaque 16 (f_repr ${high}_future)))
+  ```
+- **Mathematical range:** FIPS 204 Algorithm 36 (Decompose) defines
+  `r0 = r' mod^± (2*γ2)` where `mod^±` is centered modulo with output
+  in `(-γ2, γ2]`.  So `low_future ∈ (-95232, 95232]` (γ2=95232) or
+  `(-261888, 261888]` (γ2=261888) — half-open.  Closed
+  `is_i32b_array_opaque γ2` over-approximates by including `-γ2`.
+- **Why this is less critical than F-8/F-9:** the immediate consumer
+  of `decompose`'s `low` is `compute_hint`, whose pre takes
+  `is_i32b_array_opaque FIELD_MAX low` (very wide).  No chain-break
+  if the post is left as closed.  But it's an imprecision that
+  diverges from the canonical FIPS 204 / Hacspec spec.
+- **Recommended fix:** if F-8 introduces an `is_i32b_strict_lower`
+  predicate, reuse it here for symmetry — same single-predicate
+  cost, more accurate post.
+
+#### F-10 (2026-04-29) — `t0_deserialize` post is closed
+`is_i32b_array_opaque (pow2 12)` but should mirror F-8 input shape
+
+- **Affected method:** `t0_deserialize` post
+  (`src/simd/traits.rs:278`):
+  ```
+  Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${out}_future)
+  ```
+- **Mathematical range:** symmetric round-trip with `t0_serialize`
+  — values in `(-2^12, 2^12]` half-open.  Closed
+  `is_i32b_array_opaque (pow2 12)` over-approximates at `-pow2 12`.
+- **Why this is less critical than F-8/F-9:** the deserialize is
+  used in verification flow; downstream callers consume the result
+  via wider `is_i32b_array_opaque FIELD_MAX` pres (e.g. ring-element
+  arithmetic).  No immediate chain-break.  But once F-8/F-9 land, a
+  serialize-deserialize-serialize round-trip would break unless
+  this is also half-open.
+- **Recommended fix:** same predicate as F-8/F-9.
+
+#### F-9 (2026-04-29) — `power2round` t0_future post is closed
+`is_i32b_array_opaque (pow2 12)` but mathematically half-open `(-pow2 12, pow2 12]`
+
+- **Affected method:** `power2round` post
+  (`src/simd/traits.rs:148`):
+  ```
+  Spec.Utils.is_i32b_array_opaque (pow2 12) (f_repr ${t0}_future)
+  ```
+- **Mathematical range:** FIPS 204 Algorithm 35 (Power2Round) defines
+  `r0 = r mod^± 2^d` (centered mod) with output in `(-2^(d-1), 2^(d-1)]`.
+  With d = `BITS_IN_LOWER_PART_OF_T = 13`, `t0_future ∈ (-pow2 12, pow2 12]`
+  — half-open.  Closed `is_i32b_array_opaque (pow2 12)` over-approximates
+  at `-pow2 12`.
+- **Why this is critical (chain-break with F-8):** `power2round`'s
+  `t0_future` is the SOURCE of values that flow into
+  `t0_serialize`.  Once F-8 narrows `t0_serialize`'s pre to half-open
+  `(-pow2 12, pow2 12]`, callers chaining
+  `power2round(...) → t0_serialize(t0)` will fail to discharge the
+  `t0_serialize` pre from `power2round`'s closed post.  Specifically
+  the `signing_key.rs::generate_serialized` flow does this chain.
+- **Recommended fix:** identical to F-8 — once
+  `is_i32b_strict_lower_array_opaque (l: nat)` (or analogous half-open
+  predicate) exists on the above-trait side, swap both F-8's pre and
+  this post in lockstep.
+
+#### F-8 (2026-04-29) — `is_i32b_array_opaque (pow2 12)` for `t0_serialize`
+is closed but AVX2 free fn requires half-open lower bound
+
+- **Affected method:** `t0_serialize` (after F-6 cherry-pick `92bfff21f`).
+  Trait pre is now `Spec.Utils.is_i32b_array_opaque (pow2 12)
+  (f_repr simd_unit)` which unfolds to
+  `forall i. -pow2 12 <= v f_repr[i] <= pow2 12` — closed both ends.
+- **Gap:** the AVX2 free fn `src/simd/avx2/encoding/t0.rs::serialize`
+  pre is
+  ```
+  forall i. let x = (POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - to_i32x8 simd_unit i) in
+            x >= 0 && x < pow2 13
+  ```
+  Solving: `x >= 0` ⇔ `to_i32x8[i] <= pow2 12`; `x < pow2 13` ⇔
+  `to_i32x8[i] > -pow2 12` (**strict**).  So the AVX2 free fn pre is
+  half-open `(-pow2 12, pow2 12]`.  At trait-pre boundary
+  `f_repr[i] == -pow2 12` (= -4096), AVX2 free fn pre is unsatisfied.
+- **Empirical result:** Step 13 below-trait verify failed at
+  `Libcrux_ml_dsa.Simd.Avx2.fst:1257`:
+  ```
+  Error 19 — Assertion failed (incomplete quantifiers, rlimit=80)
+  See also Libcrux_ml_dsa.Simd.Avx2.Encoding.T0.fst(113,10-113,16)
+                                                  (113,20-113,31)
+  ```
+  i.e. both upper and lower clauses of the AVX2 free fn pre fail to
+  discharge from the closed `is_i32b 4096`.
+- **Why F-6 didn't catch this:** the F-6 commit message states the
+  fix uses `Spec.Utils.is_i32b_array_opaque (pow2 12)` (centered, |x|
+  ≤ 4096).  Mathematically t0 ranges over `(-pow2 12, pow2 12]` per
+  FIPS 204 §4.4 (the lower part of t mod q centered around 0 such
+  that the centered representative is in this range), so a
+  half-open form is the right model.  `is_i32b 4096` over-approximates
+  by including -4096.
+- **Recommended fix on the above-trait side:** three options.
+  (a) Introduce a new opaque predicate `is_i32b_strict (l: nat) (x:
+      i32) : prop = -l < v x <= l` (or equivalent half-open), with
+      lookup/intro lemmas; replace the trait pre with
+      `is_i32b_strict_array_opaque (pow2 12)`.
+  (b) Strengthen `is_i32b 4096` to `is_i32b 4095` (|x| <= 4095).  This
+      slightly narrows the upper bound (excludes 4096) but the FIPS
+      204 t0 representative form `r1 - r0` actually achieves 4096 at
+      one corner, so this would lose the upper boundary.
+  (c) Relax the AVX2 free fn pre to closed (`x <= pow2 13` not
+      strict).  This requires re-verifying the AVX2 body still
+      panic-frees at the lower boundary (coefficient = pow2 13 fits
+      in 14 bits, but the intrinsics' bit packing would silently
+      truncate).
+  Option (a) is cleanest.
+- **Below-trait posture:** AVX2 `Operations::t0_serialize` impl body
+  retains its `hax_lib::fstar!("admit ()")` until F-8 lands.
+  Portable `Operations::t0_serialize` impl body discharges fine: the
+  Portable free fn pre was widened in this lane (Step 13) to
+  `Spec.Utils.is_i32b (pow2 12)`, accepting the closed interval
+  directly (the body uses `as u8` truncation that handles all i32
+  values without panic — the body's bit-pattern correctness at
+  x == -4096 is irrelevant since the trait post is just length-pres).
+
 #### F-7 (2026-04-29) — `is_pos_array_opaque l` boundary off-by-one
 breaks Portable `commitment_serialize` discharge
 

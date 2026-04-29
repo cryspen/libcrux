@@ -542,12 +542,11 @@ impl Operations for Coefficients {
     #[requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent) - 1)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_exponent: usize) {
-        hax_lib::fstar!("admit ()");
         encoding::gamma1::serialize(simd_unit, serialized, gamma1_exponent)
     }
 
@@ -564,16 +563,11 @@ impl Operations for Coefficients {
 
     #[requires(fstar!(r#"
         (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized) - 1)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
-        // F-7: trait pre `is_pos_array_opaque (pow2 d)` allows value == pow2 d exactly,
-        // but the Portable free fn pre `bounded x d` requires < pow2 d.  Z3 cancels
-        // at rlimit 80 trying to discharge the call's requires.  Awaiting above-trait
-        // fix (tighten predicate to `<= l - 1` or change pre to `pow2 d - 1`).
-        hax_lib::fstar!("admit ()");
         encoding::commitment::serialize(simd_unit, serialized)
     }
 
@@ -611,16 +605,16 @@ impl Operations for Coefficients {
 
     #[requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+        Spec.Utils.is_i32b_array_opaque (pow2 12)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
-        // F-7 boundary off-by-one: trait pre `is_pos_array_opaque (pow2 13)` allows
-        // value == 8192 exactly, free fn `bounded x 13` requires < 8192.  Z3
-        // non-deterministic — sometimes discharges, sometimes fails (incomplete
-        // quantifiers).  Awaiting above-trait fix.
-        hax_lib::fstar!("admit ()");
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (pow2 12)
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
+        );
         encoding::t0::serialize(simd_unit, out)
     }
 

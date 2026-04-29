@@ -638,7 +638,7 @@ impl Operations for AVX2SIMDUnit {
     #[requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent) - 1)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -661,7 +661,7 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized))
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized) - 1)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -706,14 +706,15 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+        Spec.Utils.is_i32b_array_opaque (pow2 12)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
-        // AVX2 free fn t0::serialize requires `to_i32x8`-form bound on simd_unit;
-        // trait pre carries `is_pos_array_opaque (pow2 13) (f_repr simd_unit)`.
-        // Bridging f_repr ↔ to_i32x8 is a per-method translation lemma, deferred.
+        // F-8: trait pre `is_i32b_array_opaque (pow2 12)` is closed
+        // [-4096, 4096], but AVX2 free fn requires half-open (-4096, 4096]
+        // (since `4096 - x < pow2 13` ⇔ `x > -4096` strict).  At x = -4096,
+        // free fn pre fails.  Awaiting above-trait fix.
         hax_lib::fstar!("admit ()");
         encoding::t0::serialize(&simd_unit.value, out);
     }

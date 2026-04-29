@@ -10,7 +10,7 @@ fn change_t0_interval(t0: i32) -> i32 {
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
-    (forall i. bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) 13)
+    (forall i. Spec.Utils.is_i32b (pow2 12) (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i))
  /\ (Seq.length $serialized == 13)
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
