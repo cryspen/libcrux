@@ -63,6 +63,27 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 1500 --fuel 2 --ifuel 4 --split_queries always""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
+// FIPS 204 §7.2 (sigDecode) sizing: the serialized signature is the
+// concatenation `commitment_hash || signer_response || hint`, with
+// `|signer_response| = columns_in_a * gamma1_ring_element_size` and
+// `|hint| = max_ones_in_hint + rows_in_a`.  The output buffers must
+// match the per-vector dimensions.  `gamma1_exponent ∈ {17, 19}` and
+// `gamma1_ring_element_size == 32 * (1 + gamma1_exponent)` are
+// required by the inner `gamma1::deserialize` callee.
+#[hax_lib::requires(fstar!(r#"
+    (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+    v $gamma1_ring_element_size == 32 * (1 + v $gamma1_exponent) /\
+    v $rows_in_a > 0 /\
+    v $signature_size ==
+        v $commitment_hash_size +
+        v $gamma1_ring_element_size * v $columns_in_a +
+        v $max_ones_in_hint + v $rows_in_a /\
+    Seq.length $serialized == v $signature_size /\
+    Seq.length $out_commitment_hash >= v $commitment_hash_size /\
+    Seq.length $out_signer_response == v $columns_in_a /\
+    Seq.length $out_hint == v $rows_in_a"#))]
 pub(crate) fn deserialize<SIMDUnit: Operations>(
     columns_in_a: usize,
     rows_in_a: usize,
@@ -76,7 +97,6 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     out_signer_response: &mut [PolynomialRingElement<SIMDUnit>],
     out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
 ) -> Result<(), VerificationError> {
-    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == signature_size);
 
@@ -85,8 +105,25 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
 
     let (signer_response_serialized, hint_serialized) =
         rest_of_serialized.split_at(gamma1_ring_element_size * columns_in_a);
+    // Anchor the post-split lengths so the loop invariants below can
+    // refer to `Seq.length signer_response_serialized` and
+    // `Seq.length hint_serialized` directly.
+    hax_lib::fstar!(r#"
+        assert (Seq.length $rest_of_serialized ==
+                  v $signature_size - v $commitment_hash_size);
+        assert (Seq.length $signer_response_serialized ==
+                  v $gamma1_ring_element_size * v $columns_in_a);
+        assert (Seq.length $hint_serialized ==
+                  v $max_ones_in_hint + v $rows_in_a)"#);
 
     for i in 0..columns_in_a {
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+            v $i <= v $columns_in_a /\
+            (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+            v $gamma1_ring_element_size == 32 * (1 + v $gamma1_exponent) /\
+            Seq.length $signer_response_serialized ==
+                v $gamma1_ring_element_size * v $columns_in_a /\
+            Seq.length $out_signer_response == v $columns_in_a"#));
         encoding::gamma1::deserialize::<SIMDUnit>(
             gamma1_exponent,
             &signer_response_serialized
@@ -103,56 +140,37 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // spec decoding followed by zeros, which is what `verify_internal`'s
     // proof obligation needs.
     for i in 0..rows_in_a {
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+            v $i <= v $rows_in_a /\ Seq.length $out_hint == v $rows_in_a"#));
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+                v $j <= 256 /\
+                v $i < v $rows_in_a /\
+                Seq.length $out_hint == v $rows_in_a"#));
             out_hint[i][j] = 0;
         }
     }
-
     // While there are several ways to encode the same hint vector, we
     // allow only one such encoding, to ensure strong unforgeability.
-    let mut previous_true_hints_seen = 0usize;
-
-    // XXX: We would like to use early returns below, but doing so triggers a bug in
-    // Eurdice leads to a bad extraction.
-    let mut malformed_hint = false;
-
-    for i in 0..rows_in_a {
-        let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
-
-        if (current_true_hints_seen < previous_true_hints_seen)
-            || (current_true_hints_seen > max_ones_in_hint)
-        {
-            // the true hints seen should be increasing
-            // return Err(VerificationError::MalformedHintError);
-            malformed_hint = true;
-            break;
-        }
-
-        for j in previous_true_hints_seen..current_true_hints_seen {
-            if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
-                // indices of true hints for a specific polynomial should be
-                // increasing
-                // return Err(VerificationError::MalformedHintError);
-                malformed_hint = true;
-                break;
-            }
-
-            // Gate the write on the malformed flag so a later-detected
-            // failure cannot leave a partial hint in out_hint that came
-            // after the failure point in the same row.
-            if !malformed_hint {
-                set_hint(out_hint, i, hint_serialized[j] as usize);
-            }
-        }
-
-        if malformed_hint {
-            break;
-        } else {
-            previous_true_hints_seen = current_true_hints_seen;
-        }
+    // Two helpers carry the FIPS-mandated panic-freedom obligation
+    // that PR 1348 fixed; the validate pass establishes the per-row
+    // counter bounds, and the write pass commits the indices into
+    // `out_hint`.  Splitting this way keeps each helper's loop
+    // accumulator small (and so its fold_range init-state subtyping
+    // check tractable).
+    let (mut malformed_hint, previous_true_hints_seen) =
+        validate_hint_rows(hint_serialized, max_ones_in_hint, rows_in_a);
+    if !malformed_hint {
+        write_hint_rows(hint_serialized, out_hint, max_ones_in_hint, rows_in_a);
     }
 
     for j in previous_true_hints_seen..max_ones_in_hint {
+        hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+            v $j >= v $previous_true_hints_seen /\
+            v $j <= v $max_ones_in_hint /\
+            v $previous_true_hints_seen <= v $max_ones_in_hint /\
+            Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
+            v $rows_in_a > 0"#));
         if hint_serialized[j] != 0 {
             // ensures padding indices are zero
             // return Err(VerificationError::MalformedHintError);
@@ -172,4 +190,115 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
 #[hax_lib::requires(i < out_hint.len() && j < 256)]
 fn set_hint(out_hint: &mut [[i32; 256]], i: usize, j: usize) {
     out_hint[i][j] = 1
+}
+
+/// Validate the hint section's per-row cumulative counters and
+/// strict-increase ordering of indices.  Returns
+/// `(malformed_hint, previous_true_hints_seen)` — the first is `true`
+/// iff a FIPS 204 §7.2 Algorithm 22 check failed; the second is the
+/// final cumulative counter (used by the caller to scan the padding
+/// zeros).  Read-only on `hint_serialized`; the loop accumulator is
+/// just `(bool, usize)` so the fold_range init-state subtyping check
+/// closes cleanly.
+///
+/// PR 1348's bug: guarded `previous < max_ones_in_hint` instead of
+/// `current > max_ones_in_hint`, letting `current` exceed ω and the
+/// inner index loop run past the slice bound.  F* refuses
+/// panic-freedom for the buggy variant on the inner
+/// `hint_serialized[j]` access.
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 200 --ifuel 2""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a"#))]
+fn validate_hint_rows(
+    hint_serialized: &[u8],
+    max_ones_in_hint: usize,
+    rows_in_a: usize,
+) -> (bool, usize) {
+    let mut previous_true_hints_seen = 0usize;
+    let mut malformed_hint = false;
+
+    for i in 0..rows_in_a {
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+            v $i <= v $rows_in_a /\
+            v $previous_true_hints_seen <= v $max_ones_in_hint /\
+            Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a"#));
+        if !malformed_hint {
+            let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
+
+            if (current_true_hints_seen < previous_true_hints_seen)
+                || (current_true_hints_seen > max_ones_in_hint)
+            {
+                malformed_hint = true;
+            } else {
+                for j in previous_true_hints_seen..current_true_hints_seen {
+                    hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+                        v $j >= v $previous_true_hints_seen /\
+                        v $j <= v $current_true_hints_seen /\
+                        v $current_true_hints_seen <= v $max_ones_in_hint /\
+                        Seq.length $hint_serialized ==
+                            v $max_ones_in_hint + v $rows_in_a"#));
+                    if j > previous_true_hints_seen
+                        && hint_serialized[j] <= hint_serialized[j - 1]
+                    {
+                        malformed_hint = true;
+                    }
+                }
+                if !malformed_hint {
+                    previous_true_hints_seen = current_true_hints_seen;
+                }
+            }
+        }
+    }
+
+    (malformed_hint, previous_true_hints_seen)
+}
+
+/// Write the per-row hint indices into `out_hint`, assuming the row
+/// cumulative-count and ordering invariants from `validate_hint_rows`
+/// have already been checked.  Loop accumulator is just `out_hint`,
+/// so the fold_range init-state refinement check closes cleanly.
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 200 --ifuel 2""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
+#[hax_lib::requires(fstar!(r#"
+    Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
+    Seq.length $out_hint == v $rows_in_a"#))]
+fn write_hint_rows(
+    hint_serialized: &[u8],
+    out_hint: &mut [[i32; COEFFICIENTS_IN_RING_ELEMENT]],
+    max_ones_in_hint: usize,
+    rows_in_a: usize,
+) {
+    let mut previous_true_hints_seen = 0usize;
+
+    for i in 0..rows_in_a {
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+            v $i <= v $rows_in_a /\
+            v $previous_true_hints_seen <= v $max_ones_in_hint /\
+            Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
+            Seq.length $out_hint == v $rows_in_a"#));
+        let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
+        // Guard duplicates the validate_hint_rows check; it is also
+        // necessary as a pre for the inner slice access below.
+        if (current_true_hints_seen < previous_true_hints_seen)
+            || (current_true_hints_seen > max_ones_in_hint)
+        {
+            // Should not be reachable when called after a successful
+            // validate_hint_rows; defensive only.
+        } else {
+            for j in previous_true_hints_seen..current_true_hints_seen {
+                hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+                    v $j >= v $previous_true_hints_seen /\
+                    v $j <= v $current_true_hints_seen /\
+                    v $current_true_hints_seen <= v $max_ones_in_hint /\
+                    Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
+                    Seq.length $out_hint == v $rows_in_a /\
+                    v $i < v $rows_in_a"#));
+                set_hint(out_hint, i, hint_serialized[j] as usize);
+            }
+            previous_true_hints_seen = current_true_hints_seen;
+        }
+    }
 }
