@@ -1,25 +1,27 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 13 (2026-04-29).  Track A closed
-(`lemma_compute_hint_lane_commute_conditional` collapsed to a one-line
-`reveal_opaque` after the F-4 cherry-pick).  Track D-1 partial: t1 +
-error `*_serialize` trait bodies admit-free on both Portable and AVX2;
-length-pres ensures added to Portable `t1::serialize`, `t0::serialize`,
-`error::serialize{,_when_eta_is_2,_when_eta_is_4}` free fns.  F-3
-mirror sync: impl-side `requires` clauses on commitment / gamma1 /
-error / t0 `_serialize` switched from `is_i32b_array_opaque` to
-`is_pos_array_opaque` to match the cherry-picked trait pre.  New
-findings filed in `lane-split-protocol.md`:
-- F-6: `t0_serialize` trait pre semantically wrong (non-negative form
-  picked by F-3 but the AVX2 free fn computes `4096 - x`, requiring
-  centered range).
-- F-7: `is_pos_array_opaque l` boundary off-by-one (uses `<= l`,
-  free fns use strict `< pow2 d`).  Affects three of four `*_serialize`
-  trait pres (commitment, gamma1, t0 — error has tighter literal-eta
-  bound and is unaffected).
-**Empirical baseline (Step 13)**: **75 modules invoked, [CHECK]=27,
-[ADMIT]=48, 0 F* errors, 0 make-level failures**.
+**Tip**: Step 14 Track D-2 (2026-04-29).  Three `*_deserialize`
+trait bodies closed admit-free on both Portable and AVX2:
+- `t1_deserialize` (commit `62a50deeb`): free fn ensures + bit-vec
+  bridge via `i32_bit_zero_lemma_to_lt_pow2_n_weak 10` for AVX2.
+- `t0_deserialize` (commit `10b15d325`): per-lane half-open
+  `(-pow2 12, pow2 12]` via `change_t0_interval` ensures + reveal of
+  `is_i32b_strict_lower_array_opaque`.
+- `gamma1_deserialize` (commit `4ec0e9f50`): per-eta deserialize
+  helpers + closed bound `[-pow2 d, pow2 d]` via opaque reveal.
+  Defensive `coefficient1 &= GAMMA1_TIMES_2_BITMASK` for γ₁=2^19
+  (mathematical no-op; needed for SMT discharge).
+- `error_deserialize` retained as admit; filed F-14 — function is
+  partial w.r.t. trait post (body produces `[-5, 2]` for eta=2 but
+  trait wants `[-2, 2]`).  Above-trait fix needed.
+
+Step 13 deltas inherited (Track A closed; Track D-1 t1/error
+`*_serialize` admit-free; F-3/F-6/F-7 mirror sync).
+
+**Empirical baseline (Step 14 Track D-2)**: **77 modules invoked,
+[CHECK]=27, [ADMIT]=50, 0 F* errors, 0 make-level failures**.  Six
+trait body admits removed across `t1`, `t0`, `gamma1` deserialize.
 
 **Tip (prior)**: Step 12 partial (2026-04-28).  Track 0c closed AVX2
 `commitment_serialize` (`87a71ccc4`).  Track B scaffolded AVX2

@@ -283,6 +283,44 @@ Verifies under impl_1 in 16s @ rlimit 80 (used 68/80).
 - `lemma_compute_hint_bound`: `repeati`-induction on the popcount
   (real proof) — proves Spec sum ≤ 8 under binary lane hypothesis.
 
+### Step 14 Track D-2: encoding `*_deserialize` trait bodies (2026-04-29)
+**Resolved (admit removed):**
+- Portable `Operations::t1_deserialize` (commit `62a50deeb`) — free
+  fn ensures + loop_invariant + `logand_mask_lemma` SMTPat after
+  mask normalization tactic.
+- AVX2 `Operations::t1_deserialize` (commit `62a50deeb`) — tightened
+  free fn ensures from `j%32 > 10` to `j%32 >= 10`, then
+  `i32_bit_zero_lemma_to_lt_pow2_n_weak 10` bridge in trait body.
+- Portable `Operations::t0_deserialize` (commit `10b15d325`) — free
+  fn + `change_t0_interval` ensures with conditional half-open bound;
+  rlimit 300 + split_queries.
+- AVX2 `Operations::t0_deserialize` (commit `10b15d325`) — added
+  per-lane half-open bound conjunct to existing `deserialize_post`,
+  discharged via existing body proof structure; trait body bridges
+  via `f_repr ↔ to_i32x8` SMTPat assert + opaque reveal.
+- Portable `Operations::gamma1_deserialize` (commit `4ec0e9f50`) —
+  per-eta deserialize_when_* helpers + wrapper deserialize ensures;
+  rlimit 600 + split_queries.  For γ1=2^19, added defensive
+  `coefficient1 &= GAMMA1_TIMES_2_BITMASK` (mathematically a no-op
+  since the OR of disjoint bit ranges already lies in [0, pow2 20))
+  so the same SMTPat path discharges the bound; C output unchanged.
+- AVX2 `Operations::gamma1_deserialize` (commit `4ec0e9f50`) — added
+  per-lane closed bound conjunct to existing `deserialize_post`,
+  same template as t0_deserialize AVX2.
+
+**Blocked (admit retained):**
+- Portable `Operations::error_deserialize`,
+  AVX2 `Operations::error_deserialize` trait bodies — F-14: function
+  is **partial** w.r.t. trait post.  Body computes `ETA - (byte & MASK)`
+  where `byte & MASK ∈ [0, 7]` (eta=2) or `[0, 15]` (eta=4); for
+  arbitrary input bytes this exceeds the trait post's `[-eta, eta]`
+  range.  Concrete counter-example: `byte0 = 0xFF`, `byte0 & 7 = 7`,
+  `simd_unit.values[0] = 2 - 7 = -5` violates `>= -2`.  Trait pre
+  has no constraint on byte contents.  Awaiting above-trait fix:
+  either tighten trait pre to require valid-encoding bytes, or
+  add an impl-side validation step that rejects malformed bytes.
+  See lane-split-protocol.md F-14 for full analysis.
+
 ### Step 13 Track D-1: encoding `*_serialize` impl bodies (2026-04-29)
 **Resolved (admit removed):**
 - Portable `Operations::t1_serialize`, `Operations::error_serialize`

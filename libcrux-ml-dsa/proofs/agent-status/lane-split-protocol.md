@@ -39,6 +39,51 @@ body), record it here with:
 
 ### Open findings
 
+#### F-14 (2026-04-29) — `error_deserialize` is partial w.r.t. trait post
+
+- **Affected method:** `error_deserialize` post
+  (`src/simd/traits.rs` ensures clause):
+  ```
+  Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+    ($eta == Eta_Two ==> v out[i] >= -2 /\ v out[i] <= 2) /\
+    ($eta == Eta_Four ==> v out[i] >= -4 /\ v out[i] <= 4))
+  ```
+- **Gap:** the impl bodies (`src/simd/portable/encoding/error.rs::
+  deserialize_when_eta_is_2/4` and AVX2 analogs) compute
+  `simd_unit.values[i] = ETA - (byte_chunk & MASK)` where
+  - `eta=2`: `MASK=7`, so `byte_chunk & 7 ∈ [0, 7]`, hence
+    `2 - x ∈ [-5, 2]` — trait post wants `[-2, 2]`.
+  - `eta=4`: `MASK=0xF`, so `byte_chunk & 15 ∈ [0, 15]`, hence
+    `4 - x ∈ [-11, 4]` — trait post wants `[-4, 4]`.
+- **Why this matters:** the function is **partial** with respect to
+  the trait post.  For arbitrary input bytes (no pre on byte
+  contents), the impl can produce values outside `[-eta, eta]`.  The
+  post holds only on bytes produced by a corresponding
+  `error_serialize` (round-trip).  External callers (signature
+  verification consuming untrusted bytes) would receive
+  out-of-range values for adversarial inputs.
+- **Concrete counter-example (eta=2):**
+  - Input: `byte0 = 0xFF` (all bits set).
+  - `byte0 & 7 = 7`.
+  - `simd_unit.values[0] = 2 - 7 = -5`, violates `>= -2`.
+- **Recommended fix on the above-trait side:** three options.
+  (a) Strengthen the trait pre to require valid-encoding bytes:
+      `forall i. (byte i) % 8 ∈ [0, 5)` (eta=2) and
+      `forall i. (byte i) % 16 ∈ [0, 9)` (eta=4).  Awkward to
+      express but matches the partial spec.
+  (b) Add an impl-side validation step that rejects (or saturates)
+      invalid byte chunks before subtracting `ETA`.  Behavior
+      change for callers consuming untrusted bytes.
+  (c) Relax the trait post to the actual range produced by the
+      impl: `[-5, 2]` for eta=2, `[-11, 4]` for eta=4.  Loses the
+      cleaner FIPS 204 spec connection but matches reality.
+  Option (b) is closest to the FIPS 204 spec intent (signature
+  verification should reject malformed signatures), but requires an
+  impl change.  Option (a) is the cheapest above-trait-only fix.
+- **Below-trait posture:** Portable and AVX2 `Operations::error_deserialize`
+  trait method bodies retain their `hax_lib::fstar!("admit ()")` until
+  F-14 lands.  No commute-lemma work below-trait is possible.
+
 #### F-13 (2026-04-29) — `decompose` `low_future` strict-lower bound is mathematically FALSE — RESOLVED via above-trait revert `341a93d4d`
 
 Above-trait commit `341a93d4d` reverted just the `decompose` portion of

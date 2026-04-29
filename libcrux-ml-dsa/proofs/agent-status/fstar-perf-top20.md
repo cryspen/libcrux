@@ -28,6 +28,52 @@ be moved to `fstar-perf-top20.archive.md` if the file gets long.
 
 ---
 
+## Snapshot 2026-04-29c (Step 14 Track D-2 — `*_deserialize` trait body close, partial)
+
+Source: `/tmp/d2-iter12.log` (Step 14 Track D-2 close commit batch
+`62a50deeb`, `10b15d325`, `4ec0e9f50`).  Build invalidated only the
+encoding modules whose ensures changed plus their direct dependents
+(Portable.Encoding.{T1,T0,Gamma1}, Avx2.Encoding.{T1,T0,Gamma1},
+Simd.Portable, Simd.Avx2).  NTT / Invntt cascade .checked files
+were not invalidated and so this snapshot only reflects the affected
+modules — comparison with 2026-04-29b is per-function, not aggregate.
+
+Build: 77 modules invoked, [CHECK]=29, [ADMIT]=48, 0 F\* errors.
+Six trait body admits removed (3 methods × 2 impls).
+
+### Top per-function totals (affected modules only)
+
+| # | Function | Module | total (s) | max query (ms) | queries | flags |
+|---|---|---|---:|---:|---:|---|
+| 1 | `impl_1` | `L_md.Simd.Portable` | 36.45 | 8943 | 555 | FAILED-then-OK, rlimit-sat |
+| 2 | `reduce_with_proof` | `L_md.Simd.Portable` | 21.26 | 19014 | 105 | FAILED-then-OK, rlimit-sat |
+| 3 | `deserialize_when_gamma1_is_2_pow_17_` | `L_md.Simd.Portable.Encoding.Gamma1` | 0.46 | 53 | 14 | — |
+| 4 | `deserialize_when_gamma1_is_2_pow_19_` | `L_md.Simd.Portable.Encoding.Gamma1` | 0.14 | 29 | 7 | — |
+| 5 | `deserialize` | `L_md.Simd.Portable.Encoding.Gamma1` | 0.02 | 19 | 1 | — |
+
+The new `deserialize_when_gamma1_is_2_pow_*` proofs add ~0.5s to
+gamma1 module total — well within budget.  No changes in the
+Portable.{NTT,Invntt} or impl_1 / reduce_with_proof times relative
+to 2026-04-29b (those .checked files were not invalidated this
+build, so values not in this snapshot).
+
+The persistent rlimit-saturation on `impl_1` (Portable trait impl
+discharge) and `reduce_with_proof` are pre-existing — same shape as
+2026-04-29b's #6 / #14.  No regression introduced by this Track D-2
+work.
+
+### Top module totals (affected modules)
+
+| # | Module | total (s) | functions tracked |
+|---|---|---:|---:|
+| 1 | `L_md.Simd.Portable` | 57.71 | 2 |
+| 2 | `L_md.Simd.Portable.Encoding.Gamma1` | 0.62 | 3 |
+
+_Sample size: 996 Query-stats lines, ~58s total Z3 time, across
+5 functions in 2 modules._
+
+---
+
 ## Snapshot 2026-04-29b (Step 14 Track 0 final, full NTT/Invntt cascade)
 
 Source: `/tmp/track0-final.log` after F-13 revert cherry-pick from
