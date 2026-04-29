@@ -972,9 +972,13 @@ let lemma_compress_message_coefficient_fe_commute (fe result: i16) :
     assert(v (i16_to_spec_fe result).f_val == v result);
     ()
 
-(* A8 (parameterized compress): admitted.  Barrett-exactness math —
-   tedious 4-case enumeration over D ∈ {4, 5, 10, 11}.  Statement
-   matches the integer-form post of `compress<D>` in portable/compress.rs. *)
+(* A8 (parameterized compress): closed Phase 2 / B6 (Wave-A coordinator,
+   2026-04-29).  Statement matches the integer-form post of
+   `compress<D>` in portable/compress.rs.  Each D ∈ {4, 5, 10, 11}
+   reduces compress_d's u32 body to the integer formula in `requires`
+   once `pow2 (v d)` is concretized; the two `f_val` asserts pin
+   `i16_to_spec_fe` for both inputs.  Mirrors A5's (D=1) shape. *)
+#push-options "--z3rlimit 400 --fuel 1 --ifuel 1"
 let lemma_compress_ciphertext_coefficient_fe_commute (fe result: i16) (d: usize) :
   Lemma (requires (v d == 4 \/ v d == 5 \/ v d == 10 \/ v d == 11) /\
                   v fe >= 0 /\ v fe < 3329 /\
@@ -982,7 +986,13 @@ let lemma_compress_ciphertext_coefficient_fe_commute (fe result: i16) (d: usize)
         (ensures Hacspec_ml_kem.Compress.compress_d
                    (i16_to_spec_fe fe) d
                  == i16_to_spec_fe result)
-  = admit ()
+  = assert (v (i16_to_spec_fe fe).P.f_val == v fe);
+    assert (v (i16_to_spec_fe result).P.f_val == v result);
+    assert (pow2 4 == 16);
+    assert (pow2 5 == 32);
+    assert (pow2 10 == 1024);
+    assert (pow2 11 == 2048)
+#pop-options
 
 let lemma_decompress_1_fe_commute (a result: i16) :
   Lemma (requires v a >= 0 /\ v a <= 1 /\
