@@ -274,13 +274,36 @@ Verifies under impl_1 in 16s @ rlimit 80 (used 68/80).
 - `lemma_decompose_lane_commute_conditional`: real proof, packaging
   Track-1's `lemma_decompose_bridge` in the `==>`-conditional shape.
 - `lemma_compute_one_hint_bound`: trivial — Spec returns 0 or 1.
-- `lemma_compute_hint_lane_commute_conditional`: **`admit ()` body**
-  pending the FIPS 204 §3.6 "MakeHint correctness" proof bridging
-  `Spec.MLDSA.Math.compute_one_hint` (direct |r0|-vs-γ₂ comparison)
-  to `Hacspec_ml_dsa.Arithmetic.make_hint` (decompose-then-compare).
-  Estimated 60-100 lines; non-trivial.
+- `lemma_compute_hint_lane_commute_conditional`: **closed in Step 13
+  Track A** (commit pending) — body collapses to a single
+  `reveal_opaque (`%TS.compute_hint_lane_post)` after F-4 cherry-pick
+  switched the post's RHS from `make_hint`-citing to
+  `compute_one_hint`-citing.  The `introduce ... with hyp. admit ()`
+  block is gone.
 - `lemma_compute_hint_bound`: `repeati`-induction on the popcount
   (real proof) — proves Spec sum ≤ 8 under binary lane hypothesis.
+
+### Step 13 Track D-1: encoding `*_serialize` impl bodies (2026-04-29)
+**Resolved (admit removed):**
+- Portable `Operations::t1_serialize`, `Operations::error_serialize`
+  trait bodies — discharged via length-pres ensures added to
+  `t1::serialize` and `error::serialize`.
+- AVX2 `Operations::t1_serialize`, `Operations::error_serialize`
+  trait bodies — AVX2 free fns already advertise length-pres;
+  `f_repr ↔ to_i32x8` bridge auto-discharged by SMTPat.
+
+**Blocked (admit retained):**
+- Portable `Operations::commitment_serialize`,
+  `Operations::t0_serialize` trait bodies — F-7 boundary off-by-one
+  in `is_pos_array_opaque l` (uses `<= l` where free fn `bounded x d`
+  requires `< pow2 d`).  Z3 non-deterministically fails the call's
+  requires discharge.  Awaiting above-trait fix (tighten predicate
+  or change call sites to `pow2 d - 1`).
+- AVX2 `Operations::t0_serialize` trait body — F-6: trait pre uses
+  non-negative form `is_pos_array_opaque (pow2 13)` but AVX2 free
+  fn requires *centered* form (the `4096 - x` shift).  Awaiting
+  above-trait fix (revert F-3 for t0 only — use
+  `is_i32b_array_opaque (pow2 12)` instead).
 
 **Cross-method scope still open**: AVX2 use_hint, decompose,
 compute_hint bodies remain top-level `admit()` — Track 3 (stretch,

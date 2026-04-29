@@ -13,6 +13,7 @@ fn change_t0_interval(t0: i32) -> i32 {
     (forall i. bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) 13)
  /\ (Seq.length $serialized == 13)
 "#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 13);

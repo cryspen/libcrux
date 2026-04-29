@@ -1,7 +1,27 @@
 # MLDSA Verification Status
 
 **Branch**: `ml-dsa-proofs`
-**Tip**: Step 12 partial (2026-04-28).  Track 0c closed AVX2
+**Tip**: Step 13 (2026-04-29).  Track A closed
+(`lemma_compute_hint_lane_commute_conditional` collapsed to a one-line
+`reveal_opaque` after the F-4 cherry-pick).  Track D-1 partial: t1 +
+error `*_serialize` trait bodies admit-free on both Portable and AVX2;
+length-pres ensures added to Portable `t1::serialize`, `t0::serialize`,
+`error::serialize{,_when_eta_is_2,_when_eta_is_4}` free fns.  F-3
+mirror sync: impl-side `requires` clauses on commitment / gamma1 /
+error / t0 `_serialize` switched from `is_i32b_array_opaque` to
+`is_pos_array_opaque` to match the cherry-picked trait pre.  New
+findings filed in `lane-split-protocol.md`:
+- F-6: `t0_serialize` trait pre semantically wrong (non-negative form
+  picked by F-3 but the AVX2 free fn computes `4096 - x`, requiring
+  centered range).
+- F-7: `is_pos_array_opaque l` boundary off-by-one (uses `<= l`,
+  free fns use strict `< pow2 d`).  Affects three of four `*_serialize`
+  trait pres (commitment, gamma1, t0 — error has tighter literal-eta
+  bound and is unaffected).
+**Empirical baseline (Step 13)**: **75 modules invoked, [CHECK]=27,
+[ADMIT]=48, 0 F* errors, 0 make-level failures**.
+
+**Tip (prior)**: Step 12 partial (2026-04-28).  Track 0c closed AVX2
 `commitment_serialize` (`87a71ccc4`).  Track B scaffolded AVX2
 `decompose` impl body via new `lemma_decompose_spec_eq_decompose`
 bridge in `Commute.Chunk.fst` (`937adc57b`); bridge body is `admit ()`

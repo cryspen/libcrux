@@ -2,6 +2,7 @@ use crate::{constants::Eta, helper::cloop, simd::portable::vector_type::Coeffici
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"(forall i. bounded (Seq.index ${simd_unit.values} i) 2) /\ Seq.length $serialized == 3"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 fn serialize_when_eta_is_2(simd_unit: &Coefficients, serialized: &mut [u8]) {
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 3);
@@ -25,6 +26,7 @@ fn serialize_when_eta_is_2(simd_unit: &Coefficients, serialized: &mut [u8]) {
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"(forall i. bounded (Seq.index ${simd_unit.values} i) 4) /\ Seq.length $serialized == 4"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 fn serialize_when_eta_is_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const ETA: i32 = 4;
 
@@ -44,6 +46,7 @@ fn serialize_when_eta_is_4(simd_unit: &Coefficients, serialized: &mut [u8]) {
     Seq.length serialized == (match eta with | Libcrux_ml_dsa.Constants.Eta_Two -> 3 | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
  /\ (forall i. bounded (Seq.index simd_unit.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values i) (match eta with | Libcrux_ml_dsa.Constants.Eta_Two -> 2 | Libcrux_ml_dsa.Constants.Eta_Four -> 4))
 "#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub(crate) fn serialize(eta: Eta, simd_unit: &Coefficients, serialized: &mut [u8]) {
     // [eurydice] injects an unused variable here in the C code for some reason.
     match eta {

@@ -563,14 +563,11 @@ let lemma_compute_hint_bound (hint: t_Array i32 (sz 8))
   = lemma_compute_hint_bound_aux hint 8
 
 (* Conditional equation for compute_hint (paired-lemma template).
-   Bridges `Spec.MLDSA.Math.compute_one_hint` to `Hacspec.make_hint`
-   under `v high ∈ [0, q)`.  `Spec.compute_one_hint` is a direct
-   formula on `low`; `Hacspec.make_hint` calls `high_bits` on `high`
-   and `mod_q (high + low)` and tests inequality.  The two are
-   equivalent under the trait pre's bounds, but the equivalence is a
-   non-trivial FIPS 204 §3.6 property — placeholder admit for now,
-   matching the F-1 scaffolding shape. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+   Trivial under F-4 (cdb6e946e): `compute_hint_lane_post` now cites
+   `Spec.MLDSA.Math.compute_one_hint` directly, matching the lemma's
+   `requires` exactly.  The `make_hint` cross-spec link was dropped
+   on the above-trait side because it is unprovable at the boundary
+   `low = -gamma2, high != 0` (Spec returns 1, Hacspec returns 0). *)
 let lemma_compute_hint_lane_commute_conditional
     (gamma2 low high hint_future: i32)
     : Lemma
@@ -579,24 +576,7 @@ let lemma_compute_hint_lane_commute_conditional
           v hint_future == Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2))
         (ensures TS.compute_hint_lane_post gamma2 low high hint_future)
   = reveal_opaque (`%TS.compute_hint_lane_post)
-                  (TS.compute_hint_lane_post gamma2 low high hint_future);
-    introduce
-        v high >= 0 /\ v high < 8380417 ==>
-        (if Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2
-         then v hint_future == 1
-         else v hint_future == 0)
-    with hyp.
-      admit ()  (* Track 2 follow-up: prove
-                   Spec.MLDSA.Math.compute_one_hint (v low) (v high) (v gamma2) == 1
-                   <==> Hacspec_ml_dsa.Arithmetic.make_hint low high gamma2.
-                   Spec form is a direct |r0|-vs-gamma2 comparison;
-                   Hacspec form decomposes both `high` and `mod_q (high + low)`
-                   and tests their high-bits.  This is the standard FIPS 204
-                   "MakeHint correctness" property — non-trivial proof,
-                   estimated 60-100 lines.  Bridge involves showing that
-                   |r0| > gamma2 (or boundary case) is equivalent to
-                   high_bits changing under +z. *)
-#pop-options
+                  (TS.compute_hint_lane_post gamma2 low high hint_future)
 
 (* === Step 12 Track B: AVX2 decompose impl-side bridge === *)
 

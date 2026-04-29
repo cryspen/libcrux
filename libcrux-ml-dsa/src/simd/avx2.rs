@@ -638,7 +638,8 @@ impl Operations for AVX2SIMDUnit {
     #[requires(fstar!(r#"
         (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
         Seq.length $serialized == 1 + v $gamma1_exponent /\
-        Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent)) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (v $gamma1_exponent))
+            (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize) {
@@ -661,7 +662,8 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         (Seq.length $serialized == 4 \/ Seq.length $serialized == 6) /\
-        Spec.Utils.is_i32b_array_opaque (pow2 (Seq.length $serialized)) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 (Seq.length $serialized))
+            (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn commitment_serialize(simd_unit: &Self, serialized: &mut [u8]) {
@@ -673,14 +675,14 @@ impl Operations for AVX2SIMDUnit {
         Seq.length $serialized == (match $eta with
                                    | Libcrux_ml_dsa.Constants.Eta_Two -> 3
                                    | Libcrux_ml_dsa.Constants.Eta_Four -> 4) /\
-        Spec.Utils.is_i32b_array_opaque (match $eta with
-                                         | Libcrux_ml_dsa.Constants.Eta_Two -> 2
-                                         | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
-                                        (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
+            (match $eta with
+             | Libcrux_ml_dsa.Constants.Eta_Two -> 2
+             | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
+            (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn error_serialize(eta: Eta, simd_unit: &Self, serialized: &mut [u8]) {
-        hax_lib::fstar!("admit ()");
         encoding::error::serialize(eta, &simd_unit.value, serialized)
     }
 
@@ -705,10 +707,14 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Spec.Utils.is_i32b_array_opaque (pow2 13) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+            (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
+        // AVX2 free fn t0::serialize requires `to_i32x8`-form bound on simd_unit;
+        // trait pre carries `is_pos_array_opaque (pow2 13) (f_repr simd_unit)`.
+        // Bridging f_repr ↔ to_i32x8 is a per-method translation lemma, deferred.
         hax_lib::fstar!("admit ()");
         encoding::t0::serialize(&simd_unit.value, out);
     }
@@ -732,7 +738,6 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t1_serialize(simd_unit: &Self, out: &mut [u8]) {
-        hax_lib::fstar!("admit ()");
         encoding::t1::serialize(&simd_unit.value, out);
     }
 

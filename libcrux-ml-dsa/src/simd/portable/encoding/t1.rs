@@ -4,6 +4,7 @@ use crate::{
 
 #[inline(always)]
 #[hax_lib::requires(serialized.len() == 10)]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub fn serialize(simd_unit: &Coefficients, serialized: &mut [u8]) {
     #[cfg(not(eurydice))]
     debug_assert!(serialized.len() == 10);

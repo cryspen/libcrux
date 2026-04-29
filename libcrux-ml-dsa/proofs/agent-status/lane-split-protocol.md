@@ -179,6 +179,115 @@ FIELD_MID without an extra correction step in the impl
   diff; option (b) keeps the impl as-is at the cost of a slightly
   looser bound (4194303 vs 4190208).
 
+#### F-7 (2026-04-29) — `is_pos_array_opaque l` boundary off-by-one
+breaks Portable `commitment_serialize` discharge
+
+- **Affected predicate:** `Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque`
+  (`src/simd/traits/specs.rs:84`).  Defined as
+  `forall i. v x[i] >= 0 /\ v x[i] <= l` (note: `<= l`, **inclusive**).
+- **Affected methods:** three of the four F-3 `*_serialize` trait pres
+  (`commitment_serialize`, `gamma1_serialize`, `t0_serialize`) cite
+  `is_pos_array_opaque (pow2 d)` and the corresponding free fns use
+  `bounded x d` (= `< pow2 d`).  `error_serialize` is **not affected**
+  because its trait pre cites `is_pos_array_opaque eta` (literal 2 or
+  4) while its free fn requires `bounded x d` where d is the *byte
+  width* (3 or 4): the trait pre's `<= eta` (2 or 4) is strictly
+  stronger than the free fn's `< pow2 d` (4 or 16) so the implication
+  holds with room to spare.
+- **Gap:** the four free fns in `src/simd/portable/encoding/{commitment,
+  gamma1,t0,error}.rs` and the AVX2 counterparts use `bounded x d`
+  (Rust_primitives.BitVectors.bounded) which is **strict** `< pow2 d`,
+  not `<= pow2 d`.  At trait-pre boundary `value == pow2 d` (e.g.
+  `f_repr[i] == 16` for commitment with d=4), the trait pre is
+  satisfied but the free fn pre fails.  Z3 cannot bridge the gap.
+- **Empirical result:** Step 13 below-trait verify is non-deterministic
+  in which call site Z3 fails at.  First run failed at
+  `Libcrux_ml_dsa.Simd.Portable.fst:1067` (commitment_serialize call,
+  `Z3 canceled at rlimit 80`).  Second run (after re-admitting
+  commitment_serialize) failed at
+  `Libcrux_ml_dsa.Simd.Portable.fst:1161` (t0_serialize call,
+  `incomplete quantifiers`, no canceled).  This non-determinism is a
+  hallmark of the unsound implication (trait pre allows `<= pow2 d`,
+  free fn requires `< pow2 d`): Z3 sometimes finds the proof by
+  pattern-matching boundaries, sometimes doesn't.  AVX2
+  `commitment_serialize` trait body is bound-free (only length on
+  `out`) so it discharges cleanly.
+- **Mirror with ML-KEM:** ML-KEM's `bounded_pos_i16_array d v` unfolds
+  to `bounded_i16_array (mk_i16 0) (mk_i16 (pow2 d - 1)) x` — i.e.
+  upper bound is `pow2 d - 1`, equivalent to `< pow2 d`.  The ML-DSA
+  F-3 fix introduced `is_pos_array (l: nat) (x): forall i. >= 0 /\
+  <= l` and at call sites uses `is_pos_array_opaque (pow2 d)`,
+  shifting the off-by-one into the call site rather than fixing it
+  in the predicate.
+- **Recommended fix on the above-trait side:** two options.
+  (a) Tighten the predicate definition: change
+      `is_pos_array (l: nat) (x): forall i. >= 0 /\ <= l` to
+      `forall i. >= 0 /\ <= l - 1` (or equivalently `< l + 1` then
+      flip to `< l`).  This better matches ML-KEM's
+      `bounded_pos_i16_array` shape (which is `<= pow2 d - 1`).
+  (b) Keep predicate, change all four trait pres from
+      `is_pos_array_opaque (pow2 d)` to `is_pos_array_opaque (pow2 d - 1)`
+      and `is_pos_array_opaque (match eta with Eta_Two -> 1 | Eta_Four -> 3)`.
+      Less invasive but more error-prone (every call site must
+      remember `-1`).
+- **Below-trait posture:** Portable `Operations::commitment_serialize`
+  and `Operations::t0_serialize` impl bodies retain their
+  `hax_lib::fstar!("admit ()")` until F-7 lands (the latter also has
+  F-6's separate centered-vs-non-negative semantic issue, but the
+  boundary off-by-one alone is enough to block discharge).
+  Portable `Operations::error_serialize` and `Operations::t1_serialize`
+  discharge cleanly (admit-free).  AVX2 `Operations::commitment_serialize`,
+  `Operations::error_serialize`, and `Operations::t1_serialize`
+  discharge cleanly.  AVX2 `Operations::t0_serialize` admit retained
+  (F-6).  AVX2 `Operations::gamma1_serialize` admit retained (separate
+  Track A-deferred — needs offset-aware `bit_vec_of_int_t_array`
+  ensures).
+
+
+non-negative bound where impl requires centered (|x| ≤ pow2 12)
+
+- **Affected method:** `t0_serialize` (trait at
+  `src/simd/traits.rs:266`).  F-3 cherry-pick switched the trait pre
+  from `is_i32b_array_opaque (pow2 13) (f_repr simd_unit)` (signed)
+  to `is_pos_array_opaque (pow2 13) (f_repr simd_unit)` (non-negative,
+  `0 ≤ x ≤ 8192`).
+- **Gap:** the AVX2 free fn
+  `src/simd/avx2/encoding/t0.rs::serialize` requires
+  `forall i. let x = POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - to_i32x8 simd_unit i in x >= 0 && x < pow2 13`
+  where `POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE = pow2 12 = 4096`.
+  Solving for `x`: `-4095 < x ≤ 4096` — a **centered** range, not
+  `[0, 8192]`.  At trait-pre boundary `f_repr[i] == 8192`, AVX2 free
+  fn pre fails (`4096 - 8192 = -4096 < 0`).  Empirical: `Error 19 at
+  Simd.Avx2.fst(1259,47-1259,56)` from a `[CHECK]` run after F-3 mirror
+  sync (this lane's Step 13).
+- **Why this matters:** the AVX2 `Operations::t0_serialize` impl body
+  cannot drop its admit without either the bridge stronger pre or an
+  impl-side renormalization step that is not present.  Portable
+  `Operations::t0_serialize` impl body **does** verify under the
+  current F-3 trait pre (the boundary case `8192` is allowed by the
+  Portable free fn `bounded x 13` requirement of `< 8192`?  Empirical
+  result: Portable verifies, suggesting Z3 silently handles the
+  boundary).
+- **Recommended fix on the above-trait side:** replace
+  `t0_serialize`'s trait pre with the centered form
+  `is_i32b_array_opaque (pow2 12) (f_repr simd_unit)` (i.e. revert
+  F-3's choice for `t0_serialize` only).  This matches the
+  semantically correct interval for t0 inputs (the LOWER 13 bits of
+  the t value, signed-centered around 0) and discharges the AVX2 free
+  fn pre once the f_repr↔to_i32x8 bridge fires.  Portable's free fn
+  `bounded` pre is non-negative, so this would either (a) require an
+  impl-side renormalize on the Portable side or (b) keep the Portable
+  free fn pre as-is and have the impl method body convert from
+  centered to non-negative.
+- **AVX2 commitment_serialize and AVX2 error_serialize unaffected:**
+  commitment values are inherently non-negative ([0, 16) or [0, 64));
+  error values have the centered form `eta - x` where the boundary
+  case works out (eta - x ≥ 0 when x ≤ eta, and the trait pre says
+  x ≤ eta).  Only `t0` has the off-by-power-of-two centered semantic
+  that breaks at the boundary.
+- **Below-trait posture:** AVX2 `Operations::t0_serialize` impl body
+  retains its `hax_lib::fstar!("admit ()")` until F-6 lands.
+
 (Append future findings above this line, numbered F-3, F-4, ...)
 
 ### Resolved findings
