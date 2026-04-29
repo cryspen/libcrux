@@ -56,9 +56,19 @@ let compress_message_coefficient (fe: u16) =
     assert (v fe > 2496 ==> r1 = mk_i16 0);
     assert (v res = v r1)
   in
-  let result:u8 = res in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  let _:Prims.unit =
+    assert (v fe < 833 ==> (v fe * 4 + 3329) >= 3329 /\ (v fe * 4 + 3329) < 6658);
+    assert (v fe < 833 ==> (v fe * 4 + 3329) / 6658 == 0);
+    assert (v fe < 833 ==> ((v fe * 4 + 3329) / 6658) % 2 == 0);
+    assert ((v fe >= 833 && v fe <= 2496) ==> (v fe * 4 + 3329) >= 6658 /\ (v fe * 4 + 3329) < 13316
+      );
+    assert ((v fe >= 833 && v fe <= 2496) ==> (v fe * 4 + 3329) / 6658 == 1);
+    assert ((v fe >= 833 && v fe <= 2496) ==> ((v fe * 4 + 3329) / 6658) % 2 == 1);
+    assert (v fe > 2496 ==> (v fe * 4 + 3329) >= 13316 /\ (v fe * 4 + 3329) < 19974);
+    assert (v fe > 2496 ==> (v fe * 4 + 3329) / 6658 == 2);
+    assert (v fe > 2496 ==> ((v fe * 4 + 3329) / 6658) % 2 == 0)
+  in
+  res
 
 #pop-options
 
@@ -245,7 +255,7 @@ let compress
 
 #pop-options
 
-#push-options "--z3rlimit 200 --split_queries always"
+#push-options "--z3rlimit 400 --split_queries always"
 
 let decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let z:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -266,25 +276,38 @@ let decompress_1_ (a: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
   in
   let _:Prims.unit =
     assert (forall i.
-          Seq.index s.f_elements i == mk_i16 0 \/ Seq.index s.f_elements i == mk_i16 (- 1))
+          Seq.index s.f_elements i == mk_i16 0 \/ Seq.index s.f_elements i == mk_i16 (- 1));
+    assert (forall (i: nat).
+          i < 16 ==>
+          (let a_i = v (Seq.index a.f_elements i) in
+            let s_i = v (Seq.index s.f_elements i) in
+            (a_i == 0 ==> s_i == 0) /\ (a_i == 1 ==> s_i == - 1)))
   in
   let res:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant s (mk_i16 1665)
   in
   let _:Prims.unit =
     assert (forall i.
-          Seq.index res.f_elements i == mk_i16 0 \/ Seq.index res.f_elements i == mk_i16 1665)
+          Seq.index res.f_elements i == mk_i16 0 \/ Seq.index res.f_elements i == mk_i16 1665);
+    assert (forall (i: nat).
+          i < 16 ==>
+          (let a_i = v (Seq.index a.f_elements i) in
+            let res_i = v (Seq.index res.f_elements i) in
+            (a_i == 0 ==> res_i == 0) /\ (a_i == 1 ==> res_i == 1665)))
   in
   let _:Prims.unit =
     assert (forall (i: nat).
           i < 16 ==>
           (let a_i = v (Seq.index a.f_elements i) in
             (a_i == 0 ==> (2 * a_i * 3329 + 2) / 4 == 0) /\
-            (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)))
+            (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)));
+    assert (forall (i: nat).
+          i < 16 ==>
+          (let a_i = v (Seq.index a.f_elements i) in
+            let res_i = v (Seq.index res.f_elements i) in
+            (res_i == 0 \/ res_i == 1665) /\ res_i == (2 * a_i * 3329 + 2) / 4))
   in
-  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = res in
-  let _:Prims.unit = admit () (* Panic freedom *) in
-  result
+  res
 
 #pop-options
 

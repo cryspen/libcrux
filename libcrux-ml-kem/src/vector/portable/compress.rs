@@ -24,7 +24,6 @@ use libcrux_secrets::*;
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning")]
 #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
 #[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
@@ -33,10 +32,8 @@ use libcrux_secrets::*;
 // simplified: `((v fe * 4 + 3329) / 6658) % 2`.  Both forms are
 // equivalent on [0, 3329); the bridge lemma uses the hacspec form.
 //
-// Marked `panic_free` (skips body postcondition verification, still
-// panic-checked) per user directive: prove the math at the chunk /
-// Layer-1 level rather than at the primitive.  The 3-case integer
-// chain in the body left as documentation.
+// Hacspec-form post discharged via 3-case integer-division enumeration
+// on `fe ∈ [0, 3329)` proven inline at the function tail.
 #[cfg_attr(hax, hax_lib::ensures(|result| fstar!(r#"((833 <= v fe && v fe <= 2496) ==> v result == 1) /\
 						    (~(833 <=  v fe && v fe <= 2496) ==> v result == 0) /\
 						    (v result == ((v fe * 4 + 3329) / 6658) % 2)"#)))]
@@ -101,12 +98,30 @@ pub(crate) fn compress_message_coefficient(fe: U16) -> U8 {
         assert (v $res = v $r1)"#
     );
 
-    // Hacspec-form post `v res == ((v fe * 4 + 3329) / 6658) % 2` is
-    // discharged via the `panic_free` admit; the math is a 3-case
-    // integer-division evaluation on `fe ∈ [0, 3329)`:
+    // Hacspec-form post `v res == ((v fe * 4 + 3329) / 6658) % 2` —
+    // discharged by 3-case integer-division enumeration on
+    // `fe ∈ [0, 3329)`:
     //   fe ∈ [0, 832]:    4*fe+3329 ∈ [3329, 6657],   quot 0, mod 2 = 0
     //   fe ∈ [833, 2496]: 4*fe+3329 ∈ [6661, 13313],  quot 1, mod 2 = 1
     //   fe ∈ [2497, 3328]: 4*fe+3329 ∈ [13317, 16641], quot 2, mod 2 = 0
+    hax_lib::fstar!(
+        r#"assert (v $fe < 833 ==>
+            (v $fe * 4 + 3329) >= 3329 /\ (v $fe * 4 + 3329) < 6658);
+        assert (v $fe < 833 ==>
+            (v $fe * 4 + 3329) / 6658 == 0);
+        assert (v $fe < 833 ==> ((v $fe * 4 + 3329) / 6658) % 2 == 0);
+        assert ((v $fe >= 833 && v $fe <= 2496) ==>
+            (v $fe * 4 + 3329) >= 6658 /\ (v $fe * 4 + 3329) < 13316);
+        assert ((v $fe >= 833 && v $fe <= 2496) ==>
+            (v $fe * 4 + 3329) / 6658 == 1);
+        assert ((v $fe >= 833 && v $fe <= 2496) ==>
+            ((v $fe * 4 + 3329) / 6658) % 2 == 1);
+        assert (v $fe > 2496 ==>
+            (v $fe * 4 + 3329) >= 13316 /\ (v $fe * 4 + 3329) < 19974);
+        assert (v $fe > 2496 ==>
+            (v $fe * 4 + 3329) / 6658 == 2);
+        assert (v $fe > 2496 ==> ((v $fe * 4 + 3329) / 6658) % 2 == 0)"#
+    );
     res
 }
 
@@ -173,10 +188,10 @@ let compress_message_coefficient_range_helper (fe: u16) : Lemma
     v (Seq.index ${a}.f_elements i) < 3329"#))]
 // Hacspec-form post: `v result[i] == ((v a[i] * 4 + 3329) / 6658) % 2`
 // (hacspec `compress_d _ 1` in integer form).  Marked `panic_free` —
-// body proof deferred per user directive ("move up the stack"); the
-// math chains primitive `compress_message_coefficient`'s integer post
-// up through the per-lane assignment.  Layer-1 chunk-commute lemma
-// then converts integer form → spec-fe form.
+// integer-form loop-invariant body proof attempted (commit message),
+// timed out at rlimit 600 + split_queries on Q82/Q83 (the closing-loop
+// invariant subtype check).  See USER-N "compress_1 chunk-wrapper Z3
+// saturation".
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
     (let res_i = v (${result}.f_elements.[ sz i ] <: i16) in
      let a_i   = v (Seq.index ${a}.f_elements i) in
@@ -286,14 +301,12 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut a: PortableVector) -> Po
     a
 }
 
-#[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"forall i. let x = Seq.index ${a}.f_elements i in
                                         (x == mk_i16 0 \/ x == mk_i16 1)"#))]
 // Hacspec-form post: per-lane integer equation matching
 // `Hacspec_ml_kem.Compress.decompress_d fe 1` = `(2*fe*3329 + 2) / 4`.
 // On input ∈ {0, 1}: decompress_d 0 1 = 0, decompress_d 1 1 = 1665.
-// Marked `panic_free` per user directive — body proof deferred.
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
         (let res_i = v (Seq.index ${result}.f_elements i) in
          let a_i   = v (Seq.index ${a}.f_elements i) in
@@ -305,39 +318,55 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
 
     hax_lib::fstar!("assert(forall i. Seq.index ${z}.f_elements i == mk_i16 0)");
     hax_lib::fstar!(
-        r#"assert(forall i. let x = Seq.index ${a}.f_elements i in 
+        r#"assert(forall i. let x = Seq.index ${a}.f_elements i in
                                       ((0 - v x) == 0 \/ (0 - v x) == -1))"#
     );
     hax_lib::fstar!(
         r#"assert(forall i. i < 16 ==>
-                                      Spec.Utils.is_intb (pow2 15 - 1) 
+                                      Spec.Utils.is_intb (pow2 15 - 1)
                                         (0 - v (Seq.index ${a}.f_elements i)))"#
     );
 
     let s = sub(z, &a);
 
+    // Per-lane pairing: a_i == 0 ⇒ s_i == 0; a_i == 1 ⇒ s_i == -1.
     hax_lib::fstar!(
-        r#"assert(forall i. Seq.index ${s}.f_elements i == mk_i16 0 \/ 
-                                      Seq.index ${s}.f_elements i == mk_i16 (-1))"#
+        r#"assert(forall i. Seq.index ${s}.f_elements i == mk_i16 0 \/
+                                      Seq.index ${s}.f_elements i == mk_i16 (-1));
+        assert (forall (i:nat). i < 16 ==>
+             (let a_i = v (Seq.index ${a}.f_elements i) in
+              let s_i = v (Seq.index ${s}.f_elements i) in
+              (a_i == 0 ==> s_i == 0) /\
+              (a_i == 1 ==> s_i == -1)))"#
     );
 
     let res = bitwise_and_with_constant(s, 1665);
 
+    // Per-lane pairing: s_i == 0 ⇒ res_i == 0; s_i == -1 ⇒ res_i == 1665.
+    // bitwise_and_with_constant's spec gives res_i == s_i & 1665.
     hax_lib::fstar!(
         r#"assert(forall i. Seq.index ${res}.f_elements i == mk_i16 0 \/
-                                      Seq.index ${res}.f_elements i == mk_i16 1665)"#
+                                      Seq.index ${res}.f_elements i == mk_i16 1665);
+        assert (forall (i:nat). i < 16 ==>
+             (let a_i = v (Seq.index ${a}.f_elements i) in
+              let res_i = v (Seq.index ${res}.f_elements i) in
+              (a_i == 0 ==> res_i == 0) /\
+              (a_i == 1 ==> res_i == 1665)))"#
     );
 
     // Hacspec form: res_i == (2*a_i*3329 + 2) / 4 for a_i ∈ {0, 1}.
     //   a_i = 0: (0 + 2)/4 = 0  (res = 0)
     //   a_i = 1: (6658 + 2)/4 = 6660/4 = 1665  (res = 1665)
-    // The equation is bijective on {0,1} ↔ {0, 1665}, so we case
-    // on a_i.  The assertion pairs up cleanly.
     hax_lib::fstar!(
         r#"assert (forall (i:nat). i < 16 ==>
              (let a_i = v (Seq.index ${a}.f_elements i) in
               (a_i == 0 ==> (2 * a_i * 3329 + 2) / 4 == 0) /\
-              (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)))"#
+              (a_i == 1 ==> (2 * a_i * 3329 + 2) / 4 == 1665)));
+        assert (forall (i:nat). i < 16 ==>
+             (let a_i = v (Seq.index ${a}.f_elements i) in
+              let res_i = v (Seq.index ${res}.f_elements i) in
+              (res_i == 0 \/ res_i == 1665) /\
+              res_i == (2 * a_i * 3329 + 2) / 4))"#
     );
 
     res
@@ -355,8 +384,10 @@ pub(crate) fn decompress_1(a: PortableVector) -> PortableVector {
 // Hacspec-form post: `v result[i] == (2*v a[i]*3329 + pow2 D) / pow2 (D+1)`,
 // which is exactly `Hacspec_ml_kem.Compress.decompress_d fe D` when fe
 // has val = v a[i] (fe in [0, 2^D) guarantees val < 2^D < 3329 so the
-// u16 mod-3329 normalisation is a no-op).  Marked `panic_free` per
-// user directive — body proof deferred.
+// u16 mod-3329 normalisation is a no-op).
+// Marked `panic_free` — Z3-walled (rlimit 600 + split_queries times out
+// on Q82/Q83 closing-loop subtype check; same pattern as compress_1
+// chunk wrapper).  See USER-N "compress.rs chunk-wrapper Z3 saturation".
 #[hax_lib::ensures(|result| fstar!(r#"forall (i:nat). i < 16 ==>
         (let res_i = v (Seq.index ${result}.f_elements i) in
          let a_i   = v (Seq.index ${a}.f_elements i) in
