@@ -51,6 +51,9 @@ pub(crate) mod generic {
     );
 
     #[inline(always)]
+    #[hax_lib::ensures(|_| fstar!(r#"
+        Seq.length ${signing_key}_future == Seq.length ${signing_key} /\
+        Seq.length ${verification_key}_future == Seq.length ${verification_key}"#))]
     pub(crate) fn generate_key_pair<
         SIMDUnit: Operations,
         Sampler: X4Sampler,

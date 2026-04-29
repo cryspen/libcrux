@@ -398,6 +398,14 @@ benefit from these.  The three wrappers remain admitted.
   `sign_pre_hashed_mut`, `sign_pre_hashed`, `sign_mut`, `sign`,
   `verify`, `verify_pre_hashed`, and the free fn
   `derive_message_representative`.
+- **Length-preservation ensures (2026-04-29)**: `generate_key_pair`
+  carries `Seq.length ${signing_key}_future == Seq.length ${signing_key}
+  /\ Seq.length ${verification_key}_future == Seq.length ${verification_key}`,
+  established via the body admit.  This unblocks the
+  `Instantiations.{Portable,Avx2,Neon}.Ml_dsa_{44,65,87}_` subtype
+  coercion (slice-typed inner return → array-typed outer signature)
+  for all 9 platform-instantiation modules and all 3 multiplexing
+  modules.
 - **Phase added**: above-trait C.9 (Ml_dsa_generic.fst promotion;
   16 modules total — 1 generic + 3 per-param + 9 platform-instantiations
   + 3 multiplexing).
