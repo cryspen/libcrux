@@ -10,7 +10,10 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Neon.fst \
               Libcrux_ml_kem.Vector.Neon.Ntt.fst \
               Libcrux_ml_kem.Vector.Neon.Serialize.fst \
-              Libcrux_ml_kem.Vector.Neon.Vector_type.fst
+              Libcrux_ml_kem.Vector.Neon.Vector_type.fst \
+              Libcrux_ml_kem.Vector.Neon.Vector_type.fsti
+# ^ .fsti masks Error 162 (decidable-equality module-level issue) per
+# MLKEM_STATUS.md Phase 6d directive.  Out of scope for portable+AVX2.
 
 # =====================================================================
 # Trait-boundary admits — TEMPORARY, scope = trait_post-strengthening work
