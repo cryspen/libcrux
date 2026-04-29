@@ -293,6 +293,46 @@ directly; the A.6 `reduce` insertion is no longer needed (removed in
 below-trait per F-5 finding).  The 3 remaining body admits are now
 purely SMT-trigger work, not spec gaps.
 
+**Closure attempt (2026-04-29)**: deeper investigation of the
+remaining 3 wrappers surfaced two infrastructure shortfalls and one
+hax extraction quirk:
+
+1. *`shift_left_then_reduce` had no `ensures`.*  The wrapper's
+   per-simd-unit post (`shift_left_then_reduce_lane_post`) lifts to
+   `is_i32b_array_opaque FIELD_MAX re_future`, but the polynomial
+   wrapper exposed nothing — the chain `shift_left_then_reduce →
+   ntt` couldn't compose at the wrapper level.  Added an `ensures`
+   producing the polynomial-level FIELD_MAX bound + per-simd-unit
+   `Classical.forall_intro` lifting (commit infra in this session).
+2. *`Polynomial::zero()` had no `ensures`.*  `compute_w_approx` does
+   `let mut inner_result = PolynomialRingElement::zero();` then adds
+   into it; without a post on `zero()` the inner accumulator started
+   with `Prims.l_True` instead of `is_i32b_array_opaque 0`.  Added
+   an `ensures` producing the per-simd-unit zero bound (commit infra
+   in this session).
+3. *Hax typeclass-resolution quirk on tuple-folded slice access.*
+   When the outer fold accumulator is a tuple of slices (`(a_as_ntt,
+   result)`), nested-fold body `result.[i]` access fails with
+   `Error 228: Could not solve typeclass constraint
+   Core_models.Ops.Index.t_Index (FStar.Seq.Base.seq ...) usize`
+   even though the same shape works for single-slice accumulators
+   (e.g. `add_vectors`).  Worked around by changing
+   `compute_as1_plus_s2`'s `a_as_ntt: &mut [T]` parameter to
+   `&[T]` (so the outer fold is single-slice), with the body cloning
+   matrix entries into a `let mut product = ...` local.  The
+   workaround DID extract cleanly but the SMT proof did not close in
+   the 20-min budget — query 92 of `compute_w_approx` (the simplest
+   of the three, post = length only) timed out at rlimit 800 with
+   `--retry 3`.  Most queries (~85 of ~92) discharged in <100ms;
+   one inner-loop preservation query at line 728-913 took 72s rlimit
+   396.  The dominant cost is the outer-loop frame-property
+   reasoning interacting with the per-simd-unit unfolds inside
+   each wrapper's `--split_queries always` discharge.
+
+The infrastructure (`shift_left_then_reduce` ensures + `zero()`
+ensures) is committed in this session; future closure attempts will
+benefit from these.  The three wrappers remain admitted.
+
 **Sprint scope (recorded 2026-04-29)**:
 
 *Core (must achieve)*:
