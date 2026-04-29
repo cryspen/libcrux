@@ -1,13 +1,130 @@
 # agent-trackA — session log
 
 **Session date:** 2026-04-29 (Phase 1 — trait pre/post fixes;
-Phase 2 — Wave-A B6 closure; Phase 3 — Wave-B coordinator setup)
+Phase 2 — Wave-A B6 closure; Phase 3 — Wave-B coordinator setup;
+Phase 4 — Wave-A continuation B1+B3)
 **Branch:** `trait-opacify`
 **Tip at end:** `fa31480cd` (Wave-A handoff; B6 / USER-1 / A8 4-case
 Barrett enumeration closed at `2f96abe99`).  Phase 1 Cluster 1 at
 `05967b8fe`, Cluster 3 partial at `a51ddbfc3`.  Wave-B coordinator
 session 2026-04-29 11:00–11:30 added documentation only on
 `agent/lane-A2` rooted at `fa31480cd`; no new lane work merged.
+
+Wave-A continuation (this session, 2026-04-29 13:00-14:00) closed
+B1 (partial) at `f87e9a8cf` and B3 (full + USER-9a bonus) at
+`e5c4a6f49`, both off `bd2ee86c4`.  Net: -15 admits.
+
+## 2026-04-29 13:00–14:00 — Wave-A continuation (B1 + B3)
+
+Ran in isolated worktree
+`/Users/karthik/libcrux/.claude/worktrees/agent-a990e778f4d34f1c2/`
+(separate clone from `/Users/karthik/libcrux-trait-opacify/`).
+Branches `agent/lane-B1` (`f87e9a8cf`) and `agent/lane-B3`
+(`e5c4a6f49`) off `bd2ee86c4`; merged into `agent/lane-B1-B3-merged`
+at session end.
+
+### Lane B1 — `compress.rs` panic_free drops (PARTIAL)
+
+| Function | Line | Result |
+|---|---|---|
+| `compress_message_coefficient` | 27 | ✅ CLOSED — 3-case integer enum closed in 1.0s with explicit witnesses for `(v fe * 4 + 3329)` ranges |
+| `compress_ciphertext_coefficient` | 113 | ⏸ kept admitted — Barrett primitive USER-N (preexisting) |
+| `compress_1` chunk wrapper | 170 | ⏸ kept admitted — Z3 wall (USER-13) |
+| `compress<D>` chunk wrapper | 222 | ⏸ kept admitted — depends on Barrett (USER-N) |
+| `decompress_1` chunk wrapper | 289 | ✅ CLOSED — straight-line a→s→res chain with per-lane pairing assertions; rlimit 400 + split_queries |
+| `decompress_d` chunk wrapper | 347 | ⏸ kept admitted — same Z3 wall pattern as compress_1 (USER-13) |
+
+**Module verifies in 25.7s** (warm cache).  2 panic_free dropped
+(primitive `compress_message_coefficient` + chunk `decompress_1`).
+3 chunk wrappers retained panic_free; filed as USER-13.
+
+### B1 Z3 wall finding (compress_1 spike)
+
+Spike attempted on `compress_1` chunk wrapper:
+- Added `#[cfg(hax)] let _a0 = a` to capture original (per the
+  `arithmetic.rs` add/sub pattern).
+- Enriched loop invariant with: per-iteration future-frame
+  (`j >= v i ==> a.f_elements[j] == _a0.f_elements[j]` with FIELD_MODULUS
+  bound) AND past-iteration result fact
+  (`j < v i ==> v a.f_elements[j] == ((v _a0.f_elements[j] * 4 + 3329) / 6658) % 2`).
+- Bumped rlimit to 600 + `--split_queries always`.
+
+**Outcome at rlimit 600 + split_queries:** Q82 / Q83 (the closing-loop
+subtype check on `a` body) cancel at 600/600 in 206-229s each.  ~7 min
+total wall time on the single function.
+
+Same Z3 saturation shape as B5 (USER-11): accumulating context across
+the 16-lane forall + integer-form per-lane equations.  Each future
+iteration must reprove the entire invariant (16 lanes × 2 conjuncts ×
+integer arithmetic).
+
+**Step-back per R6:** reverted to panic_free, kept the primitive +
+decompress_1 closures.  Filed USER-13 with 3 path-forward strategies.
+
+### Lane B3 — AVX2 serialize/deserialize bridges (FULL CLOSURE)
+
+13 admitted bridge lemmas closed via a new axiom in
+`crates/utils/intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fsti`:
+
+```
+val bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+      (v: bit_vec 256) (d: nat{d > 0 /\ d <= 16}) (i: nat{i < 16 * d})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array
+              (vec256_as_i16x16 v) d i
+             == v ((i / d) * 16 + i % d))
+```
+
+This axiom asserts that `vec256_as_i16x16` (an abstract `val`-only
+function, no body) is the canonical bit-exact lane-decomposition.
+Without a definition of `vec256_as_i16x16`, this property is
+unprovable — it must be axiomatized.  This is a SIDEWAYS admit (1
+new axiom) but justifiable: the trait pre/post relies on the
+canonical lane-decomposition, and the axiom is its semantics.
+
+**Bridges closed (13):**
+  - `op_serialize_{4,10,12}_pre_bridge` (3)
+  - `op_serialize_{4,10,11,12}_post_bridge` (4)
+  - `op_deserialize_{1,4,10,11,12}_post_bridge` (5)
+  - `op_serialize_11_pre_bridge` (1, USER-9a bonus)
+
+Helper lemma `lemma_vec256_lane_bounded` factored out of the
+deserialize_N bridges, deriving per-lane `bounded` from the
+high-bits-zero hypothesis using the d=16 decomposition.
+
+**Module verifies in 52s** (warm cache).
+
+**Bridges still admitted (4, B4 territory — descoped):**
+  - `op_ntt_layer_{1,2}_step_bridge`
+  - `op_inv_ntt_layer_{1,2}_step_bridge`
+
+### Net delta
+
+  - **B1 PROGRESS:** -2 (compress_message_coefficient + decompress_1)
+  - **B3 PROGRESS:** -13 (10 standard + 3 USER-9a bonus bridges)
+  - **B3 SIDEWAYS:** +1 (Avx2_extract.fsti axiom)
+  - **B1 FAIR GAME:** USER-13 filed (compress_1 / compress<D> / decompress_d Z3 wall)
+  - **Net:** -15 PROGRESS, +1 SIDEWAYS, +1 FAIR GAME, **-14 net**
+
+### Hot files touched
+
+  - `libcrux-ml-kem/src/vector/portable/compress.rs` (B1)
+  - `libcrux-ml-kem/proofs/fstar/extraction/Libcrux_ml_kem.Vector.Portable.Compress.fst` (auto-extracted, B1)
+  - `libcrux-ml-kem/src/vector/avx2.rs` (B3)
+  - `crates/utils/intrinsics/src/avx2_extract.rs` (B3 — adds the lemma to the F* `replace` interface block)
+
+The intrinsics edit is the only cross-cutting change (touches a
+shared module per R10).  Justification: the brief explicitly
+authorized adding a `bit_vec_of_int_t_array` decomposition lemma in
+`Libcrux_intrinsics.Avx2_extract` for B3.
+
+### Inter-wave handoff
+
+Both lanes are non-gating for Wave-B / Wave-C: B1 is admit cleanup
+on impl-side primitives; B3 closes admits in `Vector.Avx2.fst`
+(below-trait, doesn't propagate to above-trait).  Wave-B can proceed
+unchanged.
+
+---
 
 ## 2026-04-29 11:00–11:30 — Wave-B coordinator (Phase 3 setup-only)
 

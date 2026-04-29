@@ -7,11 +7,15 @@
 | Lane | Status | Commit |
 |---|---|---|
 | B6 (USER-1 / A8) | ✅ LANDED | `2f96abe99` |
-| B1, B2, B3, B5 | ⏸ DEFERRED | — (out-of-budget; see `agent-trackA.md` Wave-A entry) |
+| B1 (compress.rs panic_free) | 🔶 PARTIAL | `f87e9a8cf` — primitive `compress_message_coefficient` + chunk wrapper `decompress_1` closed (2 / 6).  3 chunk wrappers (compress_1, decompress_d, compress<D>) remain panic_free due to Z3 saturation on 16-element forall + integer-form post in loop invariant.  Filed as USER-13. |
+| B3 (AVX2 serialize/deserialize bridges) | ✅ LANDED | `e5c4a6f49` — 13 admitted bridges closed via new `bit_vec_of_int_t_array_vec256_as_i16x16_lemma` axiom in `Libcrux_intrinsics.Avx2_extract.fsti`.  Includes USER-9a 11-bit bonus. |
+| B2, B5 | ⏸ DEFERRED | — (USER-12 / USER-11; Z3 walls) |
 | B4 | ⏸ DESCOPED | — (per prompt directive; USER-4) |
 
-Net admit-count delta: **-1 PROGRESS** (Chunk.fst:985 closed).  No
-SIDEWAYS, no FAIR GAME, no regressions.  Wave-B can proceed (B6 was
+Net admit-count delta: **-1 (B6) -2 (B1) -13 (B3) = -16 PROGRESS**,
+**+1 SIDEWAYS** (axiom in Avx2_extract.fsti), **+1 FAIR GAME**
+(USER-13 filed for the 3 remaining compress.rs chunk wrappers).
+Wave-A continuation: net **-15** admits.  Wave-B can proceed (B6 was
 the only lane gating Wave-B).
 
 ## Wave-B summary (2026-04-29 11:00–11:30, setup-only)
@@ -39,17 +43,32 @@ hax-lib's `panic_free` semantics (does NOT emit
 
 ## Admit count
 
-Below-trait movable admits at Wave-A end:
+Below-trait movable admits at Wave-A continuation end:
 - `Hacspec_ml_kem.Commute.Chunk.fst`: 2 (decompress chunk_commutes at
   lines 1069, 1083 — above-trait, A1 territory).
-- `Libcrux_ml_kem.Vector.Avx2.fst`: 14 bridge admits (B3 / B4
-  territory).
+- `Libcrux_ml_kem.Vector.Avx2.fst`: 4 bridge admits (B4 territory:
+  op_ntt_layer_{1,2}_step_bridge, op_inv_ntt_layer_{1,2}_step_bridge).
+  Was 14; B3 closed 10, USER-9a bonus closed 3, leaving 4 NTT bridges.
 - `Libcrux_ml_kem.Vector.Avx2.Ntt.fst`: 6 admits (B4 territory).
 - `Libcrux_ml_kem.Vector.Portable.fst`: 2 `--admit_smt_queries true`
   pushes (op_ntt_layer_1_step, op_inv_ntt_layer_1_step — B2).
 - `src/vector/portable.rs`: 1 panic_free (op_ntt_multiply — B5).
-- `src/vector/portable/compress.rs`: 6 panic_free (B1).
+- `src/vector/portable/compress.rs`: 4 panic_free (B1 partial:
+  compress_ciphertext_coefficient — Barrett primitive USER-N;
+  compress_1, compress<D>, decompress_d — chunk wrappers USER-13).
+  Was 6; B1 closed 2.
 - `src/vector/avx2.rs`: 7 panic_free (B3 / B4 / B5 territory).
+  Note: B3 was bridge-admit territory not panic_free; remaining
+  panic_free unchanged.
+
+## SIDEWAYS admits
+
+- `crates/utils/intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fsti`:
+  1 new `val` axiom (`bit_vec_of_int_t_array_vec256_as_i16x16_lemma`)
+  asserting that `vec256_as_i16x16` is the canonical bit-exact
+  lane-decomposition.  Used by all op_serialize/deserialize_N_bridge
+  proofs.  This is a structural axiom about the abstract function;
+  it cannot be proven without a definition of `vec256_as_i16x16`.
 
 ## Phase 7a status
 
@@ -440,6 +459,18 @@ and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
 - **Why USER-N**: 4-zeta wall is Z3-saturation, not math.  Pattern is
   proven (`b7b49c358`); applying it to layers 1 (forward + inverse)
   is mechanical but ~2 sessions and best done with smtprofiling.
+
+### USER-13 — drop `panic_free` on `compress_1` / `compress<D>` / `decompress_d` chunk wrappers (Wave-A continuation B1; Z3-walled)
+
+- **Files**: `libcrux-ml-kem/src/vector/portable/compress.rs` lines 170 (`compress_1`), 222 (`compress<D>`), 347 (`decompress_d`).
+- **Status**: panic_free retained; primitive `compress_message_coefficient` (line 27) and chunk wrapper `decompress_1` (line 289) closed in `f87e9a8cf`.  `compress<D>` is also blocked on USER-N Barrett primitive (`compress_ciphertext_coefficient` line 113).
+- **Wall**: 16-element forall + integer-form per-lane equation in loop invariant.  Spike at rlimit 600 + `--split_queries always` with input-tracking helper `#[cfg(hax)] let _a0 = a` and enriched invariant: Q82/Q83 cancel at 600/600 in 200+s each on the closing-loop subtype check.  Same shape Z3 saturation as B5 (USER-11) — accumulator forall over the per-lane `((a_j * 4 + 3329) / 6658) % 2` integer division equation cannot be reproven incrementally.
+- **Path forward**:
+  1. Per-lane decomposition: replace forall in invariant with explicit 16-lane assertions per iteration (cheap pre-SMT, total +200 lines of body proof).
+  2. Opaque per-lane predicate wrapper: define `compress_1_lane_post i a a0 = ((v a0[i] * 4 + 3329) / 6658) % 2 == v a[i]` and gate the forall with `[@@ "opaque_to_smt"]`.
+  3. Loop-invariant frame factoring: the issue is the frame `(j >= v $i ==> a.f_elements[j] == _a0.f_elements[j])` chained with the past-iteration integer-form fact.  An opaque wrapper around the past-iteration fact would cut Z3 context.
+- **Sister issue**: USER-11 (op_ntt_multiply panic_free) has the same shape — accumulating Z3 context across per-lane forall + integer arithmetic.  Both benefit from per-lane decomposition or opaque wrapping.
+- **Why USER-N**: Z3 wall hit at 20-min cap; needs smtprofiling justification for a higher rlimit or per-conjunct factoring strategy.
 
 ---
 
