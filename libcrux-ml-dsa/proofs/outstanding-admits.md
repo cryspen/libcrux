@@ -127,9 +127,26 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   `Could not solve typeclass constraint Core_models.Ops.Index.t_Index
   (FStar.Seq.Base.seq (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement ...))`.
   Both args have the same type — asymmetric.
-- **Suggested mitigation**: rewrite the body without two simultaneous
-  `&mut` accesses, e.g. clone t0[i] and t1[i] into locals, call the
-  helper, then write back.  Or report as hax bug.
+- **Closure attempt (2026-04-29, ~22 min)**: tried three restructurings —
+  (1) loop_invariant + helper kept; (2) local-clone of `t0[i]`/`t1[i]` to
+  mutable locals + `power2round_one_ring_element(&mut local_t0, &mut local_t1)`
+  + write-back; (3) inline helper body so the call site passes
+  `&mut t0[i].simd_units[j]` and `&mut t1[i].simd_units[j]` to
+  `SIMDUnit::power2round` (a trait method, not a local fn).
+  All three hit Error 228 on the SECOND slice access (`t1.[i]` or
+  `t1[i].simd_units.[j]`) regardless of restructure.
+  Notably `decompose_vector` extracts cleanly with the parallel
+  `(low.[i], high.[i])` shape — difference unclear; possibly fold
+  accumulator naming (`(high, low)` alphabetical vs `(t0, t1)`),
+  loop_invariant content, or context-pruning of the typeclass
+  instance set.  This appears to be a hax-extraction asymmetry rather
+  than something fixable from arithmetic.rs alone.
+- **Suggested mitigation**: rename the slice arguments so the fold
+  accumulator is alphabetized, e.g. `(t0, t1)` → `(low, high)` or
+  `(a, b)`, and re-test.  Or factor into a single fold with a
+  combined `(t0_slice, t1_slice)` tuple-typed parameter passed to
+  helper that accepts both as values and returns a tuple.  Or report
+  as hax bug.
 
 ### Libcrux_ml_dsa.Arithmetic.use_hint
 - **File**: `src/arithmetic.rs:155-185` (post `b097daf01`)
@@ -140,9 +157,30 @@ Items repaired across commits `04fd066f0`, `42d4a3347`, and `1c827fab7`.
   `Operations::use_hint` call's pre is satisfied.  The intro lemma
   `lemma_is_binary_array_8_intro` exists; needs to be applied per-j
   with hypotheses from the slice-level binary property.
-- **Suggested mitigation**: ~30 min — in the loop body, after
-  `from_i32_array`, add `Classical.forall_intro` over j applying the
-  intro lemma.  Then the inner `use_hint` call's pre discharges.
+- **Closure attempt (2026-04-29)**: investigation showed
+  `from_i32_array` in `src/polynomial.rs:128-136` has NO ensures
+  (extracted post is `Prims.l_True`).  The intro lemma cannot fire
+  because the per-simd-unit `repr()` equality is not visible at the
+  call site without inlining.  The recipe ("Classical.forall_intro
+  applying lemma_is_binary_array_8_intro after from_i32_array") relied
+  on `from_i32_array` having a strong post — which it does not.
+- **Suggested mitigation (Option A, in arithmetic.rs only)**: replace
+  the `from_i32_array(&hint[i], &mut tmp)` call with an inline
+  per-simd-unit fold calling `SIMDUnit::from_coefficient_array`
+  directly.  `from_coefficient_array` has the trait post
+  `future(out).repr() == array`, so a loop_invariant of shape
+  `forall kk < k. is_binary_array_8_opaque (f_repr tmp.simd_units[kk])`
+  carries the binary property forward (via `lemma_is_binary_array_8_intro`
+  applied per-iteration after the `from_coefficient_array` call).
+  Estimated effort: 30-45 min (uncertain — first iteration would still
+  need the loop-invariant for the outer i-loop to thread the hint binary
+  property + the inner loop's accumulated post + the j-loop after; non-trivial).
+- **Suggested mitigation (Option B)**: add an `ensures` to
+  `Polynomial::from_i32_array` exposing
+  `forall kk < 32. (future(result).simd_units[kk]).repr() == array[kk*8..(kk+1)*8]`.
+  Then the original recipe works directly.  Out of scope for the
+  arithmetic.rs lane but is the cleaner fix and unblocks any other
+  call site needing a per-simd-unit post.
 
 ### Libcrux_ml_dsa.Arithmetic.power2round_one_ring_element
 - **Status**: closed at `8d532957e` — admit removed, strong post
@@ -159,15 +197,34 @@ these are local to the above-trait lane.
 - **Files**: `src/encoding/{error,t0}.rs`, in `deserialize_to_vector_then_ntt`
 - **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
 - **Phase added**: above-trait C.2/C.3 (`2eefebe43`, `9848dde7c`)
-- **Diagnosis**: each function loops over `serialized.chunks_exact(N)`,
-  calling `deserialize` then `ntt` per chunk.  The chain works
-  in principle (deserialize gives ≤ pow2 12 ≤ NTT_BASE_BOUND),
-  but the loop_invariant must track the partial-progress per-poly
-  bound across `ring_elements[0..i]` plus the FIELD_MAX bound that
-  `ntt`'s post establishes for indices already processed.
-- **Suggested mitigation**: loop_invariant of shape
-  `forall k<i. is_i32b_array_opaque FIELD_MAX (ring_elements[k].simd_units[*])`
-  with the deserialize/ntt chain preserving it per iteration. ~20 min.
+- **Status update (2026-04-29)**:
+  - **T0**: CLOSED at `577a112cf` — body admit replaced with real proof.
+    Loop invariant `forall k<i. forall j<32. is_i32b_array_opaque FIELD_MAX
+    (ring_elements[k].simd_units[j].repr)`; `pow2 12 → NTT_BASE_BOUND` lift via
+    per-j `Spec.Utils.is_i32b_array_larger` invoked by `Classical.forall_intro`
+    after the local `deserialize` (which propagates the trait's
+    `is_i32b_strict_lower_array_opaque (pow2 12)` post via the existing SMTPat
+    `lemma_is_i32b_strict_lower_implies_array_opaque`).  Verified 2.5s @ rlimit 21.
+  - **Error**: BODY ADMIT RETAINED, length-preservation ensures added at
+    `(this commit)`.  Strong-bound shape is harder than T0's because the
+    `Operations::error_deserialize` trait post is in eta-conditional `forall8`
+    form (raw bound, not `is_i32b_strict_lower_array_opaque` with SMTPat
+    support), so the lift to `is_i32b_array_opaque eta_value` is manual
+    (would need `reveal_opaque (`%is_i32b_array_opaque)` plus a case-split
+    on `eta` between `Eta_Two` and `Eta_Four`).  A prior agent attempt
+    (`8601b2420` on `agent-error-rs-deserialize-ntt`) reported all individual
+    sub-goals (deserialize ensures, ntt pre, index pre) verifying under
+    `assert`, but the composite loop-invariant *preservation* step (extending
+    `forall k<i ...` to `forall k<i+1 ...` through `update_at_usize` + `ntt`'s
+    post) timed out at `--z3rlimit 14-15s` with `reason-unknown=canceled`.
+    Likely fix path: pivot to polynomial-level
+    `Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly` (already defined; SMTPat
+    + intro lemmas in place) instead of the nested-forall shape, to avoid
+    quantifier-trigger explosion.
+- **Suggested mitigation (closing the body)**: as above — try is_bounded_poly
+  factoring to avoid nested-forall blowup; or write a manual bridge lemma in
+  `Spec.Utils` converting eta-conditional `forall8` to `is_i32b_array_opaque`,
+  then mirror T0's pattern.  ~30-45 min once the bridge is in place.
 
 ### Libcrux_ml_dsa.Encoding.Verification_key.{generate_serialized,deserialize}
 - **File**: `src/encoding/verification_key.rs`
