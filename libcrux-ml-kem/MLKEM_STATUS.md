@@ -1,6 +1,32 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `0784e3b72` (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; layer 4_plus body TEMP-admitted pending Step 5 drive-to-the-top spike; 2026-04-28 late evening)
+**Branch**: `trait-opacify`  **Tip**: `2f96abe99` (Wave-A B6 / USER-1 / A8 4-case Barrett enumeration closed in `Hacspec_ml_kem.Commute.Chunk.fst`; 2026-04-29).  Prior tip: `0784e3b72` (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; layer 4_plus body TEMP-admitted pending Step 5 drive-to-the-top spike; 2026-04-28 late evening)
+
+## Wave-A summary (2026-04-29)
+
+| Lane | Status | Commit |
+|---|---|---|
+| B6 (USER-1 / A8) | ✅ LANDED | `2f96abe99` |
+| B1, B2, B3, B5 | ⏸ DEFERRED | — (out-of-budget; see `agent-trackA.md` Wave-A entry) |
+| B4 | ⏸ DESCOPED | — (per prompt directive; USER-4) |
+
+Net admit-count delta: **-1 PROGRESS** (Chunk.fst:985 closed).  No
+SIDEWAYS, no FAIR GAME, no regressions.  Wave-B can proceed (B6 was
+the only lane gating Wave-B).
+
+## Admit count
+
+Below-trait movable admits at Wave-A end:
+- `Hacspec_ml_kem.Commute.Chunk.fst`: 2 (decompress chunk_commutes at
+  lines 1069, 1083 — above-trait, A1 territory).
+- `Libcrux_ml_kem.Vector.Avx2.fst`: 14 bridge admits (B3 / B4
+  territory).
+- `Libcrux_ml_kem.Vector.Avx2.Ntt.fst`: 6 admits (B4 territory).
+- `Libcrux_ml_kem.Vector.Portable.fst`: 2 `--admit_smt_queries true`
+  pushes (op_ntt_layer_1_step, op_inv_ntt_layer_1_step — B2).
+- `src/vector/portable.rs`: 1 panic_free (op_ntt_multiply — B5).
+- `src/vector/portable/compress.rs`: 6 panic_free (B1).
+- `src/vector/avx2.rs`: 7 panic_free (B3 / B4 / B5 territory).
 
 ## Phase 7a status
 
@@ -83,12 +109,14 @@ decidable-eq, unrelated).
 Manual / Z3-blocked / math-heavy proofs.  Each one is exemplary: the
 agent can copy the style to extend the pattern to similar admits.
 
-### USER-1 (do first — template for all subsequent compress<D> posts)
+### USER-1 ✅ CLOSED 2026-04-29 (Wave-A B6)
 
 **`lemma_compress_ciphertext_coefficient_fe_commute`** (a.k.a. **A8**) in
 `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`.
 
-- **Status**: admitted, statement preserved.
+- **Status**: ✅ proven at commit `2f96abe99`.  Body = 2 f_val asserts
+  + 4 pow2 witnesses (16, 32, 1024, 2048) at rlimit 400.  Verifies in
+  86s cold (full Chunk.fst).  Mirrors A5's D=1 closure shape.
 - **Math**: Barrett-exactness 4-case enumeration over D ∈ {4, 5, 10, 11}.
   For each D, the integer formula `((v fe * 2 * 2^D + 3329) / 6658) % 2^D`
   equals hacspec's `compress_d (i16_to_spec_fe fe) D`.

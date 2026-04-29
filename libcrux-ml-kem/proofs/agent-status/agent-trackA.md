@@ -1,9 +1,138 @@
 # agent-trackA — session log
 
-**Session date:** 2026-04-29 (Phase 1 — trait pre/post fixes)
+**Session date:** 2026-04-29 (Phase 1 — trait pre/post fixes;
+Phase 2 — Wave-A B6 closure)
 **Branch:** `trait-opacify`
-**Tip at end:** `a51ddbfc3` (Cluster 3 partial — 4 portable BitVec
-lemmas).  Cluster 1 lands at `05967b8fe`.
+**Tip at end:** `2f96abe99` (Wave-A B6 / USER-1 / A8 4-case Barrett
+enumeration closed).  Phase 1 Cluster 1 at `05967b8fe`, Cluster 3
+partial at `a51ddbfc3`.
+
+## 2026-04-29 — Wave-A coordinator (Phase 2 below-trait, partial)
+
+Single-agent coordinator role per `wave-A-prompt.md`.  Worktree
+`/Users/karthik/libcrux-trait-opacify/`; below-trait surface.
+
+### Wave-A deliverable
+
+| Lane | Status | Commit | Notes |
+|---|---|---|---|
+| B6 (USER-1 / A8) | ✅ LANDED | `2f96abe99` | 4-case Barrett enumeration closed; `lemma_compress_ciphertext_coefficient_fe_commute` proven via 2 f_val asserts + 4 pow2 witnesses at rlimit 400.  Verifies in 86s cold (full Chunk.fst module).  **Gates Wave-B** (A1 serialize migration depends on this commute). |
+| B1 (compress/decompress panic_free) | ⏸ DEFERRED | — | Out-of-budget; see "Deferral rationale" below. |
+| B2 (Portable NTT layer 1) | ⏸ DEFERRED | — | Z3-medium risk, 4-zeta wall.  See deferral rationale. |
+| B3 (AVX2 serialize bridges) | ⏸ DEFERRED | — | 7 admitted bridge lemmas; mechanical but ~2 sess. |
+| B4 (AVX2 NTT layer 1/2) | ⏸ DESCOPED | — | Per prompt directive (descope on first wall); USER-4. |
+| B5 (op_ntt_multiply panic_free) | ⏸ DEFERRED | — | Body proof needs forall4-of-branch_post bridge from forall8-of-binomials_post; ~50 lines per backend × 2. |
+
+**Net admit-count delta:** -1 PROGRESS, 0 SIDEWAYS, 0 FAIR GAME,
+**-1 net** (Chunk.fst:985 admit removed and proof closed for real).
+
+### B6 closure detail (USER-1 / A8)
+
+`lemma_compress_ciphertext_coefficient_fe_commute` in
+`Hacspec_ml_kem.Commute.Chunk.fst` (line 985 admit before, real
+proof after `2f96abe99`).
+
+Statement: for `D ∈ {4, 5, 10, 11}` and `fe ∈ [0, 3329)`, if
+`v result == ((v fe * 2 * 2^D + 3329) / 6658) % 2^D`, then
+`compress_d (i16_to_spec_fe fe) D == i16_to_spec_fe result`.
+
+Proof shape (mirrors A5's D=1 closure at line 965):
+```
+#push-options "--z3rlimit 400 --fuel 1 --ifuel 1"
+let lemma_compress_ciphertext_coefficient_fe_commute (fe result: i16) (d: usize) :
+  Lemma (...) (...)
+  = assert (v (i16_to_spec_fe fe).P.f_val == v fe);
+    assert (v (i16_to_spec_fe result).P.f_val == v result);
+    assert (pow2 4 == 16);
+    assert (pow2 5 == 32);
+    assert (pow2 10 == 1024);
+    assert (pow2 11 == 2048)
+#pop-options
+```
+
+The two `f_val` asserts pin the i16_to_spec_fe lifts (each unfolds
+to `mk_u16 (v x % 3329)` with `v x % 3329 == v x` since both are
+in [0, 3329)).  The four `pow2` asserts give Z3 concrete values to
+chase through `compress_d`'s u32 body — `Core_models.Num.impl_u32__pow
+(mk_u32 2) (cast d <: u32)` returns `mk_u32 (pow2 (v d))` per the
+`pow_u32` spec when `v d ≤ 16`, and the rest is pure Euclidean
+integer arithmetic.
+
+Closed on **first attempt** with no body iteration.  Lemma's heaviest
+queries used <1 rlimit unit each; rlimit 400 was over-provisioned.
+The fuel 1 / ifuel 1 bump (vs file default fuel 0 / ifuel 1) was
+likely unnecessary but kept for safety.
+
+### Wave-A deferral rationale (B1, B2, B3, B4, B5)
+
+Wave-A coordinator made the strategic call to land B6-only and defer
+the remaining 5 lanes after analysis showed each exceeds the
+1-session lane budget when accounting for hax-extract churn:
+
+  - **B1 mismatch.**  Prompt described "5 stale `panic_free`" in
+    `src/vector/portable.rs`, but those annotations actually live in
+    `src/vector/portable/compress.rs` (primitives + chunk wrappers).
+    The 6 `panic_free` annotations there are: `compress_message_coefficient`
+    primitive (3-case enum, tractable), `compress_ciphertext_coefficient`
+    primitive (Barrett exactness, **HARD MATH** — the SAME math as A8
+    but at the impl/integer level, NOT bridged by A8 itself), and 4
+    chunk-level wrappers (each chains primitive post via per-lane
+    composition).  Closing all 6 needs hax extract + 4-5 body proofs;
+    the Barrett primitive is genuinely a USER-N task.
+
+  - **B2 (Portable NTT layer 1).**  Per `op_ntt_layer_1_step` comment
+    in `portable.rs:397-421`, prior attempts at rlimit 800 +
+    split_queries hung >10 min on the 4-zeta-parallel wall.
+    Mitigation requires per-branch decomposition (4 lemmas at
+    concrete `b`) — same pattern that closed inverse layer 2 in
+    `b7b49c358`.  ~2 sessions; B6 was correctly chosen first.
+
+  - **B3 (AVX2 serialize bridges).**  7 admitted bridge lemmas
+    (`op_serialize_N_post_bridge` for N ∈ {4,10,12} +
+    `op_deserialize_N_post_bridge` for N ∈ {1,4,10,12}).  Discharge
+    via `Tactics.GetBit.prove_bit_vector_equality'` + a
+    `bit_vec_of_int_t_array` decomposition lemma in
+    `Avx2_extract.fsti`.  Mechanical but ~2 sess of work.
+
+  - **B4 (AVX2 NTT layer 1/2).**  DESCOPED per prompt's "descope on
+    first wall".  Z3-walled per USER-4.
+
+  - **B5 (drop op_ntt_multiply panic_free).**  Body proof needs to
+    bridge primitive's `forall8 of ntt_multiply_binomials_post` to
+    trait's `forall4 of ntt_multiply_branch_post`.  A1-A4 enable
+    per-branch composition, but the wrapper bridge is ~50 lines per
+    backend.  Plus hax extract.  Out-of-budget for 1 sess.
+
+### Concurrent-commit handling
+
+While Wave-A was running, the user committed `749b0136c`
+(serialize-prompt.md, file-disjoint).  B6 was created from
+`fc4754a7d` then rebased cleanly onto `749b0136c` before FF-merge to
+`trait-opacify` at `2f96abe99`.
+
+### Inter-wave handoff
+
+Wave-B may proceed: B6 was the only lane gating Wave-B (A1 serialize
+migration cites `lemma_compress_ciphertext_coefficient_fe_commute`).
+The deferred admit cleanup (B1/B2/B3/B5) is non-gating; Wave-B/C can
+absorb opportunistically or these become USER-N lanes.
+
+Hot files touched:
+- `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`
+  — lemma at line 985 closed (in-place, since admit→proof is the
+  lane goal, not a "body edit").
+
+User had IDE sessions on `Hacspec_ml_kem.Commute.Bridges.fst` (PID
+50771) and `Libcrux_ml_kem.Ind_cpa.fst` (PID 32385) throughout.
+Bridges.fst's `.checked` will need re-verification on next make
+(Chunk.fst dep mtime updated); the IDE session itself continues to
+work since it uses in-memory state.
+
+Per heads-up at session start, two CLI verifications of
+`Libcrux_ml_kem.Vector.Portable.Serialize.fst` (PIDs 50388, 65549)
+were active.  Both completed during Wave-A; no collision.
+
+---
 
 ## 2026-04-29 — Phase 1 (post-Phase-H trait pre/post fixes)
 

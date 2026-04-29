@@ -25,11 +25,21 @@ SPRINT STATUS (at Wave-B start)
 ═══════════════════════════════════════════════════════════════════
 
 ✅ Phase 0, Phase H, Phase 1.
-✅ Phase 2 (Wave-A) — below-trait closed.  Final tip: <REPLACE WITH
-   WAVE-A FINAL SHA recorded in `wave-A-prompt.md` deliverable>.
-   - All B-lanes merged: B1, B2, B3, B5, B6.  B4: <merged or
-     deferred to USER-4 / sim-model-unification>.
-   - Net admit-count delta: <REPLACE WITH WAVE-A REPORT>.
+🔶 Phase 2 (Wave-A) — PARTIAL.  Final tip: `2f96abe99` (B6 closure)
+   on top of `749b0136c` (concurrent serialize-prompt doc commit by
+   the user).  Branch: `trait-opacify` (FF'd to B6).
+   - **B6 LANDED (gates Wave-B).**  USER-1 / A8 4-case Barrett
+     enumeration closed in `Hacspec_ml_kem.Commute.Chunk.fst` —
+     `lemma_compress_ciphertext_coefficient_fe_commute` proven via
+     2 f_val asserts + 4 pow2 witnesses at rlimit 400.  Verifies in
+     86s cold (full Chunk.fst module).
+   - **B1, B2, B3, B4, B5 DEFERRED.**  See "Wave-A deferral
+     rationale" section in `agent-trackA.md` (2026-04-29 entry).
+     Each lane has a tractable scope but exceeded the 1-session
+     budget given hax-extract churn + body proof complexity.  The
+     deferred admit cleanup is non-gating for Wave-B/C.
+   - Net admit-count delta: -1 PROGRESS (Chunk.fst:985 admit removed),
+     0 SIDEWAYS, 0 FAIR GAME, **-1 net**.
 
 ⏸ Phase 3 parallel — Wave-B's responsibility (this prompt).
 ⏸ Phase 3 critical chain — Wave-C (`wave-C-prompt.md`; recalibrated
