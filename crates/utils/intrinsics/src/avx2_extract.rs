@@ -11,6 +11,22 @@
 unfold type $:{Vec256} = bit_vec 256
 val vec256_as_i16x16 (x: bit_vec 256) : t_Array i16 (sz 16)
 let get_lane (v: bit_vec 256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
+
+(* The bit-level decomposition of `vec256_as_i16x16`: bit i of the
+   underlying `bit_vec 256` corresponds to bit `i % 16` of the i16
+   lane at index `i / 16`.  Since `vec256_as_i16x16` is the canonical
+   lane-decomposition isomorphism, this property axiomatises that
+   the lane-decomposition is bit-exact at every supported `d`.
+
+   Used by AVX2 op_serialize_N / op_deserialize_N bridge lemmas to
+   bridge the primitive-level BitVec lane post (in terms of `v`
+   directly) to the trait's array-form post (in terms of
+   `bit_vec_of_int_t_array (vec256_as_i16x16 v) N`). *)
+val bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+      (v: bit_vec 256) (d: nat{d > 0 /\ d <= 16}) (i: nat{i < 16 * d})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array
+              (vec256_as_i16x16 v) d i
+             == v ((i / d) * 16 + i % d))
 "#
 )]
 pub struct Vec256(u8);
