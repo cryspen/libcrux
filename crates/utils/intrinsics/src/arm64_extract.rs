@@ -262,25 +262,44 @@ pub fn _vshrq_n_u16<const SHIFT_BY: i32>(v: _uint16x8_t) -> _uint16x8_t {
 
 #[inline(always)]
 #[hax_lib::lean::replace_body("sorry")]
-// TODO: ensures needs `requires (v SHIFT_BY >= 0 /\ v SHIFT_BY < 64)` for >>! subtyping
+#[hax_lib::requires(0 <= SHIFT_BY && SHIFT_BY < 64)]
+#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
+    (get_lane_u64x2 $v i >>! (cast ${SHIFT_BY} <: u32))"))]
 pub fn _vshrq_n_u64<const SHIFT_BY: i32>(v: _uint64x2_t) -> _uint64x2_t {
     unimplemented!()
 }
 
+// Note: NO `#[hax_lib::lean::replace_body("sorry")]` — this is a real
+// fallback body, not a stub, and we want both backends to extract it.
+//
+// The `before` block opens the rotate-decomposition lemma module so its
+// SMTPat-tagged bridge lemma fires when F* sees `rotate_left ... LEFT`
+// in the post.
+#[cfg_attr(hax, hax_lib::fstar::before(r#"open Bitvec.U64Rotate"#))]
 #[inline(always)]
-#[hax_lib::lean::replace_body("sorry")]
+#[hax_lib::requires(0 < LEFT && LEFT < 64 && 0 < RIGHT && RIGHT < 64 && LEFT + RIGHT == 64)]
 #[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
     Core_models.Num.impl_u64__rotate_left (get_lane_u64x2 $a i ^. get_lane_u64x2 $b i) (cast ${LEFT} <: u32)"))]
 pub fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(
     a: _uint64x2_t,
     b: _uint64x2_t,
 ) -> _uint64x2_t {
-    unimplemented!()
+    // Manual fallback: VXAR is XOR-and-rotate-right by RIGHT, equivalent
+    // to `(a XOR b) shl LEFT  XOR  (a XOR b) shr RIGHT` when LEFT+RIGHT=64.
+    // The post's `rotate_left .. LEFT` is bridged to this composition
+    // by `Bitvec.U64Rotate.lemma_u64_rotate_left_decomp` (SMTPat).
+    let a_xor_b = _veorq_u64(a, b);
+    _veorq_u64(
+        _vshlq_n_u64::<LEFT>(a_xor_b),
+        _vshrq_n_u64::<RIGHT>(a_xor_b),
+    )
 }
 
 #[inline(always)]
 #[hax_lib::lean::replace_body("sorry")]
-// TODO: ensures needs `requires (v SHIFT_BY >= 0 /\ v SHIFT_BY < 64)` for <<! subtyping
+#[hax_lib::requires(0 <= SHIFT_BY && SHIFT_BY < 64)]
+#[hax_lib::ensures(|result| fstar!("forall (i:nat{i < 2}). get_lane_u64x2 $result i ==
+    (get_lane_u64x2 $v i <<! (cast ${SHIFT_BY} <: u32))"))]
 pub fn _vshlq_n_u64<const SHIFT_BY: i32>(v: _uint64x2_t) -> _uint64x2_t {
     unimplemented!()
 }
