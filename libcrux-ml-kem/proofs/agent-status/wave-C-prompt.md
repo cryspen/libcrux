@@ -1,13 +1,60 @@
 # Wave-C coordinator prompt — Phase 3 critical chain (A6 → A7 → A8)
 
-**STATUS: SKELETAL.**  This prompt is intentionally light.  Wave-C
-will be **recalibrated** based on what Waves A and B learn in flight
-(especially: A3's Chunk.fst additions, A5's Bridges.fst additions,
-A6's matrix-level commute lemmas needed, and the Z3 budget for
-ind_cpa / ind_cca after the trait posts strengthen).
+**STATUS: BLOCKED on Wave-B.**  Wave-B's coordinator session
+2026-04-29 11:00–11:30 closed 0 lanes.  Wave-B's findings (recorded
+below) recommend ONE-LANE-AT-A-TIME for the next series of sessions;
+the multi-lane "wave" structure is not the right unit of work for
+Phase 3 given the Z3-wall density.
 
-The Wave-B coordinator updates this file at end-of-wave with the
-recalibrated lane briefs, time budgets, and known unknowns.
+**Sprint state at end of Wave-B:**
+  - trait-opacify HEAD: `fa31480cd` (unchanged from Wave-A).
+  - Above-trait worktree: `~/libcrux-ml-kem-above-trait/` (Wave-B
+    setup is reusable for follow-on lane sessions).
+  - Wave-B local Makefile: TEMP-admits `Libcrux_ml_kem.Invert_ntt.fst`
+    in addition to the standard below-trait + Wave-C surface.  Lane
+    A5 will UNADMIT when it begins.
+  - Net admit-count delta from Wave-B: **0 net**.
+
+## Wave-B's findings (2026-04-29) — the Phase 3 recalibration
+
+1. **Lane scope is mis-sized for "wave" coordination.**  Each
+   above-trait lane (A1-A5) is 1-3 sessions of Z3-walled body
+   discharge.  A coordinator session that "spawns" them sequentially
+   doesn't fit a typical 30-60 min Claude session budget.  Treat each
+   lane as its OWN session henceforth; coordinator role atrophies.
+
+2. **A2 spike: hax-lib `panic_free` semantics (recorded surprise).**
+   Changing `verification_status(lax)` → `verification_status(panic_free)`
+   on `sample_from_uniform_distribution_next` does NOT add an
+   `--admit_smt_queries true` push-options block in the generated F*.
+   `lax` IS the only annotation that emits that.  So `panic_free` is
+   the same as full verification for SMT purposes; the only thing it
+   affects is the panic-freedom check.  This means dropping `lax`
+   directly to `panic_free` (or removing `verification_status` entirely)
+   triggers the full body proof.  A2 hit the rejection-loop invariant
+   subtyping wall (`forall j. j < K ==> ...` two-level forall) at
+   rlimit 400 / "incomplete quantifiers".
+
+3. **A1 / A3 / A5 untouched.**  Same Z3-wall risk as A2; deferred to
+   USER-N or to dedicated single-lane sessions.
+
+4. **Invert_ntt.fst Q101 baseline regression.**  In the Wave-B worktree
+   (clone of trait-opacify HEAD `fa31480cd`), `inv_ntt_layer_int_vec_step_reduce`
+   Q101 saturates rlimit 200 in the without-hint retry path (after
+   hint replay fails).  This was passing in the source worktree at
+   `0784e3b72` per agent-trackA but no longer at `fa31480cd`.  Suspect
+   cause: B6's edit to `Hacspec_ml_kem.Commute.Chunk.fst` invalidated
+   the hint chain into Q101; the genuine Z3 problem is borderline at
+   rlimit 200.  Mitigation: either bump rlimit to 400 on
+   `inv_ntt_layer_int_vec_step_reduce`, or (Wave-B's choice) keep
+   Invert_ntt.fst admitted until A5 begins.
+
+5. **Perf top-20: a much smaller surface in Wave-B baseline.**  See
+   `proofs/agent-status/fstar-perf-top20.md` Snapshot 2.  With Wave-A's
+   below-trait surface admitted away, only ~11 functions report
+   non-trivial Query-stats.  `compress_then_serialize_message`'s
+   single-query 4.9 s / max 4867 ms is the new top culprit and is
+   directly in A1's Phase 7c migration path.
 
 ---
 
@@ -98,3 +145,31 @@ then A8 sequentially to remove modules from ADMIT_MODULES.
 to replace this skeletal scope with the recalibrated brief based on
 Wave-B's findings.  The structure above is a starting point, not
 a contract.
+
+## Recommended next-session sequence (Wave-B's parting advice)
+
+Skip the "wave" framing.  Do single-lane sessions in this order:
+
+1. **Single-lane A2 session (1-2 hr).**  Tighten the rejection-loop
+   invariant on `sample_from_uniform_distribution_next` with explicit
+   per-`j` case-split + `Classical.forall_intro` over the K range.
+   Then drop `verification_status(lax)`.  Expect Q1-Q3 to land at
+   rlimit 400 ± `--split_queries always`.  After this lane succeeds:
+   re-snapshot perf-top20.
+2. **Single-lane A1 session (2-3 hr).**  Pick one of the smaller
+   Phase 7c targets (`to_unsigned_field_modulus` or
+   `serialize_uncompressed_ring_element`) and drop its `panic_free`.
+   Mechanical Phase 7c migration on `compress_then_serialize_message`
+   etc. is a separate session each — this is N×1-hour work, not 1×N.
+3. **Single-lane A5 session (3+ hr) — the unblock for Wave-C.**
+   Step 5 spike: admit layer-4_plus's strengthened post citing
+   `IN.ntt_inverse_layer_n 256`, push the post chain up to
+   `invert_ntt_montgomery`, validate against consumers.  If the spec
+   shape holds, then come back and discharge layer 4_plus's body.
+   This MUST land before A6 (Wave-C's first lane) can proceed.
+4. **Single-lane A3 session.**  Pick fix hypothesis (b) from USER-7
+   (define `to_spec_poly_mont_arr` array-form lemma) — sidesteps the
+   record-bridge issue that killed the 3 prior attempts.
+
+Wave-C (A6/A7/A8) remains gated on at least A5.  A4 remains
+opportunistic (OK to leave admitted indefinitely).

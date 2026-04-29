@@ -187,3 +187,82 @@ Admit-during-debugging hides regressions in those.
 | Step 4 layer 2/3/4_plus Rust strengthening | `make Invert_ntt.fst.checked` | per-fn admit on the OTHER layers + `_montgomery` |
 | Step 5 `invert_ntt_montgomery` post chain | `make` (no shortcuts; needs all layers) | none |
 | End of each step | full `make` regression | remove all temp admits |
+
+---
+
+## Snapshot 2 — 2026-04-29 — Wave-B baseline (above-trait worktree, `fa31480cd`)
+
+**Source:** `/tmp/wave-b-baseline-take3.log` (full make from
+`~/libcrux-ml-kem-above-trait/libcrux-ml-kem/proofs/fstar/extraction/`).
+**Wall:** ~9 min cold.  **Errors:** 0 (108 hint-replay warnings, all
+F* auto-retried successfully — F* IDE sessions on Bridges.fst /
+Ind_cpa.fst kept warm in source worktree concurrently).
+
+### NOT directly comparable to Snapshot 1
+
+Wave-B's local Makefile admits the entire below-trait surface
+(`Vector.{Portable,Avx2}.*`) plus Wave-C's consumer chain (Matrix,
+Ind_cca.*, Mlkem*).  Plus a TEMP admit on `Libcrux_ml_kem.Invert_ntt.fst`
+because its `inv_ntt_layer_int_vec_step_reduce` Q101 saturates at
+rlimit 200 in the without-hint retry path (hint-replay fails first,
+then no-hint retry hits 200/200 used in 57 s).  Lane A5 will
+UNADMIT Invert_ntt.fst when it begins (A5 owns this module per
+wave-B-prompt §"WAVE-B SCOPE").
+
+### Wave-B verification surface (top entries above 0.05 s)
+
+| # | Total (s) | Max query (ms) | Queries | Failed | rlimit-sat | Module | Function |
+|---|---|---|---|---|---|---|---|
+| 1 | 4.9 | 4867 |  1 | 0 | 0 | Libcrux_ml_kem.Serialize | compress_then_serialize_message |
+| 2 | 1.2 |  142 | 42 | 0 | 0 | Libcrux_ml_kem.Ntt | ntt_at_layer_4_plus |
+| 3 | 1.2 | 1179 |  1 | 0 | 0 | Libcrux_ml_kem.Serialize | deserialize_to_reduced_ring_element |
+| 4 | 1.0 |  966 |  1 | 0 | 0 | Libcrux_ml_kem.Serialize | deserialize_then_decompress_message |
+| 5 | 0.5 |   50 | 16 | 0 | 0 | Libcrux_ml_kem.Polynomial | ntt_multiply |
+| 6 | 0.4 |   28 | 17 | 0 | 0 | Libcrux_ml_kem.Ntt | ntt_at_layer_7_ |
+| 7 | 0.3 |   64 | 11 | 0 | 0 | Libcrux_ml_kem.Polynomial | add_to_ring_element |
+| 8 | 0.2 |  145 |  2 | 0 | 0 | Libcrux_ml_kem.Polynomial | multiply_by_constant_bounded |
+| 9 | 0.1 |   28 |  6 | 0 | 0 | Libcrux_ml_kem.Polynomial | add_message_error_reduce |
+| 10 | 0.1 |   25 |  6 | 0 | 0 | Libcrux_ml_kem.Polynomial | add_standard_error_reduce |
+| 11 | 0.1 |   26 |  5 | 0 | 0 | Libcrux_ml_kem.Polynomial | add_error_reduce |
+
+### Observations
+
+- **`compress_then_serialize_message` 4.9 s, 1 query, max 4867 ms** —
+  a single heavy Z3 problem.  Above-trait `Serialize.fst`; A1's Phase 7c
+  migration touches this module.  Watch for regression when A1 adds
+  hacspec citations.
+- **`ntt_at_layer_4_plus` 1.2 s / 42 queries** vs Snapshot 1's 24.7 s /
+  225 queries.  Hint replay is doing most of the work — most queries
+  succeed immediately on hint match.  A5's strengthening work could
+  invalidate these hints; A5 should expect rlimit-sat regressions
+  when it touches Chunk.fst / Bridges.fst.
+- **A3 targets all under 0.4 s** in the warm-cache state:
+  `add_to_ring_element` 0.3 s, `add_message_error_reduce` 0.1 s,
+  `add_standard_error_reduce` 0.1 s, `add_error_reduce` 0.1 s.
+  USER-7's `subtract_reduce` is admitted via `--admit_smt_queries true`
+  on the body (so no Query-stats reach the table).  When A3 unadmits
+  the body, expect these 4 functions' Z3 cost to jump.
+- **Hacspec_ml_kem.Commute.Chunk lemmas not in the table** — those live
+  in `specs/ml-kem/proofs/fstar/commute/` (separate sub-Makefile), so
+  Query-stats for them appear only when `make` is run from THAT dir.
+  Wave-B's per-lane work needs to refresh that dir's perf data
+  separately (or run with `--query_stats` from a top-level prove).
+
+### Regression-watch thresholds for Wave-B
+
+- **A1**: alert if `compress_then_serialize_message` total grows
+  >7.4 s (1.5×) or its max query >7300 ms.  Other Serialize fns
+  similarly.
+- **A2**: Sampling.fst not currently in top-11 (warm-cache + lax
+  bypasses); A2's `lax→panic_free` removal will introduce new
+  Query-stats lines.  Establish per-fn baseline at A2 start.
+- **A3**: alert if `add_*_reduce` family totals jump >0.5 s or any
+  of them shows >5 saturated rlimit queries.  USER-7's
+  `subtract_reduce` will appear in the table for the first time
+  when A3 unadmits.
+- **A5**: A5 unadmits Invert_ntt.fst.  Expect `inv_ntt_layer_int_vec_step_reduce`
+  Q101 saturation to recur (this is the Step 5 spike target).
+  Also watch `invert_ntt_at_layer_4_plus` (Snapshot 1: 31.9 s / 1
+  failed query at rlimit 200) — currently bypassed via
+  `--admit_smt_queries true` per `agent-trackA.md` "Layer 4_plus
+  regression — diagnosis + landing decision".

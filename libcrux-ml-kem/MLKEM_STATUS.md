@@ -1,6 +1,6 @@
 # MLKEM Verification Status
 
-**Branch**: `trait-opacify`  **Tip**: `2f96abe99` (Wave-A B6 / USER-1 / A8 4-case Barrett enumeration closed in `Hacspec_ml_kem.Commute.Chunk.fst`; 2026-04-29).  Prior tip: `0784e3b72` (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; layer 4_plus body TEMP-admitted pending Step 5 drive-to-the-top spike; 2026-04-28 late evening)
+**Branch**: `trait-opacify`  **Tip**: `fa31480cd` (Wave-A handoff; B6 / USER-1 / A8 4-case Barrett enumeration closed at `2f96abe99`; 2026-04-29).  Prior tip: `0784e3b72` (track A — Phase 7a Step 3 sub-pieces 1+2 — strengthened `inv_ntt_layer_int_vec_step_reduce` post + chunk-pair Bridges lemma; layer 4_plus body TEMP-admitted pending Step 5 drive-to-the-top spike; 2026-04-28 late evening)
 
 ## Wave-A summary (2026-04-29)
 
@@ -13,6 +13,29 @@
 Net admit-count delta: **-1 PROGRESS** (Chunk.fst:985 closed).  No
 SIDEWAYS, no FAIR GAME, no regressions.  Wave-B can proceed (B6 was
 the only lane gating Wave-B).
+
+## Wave-B summary (2026-04-29 11:00–11:30, setup-only)
+
+Worktree: `~/libcrux-ml-kem-above-trait/` (NEW; cloned from
+`/Users/karthik/libcrux-trait-opacify/` at trait-opacify HEAD
+`fa31480cd`).  Coordinator session 30 min; 0 lanes closed; 1 lane
+spike attempted (A2) and reverted.
+
+| Lane | Status | Notes |
+|---|---|---|
+| A1 (Phase 7c serialize) | ⏸ NOT ATTEMPTED | Same Z3-wall risk as A2; deferred to USER-N |
+| A2 (Phase 7n + USER-10) | ⏸ DEFERRED | `lax→panic_free` spike on `sample_from_uniform_distribution_next` failed at Sampling.fst(161,18-161,43) subtyping (incomplete quantifiers, rlimit 400).  Filed as USER-10. |
+| A3 (USER-7 + 2 sibling fns) | ⏸ NOT ATTEMPTED | USER-7 has 3 prior failed attempts; deferred |
+| A5 (USER-6 invert_ntt_montgomery) | ⏸ NOT ATTEMPTED | Wave-B baseline already showed `inv_ntt_layer_int_vec_step_reduce` Q101 saturation; Invert_ntt.fst TEMP-admitted in Wave-B local Makefile.  Lane A5 will UNADMIT when it begins (next session). |
+
+Net admit-count delta: **0 net**.  No upstream commits from Wave-B
+beyond documentation (perf snapshot, agent-trackA log, this section).
+Wave-C still gated on A5; sprint progress is paused at Wave-B's start.
+
+See `agent-trackA.md` 2026-04-29 11:00–11:30 entry for full
+attempt-and-revert detail on A2 and the recorded surprise about
+hax-lib's `panic_free` semantics (does NOT emit
+`--admit_smt_queries true` push-options — only `lax` does).
 
 ## Admit count
 

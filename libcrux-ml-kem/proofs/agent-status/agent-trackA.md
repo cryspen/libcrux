@@ -1,11 +1,118 @@
 # agent-trackA — session log
 
 **Session date:** 2026-04-29 (Phase 1 — trait pre/post fixes;
-Phase 2 — Wave-A B6 closure)
+Phase 2 — Wave-A B6 closure; Phase 3 — Wave-B coordinator setup)
 **Branch:** `trait-opacify`
-**Tip at end:** `2f96abe99` (Wave-A B6 / USER-1 / A8 4-case Barrett
-enumeration closed).  Phase 1 Cluster 1 at `05967b8fe`, Cluster 3
-partial at `a51ddbfc3`.
+**Tip at end:** `fa31480cd` (Wave-A handoff; B6 / USER-1 / A8 4-case
+Barrett enumeration closed at `2f96abe99`).  Phase 1 Cluster 1 at
+`05967b8fe`, Cluster 3 partial at `a51ddbfc3`.  Wave-B coordinator
+session 2026-04-29 11:00–11:30 added documentation only on
+`agent/lane-A2` rooted at `fa31480cd`; no new lane work merged.
+
+## 2026-04-29 11:00–11:30 — Wave-B coordinator (Phase 3 setup-only)
+
+Single-agent coordinator role per `wave-B-prompt.md`.  Worktree
+`~/libcrux-ml-kem-above-trait/` (NEW; cloned from
+`/Users/karthik/libcrux-trait-opacify/` at trait-opacify HEAD
+`fa31480cd`).  Branch `agent/lane-A2` carries the documentation
+updates; no lane bodies committed.
+
+Wave-B's local `proofs/fstar/extraction/Makefile` admits the entire
+below-trait surface (`Vector.{Portable,Avx2}.*`) plus Wave-C's
+consumer chain (Matrix via SLOW_MODULES, Ind_cca.*, Mlkem*) plus a
+TEMP admit on `Libcrux_ml_kem.Invert_ntt.fst` for baseline.  These
+admits are LOCAL to the above-trait worktree and do not push to
+`trait-opacify`.
+
+### Wave-B deliverable
+
+| Lane | Status | Commit | Notes |
+|---|---|---|---|
+| A1 (Phase 7c serialize) | ⏸ NOT ATTEMPTED | — | Same Z3-wall risk as A2; deferred to USER-N (next sprint) |
+| A2 (Phase 7n + USER-10) | ⏸ DEFERRED | — | `lax→panic_free` spike on `sample_from_uniform_distribution_next` failed at Sampling.fst(161,18-161,43) subtyping (rlimit 400 / "incomplete quantifiers" on loop-accumulator forall over `v_K`).  Reverted; file as USER-10. |
+| A3 (USER-7 + 2 sibling fns) | ⏸ NOT ATTEMPTED | — | USER-7 has 3 failed attempts logged in MLKEM_STATUS; deferred to USER-7 |
+| A5 (USER-6 invert_ntt_montgomery) | ⏸ NOT ATTEMPTED | — | 3-session Z3-walled task per Step 3.3 + Step 4 layer 4_plus + Step 5 chain.  Wave-B baseline ALREADY hit `inv_ntt_layer_int_vec_step_reduce` Q101 saturation (rlimit 200 / canceled in 57 s) — Invert_ntt.fst TEMP-admitted in Wave-B local Makefile so the rest of baseline could verify. |
+| A4 (Phase 7.2 std_error_reduce) | ⏸ OUT OF SCOPE | — | Opportunistic; not pursued |
+
+**Net admit-count delta:** 0 PROGRESS, 0 SIDEWAYS, 0 FAIR GAME, **0 net**.
+
+### Wave-B setup detail
+
+- Worktree: `~/libcrux-ml-kem-above-trait/` from source HEAD `fa31480cd`.
+  Re-extracted 141 .fst/.fsti via `python3 hax.py extract`; rsync'd
+  `.fstar-cache/checked` (216 files) + `hints` (177 files) from source
+  worktree so warm cache replays.
+- Local Makefile additions to `ADMIT_MODULES`: 13 below-trait
+  (`Vector.{Portable,Avx2}.{fst, Arithmetic, Compress, Ntt, Sampling,
+  Serialize, Vector_type}`) + 24 Wave-C surface (Matrix via
+  SLOW_MODULES, `Ind_cca.*` family, `Mlkem512/768/1024` family) + 1
+  TEMP for `Invert_ntt.fst` (lane A5 will UNADMIT when it begins;
+  rationale documented inline in the local Makefile).
+- Three baseline takes:
+  - **Take 1:** `make 2>&1 | tail -50` truncated upstream errors;
+    info loss.  Switched to full-capture nohup.
+  - **Take 2:** Killed mid-run after realising tail had masked the
+    upstream picture.
+  - **Take 3 (FINAL_EXIT=0):** ~9 min cold; 108 hint-replay warnings
+    (all F* auto-retried OK).  Log at `/tmp/wave-b-baseline-take3.log`.
+
+### A2 attempt detail — why panic_free isn't a step-down from lax
+
+Spike: change `verification_status(lax)` → `verification_status(panic_free)`
+on `sample_from_uniform_distribution_next` (Phase 7n target).
+
+**Surprise (recording for posterity):** hax-lib's `panic_free` does
+NOT emit `--admit_smt_queries true` push-options (only `lax` does).
+So `panic_free` actually moves the function to FULL VERIFICATION,
+not the intermediate state I'd assumed.  This is good in principle
+but hits the Z3 wall:
+
+```
+* Error 19 at Libcrux_ml_kem.Sampling.fst(161,18-161,43):
+  - Subtyping check failed
+  - Expected type acc' { (let out, sampled_coefficients = acc' in
+                          forall (j: usize). j <. v_K ==> ...) }
+  - SMT solver says: unknown because (incomplete quantifiers)
+                     (rlimit=400; fuel=0; ifuel=1)
+```
+
+The loop-invariant is a 2-level forall (`forall j. j < K ==> bound /\
+forall k. k < count[j] ==> ...`).  Z3 can't instantiate the outer
+forall at the witness needed for body-preservation without explicit
+hand-holding — likely a per-`j` case-split with `Classical.forall_intro`
+or `--split_queries always`.  This is exactly the "rejection-loop
+invariant tightening" predicted in MLKEM_STATUS Phase 7n / USER-10.
+20-min cap → revert to `lax`, file as USER-10.
+
+### Hot-file impact
+
+- `proofs/agent-status/fstar-perf-top20.md`: Snapshot 2 (Wave-B
+  baseline) appended.  Top entry: `compress_then_serialize_message`
+  4.9 s / max 4867 ms / 1 query — watch this in A1's regression checks.
+  Per-A-lane regression-watch thresholds documented in the snapshot.
+- `proofs/fstar/extraction/Makefile`: Wave-B-LOCAL; do NOT push to
+  `trait-opacify`.
+
+### Inter-wave handoff for next session
+
+Wave-B did NOT close any lanes; Wave-C is unblocked only insofar as
+Wave-B's setup work is reusable.  Recommendation:
+
+1. **Pick ONE lane and focus.** A2's Z3 wall is concrete and local
+   (per-K case-split on the rejection loop's invariant +
+   `Classical.forall_intro`).  ~1-2 hr of focused work.
+2. **Don't unadmit Invert_ntt.fst at session start** — keep the
+   TEMP admit; saves ~1 min/baseline on the Q101 retry.  A5 will
+   unadmit when it begins.
+3. **Re-snapshot perf after each lane lands.**  A1 (Phase 7c)
+   in particular will reshape `compress_then_serialize_message`;
+   expect regression if Hacspec citations replace the Spec.MLKEM
+   ones.  Compare against Snapshot 2.
+4. **Cache hygiene.** Per `feedback_no_cache_nuke` and the SHA-touch
+   pattern in `feedback_touch_unchanged_checked`: after `hax.py
+   extract`, snapshot SHAs and `touch` the .checked files for
+   unchanged content to skip cascade re-verification.  This pattern
+   was used successfully for take-3.
 
 ## 2026-04-29 — Wave-A coordinator (Phase 2 below-trait, partial)
 
