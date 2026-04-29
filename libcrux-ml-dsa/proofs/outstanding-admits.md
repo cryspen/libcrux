@@ -230,16 +230,23 @@ these are local to the above-trait lane.
 - **File**: `src/encoding/verification_key.rs`
 - **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
 - **Phase added**: above-trait C.5 (`0d11b64a9`)
-- **Diagnosis**: `generate_serialized` does
-  `verification_key_serialized[0..32].copy_from_slice(seed)` then
-  per-i loop with `offset = SEED_FOR_A_SIZE + i * RING_ELEMENT_OF_T1S_SIZE`.
-  The offset arithmetic (32 + i * 320) and the post-copy_from_slice
-  state confuse the fold-with-tuple-accumulator in extracted F*.
-  `deserialize` has the same shape minus the seed write.
-- **Suggested mitigation**: rewrite to use `i * RING_ELEMENT_OF_T1S_SIZE`
-  inline in the slice index without the `offset` variable; add
-  loop_invariant tracking length-preservation explicitly through
-  the slice update.  ~30 min.
+- **Status update (2026-04-29)**:
+  - **deserialize**: CLOSED at `743956689` — inline `320` literal in slice
+    index + minimal `loop_invariant` (`i <= rows_in_a /\ rows_in_a <= 8 /\
+    rows_in_a == Seq.length t1 /\ Seq.length serialized == rows_in_a * 320`)
+    + `--z3rlimit 200`.  Verifies in ~2s.
+  - **generate_serialized**: BODY ADMIT RETAINED.  The `+ SEED_FOR_A_SIZE`
+    (= 32) offset in the per-iteration slice index compounds with the
+    multiplicative-bound check on `i * 320` and the function's triple-forall
+    precondition (`forall k j i. v >= 0 /\ ... < pow2 10`) to exhaust Z3
+    even at `--z3rlimit 800 --split_queries always`.  Quantifier-instantiation
+    explosion.  Compare `commitment.serialize_vector` which uses the OPAQUE
+    `is_pos_array_opaque (pow2 N - 1)` predicate inside the forall and
+    verifies cleanly.  Closure path: either (a) tighten `T1.serialize`'s
+    precondition in `t1.rs` to use `is_pos_array_opaque (pow2 10 - 1)`
+    (cascades to re-verify T1.fst), or (b) inline `lemma_is_pos_array_intro`
+    calls per (k, j) pair via `hax_lib::fstar!(...)`.  ~45-60 min;
+    cross-file scope.
 
 ### Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized
 - **File**: `src/encoding/signing_key.rs`
