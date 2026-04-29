@@ -76,6 +76,49 @@ body), record it here with:
   `decompose` portion of F-11 was incorrect and is now reverted via
   F-13; the F-11 entry has been amended to note this.
 
+#### F-14 (below-trait) (2026-04-29) — `error_deserialize` trait post over-tight vs FIPS 204 / Hacspec — RESOLVED above-trait
+
+- **Filed by:** below-trait audit at commit `8b108e6d2`
+  (lane-split-protocol.md F-14 entry, this branch's worktree
+  `libcrux-ml-dsa-proofs`).  Numbering: not the same as the
+  above-trait F-14 (`8fa040756`, Signing_key.generate_serialized).
+- **Original gap:** trait post in `src/simd/traits.rs::error_deserialize`
+  was the canonical-symmetric range `v out[i] ∈ [-eta, eta]`
+  (i.e. `>= -2 /\ <= 2` for eta=2 and `>= -4 /\ <= 4` for eta=4).
+  This is **wrong** w.r.t. FIPS 204 Algorithm 19 (BitUnpack), which
+  defines the output as `w[i] ∈ [b - 2^c + 1, b]` with `c = bitlen(a + b)`:
+  - eta=2: `c = 3`, range `[-5, 2]`.
+  - eta=4: `c = 4`, range `[-11, 4]`.
+  Concrete counter-example (eta=2, `serialized[0] = 0xFF`): impl
+  produces `simd_unit.values[0] = 2 - 7 = -5`, which violates
+  `>= -2` but satisfies the FIPS `>= -5`.
+- **Hacspec confirmation:** `specs/ml-dsa/src/encoding.rs::bit_unpack`
+  doc comment lines 82-83 explicitly state the output range is
+  `[b - 2^c + 1, b]`, equal to `[-a, b]` only when `a + b + 1` is a
+  power of 2 — which it is not for ML-DSA's eta values (5 and 9).
+- **Caller audit (above-trait):** no caller above the trait observes
+  the `[-eta, eta]` form.  The wrappers in `src/encoding/error.rs`
+  and `src/ml_dsa_generic.rs::sign_internal` either have no
+  `#[ensures]` or are body-admitted upstream of the call.  AVX2
+  `rejection_sample::less_than_eta::sample` uses a different free fn
+  (`error::deserialize_to_unsigned`) with explicit interval validation
+  — independent of this post.  Conclusion: the (false) tightening
+  was purely aspirational.
+- **Above-trait fix (this commit):** relax the trait post in
+  `src/simd/traits.rs::error_deserialize` to the FIPS 204 BitUnpack
+  range — change two literals: eta=2 lower bound `-2 → -5`,
+  eta=4 lower bound `-4 → -11`.  Upper bounds (`<= 2`, `<= 4`)
+  unchanged (FIPS-correct).  Single ensures-clause edit; no other
+  trait spec change.
+- **Below-trait posture:** Portable and AVX2
+  `Operations::error_deserialize` trait method bodies retain their
+  `hax_lib::fstar!("admit ()")` until below-trait cherry-picks this
+  commit.  Once cherry-picked, the closure follows the Track D-2
+  t1/t0/gamma1 deserialize template (commits `62a50deeb`,
+  `10b15d325`, `4ec0e9f50`): add per-eta ensures to the wrapper free
+  fn matching the new trait post, drop the trait body admit.  No
+  commute-lemma work required.
+
 #### F-3 (2026-04-28) — encoding `*_serialize` trait pres use signed
 bound where free fns require non-negative
 
