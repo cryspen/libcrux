@@ -116,11 +116,8 @@ pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-#[hax_lib::requires(fstar!(r#"forall i. i < 16 ==> 
-    Spec.Utils.is_intb (pow2 15 - 1) (v (Seq.index ${vec}.f_elements i) * v c)"#))]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. i < 16 ==> 
-    (v (Seq.index ${result}.f_elements i) == 
-     v (Seq.index ${vec}.f_elements i) * v c)"#))]
+#[hax_lib::requires(fstar!(r#"${spec::multiply_by_constant_pre} ${vec}.f_elements c"#))]
+#[hax_lib::ensures(|result| fstar!(r#"${spec::multiply_by_constant_post} ${vec}.f_elements c ${result}.f_elements"#))]
 pub fn multiply_by_constant(mut vec: PortableVector, c: i16) -> PortableVector {
     #[cfg(hax)]
     let _vec0 = vec;

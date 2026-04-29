@@ -576,56 +576,76 @@ let ntt_multiply_branch_post
 "#
         )
     )]
+    // Pre is stated on the *sum* `v lhs[i] + v rhs[i]`, not on lhs / rhs
+    // separately.  Callers pass typed-bounded vectors (e.g.
+    // `is_i16b_array_opaque L _`) and the sum-bound holds whenever
+    // `2*L <= pow2 15 - 1`.  Stating the pre on the sum keeps the
+    // trait-level pre symmetric with `add_post`'s sum-form equation
+    // and avoids forcing every caller to re-prove the elementwise sum
+    // bound (it is what they already establish to invoke `add`).
     pub(crate) fn add_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
             r#"forall i.
-            is_intb (pow2 15 - 1) 
+            is_intb (pow2 15 - 1)
                 (v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
         )
     }
 
+    // Equation and output-bound bundled under a single `forall` so Z3
+    // fires both facts on the same instantiation — splitting them into
+    // two foralls triggers "incomplete quantifiers" in the typeclass-
+    // implication check at the impl-side wrapper site.  The bound
+    // `is_intb (pow2 15 - 1) (v result[i])` is derivable from the
+    // equation + `add_pre` (which states the sum fits in i16); making
+    // it explicit lets callers cite the i16-bound on result without
+    // re-substituting through the equation.
     pub(crate) fn add_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall i. 
-                v (Seq.index ${result} i) == 
-                v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i))"#
+            r#"forall i.
+                v (Seq.index ${result} i) ==
+                v (Seq.index ${lhs} i) + v (Seq.index ${rhs} i) /\
+                is_intb (pow2 15 - 1) (v (Seq.index ${result} i))"#
         )
     }
 
+    // Sum-form pre (cf. `add_pre`): every caller establishes the
+    // elementwise difference bound to invoke `sub`.
     pub(crate) fn sub_pre(lhs: &[i16; 16], rhs: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
-                is_intb (pow2 15 - 1) 
+            r#"forall i.
+                is_intb (pow2 15 - 1)
                 (v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
         )
     }
 
     pub(crate) fn sub_post(lhs: &[i16; 16], rhs: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall i. 
-                v (Seq.index ${result} i) == 
-                v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i))"#
+            r#"forall i.
+                v (Seq.index ${result} i) ==
+                v (Seq.index ${lhs} i) - v (Seq.index ${rhs} i) /\
+                is_intb (pow2 15 - 1) (v (Seq.index ${result} i))"#
         )
     }
 
     pub(crate) fn negate_pre(vec: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
+            r#"forall i.
                 is_intb (pow2 15 - 1) (v (Seq.index ${vec} i))"#
         )
     }
 
     pub(crate) fn negate_post(vec: &[i16; 16], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall i. 
-                v (Seq.index ${result} i) == 
-                - (v (Seq.index ${vec} i)))"#
+            r#"forall i.
+                v (Seq.index ${result} i) ==
+                - (v (Seq.index ${vec} i)) /\
+                is_intb (pow2 15 - 1) (v (Seq.index ${result} i))"#
         )
     }
 
     pub(crate) fn multiply_by_constant_pre(vec: &[i16; 16], c: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"forall i. 
+            r#"forall i.
                 is_intb (pow2 15 - 1) (v (Seq.index ${vec} i) * v $c)"#
         )
     }
@@ -636,9 +656,10 @@ let ntt_multiply_branch_post
         result: &[i16; 16],
     ) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"(forall i.
-                v (Seq.index ${result} i) == 
-                v (Seq.index ${vec} i) * v $c)"#
+            r#"forall i.
+                v (Seq.index ${result} i) ==
+                v (Seq.index ${vec} i) * v $c /\
+                is_intb (pow2 15 - 1) (v (Seq.index ${result} i))"#
         )
     }
 
@@ -698,6 +719,12 @@ let ntt_multiply_branch_post
         )
     }
 
+    // Pre is asymmetric — only `c` is bounded (`is_i16b 1664`), `vec` is
+    // unconstrained.  This matches the implementation: the inner product
+    // `vec[i] * c` always fits in i32 because `|c| < 2^11` and `|vec[i]|
+    // <= pow2 15 - 1`, so we don't need a vec-side bound to rule out
+    // overflow.  Don't tighten the pre — it would force callers to
+    // establish a redundant `is_i16b_array` they currently don't need.
     pub(crate) fn montgomery_multiply_by_constant_pre(vec: &[i16; 16], c: i16) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(r#"is_i16b 1664 c"#)
     }
@@ -719,6 +746,15 @@ let ntt_multiply_branch_post
         hax_lib::fstar_prop_expr!(r#"is_i16b_array_opaque 3328 ${vec}"#)
     }
 
+    // The post is intentionally stated in *algebraic-int* form
+    // (`v y >= 0 /\ v y <= 3328` plus `mod_q_eq (v y) (v x)`), not as a
+    // direct hacspec `to_standard_domain` citation.  Reason: callers
+    // (compress chain, the message decode path) consume the result via
+    // residue equations, not via hacspec's t_FieldElement.  Lifting this
+    // post to a hacspec equation would force every caller to unfold the
+    // mod-q reasoning that `mod_q_eq` exists specifically to hide.
+    // Bridge to hacspec where genuinely needed via Hacspec_ml_kem.ModQ
+    // unfold lemmas inside Commute.* lemmas only (per SD1).
     pub(crate) fn to_unsigned_representative_post(
         vec: &[i16; 16],
         result: &[i16; 16],
