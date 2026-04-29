@@ -187,7 +187,7 @@ admits are LOCAL to the above-trait worktree and do not push to
 |---|---|---|---|
 | A1 (Phase 7c serialize) | ⏸ NOT ATTEMPTED | — | Same Z3-wall risk as A2; deferred to USER-N (next sprint) |
 | A2 (Phase 7n + USER-10) | ⏸ DEFERRED | — | `lax→panic_free` spike on `sample_from_uniform_distribution_next` failed at Sampling.fst(161,18-161,43) subtyping (rlimit 400 / "incomplete quantifiers" on loop-accumulator forall over `v_K`).  Reverted; file as USER-10. |
-| A3 (USER-7 + 2 sibling fns) | ⏸ NOT ATTEMPTED | — | USER-7 has 3 failed attempts logged in MLKEM_STATUS; deferred to USER-7 |
+| A3 (USER-7 subtract_reduce body) | ✅ CLOSED 2026-04-29 | (pending) | Hypothesis (b) + parameter unshadowing.  Body discharged 89s, 111 queries, max 3.5s.  Sibling fns `add_message_error_reduce`/`add_error_reduce` still bounds-only post (strengthening = multi-hour separate task). |
 | A5 (USER-6 invert_ntt_montgomery) | ⏸ NOT ATTEMPTED | — | 3-session Z3-walled task per Step 3.3 + Step 4 layer 4_plus + Step 5 chain.  Wave-B baseline ALREADY hit `inv_ntt_layer_int_vec_step_reduce` Q101 saturation (rlimit 200 / canceled in 57 s) — Invert_ntt.fst TEMP-admitted in Wave-B local Makefile so the rest of baseline could verify. |
 | A4 (Phase 7.2 std_error_reduce) | ⏸ OUT OF SCOPE | — | Opportunistic; not pursued |
 

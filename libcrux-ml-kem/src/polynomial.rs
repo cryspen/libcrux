@@ -370,17 +370,18 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
 ///
 /// See `src/invert_ntt.rs` (above `invert_ntt_montgomery`) for the
 /// upstream chain doc.
-// HELD — body proof admitted via --admit_smt_queries true.  See USER-7
-// in `MLKEM_STATUS.md` for the full handoff: all algebra + commute
-// lemmas are proven in `Hacspec_ml_kem.Commute.Chunk` (commits
-// `c698908ba`, `0a8c7289d`); the only outstanding gap is the post-loop
-// record-equality bridge from `to_spec_poly_mont (param b)` to
-// `mont_i16_to_spec_fe ((T.f_repr _b[j/16])[j%16])`.  Three attempts
-// in 2026-04-28 session hit Z3 ceiling — see USER-7 for hypotheses on
-// the fix.  Once this lands, `add_message_error_reduce` and
-// `add_error_reduce` follow mechanically.
+// CLOSED 2026-04-29 (Phase 7a / lane A3): body discharged via
+// hypothesis (b) — array-form `to_spec_poly_mont_arr` + unfold lemma
+// + parameter unshadowing (loop uses local `b_acc`, parameter `b`
+// reachable from post-loop fragment).  All algebra + commute lemmas
+// in `Hacspec_ml_kem.Commute.Chunk` (commits `c698908ba`, `0a8c7289d`,
+// + Phase 7a/A3 additions: `to_spec_poly_mont_arr`,
+// `lemma_to_spec_poly_mont_unfold`, `lemma_subtract_reduce_scaled_eq`).
+// Sibling fns `add_message_error_reduce` / `add_error_reduce` still
+// have bounds-only posts; strengthening those (per-fe + per-chunk +
+// per-poly commute chain) is open follow-up — see MLKEM_STATUS USER-7.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always --admit_smt_queries true")]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --split_queries always")]
 #[hax_lib::requires(spec::is_bounded_poly(4095, &myself))]
 #[hax_lib::ensures(|result|
     spec::is_bounded_poly(3328, &result)
@@ -400,10 +401,30 @@ fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRingElement<Ve
       "#))]
 fn subtract_reduce<Vector: Operations>(
     myself: &PolynomialRingElement<Vector>,
-    mut b: PolynomialRingElement<Vector>,
+    b: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
     #[cfg(hax)]
     let _b = b.coefficients;
+
+    // Phase 7a / lane A3: keep the parameter `b` UNSHADOWED so we can
+    // refer to it in the post-loop bridge lemma.  The mutable loop
+    // accumulator goes through a freshly-named local `b_acc`.  The
+    // post (in the .fsti) references the parameter `b`, so reaching it
+    // by name from the body is required for the createi-extensionality
+    // lemma at the end.  Without this rename, hax's shadowing the
+    // parameter inside the `for` made the body unable to talk about
+    // the parameter directly — three prior session attempts hit Q143
+    // saturated rlimit 800 specifically because of this.
+    let mut b_acc: PolynomialRingElement<Vector> = b;
+
+    // Seed F1 (still scoped to the parameter `b`):
+    //   to_spec_poly_mont (param b) == to_spec_poly_mont_arr e_b
+    // The post-loop bridge then chains via `lemma_subtract_reduce_scaled_eq`
+    // on the parameter `b` and the constructed `b_input` (sharing
+    // `f_coefficients == e_b`).
+    hax_lib::fstar!(r#"
+        Hacspec_ml_kem.Commute.Chunk.lemma_to_spec_poly_mont_unfold #v_Vector $b
+      "#);
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // Loop invariant uses an OPAQUE per-vector predicate
@@ -413,19 +434,19 @@ fn subtract_reduce<Vector: Operations>(
         hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| {
             if j < 16 {
                 if j < i {
-                    spec::is_bounded_vector(3328, &b.coefficients[j])
+                    spec::is_bounded_vector(3328, &b_acc.coefficients[j])
                         & fstar!(r#"
                             Hacspec_ml_kem.Commute.Chunk.subtract_reduce_finalize_chunk
                               (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
                                 (Seq.index ${myself}.f_coefficients (v $j)))
                               (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
-                                (Seq.index ${b}.f_coefficients (v $j)))
+                                (Seq.index ${b_acc}.f_coefficients (v $j)))
                               (Libcrux_ml_kem.Vector.Traits.f_repr #$:Vector
                                 (Seq.index ${_b} (v $j)))
                           "#)
                 } else {
                     fstar!(r#"
-                        Seq.index ${b}.f_coefficients (v $j) == Seq.index ${_b} (v $j)
+                        Seq.index ${b_acc}.f_coefficients (v $j) == Seq.index ${_b} (v $j)
                       "#)
                 }
             } else {
@@ -444,7 +465,7 @@ fn subtract_reduce<Vector: Operations>(
         );
 
         let coefficient_normal_form =
-            Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+            Vector::montgomery_multiply_by_constant(b_acc.coefficients[i], 1441);
 
         let diff = sub_bounded(myself.coefficients[i], 4095, &coefficient_normal_form, 3328);
 
@@ -470,7 +491,7 @@ fn subtract_reduce<Vector: Operations>(
               (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector ${red})
           "#);
 
-        b.coefficients[i] = red;
+        b_acc.coefficients[i] = red;
     }
 
     // Post-loop bridge: lift the 16 per-chunk opaque finalize predicates
@@ -478,11 +499,19 @@ fn subtract_reduce<Vector: Operations>(
     // citing HP.subtract_reduce.  The commute lemma produces the helper-
     // form `subtract_reduce_helper`; the eq-helper lemma chains it to
     // HP.subtract_reduce.
+    //
+    // Phase 7a / lane A3: with the parameter `b` unshadowed (loop uses
+    // `b_acc`), invoke `lemma_subtract_reduce_scaled_eq` directly on
+    // `(b, b_input)` — both share `f_coefficients == e_b`, so their
+    // createi-of-`to_spec_poly_mont` outputs coincide.  This is the
+    // bridge from the lemma's conclusion (uses `b_input`) to the post
+    // (uses `b`) without resorting to record extensionality or
+    // per-index Seq.lemma_eq_intro inside the body.
     hax_lib::fstar!(r#"
         let b_input : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
           { Libcrux_ml_kem.Vector.f_coefficients = ${_b} } in
         Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_commute
-          #v_Vector myself b_input b;
+          #v_Vector myself b_input b_acc;
         let myself_lift = Hacspec_ml_kem.Commute.Chunk.to_spec_poly_plain #v_Vector myself in
         let scaled_b = Hacspec_ml_kem.Parameters.createi
                          #Hacspec_ml_kem.Parameters.t_FieldElement
@@ -494,10 +523,11 @@ fn subtract_reduce<Vector: Operations>(
                                 (Hacspec_ml_kem.Commute.Chunk.to_spec_poly_mont #v_Vector b_input)
                                 (v j))
                              Hacspec_ml_kem.Commute.Chunk.fe_1441) in
-        Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_eq_helper myself_lift scaled_b
+        Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_eq_helper myself_lift scaled_b;
+        Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_scaled_eq #v_Vector $b b_input
       "#);
 
-    b
+    b_acc
 }
 
 /// Compute `myself + message + InvNTT(result)` lane-wise — same fused

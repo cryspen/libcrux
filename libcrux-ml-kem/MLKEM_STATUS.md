@@ -29,7 +29,7 @@ spike attempted (A2) and reverted.
 |---|---|---|
 | A1 (Phase 7c serialize) | ⏸ NOT ATTEMPTED | Same Z3-wall risk as A2; deferred to USER-N |
 | A2 (Phase 7n + USER-10) | ⏸ DEFERRED | `lax→panic_free` spike on `sample_from_uniform_distribution_next` failed at Sampling.fst(161,18-161,43) subtyping (incomplete quantifiers, rlimit 400).  Filed as USER-10. |
-| A3 (USER-7 + 2 sibling fns) | ⏸ NOT ATTEMPTED | USER-7 has 3 prior failed attempts; deferred |
+| A3 (USER-7 subtract_reduce body) | ✅ CLOSED 2026-04-29 | Hypothesis (b) + parameter unshadowing — see USER-7 below for resolution detail.  Sibling fns (`add_message_error_reduce`, `add_error_reduce`) still bounds-only post; strengthening is a separate multi-hour task. |
 | A5 (USER-6 invert_ntt_montgomery) | ⏸ NOT ATTEMPTED | Wave-B baseline already showed `inv_ntt_layer_int_vec_step_reduce` Q101 saturation; Invert_ntt.fst TEMP-admitted in Wave-B local Makefile.  Lane A5 will UNADMIT when it begins (next session). |
 
 Net admit-count delta: **0 net**.  No upstream commits from Wave-B
@@ -233,7 +233,41 @@ agent can copy the style to extend the pattern to similar admits.
 - **Math**: 7-layer inverse composition + Montgomery scale.
 - **Why after USER-2**: same Tier-3 template.
 
-### USER-7 — `subtract_reduce` body discharge (post-loop record-equality bridge) — **IN FLIGHT (Wave-B A3)**
+### USER-7 — `subtract_reduce` body discharge (post-loop record-equality bridge) — **CLOSED 2026-04-29 (Wave-B A3)**
+
+**Resolution**: hypothesis (b) — the array-form lifter — *combined with*
+parameter unshadowing.  Three attempts in the prior session failed
+because the post references the function parameter `b` while the body's
+`for` loop accumulator shadowed it; the post-loop bridge could not name
+the parameter.  Lane A3 (2026-04-29):
+
+  1. Added `to_spec_poly_mont_arr (a: t_Array vV 16)` and
+     `lemma_to_spec_poly_mont_unfold (p) : to_spec_poly_mont p == to_spec_poly_mont_arr p.f_coefficients`
+     in `Hacspec_ml_kem.Commute.Chunk` ("Phase 7a / lane A3 additions"
+     section).  Plus `lemma_subtract_reduce_scaled_eq` for createi-extensionality.
+  2. Renamed the loop accumulator: `b` parameter (unshadowed) +
+     `let mut b_acc = b;` for the loop accumulator.
+  3. Pre-loop: applied `lemma_to_spec_poly_mont_unfold #v_Vector b`
+     (still the parameter) to seed `to_spec_poly_mont (param b) ==
+     to_spec_poly_mont_arr e_b`.
+  4. Post-loop: applied `lemma_subtract_reduce_scaled_eq #v_Vector b
+     b_input` directly (parameter `b` reachable thanks to the rename).
+
+Result: 111 SMT queries, max 3.5 s, total 89 s.  Body discharges fully
+at `--z3rlimit 800 --ext context_pruning --split_queries always`.
+
+Sibling fns `add_message_error_reduce` and `add_error_reduce` were
+described as following "mechanically" once the bridge is found, but
+this is conditional on having a strengthened post + commute-lemma
+chain analogous to `subtract_reduce`'s `subtract_reduce_finalize_chunk`
++ `lemma_subtract_reduce_iter` + `lemma_subtract_reduce_commute` +
+`lemma_subtract_reduce_eq_helper`.  Building those chains for the new
+ops is a separate ~60-90 min/fn task — filed as follow-up.
+
+---
+*Original USER-7 brief preserved below for reference.*
+
+### USER-7 (original) — `subtract_reduce` body discharge — IN FLIGHT (Wave-B A3)
 
 **`Polynomial.subtract_reduce`** body; the strengthened post landed in
 commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
