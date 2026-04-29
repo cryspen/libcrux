@@ -2,6 +2,7 @@ use crate::{helper::cloop, simd::portable::vector_type::Coefficients};
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"(forall i. bounded (Seq.index ${simd_unit.values} i) 17) /\ Seq.length $serialized == 18"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 17;
 
@@ -38,6 +39,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Coefficients, serialized: &mut 
 
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"(forall i. bounded (Seq.index ${simd_unit.values} i) 19) /\ Seq.length $serialized == 20"#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut [u8]) {
     const GAMMA1: i32 = 1 << 19;
 
@@ -66,6 +68,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Coefficients, serialized: &mut 
     /\ (forall i. bounded (Seq.index ${simd_unit.values} i) (v $gamma1_exponent))
     /\ Seq.length $serialized == (1 + v $gamma1_exponent)
 "#))]
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
 pub(crate) fn serialize(simd_unit: &Coefficients, serialized: &mut [u8], gamma1_exponent: usize) {
     match gamma1_exponent {
         17 => serialize_when_gamma1_is_2_pow_17(simd_unit, serialized),

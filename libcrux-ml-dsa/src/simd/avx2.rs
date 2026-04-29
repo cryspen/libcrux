@@ -643,7 +643,6 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| fstar!(r#"
         Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
     fn gamma1_serialize(simd_unit: &Self, serialized: &mut [u8], gamma1_exponent: usize) {
-        hax_lib::fstar!("admit ()");
         encoding::gamma1::serialize(&simd_unit.value, serialized, gamma1_exponent)
     }
 
