@@ -129,7 +129,11 @@ let deserialize_post
 "#
 )]
 #[hax_lib::requires(serialized.len() == 13)]
-#[hax_lib::ensures(|result| fstar!("deserialize_post $serialized ${out}_future"))]
+#[hax_lib::ensures(|result| fstar!(r#"
+    deserialize_post $serialized ${out}_future /\
+    (forall (i: u64). v i < 8 ==>
+      v (to_i32x8 ${out}_future i) > -(pow2 12) /\
+      v (to_i32x8 ${out}_future i) <= pow2 12)"#))]
 pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     #[cfg(not(eurydice))]
     debug_assert_eq!(serialized.len(), 13);

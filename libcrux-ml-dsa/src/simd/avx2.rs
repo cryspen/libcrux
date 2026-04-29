@@ -752,8 +752,15 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self) {
-        hax_lib::fstar!("admit ()");
         encoding::t0::deserialize(serialized, &mut out.value);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
+                (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}));
+            assert (forall (i: nat). i < 8 ==>
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i) ==
+                v (Spec.Intrinsics.to_i32x8 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 i)))"#
+        );
     }
 
     #[inline(always)]

@@ -638,8 +638,12 @@ impl Operations for Coefficients {
         Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Coefficients) {
-        hax_lib::fstar!("admit ()");
-        encoding::t0::deserialize(serialized, out)
+        encoding::t0::deserialize(serialized, out);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
+                (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}))"#
+        );
     }
 
     #[requires(fstar!(r#"
