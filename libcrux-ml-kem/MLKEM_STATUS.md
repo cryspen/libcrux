@@ -315,26 +315,37 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   `invert_ntt_montgomery`'s strengthened post (the original spike's
   question).
 
-### USER-8 — trait `from_bytes` / `to_bytes` post strengthening (Cluster 2 deferred) — **AGENT-TRACTABLE**
+### USER-8 — trait `from_bytes` / `to_bytes` post strengthening (Cluster 2) — 🔶 **PARTIAL — S1 CLOSED, S2/S3 ADMITTED 2026-04-29**
 
-**`Operations::from_bytes` / `Operations::to_bytes`** in
-`libcrux-ml-kem/src/vector/traits.rs:1217-1224`.
+Branch `agent/user-8` off `e66708d2f`.  Tip:  `<see session log>`.
 
-- **Status**: TODOs in place; trait posts (`spec::from_bytes_post`,
-  `spec::to_bytes_post`) and helper predicates
-  (`from_le_bytes_post_N`, `to_le_bytes_post_N`) defined.  Method
-  declarations not yet wired.
-- **Why deferred**: Phase 1 Cluster 2.  Portable's `from_bytes` /
-  `to_bytes` (in `src/vector/portable/vector_type.rs:42-62`) use raw
-  bit-shift body (`elements[i] = (array[2*i+1].as_i16()) << 8 |
-  array[2*i].as_i16()`); discharging `from_le_bytes_post_N` requires a
-  new `from_bytes_lemma` mirroring the existing
-  `serialize_4_lemma` / `serialize_10_lemma` BitVec pattern.  AVX2 side
-  (`src/vector/avx2.rs:53-70`): `to_bytes` is currently `lax`;
-  strengthening requires removing `lax` AND building an
-  intrinsic↔BitVec bridge.  Per Phase 1 hard rule R3 (no new admits),
-  cannot land until both sides discharge cleanly.  Estimated 60-90 min
-  per side.
+#### S1 — trait wire-up: ✅ **CLOSED**
+  - `src/vector/traits.rs:1260-1272` now declares the strengthened
+    posts (`spec::from_bytes_post`, `spec::to_bytes_post`) on
+    `from_bytes` / `to_bytes`.  TODO(C4) markers removed.
+  - Vector.Traits.fst verifies in 96s (cold) / 5s (hint replay).
+  - Vector.Traits.Spec.fst is unchanged (the helper predicates were
+    pre-existing).
+
+#### S2 — portable discharge: 🔶 **ADMITTED — see USER-14**
+  - `src/vector/portable.rs:1004-1031` — impl-side `from_bytes` and
+    `to_bytes` carry the strengthened posts; bodies invoke
+    `hax_lib::fstar!(r#"admit ()"#)` to discharge.
+  - 2 NEW admits: portable `f_from_bytes` body, portable `f_to_bytes`
+    body.
+  - Vector.Portable.fst verifies in 49s.
+
+#### S3 — AVX2 discharge: 🔶 **ADMITTED — see USER-14**
+  - `src/vector/avx2.rs:1051-1080` — same admit pattern as portable.
+  - 2 NEW admits: AVX2 `f_from_bytes` body, AVX2 `f_to_bytes` body.
+  - Note: the AVX2 `to_bytes` was previously `verification_status(lax)`;
+    we removed `lax` and replaced with the trait-post + body admit.
+  - Vector.Avx2.fst verifies in 83s (split_queries).
+
+#### Closure path
+  - **USER-14** (filed): close the 4 admits via the
+    `BitVecEq.int_t_array_bitwise_eq` lemma pattern (mirroring
+    `serialize_4_bit_vec_lemma`).  See USER-14 entry below.
 
 ### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring — **PARTIAL: 9a CLOSED, 9b OPEN**
 
@@ -572,6 +583,22 @@ and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
   3. Loop-invariant frame factoring: the issue is the frame `(j >= v $i ==> a.f_elements[j] == _a0.f_elements[j])` chained with the past-iteration integer-form fact.  An opaque wrapper around the past-iteration fact would cut Z3 context.
 - **Sister issue**: USER-11 (op_ntt_multiply panic_free) has the same shape — accumulating Z3 context across per-lane forall + integer arithmetic.  Both benefit from per-lane decomposition or opaque wrapping.
 - **Why USER-N**: Z3 wall hit at 20-min cap; needs smtprofiling justification for a higher rlimit or per-conjunct factoring strategy.
+
+### USER-14 — close 4 admits in trait `from_bytes` / `to_bytes` impl bodies (USER-8 carry-over) — **FAIR GAME** (tooling-cycle blocker)
+
+- **Files**: `libcrux-ml-kem/src/vector/portable.rs:1004-1031` (impl-side `from_bytes` / `to_bytes`), `libcrux-ml-kem/src/vector/avx2.rs:1051-1080` (same).  4 `admit ()` calls, 1 per impl method × 2 backends.
+- **Status**: trait posts WIRED (`from_le_bytes_post_N` / `to_le_bytes_post_N` from `src/vector/traits.rs:234-246`); impl methods carry the strengthened post but discharge via admit.
+- **Why FAIR GAME**: closing requires a `BitVecEq.int_t_array_bitwise_eq` lemma between a 32-byte input and a 16-i16 lane array (depth 8 vs depth 16, 256 bits each side).  Mechanically the same shape as `serialize_4_bit_vec_lemma` (8-byte vs 16-i16 at depth 8 vs depth 4).  Provable by `Tactics.GetBit.prove_bit_vector_equality' ()`.
+- **Tooling-cycle blocker**:
+  - The `Tactics.GetBit.prove_bit_vector_equality'` tactic only normalizes function bodies in the **current module's namespace**.  `Vector_type.{from,to}_bytes` lives in `Libcrux_ml_kem.Vector.Portable.Vector_type`.
+  - Putting the lemma there would add `Tactics.GetBit` as a static import.  But `Tactics.GetBit.fst` (in `fstar-helpers/fstar-bitvec/`) statically references `Libcrux_ml_kem.Vector.Portable.Vector_type.__proj__Mkt_PortableVector__item__f_elements` (line 27, the `f_elements` projector for body normalization), creating a circular module dependency.
+  - Putting the lemma in `Libcrux_ml_kem.Vector.Portable` (where `Tactics.GetBit` is already imported) doesn't help either: `Vector_type.{from,to}_bytes` body is hidden behind a `.fsti` `val` declaration, so the tactic can't unfold them.
+- **Path forward — pick one**:
+  1. **Refactor `Tactics.GetBit`**: replace the `\`%...f_elements` static reference with a runtime metaprogramming lookup (`Tactics.V2.lookup_typ` or `top_env`-based projector resolution).  This breaks the static dep and unblocks adding the tactic-using lemma to `Vector_type.fst`.  ~2-4 hr; touches shared tactic file.
+  2. **Inline `from_bytes` / `to_bytes` body into `.fsti`**: use `hax_lib::fstar::replace(interface, ...)` on `Vector_type.from_bytes` / `to_bytes` to put the body (or a `let .. = ..`-form mirror) in the .fsti, making it visible across modules.  ~1 hr; cleaner but slightly invasive.
+  3. **Move `from_bytes` / `to_bytes` definitions out of `vector_type.rs` into `portable.rs`**: lemma + body in same module = no tactic problem.  R10 doesn't forbid `portable.rs` edits.  ~30 min; may have implication-call-site downstream churn (call sites use `vector_type::from_bytes`).
+- **Spike attempted (this session)**: tried route 3 with a wrapper `from_bytes_local` calling `Vector_type.from_bytes`, plus an explicit `FStar.Tactics.V2.norm [delta_only [`%Vector_type.from_bytes]]` step before the tactic.  The norm fails to unfold across the .fsti barrier.  Confirmed: the .fsti `val`-declaration is the binding constraint, not the namespace.
+- **Sister issue**: USER-9b (AVX2 5-bit SIMD bridge) has a related but distinct shape: it's a SIMD-intrinsic→BitVec bridge at the `mm256_madd_epi16` level, not a tactic-namespace cycle.
 
 ---
 

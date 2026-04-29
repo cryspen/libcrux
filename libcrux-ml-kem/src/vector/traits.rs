@@ -1258,13 +1258,12 @@ pub trait Operations: Copy + Clone + Repr {
     fn to_i16_array(x: Self) -> [i16; 16];
 
     #[requires(array.len() >= 32)]
-    // TODO(C4): strengthen to `spec::from_bytes_post(&array, &result.repr())`
-    // once impl bodies can discharge it.
+    #[ensures(|result| spec::from_bytes_post(&array, &result.repr()))]
     fn from_bytes(array: &[u8]) -> Self;
 
     #[requires(bytes.len() >= 32)]
-    #[ensures(|_| future(bytes).len() == bytes.len())]
-    // TODO(C4): add `spec::to_bytes_post(&x.repr(), &future(bytes))` post.
+    #[ensures(|_| (future(bytes).len() == bytes.len()).to_prop() &
+                  spec::to_bytes_post(&x.repr(), &future(bytes)))]
     fn to_bytes(x: Self, bytes: &mut [u8]);
 
     // Basic arithmetic

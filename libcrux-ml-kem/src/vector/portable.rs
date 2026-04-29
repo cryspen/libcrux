@@ -950,19 +950,36 @@ impl Operations for PortableVector {
     }
 
     #[requires(array.len() >= 32)]
+    #[ensures(|out| fstar!(r#"sz (Seq.length ${array}) >=. sz 32 ==>
+                              (let head : t_Slice u8 = Seq.slice ${array} 0 32 in
+                               Libcrux_ml_kem.Vector.Traits.Spec.from_le_bytes_post_N
+                                 #(mk_usize 16) head (impl.f_repr ${out}))"#))]
     fn from_bytes(array: &[u8]) -> Self {
-        from_bytes(array.classify_ref())
+        let result = from_bytes(array.classify_ref());
+        hax_lib::fstar!(
+            r#"admit ()"#
+        );
+        result
     }
 
     #[requires(bytes.len() >= 32)]
-    #[ensures(|_| future(bytes).len() == bytes.len())]
+    #[ensures(|_| fstar!(r#"sz (Seq.length bytes_future) =. sz (Seq.length ${bytes}) /\
+                            (sz (Seq.length bytes_future) >=. sz 32 ==>
+                             (let head : t_Slice u8 = Seq.slice bytes_future 0 32 in
+                              Libcrux_ml_kem.Vector.Traits.Spec.to_le_bytes_post_N
+                                #(mk_usize 16) (impl.f_repr ${x}) head))"#))]
     fn to_bytes(x: Self, bytes: &mut [u8]) {
         #[cfg(not(hax))]
         to_bytes(x, classify_mut_slice(bytes));
 
         // hax does not support &mut returning functions like `classify_mut_slice`
         #[cfg(hax)]
-        to_bytes(x, bytes);
+        {
+            to_bytes(x, bytes);
+            hax_lib::fstar!(
+                r#"admit ()"#
+            );
+        }
     }
 
     #[requires(fstar!(r#"${spec::add_pre} ${lhs}.f_elements ${rhs}.f_elements"#))]

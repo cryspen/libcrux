@@ -14,6 +14,112 @@ Wave-A continuation (this session, 2026-04-29 13:00-14:00) closed
 B1 (partial) at `f87e9a8cf` and B3 (full + USER-9a bonus) at
 `e5c4a6f49`, both off `bd2ee86c4`.  Net: -15 admits.
 
+## 2026-04-29 14:00–15:30 — USER-8 lane (trait `from_bytes` / `to_bytes` post wiring)
+
+Ran in isolated worktree
+`/Users/karthik/libcrux/.claude/worktrees/agent-ae496f0192e9422a9/`
+(separate clone; no `.fstar-cache` initially — seeded from
+`/Users/karthik/libcrux-trait-opacify/.fstar-cache/` at session start).
+Branch `agent/user-8` off `e66708d2f` (trait-opacify HEAD).
+
+### S1 — trait wire-up (CLOSED)
+
+`src/vector/traits.rs:1260-1272` — added strengthened ensures using
+the existing `spec::from_bytes_post` / `spec::to_bytes_post` helpers.
+TODO(C4) markers removed.
+
+For the `to_bytes` ensures, used the `(future(bytes).len() == bytes.len()).to_prop() & fstar!(...)` form (matching `rej_sample`'s pattern) — direct `&&` doesn't typecheck because hax wraps the second conjunct as `Prop`.
+
+For the fstar! body of the post, hax does NOT translate `future(bytes)`
+inside `fstar!(r#"..."#)` — the literal token `future bytes` extracts
+as the binding `bytes` (parameter), not the post-state.  Workaround:
+use the literal F* name `bytes_future` (the third parameter that hax
+generates for `f_to_bytes_post`).
+
+`make check/Libcrux_ml_kem.Vector.Traits.fst` — 96s (cold, hint
+written) / 5s (replay).
+
+### S2 — portable discharge (ADMITTED, USER-14 filed)
+
+`src/vector/portable.rs:1004-1031` — strengthened impl-method ensures,
+admit-discharged via `hax_lib::fstar!(r#"admit ()"#)` in body.
+
+**Why admitted (not closed)**: tooling-level dependency cycle.
+The `BitVecEq.int_t_array_bitwise_eq` lemma needs
+`Tactics.GetBit.prove_bit_vector_equality' ()` to normalize the
+`from_bytes` / `to_bytes` body.  But the tactic only unfolds names
+in `cur_module()`'s namespace.  `Vector_type.{from,to}_bytes` lives
+in `Libcrux_ml_kem.Vector.Portable.Vector_type`.
+
+Adding the lemma there creates `Tactics.GetBit -> Vector_type ->
+Tactics.GetBit` cycle (Tactics.GetBit statically references
+`Vector_type.__proj__...f_elements` for the projector unfold).
+
+Adding the lemma in the consuming module (`Libcrux_ml_kem.Vector.Portable`)
+doesn't help because the .fsti `val from_bytes` declaration hides the
+body from clients.  Confirmed by spike: explicit
+`FStar.Tactics.V2.norm [delta_only [\`%...from_bytes]]` step does NOT
+unfold across the .fsti barrier.
+
+Spike trace ~30 min: tried route (a) attaching lemma to vector_type via
+`fstar::after` → cycle blocks `make .depend`; route (b) wrapper
+`from_bytes_local` in portable.rs with `delta_only` norm → tactic still
+can't see body, fails with `match Vector_type.from_bytes v as proj_ret`
+in goal; route (c) inline straight-line construction in vector_type
+body so tactic can normalize → still hits the `.fsti` barrier from
+external module.
+
+Filed as USER-14 with 3 path-forward options.
+
+`make check/Libcrux_ml_kem.Vector.Portable.fst` — 49s, all VCs
+discharged (with admits in `f_from_bytes` and `f_to_bytes` impl
+bodies).
+
+### S3 — AVX2 discharge (ADMITTED, same USER-14)
+
+`src/vector/avx2.rs:1051-1080` — same pattern.  AVX2 `to_bytes`
+previously had `verification_status(lax)` (line 65); removed `lax`,
+added the strengthened post + admit body.
+
+`make check/Libcrux_ml_kem.Vector.Avx2.fst` — 83s, with
+`--split_queries always` (auto-fallback).  All VCs discharged.
+
+### Net delta
+
+  - **S1 PROGRESS:** trait posts strengthened (no admit added at the trait level; the helpers were pre-existing).
+  - **S2 + S3 SIDEWAYS:** +4 admits (2 portable, 2 AVX2), each in the impl-method body discharging the trait post.
+  - **AVX2 lax dropped on `to_bytes`** — replaced by 1 admit in the trait-impl body (net same trust level).
+  - **Net admit delta**: +4 admits in `Libcrux_ml_kem.Vector.{Portable,Avx2}.fst`.
+  - **lax/panic_free delta**: -1 (AVX2 `to_bytes` lax → admit-in-body).
+
+### Hot files touched
+
+  - `libcrux-ml-kem/src/vector/traits.rs` (S1 — strengthen 2 method posts)
+  - `libcrux-ml-kem/src/vector/portable.rs` (S2 — strengthen impl posts + 2 admit bodies)
+  - `libcrux-ml-kem/src/vector/avx2.rs` (S3 — drop lax + strengthen impl posts + 2 admit bodies)
+  - `libcrux-ml-kem/MLKEM_STATUS.md` (USER-8 closure entry + USER-14 filing)
+  - `libcrux-ml-kem/proofs/agent-status/agent-trackA.md` (this entry)
+
+Vector_type.rs untouched in final state (a straight-line refactor was
+attempted mid-session for the lemma route but reverted — body shape
+doesn't matter once admits are in play).
+
+### Verification spot checks
+
+| Module | Time | Notes |
+|---|---|---|
+| Vector.Traits.Spec.fst | 9s replay | unchanged (helpers pre-existing) |
+| Vector.Traits.fst | 96s cold / 5s replay | NEW posts |
+| Vector.Portable.Vector_type.fst | 6s | unchanged |
+| Vector.Portable.fst | 49s | NEW admits |
+| Vector.Avx2.fst | 83s split | NEW admits |
+| Vector.fst | 7s | unchanged |
+| Polynomial.fst | 86s | unchanged (regression-tested) |
+| Ntt.fst | 69s | unchanged (regression-tested) |
+| Serialize.fst | 25s | unchanged (regression-tested) |
+
+---
+
 ## 2026-04-29 13:00–14:00 — Wave-A continuation (B1 + B3)
 
 Ran in isolated worktree
