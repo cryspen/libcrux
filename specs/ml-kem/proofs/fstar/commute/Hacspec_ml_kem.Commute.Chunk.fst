@@ -2401,3 +2401,183 @@ let lemma_ntt_layer_1_step_to_hacspec
 
    Estimated remaining work: 1-2 hours per layer × 5 remaining layers
    = 5-10 hours.  Out of scope for this session. *)
+
+(*** Phase 7a / lane A3 additions ***)
+
+(* Goal: bridge `to_spec_poly_mont (param b)` (record-form) to the array
+   form used at the body call site of `subtract_reduce`.  The body has
+   `let e_b = b.f_coefficients` and after the loop reconstructs a
+   `b_input = { f_coefficients = e_b }`.  Z3 has trouble equating the
+   parameter-record's `to_spec_poly_mont` to the reconstructed-record's
+   `to_spec_poly_mont` due to the `createi`-of-record-field structure.
+
+   Resolution: define `to_spec_poly_mont_arr` (resp. `_plain_arr`) over a
+   `t_Array vV 16` directly.  Both record forms unfold to the same array
+   form via a one-line lemma — Z3 sees `array == array` directly, no
+   record-projection traversal needed.
+
+   See MLKEM_STATUS.md USER-7 hypothesis (b). *)
+
+let to_spec_poly_mont_arr
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (a: t_Array vV (mk_usize 16))
+    : t_Array P.t_FieldElement (mk_usize 256)
+  = P.createi #P.t_FieldElement (mk_usize 256)
+        #(usize -> P.t_FieldElement)
+        (fun (j: usize { j <. mk_usize 256 }) ->
+          (mont_i16_to_spec_fe
+            (Seq.index (T.f_repr (Seq.index a (v j / 16)))
+                       (v j % 16))
+           <: P.t_FieldElement))
+
+let to_spec_poly_plain_arr
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (a: t_Array vV (mk_usize 16))
+    : t_Array P.t_FieldElement (mk_usize 256)
+  = P.createi #P.t_FieldElement (mk_usize 256)
+        #(usize -> P.t_FieldElement)
+        (fun (j: usize { j <. mk_usize 256 }) ->
+          (i16_to_spec_fe
+            (Seq.index (T.f_repr (Seq.index a (v j / 16)))
+                       (v j % 16))
+           <: P.t_FieldElement))
+
+(* Unfold lemma: `to_spec_poly_mont` only consumes `p.f_coefficients`,
+   so it must equal `to_spec_poly_mont_arr p.f_coefficients`.  The
+   bodies are structurally identical except the record projection.
+   Single-line proof via `Seq.lemma_eq_intro` on the createi outputs. *)
+let lemma_to_spec_poly_mont_unfold
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV) :
+    Lemma (to_spec_poly_mont p == to_spec_poly_mont_arr p.V.f_coefficients)
+  = let lhs = to_spec_poly_mont p in
+    let rhs = to_spec_poly_mont_arr p.V.f_coefficients in
+    let aux (j: nat) : Lemma (j < 256 ==> Seq.index lhs j == Seq.index rhs j)
+      = if j < 256 then begin
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize { k <. mk_usize 256 }) ->
+              (mont_i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                           (v k % 16))
+               <: P.t_FieldElement))
+            (sz j);
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize { k <. mk_usize 256 }) ->
+              (mont_i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                           (v k % 16))
+               <: P.t_FieldElement))
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs rhs
+
+(* Same for plain. *)
+let lemma_to_spec_poly_plain_unfold
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV) :
+    Lemma (to_spec_poly_plain p == to_spec_poly_plain_arr p.V.f_coefficients)
+  = let lhs = to_spec_poly_plain p in
+    let rhs = to_spec_poly_plain_arr p.V.f_coefficients in
+    let aux (j: nat) : Lemma (j < 256 ==> Seq.index lhs j == Seq.index rhs j)
+      = if j < 256 then begin
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize { k <. mk_usize 256 }) ->
+              (i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                           (v k % 16))
+               <: P.t_FieldElement))
+            (sz j);
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize { k <. mk_usize 256 }) ->
+              (i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v k / 16)))
+                           (v k % 16))
+               <: P.t_FieldElement))
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs rhs
+
+(* Record-extensionality flavoured: when two ring elements share their
+   `f_coefficients` array, their `to_spec_poly_mont` lifts coincide.
+   Composes the two unfold lemmas for direct use at body call sites. *)
+let lemma_to_spec_poly_mont_eq_of_coeffs
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p q: V.t_PolynomialRingElement vV) :
+    Lemma (requires p.V.f_coefficients == q.V.f_coefficients)
+          (ensures to_spec_poly_mont p == to_spec_poly_mont q)
+  = lemma_to_spec_poly_mont_unfold p;
+    lemma_to_spec_poly_mont_unfold q
+
+let lemma_to_spec_poly_plain_eq_of_coeffs
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p q: V.t_PolynomialRingElement vV) :
+    Lemma (requires p.V.f_coefficients == q.V.f_coefficients)
+          (ensures to_spec_poly_plain p == to_spec_poly_plain q)
+  = lemma_to_spec_poly_plain_unfold p;
+    lemma_to_spec_poly_plain_unfold q
+
+(* Createi-equality bridge for the `subtract_reduce`-family post.
+   Given two ring elements that share `f_coefficients`, the per-lane
+   createi expressions (used by both the lemma_subtract_reduce_commute
+   conclusion and the function's post-condition) coincide.  This is
+   exactly the bridge the body-level `subtract_reduce` closing query
+   needs — Z3 doesn't auto-derive equality of createis from equality
+   of the per-lane functions. *)
+#push-options "--z3rlimit 100"
+let lemma_subtract_reduce_scaled_eq
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p q: V.t_PolynomialRingElement vV) :
+    Lemma (requires p.V.f_coefficients == q.V.f_coefficients)
+          (ensures
+            (P.createi #P.t_FieldElement (mk_usize 256)
+               #(usize -> P.t_FieldElement)
+               (fun (j: usize {j <. mk_usize 256}) ->
+                 P.impl_FieldElement__mul
+                   (Seq.index (to_spec_poly_mont p) (v j))
+                   fe_1441))
+            ==
+            (P.createi #P.t_FieldElement (mk_usize 256)
+               #(usize -> P.t_FieldElement)
+               (fun (j: usize {j <. mk_usize 256}) ->
+                 P.impl_FieldElement__mul
+                   (Seq.index (to_spec_poly_mont q) (v j))
+                   fe_1441)))
+  = lemma_to_spec_poly_mont_eq_of_coeffs p q;
+    let lhs = P.createi #P.t_FieldElement (mk_usize 256)
+                #(usize -> P.t_FieldElement)
+                (fun (j: usize {j <. mk_usize 256}) ->
+                  P.impl_FieldElement__mul
+                    (Seq.index (to_spec_poly_mont p) (v j))
+                    fe_1441) in
+    let rhs = P.createi #P.t_FieldElement (mk_usize 256)
+                #(usize -> P.t_FieldElement)
+                (fun (j: usize {j <. mk_usize 256}) ->
+                  P.impl_FieldElement__mul
+                    (Seq.index (to_spec_poly_mont q) (v j))
+                    fe_1441) in
+    let aux (j: nat) : Lemma (j < 256 ==> Seq.index lhs j == Seq.index rhs j)
+      = if j < 256 then begin
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize {k <. mk_usize 256}) ->
+              P.impl_FieldElement__mul
+                (Seq.index (to_spec_poly_mont p) (v k))
+                fe_1441)
+            (sz j);
+          P.createi_lemma #P.t_FieldElement (mk_usize 256)
+            #(usize -> P.t_FieldElement)
+            (fun (k: usize {k <. mk_usize 256}) ->
+              P.impl_FieldElement__mul
+                (Seq.index (to_spec_poly_mont q) (v k))
+                fe_1441)
+            (sz j)
+        end in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro lhs rhs
+#pop-options
