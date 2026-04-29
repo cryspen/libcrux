@@ -9,11 +9,15 @@ use crate::{
 
 const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
+// F-6 (2026-04-29): caller pre uses centered `is_i32b_array_opaque (pow2 12)` to
+// match the trait pre after F-6's swap (was non-negative `is_pos_array_opaque (pow2 13)`).
+// The semantically correct interval for t0 inputs is the lower 13 signed bits of t,
+// centered around 0 (i.e. |x| <= 4096).
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == 32 * 13 /\
     (forall (j:nat). j < 32 ==>
-      Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+      Spec.Utils.is_i32b_array_opaque (pow2 12)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -23,7 +27,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 ) {
     for i in 0..re.simd_units.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"v i <= 32 /\ Seq.length serialized == 32 * 13"#
+            r#"v i <= 32 /\ Seq.length serialized == 32 * 13 /\
+              (forall (j:nat). j < 32 ==>
+                Spec.Utils.is_i32b_array_opaque (pow2 12)
+                  (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#
         ));
         SIMDUnit::t0_serialize(
             &re.simd_units[i],

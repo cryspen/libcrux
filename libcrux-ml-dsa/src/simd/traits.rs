@@ -257,9 +257,14 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     // t0: bit_pack with width 13.
     // F-3 (2026-04-28): pre uses non-negative-bounded `is_pos_array_opaque`
     // since the impl operates on the shifted (non-negative) t0 representation.
+    // F-6 (2026-04-29): switch t0_serialize back to centered `is_i32b_array_opaque (pow2 12)`.
+    // The AVX2 free fn requires `(POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE - lane) in (0, pow2 13)`,
+    // i.e. lane in (-4095, 4096], which is the centered semantic of t0 inputs (lower 13 signed
+    // bits of t centered around 0). The non-negative `is_pos_array_opaque (pow2 13)` allowed
+    // boundary `lane == 8192`, which made the AVX2 pre fail (`4096 - 8192 = -4096 < 0`).
     #[hax_lib::requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque (pow2 13)
+        Spec.Utils.is_i32b_array_opaque (pow2 12)
             (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
