@@ -1179,25 +1179,33 @@ let ntt_multiply_branch_post
     }
 
     pub(crate) fn serialize_11_pre(vec: &[i16; 16]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"serialize_pre_N 11 $vec"#)
+        hax_lib::fstar_prop_expr!(
+            r#"
+            serialize_pre_N 11 $vec"#
+        )
     }
 
     pub(crate) fn serialize_11_post(vec: &[i16; 16], result: &[u8]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"Seq.length ${result} == 22 /\
-               (serialize_pre_N 11 $vec ==>
-                  serialize_post_N 11 ${vec} ${result})"#
+            r#"
+            Seq.length ${result} == 22 /\
+            (serialize_pre_N 11 $vec ==>
+               serialize_post_N 11 ${vec} ${result})"#
         )
     }
 
     pub(crate) fn deserialize_11_pre(input: &[u8]) -> hax_lib::Prop {
-        hax_lib::fstar_prop_expr!(r#"Seq.length ${input} == 22"#)
+        hax_lib::fstar_prop_expr!(
+            r#"
+            Seq.length ${input} == 22"#
+        )
     }
 
     pub(crate) fn deserialize_11_post(input: &[u8], result: &[i16; 16]) -> hax_lib::Prop {
         hax_lib::fstar_prop_expr!(
-            r#"Seq.length ${input} == 22 ==>
-               deserialize_post_N 11 ${input} ${result}"#
+            r#"
+            Seq.length ${input} == 22 ==>
+              deserialize_post_N 11 ${input} ${result}"#
         )
     }
 
@@ -1369,12 +1377,12 @@ pub trait Operations: Copy + Clone + Repr {
     #[ensures(|result| spec::deserialize_10_post(&a, &result.repr()))]
     fn deserialize_10(a: &[u8]) -> Self;
 
-    // TODO(C4): add `spec::serialize_11_pre(&a.repr())` and
-    // `spec::serialize_11_post(&a.repr(), &result)` once impl discharges them.
+    #[requires(spec::serialize_11_pre(&a.repr()))]
+    #[ensures(|result| spec::serialize_11_post(&a.repr(), &result))]
     fn serialize_11(a: Self) -> [u8; 22];
 
-    #[requires(a.len() == 22)]
-    // TODO(C4): add `spec::deserialize_11_post(&a, &result.repr())` post.
+    #[requires(spec::deserialize_11_pre(&a))]
+    #[ensures(|result| spec::deserialize_11_post(&a, &result.repr()))]
     fn deserialize_11(a: &[u8]) -> Self;
 
     #[requires(spec::serialize_12_pre(&a.repr()))]

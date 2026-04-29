@@ -710,6 +710,35 @@ let op_deserialize_12_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 12 input
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v))
   = admit ()
+
+let op_serialize_11_pre_bridge (v: bit_vec 256) : Lemma
+  (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11
+              (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v))
+  (ensures forall (j: nat{j < 256}). j % 16 < 11 || v j = 0)
+  = admit ()
+
+let op_serialize_11_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 22)) : Lemma
+  (requires
+    Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v) /\
+    (forall (i: nat{i < 176}).
+      bit_vec_of_int_t_array r 8 i == v ((i / 11) * 16 + i % 11)))
+  (ensures
+    Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v) r)
+  = admit ()
+
+let op_deserialize_11_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+  (requires
+    Seq.length input == 22 /\
+    (forall (i: nat{i < 256}).
+      v i = (if i % 16 >= 11 then 0
+             else let j = (i / 16) * 11 + i % 16 in
+                  bit_vec_of_int_t_array (input <: t_Array _ (sz 22)) 8 j)))
+  (ensures
+    Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 11 input
+      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 v))
+  = admit ()
 "#
 )]
 #[inline(always)]
@@ -783,6 +812,25 @@ fn op_serialize_12(vector: SIMD256Vector) -> [u8; 24] {
 fn op_deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_12(bytes);
     hax_lib::fstar!(r#"op_deserialize_12_post_bridge ${bytes} ${elements}"#);
+    SIMD256Vector { elements }
+}
+
+#[inline(always)]
+#[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr ${vector})"#))]
+#[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11 (impl.f_repr ${vector}) ${out}"#))]
+fn op_serialize_11(vector: SIMD256Vector) -> [u8; 22] {
+    hax_lib::fstar!(r#"op_serialize_11_pre_bridge ${vector}.f_elements"#);
+    let result = serialize::serialize_11(vector.elements);
+    hax_lib::fstar!(r#"op_serialize_11_post_bridge ${vector}.f_elements ${result}"#);
+    result
+}
+
+#[inline(always)]
+#[hax_lib::requires(bytes.len() == 22)]
+#[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 22 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 11 $bytes (impl.f_repr ${out})"#))]
+fn op_deserialize_11(bytes: &[u8]) -> SIMD256Vector {
+    let elements = serialize::deserialize_11(bytes);
+    hax_lib::fstar!(r#"op_deserialize_11_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1021,17 +1069,18 @@ impl Operations for SIMD256Vector {
         op_deserialize_10(bytes)
     }
 
+    #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr $vector)"#))]
+    #[ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr $vector) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11 (impl.f_repr $vector) $out"#))]
     #[inline(always)]
     fn serialize_11(vector: Self) -> [u8; 22] {
-        serialize::serialize_11(vector.elements)
+        op_serialize_11(vector)
     }
 
     #[requires(bytes.len() == 22)]
+    #[ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 22 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 11 $bytes (impl.f_repr $out)"#))]
     #[inline(always)]
     fn deserialize_11(bytes: &[u8]) -> Self {
-        Self {
-            elements: serialize::deserialize_11(bytes),
-        }
+        op_deserialize_11(bytes)
     }
 
     #[requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr $vector)"#))]
