@@ -398,6 +398,7 @@ pub enum Ss {
     MlKem1024(MlKemSharedSecret),
 }
 
+#[hax_lib::include]
 impl PrivateKey {
     /// Encode a private key.
     pub fn encode(&self) -> Vec<u8> {
@@ -449,6 +450,7 @@ impl PrivateKey {
     }
 }
 
+#[hax_lib::include]
 impl PublicKey {
     /// Encapsulate a shared secret to the provided `pk` and return the `(Key, Enc)` tuple.
     pub fn encapsulate(&self, rng: &mut impl CryptoRng) -> Result<(Ss, Ct), Error> {
