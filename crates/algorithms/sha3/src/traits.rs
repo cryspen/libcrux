@@ -40,9 +40,11 @@ pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
 
     /// `(a ^ b) <<< LEFT`
     #[hax_lib::requires(
-        LEFT.to_int() + RIGHT.to_int() == 64.to_int() &&
+        LEFT > 0 &&
+        LEFT < 64 &&
         RIGHT > 0 &&
-        RIGHT < 64
+        RIGHT < 64 &&
+        LEFT + RIGHT == 64
     )]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self;
 

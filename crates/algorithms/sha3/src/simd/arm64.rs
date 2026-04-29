@@ -31,6 +31,7 @@ fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
 }
 
 #[inline(always)]
+#[hax_lib::requires(0 < LEFT && LEFT < 64 && 0 < RIGHT && RIGHT < 64 && LEFT + RIGHT == 64)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     libcrux_intrinsics::arm64::_vxarq_u64::<LEFT, RIGHT>(a, b)
 }
@@ -311,6 +312,7 @@ pub(crate) fn store_block<const RATE: usize>(
     }
 }
 
+#[hax_lib::attributes]
 impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn zero() -> Self {
@@ -325,6 +327,7 @@ impl KeccakItem<2> for uint64x2_t {
         _vrax1q_u64(a, b)
     }
     #[inline(always)]
+    #[hax_lib::requires(0 < LEFT && LEFT < 64 && 0 < RIGHT && RIGHT < 64 && LEFT + RIGHT == 64)]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self {
         _vxarq_u64::<LEFT, RIGHT>(a, b)
     }
