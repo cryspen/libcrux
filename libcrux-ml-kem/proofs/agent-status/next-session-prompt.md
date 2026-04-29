@@ -1,4 +1,8 @@
-# Next-session resume prompt — Phase 7a Step 5 spike (drive-to-the-top)
+# Next-session resume prompt — Post-Phase H, ready for Phase 1
+
+Phase H (opaque mod_q at trait boundary) committed at `08dedde99`.
+The end-to-end sprint plan is consolidated at
+`~/.claude/plans/immutable-snacking-dewdrop.md`.
 
 Paste the block below into a fresh Claude Code session opened in
 `/Users/karthik/libcrux-trait-opacify/libcrux-ml-kem`.
@@ -6,215 +10,141 @@ Paste the block below into a fresh Claude Code session opened in
 ---
 
 ```
-You are continuing the multi-agent F* verification effort on
-libcrux-ml-kem trait-opacify branch.
+You are picking up the libcrux-ml-kem F* verification sprint after
+Phase H landed (commit `08dedde99` on `trait-opacify`).
 
 ═══════════════════════════════════════════════════════════════════
-SPIKE GOAL — drive `invert_ntt_montgomery`'s strengthened post end-to-end
+SPRINT STATUS
 ═══════════════════════════════════════════════════════════════════
 
-**Why a spike, not bottom-up.**  We have layers 1, 3 strengthened
-(Steps 4 layers 1+3) and step_reduce strengthened (Step 3.1).  Layer 2
-(Step 4 layer 2) Z3-walled and is admitted; layer 4_plus's polynomial-
-level strengthening (Step 3.3) needs new spec helpers and was deferred.
-Before sinking time into discharging those, we want to know: does the
-strengthened `invert_ntt_montgomery` post actually compose with what
-the consumers in `matrix.rs` / `polynomial.rs` need?
+✅ Phase 0 (canonical edit-check loop empirical study) — verdict:
+   plain `make check/<Mod>.fst` from `proofs/fstar/extraction/`.
+   Report: `proofs/agent-status/edit-check-loop-comparison.md`.
 
-This spike admits the missing pieces, drives the chain to the top, and
-**validates the spec direction by rewiring at least one consumer post**
-(probably `subtract_reduce` or `add_message_error_reduce`).  If the
-shape is right, future bottom-up work has a definite target.  If the
-shape is wrong, we discover it now — before paying the discharge cost.
+✅ Phase H (opaque mod_q at trait boundary) — DONE 2026-04-29.
+   `Hacspec_ml_kem.ModQ.fst` defines opaque `mod_q` and `mod_q_eq`.
+   4 trait posts (barrett_reduce, mont_mul_by_constant, cond_subtract,
+   to_unsigned_representative) now use `mod_q_eq` form.  Above-trait
+   Z3 contexts no longer see raw `% 3329`.  All verifies clean:
+   ModQ.fst (8s), Commute.Chunk.fst (70s), Vector.Portable.fst (59s),
+   Vector.Avx2.fst (63s), Polynomial.fst, Invert_ntt.fst.
 
-═══════════════════════════════════════════════════════════════════
-WHAT'S COMMITTED ENTERING THIS SESSION
-═══════════════════════════════════════════════════════════════════
+⏸ Phase 1 (trait pre/post fixes) — NEXT.  ~1 session, single-agent.
+⏸ Phase 2 (below-trait closure, 7 lanes parallel) — gated on Phase 1.
+⏸ Phase 3 (above-trait closure, 8 lanes parallel) — gated on Phase 2.
 
-  Step 1:    layer-1 inverse hacspec bridge                     ✅
-  Step 2:    layer 2 + layer 3 inverse bridges                  ✅
-  Step 3.1:  strengthened `inv_ntt_layer_int_vec_step_reduce` post
-                with per-lane FE equations                       ✅
-  Step 3.2:  chunk-pair bridge
-                `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` ✅
-  Step 4:    layer 1 + layer 3 strengthening (Option B)          ✅
-  Step 7.1 + closed-form lane lemma                              ✅
-  Step 9:    scaling-chain doc comments                          ✅
-
-CURRENTLY ADMITTED (TEMP, this session will NOT discharge — it will
-ADD MORE in the same spirit so the spike runs):
-  * `invert_ntt_at_layer_4_plus` (4 calls in `invert_ntt_montgomery`)
-    — admitted by `--admit_smt_queries true` because Step 3.1's
-    strengthened step_reduce post regresses its bounds proof.
-
-WILL ALSO ADMIT in this spike:
-  * `invert_ntt_at_layer_2` (Step 4 layer 2, Z3-walled previously).
-  * Possibly `invert_ntt_montgomery` BODY (just the bound chain
-    glue) if the strengthened post inflates Q-count.
+Critical path: Phase 1 → A5 (3 sess) → A6 (2) → A7 (2) → A8 (2)
+≈ 10-11 total sessions.
 
 ═══════════════════════════════════════════════════════════════════
-SPIKE PLAN — drive in this order, stop and report at any 60-min cap
+ENVIRONMENT VERIFY (do this first)
 ═══════════════════════════════════════════════════════════════════
 
-(α) **Read the consumer landscape** [~15 min].
-    - `src/matrix.rs:135-225` — 3 callers of `invert_ntt_montgomery`.
-    - `src/polynomial.rs:340-590` — `subtract_reduce`,
-      `add_message_error_reduce`, `add_error_reduce`.  These do the
-      fused `mont_mul(b, 1441) ≡ b · 1/128` finalize.
-    - Question to answer: what polynomial-level claim does
-      `subtract_reduce`'s post (or one of the others) want to be able
-      to make?  Sketch it on paper before writing F*.
-
-    The natural shape of `invert_ntt_montgomery`'s strengthened post:
-    ```
-    mont_to_spec_poly_256 (re_future) ==
-      <7-layer-GS-chain> (mont_to_spec_poly_256 re_init)
-    ```
-    where `<7-layer-GS-chain>` is the COMPOSITION of layer-7 down to
-    layer-1 inverse butterflies (no `· 128⁻¹` finalize — that lives
-    in the consumer).  The consumer gets:
-    ```
-    result_lift == myself_lift - (1/128) * inv_butterflies_chain(b_lift)
-    ```
-
-(β) **Add poly-level lift + zetas helpers** [~30 min, new file].
-    File: `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst`
-    (NOT a new file — this stays alongside existing helpers).
-
-    (β1) `mont_to_spec_poly_256` — flatten
-         `re : t_PolynomialRingElement vV`
-         (with `re.coefficients : t_Array vV 16`) into
-         `t_Array t_FieldElement 256`:
-         ```
-         createi 256 (fun k -> mont_i16_to_spec_fe
-           (Seq.index (T.f_repr (re.coefficients.[k / 16])) (k % 16)))
-         ```
-
-    (β2) Three new zetas-N-inverse helpers analogous to `zetas_1`:
-         - `zetas_8_inv` (layer 4: 8 zetas)
-         - `zetas_4_inv` (layer 5: 4 zetas)
-         - `zetas_2_inv` (layer 6: 2 zetas)
-         (Layer 7: reuse existing `zetas_1`.)
-         Each with `zs[r] = mont_i16_to_spec_fe (zeta(2*groups - 1 - r))`.
-
-    (β3) (Optional, if time) per-lane unfold helpers analogous to
-         `lemma_ntt_inverse_layer_n_16_2_lane`, but for length 256 and
-         step ∈ {16, 32, 64, 128}.
-
-(γ) **Add layer 4_plus + layer 2 strengthened posts (admitted body)**
-    [~30 min, in `src/invert_ntt.rs`].
-
-    Strengthen `invert_ntt_at_layer_4_plus`'s post to cite
-    `IN.ntt_inverse_layer_n 256 (mont_to_spec_poly_256 re) step zs`
-    where `step = 2^layer`, `zs = zetas_<groups>_inv (zeta(*zeta_i_init - 1)) ...`.
-    Body: keep the existing `--admit_smt_queries true`.
-
-    Strengthen `invert_ntt_at_layer_2`'s post analogously to layers 1
-    and 3 (chunk-level), citing `IN.ntt_inverse_layer_n 16 ... 4 (zetas_2 ...)`.
-    Body: also admit (this is the Z3-walled one; admit body to unblock).
-
-(δ) **Strengthen `invert_ntt_montgomery`'s post** [~15 min].
-    Chain the 7 layer citations into a polynomial-level claim.  This
-    post is what the consumer sees.  Body proof: should follow from
-    the 7 layer posts via simple sequential substitution; rlimit 200
-    likely enough.  If not, admit body too — the SPIKE is about
-    validating shape, not proving.
-
-(ε) **Rewire one consumer** [~30 min].
-    Pick `subtract_reduce` (smallest, cleanest finalize).  Strengthen
-    its post to cite the polynomial-level identity:
-    ```
-    mont_to_spec_poly_256 result ==
-      mont_to_spec_poly_256 myself - (1/128) * <inv_butterflies_chain>(mont_to_spec_poly_256 b)
-    ```
-    Body proof can be admitted for the spike — what we're testing is
-    whether the post **types** at all, and whether the consumer
-    callers in `matrix.rs` accept it without unification errors.
-
-    Verify: `python3 hax.py extract && make check/Libcrux_ml_kem.Polynomial.fst`
-    (then `Matrix.fst` if Polynomial passes).
+  cd /Users/karthik/libcrux-trait-opacify
+  git status              # clean on trait-opacify (mod unrelated diffs)
+  git log --oneline trait-opacify -3
+  # Should show:
+  #   08dedde99 agent-trackA: Phase H — opaque mod_q at trait boundary + lane-split protocol
+  #   a62dd9ce0 agent-trackA: USER-7 — handoff for subtract_reduce body discharge
+  #   0a8c7289d agent-trackA: add per-poly commute lemma for subtract_reduce (mitigation b)
 
 ═══════════════════════════════════════════════════════════════════
-DECISION CRITERIA — what counts as SUCCESS for this spike
+RESUME PROTOCOL — read these in order
 ═══════════════════════════════════════════════════════════════════
 
-  ✅ **Spec shape validated** — `invert_ntt_montgomery`'s strengthened
-     post is well-typed AND `subtract_reduce`'s strengthened post
-     uses it without F* unification errors.  `Polynomial.fst` and
-     `Matrix.fst` extract + verify (with admits) clean.
+  1. ~/.claude/plans/immutable-snacking-dewdrop.md
+     (the consolidated sprint plan; Phase 1 details are in §"Phase 1")
+  2. proofs/agent-status/lane-split-protocol.md
+     (worktree split, cherry-pick discipline, style rules SD1-SD3)
+  3. proofs/agent-status/edit-check-loop-comparison.md
+     (canonical inner loop verdict)
+  4. MLKEM_STATUS.md
+     (USER-1 through USER-7 task list, especially USER-7 for the
+      currently-admitted subtract_reduce body)
+  5. proofs/agent-status/agent-trackA.md
+     (recent-session log)
 
-  ⚠️ **Shape mismatch** — F* type-checks but the consumer's claim
-     can't actually use the antecedent.  Document the exact gap and
-     redesign.
+═══════════════════════════════════════════════════════════════════
+PHASE 1 SCOPE — what this session does
+═══════════════════════════════════════════════════════════════════
 
-  ❌ **Plumbing broken** — extraction or verification fails on
-     trivial type / module / dep issues.  Fix and continue.
+Modify `src/vector/traits.rs` and re-extract `Vector.Traits.Spec.fst`.
+Batch into clusters; one trait commit per cluster.
+
+CLUSTER 1 (low-risk, post-only conjuncts):
+  • Add output bounds to `add_post`, `sub_post`, `multiply_by_constant_post`,
+    `negate_post`.  Derivable from existing `is_intb` pre.
+  • Documentation comments on `to_unsigned_representative` (kept algebraic-
+    int intentionally), `montgomery_multiply_by_constant` pre asymmetry,
+    `add`/`sub` pre on sums.
+
+CLUSTER 2 (modest impl-side proof):
+  • `from_bytes`, `to_bytes`: pull in existing `from_le_bytes_post_N` /
+    `to_le_bytes_post_N` helpers.  Portable-side discharge via existing
+    BitVecEq pattern; AVX2 may need an intrinsic↔BitVec bridge (defer
+    if heavy).
+
+CLUSTER 3 (gated on 30-min spike):
+  • `serialize_5/11`, `deserialize_5/11`: replace TODO with existing
+    pre/post helpers.  Requires 4 new lemmas in `src/vector/portable/
+    serialize.rs` mirroring `serialize_10_lemma`.  SPIKE: write
+    `serialize_5_int_lemma`. If closes <30 min, land all 4. Else defer.
+
+CLUSTER 4 (defer):
+  • `rej_sample`: leave weak with sharpened TODO.
+
+Each cluster:
+  1. Edit `traits.rs` (one cluster's worth).
+  2. `python3 hax.py extract`.
+  3. `make check/Libcrux_ml_kem.Vector.Traits.Spec.fst`.
+  4. `make check/Libcrux_ml_kem.Vector.Portable.fst` — must pass.
+  5. `make check/Libcrux_ml_kem.Vector.Avx2.fst` — must pass.
+  6. Commit cluster (single commit per cluster — keep `git bisect`
+     useful).
 
 ═══════════════════════════════════════════════════════════════════
 HARD RULES
 ═══════════════════════════════════════════════════════════════════
 
-  R1 SPIKE EXCEPTION: temp admits ARE allowed in this session for
-     bodies whose POSTS are being validated.  Mark every admit with
-     `// SPIKE TEMP — discharge after Step 5 spike` so they're
-     trivially greppable.  EVERY admit MUST be explicitly listed in
-     a "spike admits" section of agent-trackA.md before commit.
-  R2 NO new admits in `Hacspec_ml_kem.Commute.*` — those are spec
-     helpers; they must verify cleanly.
-  R5 No body assumes (axioms).  Use admits with reason, not assumes.
-  R6 ulimit -v 8388608, F* rlimit ≤ 800.
-  R7 fstar-mcp inner loop, make end-of-chunk.
-  R8 Eager commit log to agent-trackA.md.
-  R3 Hard cap 90 min for this spike.  If shape mismatch found,
-     STOP, document the gap, and hand off to a redesign session.
+R1 Phase 1 is single-agent serial.  Don't fan out to multiple lanes
+   yet — Stage 2/3 fan out once trait is frozen.
+R2 Maintain SD1 (mod-q opacity), SD2 (forall<N> over generic forall),
+   SD3 (opaque per-branch wrappers) per lane-split-protocol.md.
+R3 No new admits anywhere.  If Cluster N's impl-side discharge fails,
+   roll back the cluster and document.
+R4 ulimit -v 8388608, F* rlimit ≤ 800.
+R5 Inner loop: plain `make check/<Mod>.fst`.  Don't reach for
+   fstar-mcp or admit-everything-else (per Phase 0 verdict).
+R6 Hard cap 90 min per cluster.  If a cluster doesn't close in 90,
+   STOP, document the gap, hand off.
 
 ═══════════════════════════════════════════════════════════════════
-RESUME PROTOCOL — load durable state in this order
+DELIVERABLES
 ═══════════════════════════════════════════════════════════════════
 
-  1. proofs/agent-status/agent-trackA.md   (Step 3.1+3.2 + the
-                                            layer 4_plus admit story)
-  2. /Users/karthik/.claude/plans/replicated-beaming-pnueli.md
-                                            (THE PLAN, esp. Step 5)
-  3. proofs/agent-status/fstar-perf-top20.md (perf data)
-  4. MLKEM_STATUS.md                         (phase tracker)
-  5. src/invert_ntt.rs:498-559               (`invert_ntt_montgomery`
-                                              source — chain of 7 calls)
-  6. src/matrix.rs:130-225                   (3 callers of inv_ntt_mon)
-  7. src/polynomial.rs:340-590               (3 INTT-track reduce fns)
-  8. specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Chunk.fst
-                                              (where new helpers go)
-  9. specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Commute.Bridges.fst
-                                              (existing bridges + Step 3.2)
+  • 2-4 commits (one per cluster that lands).
+  • Updated `MLKEM_STATUS.md` with new Phase 1 entries.
+  • New entry in `proofs/agent-status/agent-trackA.md`.
+  • If Cluster 4 (rej_sample) deferred: explicit USER-N entry added
+    to MLKEM_STATUS.md.
 
-═══════════════════════════════════════════════════════════════════
-ENVIRONMENT VERIFY
-═══════════════════════════════════════════════════════════════════
-
-  cd /Users/karthik/libcrux-trait-opacify
-  git status              # clean on trait-opacify
-  git log --oneline trait-opacify -5  # latest is Step 3.1+3.2 commit
-  pgrep -f fstar.exe      # ml-kem fstar-mcp at port 3001
-                          # (recreate session as needed)
-
-REPORT one paragraph spike entry summary, then dive into (α) — the
-consumer landscape read.  Do NOT start writing F* until you've
-sketched the polynomial-level identity on paper (in your message to
-the user).  This is the most important part of the spike.
+REPORT one paragraph entry summary at end-of-session.
 ```
 
 ---
 
 ## Why this prompt is structured this way
 
-- **Spike framing is foreground** — admits are allowed precisely
-  because we're validating spec shape, not proving correctness.
-- **Consumer landscape read FIRST** — sketching the identity before
-  writing F* prevents the trap of "I built it but the caller can't
-  use it".
-- **Decision criteria explicit** — there's a defined ✅/⚠️/❌ outcome
-  so the spike can be wrapped cleanly even on shape mismatch.
-- **Step 3.3's deferred sub-pieces (β1/β2/β3) are reused** here as
-  the "natural" infrastructure unit.  Doing them in a spike is
-  cheaper than the full Step 3.3 because the loop-invariant work in
-  3.3(C) is replaced by an admit.
+- **Sprint state foreground**: every fresh agent needs to know what
+  phases are done and which is next.  Phase H is non-obvious (it's a
+  hygiene phase, not a feature) so its verdict is summarized.
+- **Resume protocol order matters**: plan file first (high-level), then
+  protocol (rules), then experiment (canonical loop), then status, then
+  log.  Each layer adds more detail.
+- **Clusters are explicitly staged**: Cluster 1 is do-immediately,
+  Cluster 3 is gated on a spike, Cluster 4 is "defer with intent".
+  This prevents the agent from sinking session time into Cluster 3 if
+  the spike fails.
+- **Hard caps at 90 min/cluster**: Phase 1's whole budget is ~1 session;
+  if a cluster runs over, the right move is to STOP rather than push
+  through.  This protects critical-path time for Phases 2-3.
