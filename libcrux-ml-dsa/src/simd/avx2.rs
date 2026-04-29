@@ -362,10 +362,10 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         ((v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
-            Spec.Utils.is_i32b_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_strict_lower_array_opaque 95232 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 44 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future)) /\
          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
-            Spec.Utils.is_i32b_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
+            Spec.Utils.is_i32b_strict_lower_array_opaque 261888 (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) /\
             Spec.Utils.is_i32b_array_opaque 16 (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future))) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.decompose_lane_post
@@ -584,7 +584,7 @@ impl Operations for AVX2SIMDUnit {
     #[requires(fstar!(r#"
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0})"#))]
     #[ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (pow2 12) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) /\
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12) (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}_future) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) >= 0 /\
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${t1}_future) i) < pow2 10) /\
@@ -709,23 +709,18 @@ impl Operations for AVX2SIMDUnit {
     #[inline(always)]
     #[requires(fstar!(r#"
         Seq.length $out == 13 /\
-        Spec.Utils.is_i32b_array_opaque (pow2 12)
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]) {
-        // F-8: trait pre `is_i32b_array_opaque (pow2 12)` is closed
-        // [-4096, 4096], but AVX2 free fn requires half-open (-4096, 4096]
-        // (since `4096 - x < pow2 13` ⇔ `x > -4096` strict).  At x = -4096,
-        // free fn pre fails.  Awaiting above-trait fix.
-        hax_lib::fstar!("admit ()");
         encoding::t0::serialize(&simd_unit.value, out);
     }
 
     #[inline(always)]
     #[requires(serialized.len() == 13)]
     #[ensures(|_| fstar!(r#"
-        Spec.Utils.is_i32b_array_opaque (pow2 12)
+        Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self) {
         hax_lib::fstar!("admit ()");

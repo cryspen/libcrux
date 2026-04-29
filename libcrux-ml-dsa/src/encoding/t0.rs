@@ -13,11 +13,14 @@ const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 // match the trait pre after F-6's swap (was non-negative `is_pos_array_opaque (pow2 13)`).
 // The semantically correct interval for t0 inputs is the lower 13 signed bits of t,
 // centered around 0 (i.e. |x| <= 4096).
+// F-8 (2026-04-29): tighten further to half-open `is_i32b_strict_lower_array_opaque (pow2 12)`
+// to match the trait pre after F-8's swap.  Required because AVX2 free fn pre is half-open
+// `(-pow2 12, pow2 12]` strict on the lower end.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == 32 * 13 /\
     (forall (j:nat). j < 32 ==>
-      Spec.Utils.is_i32b_array_opaque (pow2 12)
+      Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
         (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${serialized}_future == Seq.length ${serialized}"#))]
@@ -29,7 +32,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"v i <= 32 /\ Seq.length serialized == 32 * 13 /\
               (forall (j:nat). j < 32 ==>
-                Spec.Utils.is_i32b_array_opaque (pow2 12)
+                Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                   (i0._super_i2.f_repr (Seq.index re.f_simd_units j)))"#
         ));
         SIMDUnit::t0_serialize(
@@ -40,11 +43,14 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     }
 }
 
+// F-10 (2026-04-29): wrapper post + loop invariant tightened to half-open
+// `is_i32b_strict_lower_array_opaque (pow2 12)` for round-trip symmetry with
+// `serialize` and to match the trait `t0_deserialize` post.
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Seq.length $serialized == 32 * 13"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     (forall (j:nat). j < 32 ==>
-      Spec.Utils.is_i32b_array_opaque (pow2 12)
+      Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
         (i0._super_i2.f_repr (Seq.index ${result}_future.f_simd_units j)))"#))]
 fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
@@ -54,7 +60,7 @@ fn deserialize<SIMDUnit: Operations>(
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"v i <= 32 /\ Seq.length serialized == 32 * 13 /\
               (forall (j:nat). j < v i ==>
-                Spec.Utils.is_i32b_array_opaque (pow2 12)
+                Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                   (i0._super_i2.f_repr (Seq.index result.f_simd_units j)))"#
         ));
         SIMDUnit::t0_deserialize(
