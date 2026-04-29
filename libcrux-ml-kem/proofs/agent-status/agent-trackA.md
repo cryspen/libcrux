@@ -1205,8 +1205,6 @@ up post-A5/A6/A7 and validate the polynomial-level chain end-to-end.
 | `aae3046a9` | agent-laneA5: Phase 7a Step 3.3 + Q101 fix + layer_2 TEMP admit (USER-13) |
 | `f85a0c577` (HEAD) | agent-laneA5: Phase 7a Step 4 + Step 5 — strengthen layer_4_plus + invert_ntt_montgomery posts |
 
-
-
 ---
 
 ## 2026-04-29 — USER-9b: AVX2 5-bit serialize/deserialize SIMD↔BitVec bridge — CLOSED
@@ -1311,3 +1309,94 @@ None.
 | SHA | Message |
 |---|---|
 | `1d39f6d60` | USER-9b: AVX2 5-bit serialize/deserialize SIMD↔BitVec bridge |
+
+---
+
+## 2026-04-29 16:00–17:30 — USER-14 lane (close 4 admits in trait `from_bytes` / `to_bytes` impl bodies)
+
+Ran in isolated worktree `/Users/karthik/libcrux-user-14/`.  Branch
+`agent/user-14` off `bb6f740a2` (USER-8 trait wire-up).  Goal:
+discharge the 4 `admit ()` calls USER-8 left in
+`src/vector/portable.rs::{from_bytes,to_bytes}` impl bodies and
+`src/vector/avx2.rs::{from_bytes,to_bytes}` impl bodies.
+
+### Spike — Path 1 (Tactics.GetBit refactor)
+
+Replaced the static backtick-FQN
+`\`%Libcrux_ml_kem.Vector.Portable.Vector_type.__proj__Mkt_PortableVector__item__f_elements`
+on `Tactics.GetBit.fst:27` with the string-form namespace
+`"Libcrux_ml_kem.Vector.Portable.Vector_type"`.  Rationale: backtick-
+FQN forms are tracked by F*'s dependency analyser as static module
+references (creating the cycle USER-8 documented), but string-form
+namespaces in `delta_namespace` are NOT tracked statically — same
+unfold capability, no `.depend` edge.
+
+**Cycle-break verified**: Tactics.GetBit recompiled in 0.6s.
+A Tactics.GetBit-using lemma in Vector_type subsequently passed the
+`.depend` check.
+
+**Tactic still failed**: with concrete loop bounds
+(`v_FIELD_ELEMENTS_IN_VECTOR == sz 16`), `prove_bit_vector_equality'`
+unfolded only ONE recursion of `Rust_primitives.Hax.Folds.fold_range`
+in the `from_bytes` body.  Adding `"Rust_primitives.Hax.Folds"`,
+`"Rust_primitives.Hax.Monomorphized_update_at"`,
+`"Libcrux_ml_kem.Vector.Traits"`, `"Rust_primitives.Integers"` to the
+delta_namespace did NOT cause deeper unfolding — Z3 saw
+`match v 0 < v 16 with | true -> fold_range 1 16 ... | _ -> repeat 0`
+stuck after one step (visible in Goal 1/1 dump at rlimit 800).
+
+**Side effect from over-broad `delta_namespace`**: with the expanded
+list, `Libcrux_ml_kem.Vector.Portable.Serialize.fst` started failing
+at `serialize_5_bit_vec_lemma` after ~26 min wall (under
+`VERIFY_SLOW_MODULES=yes`).  Aggressive unfold exposes context that
+destabilises slow proofs.  Confirms that any Tactics.GetBit edits
+need full SLOW_MODULES regression before merge.
+
+### Decisions
+
+- **REVERTED** all Tactics.GetBit and Vector_type edits.  Final tip
+  is `bb6f740a2` + USER-14 doc-only commit (this entry +
+  MLKEM_STATUS.md USER-14 update).
+- **Admit count delta**: ±0 (4 admits remain as USER-8 left them).
+- **Documented two viable follow-on paths in MLKEM_STATUS.md USER-14**:
+    - Path 1a: refactor Vector_type body to straight-line + reapply
+      Tactics.GetBit cycle-break (estimate 2 hr).
+    - Path 1b: sandwich pattern (helper + equality lemma) + cycle-break
+      (estimate 4 hr).
+    - Path 2 untested but viable.
+
+### Lessons
+
+  - The `\`%Type.proj`-style static reference in Tactics.GetBit creates
+    a real `.depend` cycle.  String-form namespace fixes the cycle.
+    But this MUST be regression-tested against all SLOW_MODULES
+    consumers (Vector.Portable.Serialize.fst at minimum) before
+    landing — over-broad unfold can destabilise pre-existing
+    bit-vector lemmas.
+
+  - The fold-loop body of Vector_type.{from,to}_bytes does NOT
+    normalise to straight-line via `norm [iota; zeta; delta_namespace]`
+    even with all relevant Rust_primitives namespaces enabled.  The
+    fold's typed-recursion structure (with the `fold_range_wf_index`
+    refinement) blocks F*'s normaliser from making progress past the
+    first recursion.  Closing this admit needs *either* a body
+    refactor (straight-line in Rust source) *or* an explicit per-index
+    body lemma (induction on the fold).
+
+### Hot files touched
+
+  - `libcrux-ml-kem/MLKEM_STATUS.md` (USER-14 entry refined with
+    spike findings + 3 follow-on paths)
+  - `libcrux-ml-kem/proofs/agent-status/agent-trackA.md` (this entry)
+
+(All Rust + F* source files reverted to USER-8 baseline.)
+
+### Net delta
+
+  - **Admit delta**: 0 (4 portable+AVX2 admits remain).
+  - **lax/panic_free delta**: 0.
+  - **Diagnosis advance**: ✅ — concrete characterisation of why
+    `prove_bit_vector_equality'` doesn't close the lemma even after
+    cycle-break, plus identification of the SLOW_MODULES regression
+    risk vector.  Next session can skip ~1 hr of cycle-break
+    rediscovery.

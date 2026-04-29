@@ -636,21 +636,82 @@ and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
 - **Sister issue**: USER-11 (op_ntt_multiply panic_free) has the same shape — accumulating Z3 context across per-lane forall + integer arithmetic.  Both benefit from per-lane decomposition or opaque wrapping.
 - **Why USER-N**: Z3 wall hit at 20-min cap; needs smtprofiling justification for a higher rlimit or per-conjunct factoring strategy.
 
-### USER-14 — close 4 admits in trait `from_bytes` / `to_bytes` impl bodies (USER-8 carry-over) — **FAIR GAME** (tooling-cycle blocker)
+### USER-14 — close 4 admits in trait `from_bytes` / `to_bytes` impl bodies (USER-8 carry-over) — 🔶 **STILL OPEN — Path 1 spike attempted 2026-04-29, did not close**
 
-- **Files**: `libcrux-ml-kem/src/vector/portable.rs:1004-1031` (impl-side `from_bytes` / `to_bytes`), `libcrux-ml-kem/src/vector/avx2.rs:1051-1080` (same).  4 `admit ()` calls, 1 per impl method × 2 backends.
+- **Files**: `libcrux-ml-kem/src/vector/portable.rs:957-983` (impl-side `from_bytes` / `to_bytes`), `libcrux-ml-kem/src/vector/avx2.rs:1051-1073` (same).  4 `admit ()` calls, 1 per impl method × 2 backends.
 - **Status**: trait posts WIRED (`from_le_bytes_post_N` / `to_le_bytes_post_N` from `src/vector/traits.rs:234-246`); impl methods carry the strengthened post but discharge via admit.
 - **Why FAIR GAME**: closing requires a `BitVecEq.int_t_array_bitwise_eq` lemma between a 32-byte input and a 16-i16 lane array (depth 8 vs depth 16, 256 bits each side).  Mechanically the same shape as `serialize_4_bit_vec_lemma` (8-byte vs 16-i16 at depth 8 vs depth 4).  Provable by `Tactics.GetBit.prove_bit_vector_equality' ()`.
 - **Tooling-cycle blocker**:
   - The `Tactics.GetBit.prove_bit_vector_equality'` tactic only normalizes function bodies in the **current module's namespace**.  `Vector_type.{from,to}_bytes` lives in `Libcrux_ml_kem.Vector.Portable.Vector_type`.
   - Putting the lemma there would add `Tactics.GetBit` as a static import.  But `Tactics.GetBit.fst` (in `fstar-helpers/fstar-bitvec/`) statically references `Libcrux_ml_kem.Vector.Portable.Vector_type.__proj__Mkt_PortableVector__item__f_elements` (line 27, the `f_elements` projector for body normalization), creating a circular module dependency.
   - Putting the lemma in `Libcrux_ml_kem.Vector.Portable` (where `Tactics.GetBit` is already imported) doesn't help either: `Vector_type.{from,to}_bytes` body is hidden behind a `.fsti` `val` declaration, so the tactic can't unfold them.
-- **Path forward — pick one**:
-  1. **Refactor `Tactics.GetBit`**: replace the `\`%...f_elements` static reference with a runtime metaprogramming lookup (`Tactics.V2.lookup_typ` or `top_env`-based projector resolution).  This breaks the static dep and unblocks adding the tactic-using lemma to `Vector_type.fst`.  ~2-4 hr; touches shared tactic file.
-  2. **Inline `from_bytes` / `to_bytes` body into `.fsti`**: use `hax_lib::fstar::replace(interface, ...)` on `Vector_type.from_bytes` / `to_bytes` to put the body (or a `let .. = ..`-form mirror) in the .fsti, making it visible across modules.  ~1 hr; cleaner but slightly invasive.
-  3. **Move `from_bytes` / `to_bytes` definitions out of `vector_type.rs` into `portable.rs`**: lemma + body in same module = no tactic problem.  R10 doesn't forbid `portable.rs` edits.  ~30 min; may have implication-call-site downstream churn (call sites use `vector_type::from_bytes`).
-- **Spike attempted (this session)**: tried route 3 with a wrapper `from_bytes_local` calling `Vector_type.from_bytes`, plus an explicit `FStar.Tactics.V2.norm [delta_only [`%Vector_type.from_bytes]]` step before the tactic.  The norm fails to unfold across the .fsti barrier.  Confirmed: the .fsti `val`-declaration is the binding constraint, not the namespace.
-- **Sister issue**: USER-9b (AVX2 5-bit SIMD bridge) has a related but distinct shape: it's a SIMD-intrinsic→BitVec bridge at the `mm256_madd_epi16` level, not a tactic-namespace cycle.
+
+#### Spike attempted by USER-14 lane (2026-04-29):
+
+**Path 1 (Tactics.GetBit refactor) — partial advance, not closed**:
+1. Replaced `\`%Libcrux_ml_kem.Vector.Portable.Vector_type.__proj__...f_elements`
+   on `Tactics.GetBit.fst:27` with the **string-form namespace** `"Libcrux_ml_kem.Vector.Portable.Vector_type"`.  Backtick-FQN
+   creates a static `.depend` edge; string-namespace does NOT.  This DID
+   break the cycle — Tactics.GetBit recompiled in 0.6s, and the
+   namespace covers `f_elements` (projector) plus all other Vector_type
+   symbols, so the unfold capability is a strict superset.
+2. Added (`hax_lib::fstar::after`) `from_bytes_bit_vec_lemma` and
+   `to_bytes_bit_vec_lemma` to `vector_type.rs` mirroring the
+   `serialize_4_bit_vec_lemma` shape.  The cycle break was verified
+   (no .depend cycle error).
+3. **The tactic ran but failed**: with concrete loop bounds
+   (`v_FIELD_ELEMENTS_IN_VECTOR == sz 16`), the tactic only unfolded
+   ONE recursion of `Rust_primitives.Hax.Folds.fold_range`.  Adding
+   `"Rust_primitives.Hax.Folds"`,
+   `"Rust_primitives.Hax.Monomorphized_update_at"`,
+   `"Libcrux_ml_kem.Vector.Traits"`, and `"Rust_primitives.Integers"`
+   to the `delta_namespace` did NOT cause deeper unfolding — Z3 still
+   sees `match v 0 < v 16 with | true -> fold_range 1 16 ... | _ -> repeat 0`
+   stuck after one step.  Reproduces with rlimit 800.
+4. **Side effect**: with the expanded `delta_namespace`, the
+   `serialize_5_bit_vec_lemma` Q (in
+   `Libcrux_ml_kem.Vector.Portable.Serialize.fst`) FAILED at
+   ~26-min wall under `VERIFY_SLOW_MODULES=yes`.  Aggressive unfold
+   exposes context that destabilises slow proofs.  The USER-14 lane
+   reverted Tactics.GetBit fully (`git diff` clean) before commit; the
+   final tip is the same as USER-8's tip `bb6f740a2` minus session
+   docs.
+
+**Conclusion**: Path 1 by itself is insufficient.  The fold-loop body of
+`Vector_type.{from,to}_bytes` doesn't unfold mechanically under
+`norm [iota; zeta; delta_namespace ...]`, even with all relevant
+namespaces enabled.  Two follow-on routes:
+
+  **Path 1a — straight-line body refactor** (recommended next attempt):
+  Refactor `vector_type.rs::from_bytes` and `to_bytes` Rust source from
+  the `for i in 0..16 { elements[i] = ... }` loop form into an explicit
+  `[(array[1] << 8) | array[0], (array[3] << 8) | array[2], …, (array[31] << 8) | array[30]]`
+  array-of-list form (mirrors `serialize_4_int` from `serialize.rs`).
+  Cost: 24 transitive consumers' `.checked` invalidate (the touch-
+  unchanged-checked feedback note doesn't apply because Vector_type's
+  content hash genuinely changes).  But the lemma then closes mechanically
+  via `prove_bit_vector_equality'` — PROVIDED the Tactics.GetBit static
+  cycle is broken first (Path 1's string-namespace fix on line 27,
+  re-applied carefully).  Estimate: 2 hr (incl. ~30 min cache cascade).
+
+  **Path 1b — sandwich pattern** (smaller blast radius):
+  Keep both Vector_type body AND Tactics.GetBit untouched.  Add a
+  `from_bytes_straight` / `to_bytes_straight` helper *inside* Vector_type
+  that's straight-line, plus a `from_bytes_eq_straight` Lemma (provable
+  by induction on the fold or by `Seq.lemma_eq_intro` + per-index
+  `Seq.upd` reasoning).  Then the bit-vec lemma uses the straight-line
+  form.  Drawback: still needs the cycle-break (Path 1's string fix).
+  Estimate: 4 hr.
+
+  **Path 2 (`hax_lib::fstar::replace(interface)` body inline)** — also
+  viable if `hax_lib::fstar::replace` accepts that target on the .fsti
+  side.  Untested.  Estimate: 1 hr.
+
+**Files modified during USER-14 spike (all reverted)**:
+  - `fstar-helpers/fstar-bitvec/Tactics.GetBit.fst` (line 27 alt) — REVERTED
+  - `libcrux-ml-kem/src/vector/portable/vector_type.rs` — REVERTED
+
+**Sister issue**: USER-9b (AVX2 5-bit SIMD bridge) has a related but distinct shape: it's a SIMD-intrinsic→BitVec bridge at the `mm256_madd_epi16` level, not a tactic-namespace cycle.
 
 ---
 
