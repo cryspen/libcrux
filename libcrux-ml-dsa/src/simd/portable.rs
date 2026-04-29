@@ -572,8 +572,12 @@ impl Operations for Coefficients {
         Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
-        hax_lib::fstar!("admit ()");
-        encoding::gamma1::deserialize(serialized, out, gamma1_exponent)
+        encoding::gamma1::deserialize(serialized, out, gamma1_exponent);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}))"#
+        );
     }
 
     #[requires(fstar!(r#"

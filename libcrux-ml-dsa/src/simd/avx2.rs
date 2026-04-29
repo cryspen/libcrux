@@ -669,8 +669,15 @@ impl Operations for AVX2SIMDUnit {
         Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize) {
-        hax_lib::fstar!("admit ()");
         encoding::gamma1::deserialize(serialized, &mut out.value, gamma1_exponent);
+        hax_lib::fstar!(
+            r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
+                (Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
+                    (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}));
+            assert (forall (i: nat). i < 8 ==>
+                v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i) ==
+                v (Spec.Intrinsics.to_i32x8 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 i)))"#
+        );
     }
 
     #[inline(always)]
