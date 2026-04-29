@@ -602,6 +602,7 @@ impl Operations for AVX2SIMDUnit {
         Seq.length $randomness / 3 <= 4294967295 /\
         Seq.length $randomness / 3 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= 0 /\
           v (Seq.index ${out}_future i) < 8380417)"#))]
@@ -615,6 +616,7 @@ impl Operations for AVX2SIMDUnit {
         Seq.length $randomness * 2 <= 4294967295 /\
         Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -2 /\ v (Seq.index ${out}_future i) <= 2)"#))]
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
@@ -627,6 +629,7 @@ impl Operations for AVX2SIMDUnit {
         Seq.length $randomness * 2 <= 4294967295 /\
         Seq.length $randomness * 2 <= Seq.length $out"#))]
     #[ensures(|result| fstar!(r#"v $result <= 8 /\
+        Seq.length ${out}_future == Seq.length $out /\
         (forall (i:nat{i < Seq.length ${out}_future}). i < v $result ==>
           v (Seq.index ${out}_future i) >= -4 /\ v (Seq.index ${out}_future i) <= 4)"#))]
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {

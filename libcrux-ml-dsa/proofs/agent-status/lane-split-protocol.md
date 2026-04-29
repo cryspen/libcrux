@@ -179,6 +179,37 @@ FIELD_MID without an extra correction step in the impl
   diff; option (b) keeps the impl as-is at the cost of a slightly
   looser bound (4194303 vs 4190208).
 
+#### F-12 (2026-04-29) — `rejection_sample_*` trait posts gain length-preservation conjunct (above-trait → below-trait mirror)
+
+- **Source:** above-trait commit (this branch's `216cbf17e` after
+  cherry-pick) added `Seq.length ${out}_future == Seq.length $out` to
+  the `#[ensures(...)]` of all three `Operations::rejection_sample_*`
+  methods on the trait declaration in `src/simd/traits.rs`.
+- **Numbering note:** above-trait originally filed this finding as
+  "F-6" in the integration commit, but F-6 was already taken on the
+  below-trait side by the resolved `t0_serialize` centered-bound
+  finding.  Renumbered to **F-12** during integration to leave F-8 –
+  F-11 free for the half-open `(-l, l]` predicate batch above.
+- **Why above-trait needed it:** required to prove panic-freedom of
+  the upstream `Sample::rejection_sample_*` wrappers in `src/sample.rs`.
+  The wrappers slice `out[*sampled_coefficients..]`, pass to the trait
+  method, then `update_at_range_from out RangeFrom tmp0`.  Without
+  length-preservation on the trait return, F\* can't discharge the
+  update's pre `Seq.length tmp0 <= Seq.length out - sampled_coefficients`.
+- **Below-trait mirror (this commit):** the matching conjunct has been
+  added to the `#[ensures(...)]` clauses of the Portable + AVX2 impl
+  method signatures in `src/simd/portable.rs` and `src/simd/avx2.rs`
+  (three methods each: `rejection_sample_less_than_field_modulus`,
+  `rejection_sample_less_than_eta_equals_2`,
+  `rejection_sample_less_than_eta_equals_4`).
+- **Implementation impact:** **none** — the underlying free fns
+  (`sample::rejection_sample_*`, `rejection_sample::less_than_*::sample`)
+  already preserve length trivially (in-place mutation through
+  `&mut [i32]`).  The bodies remain admitted in this lane, so the
+  added conjunct only tightens the post and does not introduce any
+  new proof obligation that has to discharge below-trait.
+- **Status:** RESOLVED (above-trait + below-trait mirror in lockstep).
+
 #### F-11 (2026-04-29) — `decompose` low_future post is closed
 `is_i32b_array_opaque γ2` but FIPS 204 produces half-open `(-γ2, γ2]`
 
