@@ -63,6 +63,41 @@ queries used <1 rlimit unit each; rlimit 400 was over-provisioned.
 The fuel 1 / ifuel 1 bump (vs file default fuel 0 / ifuel 1) was
 likely unnecessary but kept for safety.
 
+### Wave-A B5 spike (post-handoff, same session) — REVERTED at 20-min cap
+
+After the Wave-A handoff committed at `fa31480cd`, the coordinator
+ran a follow-up B5 spike on branch `agent/lane-B5` to validate the
+hax-extract path and try to land op_ntt_multiply panic_free closure.
+
+**Body proof shape validated** (lemma_base_case_mult_pair_commute × 8
++ forall4 dispatch — written in `src/vector/portable.rs:899` body
+via `hax_lib::fstar!` macros).  hax extract clean in 15s; re-extract
+of `Vector.Portable.fst` looked correct.
+
+**Z3 outcome at rlimit 400 + --split_queries always:**
+
+| Query | Sub-conjunct of `assert (p_branch 0)` | Time | Rlimit used |
+|---|---|---|---|
+| Q28 | conjunct 1 | 31 s | 126/400 |
+| Q30 | conjunct 2 | 51 s | 192/400 |
+| Q32 | conjunct 3 | 84 s | 279/400 |
+| Q34 | conjunct 4 | **104 s — canceled (rlimit saturated)** | 400/400 |
+
+Each sub-conjunct's rlimit usage roughly doubled.  Z3 accumulates
+context across 8 binomial pair facts + 4 conjuncts of branch_post +
+the if-ladder for `zp = if b = 0 then zeta0 else ...`.  Even with
+concrete `b = 0`, Z3 propagates the if-ladder through every conjunct.
+
+**Step-back per R6:** reverted `src/vector/portable.rs` and
+re-extracted (back to `fa31480cd` extracted state).  Documented the
+finding in `proofs/agent-status/wave-A-continuation-prompt.md` with
+3 path-forward strategies (per-conjunct decomposition recommended
+as cheapest; per-branch helper lemma in Chunk.fst as the proven
+layer-2 unlock pattern).
+
+**Time budget:** ~10 min coding + 10 min make = 20 min total cap hit.
+Branch `agent/lane-B5` deleted (no commits).
+
 ### Wave-A deferral rationale (B1, B2, B3, B4, B5)
 
 Wave-A coordinator made the strategic call to land B6-only and defer
