@@ -119,7 +119,7 @@ R6 Hard cap 90 min per cluster.  If a cluster doesn't close in 90,
    STOP, document the gap, hand off.
 
 ═══════════════════════════════════════════════════════════════════
-DELIVERABLES
+DELIVERABLES (this session)
 ═══════════════════════════════════════════════════════════════════
 
   • 2-4 commits (one per cluster that lands).
@@ -129,6 +129,80 @@ DELIVERABLES
     to MLKEM_STATUS.md.
 
 REPORT one paragraph entry summary at end-of-session.
+
+═══════════════════════════════════════════════════════════════════
+AFTER PHASE 1 — Phase 2 + 3 parallel/sequential breakdown
+═══════════════════════════════════════════════════════════════════
+
+Once Phase 1 lands, the trait contract is FROZEN.  Phases 2 (below-trait
+closure) and 3 (above-trait closure) fan out to parallel agents.
+
+PHASE 2 (below-trait, 7 lanes, parallel after Phase 1):
+
+  Each lane works in its own worktree off `trait-opacify` HEAD post-
+  Phase-1.  Per-lane Makefile admits all OTHER lanes' modules — see
+  lane-split-protocol.md.  Lanes touching `Commute.Chunk.fst` must
+  serialize through B6 (sequential); the rest are file-disjoint.
+
+  Lane | Files | Effort | Risk | Sequential constraint
+  -----|-------|--------|------|---------------------
+  B1   | src/vector/portable.rs (compress/decompress stale)  | 1 sess | low  | parallel (file-disjoint)
+  B2   | src/vector/portable.rs, portable/ntt.rs (NTT layer 1) | 2 sess | med (Z3) | parallel (file-disjoint)
+  B3   | src/vector/avx2.rs, libcrux-intrinsics/...Avx2_extract.fst | 2 sess | low-med | parallel (file-disjoint)
+  B4   | src/vector/avx2.rs, vector/avx2/ntt.rs, Bridges.fst | 1 sess spike | high | serial after B6 if Bridges touched
+  B5   | src/vector/{portable,avx2}.rs (drop ntt_multiply panic_free) | 1 sess | low | parallel (file-disjoint)
+  B6   | Hacspec_ml_kem.Commute.Chunk.fst (USER-1 A8) | 1-2 sess | medium | LAND FIRST; gates A1, A3, A5
+  B7   | DESCOPE — keep AVX2 SIMD lane lemmas as admit boundary | 0 sess | n/a | n/a
+
+  Sequential within Phase 2: B6 → all others.
+  Parallel: B1 ‖ B2 ‖ B3 ‖ B5 (no shared files).
+  B4 is high-risk; 1-session spike then defer if blocked.
+
+PHASE 3 (above-trait, 8 lanes, parallel after Phase 2):
+
+  Lane | Files | Effort | Depends on | Critical path?
+  -----|-------|--------|------------|---------------
+  A1   | src/serialize.rs, Chunk.fst (Phase 7c migration) | 1-2 sess | B6 | no
+  A2   | src/sampling.rs (Phase 7n migration)             | 1 sess   | none | no
+  A3   | src/polynomial.rs, Chunk.fst (USER-7 + 2 add fns)| 2 sess   | Phase 1 trait | no
+  A4   | src/polynomial.rs (Phase 7.2 std_error_reduce)   | 1-2 sess | A3 templates | OFF (may stay admitted)
+  A5   | src/invert_ntt.rs, Bridges.fst, Chunk.fst (USER-6) | 3 sess | Phase 2 trait stable | **YES**
+  A6   | src/matrix.rs, Chunk.fst (compute_message etc.)   | 2 sess  | A3 + A5 | **YES**
+  A7   | src/ind_cpa.rs, Makefile (unadmit Ind_cpa)        | 2 sess  | A1, A2, A6 | **YES**
+  A8   | src/ind_cca.rs, src/matrix.rs, Makefile           | 2 sess  | A7 | **YES**
+
+  Sequential: A5 → A6 → A7 → A8 (the critical path; ~9 sessions wall).
+  Parallel with critical path: A1, A2, A3 can run alongside A5.
+  Risk-tier: A4 may not converge — leave admitted if blocked, doesn't gate ind_cpa/ind_cca.
+  Sequential within parallel: A1 depends on B6; A3 depends on Phase 1 trait stability.
+
+COORDINATION:
+
+  • `Hacspec_ml_kem.Commute.Chunk.fst` is the hot file (touched by B6,
+    A1, A3, A5, A6).  Convention: each lane appends to a clearly-
+    marked `(* Phase 7X additions *)` section.  Never edit existing
+    lemma bodies.
+  • `Hacspec_ml_kem.Commute.Bridges.fst` is touched by A5 (and B4).
+    Sequence A5 after B4 if both run.
+  • Makefile is edited by A7 then A8 sequentially.
+
+MERGE ORDER back to `trait-opacify`:
+
+  1. B1, B5 (low-risk file-disjoint) — clear backlog
+  2. B6 (Chunk.fst foundation; gates Phase 3)
+  3. B3, B2 (medium effort, fan out)
+  4. A2, A1 (Phase 3 disjoint pair)
+  5. A3 (sequential after B6 to serialize Chunk merges)
+  6. A5 (sequential after A3)
+  7. A6 → A7 → A8 (strictly sequential consumer chain)
+  8. B4 (or descoped) — last, lowest priority
+  9. A4 — opportunistic; can land any time after A3 if it converges
+
+CRITICAL PATH WALL TIME (max-parallel):
+  Phase 1 (1 sess) → A5 (3) → A6 (2) → A7 (2) → A8 (2) ≈ 10 sessions
+
+For full lane briefs (40-word starter prompts), see
+`~/.claude/plans/immutable-snacking-dewdrop.md` §"Phase 2/3".
 ```
 
 ---
