@@ -307,6 +307,42 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   see `Phase 7n` brief for the analogous `sample_from_uniform_distribution_next`
   pattern.  Best done in lane B-something or as part of A2.
 
+### USER-11 — drop `op_ntt_multiply` `panic_free` (Wave-A B5; Z3-walled)
+
+**Wrappers**: `op_ntt_multiply` in `libcrux-ml-kem/src/vector/portable.rs:899`
+and `libcrux-ml-kem/src/vector/avx2.rs:571` (both backends).
+
+- **Status**: spiked 2026-04-29 (Wave-A B5) and reverted at the
+  20-min cap.  Body proof shape validated; Z3 saturates at rlimit 400.
+- **Math**: A1–A4 base-case lemmas already proven.  Body chains 8
+  `lemma_base_case_mult_pair_commute` calls (one per binomial pair
+  k ∈ {0..7} with appropriate ±zeta) plus `forall4` over per-branch
+  `ntt_multiply_branch_post`.
+- **Z3 wall observed (rlimit 400 + --split_queries always)**:
+  * Q28 (sub-conjunct 1 of `assert (p_branch 0)`): 31 s, 126/400.
+  * Q30 (sub-conjunct 2): 51 s, 192/400.
+  * Q32 (sub-conjunct 3): 84 s, 279/400.
+  * Q34 (sub-conjunct 4): **canceled at 400/400 in 104 s** → Error 19.
+  Per-conjunct rlimit roughly doubles; Z3 accumulates the 8 binomial
+  facts + 4 branch_post conjuncts + the if-ladder for `zp` selection.
+- **Path forward** (3 strategies, ordered by cost):
+  1. Per-conjunct decomposition: replace `assert (p_branch b)` with
+     4 explicit lane-FE assertions, one per lane in the branch.
+     Each Z3 query then has only the relevant pair_commute fact in
+     scope.  +48 lines × 2 backends.
+  2. Per-branch helper lemma in `Hacspec_ml_kem.Commute.Chunk.fst`
+     (B5 additions section), one per concrete `b ∈ {0..3}`,
+     mirroring the inverse layer-2 unlock pattern (commit
+     `b7b49c358`).  Wrapper invokes 4 helpers + forall4.
+  3. rlimit bump to 800 + intermediate hand-holding asserts.
+     Cheapest but least robust if 4th conjunct still saturates.
+- **Reproducer**: see `proofs/agent-status/wave-A-continuation-prompt.md`
+  ("B5 finding" section) + `proofs/agent-status/agent-trackA.md`
+  (Wave-A B5 spike entry) for the full body proof and Z3 stats.
+- **Why USER-N**: 20-min cap exceeded; Z3 tuning is the bottleneck,
+  not math.  A user with smtprofiling can pick the right strategy
+  faster than agent-iteration on rlimit knob.
+
 ---
 
 ## AGENT TASKS — parallelizable mechanical work
