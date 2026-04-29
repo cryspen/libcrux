@@ -283,12 +283,43 @@ commit `c698908ba` and per-poly commute lemma chain in `0a8c7289d`.
   cannot land until both sides discharge cleanly.  Estimated 60-90 min
   per side.
 
-### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring (Cluster 3 partial) — **IN FLIGHT (agent)**
+### USER-9 — trait `serialize_5/11` and `deserialize_5/11` post wiring — **PARTIAL: 9a CLOSED, 9b OPEN**
 
-(Independent agent operates per `proofs/agent-status/serialize-prompt.md`,
-running in this same below-trait worktree on a file-disjoint surface
-— `src/vector/portable/serialize.rs`.  Started by user
-post-`749b0136c`.  Original USER-9 brief follows for reference.)
+Split into two sub-tasks (see commit `750e28ba1` audit detail):
+
+#### USER-9a (11-bit, AVX2 wrapper-bridge) — ✅ **CLOSED 2026-04-29** (commit `2deb01199`)
+
+- Trait now carries strong `BitVecEq` posts on `serialize_11` /
+  `deserialize_11` (`src/vector/traits.rs:1372-1378` — TODO(C4) removed).
+- Portable impl discharges via `serialize_11_lemma` /
+  `deserialize_11_lemma` (the Cluster 3 BitVec lemmas, scale-up
+  confirmed at `750e28ba1`).
+- AVX2 impl discharges via 3 new admitted bridges
+  (`op_serialize_11_pre_bridge`, `op_serialize_11_post_bridge`,
+  `op_deserialize_11_post_bridge`) mirroring the 4/10/12 shape.
+- AVX2 primitives in `avx2/serialize.rs` keep
+  `verification_status(lax)` on the body but now have `BitVec`
+  pre/post on their signatures.
+- Verification: Vector.Traits.fst 1:25, Vector.Portable.fst 2:18,
+  Vector.Avx2.fst 1:01, Vector.Avx2.Serialize.fst ~1:30.
+- **hax quirk for posterity**: single-line spec helper bodies are
+  inlined into trait declarations, producing unbound `impl.f_repr`
+  refs in extracted F*.  Reformat to multi-line bodies (matching
+  `serialize_10_*` format) so hax keeps them as function calls.
+
+#### USER-9b (5-bit, real AVX2 SIMD) — ⏸ OPEN
+
+**`avx2/serialize.rs:352, 466`** — `serialize_5` / `deserialize_5`
+use genuine AVX2 (`mm256_madd_epi16`, `mm256_set_epi16`,
+`mm256_shuffle_epi8`).  Need a SIMD↔BitVec bridge mirroring
+`op_serialize_4_post_bridge` (~1 lane-day per the serialize-status
+audit at `750e28ba1`).  Sub-steps:
+  1. Drop `verification_status(lax)` on the AVX2 primitive bodies.
+  2. Add SIMD↔BitVec bridge admit in
+     `libcrux-intrinsics/proofs/fstar/extraction/Libcrux_intrinsics.Avx2_extract.fst`.
+  3. Wrapper discharges the trait post analogously to USER-9a.
+
+(Original USER-9 brief follows for reference.)
 
 **Trait method declarations** in
 `libcrux-ml-kem/src/vector/traits.rs:1320-1342`.
