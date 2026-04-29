@@ -2,16 +2,27 @@
 
 **Branch**: `ml-dsa-proofs` (the `ml-dsa-above-trait` lane has been
 merged in; tip after merge: `dd0fb629c`; tip after rlimit bumps:
-`43c8d40dd`).
+`43c8d40dd`; tip after cherry-pick of PR 1348 closure: `9c83b0279`).
 
 **Worktree**: `/Users/karthik/libcrux-ml-dsa-proofs/`.  The
 `~/libcrux-ml-dsa-above-trait/` worktree should now be considered
-**stale** — all future work happens here.
+**stale** — all future work happens here.  Sub-agent branches
+(`agent-aa244240-above-trait`, `agent-ab0453d4-above-trait`,
+`ml-dsa-above-trait-agent-a370d3b3`) hold only duplicates / older
+states of work that's already merged here.
 
-**Empirical baseline** (commit `43c8d40dd`):
+**Empirical baseline** (commit `43c8d40dd`, full re-prove):
 - 99 modules invoked, [CHECK]=76, [ADMIT]=23, 0 F\* errors,
   0 make-level failures.
 - All 23 admits are pre-budgeted (see "Pre-budgeted admits" below).
+
+**Latest commit** (`9c83b0279`, incremental re-prove only — most
+.checked files cached):
+- 77 modules invoked, [CHECK]=58, [ADMIT]=19, 0 F\* errors.
+- The cherry-pick closes the `Encoding.Signature.deserialize` body
+  admit (PR 1348 in-place verification — replaces top-of-body
+  `admit ()` with real `#[hax_lib::requires]` + per-loop invariants
+  + `validate_hint_rows` / `write_hint_rows` helpers).
 
 The lane-split protocol is no longer active.  Any agent in this
 worktree may now edit any source file.  Trait pre/post changes
@@ -21,13 +32,16 @@ should be made directly here without a cherry-pick handshake.
 
 ```bash
 cd /Users/karthik/libcrux-ml-dsa-proofs/libcrux-ml-dsa
-git rev-parse HEAD                                # 43c8d40dd or descendant
+git rev-parse HEAD                                # 9c83b0279 or descendant
 proofs/agent-status/touch-unchanged-checked.sh snapshot
 JOBS=2 ./hax.sh extract
 proofs/agent-status/touch-unchanged-checked.sh skip-unchanged
 JOBS=2 ./hax.sh prove 2>&1 > /tmp/baseline.log
 grep -E "Modules invoked|F\* errors|^\* Error" /tmp/baseline.log
-# Expect: 99 invoked, [CHECK]=76, [ADMIT]=23, 0 F* errors.
+# Expect on a fresh-cache run: ~99 invoked, [CHECK]≈76, [ADMIT]≈23,
+#   0 F* errors.
+# Expect on an incremental run: fewer invoked (cached .checked files
+#   skipped), 0 F* errors.
 ```
 
 If the baseline isn't clean, **stop and diagnose** before editing.
@@ -122,11 +136,13 @@ sampling state machines + Xof-trait-dependent flows.
 `compute_w_approx`.  Strong pre/post; bodies admit.
 
 **Encoding.* wrappers — admit bodies**:
-`Verification_key.{generate_serialized,deserialize}`,
-`Signing_key.generate_serialized`, `Signature.{serialize,deserialize}`.
-F-13 / F-14 / F-15 closures (above-trait `577a112cf`,
-`8fa040756`, `65940351b`, `743956689`) closed several but others
-remain.
+`Verification_key.generate_serialized`, `Signature.serialize`.
+Closures already landed:
+- `Encoding.T0.deserialize_to_vector_then_ntt` (`577a112cf`).
+- `Encoding.Error.deserialize_to_vector_then_ntt` length-pres (`65940351b`).
+- `Encoding.Signing_key.generate_serialized` (`8fa040756`).
+- `Encoding.Verification_key.deserialize` (`743956689`).
+- `Encoding.Signature.deserialize` (PR 1348, `9c83b0279`).
 
 **Arithmetic.fst** — `power2round_vector` body admit (hax IndexMut
 quirk, see `outstanding-admits.md`).
@@ -209,7 +225,7 @@ entries remain in the doc and are flagged as a Session F cleanup.
 ## Sanity-check checklist for next session
 
 ```bash
-# 1. Confirm tip:
+# 1. Confirm tip (should be 9c83b0279 or a descendant):
 git log --oneline -5
 
 # 2. Confirm clean state:
@@ -223,9 +239,11 @@ JOBS=2 ./hax.sh prove 2>&1 > /tmp/baseline.log
 
 # 4. Confirm baseline:
 grep -E "Modules invoked|F\* errors" /tmp/baseline.log
-# Expect:
+# Expect on a fresh build (after touching all .checked):
 #   Modules invoked:        99  ([CHECK]=76  [ADMIT]=23)
 #   F* errors reported:     0
+# Expect on an incremental build (most .checked cached):
+#   ~50-77 invoked, 0 F* errors.
 ```
 
 If the baseline drifts (CHECK count drops or errors appear), the
