@@ -10,6 +10,17 @@ This task is **gating** — close it before attempting any other
 below-trait work.  It is a single, focused fix to a propagation gap
 introduced by the previous session's cherry-pick.
 
+## Heads-up: parallel agent in flight
+
+A prior parent session also spawned agent `a44d6c4edd6912470` to verify
+F-8/F-9/F-10/F-11 below-trait in an isolated worktree (sibling
+`ml-dsa-proofs` workdir, separate `.fstar-cache`).  Its scope overlaps
+with Track 0 — it may close some of the same gaps before you start.
+**Before doing anything, run `git fetch && git log -1 --oneline`** and
+confirm tip is still `737f8afcb`.  If a newer commit appears suggesting
+that agent's work landed, read its message and reconcile your plan
+(some subtasks may already be done).
+
 ## Background
 
 Previous session cherry-picked four above-trait commits
@@ -26,6 +37,10 @@ use the new predicate:
   - `power2round` t0_future post
   - `t0_serialize` pre
   - `t0_deserialize` post
+
+(`c6c68bbca` itself was preceded by `b21165f79` (F-12
+rejection_sample length-preservation mirror) and earlier F-6 / F-7
+mirrors — foundational, already in place; Track 0 builds on them.)
 
 But the cherry-pick **did not** propagate the change to:
 
@@ -79,9 +94,17 @@ Tip should be `737f8afcb` (Step 14 handoff).  If it isn't, run
    shape is final — definitely NOT this session.
 4. **rlimit ≤ 200** for new commute lemmas; ≤ 300 for impl method
    bodies.  Pass via `#push-options "--z3rlimit N"` blocks scoped to
-   the lemma.
+   the lemma.  **Diagnostic heuristic** before bumping rlimit: read
+   the `Query-stats` line — if `used rlimit` is low (e.g. 0.4) with
+   "incomplete quantifiers" or "canceled", the gap is
+   quantifier-instantiation (a real proof obligation; need an
+   explicit assert / SMTPat / lemma call).  If `used rlimit` is high
+   (> 0.9), it's resource-saturation (try `--retry 3` or a small
+   rlimit bump).  Don't bump rlimit to mask quantifier gaps.
 5. Use `proofs/agent-status/touch-unchanged-checked.sh` for the
-   iteration loop:
+   iteration loop (see user memory
+   `feedback_touch_unchanged_checked.md` — skips NTT/Invntt cascade
+   re-verification, saves ~10 min per iteration):
 
    ```bash
    proofs/agent-status/touch-unchanged-checked.sh snapshot
