@@ -163,6 +163,59 @@ USER-10 — Cluster 4 rej_sample post wire-up (Phase 1 deferred;
   combine with lane A2).
 
 ═══════════════════════════════════════════════════════════════════
+COORDINATOR'S RESPONSIBILITY — overall proof status
+═══════════════════════════════════════════════════════════════════
+
+The coordinating session (whoever spawns the lane agents) must keep a
+tight overview of OVERALL admit count, not per-lane "did the lane's
+target compile" stats.  Use this rubric every time a lane reports back:
+
+  • **PROGRESS**: an existing admit (`--admit_smt_queries true`,
+    `panic_free`, `lax`, or `admit ()`) was REMOVED and the proof
+    closes for real.  Net admit count goes DOWN.
+  • **SIDEWAYS**: an admit was moved to a NEW admitted lemma (the
+    lemma exists to delegate the admit further down).  Net admit
+    count is unchanged or up.  This is sometimes the right move —
+    e.g., factoring out a 4-case Barrett enumeration into a single
+    admitted lemma the user can attack — but the coordinator must
+    notice it isn't progress.
+  • **FAIR GAME**: a NEW admit scoped to a small, well-defined
+    arithmetic or bitvector property (≤10 lines of math).  Counts as
+    sideways but cheap — file under USER-N for the user to close, do
+    not block the lane on it.
+
+After every lane merge: re-run `make` from `proofs/fstar/extraction/`
+and grep for admits.  Track the running count in a coordinator note;
+flag if the count is rising.
+
+═══════════════════════════════════════════════════════════════════
+F*/Z3 TIME BUDGET — when to step back
+═══════════════════════════════════════════════════════════════════
+
+Proof failures in F*/Z3 burn 5-30 min per attempt.  If a single
+function or lemma is not closing after **20 minutes of strategy
+iteration** (rlimit bumps, split_queries, opacity tweaks, lemma
+factoring), STOP and audit:
+
+  (a) **Is the property actually true?**  Counter-example check:
+      pick concrete values, compute by hand, see if both sides agree.
+      Many "Z3 walls" are actually subtle off-by-one or sign errors
+      that no amount of rlimit will fix.
+  (b) **Is the property truly needed?**  Often the post is stronger
+      than the consumer requires; relaxing the post (or moving the
+      strong form into a separate lemma the consumer cites only when
+      it needs it) sidesteps the Z3 cost entirely.
+  (c) **Is the user better placed to close it?**  Calc-style proofs,
+      bit-vector bashes, and 4-case Barrett enumerations are often
+      faster for a human with the smtprofiling skill than for an
+      agent burning rlimit.  In that case: ADMIT, add a USER-N entry
+      with the math + counter-example + best-strategy notes, MOVE ON.
+
+Default to (c) when 20 min has passed.  Sunk-cost on a single Z3
+wall is the largest source of session-wide slip; the sprint plan
+budgets sessions per lane, not per lemma.
+
+═══════════════════════════════════════════════════════════════════
 HARD RULES (carried over from Phase 1)
 ═══════════════════════════════════════════════════════════════════
 
@@ -170,13 +223,19 @@ R1 Phases 2 and 3 fan out across worktrees per lane-split-protocol.
    Use `agent/<lane>` branch convention.
 R2 Maintain SD1 (mod-q opacity), SD2 (forall<N> over generic forall),
    SD3 (opaque per-branch wrappers) per lane-split-protocol.md.
-R3 No new admits anywhere.  If a lane's discharge fails, roll back
-   the lane's commits and document.
+R3 No new admits anywhere — *unless* the admit is a small,
+   well-scoped arithmetic / bitvector property handed off to a
+   USER-N lane (per the coordinator's rubric above).  If a lane's
+   discharge fails on the body of its assigned function, roll back
+   the lane's commits and document — don't paper over with broad
+   `panic_free`.
 R4 ulimit -v 8388608, F* rlimit ≤ 800.
 R5 Inner loop: plain `make check/<Mod>.fst` from
    `proofs/fstar/extraction/`.
 R6 Hard cap 1 session per lane (B-lanes) / 2-3 sessions per A-lane
    (per the table above).  If a lane exceeds budget, STOP and document.
+   Within a lane, hard cap 20 min per function/lemma before
+   triggering the step-back audit (see "F*/Z3 TIME BUDGET" above).
 R7 Don't bulk-delete `.checked` files — `make` handles staleness.
    Surgical `rm` only the target's `.checked` when iterating, and even
    then prefer `touch <file>.fst` to invalidate downstream.
