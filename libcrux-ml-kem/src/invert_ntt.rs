@@ -161,20 +161,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
 // `invert_ntt_montgomery`'s post (`is_bounded_poly(3328)`) is unchanged.
 //
 // Skipping Barrett at layers 2/3 saves ~80 SIMD ops per inverse NTT.
-//
-// TEMP admit (Phase 7a Step 5 lane A5): layer_2's loop accumulator
-// subtyping check (Q2 / Q96 in the extracted file) saturates rlimit 400
-// in 75-110 sec per sub-query without converging.  This is a
-// pre-existing Z3 wall noted in the Wave-A baseline ("layer_2 cancels
-// at rlimit 400 in 86s") and predates the Phase 7a Step 4 strengthening
-// of layers 1/3.  Filed as USER-13 (loop-accum subtyping wall on
-// inv_ntt_layer_2's nested-if branch_post).  Mitigation tried: rlimit
-// 800 + --split_queries always (hung past 12 min), reverted.  The body
-// is admitted to unblock A5's Step 5 critical path; layer_2's
-// bounds-only post is correct (matches the same shape that compiles for
-// layer 3) and is consumed unchanged by `invert_ntt_montgomery`.
 #[inline(always)]
-#[hax_lib::fstar::options("--admit_smt_queries true")]
+#[hax_lib::fstar::options("--z3rlimit 100")]
 #[hax_lib::requires(spec::is_bounded_poly(3328, re) & (*zeta_i == 64))]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(2 * 3328, future(re)) & (*future(zeta_i) == 32))]
 pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
@@ -201,12 +189,18 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
         });
 
         *zeta_i -= 1;
-        hax_lib::fstar!(
-            r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
-                        (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
-        );
         re.coefficients[round] =
             Vector::inv_ntt_layer_2_step(re.coefficients[round], zeta(*zeta_i), zeta(*zeta_i - 1));
+        // Iter-end subtyping check saturates Z3 on its own (the trait
+        // post's `forall4 branch_post` FE conjunct gives Z3 four
+        // tempting-but-irrelevant opaque atoms per call); asserting the
+        // bound directly hands the next-iter invariant exactly the atom
+        // it needs.
+        hax_lib::fstar!(
+            r#"assert (Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector
+                         (mk_usize 2 *! mk_usize 3328)
+                         (re.Libcrux_ml_kem.Vector.f_coefficients.[round] <: v_Vector))"#
+        );
         *zeta_i -= 1;
     }
 }
