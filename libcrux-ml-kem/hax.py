@@ -120,6 +120,16 @@ class extractAction(argparse.Action):
             "-libcrux_ml_kem::hash_functions::avx2::*",
             "-libcrux_ml_kem::hash_functions::neon::*",
             "+:libcrux_ml_kem::hash_functions::*::*",
+            # Incremental-API alloc submodules use `Box<dyn Keys>` / `&dyn Any`
+            # which hax extracts as F* `dyn`, an unknown identifier.  These are
+            # runtime-dispatch helpers and irrelevant for proofs.
+            "-libcrux_ml_kem::ind_cca::incremental::**::as_keypair",
+            "-libcrux_ml_kem::ind_cca::incremental::**::as_state",
+            "-libcrux_ml_kem::ind_cca::incremental::multiplexing::alloc::**",
+            "-libcrux_ml_kem::ind_cca::incremental::types::alloc::**",
+            "-libcrux_ml_kem::mlkem512::incremental::alloc::**",
+            "-libcrux_ml_kem::mlkem768::incremental::alloc::**",
+            "-libcrux_ml_kem::mlkem1024::incremental::alloc::**",
         ]
         include_str = " ".join(includes)
         interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants -libcrux_ml_kem::traits::spec -libcrux_ml_kem::polynomial::spec"
@@ -128,7 +138,7 @@ class extractAction(argparse.Action):
             "hax",
             "-C",
             "--features",
-            "simd128,simd256",
+            "simd128,simd256,incremental",
             ";",
             "into",
             "-i",
@@ -152,6 +162,38 @@ class extractAction(argparse.Action):
         for patch in patches:
             print(f"\nApplying patch: {patch}")
             shell(["git", "apply", patch], cwd=".")
+
+        # Drop runtime-dispatch alloc-helper modules.  These contain
+        # `Box<dyn Keys>` / `&dyn Any` that hax extracts as F* `dyn 1 (...)`,
+        # an unknown identifier — and they're irrelevant for proofs.  The
+        # `-i` filters on the alloc submodules don't fully prevent this
+        # because the parent modules cite them.
+        alloc_helpers = [
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem512.Incremental.Alloc.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem512.Incremental.Alloc.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem768.Incremental.Alloc.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem768.Incremental.Alloc.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem1024.Incremental.Alloc.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem1024.Incremental.Alloc.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Ind_cca.Incremental.Multiplexing.Alloc.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Ind_cca.Incremental.Multiplexing.Alloc.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Ind_cca.Incremental.Types.Alloc.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Ind_cca.Incremental.Types.Alloc.fsti",
+            # The .Incremental.Rand modules call `rng.try_fill_bytes` whose F*
+            # model (Rand_core.f_try_fill_bytes) doesn't exist in the hax
+            # proof-libs (only `f_fill_bytes` is modeled).  Drop until the lib
+            # gains the binding.  The non-incremental .Rand modules use
+            # `f_fill_bytes` and extract fine.
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem512.Incremental.Rand.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem512.Incremental.Rand.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem768.Incremental.Rand.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem768.Incremental.Rand.fsti",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem1024.Incremental.Rand.fst",
+            "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem1024.Incremental.Rand.fsti",
+        ]
+        for f in alloc_helpers:
+            if os.path.exists(f):
+                os.remove(f)
 
         return None
 

@@ -67,7 +67,7 @@ compression widths: `d ∈ {1, 4, 5, 10, 11, 12}` for serialize,
 
 | # | Milestone | Owner fn (file:line) | Status | Distance |
 |---|---|---|---|---|
-| 19 | `MlKem*::generate_key_pair` panic-free | `src/mlkem512.rs:105`, `mlkem768.rs:105`, `mlkem1024.rs:105` | ❌ unverified — `mlkem.rs` filtered out of F\* extraction | **first**: get `mlkem.rs` extracted (configure `hax.py` to include it). ~1 session for that, then panic-freedom usually trivial. |
+| 19 | `MlKem*::generate_key_pair` panic-free | `src/mlkem512.rs:105`, `mlkem768.rs:105`, `mlkem1024.rs:105` | 🔶 extracted, body admitted — milestone #0 closed: `incremental` cargo feature added to `hax.py`; new modules `Mlkem*.Incremental.*` and `Ind_cca.Incremental.*` extract and are admitted in `Makefile` ADMIT_MODULES pending per-fn PF | ~1 session — strengthen `pk1_len()`/`pk2_len()`/`key_pair_len()` ensures with usize bounds, then drop ADMIT_MODULES entries. The Box<dyn>/`try_fill_bytes` runtime-dispatch helpers (`.Alloc`, `.Incremental.Rand`) are deleted post-extraction. |
 | 20 | `MlKem*::generate_key_pair` correct vs hacspec | same | ❌ no claim possible until (19) | needs hacspec spec for `kem_keygen_d`; ~2 sprints once extraction lands |
 | 21 | `MlKem*::encapsulate` panic-free | `src/mlkem768.rs:139` etc. | ❌ unverified — same extraction gap | gated on (19) |
 | 22 | `MlKem*::encapsulate` correct vs hacspec | same | ❌ no claim | gated on (19); needs `Hacspec_ml_kem.encapsulate` spec finalized |

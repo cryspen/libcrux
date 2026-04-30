@@ -11,7 +11,24 @@ ADMIT_MODULES = Libcrux_ml_kem.Ind_cca.Unpacked.fst \
               Libcrux_ml_kem.Vector.Neon.Ntt.fst \
               Libcrux_ml_kem.Vector.Neon.Serialize.fst \
               Libcrux_ml_kem.Vector.Neon.Vector_type.fst \
-              Libcrux_ml_kem.Vector.Neon.Vector_type.fsti
+              Libcrux_ml_kem.Vector.Neon.Vector_type.fsti \
+              Libcrux_ml_kem.Ind_cca.Incremental.fst \
+              Libcrux_ml_kem.Ind_cca.Incremental.Avx2.fst \
+              Libcrux_ml_kem.Ind_cca.Incremental.Portable.fst \
+              Libcrux_ml_kem.Ind_cca.Incremental.Types.fst \
+              Libcrux_ml_kem.Ind_cca.Incremental.Multiplexing.fst \
+              Libcrux_ml_kem.Mlkem512.Incremental.fst \
+              Libcrux_ml_kem.Mlkem768.Incremental.fst \
+              Libcrux_ml_kem.Mlkem1024.Incremental.fst
+# Incremental-API modules (Mlkem*.Incremental.* and Ind_cca.Incremental.*) admitted
+# as milestone-#0 follow-up.  Newly extracted via `incremental` cargo feature.
+# PF proofs scoped to proof_milestones.md rows 19-25.  Immediate failures are
+# usize-arithmetic non-overflow obligations on `key_pair_len`, `encaps_state_len`
+# etc. which need either #[ensures] bounds on `pk1_len()`/`pk2_len()` in
+# src/mlkem.rs or per-fn rlimit bumps.
+#
+# The .Alloc and .Incremental.Rand submodules are deleted post-extraction by
+# hax.py (they use `Box<dyn Keys>` and `try_fill_bytes` which lack F* models).
 # ^ .fsti masks Error 162 (decidable-equality module-level issue) per
 # MLKEM_STATUS.md Phase 6d directive.  Out of scope for portable+AVX2.
 

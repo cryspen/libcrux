@@ -33,10 +33,10 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | ind_cpa           |    1 |  21 |  21 |     |   0 |    0 |      0 |       0 |
 |            | ind_cca           |    1 |  27 |   0 |     |  13 |    3 |      0 |      11 |
 |            | instantiations    |    2 |  40 |   0 |     |  40 |    0 |      0 |       0 |
-|            | multiplexing      |    2 |  20 |   0 |  12 |   8 |    0 |      0 |       0 |
-|            | incremental       |    2 |  45 |   0 |  45 |   0 |    0 |      0 |       0 |
+|            | multiplexing      |    2 |  20 |  12 |     |   8 |    0 |      0 |       0 |
+|            | incremental       |    2 |  45 |  45 |     |   0 |    0 |      0 |       0 |
 |            | polynomial        |    1 |  49 |   0 |     |  25 |    2 |     18 |       4 |
-|            | invert_ntt        |    1 |   6 |   2 |     |   0 |    0 |      1 |       3 |
+|            | invert_ntt        |    1 |   6 |   2 |     |   0 |    0 |      0 |       4 |
 |            | ntt               |    1 |  11 |   0 |     |   3 |    0 |      8 |       0 |
 |            | mlkem*            |    4 | 134 |   0 |  36 |  98 |    0 |      0 |       0 |
 |            | matrix            |    1 |   5 |   0 |     |   0 |    0 |      5 |       0 |
@@ -45,7 +45,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | vector (top)      |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | vector/traits     |    1 | 104 |   0 |     |  68 |   36 |      0 |       0 |
 |            | rej_sample_table  |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **29** | **614** | **29** | **112** | **333** | **60** | **32** |  **48** |
+|            | **Generic total** | **29** | **614** | **86** | **55** | **333** | **60** | **31** |  **49** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | arithmetic        |    1 |  13 |   0 |     |   6 |    7 |      0 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   0 |    0 |     10 |       0 |
@@ -77,19 +77,19 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 - **Total modules**: 49
 - **Total functions**: 934
-- **Lax** (admitted): 126 (13.5%)
-- **Unverified** (not extracted): 113 (12.1%)
+- **Lax** (admitted): 183 (19.6%)
+- **Unverified** (not extracted): 56 (6.0%)
 - **Panic-safe** (PF + Math + Bounds + Hacspec): 695 (74.4%)
   - Panic-free only (no further proof): 393 (42.1%)
   - Math (non-trivial ensures, no bounds/spec match): 160 (17.1%)
-  - Bounds (range/interval ensures): 44 (4.7%)
-  - Hacspec (cites high-level spec): 98 (10.5%)
+  - Bounds (range/interval ensures): 43 (4.6%)
+  - Hacspec (cites high-level spec): 99 (10.6%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      29 |  614 |  29 | 112 | 333 |   60 |     32 |      48 |
+| Generic      |      29 |  614 |  86 |  55 | 333 |   60 |     31 |      49 |
 | Portable     |       7 |  121 |   4 |   0 |  36 |   44 |     10 |      27 |
 | Avx2         |       6 |  116 |  11 |   0 |  24 |   56 |      2 |      23 |
 | Neon         |       7 |   83 |  82 |   1 |   0 |    0 |      0 |       0 |
@@ -102,9 +102,6 @@ These Rust modules have no corresponding F\* file in the extraction directory â€
 | ------------------------------ | ---------------------------------------- | --- |
 | Generic/lib                    | src/lib.rs                               |   3 |
 | Generic/pqcp                   | src/pqcp.rs                              |  16 |
-| Generic/multiplexing           | src/ind_cca/incremental/multiplexing.rs  |  12 |
-| Generic/incremental            | src/ind_cca/incremental.rs               |  13 |
-| Generic/incremental            | src/ind_cca/incremental/types.rs         |  32 |
 | Generic/mlkem*                 | src/mlkem.rs                             |  36 |
 | Neon/sampling                  | src/vector/neon/sampling.rs              |   1 |
 
@@ -114,8 +111,8 @@ Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) in
 
 | Module                    |  Line |
 | ------------------------- | ----- |
-| Generic/invert_ntt        |   475 |
-| Generic/invert_ntt        |   589 |
+| Generic/invert_ntt        |   548 |
+| Generic/invert_ntt        |   662 |
 | Portable/vector           |   435 |
 | Portable/vector           |   674 |
 | Portable/vector           |   962 |

@@ -14,9 +14,9 @@ use avx2::{
     validate_pk as validate_pk_avx2, validate_pk_bytes as validate_pk_bytes_avx2,
 };
 
-#[cfg(all(feature = "simd128", feature = "alloc"))]
+#[cfg(all(feature = "simd128", feature = "alloc", not(hax)))]
 use neon::{as_keypair as as_neon_keypair, as_state as as_neon_state};
-#[cfg(feature = "simd128")]
+#[cfg(all(feature = "simd128", not(hax)))]
 use neon::{
     decapsulate as decapsulate_neon, decapsulate_compressed_key as decapsulate_compressed_key_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
@@ -42,9 +42,9 @@ use portable::{
     validate_pk as validate_pk_avx2, validate_pk_bytes as validate_pk_bytes_avx2,
 };
 
-#[cfg(all(not(feature = "simd128"), feature = "alloc"))]
+#[cfg(all(any(not(feature = "simd128"), hax), feature = "alloc"))]
 use portable::{as_keypair as as_neon_keypair, as_state as as_neon_state};
-#[cfg(not(feature = "simd128"))]
+#[cfg(any(not(feature = "simd128"), hax))]
 use portable::{
     decapsulate as decapsulate_neon, decapsulate_compressed_key as decapsulate_compressed_key_neon,
     decapsulate_incremental_key as decapsulate_incremental_key_neon,
