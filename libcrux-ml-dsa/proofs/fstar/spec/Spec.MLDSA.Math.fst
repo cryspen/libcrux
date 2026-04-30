@@ -154,7 +154,7 @@ let rejection_sample_field_modulus_inner
   if coefficient <. mk_i32 8380417 then 
     Seq.append s (Seq.create 1 coefficient) else s
 
-let rejection_sample_field_modulus (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
+let rejection_sample_field_modulus (randomness:Seq.seq u8{Seq.length randomness <= max_usize}) : (Seq.seq i32) =
   repeati (sz ((Seq.length randomness) / 3))
     (rejection_sample_field_modulus_inner randomness) Seq.empty
 
@@ -170,7 +170,7 @@ let rejection_sample_eta_2_inner
   if try_1 <. mk_u8 15 then 
     Seq.append s (Seq.create 1 (mk_i32 2 -. ((cast try_1 <: i32) %! mk_i32 5))) else s
 
-let rejection_sample_eta_2 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
+let rejection_sample_eta_2 (randomness:Seq.seq u8{Seq.length randomness <= max_usize}) : (Seq.seq i32) =
   repeati (sz (Seq.length randomness))
     (rejection_sample_eta_2_inner randomness) Seq.empty
 
@@ -186,7 +186,7 @@ let rejection_sample_eta_4_inner
   if try_1 <. mk_u8 9 then 
     Seq.append s (Seq.create 1 (mk_i32 4 -. (cast try_1 <: i32))) else s
 
-let rejection_sample_eta_4 (randomness:Seq.seq u8{Seq.length randomness < max_usize}) : (Seq.seq i32) =
+let rejection_sample_eta_4 (randomness:Seq.seq u8{Seq.length randomness <= max_usize}) : (Seq.seq i32) =
   repeati (sz (Seq.length randomness))
     (rejection_sample_eta_4_inner randomness) Seq.empty
 

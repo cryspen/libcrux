@@ -57,15 +57,6 @@ ADMIT_MODULES += \
 	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_field_modulus.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.fst
 
-# =====================================================================
-# Spec dispatcher (1)
-# =====================================================================
-# Internal spec helper; admit-only.  `rejection_sample_*_post`
-# references `Spec.MLDSA.Math.rejection_sample_field_modulus` which
-# carries a randomness-length precondition not yet bridged here.
-ADMIT_MODULES += \
-	Libcrux_ml_dsa.Specs.Simd.Portable.Sample.fst
-
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
 	      $(shell git rev-parse --show-toplevel)/libcrux-ml-kem/proofs/fstar/spec \
