@@ -217,6 +217,27 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
      without subtraction (e.g. `T0_SIZE = 13 * 256 / 8`) work with
      plain `assert`. See commit `5d32e16df`.
 
+  **AP-6 NEVER bump `--z3rlimit` above 800 (≤ 400 with `--split_queries
+     always`).** High-rlimit proofs are flaky: Z3 perf at high rlimit
+     is non-monotone, so a proof passing at 1500 may fail at 1200 and
+     pass again at 800. Bumping rlimit past the cap masks structural
+     problems instead of fixing them. Default is `--z3rlimit 200`
+     (R4); raise only after profiling shows a single hot query
+     genuinely needs more budget.
+     - With `--split_queries always`, the cap drops to 400 *per split*
+       — each sub-query gets its own budget, so 400 per split is a much
+       larger total than 400 monolithic. If a split proof needs > 400
+       per query, the split granularity is wrong (factor differently
+       or un-split).
+     - When a proof is failing, the answer is NEVER "bump rlimit past
+       the cap." Use AP-3 (targeted `reveal_opaque`), drive-to-the-top
+       spike, factoring into helper lemmas, opacification, or accept
+       `verification_status(lax)` until a structural fix lands.
+     - When touching legacy code with rlimit > cap: reduce if possible;
+       otherwise leave the legacy value but flag it in the commit
+       message as needing structural cleanup. Don't *increase* an
+       existing high value.
+
 ## Hard rules
 
   R1 Branch `ml-dsa-proofs` directly. User merges to origin manually.
@@ -225,7 +246,8 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
      must come with a one-line reason in the Makefile comment block.
   R3 No new axioms unless absolutely necessary. File as SIDEWAYS in
      `MLDSA_STATUS.md` + commit message.
-  R4 `ulimit -v 8388608`. F\* `--z3rlimit ≤ 800`. Default `--z3rlimit 200`.
+  R4 `ulimit -v 8388608`. F\* `--z3rlimit ≤ 800` (≤ 400 with
+     `--split_queries always`; see AP-6). Default `--z3rlimit 200`.
   R5 Inner edit-check: `make check/<Mod>.fst` from
      `proofs/fstar/extraction/`. Cap 20 min/attempt.
   R6 Re-record hints + touch unchanged `.checked` after extract — use
