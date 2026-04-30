@@ -1,43 +1,36 @@
-# Agent prompt — ML-KEM continuation (post-2026-04-30b session)
+# Agent prompt — ML-KEM continuation (post-2026-04-30c session)
 
 Paste this into a fresh Claude Code session opened in
 `~/libcrux-trait-opacify/libcrux-ml-kem` (auto mode recommended).
 
 You are a single-lane agent for the libcrux-ml-kem F\* verification
-effort.  Branch: `trait-opacify` (current tip `3ab43b5f7`).
+effort.  Branch: `trait-opacify` (current tip `34916fd73`).
 
-## Previous session deliverables (2026-04-30b)
+## Previous session deliverables (2026-04-30c)
 
-  - **Spec bug fix** (`bbef9328b`) — `src/ind_cpa.rs:136`: changed
-    `$out` to `${out}_future` in `serialize_vector`'s ensures.  Without
-    `_future`, the post asserted the *input* slice equals
-    `vector_encode_12(key)` (false in general).  Audit confirmed this
-    was the **only** instance of the `$<param>` (no `_future`) anti-
-    pattern across ml-kem, ml-dsa, and sha3.
-  - **Row 4 closed** in `proof_milestones.md` — confirmed
-    `invert_ntt_at_layer_2` already cites
-    `Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n` per chunk via
-    post-loop `forall_intro` of `lemma_inv_ntt_layer_2_step_to_hacspec`
-    (verified in extracted `Invert_ntt.fst{,i}.checked`).  The earlier
-    "bounds-only" tracker entry was stale.
-  - **Validation attempt** (`3ab43b5f7`) — re-extracted, dropped
-    `Libcrux_ml_kem.Ind_cpa.fst` from `ADMIT_MODULES`, ran make at
-    rlimit 800.  `serialize_vector` Q2 stalled 532 s before cancel;
-    final error "Subtyping check failed" at line 93 (the `Seq.slice
-    out` arg to per-iteration `lemma_aux`'s `eq_intro`).  Conclusion:
-    **spec fix is necessary but not sufficient** — body needs
-    structural work.  `Ind_cpa.fst` restored to `ADMIT_MODULES`.
-  - **Audit: Spec.MLKEM dominates the codebase** — 867 refs total
-    (324 Rust + 543 F\*); top files `src/ind_cca.rs` (145) and
-    `src/ind_cpa.rs` (147).  `Hacspec_ml_kem.*` replacements exist
-    for function symbols but `Hacspec_ml_kem.Parameters` lacks
-    parameterized size constants (`v_CPA_PUBLIC_KEY_SIZE`-equivalent).
-  - **Layer 7 forward bridge — design gap documented**.  Layer 7's
-    impl uses plain int multiply by `-1600` (≡ 1729 = `v_ZETAS.[1]`
-    mod q) on plain CBD inputs.  Under `mont_i16_to_spec_fe`,
-    `mont_lift(-1600) = 2578 ≠ 1729`, so the natural layer-7 bridge
-    wants `i16_to_spec_array` (plain), which doesn't compose with
-    the existing forward 1/2/3 trait bridges.  Multi-session.
+  - **`Ind_cpa.fst` un-laxed** (`504c881bb`).  Dropped
+    `Libcrux_ml_kem.Ind_cpa.fst` from `ADMIT_MODULES` via per-fn
+    `verification_status(lax)` cascade.  3 fns at PF/Hacspec end-to-
+    end via composition over the lax callees:
+    `serialize_public_key`, `serialize_public_key_mut`,
+    `generate_keypair` (Q2 5.1 s, full hacspec contract).  16 fns
+    per-fn lax.  Module make: 27 s wall (was >800 s cancelled).
+    Three legacy rlimits brought to cap (1500/2500/1500 →
+    400/400/800).
+  - **`Hacspec_ml_kem.Parameters.Sizes` shipped** (`a65ab3e43`).
+    Rank-parameterized versions of the top-5 Spec.MLKEM size
+    constants (`v_ETA1`, `v_ETA1_RANDOMNESS_SIZE`,
+    `v_RANKED_BYTES_PER_RING_ELEMENT`, `v_CPA_PUBLIC_KEY_SIZE`,
+    `v_CCA_PRIVATE_KEY_SIZE`) plus equality lemmas to `Spec.MLKEM`.
+    Module makes pass in 1.16 s; all 16 queries succeed at rlimit 80.
+    Lives at
+    `specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Parameters.Sizes.fst`.
+  - **AP-8 + `feedback_rlimit_cap_800` strengthened** (mid-session
+    user re-affirmation).  Never bump rlimit > 800; under
+    `--split_queries always` the cap is 400/query; high-rlimit proofs
+    are flake debt — fix structurally.  Remediation ladder
+    documented (SD4 → factor → split_queries → drive-to-the-top →
+    lax).
 
 ## DO NOT TOUCH
 
@@ -46,53 +39,45 @@ effort.  Branch: `trait-opacify` (current tip `3ab43b5f7`).
 
 ## Priority order
 
-**1. `serialize_vector` body unblock (~1 session).**  Path of least
-resistance is **(c) accept `verification_status(lax)` on
-`serialize_vector` and un-lax the cascade**.  Likely flips ≥ 18/21
-`Ind_cpa.fst` fns from Lax → PF/Hacspec.
+**1. `Spec.MLKEM` removal pass — per-fn migration in `src/ind_cpa.rs`
+(~2 sessions).**  292 Rust hits across `ind_cpa.rs` (147) and
+`ind_cca.rs` (145).  Foundation (`Hacspec_ml_kem.Parameters.Sizes`)
+already shipped — start using it.  User mandate
+`feedback_avoid_spec_mlkem`.
 
-  - Add `#[hax_lib::fstar::verification_status(lax)]` to
-    `serialize_vector` in `src/ind_cpa.rs:139`.
-  - Drop `Libcrux_ml_kem.Ind_cpa.fst` from
-    `proofs/fstar/extraction/Makefile` `ADMIT_MODULES`.
-  - `python3 hax.py extract` → touch unchanged `.checked` →
-    `make check/Libcrux_ml_kem.Ind_cpa.fst`.
-  - For each remaining failure, mark THAT function lax incrementally
-    (e.g. `serialize_public_key_mut` if it can't compose without a
-    real `serialize_vector` post).  Goal: ≥ 18 of 21 fns at PF/Hacspec.
-  - Watch: high-rlimit annotations from previous attempt — likely
-    blockers if their bodies are similarly Z3-walled:
-    `compress_then_serialize_u` (1500), `encrypt_unpacked` (800),
-    `deserialize_then_decompress_u` (800), `generate_keypair_unpacked`
-    (500), `encrypt` (500).  **Lower rlimits to ≤ 800 (≤ 400 with
-    split_queries) when you touch them; don't preserve legacy 1000+
-    values** (memory rule `feedback_rlimit_cap_800`).
-  - Alternative paths if (c) cascades poorly:
-    (a) Factor `serialize_vector`'s `lemma_aux` to a module-scope
-    helper that's called once per iteration (the slice-bound subtyping
-    is what's heavy).
-    (b) Strengthen the loop invariant with an opaque slice-bound
-    predicate.
+  - **Start with the 3 PF/Hacspec fns in `ind_cpa.rs`**:
+    `serialize_public_key`, `serialize_public_key_mut`,
+    `generate_keypair`.  These already verify; migrating their
+    ensures from `Spec.MLKEM.*` to
+    `Hacspec_ml_kem.Parameters.Sizes.*` is low-risk one-shot work.
+    For each: edit ensures, re-extract, `make check/Libcrux_ml_kem.Ind_cpa.fst`,
+    verify it still passes.  If it fails, bring in
+    `lemma_<C>_eq` from `Hacspec_ml_kem.Parameters.Sizes` via a
+    `hax_lib::fstar!()` block.
+  - **Trace transitive cites BEFORE committing each function.**
+    `Libcrux_ml_kem.Vector.to_spec_vector_t` and friends may
+    themselves use `Spec.MLKEM` internally.  Grep one hop down
+    (e.g. `grep -n "Spec.MLKEM" specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.*.fst`)
+    before declaring a function migrated.
+  - Then move to the lax fns.  Their ensures are still in scope
+    (the lax marker only admits the body, not the post).  Migrating
+    them establishes the spec contract while leaving the body
+    admitted; a future un-lax pass will close the body.
+  - **Commit cadence**: one commit per function or small group.
+    Prefix `agent-mlkem:`.
 
-**2. `Spec.MLKEM` removal pass on `src/ind_cpa.rs` and `src/ind_cca.rs`
-(~2-3 sessions).**  User mandate: no new `Spec.MLKEM.*` citations and
-remove existing ones ASAP (`feedback_avoid_spec_mlkem`).  292 Rust
-hits in these two files; the heaviest leverage move available.
+**2. Un-lax cascade follow-up on `Ind_cpa.fst` (parallel; ~3-4
+sessions).**  16 fns are per-fn lax.  Path-of-least-resistance per
+session: pick one cluster (serialize/sample / encrypt/build /
+deserialize/decrypt), factor a lemma to module scope where the
+per-iteration `eq_intro`'s slice-bound subtyping is heavy
+(`feedback_layer2_branch_post_z3_unlock` shape), and un-lax that
+function.  Don't bump rlimit — use SD4, factoring, opacity, or
+keep lax.
 
-  - **First deliverable: parameterized size constants**.  Add to
-    `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.Parameters.fst`
-    parameterized versions of the top-5 Spec.MLKEM constants:
-    `v_CPA_PUBLIC_KEY_SIZE`, `v_RANKED_BYTES_PER_RING_ELEMENT`,
-    `v_ETA1_RANDOMNESS_SIZE`, `v_ETA1`, `v_CCA_PRIVATE_KEY_SIZE`.
-    Prove equality to the Spec.MLKEM versions in a Bridges file (one
-    lemma per shape).
-  - Then per-function migration in `ind_cpa.rs` and `ind_cca.rs`.
-    One commit per function or small group.  Watch transitive cites:
-    `Libcrux_ml_kem.Vector.to_spec_vector_t` may hit `Spec.MLKEM`
-    internally — trace one hop down before committing.
-
-**3. Forward NTT layer 7 bridge** (gated, multi-session).  Lift-
-convention design open.  Two candidate resolutions:
+**3. Forward NTT layer 7 bridge (gated, multi-session).**  Lift-
+convention design open (see session-2026-04-30b session report
+section F4).  Two candidate resolutions:
   (a) Add a `plain_to_mont_lift` transition lemma at the layer-7
       boundary (cheap, contained).
   (b) Re-state forward 1/2/3 ensures under the plain lift
@@ -127,24 +112,25 @@ convention design open.  Two candidate resolutions:
        (v $C == K)` fails under `fuel 0` even when Z3 can compute
        the value if the constant chain has a `-` step.
 
-  **AP-7 (NEW, this session)**: `$<param>` instead of
-  `${<param>}_future` in `#[hax_lib::ensures(...)]` for `&mut`
-  parameters.  Renders the post on the *input*, not the
-  post-mutation result — usually false.  Audit confirms only one
-  occurrence (now fixed); guard against re-introducing it.
+  AP-7 `$<param>` instead of `${<param>}_future` in
+  `#[hax_lib::ensures(...)]` for `&mut` parameters.  Renders the
+  post on the *input*, not the post-mutation result — usually
+  false.  Audit confirmed only one occurrence (fixed
+  `bbef9328b`); guard against re-introducing it.
 
-  **AP-8 (NEW, this session, REINFORCED 2026-04-30 mid-session)**:
-  bumping `--z3rlimit` past 800 to push through a Z3 wall — and any
-  rlimit > 400 when `--split_queries always` is set.  Prohibited
+  **AP-8 (REINFORCED 2026-04-30 mid-session)**: bumping
+  `--z3rlimit` past 800 — and any rlimit > 400 when
+  `--split_queries always` is set.  Prohibited
   (`feedback_rlimit_cap_800`).  Z3 perf at high rlimit is
-  non-monotone — proofs flip pass/fail across re-runs.  **High-rlimit
-  proofs are flake debt.**  When you hit a wall, in order: (1)
-  targeted `reveal_opaque (\`%P) (P args)` (Rule SD4); (2) factor a
-  lemma to module scope; (3) `--split_queries always` + lower
-  per-query rlimit; (4) drive-to-the-top spike; (5) accept
-  `verification_status(lax)` and un-lax consumers.  Never bump.
-  When TOUCHING legacy code with rlimit > 800 (or > 400 under split),
-  REDUCE it in the same commit — don't preserve the flake.
+  non-monotone — proofs flip pass/fail across re-runs.
+  **High-rlimit proofs are flake debt.**  When you hit a wall, in
+  order: (1) targeted `reveal_opaque (\`%P) (P args)` (Rule SD4);
+  (2) factor a lemma to module scope; (3) `--split_queries always`
+  + lower per-query rlimit; (4) drive-to-the-top spike;
+  (5) accept `verification_status(lax)` and un-lax consumers.
+  Never bump.  When TOUCHING legacy code with rlimit > 800
+  (or > 400 under split), REDUCE it in the same commit — don't
+  preserve the flake.
 
 ## Hard rules
 
@@ -172,17 +158,18 @@ convention design open.  Two candidate resolutions:
   R9 After each milestone closure: regenerate
      `proofs/verification_status.md` and update `proof_milestones.md`
      status icon.  Commit prefix: `agent-mlkem:`.
-  **R10 (NEW)**: NO new `Spec.MLKEM.*` citations.  Use
-  `Hacspec_ml_kem.*` (`feedback_avoid_spec_mlkem`).  When touching
-  existing Spec.MLKEM ensures opportunistically migrate them in the
-  same commit.
+  R10 NO new `Spec.MLKEM.*` citations.  Use
+  `Hacspec_ml_kem.Parameters.Sizes.*` for size constants
+  (`feedback_avoid_spec_mlkem`).  When touching existing
+  Spec.MLKEM ensures, opportunistically migrate them in the same
+  commit.
 
 ## Workflow
 
-  1. Read `proofs/agent-status/session-2026-04-30b.md` (the previous
-     session's report, particularly the "Findings" section and the
-     "Recommended next session" punch list).
-  2. Read `proofs/proof_milestones.md` for current row statuses.
+  1. Read `proofs/agent-status/session-2026-04-30c.md` (the previous
+     session's report — has commit SHAs and findings).
+  2. Read `proofs/proof_milestones.md` for current row statuses
+     (row 27 is now ⚠️ partial).
   3. Pick the first priority that's actionable.  Make the change.
   4. Iterate `make check/<Mod>.fst` until clean.
   5. `python3 proofs/generate_verification_status.py` to refresh report.
@@ -194,21 +181,50 @@ convention design open.  Two candidate resolutions:
 
   ```bash
   cd ~/libcrux-trait-opacify/libcrux-ml-kem
-  cd proofs/fstar/extraction
-  find . -maxdepth 1 \( -name "Libcrux_ml_kem*.fst" -o -name "Libcrux_ml_kem*.fsti" \) | sort | xargs shasum > /tmp/pre.sha
-  cd ../../..
+  find proofs/fstar/extraction -maxdepth 1 \( -name "Libcrux_ml_kem*.fst" -o -name "Libcrux_ml_kem*.fsti" \) | sort | xargs shasum > /tmp/pre.sha
   python3 hax.py extract
-  cd proofs/fstar/extraction
   # Local fix for hax codegen bug — duplicate noeq on Neon Vector_type
-  sed -i '' '7,8d' Libcrux_ml_kem.Vector.Neon.Vector_type.fsti 2>/dev/null
-  find . -maxdepth 1 \( -name "Libcrux_ml_kem*.fst" -o -name "Libcrux_ml_kem*.fsti" \) | sort | xargs shasum > /tmp/post.sha
+  sed -i '' '7,8d' proofs/fstar/extraction/Libcrux_ml_kem.Vector.Neon.Vector_type.fsti 2>/dev/null
+  find proofs/fstar/extraction -maxdepth 1 \( -name "Libcrux_ml_kem*.fst" -o -name "Libcrux_ml_kem*.fsti" \) | sort | xargs shasum > /tmp/post.sha
   diff /tmp/pre.sha /tmp/post.sha > /tmp/diff.sha
+  cd proofs/fstar/extraction
   for f in $(find . -maxdepth 1 \( -name "Libcrux_ml_kem*.fst" -o -name "Libcrux_ml_kem*.fsti" \)); do
     base=$(basename $f); chk=/Users/karthik/libcrux-trait-opacify/.fstar-cache/checked/$base.checked
     if ! grep -qF "$base" /tmp/diff.sha && [ -f "$chk" ]; then touch "$chk"; fi
   done
-  ulimit -v 8388608
   ```
+
+  Note: `ulimit -v 8388608` fails silently on macOS (`setrlimit failed:
+  invalid argument`).  Skip it locally; the make still runs.
+
+## Migration recipe for priority 1 (per-fn)
+
+For each function in `src/ind_cpa.rs` (start with the 3 verified
+ones):
+
+  1. Find every `Spec.MLKEM.<C>` symbol in its `requires`/`ensures`.
+  2. Where `<C>` is one of `v_ETA1`, `v_ETA1_RANDOMNESS_SIZE`,
+     `v_RANKED_BYTES_PER_RING_ELEMENT`, `v_CPA_PUBLIC_KEY_SIZE`,
+     `v_CCA_PRIVATE_KEY_SIZE` (or `v_CPA_PRIVATE_KEY_SIZE` —
+     derived), replace with
+     `Hacspec_ml_kem.Parameters.Sizes.<C>`.  The post is now stated
+     in the new namespace.
+  3. If the function body's annotations use the old shape (e.g.
+     loop invariants, intermediate asserts), either migrate them
+     too OR introduce a one-line `hax_lib::fstar!()` invoking
+     `Hacspec_ml_kem.Parameters.Sizes.lemma_<C>_eq <rank>` to
+     bridge.  Prefer migrating outright when the cluster is small.
+  4. Re-extract.  `make check/Libcrux_ml_kem.Ind_cpa.fst` (~30 s
+     wall now).
+  5. Commit.  Move to next function.
+
+For symbols NOT in the top-5 (e.g. `v_C1_SIZE`, `v_C2_SIZE`,
+`v_CPA_CIPHERTEXT_SIZE`, `is_rank`, `vector_encode_12`,
+`byte_encode`, `ind_cpa_encrypt`, etc.) — DO NOT migrate yet.
+Either skip the function or extend `Parameters.Sizes` with the
+missing constant first (one commit, then per-fn migration).
+`is_rank` and `rank` are already exported from
+`Hacspec_ml_kem.Parameters.Sizes` and can replace `Spec.MLKEM.is_rank`.
 
 ## Deliverable
 
@@ -220,7 +236,9 @@ End-of-session report (≤ 200 words) at
   - F\* perf delta on affected modules vs
     `proofs/agent-status/fstar-perf-top20.md`.
   - Final commit SHA.
-  - Spec.MLKEM hit count delta if you touched the migration.
+  - Spec.MLKEM hit count delta (run
+    `grep -rn "Spec\.MLKEM" specs/ml-kem/src libcrux-ml-kem/src | wc -l`
+    before and after).
   - Next-priority recommendation for the FOLLOWING session.
 
 DO NOT push to origin.  DO NOT touch `~/libcrux-ml-dsa-proofs` or
