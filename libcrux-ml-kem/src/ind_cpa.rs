@@ -133,7 +133,7 @@ pub(crate) fn serialize_public_key_mut<
     (forall (i:nat). i < v $K ==>
         Libcrux_ml_kem.Polynomial.Spec.is_bounded_poly (sz 3328) (Seq.index $key i))"#))]
 #[hax_lib::ensures(|()|
-    fstar!(r#"$out == Spec.MLKEM.vector_encode_12 #$K
+    fstar!(r#"${out}_future == Spec.MLKEM.vector_encode_12 #$K
             (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector $key)"#)
 )]
 pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
