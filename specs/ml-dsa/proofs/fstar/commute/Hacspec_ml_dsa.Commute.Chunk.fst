@@ -760,3 +760,61 @@ let lemma_mont_mul_bound_and_mod_q (x y: i32)
     assert (v product == prod);  // anchor
     assert_norm (pow2 31 * 8380417 + pow2 31 * 8380416 < pow2 32 * 8380417)
 #pop-options
+
+(* === Chunking lemma — bridges 32 chunks of 8-lane i32 arrays to flat 256.
+   Used by per-layer NTT/Invntt commute lemmas to relate the
+   PolynomialRingElement-level repr (32 SIMD units of 8 lanes each) to
+   `Hacspec_ml_dsa.Ntt.{ntt, intt, ntt_layer, intt_layer}` which all
+   operate on `t_Array i32 256`.  Backend-agnostic: works on the abstract
+   i32-array view, not the per-backend SIMD unit struct.  Consumers
+   project SIMDUnit -> t_Array i32 8 via the trait method `f_repr`
+   before invoking. *)
+
+let simd_units_to_array
+      (chunks: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
+    : t_Array i32 (mk_usize 256)
+  = Hacspec_ml_dsa.createi #i32 (mk_usize 256)
+      #(usize -> i32)
+      (fun (i: usize{i <. mk_usize 256}) ->
+         Seq.index (Seq.index chunks (v i / 8)) (v i % 8))
+
+(* Index reveal — `simd_units_to_array` at flat index `8b + l` is
+   `chunks.[b].[l]`.  Discharges via the SMTPat on `createi_lemma`. *)
+let lemma_simd_units_to_array_reveal
+      (chunks: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
+      (b: nat{b < 32}) (l: nat{l < 8})
+    : Lemma
+        (Seq.index (simd_units_to_array chunks) (8*b + l) ==
+         Seq.index (Seq.index chunks b) l)
+  = let i: usize = mk_usize (8*b + l) in
+    assert (v i = 8*b + l);
+    assert (v i / 8 = b);
+    assert (v i % 8 = l)
+
+(* Frame property — if `chunks_future` agrees with `chunks` on every
+   chunk index `j <> b`, then `simd_units_to_array` agrees on every
+   flat index `i` whose chunk `i/8 <> b`.  At every per-layer NTT
+   bridge, exactly one chunk is being updated; this lemma carries the
+   "other 31 chunks unchanged" invariant through the chunk-to-flat
+   transformation. *)
+let lemma_simd_units_to_array_other_chunk_unchanged
+      (chunks chunks_future: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
+      (b: nat{b < 32})
+    : Lemma
+        (requires forall (j: nat). j < 32 /\ j <> b ==>
+                  Seq.index chunks_future j == Seq.index chunks j)
+        (ensures forall (i: nat). i < 256 /\ (i / 8) <> b ==>
+                  Seq.index (simd_units_to_array chunks_future) i ==
+                  Seq.index (simd_units_to_array chunks) i)
+  = let aux (i: nat{i < 256 /\ (i / 8) <> b})
+          : Lemma (Seq.index (simd_units_to_array chunks_future) i ==
+                   Seq.index (simd_units_to_array chunks) i)
+      = let b' : nat = i / 8 in
+        let l' : nat = i % 8 in
+        assert (b' < 32);
+        assert (l' < 8);
+        assert (8 * b' + l' == i);
+        lemma_simd_units_to_array_reveal chunks_future b' l';
+        lemma_simd_units_to_array_reveal chunks b' l'
+    in
+    Classical.forall_intro aux
