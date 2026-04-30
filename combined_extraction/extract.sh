@@ -30,8 +30,8 @@ clean=0
 config=$extract_root/extract.yaml
 out=generated
 glue=$EURYDICE_HOME/include/eurydice_glue.h
-features_mlkem="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768"
-features_mldsa="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mldsa65"
+features_mlkem="${features} --no-default-features --features=mlkem768"
+features_mldsa="${features} --no-default-features --features=mldsa65"
 eurydice_glue=1
 karamel_include=1
 unrolling=16
@@ -80,44 +80,42 @@ if [[ "$no_charon" = 0 ]]; then
     popd
     rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_ml_dsa.llbc
 
-    flags=
+    flags="-- "
     if [[ $(uname -m) == "arm64" ]]; then
-       flags+="-- --target=x86_64-apple-darwin"
+       flags+="--target=x86_64-apple-darwin "
     fi
 
     cd $repo_root/crates/utils/secrets
     echo "Running charon (secrets) ..."
-    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
+             --rustc-arg="-Cdebug-assertions=no" \
              --preset eurydice \
-             --start-from libcrux_secrets \
              --remove-associated-types '*' \
              --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags
 
     cd $repo_root/crates/algorithms/sha3
     echo "Running charon (SHA3) ..."
-    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-             --preset eurydice \
-             --start-from libcrux_sha3 \
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
+             --rustc-arg="-Cdebug-assertions=no" \
+              --preset eurydice \
              --remove-associated-types '*' \
              --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags
     
     cd $repo_root/libcrux-ml-kem
     echo "Running charon (ML-KEM) ..."
-    RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $CHARON_HOME/bin/charon cargo \
-             $features_mlkem \
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
+             --rustc-arg="-Cdebug-assertions=no" \
              --preset eurydice \
-             --start-from libcrux_ml_kem \
-             --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags
+             --include 'core::num::*::BITS' --include 'core::num::*::MAX' $flags $features_mlkem
     
     cd $repo_root/libcrux-ml-dsa
     echo "Running charon (ML-DSA) ..."
     RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon cargo \
-             $features_mldsa \
+             --rustc-arg="-Cdebug-assertions=no" \
              --preset eurydice \
-             --start-from libcrux_ml_dsa \
              --remove-associated-types '*' \
              --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-             --rustc-arg=-Cdebug-assertions=no $flags
+             $flags $features_mldsa
 
     
     # rm -rf $repo_root/libcrux_ml_kem.llbc $repo_root/libcrux_sha3.llbc $repo_root/libcrux_secrets.llbc
