@@ -59,9 +59,6 @@ pub(crate) fn infinity_norm_exceeds_with_proof(simd_unit: &Coefficients, bound: 
     Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (${rhs.repr()})"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) /\
-    Spec.MLDSA.Math.(forall i. i < 8 ==>
-        mod_q (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) i)) ==
-        mod_q (v (Seq.index (${lhs.repr()}) i) * v (Seq.index (${rhs.repr()}) i) * 8265825)) /\
     Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
       Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
         (Seq.index (${lhs.repr()}) i)
@@ -477,9 +474,6 @@ impl Operations for Coefficients {
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (${rhs.repr()})"#))]
     #[ensures(|_| fstar!(r#"
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) /\
-        Spec.MLDSA.Math.(forall i. i < 8 ==>
-            mod_q (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}_future) i)) ==
-            mod_q (v (Seq.index (${lhs.repr()}) i) * v (Seq.index (${rhs.repr()}) i) * 8265825)) /\
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
             (Seq.index (${lhs.repr()}) i)

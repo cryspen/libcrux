@@ -222,10 +222,7 @@ let lemma_use_hint_lane_intro (gamma2 input hint future_hint: i32)
   reveal_opaque (`%use_hint_lane_post)
                 (use_hint_lane_post gamma2 input hint future_hint)
 
-(* montgomery_multiply: post relates lane to lhs*rhs*8265825 mod q (R^{-1}).
-   Both `mod_q` citations live in parallel during Phase 1 — the obsolete
-   `Spec.MLDSA.Math.mod_q` conjunct retained on the trait side (Phase 4
-   drops it). *)
+(* montgomery_multiply: post relates lane to lhs*rhs*8265825 mod q (R^{-1}). *)
 [@@ "opaque_to_smt"]
 let montgomery_multiply_lane_post (lhs rhs future_lhs: i32) : prop =
   (v future_lhs) % 8380417 == (v lhs * v rhs * 8265825) % 8380417
