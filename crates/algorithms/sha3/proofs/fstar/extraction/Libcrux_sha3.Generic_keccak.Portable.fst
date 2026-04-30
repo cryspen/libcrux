@@ -230,6 +230,17 @@ let impl__squeeze_last
   in
   self, out <: (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 & t_Slice u8)
 
+(* Stability fix (cold-cache profile, 2026-04-30 — see /tmp/sha3-coldprof
+   build.log + parse.py output).  Without `--split_queries always` the
+   monolithic q1 of `impl__squeeze_first_five_blocks` timed out at
+   173,468 ms hitting the full rlimit 800 budget, then F* auto-split into
+   46 sub-queries that each succeeded in 16-160 ms (~5 s of useful work
+   buried under 173 s of wasted Z3 time).  Adding `--split_queries always`
+   here skips the wasted monolithic attempt and goes straight to the split
+   that actually works.  Class A (bounds-only ensures); no functional
+   admit involved.  Same fix can be applied to the other linear
+   impl__squeeze_*_block(s) wrappers if they show similar instability. *)
+#push-options "--split_queries always"
 let impl__squeeze_first_five_blocks
       (v_RATE: usize)
       (self: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
@@ -310,6 +321,7 @@ let impl__squeeze_first_five_blocks
       v_RATE
   in
   self, out <: (Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 & t_Slice u8)
+#pop-options
 
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 800 --split_queries always"
 
@@ -437,6 +449,44 @@ let absorb (v_RATE: usize) (v_DELIM: u8) (input: t_Slice u8)
 /// determined by state, bytes outside are preserved) makes the
 /// block-by-block step go through without needing a separate
 /// buffer-independence lemma.
+
+(* USER-2 — STABILITY ADMIT, NOT A SOUNDNESS ADMIT.
+
+   Cold-cache profile (2026-04-30, /tmp/sha3-coldprof/build.log + parse.py)
+   measured this function at 347,634 ms total SMT (371 sub-queries under
+   `--split_queries always`).  The single worst sub-query
+   `squeeze, q227` succeeded in 162,194 ms but used 689/800 rlimit —
+   above the user policy's 150 s threshold for stability admits and
+   already at 86% of the available rlimit budget, so any future
+   variation in machine load would flake the proof.
+
+   The proof IS sound.  Direct consumer evidence at the time of writing:
+   `Libcrux_sha3.Portable.fst` (.checked timestamp Apr 30 19:28) and
+   `Libcrux_sha3.fst` (.checked timestamp Apr 30 19:28) both verified
+   warm-cached against this function's ensures, with the full top-level
+   chain (`keccak1` -> `sha224`/`sha256`/.../`shake256` and the
+   `*_ema` variants) reporting "All verification conditions discharged
+   successfully" in 8,322 ms wall on 2026-04-30 18:36 UTC.  The spec
+   contract `output_future == Hacspec_sha3.Sponge.squeeze ...` is
+   therefore well-formed and consumed by 18 layer-3 wrappers.
+
+   Local-stabilization class: B+C+D mixed.  The function nests four
+   `forall_intro` calls on per-byte aux lemmas (`aux_write`, `aux_tail`,
+   `aux_write_step`, `aux_tail_step`), each composed inside a
+   `fold_range` loop body whose 4-clause invariant cites
+   `Hacspec_sha3.Sponge.squeeze_blocks` and `squeeze_state`.  Z3 is
+   asked to compose the per-byte forall with the loop invariant's
+   block-indexed forall in one sub-query — q227 corresponds to one
+   of those compositions and it crosses the 150 s line.
+
+   Structural fix (~1 sprint, deferred): factor each per-byte aux into
+   a top-level `lemma_squeeze_*_byte_*` lemma proven once, and replace
+   the in-body `forall_intro aux` cascade with explicit instantiations
+   tied to the loop iteration index `i`.  Each per-byte lemma should
+   discharge in <500 ms standalone (mirrors the per-index pattern that
+   already works for `lemma_rho_thru_K_extract_lane`); the loop body
+   then cites them by name without quantifier composition. *)
+#push-options "--admit_smt_queries true"
 let squeeze
       (v_RATE: usize)
       (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
@@ -740,6 +790,7 @@ let squeeze
       output, s <: (t_Slice u8 & Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
   in
   output
+#pop-options
 
 #pop-options
 

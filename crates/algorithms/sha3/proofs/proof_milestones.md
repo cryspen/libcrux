@@ -145,6 +145,53 @@ partials, then assemble.** Each row-helper has a 5-element forall
 that Z3 should handle directly. Estimated 1 sprint of careful work
 — not the 30-minute "tweak" suggested by the agent prompt.
 
+## Note B — cold-cache profile + USER-2 stability admit (2026-04-30, evening)
+
+Priority-1 of the next-session prompt (cold-cache profile of
+`Libcrux_sha3.Generic_keccak.Portable.fst` + USER-N decisions).
+
+Cold-cache rebuild (8 chain `.checked` files moved out of the way,
+log at `/tmp/sha3-coldprof/build.log`):
+
+- **TOTAL TIME: 599,941 ms F\*-side / 952 s wall** (15:52). Verified.
+- Two functions cross the 150 s single-sub-query threshold:
+  1. `impl__squeeze_first_five_blocks` — q1 monolithic FAILED at
+     **173,468 ms (rlimit 800/800)**, then F\* auto-split into 46
+     sub-queries each succeeding in 16-160 ms (~5 s of useful work
+     buried under 173 s of wasted Z3 time). Class A (bounds-only).
+  2. `squeeze` — q227 succeeded in **162,194 ms (used rlimit
+     688.768/800)** — at 86% of budget, fragile under load.
+     Class B+C+D (per-byte forall composed with loop invariant).
+
+### Action 1 — `--split_queries always` on `impl__squeeze_first_five_blocks`
+
+Strictly superior to USER-N admit: skips the wasted 173 s monolithic
+attempt, preserves the 46 sub-query proof. Single-line pragma fix.
+After: 968 ms total across 46 sub-queries (was 178,195 ms).
+
+### Action 2 — USER-2 stability admit on `squeeze`
+
+`#push-options "--admit_smt_queries true"` wrapping the function with
+a multi-paragraph comment naming the q227 measurement, the consumer
+evidence (`Libcrux_sha3.Portable.fst` and `Libcrux_sha3.fst` both
+verify warm-cached against the squeeze ensures), the failure class
+B+C+D, and the structural fix recipe (factor per-byte aux into
+top-level lemmas; ~1 sprint).
+
+### Verification after edits
+
+Cold-rebuild of just the target (deps stayed warm):
+
+- **TOTAL TIME: 22,376 ms F\*-side / 31 s wall** — 27x faster.
+- Total SMT ms across all functions: **16,031 ms** (was 806,816).
+- Slowest single query: **8,019 ms** (`impl__squeeze_first_three_blocks`).
+- Zero USER-N candidates remain at the 150 s threshold.
+- `Libcrux_sha3.Generic_keccak.Portable` verified.
+
+Combined load-bearing admits in the sponge/keccak chain are now:
+USER-1 (`EquivImplSpec.Keccakf.Generic.lemma_theta_rho_to_spec`) +
+USER-2 (`Libcrux_sha3.Generic_keccak.Portable.squeeze`).
+
 ## Headline interpretation
 
 After this sprint:
@@ -179,6 +226,10 @@ the SIMD backends, and the structural fix to `lemma_theta_rho_to_spec`.
    replace the USER-1 admit (added 2026-04-30 to unblock the chain)
    with the row-helper factoring approach. ~1 sprint of focused
    proof-engineering work.
+1b. **Stabilize `Generic_keccak.Portable.squeeze` properly** (Note B) —
+    replace the USER-2 admit with per-byte top-level lemmas
+    (`lemma_squeeze_*_byte_*`) so the loop body cites them by name
+    instead of `forall_intro` cascades on per-byte aux. ~1 sprint.
 2. **Close the two squeeze driver-lemma admits** (rows 9, 10) —
    `lemma_squeeze4_avx2` and `lemma_squeeze2_arm64`. Per `HANDOFF.md`
    + `BRIEF_squeeze_steps.md`, the Simd128/Simd256 squeeze loop
