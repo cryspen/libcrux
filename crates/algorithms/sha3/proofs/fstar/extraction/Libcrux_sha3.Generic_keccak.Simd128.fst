@@ -357,6 +357,10 @@ let squeeze2
 
 #pop-options
 
+/// Two-lane Keccak driver.  The function-level ensures keep only the
+/// bounds (length-preservation); the per-lane functional spec is
+/// proved at the Neon-wrapper level using
+/// `EquivImplSpec.Sponge.Arm64.API.lemma_keccak2_arm64`.
 let keccak2
       (v_RATE: usize)
       (v_DELIM: u8)

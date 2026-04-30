@@ -20,18 +20,12 @@ module EquivImplSpec.Sponge.Arm64.API
    equivalence we need is single-lane: [digest] == scalar SHA3-256 of
    [data].
 
-   LAYER STRUCTURE (mirrors [EquivImplSpec.Sponge.Portable.API]):
+   The driver-level lemmas ([lemma_absorb2_arm64], [lemma_squeeze2_arm64],
+   [lemma_keccak2_arm64]) live in [EquivImplSpec.Sponge.Arm64.Driver]
+   to break a dependency cycle with [Libcrux_sha3.Neon] (which now
+   cites [lemma_keccak2_arm64] from its function bodies).
 
-     lemma_keccak2_arm64  : per-lane keccak2 ≡ scalar keccak
-       ↓
-     lemma_sha*_arm64, lemma_shake*_arm64 : top-level hashers ≡ spec
-
-   [lemma_keccak2_arm64] is ADMITTED — it is the Arm64 counterpart of
-   [lemma_absorb_portable] + [lemma_squeeze_portable], requiring
-   reasoning over the fold_range in [keccak2] and the per-lane
-   NEON bridges [arm64_sc_load_block], [arm64_sc_load_last],
-   [arm64_sc_store_block] (the latter three are also admitted and
-   constitute the "loop" content).
+   This module hosts only the per-hasher top-level theorems.
    ================================================================ *)
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
@@ -39,105 +33,13 @@ module EquivImplSpec.Sponge.Arm64.API
 open FStar.Mul
 open Core_models
 
-module I = Libcrux_intrinsics.Arm64_extract
-module KA = EquivImplSpec.Keccakf.Arm64
+module D = EquivImplSpec.Sponge.Arm64.Driver
 
-
-(* ================================================================
-   LAYER ASSUMPTIONS: two driver-level lemmas (absorb, squeeze2) at
-   N=2, analogous to [lemma_absorb_portable] + [lemma_squeeze_portable]
-   on the Portable side.  [lemma_keccak2_arm64] is derived by
-   composition, mirroring how [lemma_keccak1_portable] is proven in
-   [EquivImplSpec.Sponge.Portable.API].
-
-   Both assumptions are per-lane and will be discharged once the
-   Arm64 lockstep inductions (analogous to Gap 2 on the Portable
-   side) are closed.  Splitting keccak2 into absorb+squeeze factors
-   matches the Portable layout and isolates the two independent
-   sub-problems.
-   ================================================================ *)
-
-(** Driver-level absorb at N=2.  Running [absorb2] yields a state
-    whose lane-[l] extraction equals the scalar
-    [Hacspec_sha3.Sponge.absorb] applied to [data[l]].
-
-    The per-lane equivalence is discharged directly by the Rust-side
-    ensures on [Libcrux_sha3.Generic_keccak.Simd128.absorb2] (proved
-    inline via an [absorb_blocks]-based loop invariant at N=2). *)
-let lemma_absorb2_arm64
-      (rate: usize) (delim: u8)
-      (data: t_Array (t_Slice u8) (mk_usize 2))
-      (l: nat{l < 2})
-  : Lemma
-      (requires
-        Libcrux_sha3.Proof_utils.valid_rate rate /\
-        Libcrux_sha3.Proof_utils.slices_same_len (mk_usize 2) data)
-      (ensures (
-        let s2 = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim data in
-        EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2) KA.lc_arm64
-          s2.Libcrux_sha3.Generic_keccak.f_st l
-        ==
-        Hacspec_sha3.Sponge.absorb rate delim (data.[ mk_usize l ])))
-  = let _ = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim data in
-    ()
-
-(** Driver-level squeeze2 at N=2.  For an arbitrary two-lane state
-    [s], running [squeeze2] yields output slices whose lane-[l]
-    component equals [Hacspec_sha3.Sponge.squeeze] applied to
-    [extract_lane s l]. *)
-assume val lemma_squeeze2_arm64
-      (rate: usize)
-      (s: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 2) I.t_e_uint64x2_t)
-      (out0 out1: t_Slice u8)
-      (l: nat{l < 2})
-  : Lemma
-      (requires
-        Libcrux_sha3.Proof_utils.valid_rate rate /\
-        Seq.length #u8 out0 < v Core_models.Num.impl_usize__MAX - 200 /\
-        Seq.length #u8 out0 == Seq.length #u8 out1)
-      (ensures (
-        let outlen : usize = Core_models.Slice.impl__len #u8 out0 in
-        let (out0', out1') =
-          Libcrux_sha3.Generic_keccak.Simd128.squeeze2 rate s out0 out1 in
-        let r_l = if l = 0 then out0' else out1' in
-        r_l
-        ==
-        (Hacspec_sha3.Sponge.squeeze outlen
-           (EquivImplSpec.Keccakf.Generic.extract_lane (mk_usize 2) KA.lc_arm64
-              s.Libcrux_sha3.Generic_keccak.f_st l)
-           rate
-         <: t_Slice u8)))
-
-(* ================================================================
-   lemma_keccak2_arm64 = lemma_absorb2_arm64 ; lemma_squeeze2_arm64.
-
-   Structurally identical to how lemma_keccak1_portable composes
-   lemma_absorb_portable + lemma_squeeze_portable on the Portable
-   side.
-   ================================================================ *)
-
-let lemma_keccak2_arm64
-      (rate: usize) (delim: u8)
-      (input: t_Array (t_Slice u8) (mk_usize 2))
-      (out0 out1: t_Slice u8)
-  : Lemma
-      (requires
-        Libcrux_sha3.Proof_utils.valid_rate rate /\
-        Libcrux_sha3.Proof_utils.slices_same_len (mk_usize 2) input /\
-        Seq.length #u8 out0 < v Core_models.Num.impl_usize__MAX - 200 /\
-        Seq.length #u8 out0 == Seq.length #u8 out1)
-      (ensures (
-        let (r0, r1) =
-          Libcrux_sha3.Generic_keccak.Simd128.keccak2
-            rate delim input out0 out1 in
-        let n : usize = Core_models.Slice.impl__len #u8 out0 in
-        r0 == (Hacspec_sha3.Sponge.keccak n rate delim (input.[ mk_usize 0 ]) <: t_Slice u8) /\
-        r1 == (Hacspec_sha3.Sponge.keccak n rate delim (input.[ mk_usize 1 ]) <: t_Slice u8)))
-  = let s = Libcrux_sha3.Generic_keccak.Simd128.absorb2 rate delim input in
-    lemma_absorb2_arm64 rate delim input 0;
-    lemma_absorb2_arm64 rate delim input 1;
-    lemma_squeeze2_arm64 rate s out0 out1 0;
-    lemma_squeeze2_arm64 rate s out0 out1 1
+(* Re-export driver-level lemmas under their historical names so that
+   downstream consumers (and existing F* call-sites) keep compiling. *)
+let lemma_absorb2_arm64 = D.lemma_absorb2_arm64
+let lemma_squeeze2_arm64 = D.lemma_squeeze2_arm64
+let lemma_keccak2_arm64 = D.lemma_keccak2_arm64
 
 
 (* ================================================================
@@ -159,7 +61,7 @@ let lemma_sha224_arm64 (digest data: t_Slice u8)
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 (mk_usize 28) =
       Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 28) in
-    lemma_keccak2_arm64 (mk_usize 144) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
+    D.lemma_keccak2_arm64 (mk_usize 144) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
 
 let lemma_sha256_arm64 (digest data: t_Slice u8)
   : Lemma
@@ -172,7 +74,7 @@ let lemma_sha256_arm64 (digest data: t_Slice u8)
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 (mk_usize 32) =
       Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
-    lemma_keccak2_arm64 (mk_usize 136) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
+    D.lemma_keccak2_arm64 (mk_usize 136) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
 
 let lemma_sha384_arm64 (digest data: t_Slice u8)
   : Lemma
@@ -185,7 +87,7 @@ let lemma_sha384_arm64 (digest data: t_Slice u8)
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 (mk_usize 48) =
       Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 48) in
-    lemma_keccak2_arm64 (mk_usize 104) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
+    D.lemma_keccak2_arm64 (mk_usize 104) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
 
 let lemma_sha512_arm64 (digest data: t_Slice u8)
   : Lemma
@@ -198,7 +100,7 @@ let lemma_sha512_arm64 (digest data: t_Slice u8)
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 (mk_usize 64) =
       Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64) in
-    lemma_keccak2_arm64 (mk_usize 72) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
+    D.lemma_keccak2_arm64 (mk_usize 72) (mk_u8 6) inputs digest (dummy <: t_Slice u8)
 
 let lemma_shake128_arm64 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slice u8)
   : Lemma
@@ -211,7 +113,7 @@ let lemma_shake128_arm64 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slic
       FStar.Pervasives.assert_norm (List.Tot.length l == 2);
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 v_LEN = Rust_primitives.Hax.repeat (mk_u8 0) v_LEN in
-    lemma_keccak2_arm64 (mk_usize 168) (mk_u8 31) inputs
+    D.lemma_keccak2_arm64 (mk_usize 168) (mk_u8 31) inputs
       (digest <: t_Slice u8) (dummy <: t_Slice u8)
 
 let lemma_shake256_arm64 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slice u8)
@@ -225,5 +127,5 @@ let lemma_shake256_arm64 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slic
       FStar.Pervasives.assert_norm (List.Tot.length l == 2);
       Rust_primitives.Hax.array_of_list 2 l in
     let dummy : t_Array u8 v_LEN = Rust_primitives.Hax.repeat (mk_u8 0) v_LEN in
-    lemma_keccak2_arm64 (mk_usize 136) (mk_u8 31) inputs
+    D.lemma_keccak2_arm64 (mk_usize 136) (mk_u8 31) inputs
       (digest <: t_Slice u8) (dummy <: t_Slice u8)
