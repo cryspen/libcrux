@@ -222,6 +222,14 @@ def list_extracted_modules(extraction_dir, prefix, src_dir=None):
             continue
         mod = fname[len(prefix):]
         mod = mod.removesuffix('.fsti').removesuffix('.fst')
+        # Bare crate-name file (e.g. `Libcrux_sha3.fst`) — hax extracts
+        # `src/lib.rs` to the prefix-only `.fst`/`.fsti`. After stripping
+        # the trailing dot from the prefix and the suffix, what remains
+        # is the bare suffix string `fst`/`fsti` with no leading dot for
+        # `removesuffix('.fst')` to bite. Map it to `src/lib.rs`.
+        if mod in ('fst', 'fsti'):
+            extracted.add('src/lib.rs')
+            continue
         # Strip trailing-underscore mangling per-segment.
         segments = [s.rstrip('_') for s in mod.split('.')]
         # Direct mapping
