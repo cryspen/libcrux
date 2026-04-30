@@ -5,6 +5,7 @@ use libcrux_intrinsics::avx2::*;
 // Partition a stream of bytes into 24-bit values, and then clear the most
 // significant bit to turn them into 23-bit ones.
 #[inline(always)]
+#[hax_lib::requires(serialized.len() == 24)]
 fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
     #[cfg(not(eurydice))]
     debug_assert_eq!(serialized.len(), 24);
@@ -30,6 +31,9 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires(input.len() == 24 && output.len() >= 8)]
+#[hax_lib::ensures(|result| future(output).len() == output.len() && result <= 8)]
 pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
 
@@ -55,6 +59,13 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
+
+    hax_lib::fstar!(
+        r#"assume (v (Core_models.Num.impl_i32__count_ones $good_lower_half) <= 4);
+           assume (v (Core_models.Num.impl_i32__count_ones $good_upper_half) <= 4);
+           assume (v $good_lower_half >= 0 /\ v $good_lower_half < 16);
+           assume (v $good_upper_half >= 0 /\ v $good_upper_half < 16)"#
+    );
 
     // Each bit (and its corresponding position) represents an element we
     // want to sample. We'd like all such elements to be next to each other starting

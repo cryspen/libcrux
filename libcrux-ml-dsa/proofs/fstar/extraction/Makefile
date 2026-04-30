@@ -53,8 +53,6 @@ ADMIT_MODULES += \
 # closures).  Tracked as Session C in
 # `proofs/post-merge-handoff.md`.
 ADMIT_MODULES += \
-	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.fst \
-	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_field_modulus.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Shuffle_table.fst
 
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \

@@ -66,6 +66,7 @@ pub fn mm_storeu_si128_u128(output: &mut u128, vector: Vec128) {
 }
 
 #[hax_lib::opaque]
+#[hax_lib::ensures(|_r| future(output).len() == output.len())]
 #[inline(always)]
 pub fn mm_storeu_si128_u8(output: &mut [u8], vector: Vec128) {
     #[cfg(not(hax))]
@@ -76,6 +77,7 @@ pub fn mm_storeu_si128_u8(output: &mut [u8], vector: Vec128) {
 }
 
 #[hax_lib::opaque]
+#[hax_lib::ensures(|_r| future(output).len() == output.len())]
 #[inline(always)]
 pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
     #[cfg(not(hax))]

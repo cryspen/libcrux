@@ -6,6 +6,7 @@ use libcrux_intrinsics::avx2::*;
 // benchmarks. Revisit this once the other functions are vectorized.
 
 #[inline(always)]
+#[hax_lib::requires(ETA == 2 || ETA == 4)]
 fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
     match ETA as u8 {
         2 => {
@@ -24,6 +25,9 @@ fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::requires((ETA == 2 || ETA == 4) && input.len() == 4 && output.len() >= 8)]
+#[hax_lib::ensures(|result| future(output).len() == output.len() && result <= 8)]
 pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usize {
     // Whether or not ETA is 2 or 4, we always split the input bytestream into
     // values that are 4-bits wide.
@@ -45,6 +49,13 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
 
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
+
+    hax_lib::fstar!(
+        r#"assume (v (Core_models.Num.impl_i32__count_ones $good_lower_half) <= 4);
+           assume (v (Core_models.Num.impl_i32__count_ones $good_upper_half) <= 4);
+           assume (v $good_lower_half >= 0 /\ v $good_lower_half < 16);
+           assume (v $good_upper_half >= 0 /\ v $good_upper_half < 16)"#
+    );
 
     // Now move all the coefficients into the signed interval, some of the
     // coefficients will be rejected, so the calculations in some lanes might be
