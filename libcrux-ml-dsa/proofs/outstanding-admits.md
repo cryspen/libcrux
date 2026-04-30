@@ -205,26 +205,24 @@ these are local to the above-trait lane.
     after the local `deserialize` (which propagates the trait's
     `is_i32b_strict_lower_array_opaque (pow2 12)` post via the existing SMTPat
     `lemma_is_i32b_strict_lower_implies_array_opaque`).  Verified 2.5s @ rlimit 21.
-  - **Error**: BODY ADMIT RETAINED, length-preservation ensures added at
-    `(this commit)`.  Strong-bound shape is harder than T0's because the
-    `Operations::error_deserialize` trait post is in eta-conditional `forall8`
-    form (raw bound, not `is_i32b_strict_lower_array_opaque` with SMTPat
-    support), so the lift to `is_i32b_array_opaque eta_value` is manual
-    (would need `reveal_opaque (`%is_i32b_array_opaque)` plus a case-split
-    on `eta` between `Eta_Two` and `Eta_Four`).  A prior agent attempt
-    (`8601b2420` on `agent-error-rs-deserialize-ntt`) reported all individual
-    sub-goals (deserialize ensures, ntt pre, index pre) verifying under
-    `assert`, but the composite loop-invariant *preservation* step (extending
-    `forall k<i ...` to `forall k<i+1 ...` through `update_at_usize` + `ntt`'s
-    post) timed out at `--z3rlimit 14-15s` with `reason-unknown=canceled`.
-    Likely fix path: pivot to polynomial-level
-    `Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly` (already defined; SMTPat
-    + intro lemmas in place) instead of the nested-forall shape, to avoid
-    quantifier-trigger explosion.
-- **Suggested mitigation (closing the body)**: as above — try is_bounded_poly
-  factoring to avoid nested-forall blowup; or write a manual bridge lemma in
-  `Spec.Utils` converting eta-conditional `forall8` to `is_i32b_array_opaque`,
-  then mirror T0's pattern.  ~30-45 min once the bridge is in place.
+  - **Error**: CLOSED 2026-04-30 (F-16) — body admit replaced with real
+    proof.  Approach: instead of trying to lift the eta-conditional
+    `forall8` post to `is_i32b_array_opaque eta_value`, pick a *uniform*
+    looser bound that covers both eta cases.  Specifically, both
+    `eta=2 ==> -5 <= v <= 2` and `eta=4 ==> -11 <= v <= 4` satisfy
+    `is_i32b 11`, so the local `deserialize` wrapper exposes
+    `forall j<32. is_i32b_array_opaque 11 (...)` via a targeted
+    per-iteration `reveal_opaque (\`%is_i32b_array_opaque)
+    (is_i32b_array_opaque 11 (repr (result.simd_units[v i])))` (single-arg
+    form per AP-3 / Rule SD4) plus a strengthened loop_invariant.
+    `deserialize_to_vector_then_ntt` then mirrors T0's recipe: per-j
+    `is_i32b_array_larger 11 NTT_BASE_BOUND` via `Classical.forall_intro`
+    to lift to ntt's pre, then ntt's post supplies FIELD_MAX which the
+    loop_invariant carries forward.  Verifies in ~7s @ default
+    `--z3rlimit 80` (no escalation needed).  Contract change: pre adds
+    `v ring_element_size == 32 * eta_chunk_bytes` so the inner
+    `deserialize` call discharges; only caller is
+    `Ml_dsa_generic.sign` (in ADMIT_MODULES, unaffected).
 
 ### Libcrux_ml_dsa.Encoding.Verification_key.{generate_serialized,deserialize}
 - **File**: `src/encoding/verification_key.rs`
