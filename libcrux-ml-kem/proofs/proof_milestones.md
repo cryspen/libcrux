@@ -75,7 +75,7 @@ compression widths: `d ∈ {1, 4, 5, 10, 11, 12}` for serialize,
 | 24 | `MlKem*::decapsulate` correct vs hacspec | same | ❌ no claim | gated on (19) |
 | 25 | `MlKem*::validate_public_key/private_key` correct | `src/mlkem768.rs:71, 81, 95` | ❌ unverified | gated on (19) |
 | 26 | `Ind_cca::encapsulate` correct vs hacspec | `src/ind_cca.rs` | ⚠️ partial — 11 hacspec / 27 fns; 14 PF, 3 Math (Hacspec_ml_kem citations exist for some but not the top-level entries) | ~1-2 sprints |
-| 27 | `Ind_cpa::encapsulate/decapsulate` panic-free | `src/ind_cpa.rs` | 🔶 **all 21 fns lax** — `Ind_cpa.fst` is in `ADMIT_MODULES` (not just lax annotation, the WHOLE module is admitted) | ~2 sprints — drop module-level admit, add per-fn `verification_status(panic_free)` then strengthen |
+| 27 | `Ind_cpa::encapsulate/decapsulate` panic-free | `src/ind_cpa.rs` | 🔶 **all 21 fns lax** — `Ind_cpa.fst` is in `ADMIT_MODULES`. Milestone #1 attempted bulk un-admit on 2026-04-30; failed because `serialize_vector` (line 25-108, rlimit 1000) hit "incomplete quantifiers" at the line-105 assertion after 202 s — known blocker. Other 18 fns may be PF-clean already; needs per-fn audit. | ~2 sprints — surface `serialize_vector` as `verification_status(lax)` per-fn (or strengthen its loop invariants), then drop module-level admit; remaining fns likely verify. |
 | 28 | `Ind_cca` correct vs hacspec (composition) | top-level over (19)-(27) | ❌ blocked on (19) + (26) + (27) | many sprints |
 
 ## Headline interpretation
