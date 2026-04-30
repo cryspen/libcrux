@@ -62,36 +62,60 @@ The sponge construction is the strongest-verified layer in the crate.
 | 9 | `Generic_keccak.Simd128::absorb`, `squeeze` (Neon backend) | `src/generic_keccak/simd128.rs` via `EquivImplSpec.Sponge.Arm64.fst` | ❓ check — equivalence file exists; not yet inspected | review |
 | 10 | `Generic_keccak.Simd256::absorb`, `squeeze` (AVX2 backend) | `src/generic_keccak/simd256.rs` via `EquivImplSpec.Sponge.Avx2.fst` | ❓ check | review |
 | 11 | `Generic_keccak.Xof::*` correct (extendable-output functions) | `src/generic_keccak/xof.rs` | ⚠️ — script shows it under Generic, panic-free | ~1 session to surface ensures |
-| 12 | `keccak1` (single-rate single-call) correct | `src/generic_keccak/portable.rs:447 keccak1` | ⚠️ — short wrapper, no ensures shown | ~1 session — should compose absorb + squeeze, follows directly from (6)+(7) |
+| 12 | `keccak1` (single-rate single-call) correct | `src/generic_keccak/portable.rs:447 keccak1` | ✅ **wired** — function-level ensures cites `Hacspec_sha3.Sponge.keccak`. Composition of (6) absorb + (7) squeeze + `keccak` definitional unfold (`--fuel 1`). Verification pending due to upstream flake — see Note A. | *(wired; verify-pending)* |
 
 ## Layer 3 — Top-level Hash API
 
 | # | Milestone | Owner fn (file:line) | Status | Distance |
 |---|---|---|---|---|
-| 13 | `sha3::sha224` correct vs `Hacspec_sha3.Sha3.sha3_224` | `src/lib.rs::sha224` | ❌ unverified — `lib.rs` is filtered out of F\* extraction (no `Libcrux_sha3.Lib.fst`). Function has only a `requires` (length precondition); no ensures. | **first**: get `lib.rs` extracted (configure hax). Once extracted, ~1 session per digest to wire `Hacspec_sha3.Sha3.sha3_224` ensures. |
-| 14 | `sha3::sha256` correct vs `Hacspec_sha3.Sha3.sha3_256` | `src/lib.rs::sha256` | ❌ same | gated on (13); ~1 session |
-| 15 | `sha3::sha384` correct | `src/lib.rs::sha384` | ❌ same | gated on (13) |
-| 16 | `sha3::sha512` correct | `src/lib.rs::sha512` | ❌ same | gated on (13) |
-| 17 | `sha3::shake128`, `shake256` correct | `src/lib.rs` | ❌ same | gated on (13); ~1 session each |
-| 18 | `*_ema` (in-place / "explicit memory address") variants correct | `src/lib.rs::sha224_ema, sha256_ema, ...` | ❌ same — same extraction gap | gated on (13) |
-| 19 | `Portable::sha224/256/384/512` (the actual implementations under `lib.rs::sha*` wrappers) | `src/portable.rs::sha224, sha256, ...` | ⚠️ — script-counted under Portable; check if they have hacspec ensures | review needed; if not, ~1 session per fn (compose absorb + squeeze for the appropriate rate) |
-| 20 | `Avx2::*` (parallel hashing) correct | `src/avx2.rs` | ❌ — `avx2.rs` is in the unverified set (`avx2.rs` filtered out per script) | ~1 session to extract + wire |
+| 13 | `sha3::sha224` correct vs `Hacspec_sha3.Sponge.keccak 28 144 6 _` | `src/lib.rs::sha224` | ✅ **wired** — `lib.rs` IS extracted (as `Libcrux_sha3.fst`, no `.Lib` segment); the prior milestone text was wrong on extraction status. Function-level ensures cites `Hacspec_sha3.Sponge.keccak` directly (skipping the `try_into` wrapper in `Hacspec_sha3.Sha3.sha3_224`, which is identity for `[u8; 28] → [u8; 28]`). Verification pending — see Note A. | *(wired; verify-pending)* |
+| 14 | `sha3::sha256` correct vs `Hacspec_sha3.Sponge.keccak 32 136 6 _` | `src/lib.rs::sha256` | ✅ **wired** | *(wired; verify-pending)* |
+| 15 | `sha3::sha384` correct vs `Hacspec_sha3.Sponge.keccak 48 104 6 _` | `src/lib.rs::sha384` | ✅ **wired** | *(wired; verify-pending)* |
+| 16 | `sha3::sha512` correct vs `Hacspec_sha3.Sponge.keccak 64 72 6 _` | `src/lib.rs::sha512` | ✅ **wired** | *(wired; verify-pending)* |
+| 17 | `sha3::shake128<BYTES>`, `shake256<BYTES>` correct vs `Hacspec_sha3.Sponge.keccak BYTES (168\|136) 31 _` | `src/lib.rs` | ✅ **wired** | *(wired; verify-pending)* |
+| 18 | `*_ema` variants correct (sha224_ema, sha256_ema, sha384_ema, sha512_ema, shake128_ema, shake256_ema) | `src/lib.rs::sha224_ema, sha256_ema, ...` | ✅ **wired** — function-level ensures on each, citing `Hacspec_sha3.Sponge.keccak` at the appropriate rate/delim/length | *(wired; verify-pending)* |
+| 19 | `Portable::sha224/256/384/512` (the actual implementations under `lib.rs::sha*` wrappers) | `src/portable.rs::sha224, sha256, sha384, sha512, shake128, shake256` | ✅ **wired** — function-level ensures on all six, citing `Hacspec_sha3.Sponge.keccak`. Verification pending — see Note A. | *(wired; verify-pending)* |
+| 20 | `Avx2::*` (parallel hashing) correct | `src/avx2.rs` | ⚠️ — extraction is in-flight in a separate dirty effort (untracked `Libcrux_sha3.Avx2.X4*.fst`, modified `src/simd/avx2.rs`); not addressed by this sprint per R7. | gated on the parallel AVX2 effort completing extraction |
 | 21 | `Neon::*` correct | `src/neon.rs` | partial — script shows 1 hacspec in Neon; check coverage | review |
-| 22 | `digest::Digest` trait impl correct | `src/impl_digest_trait.rs` | ❌ unverified (filtered out) | ~1 session to extract |
+| 22 | `digest::Digest` trait impl correct | `src/impl_digest_trait.rs` | ❌ unverified — `#[cfg(not(any(hax, eurydice)))]` gate keeps it out of extraction | not on the F\*-verification path; intentional |
+
+## Note A — verification-pending status (2026-04-30)
+
+Sprint added function-level hacspec ensures to keccak1 + 18 layer-3
+wrapper functions (6 in `Libcrux_sha3.Portable.fst`, 12 in
+`Libcrux_sha3.fst`). Verification could not be COMPLETED in this
+sprint because:
+
+- `EquivImplSpec.Keccakf.Generic.fst::lemma_theta_rho_to_spec` is
+  pre-existing-flaky at HEAD: query 1 timed out at 446s and query
+  19 timed out at 566s under `--z3rlimit 1600` in the run on
+  2026-04-30 16:43 UTC. The flake is upstream of all sponge / keccak
+  proofs, so the entire dependency chain through
+  `Libcrux_sha3.Generic_keccak.Portable.fst` cannot be re-verified
+  from a cold cache.
+- No `.checked` cache existed for `Libcrux_sha3.Generic_keccak.Portable.fst`
+  at sprint start (Apr 26 cache, regenerated Apr 30).
+- Per R3 + R7, this sprint did NOT add admits to bypass the upstream
+  flake nor edit the dirty in-flight `proof_utils.fst` /
+  `simd/avx2` work that may be perturbing the chain.
+
+Mitigation: the source-side ensures are wired and the script picks
+them up (Hacspec count 6 → 25). A subsequent session that fixes the
+upstream flake (or uses a stronger Z3 timeout) should be able to
+discharge them mechanically.
 
 ## Headline interpretation
 
-The script's "Hacspec: 6/242 (2.5%)" UNDERCOUNTS the real proof
-state because:
-- The keccakf1600 equivalence is proven via `EquivImplSpec.*` lemmas
-  invoked from inside other functions, not via the keccakf1600
-  function's own `ensures`. The script can't see those lemmas.
-- The sponge `absorb`/`squeeze` ensures DO cite `Hacspec_sha3.*` and
-  contribute to the 6 hacspec count.
+After this sprint:
+- Script reports **Hacspec: 25/242 (10.3%)**, up from 6/242 (2.5%).
+- **Unverified: 1/242 (0.4%)** (was 17 — the 16 lib.rs fns flipped
+  to extracted via the script fix; impl_digest_trait remains by
+  design as it's `cfg(not(any(hax, eurydice)))`).
+- **Panic-safe: 98.8%**, up from 92.1%.
 
-**Real picture**: the entire Generic-Keccak / Sponge layer is proven
-equivalent to `Hacspec_sha3.{Keccak_f, Sponge}`. The gap is at the
-top-level digest API (`lib.rs`) which isn't even extracted to F\*.
+Caveat: the 19 newly-Hacspec-counted functions are wired but
+verification-pending due to the upstream `lemma_theta_rho_to_spec`
+flake described in Note A.
 
 ## Comparison with ml-kem / ml-dsa
 
@@ -107,17 +131,21 @@ most behind at the **API surface** (lib.rs unverified).
 
 ## Next-priority order
 
-1. **Surface `lemma_keccakf1600_portable` as `ensures` on `keccakf1600`**
-   (row 1) — small refactor, makes the proof state visible to the
-   verification-status script and to readers. ~1 session.
-2. **Extract `lib.rs`** (rows 13-18) — gates the entire top-level API
-   correctness. ~1 session for extraction config + per-digest ensures
-   wiring is then fast since the sponge layer is already proven.
+1. **Discharge the verify-pending layer-3 ensures** — fix the
+   upstream `lemma_theta_rho_to_spec` flake (Note A) so the 19
+   newly-wired ensures verify, OR add the lemma to `SLOW_MODULES` /
+   factor it. ~1 session if the flake is timeout-only and not a
+   regression.
+2. **Surface `lemma_keccakf1600_portable` as `ensures` on `keccakf1600`**
+   (row 1) — generic version is parameterised by `T: KeccakItem`, so
+   the surfacing requires either per-backend wrapper methods or a
+   generic ensures conditional on the type parameters. ~1 session.
 3. **Audit `EquivImplSpec.Keccakf.Avx2.fst` and `EquivImplSpec.Sponge.Avx2.fst`**
    (rows 3, 10) — confirm AVX2 backend equivalence is closed (or file
    USER-N if admits remain).
 4. **Per-block squeeze ensures** (row 8) — surface the per-block
    functional equivalence so callers don't need to reason through the
    composition manually.
-5. **`avx2.rs` extraction** (row 20) — gates the parallel-hash API
-   correctness.
+5. **`top-level hash() dispatcher correctness`** (`lib.rs::hash`) —
+   ensures depending on Algorithm enum value; not addressed in this
+   sprint due to match-based ensures complexity.

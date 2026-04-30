@@ -22,7 +22,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 | Category   | File              | Mods | Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ---------- | ----------------- | ---- | --- | --- | --- | --- | ---- | ------ | ------- |
-| _Generic_  | lib               |    1 |  16 |   0 |  16 |   0 |    0 |      0 |       0 |
+| _Generic_  | lib               |    1 |  16 |   0 |     |   4 |    0 |      0 |      12 |
 |            | traits            |    1 |  14 |   0 |     |  11 |    3 |      0 |       0 |
 |            | proof_utils       |    1 |   6 |   0 |     |   6 |    0 |      0 |       0 |
 |            | impl_digest_trait |    1 |   1 |   0 |   1 |   0 |    0 |      0 |       0 |
@@ -30,12 +30,12 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | generic_keccak (top) |    1 |  56 |   0 |     |  56 |    0 |      0 |       0 |
 |            | generic_keccak/constants |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | generic_keccak/xof |    1 |   8 |   0 |     |   2 |    6 |      0 |       0 |
-|            | **Generic total** | **8** | **101** | **0** | **17** | **75** | **9** |  **0** |   **0** |
+|            | **Generic total** | **8** | **101** | **0** | **1** | **79** | **9** |  **0** |  **12** |
 |            |                   |      |     |     |     |     |      |        |         |
-| _Portable_ | generic_keccak    |    1 |   9 |   0 |     |   1 |    5 |      0 |       3 |
-|            | portable          |    1 |  27 |   0 |     |  14 |   13 |      0 |       0 |
+| _Portable_ | generic_keccak    |    1 |   9 |   0 |     |   1 |    4 |      0 |       4 |
+|            | portable          |    1 |  27 |   0 |     |   8 |   13 |      0 |       6 |
 |            | simd              |    1 |  20 |   0 |     |  17 |    3 |      0 |       0 |
-|            | **Portable total** | **3** | **56** | **0** |     | **32** | **21** |  **0** |   **3** |
+|            | **Portable total** | **3** | **56** | **0** |     | **26** | **20** |  **0** |  **10** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Avx2_     | generic_keccak    |    1 |   9 |   0 |     |   1 |    6 |      0 |       2 |
 |            | avx2              |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
@@ -52,19 +52,19 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 - **Total modules**: 17
 - **Total functions**: 242
 - **Lax** (admitted): 2 (0.8%)
-- **Unverified** (not extracted): 17 (7.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 223 (92.1%)
-  - Panic-free only (no further proof): 159 (65.7%)
-  - Math (non-trivial ensures, no bounds/spec match): 58 (24.0%)
+- **Unverified** (not extracted): 1 (0.4%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 239 (98.8%)
+  - Panic-free only (no further proof): 157 (64.9%)
+  - Math (non-trivial ensures, no bounds/spec match): 57 (23.6%)
   - Bounds (range/interval ensures): 0 (0.0%)
-  - Hacspec (cites high-level spec): 6 (2.5%)
+  - Hacspec (cites high-level spec): 25 (10.3%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |       8 |  101 |   0 |  17 |  75 |    9 |      0 |       0 |
-| Portable     |       3 |   56 |   0 |   0 |  32 |   21 |      0 |       3 |
+| Generic      |       8 |  101 |   0 |   1 |  79 |    9 |      0 |      12 |
+| Portable     |       3 |   56 |   0 |   0 |  26 |   20 |      0 |      10 |
 | Avx2         |       3 |   41 |   1 |   0 |  21 |   17 |      0 |       2 |
 | Neon         |       3 |   44 |   1 |   0 |  31 |   11 |      0 |       1 |
 
@@ -74,7 +74,6 @@ These Rust modules have no corresponding F\* file in the extraction directory â€
 
 | Module                         | Path                                     | Fns |
 | ------------------------------ | ---------------------------------------- | --- |
-| Generic/lib                    | src/lib.rs                               |  16 |
 | Generic/impl_digest_trait      | src/impl_digest_trait.rs                 |   1 |
 
 ## Body-admit sites (audit)

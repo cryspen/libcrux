@@ -194,3 +194,98 @@ Existing memories that this audit confirmed are still load-bearing:
 SD3/SD4, lane split, reveal_opaque targeting, fstar-mcp session
 lifecycle, touch-unchanged-`.checked`, no-cache-nuke,
 for-loop-param-unshadowing, drive-to-the-top spike.
+
+## Cross-sprint delta — appended 2026-04-30 (from ml-dsa-proofs)
+
+Source: `~/libcrux-ml-dsa-proofs/libcrux-ml-dsa/proofs/agent-status/cross-sprint-delta-2026-04-30.md`
+(commit `c38294d8e` on `ml-dsa-proofs`).
+
+### AP-4 (universal): `bits USIZE` is opaque
+
+`Rust_primitives.Integers.bits Rust_primitives.Integers.USIZE` is
+kept opaque by hax proof-libs. Z3 cannot derive `v x < bits USIZE`
+from `v x < 64` under fuel 0; `assert_norm` does not unfold it.
+Affects any function that does `1 << shift_amount` on a usize.
+
+**SHA-3 relevance**: keccak does shifts on `usize` (rate
+calculations, byte indexing) — usually bound is small (`< 8` for
+the lane-byte index, `< 25` for state index), so we likely fall
+into the easy path. If it bites, prefer tighter bounds over an
+`assert_norm (bits USIZE == 64)` (won't work).
+
+### AP-5 (universal): `assert_norm` for constant chains with subtraction
+
+When a constant extracts via a chain that includes a subtraction
+step, plain `assert (v $C == K)` fails under fuel 0; `assert_norm`
+works.
+
+**SHA-3 relevance**: minor. Most SHA-3 constants are direct
+literals (`SHA3_224_RATE = 144`, `SHA3_DELIM = 6`) without
+subtraction chains. Watch for it in any future `<RATE> - 1`
+constant-folded into the spec.
+
+### Makefile flip (allowlist > denylist) — N/A for SHA-3
+
+ML-DSA recently flipped from a `VERIFIED_MODULES` denylist with
+`filter-out` to a small explicit `ADMIT_MODULES` allowlist. SHA-3's
+`proofs/fstar/extraction/Makefile` already has neither —
+extraction defaults to "all .fst files verified, none admitted."
+No flip needed.
+
+### Agent-prompt freshness audit — APPLIES to SHA-3 (in-flight)
+
+The ML-DSA prompt had a material factual error ("design
+Hacspec_ml_dsa.Ntt from scratch" when 4318 lines already existed).
+
+**SHA-3 prompt has the analogous bug**: `agent-prompt-sha3.md`
+priority #0 says "Extract `lib.rs` — currently filtered out of
+hax". This is wrong. `lib.rs` IS extracted to
+`proofs/fstar/extraction/Libcrux_sha3.fst` (no `.Lib` segment).
+`Libcrux_sha3.fst` exists with all top-level digest fns
+(`sha224`/`sha256`/`sha384`/`sha512`/`shake128`/`shake256` and the
+`*_ema` variants).
+
+The `Unverified: 16` count in `verification_status.md` is a
+**script bug**, not an extraction gap.
+`generate_verification_status.py::list_extracted_modules` strips
+the prefix `Libcrux_sha3.` from filenames and tries to map to a
+Rust path; `Libcrux_sha3.fst` becomes `fst` (no leading dot for
+`removesuffix('.fst')` to strip), which then maps to `src/fst.rs`
+instead of `src/lib.rs`. Fix is one local function in the script.
+
+This unblocks the entire layer-3 milestone group (rows 13-18):
+the API IS extracted, just needs hacspec ensures wired.
+
+### Encoding-wrapper closure recipe
+
+For the wrapper shape:
+```rust
+pub fn sha224(digest: &mut [u8], data: &[u8]) {
+    keccak1::<144, 0x06u8>(data, digest);
+}
+```
+
+SHA-3's `Libcrux_sha3.Portable.{sha224, ...}` and
+`Libcrux_sha3.{sha224, sha256, ..., sha224_ema, ...}` are precisely
+this shape — thin wrappers around `keccak1` (or another wrapper).
+Once `keccak1` has a hacspec ensures, the wrappers should close
+with **no `loop_invariant!` or offset-arithmetic asserts** because
+they have no loop. Composition is trivial:
+
+```
+sha224(digest, data)  =def= keccak1::<144, 0x06>(data, digest)
+                           ensures: digest == sponge.keccak data.len() 144 0x06 data
+sha3_224(message)     =def= unwrap (try_into (sponge.keccak 28 144 0x06 message))
+```
+
+Bridge needs: (a) `digest.len() == 28` precondition where applicable,
+(b) `try_into` of `[u8; 28]` to `[u8; 28]` is identity (or just
+inline `Hacspec_sha3.Sponge.keccak` instead of citing
+`Hacspec_sha3.Sha3.sha3_224`).
+
+### Shared anti-pattern catalog (optional)
+
+Cross-sprint delta proposes pulling the AP-N catalog into a single
+top-level file so all three prompts can cite by number. Worth doing
+once a fourth crate enters the rotation; for now, three inlined
+copies is tolerable.
