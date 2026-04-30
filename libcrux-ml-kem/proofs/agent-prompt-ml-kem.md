@@ -1,30 +1,43 @@
-# Agent prompt — ML-KEM continuation (post-2026-04-30 session)
+# Agent prompt — ML-KEM continuation (post-2026-04-30b session)
 
 Paste this into a fresh Claude Code session opened in
 `~/libcrux-trait-opacify/libcrux-ml-kem` (auto mode recommended).
 
-You are a single-lane agent for the libcrux-ml-kem F\* verification effort.
-Branch: `trait-opacify` (current tip `c87d1072e`).
+You are a single-lane agent for the libcrux-ml-kem F\* verification
+effort.  Branch: `trait-opacify` (current tip `3ab43b5f7`).
 
-## Previous session deliverables (2026-04-30)
+## Previous session deliverables (2026-04-30b)
 
-  - **Milestone #0 closed** (`86c48def7`) — mlkem.rs extraction. −57
-    Unverified, +57 Lax (new `Mlkem*.Incremental.*` and
-    `Ind_cca.Incremental.*` modules admitted in Makefile pending
-    per-fn PF; PF work scoped to milestone rows 19-25).
-  - **Milestone #2 forward NTT layers 1, 2, 3 closed** via inverse-
-    pattern transfer: `c32653051` (layer 1), `744b15937` (layer 2,
-    bridge 282 LoC + impl), `0ea02c19e` (layer 3, bridge 152 LoC +
-    impl).  +4 Hacspec, −4 Bounds.
-  - **Milestone #1 finding documented** (`c04830b8a`) — `Ind_cpa.fst`
-    bulk un-admit fails on `serialize_vector` (`src/ind_cpa.rs:139`)
-    at line-105 assertion, "incomplete quantifiers" after 202 s
-    @ rlimit 1000.
-  - **Sprint-learnings codified** (`c87d1072e`) — empirical
-    "inverse → forward NTT pattern transfer is robust" finding;
-    documents 3 invariants that hold across the transfer + 1
-    material divergence (forward butterfly's `z*b` asymmetry needs
-    `--z3rlimit 800 --split_queries always` on per-lane wrappers).
+  - **Spec bug fix** (`bbef9328b`) — `src/ind_cpa.rs:136`: changed
+    `$out` to `${out}_future` in `serialize_vector`'s ensures.  Without
+    `_future`, the post asserted the *input* slice equals
+    `vector_encode_12(key)` (false in general).  Audit confirmed this
+    was the **only** instance of the `$<param>` (no `_future`) anti-
+    pattern across ml-kem, ml-dsa, and sha3.
+  - **Row 4 closed** in `proof_milestones.md` — confirmed
+    `invert_ntt_at_layer_2` already cites
+    `Hacspec_ml_kem.Invert_ntt.ntt_inverse_layer_n` per chunk via
+    post-loop `forall_intro` of `lemma_inv_ntt_layer_2_step_to_hacspec`
+    (verified in extracted `Invert_ntt.fst{,i}.checked`).  The earlier
+    "bounds-only" tracker entry was stale.
+  - **Validation attempt** (`3ab43b5f7`) — re-extracted, dropped
+    `Libcrux_ml_kem.Ind_cpa.fst` from `ADMIT_MODULES`, ran make at
+    rlimit 800.  `serialize_vector` Q2 stalled 532 s before cancel;
+    final error "Subtyping check failed" at line 93 (the `Seq.slice
+    out` arg to per-iteration `lemma_aux`'s `eq_intro`).  Conclusion:
+    **spec fix is necessary but not sufficient** — body needs
+    structural work.  `Ind_cpa.fst` restored to `ADMIT_MODULES`.
+  - **Audit: Spec.MLKEM dominates the codebase** — 867 refs total
+    (324 Rust + 543 F\*); top files `src/ind_cca.rs` (145) and
+    `src/ind_cpa.rs` (147).  `Hacspec_ml_kem.*` replacements exist
+    for function symbols but `Hacspec_ml_kem.Parameters` lacks
+    parameterized size constants (`v_CPA_PUBLIC_KEY_SIZE`-equivalent).
+  - **Layer 7 forward bridge — design gap documented**.  Layer 7's
+    impl uses plain int multiply by `-1600` (≡ 1729 = `v_ZETAS.[1]`
+    mod q) on plain CBD inputs.  Under `mont_i16_to_spec_fe`,
+    `mont_lift(-1600) = 2578 ≠ 1729`, so the natural layer-7 bridge
+    wants `i16_to_spec_array` (plain), which doesn't compose with
+    the existing forward 1/2/3 trait bridges.  Multi-session.
 
 ## DO NOT TOUCH
 
@@ -33,46 +46,59 @@ Branch: `trait-opacify` (current tip `c87d1072e`).
 
 ## Priority order
 
-  **1. Forward NTT layer 7 bridge + impl** (~1 session).  Layer 7
-     is structurally novel but contained:
-     - No `f_ntt_layer_7_step` trait function exists; the impl
-       (`src/ntt.rs:471 ntt_at_layer_7`) uses
-       `multiply_by_constant_bounded(_, _, -1600)` directly with
-       `add_bounded`/`sub_bounded`, skipping the trait.
-     - Hacspec target: `N.ntt_layer_n 256 p 128 zetas` with
-       `zetas` length 1, `zetas[0] == ζ(1)`.
-     - First step: identify `mont_lift(-1600) == ζ(1)` (or its
-       negation) — spec-side lemma, novel for layer 7.
-     - Per-chunk-pair: `result[low_j] = re[j] + ζ * re[j+8]`,
-       `result[high_(j+8)] = re[j] - ζ * re[j+8]` for j ∈ 0..8.
-     - 8 chunk pairs × 2 lanes (low j, high j+8) → 16 chunk
-       results → polynomial-level layer-7 claim.
-     - File the bridge in `Hacspec_ml_kem.Commute.Bridges.fst`
-       after the forward layer 3 section.
+**1. `serialize_vector` body unblock (~1 session).**  Path of least
+resistance is **(c) accept `verification_status(lax)` on
+`serialize_vector` and un-lax the cascade**.  Likely flips ≥ 18/21
+`Ind_cpa.fst` fns from Lax → PF/Hacspec.
 
-  **2. `Ind_cpa.fst` per-fn audit** (~1 session).  The 2026-04-30
-     attempt found `serialize_vector` is the blocker.  Strategy:
-     - Add `#[hax_lib::fstar::verification_status(lax)]` to
-       `serialize_vector` as a per-fn admit.
-     - Drop `Libcrux_ml_kem.Ind_cpa.fst` from
-       `proofs/fstar/extraction/Makefile` ADMIT_MODULES.
-     - Run `make check/Libcrux_ml_kem.Ind_cpa.fst`.  If other
-       functions fail, mark them lax incrementally.
-     - Goal: ≥18 of 21 fns flip from Lax → PF/Hacspec.  Closes
-       part of milestone row 27.
-     - Functions to watch (high z3rlimit annotations seen 2026-04-30):
-       `serialize_vector` (1000), `compress_then_serialize_u` (1500),
-       `encrypt_unpacked` (800), `deserialize_then_decompress_u` (800),
-       `generate_keypair_unpacked` (500), `encrypt` (500).
+  - Add `#[hax_lib::fstar::verification_status(lax)]` to
+    `serialize_vector` in `src/ind_cpa.rs:139`.
+  - Drop `Libcrux_ml_kem.Ind_cpa.fst` from
+    `proofs/fstar/extraction/Makefile` `ADMIT_MODULES`.
+  - `python3 hax.py extract` → touch unchanged `.checked` →
+    `make check/Libcrux_ml_kem.Ind_cpa.fst`.
+  - For each remaining failure, mark THAT function lax incrementally
+    (e.g. `serialize_public_key_mut` if it can't compose without a
+    real `serialize_vector` post).  Goal: ≥ 18 of 21 fns at PF/Hacspec.
+  - Watch: high-rlimit annotations from previous attempt — likely
+    blockers if their bodies are similarly Z3-walled:
+    `compress_then_serialize_u` (1500), `encrypt_unpacked` (800),
+    `deserialize_then_decompress_u` (800), `generate_keypair_unpacked`
+    (500), `encrypt` (500).  **Lower rlimits to ≤ 800 (≤ 400 with
+    split_queries) when you touch them; don't preserve legacy 1000+
+    values** (memory rule `feedback_rlimit_cap_800`).
+  - Alternative paths if (c) cascades poorly:
+    (a) Factor `serialize_vector`'s `lemma_aux` to a module-scope
+    helper that's called once per iteration (the slice-bound subtyping
+    is what's heavy).
+    (b) Strengthen the loop invariant with an opaque slice-bound
+    predicate.
 
-  **3. Forward NTT top-level `ntt_vector_u`** (gated, NOT yet
-     actionable).  Calls layers 4_plus (×4), 3, 2, 1,
-     `poly_barrett_reduce`.  Layers 1/2/3 now cite hacspec.
-     Forward layer 4_plus has bounds-only post — needs a forward
-     analog of the "USER-14 work" before `ntt_vector_u` composes.
-     **Not actionable until forward 4_plus is closed (separate
-     work item, do not conflate with USER-14 which is the inverse
-     direction).**
+**2. `Spec.MLKEM` removal pass on `src/ind_cpa.rs` and `src/ind_cca.rs`
+(~2-3 sessions).**  User mandate: no new `Spec.MLKEM.*` citations and
+remove existing ones ASAP (`feedback_avoid_spec_mlkem`).  292 Rust
+hits in these two files; the heaviest leverage move available.
+
+  - **First deliverable: parameterized size constants**.  Add to
+    `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.Parameters.fst`
+    parameterized versions of the top-5 Spec.MLKEM constants:
+    `v_CPA_PUBLIC_KEY_SIZE`, `v_RANKED_BYTES_PER_RING_ELEMENT`,
+    `v_ETA1_RANDOMNESS_SIZE`, `v_ETA1`, `v_CCA_PRIVATE_KEY_SIZE`.
+    Prove equality to the Spec.MLKEM versions in a Bridges file (one
+    lemma per shape).
+  - Then per-function migration in `ind_cpa.rs` and `ind_cca.rs`.
+    One commit per function or small group.  Watch transitive cites:
+    `Libcrux_ml_kem.Vector.to_spec_vector_t` may hit `Spec.MLKEM`
+    internally — trace one hop down before committing.
+
+**3. Forward NTT layer 7 bridge** (gated, multi-session).  Lift-
+convention design open.  Two candidate resolutions:
+  (a) Add a `plain_to_mont_lift` transition lemma at the layer-7
+      boundary (cheap, contained).
+  (b) Re-state forward 1/2/3 ensures under the plain lift
+      (`i16_to_spec_array`) so the chain is uniform (expensive,
+      cascades through trait bridges).
+  Don't start until the design choice is made.
 
 ## Anti-patterns (still load-bearing)
 
@@ -101,17 +127,34 @@ Branch: `trait-opacify` (current tip `c87d1072e`).
        (v $C == K)` fails under `fuel 0` even when Z3 can compute
        the value if the constant chain has a `-` step.
 
+  **AP-7 (NEW, this session)**: `$<param>` instead of
+  `${<param>}_future` in `#[hax_lib::ensures(...)]` for `&mut`
+  parameters.  Renders the post on the *input*, not the
+  post-mutation result — usually false.  Audit confirms only one
+  occurrence (now fixed); guard against re-introducing it.
+
+  **AP-8 (NEW, this session)**: bumping `--z3rlimit` past 800 to
+  push through a Z3 wall.  Prohibited (`feedback_rlimit_cap_800`).
+  Z3 perf at high rlimit is non-monotone — proofs flip pass/fail.
+  When you hit a wall, factor the lemma, opacify, drive-to-the-top,
+  or accept lax.  Never bump.
+
 ## Hard rules
 
   R1 Branch `trait-opacify` directly.  User merges to origin manually.
   R2 No NEW broad admits.  `--admit_smt_queries true` is OK as a
      temporary scaffold; remove before committing each closure.
+     Per-fn `verification_status(lax)` is the supported per-function
+     admit form.
   R3 No new axioms unless absolutely necessary.  If you must, file
      as SIDEWAYS in `MLKEM_STATUS.md` + commit message.
-  R4 `ulimit -v 8388608`. F\* `--z3rlimit ≤ 800`. Default tier:
-     `--z3rlimit 200`. Bump only after profiling.
+  R4 `ulimit -v 8388608`.  **F\* `--z3rlimit ≤ 800` HARD CAP**;
+     **`--split_queries always` cap is `≤ 400` per query** (memory
+     rule `feedback_rlimit_cap_800`).  Default tier:
+     `--z3rlimit 200`.  Bump only after profiling.  When touching
+     legacy code with rlimit > 800, REDUCE it; don't preserve.
   R5 Inner edit-check: `make check/<Mod>.fst` from
-     `proofs/fstar/extraction/`. Cap iteration at 20 min/attempt.
+     `proofs/fstar/extraction/`.  Cap iteration at 20 min/attempt.
   R6 Always re-record hints AND touch unchanged `.checked` after
      `python3 hax.py extract` (per `feedback_touch_unchanged_checked`).
   R7 Trait FROZEN — DO NOT touch `src/vector/traits.rs` (the trait
@@ -122,14 +165,16 @@ Branch: `trait-opacify` (current tip `c87d1072e`).
   R9 After each milestone closure: regenerate
      `proofs/verification_status.md` and update `proof_milestones.md`
      status icon.  Commit prefix: `agent-mlkem:`.
+  **R10 (NEW)**: NO new `Spec.MLKEM.*` citations.  Use
+  `Hacspec_ml_kem.*` (`feedback_avoid_spec_mlkem`).  When touching
+  existing Spec.MLKEM ensures opportunistically migrate them in the
+  same commit.
 
 ## Workflow
 
-  1. Read `proofs/agent-status/sprint-learnings.md` (particularly
-     the "Cross-sprint deltas (appended 2026-04-30)", "ML-KEM-side
-     learnings to mirror back", and "Inverse → forward NTT pattern
-     transfer is empirically robust" sections — the latter has the
-     forward-bridge recipe codified).
+  1. Read `proofs/agent-status/session-2026-04-30b.md` (the previous
+     session's report, particularly the "Findings" section and the
+     "Recommended next session" punch list).
   2. Read `proofs/proof_milestones.md` for current row statuses.
   3. Pick the first priority that's actionable.  Make the change.
   4. Iterate `make check/<Mod>.fst` until clean.
@@ -137,22 +182,6 @@ Branch: `trait-opacify` (current tip `c87d1072e`).
   6. Update `proof_milestones.md` row status + add commit SHA.
   7. Commit with prefix `agent-mlkem:`.  Move to next.
   8. Cap: 4-5 milestones or 4 hours total.
-
-## Layer 7 forward bridge — orientation pointers
-
-  - Source: `src/ntt.rs:471 ntt_at_layer_7` body (lines 471-510).
-    Skip-Mont path; constant `-1600` is the magic value.
-  - Hacspec spec: `Hacspec_ml_kem.Ntt.ntt_layer_n` at
-    `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.Ntt.fst:280`.
-  - For layer 7: `len = 128`, `groups = 1`, single zeta.
-  - Polynomial level (256 coeffs) — different from layers 1-3
-    which were per-vector (16 coeffs).  Bridge needs to operate
-    poly-level, not chunk-level.
-  - Reference for poly-level chain: see `to_spec_poly_mont` in
-    `Hacspec_ml_kem.Commute.Chunk` and how
-    `invert_ntt_at_layer_4_plus`'s ensures cites
-    `IN.ntt_inverse_layer p layer` (impl-pattern, even if body is
-    admitted).
 
 ## Per-build hygiene (paste-ready)
 
@@ -171,19 +200,22 @@ Branch: `trait-opacify` (current tip `c87d1072e`).
     base=$(basename $f); chk=/Users/karthik/libcrux-trait-opacify/.fstar-cache/checked/$base.checked
     if ! grep -qF "$base" /tmp/diff.sha && [ -f "$chk" ]; then touch "$chk"; fi
   done
+  ulimit -v 8388608
   ```
 
 ## Deliverable
 
-End-of-session report (≤ 200 words):
+End-of-session report (≤ 200 words) at
+`proofs/agent-status/session-<date>.md`:
   - Milestones closed (✅) with commit SHAs.
   - Milestones partially advanced (🔶 → improved).
-  - Any new admits/axioms (R3).
+  - Any new admits/axioms (R3) or new lax markers (R2).
   - F\* perf delta on affected modules vs
     `proofs/agent-status/fstar-perf-top20.md`.
   - Final commit SHA.
+  - Spec.MLKEM hit count delta if you touched the migration.
   - Next-priority recommendation for the FOLLOWING session.
 
 DO NOT push to origin.  DO NOT touch `~/libcrux-ml-dsa-proofs` or
-`~/libcrux-sha3-focused`.  DO NOT touch
-`invert_ntt_at_layer_4_plus` (USER-14, user-handled).
+`~/libcrux-sha3-focused`.  DO NOT touch `invert_ntt_at_layer_4_plus`
+(USER-14, user-handled).
