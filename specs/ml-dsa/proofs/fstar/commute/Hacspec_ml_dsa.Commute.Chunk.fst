@@ -818,3 +818,67 @@ let lemma_simd_units_to_array_other_chunk_unchanged
         lemma_simd_units_to_array_reveal chunks b' l'
     in
     Classical.forall_intro aux
+
+(* ===== NTT layer 0 (forward, within-chunk, len=1) =====
+   Bridges from the impl's `simd_unit_ntt_at_layer_0_` (4 butterfly
+   steps over disjoint lane pairs) to `Hacspec_ml_dsa.Ntt.ntt_layer
+   flat 0` indexed on the 8 lanes of one chunk.
+
+   The impl uses Montgomery-form zetas hardcoded inline; the spec uses
+   standard-form zetas from `Hacspec_ml_dsa.Ntt.v_ZETAS`.  The bridge
+   carries the per-zeta congruence
+       (v zeta_mont) % q == (zeta_std * pow2 32) % q
+   as an explicit precondition; consumers discharge it with
+   `Spec.MLDSA.Ntt.zeta_r` (already proven for all 256 indices).
+
+   Key Mont identity: `pow2 32 * 8265825 ≡ 1 (mod 8380417)` —
+   `assert_norm`'d once in `lemma_butterfly_step_fe` below. *)
+
+(* Per-butterfly-step FE bridge.  Pure algebraic — no impl reveal.
+   Hypothesis shape mirrors the FE-form post we will expose on
+   `simd_unit_ntt_step` after re-extraction (Step 5).  The impl's
+   `simd_unit_ntt_step simd_unit zeta_mont index step` leaves all but
+   the two pair lanes unchanged; this lemma talks about the two-lane
+   slice (lo_old / hi_old / t / lo_new / hi_new). *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_butterfly_step_fe
+    (lo_old hi_old t lo_new hi_new zeta_mont: i32)
+    (zeta_std: int)
+    : Lemma
+        (requires
+          v lo_new == v lo_old + v t /\
+          v hi_new == v lo_old - v t /\
+          (v t) % 8380417 == (v hi_old * v zeta_mont * 8265825) % 8380417 /\
+          (v zeta_mont) % 8380417 == (zeta_std * pow2 32) % 8380417)
+        (ensures
+          (v lo_new) % 8380417 == (v lo_old + v hi_old * zeta_std) % 8380417 /\
+          (v hi_new) % 8380417 == (v lo_old - v hi_old * zeta_std) % 8380417)
+  = let q : pos = 8380417 in
+    assert_norm ((pow2 32 * 8265825) % q == 1);
+    // Step 1: v zeta_mont * 8265825 ≡ zeta_std (mod q)
+    L.lemma_mod_mul_distr_l (v zeta_mont) 8265825 q;
+    L.lemma_mod_mul_distr_l (zeta_std * pow2 32) 8265825 q;
+    L.lemma_mod_mul_distr_r zeta_std (pow2 32 * 8265825) q;
+    assert ((v zeta_mont * 8265825) % q == zeta_std % q);
+    // Step 2: v t ≡ v hi_old * zeta_std (mod q)
+    L.lemma_mod_mul_distr_r (v hi_old) (v zeta_mont * 8265825) q;
+    L.lemma_mod_mul_distr_r (v hi_old) zeta_std q;
+    assert ((v hi_old * v zeta_mont * 8265825) % q == (v hi_old * zeta_std) % q);
+    assert ((v t) % q == (v hi_old * zeta_std) % q);
+    // Step 3: lo_new ≡ lo_old + hi_old * zeta_std (mod q)
+    L.lemma_mod_plus_distr_r (v lo_old) (v t) q;
+    L.lemma_mod_plus_distr_r (v lo_old) (v hi_old * zeta_std) q;
+    // Step 4: hi_new ≡ lo_old - hi_old * zeta_std (mod q)
+    L.lemma_mod_sub_distr (v lo_old) (v t) q;
+    L.lemma_mod_sub_distr (v lo_old) (v hi_old * zeta_std) q
+#pop-options
+
+(* TODO (next session): per-chunk lane bridge
+   `lemma_ntt_layer_0_chunk_to_hacspec` + polynomial-level composition
+   `lemma_ntt_layer_0_step_to_hacspec_poly`.  Both flagged as Z3-risky
+   (port-plan §5#3) — i32 mod q = 8380417 is slower for SMT than ML-KEM's
+   i16/3329, and `Hacspec_ml_dsa.Ntt.ntt_layer` is a `createi`-of-`if`
+   over 256 indices.  Recommended approach: factor `ntt_layer flat 0`
+   into a top-level `let layer_0_lane (i: nat{i < 256}) : i32 = ...`
+   reduction lemma so the per-lane unfold is a one-liner, then compose
+   via `Classical.forall_intro` + `Seq.lemma_eq_intro` over 256 lanes. *)
