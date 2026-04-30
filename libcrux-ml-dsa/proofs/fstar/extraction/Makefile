@@ -45,9 +45,13 @@ ADMIT_MODULES += \
 # =====================================================================
 # AVX2 rejection sample shuffle table + samplers (3)
 # =====================================================================
-# Shuffle_table is pure data computation; samplers are admit-only
+# Shuffle_table is dead-code "executable spec" for the const
+# `SHUFFLE_TABLE`; its `is_bit_set` does `1 << bit_position` which
+# requires `v bit_position < bits USIZE` (opaque in the proof-libs
+# .fsti) — fixable but not trivial.  Samplers are admit-only
 # pending bit-vec body proofs (similar shape to Step 13 Track A AVX2
-# closures).  Tracked as Session C in `proofs/post-merge-handoff.md`.
+# closures).  Tracked as Session C in
+# `proofs/post-merge-handoff.md`.
 ADMIT_MODULES += \
 	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_eta.fst \
 	Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Less_than_field_modulus.fst \
