@@ -58,7 +58,7 @@ The sponge construction is the strongest-verified layer in the crate.
 |---|---|---|---|---|
 | 6 | `Generic_keccak.Portable::absorb` correct vs hacspec | `src/generic_keccak/portable.rs:161 absorb` | ✅ **proven** — ensures asserts `$result.st == Hacspec_sha3.Sponge.absorb $RATE $DELIM $input` directly. Options: `--z3rlimit 800 --split_queries always`. Loop invariant uses block-indexed `absorb_blocks` to dodge a Z3 LP-solver bug. | *(done)* |
 | 7 | `Generic_keccak.Portable::squeeze` correct vs hacspec | `src/generic_keccak/portable.rs:245 squeeze` | ✅ — body fragment uses `Hacspec_sha3.Keccak_f.keccak_f` and `Hacspec_sha3.Sponge.squeeze_state`/`squeeze_last` to assert equivalence | *(done)* |
-| 8 | `Generic_keccak.Portable::squeeze_first_block`, `squeeze_next_block`, `squeeze_first_three_blocks`, `squeeze_first_five_blocks`, `squeeze_last` correct | `src/generic_keccak/portable.rs:30, 41, 51, 83, 128` | ⚠️ — function-level ensures only `future(out).len() == out.len()` (panic-free); functional equivalence likely covered by composition through (7) but not stated per-block | ~1 session per block-variant to surface the per-fn ensures |
+| 8 | `Generic_keccak.Portable::squeeze_first_block`, `squeeze_next_block`, `squeeze_first_three_blocks`, `squeeze_first_five_blocks`, `squeeze_last` correct | `src/generic_keccak/portable.rs:30, 41, 51, 83, 128` | ✅ **proven** for the 4 full-block variants (audited 2026-04-30 evening): `EquivImplSpec.Sponge.Portable.SqueezeAPI.lemma_squeeze_{first,next,first_three,first_five}_block(s)_portable` chain `lemma_squeeze_once_portable` + `KP.lemma_keccakf1600_portable` to give the impl ≡ chained-`squeeze_state` equivalence. Same audit pattern as keccakf1600 (Layer 1, milestone 1). `squeeze_last` was already proven (its Rust ensures cites `Hacspec_sha3.Sponge.squeeze_last` directly). The Rust-side `#[hax_lib::ensures]` are still bounds-only (so `verification_status.md` won't auto-detect the upgrade); the F\* lemmas are the audit anchor. | *(done — modulo backfilling Rust ensures so the audit script picks them up)* |
 | 9 | `Generic_keccak.Simd128::absorb2`, `squeeze2` (Neon, N=2) | `src/generic_keccak/simd128.rs` via `EquivImplSpec.Sponge.Arm64.{fst, Steps.fst, API.fst}` | 🔶 **partial** (audited 2026-04-30) — `EquivImplSpec.Sponge.Arm64.fst` (main, 0 admits) and `Arm64.Steps.fst` (0 admits) are clean. `Arm64.API.fst::lemma_squeeze2_arm64` is `assume val` (single driver-level admit; the loop-invariant proof on `Simd128.squeeze2` is unfinished — see `BRIEF_squeeze_steps.md` and `HANDOFF.md`). The absorb side IS proven (`lemma_absorb2_arm64` is `let`). | ~1 sprint to close `lemma_squeeze2_arm64` (loop-invariant work analogous to portable squeeze) |
 | 10 | `Generic_keccak.Simd256::absorb4`, `squeeze4` (AVX2, N=4) | `src/generic_keccak/simd256.rs` via `EquivImplSpec.Sponge.Avx2.{fst, Steps.fst, API.fst}` | 🔶 **partial** (audited 2026-04-30) — same shape as Arm64. Main + Steps files are clean. `Avx2.API.fst::lemma_squeeze4_avx2` is `assume val` (single driver-level admit; mirrors `lemma_squeeze2_arm64`'s gap). The absorb side IS proven. The admit's comment cites `avx2_sc_store_block` as a precondition admit but the actual file shows 0 admits there — comment may be stale. | ~1 sprint, mirrors row 9 |
 | 11 | `Generic_keccak.Xof::*` correct (extendable-output functions) | `src/generic_keccak/xof.rs` | ⚠️ — script shows it under Generic, panic-free | ~1 session to surface ensures |
@@ -243,9 +243,13 @@ the SIMD backends, and the structural fix to `lemma_theta_rho_to_spec`.
    (row 1) — generic version is parameterised by `T: KeccakItem`, so
    the surfacing requires either per-backend wrapper methods or a
    generic ensures conditional on the type parameters. ~1 session.
-5. **Per-block squeeze ensures** (row 8) — surface the per-block
-   functional equivalence so callers don't need to reason through the
-   composition manually.
+5. **Backfill Rust-side per-block ensures** (row 8) — the F\*
+   equivalence lemmas already exist in
+   `EquivImplSpec.Sponge.Portable.SqueezeAPI.fst` (added 2026-04-30
+   evening). Surface them as `#[hax_lib::ensures]` on the Rust
+   methods so `verification_status.md` reflects the proof state.
+   Gated on a clean re-extraction window (R7 conflict with the
+   parallel AVX2 effort that owns several files).
 6. **`hash()` dispatcher correctness** (`lib.rs::hash`) —
    match-based ensures over Algorithm enum; not addressed in this
    sprint due to match-based ensures complexity.
