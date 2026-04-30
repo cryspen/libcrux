@@ -79,10 +79,14 @@ Hacspec / spec:
   bridging Hacspec semantics to per-lane post predicates.
 - `Spec.Intrinsics.fst`, `Spec.MLDSA.Math.fst`, `Spec.MLDSA.Ntt.fst`.
 
-## Pre-budgeted admits (23 modules, intentionally NOT verified yet)
+## Pre-budgeted admits (20 modules, intentionally NOT verified yet)
 
-Listed in `proofs/fstar/extraction/Makefile`'s `ADMIT_MODULES`
-filter (i.e., everything not in `VERIFIED_MODULES`).
+Listed explicitly in `proofs/fstar/extraction/Makefile`'s
+`ADMIT_MODULES` allowlist (mirroring `libcrux-ml-kem`'s structure
+since 2026-04-30).  Every other `.fst` in the extraction tree is
+verified by full SMT — newly-extracted files therefore default to
+verified, forcing an explicit Makefile entry to admit.  Goal: drive
+this list to zero.
 
 User-facing API wrappers (12):
 - `Libcrux_ml_dsa.Ml_dsa_{44,65,87}_.fst` and the
@@ -94,10 +98,6 @@ These are the public entry points (`generate_key_pair`, `sign`,
 top-level functional-correctness specs that don't exist yet.
 **Stretch goal** for a future sprint.
 
-Type-level glue (3):
-- `Libcrux_ml_dsa.Constants.Ml_dsa_{44,65,87}_.fst` — per-parameter
-  set constant collections.  Just consts; should verify trivially.
-
 Sample dispatchers (4):
 - `Libcrux_ml_dsa.Samplex4.{Avx2,Neon,Portable}.fst`,
   `Libcrux_ml_dsa.Samplex4.fst` — X4-parallel matrix sampling.
@@ -106,13 +106,24 @@ Sample dispatchers (4):
 
 AVX2 rejection sample shuffle table + samplers (3):
 - `Simd.Avx2.Rejection_sample.{Less_than_eta,Less_than_field_modulus,Shuffle_table}.fst`.
-- The shuffle table is pure data; the samplers are admit-only
-  pending bit-vec body proofs (similar shape to the Step 13 Track A
-  AVX2 closures).
+- The shuffle table is pure data, but its `is_bit_set` helper does
+  `1 << bit_position` with `bit_position: u8` — F* needs a
+  `bit_position < bits USIZE` refinement that's not in the extracted
+  source.  Source-side fix: add a `requires(bit_position < 64)`.
+- The samplers are admit-only pending bit-vec body proofs (similar
+  shape to the Step 13 Track A AVX2 closures).
 
 Spec dispatcher (1):
 - `Libcrux_ml_dsa.Specs.Simd.Portable.Sample.fst` — internal spec
-  helper; admit-only.
+  helper.  `rejection_sample_*_post` references
+  `Spec.MLDSA.Math.rejection_sample_field_modulus` whose
+  randomness-length precondition is not yet bridged in the
+  extracted post.
+
+Recently-promoted (no longer admitted):
+- `Libcrux_ml_dsa.Constants.Ml_dsa_{44,65,87}_.fst` — promoted
+  2026-04-30 (Session B follow-up).  Pure const definitions; verify
+  trivially with no source change.
 
 ## Outstanding admits (within VERIFIED modules)
 

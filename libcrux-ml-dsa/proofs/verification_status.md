@@ -36,13 +36,13 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | samplex4          |    1 |   7 |   7 |     |   0 |    0 |      0 |       0 |
 |            | pre_hash          |    1 |   9 |   0 |     |   7 |    2 |      0 |       0 |
 |            | hash_functions    |    1 |  79 |  79 |     |   0 |    0 |      0 |       0 |
-|            | encoding          |    6 |  45 |   3 |     |  33 |    7 |      2 |       0 |
+|            | encoding          |    6 |  45 |   2 |     |  34 |    7 |      2 |       0 |
 |            | ml_dsa_generic    |    4 |  41 |  41 |     |   0 |    0 |      0 |       0 |
 |            | ml_dsa_*          |    3 |  46 |  46 |     |   0 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | simd/traits       |    2 |  33 |   0 |     |   6 |   15 |      4 |       8 |
 |            | simd/tests        |    1 |   6 |   0 |   6 |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **31** | **348** | **192** | **6** | **93** | **31** | **18** |   **8** |
+|            | **Generic total** | **31** | **348** | **191** | **6** | **94** | **31** | **18** |   **8** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | vector_type       |    1 |   3 |   0 |     |   3 |    0 |      0 |       0 |
 |            | arithmetic        |    1 |  21 |   0 |     |   2 |    3 |      1 |      15 |
@@ -66,10 +66,10 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 - **Total modules**: 58
 - **Total functions**: 577
-- **Lax** (admitted): 222 (38.5%)
+- **Lax** (admitted): 221 (38.3%)
 - **Unverified** (not extracted): 6 (1.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 349 (60.5%)
-  - Panic-free only (no further proof): 116 (20.1%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 350 (60.7%)
+  - Panic-free only (no further proof): 117 (20.3%)
   - Math (non-trivial ensures, no bounds/spec match): 121 (21.0%)
   - Bounds (range/interval ensures): 59 (10.2%)
   - Hacspec (cites high-level spec): 53 (9.2%)
@@ -78,7 +78,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      31 |  348 | 192 |   6 |  93 |   31 |     18 |       8 |
+| Generic      |      31 |  348 | 191 |   6 |  94 |   31 |     18 |       8 |
 | Portable     |      12 |  118 |   5 |   0 |  10 |   37 |     38 |      28 |
 | Avx2         |      15 |  111 |  25 |   0 |  13 |   53 |      3 |      17 |
 
@@ -108,7 +108,6 @@ Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) in
 | Generic/sample            |   499 |
 | Generic/encoding          |    89 |
 | Generic/encoding          |     8 |
-| Generic/encoding          |    21 |
 | Generic/ml_dsa_generic    |    57 |
 | Generic/ml_dsa_generic    |   134 |
 | Generic/ml_dsa_generic    |   364 |
