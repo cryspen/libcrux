@@ -40,7 +40,12 @@ pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
 #[hax_lib::ensures(|_| fstar!(r#"
     (forall (i:nat). i < 32 ==>
         Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-            (i0._super_i2.f_repr (Seq.index ${re}_future.f_simd_units i)))"#))]
+            (i0._super_i2.f_repr (Seq.index ${re}_future.f_simd_units i))) /\
+    (forall (i:nat). i < 32 ==>
+        Spec.Utils.forall8 (fun (l: nat{l < 8}) ->
+          Libcrux_ml_dsa.Simd.Traits.Specs.reduce_lane_post
+            (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) l)
+            (Seq.index (i0._super_i2.f_repr (Seq.index ${re}_future.f_simd_units i)) l)))"#))]
 pub(crate) fn reduce<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
     SIMDUnit::reduce(&mut re.simd_units);
 }
