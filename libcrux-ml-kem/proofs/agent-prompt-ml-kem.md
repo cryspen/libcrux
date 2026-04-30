@@ -133,11 +133,18 @@ convention design open.  Two candidate resolutions:
   post-mutation result — usually false.  Audit confirms only one
   occurrence (now fixed); guard against re-introducing it.
 
-  **AP-8 (NEW, this session)**: bumping `--z3rlimit` past 800 to
-  push through a Z3 wall.  Prohibited (`feedback_rlimit_cap_800`).
-  Z3 perf at high rlimit is non-monotone — proofs flip pass/fail.
-  When you hit a wall, factor the lemma, opacify, drive-to-the-top,
-  or accept lax.  Never bump.
+  **AP-8 (NEW, this session, REINFORCED 2026-04-30 mid-session)**:
+  bumping `--z3rlimit` past 800 to push through a Z3 wall — and any
+  rlimit > 400 when `--split_queries always` is set.  Prohibited
+  (`feedback_rlimit_cap_800`).  Z3 perf at high rlimit is
+  non-monotone — proofs flip pass/fail across re-runs.  **High-rlimit
+  proofs are flake debt.**  When you hit a wall, in order: (1)
+  targeted `reveal_opaque (\`%P) (P args)` (Rule SD4); (2) factor a
+  lemma to module scope; (3) `--split_queries always` + lower
+  per-query rlimit; (4) drive-to-the-top spike; (5) accept
+  `verification_status(lax)` and un-lax consumers.  Never bump.
+  When TOUCHING legacy code with rlimit > 800 (or > 400 under split),
+  REDUCE it in the same commit — don't preserve the flake.
 
 ## Hard rules
 

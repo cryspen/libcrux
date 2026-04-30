@@ -30,7 +30,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | lib               |    1 |   3 |   0 |   3 |   0 |    0 |      0 |       0 |
 |            | pqcp              |    1 |  16 |   0 |  16 |   0 |    0 |      0 |       0 |
 |            | hash_functions    |    1 |  49 |   0 |     |  21 |    0 |      0 |      28 |
-|            | ind_cpa           |    1 |  21 |  21 |     |   0 |    0 |      0 |       0 |
+|            | ind_cpa           |    1 |  21 |  16 |     |   2 |    1 |      0 |       2 |
 |            | ind_cca           |    1 |  27 |   0 |     |  13 |    3 |      0 |      11 |
 |            | instantiations    |    2 |  40 |   0 |     |  40 |    0 |      0 |       0 |
 |            | multiplexing      |    2 |  20 |  12 |     |   8 |    0 |      0 |       0 |
@@ -45,7 +45,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | vector (top)      |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | vector/traits     |    1 | 104 |   0 |     |  68 |   36 |      0 |       0 |
 |            | rej_sample_table  |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **29** | **614** | **86** | **55** | **333** | **60** | **28** |  **52** |
+|            | **Generic total** | **29** | **614** | **81** | **55** | **335** | **61** | **28** |  **54** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | arithmetic        |    1 |  13 |   0 |     |   6 |    7 |      0 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   0 |    0 |     10 |       0 |
@@ -77,19 +77,19 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 - **Total modules**: 49
 - **Total functions**: 934
-- **Lax** (admitted): 183 (19.6%)
+- **Lax** (admitted): 178 (19.1%)
 - **Unverified** (not extracted): 56 (6.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 695 (74.4%)
-  - Panic-free only (no further proof): 393 (42.1%)
-  - Math (non-trivial ensures, no bounds/spec match): 160 (17.1%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 700 (74.9%)
+  - Panic-free only (no further proof): 395 (42.3%)
+  - Math (non-trivial ensures, no bounds/spec match): 161 (17.2%)
   - Bounds (range/interval ensures): 40 (4.3%)
-  - Hacspec (cites high-level spec): 102 (10.9%)
+  - Hacspec (cites high-level spec): 104 (11.1%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      29 |  614 |  86 |  55 | 333 |   60 |     28 |      52 |
+| Generic      |      29 |  614 |  81 |  55 | 335 |   61 |     28 |      54 |
 | Portable     |       7 |  121 |   4 |   0 |  36 |   44 |     10 |      27 |
 | Avx2         |       6 |  116 |  11 |   0 |  24 |   56 |      2 |      23 |
 | Neon         |       7 |   83 |  82 |   1 |   0 |    0 |      0 |       0 |

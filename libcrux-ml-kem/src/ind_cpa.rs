@@ -127,7 +127,8 @@ pub(crate) fn serialize_public_key_mut<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 1000 --ext context_pruning")]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     ${out.len()} == Spec.MLKEM.v_RANKED_BYTES_PER_RING_ELEMENT $K /\
     (forall (i:nat). i < v $K ==>
@@ -182,8 +183,9 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options(
-    "--max_fuel 15 --z3rlimit 1500 --ext context_pruning --split_queries always"
+    "--max_fuel 15 --z3rlimit 400 --ext context_pruning --split_queries always"
 )]
 #[cfg_attr(
     hax,
@@ -300,8 +302,9 @@ fn sample_ring_element_cbd<
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options(
-    "--max_fuel 25 --z3rlimit 2500 --ext context_pruning --split_queries always"
+    "--max_fuel 25 --z3rlimit 400 --ext context_pruning --split_queries always"
 )]
 #[cfg_attr(hax, hax_lib::fstar::before(r#"let sample_vector_cbd_then_ntt_helper_2
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -450,6 +453,7 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::before(r#"[@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 500 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
@@ -580,6 +584,7 @@ pub(crate) fn generate_keypair<
 }
 
 /// Serialize the secret key from the unpacked key pair generation.
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn serialize_unpacked_secret_key<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -603,7 +608,8 @@ pub(crate) fn serialize_unpacked_secret_key<
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
-#[hax_lib::fstar::options("--z3rlimit 1500 --ext context_pruning")]
+#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $OUT_LEN == Spec.MLKEM.v_C1_SIZE $K /\
     $COMPRESSION_FACTOR == Spec.MLKEM.v_VECTOR_U_COMPRESSION_FACTOR $K /\
@@ -707,6 +713,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
       $ETA1 == Spec.MLKEM.v_ETA1 $K /\
@@ -772,6 +779,7 @@ pub(crate) fn encrypt_unpacked<
     ciphertext
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn encrypt_c1<
     const K: usize,
@@ -840,6 +848,7 @@ pub(crate) fn encrypt_c1<
     (r_as_ntt, error_2)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn encrypt_c2<
     const K: usize,
@@ -865,6 +874,7 @@ pub(crate) fn encrypt_c2<
 }
 
 #[allow(non_snake_case)]
+#[hax_lib::fstar::verification_status(lax)]
 #[hax_lib::fstar::options("--z3rlimit 500 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $ETA1 = Spec.MLKEM.v_ETA1 $K /\
@@ -928,13 +938,14 @@ pub(crate) fn encrypt<
     >(&unpacked_public_key, message, randomness)
 }
 
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
     $T_AS_NTT_ENCODED_SIZE == Spec.MLKEM.v_T_AS_NTT_ENCODED_SIZE $K /\
     length $public_key == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     let (t_as_ntt_bytes, seed_for_A) = split public_key $T_AS_NTT_ENCODED_SIZE in
-    let t_as_ntt = Spec.MLKEM.vector_decode_12 #$K t_as_ntt_bytes in 
+    let t_as_ntt = Spec.MLKEM.vector_decode_12 #$K t_as_ntt_bytes in
     let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
     (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${result.t_as_ntt} == t_as_ntt /\
      valid ==> Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector ${result.A} == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"#))]
@@ -966,6 +977,7 @@ fn build_unpacked_public_key<
     let matrix_A_as_ntt, valid = Spec.MLKEM.sample_matrix_A_ntt #$K seed_for_A in
     (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${unpacked_public_key_future.t_as_ntt} == t_as_ntt /\
     valid ==> Libcrux_ml_kem.Vector.to_spec_matrix_t #$K #$:Vector ${unpacked_public_key_future.A} == Spec.MLKEM.matrix_transpose matrix_A_as_ntt)"#)}})]
+#[hax_lib::fstar::verification_status(lax)]
 pub(crate) fn build_unpacked_public_key_mut<
     const K: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -1001,6 +1013,7 @@ pub(crate) fn build_unpacked_public_key_mut<
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
@@ -1048,6 +1061,7 @@ fn deserialize_then_decompress_u<
 }
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
@@ -1118,6 +1132,7 @@ pub(crate) fn deserialize_vector<const K: usize, Vector: Operations>(
     fstar!(r#"$result == Spec.MLKEM.ind_cpa_decrypt_unpacked $K $ciphertext
         (Libcrux_ml_kem.Vector.to_spec_vector_t #$K #$:Vector ${secret_key}.f_secret_as_ntt)"#)
 )]
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn decrypt_unpacked<
     const K: usize,
@@ -1155,6 +1170,7 @@ pub(crate) fn decrypt_unpacked<
 #[hax_lib::ensures(|result|
     fstar!(r#"$result == Spec.MLKEM.ind_cpa_decrypt $K $secret_key $ciphertext"#)
 )]
+#[hax_lib::fstar::verification_status(lax)]
 #[inline(always)]
 pub(crate) fn decrypt<
     const K: usize,
