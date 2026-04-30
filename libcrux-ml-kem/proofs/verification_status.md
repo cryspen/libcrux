@@ -37,7 +37,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | incremental       |    2 |  45 |  45 |     |   0 |    0 |      0 |       0 |
 |            | polynomial        |    1 |  49 |   0 |     |  25 |    2 |     18 |       4 |
 |            | invert_ntt        |    1 |   6 |   2 |     |   0 |    0 |      0 |       4 |
-|            | ntt               |    1 |  11 |   0 |     |   3 |    0 |      8 |       0 |
+|            | ntt               |    1 |  11 |   0 |     |   3 |    0 |      7 |       1 |
 |            | mlkem*            |    4 | 134 |   0 |  36 |  98 |    0 |      0 |       0 |
 |            | matrix            |    1 |   5 |   0 |     |   0 |    0 |      5 |       0 |
 |            | serialize         |    1 |  25 |   4 |     |  20 |    1 |      0 |       0 |
@@ -45,7 +45,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | vector (top)      |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | vector/traits     |    1 | 104 |   0 |     |  68 |   36 |      0 |       0 |
 |            | rej_sample_table  |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **29** | **614** | **86** | **55** | **333** | **60** | **31** |  **49** |
+|            | **Generic total** | **29** | **614** | **86** | **55** | **333** | **60** | **30** |  **50** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | arithmetic        |    1 |  13 |   0 |     |   6 |    7 |      0 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   0 |    0 |     10 |       0 |
@@ -82,14 +82,14 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 - **Panic-safe** (PF + Math + Bounds + Hacspec): 695 (74.4%)
   - Panic-free only (no further proof): 393 (42.1%)
   - Math (non-trivial ensures, no bounds/spec match): 160 (17.1%)
-  - Bounds (range/interval ensures): 43 (4.6%)
-  - Hacspec (cites high-level spec): 99 (10.6%)
+  - Bounds (range/interval ensures): 42 (4.5%)
+  - Hacspec (cites high-level spec): 100 (10.7%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      29 |  614 |  86 |  55 | 333 |   60 |     31 |      49 |
+| Generic      |      29 |  614 |  86 |  55 | 333 |   60 |     30 |      50 |
 | Portable     |       7 |  121 |   4 |   0 |  36 |   44 |     10 |      27 |
 | Avx2         |       6 |  116 |  11 |   0 |  24 |   56 |      2 |      23 |
 | Neon         |       7 |   83 |  82 |   1 |   0 |    0 |      0 |       0 |
