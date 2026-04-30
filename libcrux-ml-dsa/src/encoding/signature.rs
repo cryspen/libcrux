@@ -3,8 +3,69 @@ use crate::{
     simd::traits::Operations, VerificationError,
 };
 
+// `count_row_ones`: number of `1`-entries in a single 256-element row
+// (the `[i32; 256]` hint row produced by `make_hint`).  Recursive,
+// purely spec-level — used by `count_total_ones` below to bound the
+// running `true_hints_seen` accumulator in `serialize`.
+//
+// `count_total_ones`: number of `1`-entries summed across every row
+// of `hint`.  The caller (`sign_internal`) ensures the running count
+// returned by `make_hint` is `<= MAX_ONES_IN_HINT` before invoking
+// `serialize`; we lift that into a precondition here so the inner
+// hint-pack loop body can show panic-freedom on
+// `signature[offset + true_hints_seen]`.
+//
+// Workaround for the macro-expansion ban on `hax_lib::fstar!` at item
+// position: attach the spec-helper definitions to a hax-only dummy
+// function via `fstar::before`, mirroring the
+// `_keccak_state_impl_opts` pattern in
+// `crates/algorithms/sha3/src/generic_keccak/portable.rs`.
+#[hax_lib::fstar::before(
+    r#"
+let rec count_row_ones (row: t_Array i32 (mk_usize 256)) (j: nat{j <= 256})
+  : Tot nat (decreases j) =
+  if j = 0 then 0
+  else
+    let prev = count_row_ones row (j - 1) in
+    if Seq.index row (j - 1) = mk_i32 1 then prev + 1 else prev
+
+let rec count_total_ones (hint: t_Slice (t_Array i32 (mk_usize 256)))
+  : Tot nat (decreases (Seq.length hint)) =
+  if Seq.length hint = 0 then 0
+  else
+    let row = Seq.index hint 0 in
+    count_row_ones row 256 + count_total_ones (Seq.slice hint 1 (Seq.length hint))
+"#
+)]
+fn _signature_serialize_spec_helpers() {}
+
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --fuel 1 --ifuel 1 --split_queries always""#)]
+#[hax_lib::fstar::after(r#"#pop-options"#)]
+// FIPS 204 §7.2 Algorithm 20 (sigEncode) sizing requirement: the
+// serialized signature is `commitment_hash || signer_response || hint`,
+// with `|signer_response| = columns_in_a * gamma1_ring_element_size`
+// and `|hint| = max_ones_in_hint + rows_in_a`.  `gamma1_exponent ∈
+// {17, 19}` is required by the inner `gamma1::serialize` callee.
+//
+// `count_total_ones hint <= v max_ones_in_hint` is the
+// FIPS-204-mandated bound on the hint vector's Hamming weight.  The
+// caller (`sign_internal`) returns `Err(RejectionSamplingError)`
+// rather than calling `serialize` when this bound is violated, so
+// expressing it as a precondition here is sound.
+#[hax_lib::requires(fstar!(r#"
+    (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+    v $gamma1_ring_element_size == 32 * (1 + v $gamma1_exponent) /\
+    Seq.length $hint == v $rows_in_a /\
+    Seq.length $signature ==
+        v $commitment_hash_size +
+        v $gamma1_ring_element_size * v $columns_in_a +
+        v $max_ones_in_hint + v $rows_in_a /\
+    Seq.length $commitment_hash == v $commitment_hash_size /\
+    Seq.length $signer_response == v $columns_in_a /\
+    count_total_ones $hint <= v $max_ones_in_hint /\
+    v $max_ones_in_hint + v $rows_in_a <= max_usize"#))]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     commitment_hash: &[u8],
     signer_response: &[PolynomialRingElement<SIMDUnit>],
@@ -17,6 +78,32 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     max_ones_in_hint: usize,
     signature: &mut [u8],
 ) {
+    // Body admit retained pending two distinct sub-proof obligations
+    // that this scaffolding does not yet discharge (left to a follow-up
+    // session — see `proofs/outstanding-admits.md` "Signature.serialize"):
+    //
+    //   1. The inner `gamma1::serialize` call requires a polynomial-
+    //      element bound on each `signer_response[i].simd_units[j]`
+    //      (`is_pos_array_opaque (pow2 gamma1_exponent - 1) ...`).  This
+    //      is established by the caller (`sign_internal`) via the
+    //      sample-in-ball / mask flow but is not yet exposed as a
+    //      function precondition.  Adding it would extend the `requires`
+    //      with a `forall i. forall j. is_pos_array_opaque ...` clause
+    //      mirroring `gamma1::serialize`'s own pre.
+    //
+    //   2. The hint-pack inner loop's `signature[offset + true_hints_seen]
+    //      = j as u8` requires `v true_hints_seen < v max_ones_in_hint`.
+    //      The `count_total_ones $hint <= v $max_ones_in_hint`
+    //      precondition (above) plus a per-row monotonicity invariant
+    //      using `count_row_ones` would establish this.  The invariant
+    //      shape is documented in the `proofs/post-merge-handoff.md`
+    //      Session B note.  A previous attempt at adding the loop
+    //      invariants (commit history of this branch) showed that
+    //      defending the `count_total_ones` chain through the
+    //      fold-range step required additional auxiliary lemmas
+    //      (`lemma_count_total_ones_split`, plus a row-monotonicity
+    //      lemma) which would have to be discharged without `admit ()`
+    //      to satisfy the no-new-axioms rule.  Estimated 2-3 hr.
     hax_lib::fstar!("admit ()");
     let mut offset = 0;
 

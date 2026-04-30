@@ -268,17 +268,43 @@ these are local to the above-trait lane.
 - **File**: `src/encoding/signature.rs`
 - **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
 - **Phase added**: above-trait C.5 (`0d11b64a9`)
-- **Diagnosis**: `serialize` packs commitment_hash + per-poly
-  gamma1_serialize + hint-bit-pack with running `true_hints_seen`
-  counter and per-row written count.  Bounding the counter
-  requires a count-of-ones precondition that the caller
-  (`sign_internal`) ensures via `if ones_in_hint > MAX_ONES_IN_HINT
-  { skip }`, but expressing it in F* needs either a recursive
-  spec helper or a function-signature change.
-- **Suggested mitigation**: helper-split mirroring PR 1348's
+- **Scaffolding session** (`agent-signature-serialize` branch):
+  - Spec helpers `count_row_ones` / `count_total_ones` added via
+    `fstar::before` on a dummy `_signature_serialize_spec_helpers` fn
+    (item-context macro workaround).
+  - Precondition strengthened with: `count_total_ones $hint <=
+    v $max_ones_in_hint`, signature/hint/commitment_hash/signer_response
+    length identities, `gamma1_exponent ∈ {17, 19}`, and
+    `gamma1_ring_element_size == 32 * (1 + v $gamma1_exponent)`.
+  - Body admit retained — see two sub-obligations below.
+- **Remaining sub-obligation 1** — `gamma1::serialize` precondition:
+  the inner call requires
+    `forall (j: nat). j < 32 ==>
+       Libcrux_ml_dsa.Simd.Traits.Specs.is_pos_array_opaque
+         (pow2 (v $gamma1_exponent) - 1)
+         (i0._super_i2.f_repr (Seq.index re.f_simd_units j))`
+  for each `re = signer_response[i]`.  This is a polynomial-element
+  bound that the caller (`sign_internal`'s sample-in-ball/mask flow)
+  establishes but is not yet exposed as a `serialize` precondition.
+  Adding it requires a `forall i:nat. i < v columns_in_a ==> forall
+  j:nat. j < 32 ==> ...` clause + matching `loop_invariant`.
+- **Remaining sub-obligation 2** — `true_hints_seen` panic-freedom:
+  `signature[offset + true_hints_seen] = j as u8` requires
+  `v true_hints_seen < v max_ones_in_hint`.  The
+  `count_total_ones $hint <= v $max_ones_in_hint` precondition plus
+  `count_row_ones`-based per-row monotonicity invariants would
+  establish this, but the proof needs auxiliary lemmas
+  (`lemma_count_total_ones_split` over the `Seq.slice hint i ...`
+  cons split + per-row `count_row_ones` monotonicity) which would
+  have to be discharged without `admit ()`.
+- **Suggested mitigation**: same helper-split mirror of PR 1348's
   `deserialize` closure — extract the hint-pack inner loop into
-  `write_signature_hints` and carry the count bound through it.
-  See post-merge-handoff Session B option list.
+  `write_signature_hints` carrying both the polynomial bound (1) and
+  the count bound (2).  Estimated: 2-3 hr if both lemmas can be
+  expressed via standard `Seq` lemmas; longer if the `is_pos_array_opaque`
+  closure under `simd_units` indexing turns out to need a Polynomial
+  trait-method ensures strengthening (similar shape to the Step 13
+  Track A bridges).
 
 `Encoding.Signature.deserialize` was closed in PR 1348 (`9c83b0279`).
 
