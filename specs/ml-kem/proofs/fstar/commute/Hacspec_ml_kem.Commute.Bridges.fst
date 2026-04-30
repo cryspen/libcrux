@@ -1011,6 +1011,150 @@ let lemma_ntt_layer_2_step_to_hacspec
 
 #pop-options
 
+(*** Phase 7b — Forward NTT layer 3 hacspec bridge ***)
+
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
+
+(* Per-lane unfold for `N.ntt_layer_n (mk_usize 16) p (mk_usize 8) zs`
+   at concrete lane `i ∈ [0, 16)`.  Mirror of
+   `lemma_ntt_inverse_layer_n_16_8_lane` for forward butterfly.
+   Layer-3 form: 1 zeta, partner stride 8, group selector always 0
+   (since `2 * len = 16` ≥ N). *)
+let lemma_ntt_layer_n_16_8_lane
+    (p: t_Array P.t_FieldElement (mk_usize 16))
+    (zs: t_Array P.t_FieldElement (mk_usize 1))
+    (i: nat {i < 16}) :
+    Lemma
+      (let result = N.ntt_layer_n (mk_usize 16) p (mk_usize 8)
+                                    (Rust_primitives.unsize zs) in
+       (i < 8 ==>
+         i + 8 < 16 /\
+         Seq.index result i ==
+           (N.butterfly (Seq.index zs 0)
+                         (Seq.index p i)
+                         (Seq.index p (i + 8)))._1) /\
+       (i >= 8 ==>
+         i >= 8 /\
+         Seq.index result i ==
+           (N.butterfly (Seq.index zs 0)
+                         (Seq.index p (i - 8))
+                         (Seq.index p i))._2))
+  = let result = N.ntt_layer_n (mk_usize 16) p (mk_usize 8)
+                                 (Rust_primitives.unsize zs) in
+    P.createi_lemma #P.t_FieldElement (mk_usize 16)
+      #(usize -> P.t_FieldElement)
+      (fun (j: usize { j <. mk_usize 16 }) ->
+        let group:usize = j /! (mk_usize 2 *! mk_usize 8 <: usize) in
+        let idx:usize = j %! (mk_usize 2 *! mk_usize 8 <: usize) in
+        (if idx <. mk_usize 8 then
+          (N.butterfly (Seq.index zs (v group))
+                        (Seq.index p (v j))
+                        (Seq.index p (v j + 8)))._1
+        else
+          (N.butterfly (Seq.index zs (v group))
+                        (Seq.index p (v j - 8))
+                        (Seq.index p (v j)))._2)
+        <: P.t_FieldElement)
+      (sz i)
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Per-lane bridge for `f_ntt_layer_3_step`: produces the per-lane FE
+   equation `out_fe.[i] == rhs.[i]` from the trait branch post and
+   the `lemma_ntt_layer_n_16_8_lane` unfold helper.
+
+   Layer-3 lane → branch mapping (same as inverse): lane `i ∈ [0, 16)`
+   belongs to branch `b = (i mod 8) / 2`.  Branch `b` touches the
+   four lanes `(2b, 2b+1, 2b+8, 2b+9) = (i1, i2, j1, j2)`.  Hacspec
+   lane `i`:
+     - if i < 8 (low half): `result[i] = vec[i] + z * vec[i+8]` —
+       matches `N.butterfly._1` at `(i, i+8)`.  Lane is `i1` if `i`
+       even, `i2` if `i` odd.
+     - if i ≥ 8 (high half): `result[i] = vec[i-8] - z * vec[i]` —
+       matches `N.butterfly._2` at `(i-8, i)`.  Lane is `j1` if `i`
+       even, `j2` if `i` odd.
+   Single zeta for the whole vector — `zetas_1_lane` collapses
+   `Seq.index zs 0` to `mont_i16_to_spec_fe zeta0`.
+
+   Mirror of `lemma_inv_ntt_layer_3_step_lane_bridge`; only the
+   per-lane FE equation differs (forward butterfly's `z * b`
+   asymmetry vs inverse's `(a - b) * z` upper-half). *)
+private
+let lemma_ntt_layer_3_step_lane_bridge
+    (in_arr out_arr: t_Array i16 (mk_usize 16))
+    (zeta0: i16)
+    (i: nat {i < 16}) :
+  Lemma
+    (requires
+      TS.ntt_layer_3_step_post in_arr zeta0 out_arr)
+    (ensures
+      (let zs = zetas_1 zeta0 in
+       let p_fe = mont_i16_to_spec_array in_arr in
+       let r_fe = mont_i16_to_spec_array out_arr in
+       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 8)
+                                (Rust_primitives.unsize zs) in
+       Seq.index r_fe i == Seq.index rhs i))
+  = let zs = zetas_1 zeta0 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    let b : nat = (i % 8) / 2 in
+    assert (b < 4);
+    assert (Spec.Utils.forall4 (fun (bb: nat{bb < 4}) ->
+              TS.ntt_layer_3_step_branch_post bb in_arr zeta0 out_arr));
+    assert (TS.ntt_layer_3_step_branch_post b in_arr zeta0 out_arr);
+    reveal_opaque (`%TS.ntt_layer_3_step_branch_post)
+                  (TS.ntt_layer_3_step_branch_post b in_arr zeta0 out_arr);
+    lemma_ntt_layer_n_16_8_lane p_fe zs i;
+    zetas_1_lane zeta0 (sz 0);
+    mont_array_lane out_arr (sz i);
+    mont_array_lane in_arr (sz i);
+    if i < 8 then begin
+      assert (i + 8 < 16);
+      mont_array_lane in_arr (sz (i + 8))
+    end else begin
+      assert (i >= 8);
+      mont_array_lane in_arr (sz (i - 8))
+    end
+
+#pop-options
+
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+
+(* Per-vector hacspec bridge for `f_ntt_layer_3_step`.
+
+   Mirror of `lemma_ntt_layer_1_step_to_hacspec` for layer 3.
+   Composes the 16 per-lane bridges via `Classical.forall_intro` +
+   `Seq.lemma_eq_intro`. *)
+let lemma_ntt_layer_3_step_to_hacspec
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (vec: vV) (zeta0: i16) :
+  Lemma
+    (requires TS.ntt_layer_3_step_pre (T.f_repr vec) zeta0)
+    (ensures
+       (let r = T.f_ntt_layer_3_step vec zeta0 in
+        mont_i16_to_spec_array (T.f_repr r) ==
+          N.ntt_layer_n (mk_usize 16)
+            (mont_i16_to_spec_array (T.f_repr vec))
+            (mk_usize 8)
+            (Rust_primitives.unsize (zetas_1 zeta0))))
+  = let r = T.f_ntt_layer_3_step vec zeta0 in
+    let in_arr = T.f_repr vec in
+    let out_arr = T.f_repr r in
+    let zs = zetas_1 zeta0 in
+    let p_fe = mont_i16_to_spec_array in_arr in
+    let r_fe = mont_i16_to_spec_array out_arr in
+    let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 8)
+                             (Rust_primitives.unsize zs) in
+    assert (TS.ntt_layer_3_step_post in_arr zeta0 out_arr);
+    let aux (j: nat) : Lemma (j < 16 ==> Seq.index r_fe j == Seq.index rhs j)
+      = if j < 16 then
+          lemma_ntt_layer_3_step_lane_bridge in_arr out_arr zeta0 j
+    in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro r_fe rhs
+
+#pop-options
 
 (*** Phase 7a (track A) — Layer 4_plus chunk-pair hacspec bridge ***)
 

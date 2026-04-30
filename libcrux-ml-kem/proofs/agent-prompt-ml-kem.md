@@ -42,16 +42,16 @@ they unlock dozens of functions at a stroke.
   **2. Forward NTT trait-opacification (rows 1, 2, 8 of milestone
      doc)** — bounds-only ensures already exist; the hacspec ensures
      are commented out at `src/ntt.rs:277, 318`.
-     **Updated 2026-04-30**: layers 1 (commit `c32653051`, 349 s)
-     and 2 (commit `744b15937`, bridge 191 s + impl 311 s) done via
-     mirror of inverse pattern.  Layer 2 added the per-vector
-     bridge `lemma_ntt_layer_2_step_to_hacspec` to
-     `Hacspec_ml_kem.Commute.Bridges.fst` (282 LoC).
-     For layers 3, 7 the per-vector Bridges lemma
-     `lemma_ntt_layer_<N>_step_to_hacspec` does NOT exist — only
-     chunk-level `lemma_ntt_layer_<N>_step_chunk_commutes` in
-     `Hacspec_ml_kem.Commute.Chunk.fst`. **Spec-side authoring is the
-     blocker**, not impl-side ensures wiring.
+     **Updated 2026-04-30**: layers 1 (`c32653051`, 349 s),
+     2 (`744b15937`, bridge 191 s + impl 311 s), and 3 (this session,
+     bridge ~150 s + impl 302 s) done via mirror of inverse pattern.
+     Bridges added to `Hacspec_ml_kem.Commute.Bridges.fst`:
+     `lemma_ntt_layer_2_step_to_hacspec` (282 LoC) and
+     `lemma_ntt_layer_3_step_to_hacspec` (152 LoC).
+     For layer 7 the per-vector Bridges lemma does NOT exist — and
+     the structure is novel (single-zeta, between-chunk butterfly).
+     Layer 4_plus is multi-step (mirror inverse layer 4_plus's
+     pattern). **Spec-side authoring + design needed for 4_plus/7**.
      Reference commits for the inverse-NTT pattern:
        - layer 1: `8358b1093` (impl ensures), Bridges lemma at
          `Hacspec_ml_kem.Commute.Bridges.fst:150`.
