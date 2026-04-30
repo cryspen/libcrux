@@ -22,37 +22,52 @@ The first three items are **highest-leverage / lowest-risk** and should
 go before any spec/proof work on bodies. They're "force multipliers" —
 they unlock dozens of functions at a stroke.
 
-  **0. mlkem.rs extraction** — currently filtered out of hax (`-i
-     -libcrux_ml_kem::mlkem::**` in `hax.py` somewhere). Find the
-     filter rule and remove it. Validates: `python3 hax.py extract`
-     produces `Libcrux_ml_kem.Mlkem.fst`. Once extracted, the 36 fns
-     in `src/mlkem.rs` move from Unverified to at-least-PF, and the
-     KEM API milestones (rows 19-25 of milestone doc) become
-     addressable. ~1 session.
+  **0. mlkem.rs extraction — DONE 2026-04-30 (commit `86c48def7`).**
+     Was: filtered out via `mlkem.rs`'s `#![cfg(feature = "incremental")]`
+     gate combined with hax.py only enabling `simd128,simd256`.
+     Fix: added `incremental` to features + `-i` filters for the
+     runtime-dispatch alloc submodules + post-extract delete of
+     `.Alloc.fst` / `.Incremental.Rand.fst` files (Box<dyn Keys> and
+     try_fill_bytes lack F* models).  Net: −57 Unv, +57 Lax (admitted
+     pending row 19-25 PF work).  See commit message for details.
 
-  **1. `Ind_cpa.fst` admit-list audit** — currently in
-     `proofs/fstar/extraction/Makefile` ADMIT_MODULES, so all 21 fns
-     show as Lax. Per the cross-audit, ML-DSA gained −119 lax in one
-     pass by tightening its VERIFIED_MODULES list — analogous discipline
-     here. Read the actual fn-level ensures in `src/ind_cpa.rs`; if any
-     fns already have proper ensures, take the module off the admit
-     list and let per-fn counts surface the real proof state.
-     Closes (or partially closes) milestone row 27. ~1-2 sessions.
+  **1. `Ind_cpa.fst` admit-list audit — ATTEMPTED 2026-04-30
+     (commit `c04830b8a`).**  Bulk un-admit fails: `serialize_vector`
+     (src/ind_cpa.rs:139, F* line 25-108) hits "incomplete quantifiers"
+     at the line-105 assertion after 202 s with `--z3rlimit 1000`.
+     Other 18 fns may verify; needs per-fn `verification_status(lax)`
+     on serialize_vector then re-attempt the bulk un-admit.  Re-added
+     to ADMIT_MODULES for now.  ~1-2 sessions remaining.
 
   **2. Forward NTT trait-opacification (rows 1, 2, 8 of milestone
      doc)** — bounds-only ensures already exist; the hacspec ensures
-     are commented out at `src/ntt.rs:277, 318`. Apply the SAME pattern
-     that worked for inverse NTT layers 1 and 3 (commit `b7b49c358`):
-       - Add `Hacspec_ml_kem.Ntt.ntt_at_layer_n` citations to per-layer
-         ensures (mirror the `lemma_inv_ntt_layer_<N>_step_to_hacspec`
-         family).
-       - Per-branch `ntt_layer_*_step_branch_post` predicates already
-         exist in `traits.rs:313-460` — so the trait posts are wired.
-         The gap is at the IMPL function ensures.
-       - Once the trait-level posts cite hacspec, the Portable and
-         AVX2 backends propagate for free (same as the +27 / +23
-         hacspec gain on the inverse direction). High leverage.
-     ~1 sprint. Pick layers 1, 2, 7 first (most-used in callers).
+     are commented out at `src/ntt.rs:277, 318`.
+     **Updated 2026-04-30**: layer 1 done in commit `c32653051`
+     (mirror of inverse layer 1 commit `8358b1093`, verified 349 s).
+     For layers 2, 3, 7 the per-vector Bridges lemma
+     `lemma_ntt_layer_<N>_step_to_hacspec` does NOT exist — only
+     chunk-level `lemma_ntt_layer_<N>_step_chunk_commutes` in
+     `Hacspec_ml_kem.Commute.Chunk.fst`. **Spec-side authoring is the
+     blocker**, not impl-side ensures wiring.
+     Reference commits for the inverse-NTT pattern:
+       - layer 1: `8358b1093` (impl ensures), Bridges lemma at
+         `Hacspec_ml_kem.Commute.Bridges.fst:150`.
+       - layer 2: `b7b49c358` (Bridges lemma) + `4672cc005`
+         (impl ensures wiring).
+       - layer 3: `fa2151ea8` (Bridges lemma) + `43c9d45d5`
+         (impl ensures wiring).
+     Workflow per layer:
+       1. Author `lemma_ntt_layer_<N>_step_to_hacspec` in
+          `Hacspec_ml_kem.Commute.Bridges.fst` (mirror inverse).
+       2. Wire impl-side ensures in `src/ntt.rs::ntt_at_layer_<N>`
+          via per-chunk loop invariant + post-loop
+          `Classical.forall_intro` (Option B).
+       3. Verify with `--z3rlimit 800 --split_queries always`.
+     Per-branch `ntt_layer_*_step_branch_post` predicates already
+     exist in `traits.rs:313-460` — trait posts wired for layers 1
+     and 2.  Layer 7 has no branch_post and no chunk_commute (it's a
+     between-chunk butterfly, structurally different — own design).
+     ~1 sprint per layer (NOT 1 sprint total); layers 2, 3 first.
 
   3. **USER-15 — `invert_ntt_montgomery` body** (row 7). Spec post is
      already in place; body has `--admit_smt_queries true`. Strategy:
