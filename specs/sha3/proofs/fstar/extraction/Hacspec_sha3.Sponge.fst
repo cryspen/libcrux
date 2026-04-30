@@ -145,7 +145,6 @@ let squeeze_state
 
 /// Absorb one full block: XOR it into the state, then apply Keccak-f.
 /// Corresponds to one iteration of the absorb loop in Algorithm 8 (step 6).
-[@@"opaque_to_smt"]
 let absorb_block (state: t_Array u64 (mk_usize 25)) (block: t_Slice u8) (rate: usize)
     : Prims.Pure (t_Array u64 (mk_usize 25))
       (requires
