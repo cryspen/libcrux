@@ -30,7 +30,7 @@
 //!   - `reseed_counter()` is always in [1, RESEED_INTERVAL + 1].
 #![no_main]
 
-use libcrux_drbg::{
+use libcrux_hmac_drbg::{
     GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, ReseedError, RESEED_INTERVAL,
 };
 use libfuzzer_sys::fuzz_target;

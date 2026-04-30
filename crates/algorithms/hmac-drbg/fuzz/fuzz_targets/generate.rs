@@ -15,7 +15,7 @@
 //!   - On success the output buffer is fully written (no uninitialised bytes leak).
 #![no_main]
 
-use libcrux_drbg::{
+use libcrux_hmac_drbg::{
     GenerateError, HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, MAX_GENERATE_BYTES,
 };
 use libfuzzer_sys::fuzz_target;

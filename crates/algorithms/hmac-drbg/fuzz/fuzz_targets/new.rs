@@ -14,7 +14,7 @@
 //!   - On success, `needs_reseed()` is false and `reseed_counter()` is 1.
 #![no_main]
 
-use libcrux_drbg::{HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, InstantiateError};
+use libcrux_hmac_drbg::{HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, InstantiateError};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {
