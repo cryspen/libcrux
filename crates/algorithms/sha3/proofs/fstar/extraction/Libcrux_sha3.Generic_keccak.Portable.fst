@@ -743,6 +743,8 @@ let squeeze
 
 #pop-options
 
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+
 let keccak1 (v_RATE: usize) (v_DELIM: u8) (input output: t_Slice u8)
     : Prims.Pure (t_Slice u8)
       (requires
@@ -752,8 +754,18 @@ let keccak1 (v_RATE: usize) (v_DELIM: u8) (input output: t_Slice u8)
       (ensures
         fun output_future ->
           let output_future:t_Slice u8 = output_future in
-          (Core_models.Slice.impl__len #u8 output_future <: usize) =.
-          (Core_models.Slice.impl__len #u8 output <: usize)) =
+          b2t
+          ((Core_models.Slice.impl__len #u8 output_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 output <: usize)
+            <:
+            bool) /\
+          (output_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 output)
+              v_RATE v_DELIM input
+            <:
+            t_Slice u8)) =
   let s:Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64 = absorb v_RATE v_DELIM input in
   let output:t_Slice u8 = squeeze v_RATE s output in
   output
+
+#pop-options

@@ -442,7 +442,13 @@ pub(crate) fn squeeze<const RATE: usize>(mut s: KeccakState<1, u64>, output: &mu
     valid_rate(RATE) &&
     output.len() < usize::MAX - 200
 )]
-#[hax_lib::ensures(|_| future(output).len() == output.len())]
+#[hax_lib::ensures(|_| (future(output).len() == output.len()).to_prop() & {
+    fstar!(r#"(output_future <: t_Slice u8) ==
+              (Hacspec_sha3.Sponge.keccak
+                 (Core_models.Slice.impl__len #u8 $output)
+                 $RATE $DELIM $input <: t_Slice u8)"#)
+})]
+#[hax_lib::fstar::options("--fuel 1 --ifuel 1 --z3rlimit 200")]
 #[inline]
 pub(crate) fn keccak1<const RATE: usize, const DELIM: u8>(input: &[u8], output: &mut [u8]) {
     let s = absorb::<RATE, DELIM>(input);

@@ -140,7 +140,18 @@ let sha224_ema (digest payload: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) =
         (28 <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (mk_usize 28) (mk_usize 144) (mk_u8 6) payload
+            <:
+            t_Slice u8)) =
   let _:Prims.unit =
     if true
     then
@@ -171,7 +182,11 @@ let sha224 (data: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) <=
         (Rust_primitives.Hax.Int.from_machine Core_models.Num.impl_u32__MAX <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 (mk_usize 28) = result in
+          (result <: t_Array u8 (mk_usize 28)) ==
+          Hacspec_sha3.Sponge.keccak (mk_usize 28) (mk_usize 144) (mk_u8 6) data) =
   let out:t_Array u8 (mk_usize 28) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 28) in
   let out:t_Array u8 (mk_usize 28) = sha224_ema out data in
   out
@@ -188,7 +203,18 @@ let sha256_ema (digest payload: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) =
         (32 <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (mk_usize 32) (mk_usize 136) (mk_u8 6) payload
+            <:
+            t_Slice u8)) =
   let _:Prims.unit =
     if true
     then
@@ -219,7 +245,11 @@ let sha256 (data: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) <=
         (Rust_primitives.Hax.Int.from_machine Core_models.Num.impl_u32__MAX <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 (mk_usize 32) = result in
+          (result <: t_Array u8 (mk_usize 32)) ==
+          Hacspec_sha3.Sponge.keccak (mk_usize 32) (mk_usize 136) (mk_u8 6) data) =
   let out:t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let out:t_Array u8 (mk_usize 32) = sha256_ema out data in
   out
@@ -236,7 +266,18 @@ let sha384_ema (digest payload: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) =
         (48 <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (mk_usize 48) (mk_usize 104) (mk_u8 6) payload
+            <:
+            t_Slice u8)) =
   let _:Prims.unit =
     if true
     then
@@ -267,7 +308,11 @@ let sha384 (data: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) <=
         (Rust_primitives.Hax.Int.from_machine Core_models.Num.impl_u32__MAX <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 (mk_usize 48) = result in
+          (result <: t_Array u8 (mk_usize 48)) ==
+          Hacspec_sha3.Sponge.keccak (mk_usize 48) (mk_usize 104) (mk_u8 6) data) =
   let out:t_Array u8 (mk_usize 48) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 48) in
   let out:t_Array u8 (mk_usize 48) = sha384_ema out data in
   out
@@ -284,7 +329,18 @@ let sha512_ema (digest payload: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) =
         (64 <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (mk_usize 64) (mk_usize 72) (mk_u8 6) payload
+            <:
+            t_Slice u8)) =
   let _:Prims.unit =
     if true
     then
@@ -315,7 +371,11 @@ let sha512 (data: t_Slice u8)
           <:
           Hax_lib.Int.t_Int) <=
         (Rust_primitives.Hax.Int.from_machine Core_models.Num.impl_u32__MAX <: Hax_lib.Int.t_Int))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 (mk_usize 64) = result in
+          (result <: t_Array u8 (mk_usize 64)) ==
+          Hacspec_sha3.Sponge.keccak (mk_usize 64) (mk_usize 72) (mk_u8 6) data) =
   let out:t_Array u8 (mk_usize 64) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 64) in
   let out:t_Array u8 (mk_usize 64) = sha512_ema out data in
   out
@@ -326,7 +386,11 @@ let sha512 (data: t_Slice u8)
 let shake128 (v_BYTES: usize) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_BYTES)
       (requires v_BYTES <. (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_BYTES = result in
+          (result <: t_Array u8 v_BYTES) ==
+          Hacspec_sha3.Sponge.keccak v_BYTES (mk_usize 168) (mk_u8 31) data) =
   let out:t_Array u8 v_BYTES = Rust_primitives.Hax.repeat (mk_u8 0) v_BYTES in
   let out:t_Array u8 v_BYTES = Libcrux_sha3.Portable.shake128 out data in
   out
@@ -338,7 +402,19 @@ let shake128_ema (out data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 out <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun out_future ->
+          let out_future:t_Slice u8 = out_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 out_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 out <: usize)
+            <:
+            bool) /\
+          (out_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 out)
+              (mk_usize 168) (mk_u8 31) data
+            <:
+            t_Slice u8)) =
   let out:t_Slice u8 = Libcrux_sha3.Portable.shake128 out data in
   out
 
@@ -348,7 +424,11 @@ let shake128_ema (out data: t_Slice u8)
 let shake256 (v_BYTES: usize) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_BYTES)
       (requires v_BYTES <. (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:t_Array u8 v_BYTES = result in
+          (result <: t_Array u8 v_BYTES) ==
+          Hacspec_sha3.Sponge.keccak v_BYTES (mk_usize 136) (mk_u8 31) data) =
   let out:t_Array u8 v_BYTES = Rust_primitives.Hax.repeat (mk_u8 0) v_BYTES in
   let out:t_Array u8 v_BYTES = Libcrux_sha3.Portable.shake256 out data in
   out
@@ -360,6 +440,18 @@ let shake256_ema (out data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 out <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun out_future ->
+          let out_future:t_Slice u8 = out_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 out_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 out <: usize)
+            <:
+            bool) /\
+          (out_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 out)
+              (mk_usize 136) (mk_u8 31) data
+            <:
+            t_Slice u8)) =
   let out:t_Slice u8 = Libcrux_sha3.Portable.shake256 out data in
   out

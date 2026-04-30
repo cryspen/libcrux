@@ -22,7 +22,19 @@ let sha224 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 144) (mk_u8 6) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 144) (mk_u8 6) data digest
   in
@@ -34,7 +46,19 @@ let sha256 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 136) (mk_u8 6) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 136) (mk_u8 6) data digest
   in
@@ -46,7 +70,19 @@ let sha384 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 104) (mk_u8 6) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 104) (mk_u8 6) data digest
   in
@@ -58,7 +94,19 @@ let sha512 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 72) (mk_u8 6) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 72) (mk_u8 6) data digest
   in
@@ -70,7 +118,19 @@ let shake128 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 168) (mk_u8 31) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 168) (mk_u8 31) data digest
   in
@@ -82,7 +142,19 @@ let shake256 (digest data: t_Slice u8)
       (requires
         (Core_models.Slice.impl__len #u8 digest <: usize) <.
         (Core_models.Num.impl_usize__MAX -! mk_usize 200 <: usize))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun digest_future ->
+          let digest_future:t_Slice u8 = digest_future in
+          b2t
+          ((Core_models.Slice.impl__len #u8 digest_future <: usize) =.
+            (Core_models.Slice.impl__len #u8 digest <: usize)
+            <:
+            bool) /\
+          (digest_future <: t_Slice u8) ==
+          (Hacspec_sha3.Sponge.keccak (Core_models.Slice.impl__len #u8 digest)
+              (mk_usize 136) (mk_u8 31) data
+            <:
+            t_Slice u8)) =
   let digest:t_Slice u8 =
     Libcrux_sha3.Generic_keccak.Portable.keccak1 (mk_usize 136) (mk_u8 31) data digest
   in
