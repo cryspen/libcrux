@@ -84,10 +84,14 @@ pub enum ReseedFromRngError<RngError> {
 #[derive(Debug, PartialEq)]
 pub enum GenerateError {
     /// The reseed counter has exceeded [`RESEED_INTERVAL`]; call `reseed` before generating.
+    ///
+    /// [`RESEED_INTERVAL`]: crate::RESEED_INTERVAL
     ReseedRequired,
 
     /// The requested output length is zero or exceeds [`MAX_GENERATE_BYTES`].
     RequestTooLarge,
+    ///
+    /// [`MAX_GENERATE_BYTES`]: crate::MAX_GENERATE_BYTES
 
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,

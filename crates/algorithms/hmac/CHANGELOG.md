@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
-- [#1382](https://github.com/cryspen/libcrux/pull/1382): Add incremental HMAC
+- [#1382](https://github.com/cryspen/libcrux/pull/1382): Add an incremental API
 
 ## [0.0.6] (2026-02-12)
 
