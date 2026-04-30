@@ -155,7 +155,19 @@ through the `squeeze` ensures. ~1 session per block-variant.
 ## Anti-patterns to avoid
 
   - Bumping `--z3rlimit` past 800 (R4). Indicates structural problem,
-    not a "needs more budget" issue.
+    not a "needs more budget" issue. **High-rlimit proofs are flaky;
+    help them along with annotations, never by paying more SMT time.**
+  - Pairing `--split_queries always` with `--z3rlimit 800`. With
+    split_queries the per-query cap drops to **≤ 400**, because each
+    sub-query gets its own budget (so 400 split = 400 × N total). If
+    a split needs > 400, the split granularity is wrong or the proof
+    is structurally broken. Caught in the 2026-04-30 evening sprint
+    (commit `0a477d7eb`): `impl__squeeze_first_five_blocks` was
+    initially given `#push-options "--split_queries always"` but
+    inherited rlimit 800 from the file-scope push at line 13. Cold
+    profile showed each split sub-query used max **8.687 / 800**
+    rlimit — 400 was always plenty. When you ADD `--split_queries`,
+    pull rlimit to ≤ 400 in the SAME edit.
   - Marking spec functions opaque without verifying R10 (the new
     rule). Three failed-and-reverted attempts in the prior sprint:
     see `be37a8d59` + `ef70a1a42`.

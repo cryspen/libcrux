@@ -239,8 +239,11 @@ let impl__squeeze_last
    here skips the wasted monolithic attempt and goes straight to the split
    that actually works.  Class A (bounds-only ensures); no functional
    admit involved.  Same fix can be applied to the other linear
-   impl__squeeze_*_block(s) wrappers if they show similar instability. *)
-#push-options "--split_queries always"
+   impl__squeeze_*_block(s) wrappers if they show similar instability.
+   Per the rlimit policy (memory: feedback_rlimit_cap_800), --split_queries
+   is paired with --z3rlimit 400 (down from inherited 800); cold profile
+   showed each split sub-query used max 8.687 rlimit, so 400 is plenty. *)
+#push-options "--split_queries always --z3rlimit 400"
 let impl__squeeze_first_five_blocks
       (v_RATE: usize)
       (self: Libcrux_sha3.Generic_keccak.t_KeccakState (mk_usize 1) u64)
