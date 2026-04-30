@@ -43,9 +43,9 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | **Avx2 total**    | **3** | **41** | **1** |     | **21** | **17** |  **0** |   **2** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Neon_     | generic_keccak    |    1 |   7 |   0 |     |   0 |    6 |      0 |       1 |
-|            | neon              |    1 |  15 |   0 |     |  15 |    0 |      0 |       0 |
+|            | neon              |    1 |  15 |   0 |     |   8 |    0 |      0 |       7 |
 |            | simd              |    1 |  22 |   1 |     |  16 |    5 |      0 |       0 |
-|            | **Neon total**    | **3** | **44** | **1** |     | **31** | **11** |  **0** |   **1** |
+|            | **Neon total**    | **3** | **44** | **1** |     | **24** | **11** |  **0** |   **8** |
 
 ## Summary
 
@@ -54,10 +54,10 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 - **Lax** (admitted): 2 (0.8%)
 - **Unverified** (not extracted): 1 (0.4%)
 - **Panic-safe** (PF + Math + Bounds + Hacspec): 239 (98.8%)
-  - Panic-free only (no further proof): 157 (64.9%)
+  - Panic-free only (no further proof): 150 (62.0%)
   - Math (non-trivial ensures, no bounds/spec match): 57 (23.6%)
   - Bounds (range/interval ensures): 0 (0.0%)
-  - Hacspec (cites high-level spec): 25 (10.3%)
+  - Hacspec (cites high-level spec): 32 (13.2%)
 
 ### Modules per category
 
@@ -66,7 +66,7 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 | Generic      |       8 |  101 |   0 |   1 |  79 |    9 |      0 |      12 |
 | Portable     |       3 |   56 |   0 |   0 |  26 |   20 |      0 |      10 |
 | Avx2         |       3 |   41 |   1 |   0 |  21 |   17 |      0 |       2 |
-| Neon         |       3 |   44 |   1 |   0 |  31 |   11 |      0 |       1 |
+| Neon         |       3 |   44 |   1 |   0 |  24 |   11 |      0 |       8 |
 
 ## Unverified Rust modules (not extracted to F\*)
 
