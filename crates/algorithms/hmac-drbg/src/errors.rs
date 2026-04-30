@@ -89,9 +89,9 @@ pub enum GenerateError {
     ReseedRequired,
 
     /// The requested output length is zero or exceeds [`MAX_GENERATE_BYTES`].
-    RequestTooLarge,
     ///
     /// [`MAX_GENERATE_BYTES`]: crate::MAX_GENERATE_BYTES
+    RequestInvalid,
 
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,
@@ -110,7 +110,7 @@ impl fmt::Display for GenerateError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             GenerateError::ReseedRequired => f.write_str("reseed required before next generate"),
-            GenerateError::RequestTooLarge => f.write_str("generate request size out of range"),
+            GenerateError::RequestInvalid => f.write_str("generate request size out of range"),
             GenerateError::InputTooLarge => {
                 f.write_str("seed material exceeds maximum allowed size")
             }

@@ -41,7 +41,7 @@ fuzz_target!(|data: &[u8]| {
                     // Success must only happen for valid lengths.
                     assert!(output_len > 0 && output_len <= MAX_GENERATE_BYTES);
                 }
-                Err(GenerateError::RequestTooLarge) => {
+                Err(GenerateError::RequestInvalid) => {
                     assert!(output_len == 0 || output_len > MAX_GENERATE_BYTES);
                 }
                 Err(GenerateError::ReseedRequired) => {

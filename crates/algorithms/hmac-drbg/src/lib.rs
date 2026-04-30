@@ -298,10 +298,10 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             return Err(GenerateError::ReseedRequired);
         }
         if output.is_empty() {
-            return Err(GenerateError::RequestTooLarge);
+            return Err(GenerateError::RequestInvalid);
         }
         if output.len() > MAX_GENERATE_BYTES {
-            return Err(GenerateError::RequestTooLarge);
+            return Err(GenerateError::RequestInvalid);
         }
 
         // Update state with additional_input (might be empty).
