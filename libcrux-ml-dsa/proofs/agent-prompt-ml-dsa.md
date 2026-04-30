@@ -55,12 +55,26 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
 
 ## Recently closed (do not redo)
 
+  - **Spec inventory + gap analysis pass on `proof_milestones.md`**
+    (`75f26ee10`, 2026-04-30). Replaces the stale "many sprints —
+    Hacspec_ml_dsa.Ntt does not exist" framing. After audit: 0 of 25
+    milestone rows are spec-gated; almost everything is ⛓️
+    wiring-gated, with NTT/Invntt rows 📦 partial-spec (per-layer
+    commute lemmas TBD). Doc-only commit. **Closes Priority §0** —
+    next agents start at §1 or remaining §2 items.
+  - **`Specs.Simd.Portable.Sample.fst`** lifted out of ADMIT_MODULES
+    (`905cfc8e9`, 2026-04-30). Loosened `< max_usize` to `<= max_usize`
+    on `Spec.MLDSA.Math.rejection_sample_{field_modulus,eta_2,eta_4}`
+    and replaced overflow-prone `len()*2 <= u32::MAX` with
+    `len() <= 2_147_483_647` in `src/specs.rs` eta_{2,4} pres.
+    Module verifies in 925ms. **Closes the "Spec dispatcher (1)"
+    bullet under Priority §2.** ADMIT_MODULES now 19 entries (was 20).
   - **Makefile flipped to ml-kem allowlist style** (`74922609a`,
-    2026-04-30). `proofs/fstar/extraction/Makefile` now lists 20
-    explicit `ADMIT_MODULES` entries in 4 commented categories;
-    every other `.fst` is verified by full SMT. Newly-extracted
-    files default to verified, forcing an explicit Makefile entry
-    to admit.
+    2026-04-30). `proofs/fstar/extraction/Makefile` now lists 19
+    explicit `ADMIT_MODULES` entries in 3 remaining categories
+    (12 user-API + 4 Samplex4 + 3 AVX2 Rejection_sample); every
+    other `.fst` is verified by full SMT. Newly-extracted files
+    default to verified, forcing an explicit Makefile entry to admit.
   - **`Encoding.Verification_key.generate_serialized`** body admit
     closed (`5d32e16df`). Pattern: mirror `Signing_key.generate_serialized`
     + `assert_norm` for the `RING_ELEMENT_OF_T1S_SIZE` constant chain.
@@ -77,20 +91,11 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
 
 ## Priority order
 
-  **0. Spec inventory + gap analysis (1 session, before any wiring).**
-     The `Hacspec_ml_dsa.*` spec layer is already substantial but
-     was assumed missing in earlier prompts. Before wiring ensures:
-       - For each impl module that currently has bounds-only ensures
-         (Matrix, Encoding, Ml_dsa_generic.*, Sample, Ntt), check
-         whether the corresponding `Hacspec_ml_dsa.*` definition
-         exists and what it covers.
-       - Update `proofs/proof_milestones.md` to mark which milestone
-         rows are *spec-gated* (need new `Hacspec_ml_dsa` definitions)
-         vs. *wiring-gated* (spec exists, just need to add the
-         `ensures(... cites Hacspec_ml_dsa.foo ...)` clause).
-       - Land the inventory as a doc commit (no code change). Cap
-         this at one session.
-     Until this lands, (1)–(4) are guesses, not plans.
+  **0. ✅ DONE (`75f26ee10`).** Spec inventory + gap analysis pass
+     landed on `proofs/proof_milestones.md`. After audit, 0 of 25
+     rows are 🆕 spec-gated; the gating column is now
+     ⛓️ wiring-gated / 📦 partial-spec. Read the refreshed
+     `proof_milestones.md` for the per-row picture.
 
   **1. Wire `Ml_dsa_generic.{generate_key_pair_internal,
      sign_internal, verify_internal}` ensures to
@@ -104,16 +109,14 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
      beneath. Per fn, est. 2-4 hr.
 
   **2. Drive `ADMIT_MODULES` to zero (parallel-friendly with the rest).**
-     `proofs/fstar/extraction/Makefile` lists 20 explicit admits in
-     4 categories. Source-side reasons documented inline. Pick the
-     cheapest unblocked group:
+     `proofs/fstar/extraction/Makefile` lists 19 explicit admits in
+     3 remaining categories (the "Spec dispatcher (1)" group was
+     closed in `905cfc8e9`). Source-side reasons documented inline.
+     Pick the cheapest unblocked group:
        - **Samplex4 (4)** — needs trait-method panic-freedom on the
          X4 Xof hash functions. Probably 2-3 hr per dispatcher.
        - **AVX2 Rejection_sample.{Less_than_eta, Less_than_field_modulus}
          (2)** — Step 13 Track A AVX2 closure shape. ~1-2 hr each.
-       - **Specs.Simd.Portable.Sample.fst (1)** — needs randomness-
-         length precondition bridged to
-         `Spec.MLDSA.Math.rejection_sample_field_modulus`.
        - **Shuffle_table (1)** — DON'T attempt; needs a hax-proof-libs
          detour. See AP-4 below + commit `9da124ba5`.
        - **User-facing API wrappers (12)** — gated on (1) — they
