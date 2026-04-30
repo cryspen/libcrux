@@ -104,6 +104,43 @@ them up (Hacspec count 6 → 25). A subsequent session that fixes the
 upstream flake (or uses a stronger Z3 timeout) should be able to
 discharge them mechanically.
 
+### Attempts to stabilize `lemma_theta_rho_to_spec` (reverted)
+
+Three approaches were tried in-session, all reverted (lemma file is
+back to HEAD):
+
+  1. **forall_intro of `()`-bodied aux**: `let aux (k: nat{k < 25})
+     : Lemma (Seq.index lhs k == Seq.index rhs k) = ()` followed by
+     `forall_intro aux`. Failed: aux body for arbitrary `k` requires
+     Z3 to case-split on `k`, which `--ifuel 1` doesn't enable.
+     Failure shifted from eq_intro (query 19/20) to aux body (query
+     21/26) — same Z3 difficulty, different location.
+
+  2. **25 explicit `assert (lhs.[mk_usize K] == rhs.[mk_usize K])`
+     before `eq_intro`**: 293 of 294 split sub-queries passed at
+     <300 ms each (the per-index asserts work — each matches a
+     specific conjunct of `lemma_rho_thru_4_extract_lane` literally).
+     Final eq_intro still timed out at 570 s on its forall
+     precondition: Z3 has 25 specific facts but cannot lift them to
+     `forall i. lhs.[i] == rhs.[i]` without an explicit forall_intro.
+
+  3. **25-branch if-else case-split aux + `forall_intro`**: each aux
+     branch sees a literal `i = K` so each per-index sub-query was
+     supposed to be fast. In practice queries 1–46 passed quickly
+     (each <17 rlimit), but queries 47+ took 4–6 minutes each at
+     876–1187 rlimit — passing but at the edge of the 1600 budget.
+     Extrapolating, with ~250+ similar queries the run would take
+     20+ hours; not viable in sprint budget. Killed and reverted.
+
+Findings: the per-index reasoning IS sound (attempt 2 confirms each
+case is provable in <300 ms when isolated), but composing 25 facts
+into a forall is what breaks. **The right fix is structural: factor
+`lemma_theta_rho_to_spec` into 5 row-helpers (one per row of 5
+indices) using the existing `lemma_rho_thru_K_extract_lane`
+partials, then assemble.** Each row-helper has a 5-element forall
+that Z3 should handle directly. Estimated 1 sprint of careful work
+— not the 30-minute "tweak" suggested by the agent prompt.
+
 ## Headline interpretation
 
 After this sprint:
