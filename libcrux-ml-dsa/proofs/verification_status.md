@@ -36,13 +36,13 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | samplex4          |    1 |   7 |   7 |     |   0 |    0 |      0 |       0 |
 |            | pre_hash          |    1 |   9 |   0 |     |   7 |    2 |      0 |       0 |
 |            | hash_functions    |    1 |  79 |   0 |     |  69 |   10 |      0 |       0 |
-|            | encoding          |    6 |  45 |   2 |     |  34 |    7 |      2 |       0 |
+|            | encoding          |    6 |  46 |   1 |     |  35 |    7 |      3 |       0 |
 |            | ml_dsa_generic    |    4 |  41 |  10 |     |  31 |    0 |      0 |       0 |
 |            | ml_dsa_*          |    3 |  46 |  46 |     |   0 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | simd/traits       |    2 |  33 |   0 |     |   6 |   15 |      4 |       8 |
 |            | simd/tests        |    1 |   6 |   0 |   6 |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **31** | **348** | **75** | **6** | **200** | **41** | **18** |   **8** |
+|            | **Generic total** | **31** | **349** | **74** | **6** | **201** | **41** | **19** |   **8** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | vector_type       |    1 |   3 |   0 |     |   3 |    0 |      0 |       0 |
 |            | arithmetic        |    1 |  21 |   0 |     |   2 |    3 |      1 |      15 |
@@ -57,30 +57,30 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | arithmetic        |    1 |  14 |   2 |     |   0 |    4 |      1 |       7 |
 |            | ntt               |    1 |  12 |   0 |     |   5 |    7 |      0 |       0 |
 |            | invntt            |    1 |  17 |   2 |     |   2 |   13 |      0 |       0 |
-|            | rejection_sample  |    4 |   7 |   7 |     |   0 |    0 |      0 |       0 |
+|            | rejection_sample  |    4 |   7 |   3 |     |   4 |    0 |      0 |       0 |
 |            | encoding          |    6 |  26 |   7 |     |   2 |   17 |      0 |       0 |
 |            | simd (top)        |    1 |  32 |   7 |     |   1 |   12 |      2 |      10 |
-|            | **Avx2 total**    | **15** | **111** | **25** |     | **13** | **53** |  **3** |  **17** |
+|            | **Avx2 total**    | **15** | **111** | **21** |     | **17** | **53** |  **3** |  **17** |
 
 ## Summary
 
 - **Total modules**: 58
-- **Total functions**: 577
-- **Lax** (admitted): 105 (18.2%)
+- **Total functions**: 578
+- **Lax** (admitted): 100 (17.3%)
 - **Unverified** (not extracted): 6 (1.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 466 (80.8%)
-  - Panic-free only (no further proof): 223 (38.6%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 472 (81.7%)
+  - Panic-free only (no further proof): 228 (39.4%)
   - Math (non-trivial ensures, no bounds/spec match): 131 (22.7%)
-  - Bounds (range/interval ensures): 59 (10.2%)
+  - Bounds (range/interval ensures): 60 (10.4%)
   - Hacspec (cites high-level spec): 53 (9.2%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      31 |  348 |  75 |   6 | 200 |   41 |     18 |       8 |
+| Generic      |      31 |  349 |  74 |   6 | 201 |   41 |     19 |       8 |
 | Portable     |      12 |  118 |   5 |   0 |  10 |   37 |     38 |      28 |
-| Avx2         |      15 |  111 |  25 |   0 |  13 |   53 |      3 |      17 |
+| Avx2         |      15 |  111 |  21 |   0 |  17 |   53 |      3 |      17 |
 
 ## Unverified Rust modules (not extracted to F\*)
 
@@ -106,8 +106,7 @@ Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) in
 | Generic/sample            |   379 |
 | Generic/sample            |   401 |
 | Generic/sample            |   499 |
-| Generic/encoding          |    89 |
-| Generic/encoding          |     8 |
+| Generic/encoding          |    69 |
 | Generic/ml_dsa_generic    |    57 |
 | Generic/ml_dsa_generic    |   134 |
 | Generic/ml_dsa_generic    |   364 |

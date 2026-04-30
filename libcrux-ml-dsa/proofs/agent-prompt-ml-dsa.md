@@ -55,6 +55,33 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
 
 ## Recently closed (do not redo)
 
+  - **Multi-agent parallel sprint** (2026-04-30, three worktrees):
+    + `94e679871` — `Encoding.Error.deserialize_to_vector_then_ntt`
+      body admit closed via uniform `is_i32b 11` bound (covers both
+      eta=2 → [-5,2] AND eta=4 → [-11,4]) instead of eta-case-split.
+      rlimit 80 default, no split_queries needed. Innovation: avoids
+      quantifier-trigger explosion when `eta` is symbolic.
+    + `ea7ae0e92` — `Simd.Avx2.Rejection_sample.{Less_than_eta,
+      Less_than_field_modulus}` lifted out of `ADMIT_MODULES`. Pres:
+      `(ETA==2||4) && input.len()=={4,24} && output.len()>=8`.
+      Length-pres ensures added to `mm_storeu_si128_{i32,u8}` in
+      `crates/utils/intrinsics/src/avx2.rs`. `assume (count_ones (good
+      & 0xF) <= 4)` mirrors libcrux-ml-kem AVX2 sampler idiom.
+    + `484fb664a` — `Encoding.Signature.serialize` SCAFFOLDING ONLY
+      (body admit retained). Added recursive F* spec helpers
+      `count_row_ones` + `count_total_ones` and pre `count_total_ones
+      $hint <= v $max_ones_in_hint`. Body close needs helper-split
+      mirror of PR 1348 deserialize closure.
+    Baseline after merge: 78 invoked, [CHECK]=62, [ADMIT]=16,
+    0 F* errors.
+  - **NTT port plan landed** (`proofs/ntt-port-plan.md`,
+    2026-04-30). Read-only review of `~/libcrux-trait-opacify`'s
+    NTT proof machinery + reusability matrix + 14-step ordered
+    porting plan + recommended FIRST commit (chunking lemma
+    `simd_units_to_array` in `Hacspec_ml_dsa.Commute.Chunk.fst`,
+    ≤3hr, no Z3-divergence risk). Critical-path lemma identified.
+    Total estimate: ~37 agent-hours for full forward+inverse close
+    (milestones 1, 2, 5, 6, 7).
   - **Spec inventory + gap analysis pass on `proof_milestones.md`**
     (`75f26ee10`, 2026-04-30). Replaces the stale "many sprints —
     Hacspec_ml_dsa.Ntt does not exist" framing. After audit: 0 of 25
@@ -83,11 +110,16 @@ Goal: close named milestones in `proofs/proof_milestones.md`.
 
 ## Deferred with concrete plan (do not start blind)
 
-  - **`Encoding.Signature.serialize`** — needs a count-of-ones
-    precondition that the caller (`sign_internal`) ensures via
-    `if ones_in_hint > MAX_ONES_IN_HINT { skip }`. Three options
-    enumerated in `proofs/post-merge-handoff.md` Session B note +
-    `proofs/outstanding-admits.md`. Estimate: 2-3 hr.
+  - **`Encoding.Signature.serialize`** body close — scaffolding
+    landed (`484fb664a`): `count_total_ones` spec helper + pre
+    `count_total_ones $hint <= v $max_ones_in_hint`. Body still
+    admits because (a) inner `gamma1::serialize` needs polynomial
+    bound `is_pos_array_opaque (pow2 gamma1_exponent - 1)` on
+    `signer_response[i].f_simd_units` (caller-established, not
+    yet exposed as `serialize` precondition) and (b) `count_*`
+    monotonicity lemmas needed. Helper-split mirror PR 1348
+    `validate_hint_rows`/`write_hint_rows` is the path forward.
+    Estimate: 2-3 hr.
 
 ## Priority order
 
