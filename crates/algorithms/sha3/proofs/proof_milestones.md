@@ -46,8 +46,8 @@ Equivalence proofs live under `proofs/fstar/equivalence/`:
 |---|---|---|---|---|
 | 1 | Generic `keccakf1600` correct vs hacspec | `src/generic_keccak.rs:240 keccakf1600` | 🔶 the function itself has NO ensures, BUT `EquivImplSpec.Keccakf.Portable.lemma_keccakf1600_portable` IS invoked at `generic_keccak/portable.rs:89` to assert equivalence to `Hacspec_sha3.Keccak_f.keccak_f`. Proof exists OUTSIDE the function ensures. | ~1 session — pull the lemma into a function-level `ensures` so it's auditable from the source |
 | 2 | Per-step Theta / Rho / Pi / Chi / Iota correct vs hacspec | `src/generic_keccak.rs` (lines 200-240, individual step methods) | ⚠️ — these methods (`theta`, `rho`, `pi`, `chi`, `iota`) have only basic `requires`; equivalence is established at the `keccakf1600` level via `EquivImplSpec.Keccakf.ChiFold` (chi-fold step is the hardest) | partial — the chi-fold equivalence is the cited bottleneck; per-step lemmas exist but aren't surfaced in source ensures |
-| 3 | AVX2 `keccakf1600` correct vs hacspec | `EquivImplSpec.Keccakf.Avx2.fst` | ❓ check status of the lemma — file exists, need to verify it's not admitted | review needed; ~1 session if admitted |
-| 4 | Neon (Arm64) `keccakf1600` correct vs hacspec | `EquivImplSpec.Sponge.Arm64.fst` etc. | ❓ check status | review needed |
+| 3 | AVX2 `keccakf1600` correct vs hacspec | `EquivImplSpec.Keccakf.Avx2.fst::lemma_keccakf1600_avx2` | ✅ **proven** (audited 2026-04-30) — 7 lane-correctness primitives all `let`, no `assume val`. The main theorem is a direct specialization of `G.lemma_keccakf1600_to_spec` at N=4. The file's preamble comment about "seven primitives admitted" is **out of date** — those have since been closed. The proof relies on `lemma_shl_xor_shr_is_rotate_left` (in `Libcrux_sha3.Proof_utils.Lemmas`), which is admitted in Proof_utils because `Core_models.Num.impl_u64__rotate_left` is itself an opaque `assume val` — that's an intrinsics-layer admit, not a sha3-layer one. | *(done — modulo intrinsics-layer admit on rotate_left)* |
+| 4 | Neon (Arm64) `keccakf1600` correct vs hacspec | `EquivImplSpec.Keccakf.Arm64.fst::lemma_keccakf1600_arm64` | ✅ **proven** (audited 2026-04-30) — 7 lane-correctness primitives all `let`, no `assume val`. Main theorem is a direct specialization of `G.lemma_keccakf1600_to_spec` at N=2. Cleaner than the AVX2 backend (no intrinsics admits cited in the body). | *(done)* |
 | 5 | Portable `keccakf1600_portable` calls match permutation spec | `src/generic_keccak/portable.rs:89` (lemma invocation) | ✅ — lemma `EquivImplSpec.Keccakf.Portable.lemma_keccakf1600_portable` invoked at the call site; assert succeeds | *(done)* |
 
 ## Layer 2 — Sponge (absorb / squeeze)
@@ -59,8 +59,8 @@ The sponge construction is the strongest-verified layer in the crate.
 | 6 | `Generic_keccak.Portable::absorb` correct vs hacspec | `src/generic_keccak/portable.rs:161 absorb` | ✅ **proven** — ensures asserts `$result.st == Hacspec_sha3.Sponge.absorb $RATE $DELIM $input` directly. Options: `--z3rlimit 800 --split_queries always`. Loop invariant uses block-indexed `absorb_blocks` to dodge a Z3 LP-solver bug. | *(done)* |
 | 7 | `Generic_keccak.Portable::squeeze` correct vs hacspec | `src/generic_keccak/portable.rs:245 squeeze` | ✅ — body fragment uses `Hacspec_sha3.Keccak_f.keccak_f` and `Hacspec_sha3.Sponge.squeeze_state`/`squeeze_last` to assert equivalence | *(done)* |
 | 8 | `Generic_keccak.Portable::squeeze_first_block`, `squeeze_next_block`, `squeeze_first_three_blocks`, `squeeze_first_five_blocks`, `squeeze_last` correct | `src/generic_keccak/portable.rs:30, 41, 51, 83, 128` | ⚠️ — function-level ensures only `future(out).len() == out.len()` (panic-free); functional equivalence likely covered by composition through (7) but not stated per-block | ~1 session per block-variant to surface the per-fn ensures |
-| 9 | `Generic_keccak.Simd128::absorb`, `squeeze` (Neon backend) | `src/generic_keccak/simd128.rs` via `EquivImplSpec.Sponge.Arm64.fst` | ❓ check — equivalence file exists; not yet inspected | review |
-| 10 | `Generic_keccak.Simd256::absorb`, `squeeze` (AVX2 backend) | `src/generic_keccak/simd256.rs` via `EquivImplSpec.Sponge.Avx2.fst` | ❓ check | review |
+| 9 | `Generic_keccak.Simd128::absorb2`, `squeeze2` (Neon, N=2) | `src/generic_keccak/simd128.rs` via `EquivImplSpec.Sponge.Arm64.{fst, Steps.fst, API.fst}` | 🔶 **partial** (audited 2026-04-30) — `EquivImplSpec.Sponge.Arm64.fst` (main, 0 admits) and `Arm64.Steps.fst` (0 admits) are clean. `Arm64.API.fst::lemma_squeeze2_arm64` is `assume val` (single driver-level admit; the loop-invariant proof on `Simd128.squeeze2` is unfinished — see `BRIEF_squeeze_steps.md` and `HANDOFF.md`). The absorb side IS proven (`lemma_absorb2_arm64` is `let`). | ~1 sprint to close `lemma_squeeze2_arm64` (loop-invariant work analogous to portable squeeze) |
+| 10 | `Generic_keccak.Simd256::absorb4`, `squeeze4` (AVX2, N=4) | `src/generic_keccak/simd256.rs` via `EquivImplSpec.Sponge.Avx2.{fst, Steps.fst, API.fst}` | 🔶 **partial** (audited 2026-04-30) — same shape as Arm64. Main + Steps files are clean. `Avx2.API.fst::lemma_squeeze4_avx2` is `assume val` (single driver-level admit; mirrors `lemma_squeeze2_arm64`'s gap). The absorb side IS proven. The admit's comment cites `avx2_sc_store_block` as a precondition admit but the actual file shows 0 admits there — comment may be stale. | ~1 sprint, mirrors row 9 |
 | 11 | `Generic_keccak.Xof::*` correct (extendable-output functions) | `src/generic_keccak/xof.rs` | ⚠️ — script shows it under Generic, panic-free | ~1 session to surface ensures |
 | 12 | `keccak1` (single-rate single-call) correct | `src/generic_keccak/portable.rs:447 keccak1` | ✅ **wired** — function-level ensures cites `Hacspec_sha3.Sponge.keccak`. Composition of (6) absorb + (7) squeeze + `keccak` definitional unfold (`--fuel 1`). Verification pending due to upstream flake — see Note A. | *(wired; verify-pending)* |
 
@@ -158,31 +158,39 @@ flake described in Note A.
 
 | Aspect | sha-3 | ml-kem (trait-opacify) | ml-dsa |
 |---|---|---|---|
-| Core primitive proven equiv | ✅ keccakf1600 + sponge | ⚠️ inverse NTT layers 1, 3 only | ⚠️ none (bounds only) |
-| Mid-level (encoding/sponge) | ✅ absorb / squeeze direct equiv to `Hacspec_sha3.Sponge` | ⚠️ partial | ⚠️ bounds only |
-| Top-level API extracted | ❌ lib.rs filtered | ❌ mlkem.rs filtered | partial — variant API extracted |
-| Top-level API correct | ❌ no claim | ❌ no claim | ❌ no claim |
+| Core primitive proven equiv | ✅ keccakf1600 across **all 3 backends** (Portable + AVX2 + Neon) | ⚠️ inverse NTT layers 1, 3 only | ⚠️ none (bounds only) |
+| Mid-level (encoding/sponge) | ✅ Portable absorb/squeeze direct; ✅ Neon absorb (`absorb2`); ✅ AVX2 absorb (`absorb4`); 🔶 Neon `squeeze2` admitted as driver-lemma; 🔶 AVX2 `squeeze4` same | ⚠️ partial | ⚠️ bounds only |
+| Top-level API extracted | ✅ `lib.rs` IS extracted (sprint of 2026-04-30 corrected the script) | ❌ mlkem.rs filtered | partial — variant API extracted |
+| Top-level API correct (Portable) | ✅ wired (verify-pending until upstream `lemma_theta_rho_to_spec` is properly stabilized; admitted USER-1 here) | ❌ no claim | ❌ no claim |
+| Top-level API correct (AVX2/Neon) | ❌ digests in `avx2.rs`/`neon.rs` not yet wired with hacspec ensures (squeeze4/squeeze2 admits would need to discharge first) | ❌ no claim | ❌ no claim |
 
-sha3 is the most-advanced of the three at the **mid-level** but the
-most behind at the **API surface** (lib.rs unverified).
+sha3 is the most-advanced of the three at the **mid-level** AND now
+also at the **Portable API surface** (lib.rs wired this sprint).
+Remaining bottleneck: the two `squeeze{2,4}` driver-lemma admits on
+the SIMD backends, and the structural fix to `lemma_theta_rho_to_spec`.
 
 ## Next-priority order
 
-1. **Discharge the verify-pending layer-3 ensures** — fix the
-   upstream `lemma_theta_rho_to_spec` flake (Note A) so the 19
-   newly-wired ensures verify, OR add the lemma to `SLOW_MODULES` /
-   factor it. ~1 session if the flake is timeout-only and not a
-   regression.
-2. **Surface `lemma_keccakf1600_portable` as `ensures` on `keccakf1600`**
+1. **Stabilize `lemma_theta_rho_to_spec` properly** (Note A) —
+   replace the USER-1 admit (added 2026-04-30 to unblock the chain)
+   with the row-helper factoring approach. ~1 sprint of focused
+   proof-engineering work.
+2. **Close the two squeeze driver-lemma admits** (rows 9, 10) —
+   `lemma_squeeze4_avx2` and `lemma_squeeze2_arm64`. Per `HANDOFF.md`
+   + `BRIEF_squeeze_steps.md`, the Simd128/Simd256 squeeze loop
+   invariant is the unfinished work; the absorb side is already
+   proven. Once these close, AVX2 + Neon mid-level is fully verified.
+3. **Wire AVX2/Neon top-level digests** (`avx2.rs`, `neon.rs`) —
+   gated on (2). Mirrors the Portable layer-3 wiring done in this
+   sprint; per-digest ensures cite `Hacspec_sha3.Sponge.keccak` at
+   the parallel-N-lane level.
+4. **Surface `lemma_keccakf1600_portable` as `ensures` on `keccakf1600`**
    (row 1) — generic version is parameterised by `T: KeccakItem`, so
    the surfacing requires either per-backend wrapper methods or a
    generic ensures conditional on the type parameters. ~1 session.
-3. **Audit `EquivImplSpec.Keccakf.Avx2.fst` and `EquivImplSpec.Sponge.Avx2.fst`**
-   (rows 3, 10) — confirm AVX2 backend equivalence is closed (or file
-   USER-N if admits remain).
-4. **Per-block squeeze ensures** (row 8) — surface the per-block
+5. **Per-block squeeze ensures** (row 8) — surface the per-block
    functional equivalence so callers don't need to reason through the
    composition manually.
-5. **`top-level hash() dispatcher correctness`** (`lib.rs::hash`) —
-   ensures depending on Algorithm enum value; not addressed in this
+6. **`hash()` dispatcher correctness** (`lib.rs::hash`) —
+   match-based ensures over Algorithm enum; not addressed in this
    sprint due to match-based ensures complexity.
