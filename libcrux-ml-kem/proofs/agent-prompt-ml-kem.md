@@ -42,9 +42,12 @@ they unlock dozens of functions at a stroke.
   **2. Forward NTT trait-opacification (rows 1, 2, 8 of milestone
      doc)** — bounds-only ensures already exist; the hacspec ensures
      are commented out at `src/ntt.rs:277, 318`.
-     **Updated 2026-04-30**: layer 1 done in commit `c32653051`
-     (mirror of inverse layer 1 commit `8358b1093`, verified 349 s).
-     For layers 2, 3, 7 the per-vector Bridges lemma
+     **Updated 2026-04-30**: layers 1 (commit `c32653051`, 349 s)
+     and 2 (commit `744b15937`, bridge 191 s + impl 311 s) done via
+     mirror of inverse pattern.  Layer 2 added the per-vector
+     bridge `lemma_ntt_layer_2_step_to_hacspec` to
+     `Hacspec_ml_kem.Commute.Bridges.fst` (282 LoC).
+     For layers 3, 7 the per-vector Bridges lemma
      `lemma_ntt_layer_<N>_step_to_hacspec` does NOT exist — only
      chunk-level `lemma_ntt_layer_<N>_step_chunk_commutes` in
      `Hacspec_ml_kem.Commute.Chunk.fst`. **Spec-side authoring is the
