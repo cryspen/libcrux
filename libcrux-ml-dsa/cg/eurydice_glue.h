@@ -169,13 +169,15 @@ typedef struct Eurydice_dst_ref_9a_s {
   ((src1)->len == (src2)->len &&            \
    !memcmp((src1)->ptr, (src2)->ptr, (src1)->len * sizeof(t)))
 
-#define core_array___Array_T__N___as_slice(len_, ptr_, t, ret_t) \
-  (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,     \
+#define core_array___T__N___as_slice(len_, ptr_, t, ret_t)                     \
+  (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
                         EURYDICE_CFIELD(.meta =) len_})
 
-#define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, elem_type, _ret_t)                                \
-  (*src)
+
+#define core_array__core__clone__Clone_for__T__N___clone(len, src, elem_type,  \
+                                                         _ret_t)               \
+  (*(src))
+
 #define TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
@@ -323,19 +325,19 @@ static KRML_MUSTINLINE uint64_t core_num__u64__rotate_left(uint64_t x0,
 
 // ITERATORS
 
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)      \
-  (((iter_ptr)->start >= (iter_ptr)->end)                 \
-       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0, \
-                               EURYDICE_CFIELD(.f0 =) 0}) \
-       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1, \
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
+  (((iter_ptr)->start >= (iter_ptr)->end)                                      \
+       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0,                      \
+                               EURYDICE_CFIELD(.f0 =) 0})                      \
+       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                      \
                                EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
+#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
 // OPTIONS

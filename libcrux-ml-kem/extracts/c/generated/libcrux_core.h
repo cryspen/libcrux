@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_core_H
@@ -21,6 +21,17 @@ extern "C" {
 #endif
 
 #include "libcrux_sha3_internal.h"
+
+#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT \
+  (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -48,7 +59,7 @@ typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s {
 } libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext, Eurydice_arr_60
 
 */
@@ -123,7 +134,7 @@ typedef struct Eurydice_arr_2c_s {
 } Eurydice_arr_2c;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_60
 
 */

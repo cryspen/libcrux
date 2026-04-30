@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_ct_ops_H
@@ -69,7 +69,7 @@ libcrux_ml_kem_constant_time_ops_select_ct(Eurydice_borrow_slice_u8 lhs,
        i++) {
     size_t i0 = i;
     uint8_t outi = ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) |
-                   ((uint32_t)rhs.ptr[i0] & (uint32_t)~mask);
+                   ((uint32_t)rhs.ptr[i0] & (~(uint32_t)mask & 0xFFU));
     out.data[i0] = outi;
   }
   return out;

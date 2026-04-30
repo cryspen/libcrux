@@ -4,17 +4,32 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_mlkem_core_H
 #define libcrux_mlkem_core_H
 
 #include "eurydice_glue.h"
+
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_08_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct Option_08_s {
+  Option_08_tags tag;
+  size_t f0;
+} Option_08;
 
 static inline uint16_t core_num__u16__wrapping_add(uint16_t x0, uint16_t x1);
 
@@ -331,15 +346,10 @@ typedef struct Eurydice_arr_74_s {
   uint8_t data[1184U];
 } Eurydice_arr_74;
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_60, Eurydice_arr_74
-
-*/
-typedef struct tuple_f4_s {
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
   Eurydice_arr_60 fst;
   Eurydice_arr_74 snd;
-} tuple_f4;
+} libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_mut
@@ -660,15 +670,15 @@ static inline Eurydice_borrow_slice_u8 Eurydice_array_to_subslice_shared_364(
 }
 
 /**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+This function found in impl {core::convert::From<[u8; SIZE]> for
 libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_fd
+A monomorphic instance of libcrux_ml_kem.types.from_51
 with const generics
 - SIZE= 1184
 */
-static inline Eurydice_arr_74 libcrux_ml_kem_types_from_fd_d0(
+static inline Eurydice_arr_74 libcrux_ml_kem_types_from_51_d0(
     Eurydice_arr_74 value) {
   return value;
 }
@@ -678,6 +688,9 @@ typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s {
   Eurydice_arr_74 pk;
 } libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
+/**
+ Create a new [`MlKemKeyPair`] from the secret and public key.
+*/
 /**
 This function found in impl
 {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
@@ -694,15 +707,15 @@ libcrux_ml_kem_types_from_17_74(Eurydice_arr_ea sk, Eurydice_arr_74 pk) {
 }
 
 /**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+This function found in impl {core::convert::From<[u8; SIZE]> for
 libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_77
+A monomorphic instance of libcrux_ml_kem.types.from_b2
 with const generics
 - SIZE= 2400
 */
-static inline Eurydice_arr_ea libcrux_ml_kem_types_from_77_28(
+static inline Eurydice_arr_ea libcrux_ml_kem_types_from_b2_28(
     Eurydice_arr_ea value) {
   return value;
 }
@@ -894,7 +907,7 @@ typedef struct Eurydice_arr_2c_s {
 } Eurydice_arr_2c;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_600
 
 */
@@ -904,19 +917,22 @@ typedef struct tuple_38_s {
 } tuple_38;
 
 /**
-This function found in impl {core::convert::From<@Array<u8, SIZE>> for
+This function found in impl {core::convert::From<[u8; SIZE]> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_e0
+A monomorphic instance of libcrux_ml_kem.types.from_19
 with const generics
 - SIZE= 1088
 */
-static inline Eurydice_arr_2c libcrux_ml_kem_types_from_e0_80(
+static inline Eurydice_arr_2c libcrux_ml_kem_types_from_19_80(
     Eurydice_arr_2c value) {
   return value;
 }
 
+/**
+ A reference to the raw byte slice.
+*/
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
@@ -944,6 +960,9 @@ static inline Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_45(
   return lit;
 }
 
+/**
+ A reference to the raw byte slice.
+*/
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -1445,15 +1464,15 @@ static inline Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_42(
 }
 
 /**
-This function found in impl {core::convert::AsRef<@Slice<u8>> for
+This function found in impl {core::convert::AsRef<[u8]> for
 libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
+A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
 with const generics
 - SIZE= 1088
 */
-static inline Eurydice_borrow_slice_u8 libcrux_ml_kem_types_as_ref_d3_80(
+static inline Eurydice_borrow_slice_u8 libcrux_ml_kem_types_as_ref_c1_80(
     const Eurydice_arr_2c *self) {
   return Eurydice_array_to_slice_shared_42(self);
 }
@@ -1726,16 +1745,16 @@ libcrux_secrets_int_public_integers_classify_27_3a(Eurydice_arr_e2 self) {
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a
-(@Slice<T>)> for &'a (@Slice<T>)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a ([T])> for
+&'a ([T])}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
 with types uint8_t
 
 */
 static KRML_MUSTINLINE Eurydice_borrow_slice_u8
-libcrux_secrets_int_classify_public_classify_ref_9b_90(
+libcrux_secrets_int_classify_public_classify_ref_6d_90(
     Eurydice_borrow_slice_u8 self) {
   return self;
 }
@@ -1752,16 +1771,16 @@ static inline Eurydice_borrow_slice_i16 Eurydice_array_to_subslice_shared_85(
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a
-(@Slice<T>)> for &'a (@Slice<T>)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a ([T])> for
+&'a ([T])}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
 with types int16_t
 
 */
 static KRML_MUSTINLINE Eurydice_borrow_slice_i16
-libcrux_secrets_int_classify_public_classify_ref_9b_39(
+libcrux_secrets_int_classify_public_classify_ref_6d_39(
     Eurydice_borrow_slice_i16 self) {
   return self;
 }
@@ -1818,26 +1837,6 @@ with const generics
 typedef struct Eurydice_arr_49_s {
   int16_t data[128U];
 } Eurydice_arr_49;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types int32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_fc_s {
-  int32_t *ptr;
-  size_t meta;
-} Eurydice_dst_ref_mut_fc;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types int32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_fc_s {
-  const int32_t *ptr;
-  size_t meta;
-} Eurydice_dst_ref_shared_fc;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -2095,6 +2094,26 @@ static inline Eurydice_mut_borrow_slice_u8 Eurydice_slice_subslice_mut_7e(
 
 /**
 A monomorphic instance of Eurydice.arr
+with types uint64_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_a5_s {
+  uint64_t data[5U];
+} Eurydice_arr_a5;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_borrow_slice_u8
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_06_s {
+  Eurydice_borrow_slice_u8 data[1U];
+} Eurydice_arr_06;
+
+/**
+A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
 - $72size_t
@@ -2115,47 +2134,6 @@ static inline Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_7d(
   lit.ptr = a->data;
   lit.meta = (size_t)72U;
   return lit;
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_subslice_mut
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 72
-*/
-static inline Eurydice_mut_borrow_slice_u8 Eurydice_array_to_subslice_mut_36(
-    Eurydice_arr_a0 *a, core_ops_range_Range_08 r) {
-  return (Eurydice_mut_borrow_slice_u8{a->data + r.start, r.end - r.start});
-}
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint64_t
-with const generics
-- $5size_t
-*/
-typedef struct Eurydice_arr_a5_s {
-  uint64_t data[5U];
-} Eurydice_arr_a5;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_borrow_slice_u8
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_06_s {
-  Eurydice_borrow_slice_u8 data[1U];
-} Eurydice_arr_06;
-
-/**
-A monomorphic instance of Eurydice.slice_subslice_shared
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-static inline Eurydice_borrow_slice_u8 Eurydice_slice_subslice_shared_7e(
-    Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r) {
-  return (Eurydice_borrow_slice_u8{s.ptr + r.start, r.end - r.start});
 }
 
 /**
@@ -2189,6 +2167,27 @@ static inline Eurydice_array_u8x8 unwrap_26_ab(Result_8e self) {
                       "unwrap not Ok");
     KRML_HOST_EXIT(255U);
   }
+}
+
+/**
+A monomorphic instance of Eurydice.slice_subslice_shared
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+
+*/
+static inline Eurydice_borrow_slice_u8 Eurydice_slice_subslice_shared_7e(
+    Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r) {
+  return (Eurydice_borrow_slice_u8{s.ptr + r.start, r.end - r.start});
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_mut
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 72
+*/
+static inline Eurydice_mut_borrow_slice_u8 Eurydice_array_to_subslice_mut_36(
+    Eurydice_arr_a0 *a, core_ops_range_Range_08 r) {
+  return (Eurydice_mut_borrow_slice_u8{a->data + r.start, r.end - r.start});
 }
 
 /**

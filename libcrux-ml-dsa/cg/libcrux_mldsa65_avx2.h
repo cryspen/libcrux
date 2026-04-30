@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -352,12 +352,12 @@ static inline bool libcrux_ml_dsa_simd_avx2_arithmetic_infinity_norm_exceeds(
     const __m256i *simd_unit, int32_t bound) {
   __m256i absolute_values =
       libcrux_intrinsics_avx2_mm256_abs_epi32(simd_unit[0U]);
-  __m256i bound0 = libcrux_intrinsics_avx2_mm256_set1_epi32(bound - (int32_t)1);
+  __m256i bound0 = libcrux_intrinsics_avx2_mm256_set1_epi32(bound - 1);
   __m256i compare_with_bound =
       libcrux_intrinsics_avx2_mm256_cmpgt_epi32(absolute_values, bound0);
   int32_t result = libcrux_intrinsics_avx2_mm256_testz_si256(
       compare_with_bound, compare_with_bound);
-  return result != (int32_t)1;
+  return result != 1;
 }
 
 /**
@@ -375,8 +375,7 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline __m256i
 libcrux_ml_dsa_simd_avx2_arithmetic_to_unsigned_representatives_ret(
     const __m256i *t) {
-  __m256i signs =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)31, t[0U], __m256i);
+  __m256i signs = libcrux_intrinsics_avx2_mm256_srai_epi32(31, t[0U], __m256i);
   __m256i conditional_add_field_modulus =
       libcrux_intrinsics_avx2_mm256_and_si256(
           signs, libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -391,22 +390,22 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_decompose(
   __m256i r2 =
       libcrux_ml_dsa_simd_avx2_arithmetic_to_unsigned_representatives_ret(r);
   __m256i ceil_of_r_by_128 = libcrux_intrinsics_avx2_mm256_add_epi32(
-      r2, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)127));
-  __m256i ceil_of_r_by_1280 = libcrux_intrinsics_avx2_mm256_srai_epi32(
-      (int32_t)7, ceil_of_r_by_128, __m256i);
+      r2, libcrux_intrinsics_avx2_mm256_set1_epi32(127));
+  __m256i ceil_of_r_by_1280 =
+      libcrux_intrinsics_avx2_mm256_srai_epi32(7, ceil_of_r_by_128, __m256i);
   switch (gamma2) {
     case 95232: {
       __m256i result = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-          ceil_of_r_by_1280,
-          libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)11275));
+          ceil_of_r_by_1280, libcrux_intrinsics_avx2_mm256_set1_epi32(11275));
       __m256i result0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-          result, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 23U));
-      __m256i result1 = libcrux_intrinsics_avx2_mm256_srai_epi32(
-          (int32_t)24, result0, __m256i);
+          result, libcrux_intrinsics_avx2_mm256_set1_epi32(
+                      (int32_t)((uint32_t)1 << 23U)));
+      __m256i result1 =
+          libcrux_intrinsics_avx2_mm256_srai_epi32(24, result0, __m256i);
       __m256i mask = libcrux_intrinsics_avx2_mm256_sub_epi32(
-          libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)43), result1);
+          libcrux_intrinsics_avx2_mm256_set1_epi32(43), result1);
       __m256i mask0 =
-          libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)31, mask, __m256i);
+          libcrux_intrinsics_avx2_mm256_srai_epi32(31, mask, __m256i);
       __m256i not_result =
           libcrux_intrinsics_avx2_mm256_xor_si256(result1, mask0);
       r1[0U] = libcrux_intrinsics_avx2_mm256_and_si256(result1, not_result);
@@ -414,14 +413,14 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_decompose(
     }
     case 261888: {
       __m256i result = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-          ceil_of_r_by_1280,
-          libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1025));
+          ceil_of_r_by_1280, libcrux_intrinsics_avx2_mm256_set1_epi32(1025));
       __m256i result0 = libcrux_intrinsics_avx2_mm256_add_epi32(
-          result, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 21U));
-      __m256i result1 = libcrux_intrinsics_avx2_mm256_srai_epi32(
-          (int32_t)22, result0, __m256i);
+          result, libcrux_intrinsics_avx2_mm256_set1_epi32(
+                      (int32_t)((uint32_t)1 << 21U)));
+      __m256i result1 =
+          libcrux_intrinsics_avx2_mm256_srai_epi32(22, result0, __m256i);
       r1[0U] = libcrux_intrinsics_avx2_mm256_and_si256(
-          result1, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)15));
+          result1, libcrux_intrinsics_avx2_mm256_set1_epi32(15));
       break;
     }
     default: {
@@ -430,16 +429,15 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_decompose(
       KRML_HOST_EXIT(255U);
     }
   }
-  int32_t alpha = gamma2 * (int32_t)2;
+  int32_t alpha = gamma2 * 2;
   __m256i r0_tmp = libcrux_intrinsics_avx2_mm256_mullo_epi32(
       r1[0U], libcrux_intrinsics_avx2_mm256_set1_epi32(alpha));
   __m256i r0_tmp0 = libcrux_intrinsics_avx2_mm256_sub_epi32(r2, r0_tmp);
   __m256i field_modulus_halved = libcrux_intrinsics_avx2_mm256_set1_epi32(
-      (LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS - (int32_t)1) / (int32_t)2);
+      (LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS - 1) / 2);
   __m256i mask =
       libcrux_intrinsics_avx2_mm256_sub_epi32(field_modulus_halved, r0_tmp0);
-  __m256i mask0 =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)31, mask, __m256i);
+  __m256i mask0 = libcrux_intrinsics_avx2_mm256_srai_epi32(31, mask, __m256i);
   __m256i field_modulus_and_mask = libcrux_intrinsics_avx2_mm256_and_si256(
       mask0, libcrux_intrinsics_avx2_mm256_set1_epi32(
                  LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS));
@@ -474,7 +472,7 @@ static KRML_MUSTINLINE size_t libcrux_ml_dsa_simd_avx2_arithmetic_compute_hint(
   int32_t hints_mask = libcrux_intrinsics_avx2_mm256_movemask_ps(
       libcrux_intrinsics_avx2_mm256_castsi256_ps(hint[0U]));
   hint[0U] = libcrux_intrinsics_avx2_mm256_and_si256(
-      hint[0U], libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1));
+      hint[0U], libcrux_intrinsics_avx2_mm256_set1_epi32(1));
   return (size_t)core_num__i32__count_ones(hints_mask);
 }
 
@@ -506,14 +504,14 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_use_hint(
   __m256i all_zeros = libcrux_intrinsics_avx2_mm256_setzero_si256();
   __m256i negate_hints =
       libcrux_intrinsics_avx2_vec256_blendv_epi32(all_zeros, hint[0U], r0);
-  __m256i negate_hints0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)1, negate_hints, __m256i);
+  __m256i negate_hints0 =
+      libcrux_intrinsics_avx2_mm256_slli_epi32(1, negate_hints, __m256i);
   __m256i hints =
       libcrux_intrinsics_avx2_mm256_sub_epi32(hint[0U], negate_hints0);
   __m256i r1_plus_hints = libcrux_intrinsics_avx2_mm256_add_epi32(r1, hints);
   switch (gamma2) {
     case 95232: {
-      __m256i max = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)43);
+      __m256i max = libcrux_intrinsics_avx2_mm256_set1_epi32(43);
       r1_plus_hints = libcrux_intrinsics_avx2_vec256_blendv_epi32(
           r1_plus_hints, max, r1_plus_hints);
       __m256i greater_than_or_equal_to_max =
@@ -524,7 +522,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_use_hint(
     }
     case 261888: {
       hint[0U] = libcrux_intrinsics_avx2_mm256_and_si256(
-          r1_plus_hints, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)15));
+          r1_plus_hints, libcrux_intrinsics_avx2_mm256_set1_epi32(15));
       break;
     }
     default: {
@@ -552,10 +550,8 @@ libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
     __m256i *lhs, const __m256i *rhs) {
   __m256i prod02 = libcrux_intrinsics_avx2_mm256_mul_epi32(lhs[0U], rhs[0U]);
   __m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, lhs[0U],
-                                                  __m256i),
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, rhs[0U],
-                                                  __m256i));
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, lhs[0U], __m256i),
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, rhs[0U], __m256i));
   __m256i k02 = libcrux_intrinsics_avx2_mm256_mul_epi32(
       prod02, inverse_of_modulus_mod_montgomery_r);
   __m256i k13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
@@ -565,9 +561,9 @@ libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_aux(
   __m256i res02 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod02, c02);
   __m256i res13 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod13, c13);
   __m256i res02_shifted =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, res02, __m256i);
-  lhs[0U] = libcrux_intrinsics_avx2_mm256_blend_epi32(
-      (int32_t)170, res02_shifted, res13, __m256i);
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, res02, __m256i);
+  lhs[0U] = libcrux_intrinsics_avx2_mm256_blend_epi32(170, res02_shifted, res13,
+                                                      __m256i);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -608,14 +604,12 @@ static inline void libcrux_ml_dsa_simd_avx2_arithmetic_power2round(
   r1[0U] = libcrux_intrinsics_avx2_mm256_add_epi32(
       r0[0U],
       libcrux_intrinsics_avx2_mm256_set1_epi32(
-          ((int32_t)1
-           << (uint32_t)(LIBCRUX_ML_DSA_CONSTANTS_BITS_IN_LOWER_PART_OF_T -
-                         (size_t)1U)) -
-          (int32_t)1));
-  r1[0U] =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)13, r1[0U], __m256i);
-  __m256i tmp =
-      libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)13, r1[0U], __m256i);
+          (int32_t)((uint32_t)1
+                    << (uint32_t)(LIBCRUX_ML_DSA_CONSTANTS_BITS_IN_LOWER_PART_OF_T -
+                                  (size_t)1U)) -
+          1));
+  r1[0U] = libcrux_intrinsics_avx2_mm256_srai_epi32(13, r1[0U], __m256i);
+  __m256i tmp = libcrux_intrinsics_avx2_mm256_slli_epi32(13, r1[0U], __m256i);
   r0[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(r0[0U], tmp);
 }
 
@@ -630,7 +624,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_power2round_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_REJECTION_SAMPLE_LESS_THAN_FIELD_MODULUS_BYTESTREAM_TO_POTENTIAL_COEFFICIENTS_COEFFICIENT_MASK \
-  (((int32_t)1 << 23U) - (int32_t)1)
+  ((int32_t)((uint32_t)1 << 23U) - 1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
@@ -643,18 +637,12 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_bytestream_to_
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_loadu_si256_u8(
       Eurydice_array_to_slice_shared_6e(&serialized_extended));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set_epi32(
-                        (int32_t)0, (int32_t)5, (int32_t)4, (int32_t)3,
-                        (int32_t)0, (int32_t)2, (int32_t)1, (int32_t)0));
+      coefficients,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 5, 4, 3, 0, 2, 1, 0));
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      coefficients0,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)-1, (int8_t)8,
-          (int8_t)7, (int8_t)6, (int8_t)-1, (int8_t)5, (int8_t)4, (int8_t)3,
-          (int8_t)-1, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1, (int8_t)11,
-          (int8_t)10, (int8_t)9, (int8_t)-1, (int8_t)8, (int8_t)7, (int8_t)6,
-          (int8_t)-1, (int8_t)5, (int8_t)4, (int8_t)3, (int8_t)-1, (int8_t)2,
-          (int8_t)1, (int8_t)0));
+      coefficients0, libcrux_intrinsics_avx2_mm256_set_epi8(
+                         -1, 11, 10, 9, -1, 8, 7, 6, -1, 5, 4, 3, -1, 2, 1, 0,
+                         -1, 11, 10, 9, -1, 8, 7, 6, -1, 5, 4, 3, -1, 2, 1, 0));
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients1,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -709,7 +697,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_sample(
                                                 potential_coefficients);
   int32_t good = libcrux_intrinsics_avx2_mm256_movemask_ps(
       libcrux_intrinsics_avx2_mm256_castsi256_ps(compare_with_field_modulus));
-  int32_t good_lower_half = good & (int32_t)15;
+  int32_t good_lower_half = good & 15;
   int32_t good_upper_half = good >> 4U;
   Eurydice_arr_88 lower_shuffles =
       LIBCRUX_ML_DSA_SIMD_AVX2_REJECTION_SAMPLE_SHUFFLE_TABLE_SHUFFLE_TABLE
@@ -731,7 +719,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_sample(
   __m128i upper_shuffles0 = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_array_to_slice_shared_46(&upper_shuffles));
   __m128i upper_coefficients = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, potential_coefficients, __m128i);
+      1, potential_coefficients, __m128i);
   __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       upper_coefficients, upper_shuffles0);
   libcrux_intrinsics_avx2_mm_storeu_si128_i32(
@@ -756,7 +744,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_field_modulus_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_DESERIALIZE_TO_UNSIGNED_WHEN_ETA_IS_4_COEFFICIENT_MASK \
-  (((int32_t)1 << 4U) - (int32_t)1)
+  ((int32_t)((uint32_t)1 << 4U) - 1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
@@ -767,9 +755,8 @@ libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_4(
       (int32_t)bytes.ptr[2U], (int32_t)bytes.ptr[1U], (int32_t)bytes.ptr[1U],
       (int32_t)bytes.ptr[0U], (int32_t)bytes.ptr[0U]);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      bytes_in_simd_unit, libcrux_intrinsics_avx2_mm256_set_epi32(
-                              (int32_t)4, (int32_t)0, (int32_t)4, (int32_t)0,
-                              (int32_t)4, (int32_t)0, (int32_t)4, (int32_t)0));
+      bytes_in_simd_unit,
+      libcrux_intrinsics_avx2_mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -777,7 +764,7 @@ libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_4(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_DESERIALIZE_TO_UNSIGNED_WHEN_ETA_IS_2_COEFFICIENT_MASK \
-  (((int32_t)1 << 3U) - (int32_t)1)
+  ((int32_t)((uint32_t)1 << 3U) - 1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
@@ -785,14 +772,15 @@ libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned_when_eta_is_2(
     Eurydice_borrow_slice_u8 bytes) {
   __m256i bytes_in_simd_unit = libcrux_intrinsics_avx2_mm256_set_epi32(
       (int32_t)bytes.ptr[2U], (int32_t)bytes.ptr[2U],
-      (int32_t)bytes.ptr[2U] << 8U | (int32_t)bytes.ptr[1U],
+      (int32_t)((uint32_t)(int32_t)bytes.ptr[2U] << 8U) |
+          (int32_t)bytes.ptr[1U],
       (int32_t)bytes.ptr[1U], (int32_t)bytes.ptr[1U],
-      (int32_t)bytes.ptr[1U] << 8U | (int32_t)bytes.ptr[0U],
+      (int32_t)((uint32_t)(int32_t)bytes.ptr[1U] << 8U) |
+          (int32_t)bytes.ptr[0U],
       (int32_t)bytes.ptr[0U], (int32_t)bytes.ptr[0U]);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      bytes_in_simd_unit, libcrux_intrinsics_avx2_mm256_set_epi32(
-                              (int32_t)5, (int32_t)2, (int32_t)7, (int32_t)4,
-                              (int32_t)1, (int32_t)6, (int32_t)3, (int32_t)0));
+      bytes_in_simd_unit,
+      libcrux_intrinsics_avx2_mm256_set_epi32(5, 2, 7, 4, 1, 6, 3, 0));
   return libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -833,11 +821,11 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_shift_interval_fd(
     __m256i coefficients) {
   __m256i uu____0;
   __m256i quotient = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)26));
+      coefficients, libcrux_intrinsics_avx2_mm256_set1_epi32(26));
   __m256i quotient0 =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)7, quotient, __m256i);
+      libcrux_intrinsics_avx2_mm256_srai_epi32(7, quotient, __m256i);
   __m256i quotient1 = libcrux_intrinsics_avx2_mm256_mullo_epi32(
-      quotient0, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)5));
+      quotient0, libcrux_intrinsics_avx2_mm256_set1_epi32(5));
   __m256i coefficients_mod_5 =
       libcrux_intrinsics_avx2_mm256_sub_epi32(coefficients, quotient1);
   uu____0 = libcrux_intrinsics_avx2_mm256_sub_epi32(
@@ -860,7 +848,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_fd(
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned(
           libcrux_ml_dsa_constants_Eta_Four, input);
   int32_t interval_boundary;
-  interval_boundary = (int32_t)15;
+  interval_boundary = 15;
   __m256i compare_with_interval_boundary =
       libcrux_intrinsics_avx2_mm256_cmpgt_epi32(
           libcrux_intrinsics_avx2_mm256_set1_epi32(interval_boundary),
@@ -868,7 +856,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_fd(
   int32_t good = libcrux_intrinsics_avx2_mm256_movemask_ps(
       libcrux_intrinsics_avx2_mm256_castsi256_ps(
           compare_with_interval_boundary));
-  int32_t good_lower_half = good & (int32_t)15;
+  int32_t good_lower_half = good & 15;
   int32_t good_upper_half = good >> 4U;
   __m256i shifted =
       libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_shift_interval_fd(
@@ -892,8 +880,8 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_fd(
           .data[(size_t)good_upper_half];
   __m128i upper_shuffles0 = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_array_to_slice_shared_46(&upper_shuffles));
-  __m128i upper_coefficients = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, shifted, __m128i);
+  __m128i upper_coefficients =
+      libcrux_intrinsics_avx2_mm256_extracti128_si256(1, shifted, __m128i);
   __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       upper_coefficients, upper_shuffles0);
   libcrux_intrinsics_avx2_mm_storeu_si128_i32(
@@ -946,7 +934,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_ac(
       libcrux_ml_dsa_simd_avx2_encoding_error_deserialize_to_unsigned(
           libcrux_ml_dsa_constants_Eta_Four, input);
   int32_t interval_boundary;
-  interval_boundary = (int32_t)9;
+  interval_boundary = 9;
   __m256i compare_with_interval_boundary =
       libcrux_intrinsics_avx2_mm256_cmpgt_epi32(
           libcrux_intrinsics_avx2_mm256_set1_epi32(interval_boundary),
@@ -954,7 +942,7 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_ac(
   int32_t good = libcrux_intrinsics_avx2_mm256_movemask_ps(
       libcrux_intrinsics_avx2_mm256_castsi256_ps(
           compare_with_interval_boundary));
-  int32_t good_lower_half = good & (int32_t)15;
+  int32_t good_lower_half = good & 15;
   int32_t good_upper_half = good >> 4U;
   __m256i shifted =
       libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_shift_interval_ac(
@@ -978,8 +966,8 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_sample_ac(
           .data[(size_t)good_upper_half];
   __m128i upper_shuffles0 = libcrux_intrinsics_avx2_mm_loadu_si128(
       Eurydice_array_to_slice_shared_46(&upper_shuffles));
-  __m128i upper_coefficients = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, shifted, __m128i);
+  __m128i upper_coefficients =
+      libcrux_intrinsics_avx2_mm256_extracti128_si256(1, shifted, __m128i);
   __m128i upper_coefficients0 = libcrux_intrinsics_avx2_mm_shuffle_epi8(
       upper_coefficients, upper_shuffles0);
   libcrux_intrinsics_avx2_mm_storeu_si128_i32(
@@ -1004,27 +992,22 @@ libcrux_ml_dsa_simd_avx2_rejection_sample_less_than_eta_equals_4_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_19 \
-  ((int32_t)1 << 19U)
+  ((int32_t)((uint32_t)1 << 19U))
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19_aux(
     __m256i simd_unit_shifted) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12,
-                             (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12));
+      simd_unit_shifted,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)12, adjacent_2_combined, __m256i);
+      12, adjacent_2_combined, __m256i);
   return libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       adjacent_2_combined0,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8,
-          (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)12, (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)8, (int8_t)4,
-          (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)0));
+          -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1,
+          -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1046,7 +1029,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
           &serialized, (core_ops_range_Range_08{(size_t)0U, (size_t)16U})),
       lower_4);
   __m128i upper_4 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_4_combined, __m128i);
+      1, adjacent_4_combined, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice_mut_364(
           &serialized, (core_ops_range_Range_08{(size_t)10U, (size_t)26U})),
@@ -1059,29 +1042,27 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_2_POW_17 \
-  ((int32_t)1 << 17U)
+  ((int32_t)((uint32_t)1 << 17U))
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17_aux(
     __m256i simd_unit_shifted) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)14, (int32_t)0, (int32_t)14,
-                             (int32_t)0, (int32_t)14, (int32_t)0, (int32_t)14));
+      simd_unit_shifted,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 14, 0, 14, 0, 14, 0, 14));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)14, adjacent_2_combined, __m256i);
+      14, adjacent_2_combined, __m256i);
   __m256i every_second_element = libcrux_intrinsics_avx2_mm256_bsrli_epi128(
-      (int32_t)8, adjacent_2_combined0, __m256i);
+      8, adjacent_2_combined0, __m256i);
   __m256i every_second_element_shifted =
-      libcrux_intrinsics_avx2_mm256_slli_epi64((int32_t)36,
-                                               every_second_element, __m256i);
+      libcrux_intrinsics_avx2_mm256_slli_epi64(36, every_second_element,
+                                               __m256i);
   __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_add_epi64(
       adjacent_2_combined0, every_second_element_shifted);
   return libcrux_intrinsics_avx2_mm256_srlv_epi64(
       adjacent_4_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi64x((int64_t)28, (int64_t)0,
-                                               (int64_t)28, (int64_t)0));
+      libcrux_intrinsics_avx2_mm256_set_epi64x(28LL, 0LL, 28LL, 0LL));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1103,7 +1084,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
           &serialized, (core_ops_range_Range_08{(size_t)0U, (size_t)16U})),
       lower_4);
   __m128i upper_4 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_4_combined, __m128i);
+      1, adjacent_4_combined, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice_mut_364(
           &serialized, (core_ops_range_Range_08{(size_t)9U, (size_t)25U})),
@@ -1150,10 +1131,13 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_gamma1_serialize_a2(
                                                      gamma1_exponent);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 ((int32_t)1 << 17U)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 \
+  ((int32_t)((uint32_t)1 << 17U))
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17_TIMES_2_MASK \
-  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 << 1U) - (int32_t)1)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17_TIMES_2_MASK   \
+  ((int32_t)((uint32_t)LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_17 \
+             << 1U) -                                                     \
+   1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
@@ -1170,16 +1154,11 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17_uns
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       serialized_vec,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)15, (int8_t)14, (int8_t)13, (int8_t)-1,
-          (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)-1, (int8_t)11,
-          (int8_t)10, (int8_t)9, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)7,
-          (int8_t)-1, (int8_t)8, (int8_t)7, (int8_t)6, (int8_t)-1, (int8_t)6,
-          (int8_t)5, (int8_t)4, (int8_t)-1, (int8_t)4, (int8_t)3, (int8_t)2,
-          (int8_t)-1, (int8_t)2, (int8_t)1, (int8_t)0));
+          -1, 15, 14, 13, -1, 13, 12, 11, -1, 11, 10, 9, -1, 9, 8, 7, -1, 8, 7,
+          6, -1, 6, 5, 4, -1, 4, 3, 2, -1, 2, 1, 0));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set_epi32(
-                        (int32_t)6, (int32_t)4, (int32_t)2, (int32_t)0,
-                        (int32_t)6, (int32_t)4, (int32_t)2, (int32_t)0));
+      coefficients,
+      libcrux_intrinsics_avx2_mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -1187,10 +1166,13 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_17_uns
   out[0U] = coefficients1;
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 ((int32_t)1 << 19U)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 \
+  ((int32_t)((uint32_t)1 << 19U))
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19_TIMES_2_MASK \
-  ((LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 << 1U) - (int32_t)1)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19_TIMES_2_MASK   \
+  ((int32_t)((uint32_t)LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_GAMMA1_GAMMA1_19 \
+             << 1U) -                                                     \
+   1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
@@ -1207,16 +1189,11 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_deserialize_when_gamma1_is_2_pow_19_uns
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       serialized_vec,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)15, (int8_t)14, (int8_t)13, (int8_t)-1,
-          (int8_t)13, (int8_t)12, (int8_t)11, (int8_t)-1, (int8_t)10, (int8_t)9,
-          (int8_t)8, (int8_t)-1, (int8_t)8, (int8_t)7, (int8_t)6, (int8_t)-1,
-          (int8_t)9, (int8_t)8, (int8_t)7, (int8_t)-1, (int8_t)7, (int8_t)6,
-          (int8_t)5, (int8_t)-1, (int8_t)4, (int8_t)3, (int8_t)2, (int8_t)-1,
-          (int8_t)2, (int8_t)1, (int8_t)0));
+          -1, 15, 14, 13, -1, 13, 12, 11, -1, 10, 9, 8, -1, 8, 7, 6, -1, 9, 8,
+          7, -1, 7, 6, 5, -1, 4, 3, 2, -1, 2, 1, 0));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set_epi32(
-                        (int32_t)4, (int32_t)0, (int32_t)4, (int32_t)0,
-                        (int32_t)4, (int32_t)0, (int32_t)4, (int32_t)0));
+      coefficients,
+      libcrux_intrinsics_avx2_mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -1281,26 +1258,20 @@ static KRML_MUSTINLINE __m128i
 libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(
     const __m256i *simd_unit) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
-                         (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28,
-                         (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28));
+      simd_unit[0U],
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)28, adjacent_2_combined, __m256i);
+      28, adjacent_2_combined, __m256i);
   __m256i adjacent_4_combined =
       libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
           adjacent_2_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)6,
-              (int32_t)2, (int32_t)4, (int32_t)0));
+          libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 0, 0, 6, 2, 4, 0));
   __m128i adjacent_4_combined0 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
   return libcrux_intrinsics_avx2_mm_shuffle_epi8(
-      adjacent_4_combined0,
-      libcrux_intrinsics_avx2_mm_set_epi8(
-          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
-          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
-          (int8_t)-16, (int8_t)-16, (int8_t)12, (int8_t)4, (int8_t)8,
-          (int8_t)0));
+      adjacent_4_combined0, libcrux_intrinsics_avx2_mm_set_epi8(
+                                -16, -16, -16, -16, -16, -16, -16, -16, -16,
+                                -16, -16, -16, 12, 4, 8, 0));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1308,34 +1279,29 @@ static KRML_MUSTINLINE __m256i
 libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_6(
     const __m256i *simd_unit) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
-                         (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26,
-                         (int32_t)0, (int32_t)26, (int32_t)0, (int32_t)26));
+      simd_unit[0U],
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 26, 0, 26, 0, 26, 0, 26));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)26, adjacent_2_combined, __m256i);
+      26, adjacent_2_combined, __m256i);
   __m256i adjacent_3_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       adjacent_2_combined0,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1, (int8_t)0,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)1, (int8_t)0));
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0, -1, -1,
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 8, 1, 0));
   __m256i adjacent_3_combined0 = libcrux_intrinsics_avx2_mm256_mullo_epi16(
       adjacent_3_combined,
       libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
-          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
-          (int16_t)1 << 0U, (int16_t)1 << 4U, (int16_t)1 << 0U,
-          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
-          (int16_t)1 << 0U, (int16_t)1 << 0U, (int16_t)1 << 0U,
-          (int16_t)1 << 4U));
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 4U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 0U),
+          (int16_t)((uint32_t)1 << 0U), (int16_t)((uint32_t)1 << 4U)));
   return libcrux_intrinsics_avx2_mm256_srlv_epi32(
       adjacent_3_combined0,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)4, (int32_t)0,
-          (int32_t)0, (int32_t)0, (int32_t)4));
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 0, 4, 0, 0, 0, 4));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1362,7 +1328,7 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(
       __m128i lower_3 =
           libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_3_combined);
       __m128i upper_3 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-          (int32_t)1, adjacent_3_combined, __m128i);
+          1, adjacent_3_combined, __m128i);
       libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
           Eurydice_array_to_subslice_mut_367(
               &serialized, (core_ops_range_Range_08{(size_t)0U, (size_t)16U})),
@@ -1396,33 +1362,27 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_commitment_serialize_a2(
   libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(simd_unit, serialized);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_ETA_4 ((int32_t)4)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_ETA_4 (4)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m128i
 libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4_aux(
     __m256i simd_unit_shifted) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28,
-                             (int32_t)0, (int32_t)28, (int32_t)0, (int32_t)28));
+      simd_unit_shifted,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)28, adjacent_2_combined, __m256i);
+      28, adjacent_2_combined, __m256i);
   __m256i adjacent_4_combined =
       libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
           adjacent_2_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)6,
-              (int32_t)2, (int32_t)4, (int32_t)0));
+          libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 0, 0, 6, 2, 4, 0));
   __m128i adjacent_4_combined0 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined);
   return libcrux_intrinsics_avx2_mm_shuffle_epi8(
-      adjacent_4_combined0,
-      libcrux_intrinsics_avx2_mm_set_epi8(
-          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
-          (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16, (int8_t)-16,
-          (int8_t)-16, (int8_t)-16, (int8_t)12, (int8_t)4, (int8_t)8,
-          (int8_t)0));
+      adjacent_4_combined0, libcrux_intrinsics_avx2_mm_set_epi8(
+                                -16, -16, -16, -16, -16, -16, -16, -16, -16,
+                                -16, -16, -16, 12, 4, 8, 0));
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1448,49 +1408,37 @@ libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4(
       uint8_t);
 }
 
-#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_ETA_2 ((int32_t)2)
+#define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_ERROR_ETA_2 (2)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m128i
 libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_2_aux(
     __m256i simd_unit_shifted) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit_shifted, libcrux_intrinsics_avx2_mm256_set_epi32(
-                             (int32_t)0, (int32_t)29, (int32_t)0, (int32_t)29,
-                             (int32_t)0, (int32_t)29, (int32_t)0, (int32_t)29));
+      simd_unit_shifted,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 29, 0, 29, 0, 29, 0, 29));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)29, adjacent_2_combined, __m256i);
+      29, adjacent_2_combined, __m256i);
   __m256i adjacent_4_combined = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       adjacent_2_combined0,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)8, (int8_t)-1, (int8_t)0,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)-1,
-          (int8_t)-1, (int8_t)-1, (int8_t)-1, (int8_t)8, (int8_t)-1,
-          (int8_t)0));
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, -1, 0, -1, -1,
+          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, -1, 0));
   __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_madd_epi16(
       adjacent_4_combined,
       libcrux_intrinsics_avx2_mm256_set_epi16(
-          (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0,
-          (int16_t)0, (int16_t)1 << 6U, (int16_t)1, (int16_t)0, (int16_t)0,
-          (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)0, (int16_t)1 << 6U,
-          (int16_t)1));
+          0, 0, 0, 0, 0, 0, (int16_t)((uint32_t)1 << 6U), 1, 0, 0, 0, 0, 0, 0,
+          (int16_t)((uint32_t)1 << 6U), 1));
   __m256i adjacent_6_combined =
       libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
           adjacent_4_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0,
-              (int32_t)0, (int32_t)4, (int32_t)0));
+          libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
   __m128i adjacent_6_combined0 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_6_combined);
   __m128i adjacent_6_combined1 = libcrux_intrinsics_avx2_mm_sllv_epi32(
-      adjacent_6_combined0,
-      libcrux_intrinsics_avx2_mm_set_epi32((int32_t)0, (int32_t)0, (int32_t)0,
-                                           (int32_t)20));
-  return libcrux_intrinsics_avx2_mm_srli_epi64((int32_t)20,
-                                               adjacent_6_combined1, __m128i);
+      adjacent_6_combined0, libcrux_intrinsics_avx2_mm_set_epi32(0, 0, 0, 20));
+  return libcrux_intrinsics_avx2_mm_srli_epi64(20, adjacent_6_combined1,
+                                               __m128i);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -1560,11 +1508,11 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_error_deserialize(
   int32_t eta_v;
   switch (eta) {
     case libcrux_ml_dsa_constants_Eta_Two: {
-      eta_v = (int32_t)2;
+      eta_v = 2;
       break;
     }
     case libcrux_ml_dsa_constants_Eta_Four: {
-      eta_v = (int32_t)4;
+      eta_v = 4;
       break;
     }
     default: {
@@ -1589,8 +1537,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_error_deserialize_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE \
-  ((int32_t)1 << (uint32_t)(LIBCRUX_ML_DSA_CONSTANTS_BITS_IN_LOWER_PART_OF_T -       \
-                            (size_t)1U))
+  ((int32_t)((uint32_t)1                                                             \
+             << (uint32_t)(LIBCRUX_ML_DSA_CONSTANTS_BITS_IN_LOWER_PART_OF_T -        \
+                           (size_t)1U)))
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m256i
@@ -1604,32 +1553,28 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE __m128i
 libcrux_ml_dsa_simd_avx2_encoding_t0_serialize_aux(__m256i simd_unit) {
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit, libcrux_intrinsics_avx2_mm256_set_epi32(
-                     (int32_t)0, (int32_t)19, (int32_t)0, (int32_t)19,
-                     (int32_t)0, (int32_t)19, (int32_t)0, (int32_t)19));
+      simd_unit,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 19, 0, 19, 0, 19, 0, 19));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)19, adjacent_2_combined, __m256i);
+      19, adjacent_2_combined, __m256i);
   __m256i adjacent_4_combined =
       libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
           adjacent_2_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)0, (int32_t)6,
-              (int32_t)4, (int32_t)2, (int32_t)0));
+          libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 0, 0, 6, 4, 2, 0));
   __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      adjacent_4_combined, libcrux_intrinsics_avx2_mm256_set_epi32(
-                               (int32_t)0, (int32_t)6, (int32_t)0, (int32_t)6,
-                               (int32_t)0, (int32_t)6, (int32_t)0, (int32_t)6));
+      adjacent_4_combined,
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 6, 0, 6, 0, 6, 0, 6));
   __m256i adjacent_4_combined1 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)6, adjacent_4_combined0, __m256i);
+      6, adjacent_4_combined0, __m256i);
   __m256i second_4_combined = libcrux_intrinsics_avx2_mm256_bsrli_epi128(
-      (int32_t)8, adjacent_4_combined1, __m256i);
-  __m256i least_12_bits_shifted_up = libcrux_intrinsics_avx2_mm256_slli_epi64(
-      (int32_t)52, second_4_combined, __m256i);
+      8, adjacent_4_combined1, __m256i);
+  __m256i least_12_bits_shifted_up =
+      libcrux_intrinsics_avx2_mm256_slli_epi64(52, second_4_combined, __m256i);
   __m256i bits_sequential = libcrux_intrinsics_avx2_mm256_add_epi64(
       adjacent_4_combined1, least_12_bits_shifted_up);
   __m256i bits_sequential0 = libcrux_intrinsics_avx2_mm256_srlv_epi64(
-      bits_sequential, libcrux_intrinsics_avx2_mm256_set_epi64x(
-                           (int64_t)0, (int64_t)0, (int64_t)12, (int64_t)0));
+      bits_sequential,
+      libcrux_intrinsics_avx2_mm256_set_epi64x(0LL, 0LL, 12LL, 0LL));
   return libcrux_intrinsics_avx2_mm256_castsi256_si128(bits_sequential0);
 }
 
@@ -1661,7 +1606,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t0_serialize_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T0_DESERIALIZE_UNSIGNED_COEFFICIENT_MASK \
-  (((int32_t)1 << 13U) - (int32_t)1)
+  ((int32_t)((uint32_t)1 << 13U) - 1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
@@ -1677,18 +1622,12 @@ libcrux_ml_dsa_simd_avx2_encoding_t0_deserialize_unsigned(
   __m256i serialized1 =
       libcrux_intrinsics_avx2_mm256_set_m128i(serialized0, serialized0);
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
-      serialized1,
-      libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)12, (int8_t)11, (int8_t)-1,
-          (int8_t)11, (int8_t)10, (int8_t)9, (int8_t)-1, (int8_t)-1, (int8_t)9,
-          (int8_t)8, (int8_t)-1, (int8_t)8, (int8_t)7, (int8_t)6, (int8_t)-1,
-          (int8_t)6, (int8_t)5, (int8_t)4, (int8_t)-1, (int8_t)-1, (int8_t)4,
-          (int8_t)3, (int8_t)-1, (int8_t)3, (int8_t)2, (int8_t)1, (int8_t)-1,
-          (int8_t)-1, (int8_t)1, (int8_t)0));
+      serialized1, libcrux_intrinsics_avx2_mm256_set_epi8(
+                       -1, -1, 12, 11, -1, 11, 10, 9, -1, -1, 9, 8, -1, 8, 7, 6,
+                       -1, 6, 5, 4, -1, -1, 4, 3, -1, 3, 2, 1, -1, -1, 1, 0));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set_epi32(
-                        (int32_t)3, (int32_t)6, (int32_t)1, (int32_t)4,
-                        (int32_t)7, (int32_t)2, (int32_t)5, (int32_t)0));
+      coefficients,
+      libcrux_intrinsics_avx2_mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
   __m256i coefficients1 = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -1718,24 +1657,19 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t1_serialize(
     const __m256i *simd_unit, Eurydice_mut_borrow_slice_u8 out) {
   Eurydice_arr_6d serialized = {{0U}};
   __m256i adjacent_2_combined = libcrux_intrinsics_avx2_mm256_sllv_epi32(
-      simd_unit[0U], libcrux_intrinsics_avx2_mm256_set_epi32(
-                         (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22,
-                         (int32_t)0, (int32_t)22, (int32_t)0, (int32_t)22));
+      simd_unit[0U],
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22));
   __m256i adjacent_2_combined0 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)22, adjacent_2_combined, __m256i);
+      22, adjacent_2_combined, __m256i);
   __m256i adjacent_4_combined =
       libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(
           adjacent_2_combined0,
-          libcrux_intrinsics_avx2_mm256_set_epi32(
-              (int32_t)0, (int32_t)0, (int32_t)6, (int32_t)4, (int32_t)0,
-              (int32_t)0, (int32_t)2, (int32_t)0));
+          libcrux_intrinsics_avx2_mm256_set_epi32(0, 0, 6, 4, 0, 0, 2, 0));
   __m256i adjacent_4_combined0 = libcrux_intrinsics_avx2_mm256_sllv_epi32(
       adjacent_4_combined,
-      libcrux_intrinsics_avx2_mm256_set_epi32(
-          (int32_t)0, (int32_t)12, (int32_t)0, (int32_t)12, (int32_t)0,
-          (int32_t)12, (int32_t)0, (int32_t)12));
+      libcrux_intrinsics_avx2_mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12));
   __m256i adjacent_4_combined1 = libcrux_intrinsics_avx2_mm256_srli_epi64(
-      (int32_t)12, adjacent_4_combined0, __m256i);
+      12, adjacent_4_combined0, __m256i);
   __m128i lower_4 =
       libcrux_intrinsics_avx2_mm256_castsi256_si128(adjacent_4_combined1);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
@@ -1743,7 +1677,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t1_serialize(
           &serialized, (core_ops_range_Range_08{(size_t)0U, (size_t)16U})),
       lower_4);
   __m128i upper_4 = libcrux_intrinsics_avx2_mm256_extracti128_si256(
-      (int32_t)1, adjacent_4_combined1, __m128i);
+      1, adjacent_4_combined1, __m128i);
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
       Eurydice_array_to_subslice_mut_369(
           &serialized, (core_ops_range_Range_08{(size_t)5U, (size_t)21U})),
@@ -1766,7 +1700,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_t1_serialize_a2(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_ENCODING_T1_DESERIALIZE_COEFFICIENT_MASK \
-  (((int32_t)1 << 10U) - (int32_t)1)
+  ((int32_t)((uint32_t)1 << 10U) - 1)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t1_deserialize(
@@ -1783,16 +1717,11 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_encoding_t1_deserialize(
   __m256i coefficients = libcrux_intrinsics_avx2_mm256_shuffle_epi8(
       bytes_loaded0,
       libcrux_intrinsics_avx2_mm256_set_epi8(
-          (int8_t)-1, (int8_t)-1, (int8_t)9, (int8_t)8, (int8_t)-1, (int8_t)-1,
-          (int8_t)8, (int8_t)7, (int8_t)-1, (int8_t)-1, (int8_t)7, (int8_t)6,
-          (int8_t)-1, (int8_t)-1, (int8_t)6, (int8_t)5, (int8_t)-1, (int8_t)-1,
-          (int8_t)4, (int8_t)3, (int8_t)-1, (int8_t)-1, (int8_t)3, (int8_t)2,
-          (int8_t)-1, (int8_t)-1, (int8_t)2, (int8_t)1, (int8_t)-1, (int8_t)-1,
-          (int8_t)1, (int8_t)0));
+          -1, -1, 9, 8, -1, -1, 8, 7, -1, -1, 7, 6, -1, -1, 6, 5, -1, -1, 4, 3,
+          -1, -1, 3, 2, -1, -1, 2, 1, -1, -1, 1, 0));
   __m256i coefficients0 = libcrux_intrinsics_avx2_mm256_srlv_epi32(
-      coefficients, libcrux_intrinsics_avx2_mm256_set_epi32(
-                        (int32_t)6, (int32_t)4, (int32_t)2, (int32_t)0,
-                        (int32_t)6, (int32_t)4, (int32_t)2, (int32_t)0));
+      coefficients,
+      libcrux_intrinsics_avx2_mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
   out[0U] = libcrux_intrinsics_avx2_mm256_and_si256(
       coefficients0,
       libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -1852,9 +1781,9 @@ static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6(
       libcrux_intrinsics_avx2_mm256_set1_epi32(
           (int32_t)
               LIBCRUX_ML_DSA_SIMD_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R);
-  __m256i zeta7 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)25847);
-  __m256i zeta60 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)-2608894);
-  __m256i zeta61 = libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)-518909);
+  __m256i zeta7 = libcrux_intrinsics_avx2_mm256_set1_epi32(25847);
+  __m256i zeta60 = libcrux_intrinsics_avx2_mm256_set1_epi32(-2608894);
+  __m256i zeta61 = libcrux_intrinsics_avx2_mm256_set1_epi32(-518909);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_7_and_6_mul(
       re, (size_t)0U, zeta7,
       LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_7_AND_6_STEP_BY_7,
@@ -2074,61 +2003,61 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3(
     Eurydice_arr_cd0 *re) {
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_f6(re, (size_t)0U,
-                                                            (int32_t)237124);
+                                                            237124);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_f6(re, (size_t)1U,
-                                                            (int32_t)-777960);
+                                                            -777960);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_f6(re, (size_t)2U,
-                                                            (int32_t)-876248);
+                                                            -876248);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_f6(re, (size_t)3U,
-                                                            (int32_t)466468);
+                                                            466468);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)0U,
-                                                            (int32_t)1826347);
+                                                            1826347);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)1U,
-                                                            (int32_t)2353451);
+                                                            2353451);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)2U,
-                                                            (int32_t)-359251);
+                                                            -359251);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)3U,
-                                                            (int32_t)-2091905);
+                                                            -2091905);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)4U,
-                                                            (int32_t)3119733);
+                                                            3119733);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)5U,
-                                                            (int32_t)-2884855);
+                                                            -2884855);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)6U,
-                                                            (int32_t)3111497);
+                                                            3111497);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_90(re, (size_t)7U,
-                                                            (int32_t)2680103);
+                                                            2680103);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)0U,
-                                                            (int32_t)2725464);
+                                                            2725464);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)1U,
-                                                            (int32_t)1024112);
+                                                            1024112);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)2U,
-                                                            (int32_t)-1079900);
+                                                            -1079900);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)3U,
-                                                            (int32_t)3585928);
+                                                            3585928);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)4U,
-                                                            (int32_t)-549488);
+                                                            -549488);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)5U,
-                                                            (int32_t)-1119584);
+                                                            -1119584);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)6U,
-                                                            (int32_t)2619752);
+                                                            2619752);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)7U,
-                                                            (int32_t)-2108549);
+                                                            -2108549);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)8U,
-                                                            (int32_t)-2118186);
+                                                            -2118186);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)9U,
-                                                            (int32_t)-3859737);
+                                                            -3859737);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)10U,
-                                                            (int32_t)-1399561);
+                                                            -1399561);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)11U,
-                                                            (int32_t)-3277672);
+                                                            -3277672);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)12U,
-                                                            (int32_t)1757237);
+                                                            1757237);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)13U,
-                                                            (int32_t)-19422);
+                                                            -19422);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)14U,
-                                                            (int32_t)4010497);
+                                                            4010497);
   libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_5_to_3_round_7b(re, (size_t)15U,
-                                                            (int32_t)280005);
+                                                            280005);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2139,8 +2068,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(
   __m256i summands = libcrux_intrinsics_avx2_mm256_set_m128i(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(re1),
       libcrux_intrinsics_avx2_mm256_castsi256_si128(re0));
-  __m256i zeta_products = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)19, re1, re0, __m256i);
+  __m256i zeta_products =
+      libcrux_intrinsics_avx2_mm256_permute2x128_si256(19, re1, re0, __m256i);
   __m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi32(
       zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
   libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(&zeta_products,
@@ -2153,7 +2082,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(
       libcrux_intrinsics_avx2_mm256_castsi256_si128(sub_terms),
       libcrux_intrinsics_avx2_mm256_castsi256_si128(add_terms));
   __m256i nre1 = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)19, sub_terms, add_terms, __m256i);
+      19, sub_terms, add_terms, __m256i);
   re->data[index] = nre0;
   re->data[index + (size_t)1U] = nre1;
 }
@@ -2161,38 +2090,22 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_2(
     Eurydice_arr_cd0 *re) {
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)0U, (int32_t)2706023,
-                                           (int32_t)95776);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)2U, (int32_t)3077325,
-                                           (int32_t)3530437);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)4U, (int32_t)-1661693,
-                                           (int32_t)-3592148);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)6U, (int32_t)-2537516,
-                                           (int32_t)3915439);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)8U, (int32_t)-3861115,
-                                           (int32_t)-3043716);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)10U, (int32_t)3574422,
-                                           (int32_t)-2867647);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)12U, (int32_t)3539968,
-                                           (int32_t)-300467);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)14U, (int32_t)2348700,
-                                           (int32_t)-539299);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)16U, (int32_t)-1699267,
-                                           (int32_t)-1643818);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)18U, (int32_t)3505694,
-                                           (int32_t)-3821735);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)20U, (int32_t)3507263,
-                                           (int32_t)-2140649);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)22U, (int32_t)-1600420,
-                                           (int32_t)3699596);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)24U, (int32_t)811944,
-                                           (int32_t)531354);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)26U, (int32_t)954230,
-                                           (int32_t)3881043);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)28U, (int32_t)3900724,
-                                           (int32_t)-2556880);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)30U, (int32_t)2071892,
-                                           (int32_t)-2797779);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)0U, 2706023, 95776);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)2U, 3077325, 3530437);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)4U, -1661693, -3592148);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)6U, -2537516, 3915439);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)8U, -3861115, -3043716);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)10U, 3574422, -2867647);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)12U, 3539968, -300467);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)14U, 2348700, -539299);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)16U, -1699267, -1643818);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)18U, 3505694, -3821735);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)20U, 3507263, -2140649);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)22U, -1600420, 3699596);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)24U, 811944, 531354);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)26U, 954230, 3881043);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)28U, 3900724, -2556880);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_8(re, (size_t)30U, 2071892, -2797779);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2223,54 +2136,38 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_1(
     Eurydice_arr_cd0 *re) {
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)0U, (int32_t)-3930395,
-                                           (int32_t)-1528703, (int32_t)-3677745,
-                                           (int32_t)-3041255);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)2U, (int32_t)-1452451,
-                                           (int32_t)3475950, (int32_t)2176455,
-                                           (int32_t)-1585221);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)4U, (int32_t)-1257611,
-                                           (int32_t)1939314, (int32_t)-4083598,
-                                           (int32_t)-1000202);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)6U, (int32_t)-3190144,
-                                           (int32_t)-3157330, (int32_t)-3632928,
-                                           (int32_t)126922);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)8U, (int32_t)3412210,
-                                           (int32_t)-983419, (int32_t)2147896,
-                                           (int32_t)2715295);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)10U, (int32_t)-2967645,
-                                           (int32_t)-3693493, (int32_t)-411027,
-                                           (int32_t)-2477047);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)12U, (int32_t)-671102,
-                                           (int32_t)-1228525, (int32_t)-22981,
-                                           (int32_t)-1308169);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)14U, (int32_t)-381987,
-                                           (int32_t)1349076, (int32_t)1852771,
-                                           (int32_t)-1430430);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)16U, (int32_t)-3343383,
-                                           (int32_t)264944, (int32_t)508951,
-                                           (int32_t)3097992);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)18U, (int32_t)44288,
-                                           (int32_t)-1100098, (int32_t)904516,
-                                           (int32_t)3958618);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)20U, (int32_t)-3724342,
-                                           (int32_t)-8578, (int32_t)1653064,
-                                           (int32_t)-3249728);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)22U, (int32_t)2389356,
-                                           (int32_t)-210977, (int32_t)759969,
-                                           (int32_t)-1316856);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)24U, (int32_t)189548,
-                                           (int32_t)-3553272, (int32_t)3159746,
-                                           (int32_t)-1851402);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)26U, (int32_t)-2409325,
-                                           (int32_t)-177440, (int32_t)1315589,
-                                           (int32_t)1341330);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)28U, (int32_t)1285669,
-                                           (int32_t)-1584928, (int32_t)-812732,
-                                           (int32_t)-1439742);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)30U, (int32_t)-3019102,
-                                           (int32_t)-3881060, (int32_t)-3628969,
-                                           (int32_t)3839961);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)0U, -3930395, -1528703,
+                                           -3677745, -3041255);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)2U, -1452451, 3475950,
+                                           2176455, -1585221);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)4U, -1257611, 1939314,
+                                           -4083598, -1000202);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)6U, -3190144, -3157330,
+                                           -3632928, 126922);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)8U, 3412210, -983419,
+                                           2147896, 2715295);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)10U, -2967645, -3693493,
+                                           -411027, -2477047);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)12U, -671102, -1228525,
+                                           -22981, -1308169);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)14U, -381987, 1349076,
+                                           1852771, -1430430);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)16U, -3343383, 264944,
+                                           508951, 3097992);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)18U, 44288, -1100098,
+                                           904516, 3958618);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)20U, -3724342, -8578,
+                                           1653064, -3249728);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)22U, 2389356, -210977,
+                                           759969, -1316856);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)24U, 189548, -3553272,
+                                           3159746, -1851402);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)26U, -2409325, -177440,
+                                           1315589, 1341330);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)28U, 1285669, -1584928,
+                                           -812732, -1439742);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_4(re, (size_t)30U, -3019102, -3881060,
+                                           -3628969, 3839961);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2280,10 +2177,8 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
     int32_t zeta_b2, int32_t zeta_b3) {
   __m256i re0 = re->data[index];
   __m256i re1 = re->data[index + (size_t)1U];
-  __m256i a =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)216, re0, __m256i);
-  __m256i b =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)216, re1, __m256i);
+  __m256i a = libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, re0, __m256i);
+  __m256i b = libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, re1, __m256i);
   __m256i summands = libcrux_intrinsics_avx2_mm256_unpacklo_epi64(a, b);
   __m256i zeta_products = libcrux_intrinsics_avx2_mm256_unpackhi_epi64(a, b);
   __m256i zetas = libcrux_intrinsics_avx2_mm256_set_epi32(
@@ -2299,9 +2194,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
   __m256i b_terms_shuffled =
       libcrux_intrinsics_avx2_mm256_unpackhi_epi64(add_terms, sub_terms);
   __m256i nre0 = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)216, a_terms_shuffled, __m256i);
+      216, a_terms_shuffled, __m256i);
   __m256i nre1 = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)216, b_terms_shuffled, __m256i);
+      216, b_terms_shuffled, __m256i);
   re->data[index] = nre0;
   re->data[index + (size_t)1U] = nre1;
 }
@@ -2309,70 +2204,54 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_ntt_ntt_at_layer_0(
     Eurydice_arr_cd0 *re) {
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)0U, (int32_t)2091667, (int32_t)3407706, (int32_t)2316500,
-      (int32_t)3817976, (int32_t)-3342478, (int32_t)2244091, (int32_t)-2446433,
-      (int32_t)-3562462);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)2U, (int32_t)266997, (int32_t)2434439, (int32_t)-1235728,
-      (int32_t)3513181, (int32_t)-3520352, (int32_t)-3759364, (int32_t)-1197226,
-      (int32_t)-3193378);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)4U, (int32_t)900702, (int32_t)1859098, (int32_t)909542,
-      (int32_t)819034, (int32_t)495491, (int32_t)-1613174, (int32_t)-43260,
-      (int32_t)-522500);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)6U, (int32_t)-655327, (int32_t)-3122442, (int32_t)2031748,
-      (int32_t)3207046, (int32_t)-3556995, (int32_t)-525098, (int32_t)-768622,
-      (int32_t)-3595838);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)8U, (int32_t)342297, (int32_t)286988, (int32_t)-2437823,
-      (int32_t)4108315, (int32_t)3437287, (int32_t)-3342277, (int32_t)1735879,
-      (int32_t)203044);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)10U, (int32_t)2842341, (int32_t)2691481, (int32_t)-2590150,
-      (int32_t)1265009, (int32_t)4055324, (int32_t)1247620, (int32_t)2486353,
-      (int32_t)1595974);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)12U, (int32_t)-3767016, (int32_t)1250494, (int32_t)2635921,
-      (int32_t)-3548272, (int32_t)-2994039, (int32_t)1869119, (int32_t)1903435,
-      (int32_t)-1050970);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)14U, (int32_t)-1333058, (int32_t)1237275, (int32_t)-3318210,
-      (int32_t)-1430225, (int32_t)-451100, (int32_t)1312455, (int32_t)3306115,
-      (int32_t)-1962642);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)16U, (int32_t)-1279661, (int32_t)1917081, (int32_t)-2546312,
-      (int32_t)-1374803, (int32_t)1500165, (int32_t)777191, (int32_t)2235880,
-      (int32_t)3406031);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)18U, (int32_t)-542412, (int32_t)-2831860, (int32_t)-1671176,
-      (int32_t)-1846953, (int32_t)-2584293, (int32_t)-3724270, (int32_t)594136,
-      (int32_t)-3776993);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)20U, (int32_t)-2013608, (int32_t)2432395, (int32_t)2454455,
-      (int32_t)-164721, (int32_t)1957272, (int32_t)3369112, (int32_t)185531,
-      (int32_t)-1207385);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)22U, (int32_t)-3183426, (int32_t)162844, (int32_t)1616392,
-      (int32_t)3014001, (int32_t)810149, (int32_t)1652634, (int32_t)-3694233,
-      (int32_t)-1799107);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)24U, (int32_t)-3038916, (int32_t)3523897, (int32_t)3866901,
-      (int32_t)269760, (int32_t)2213111, (int32_t)-975884, (int32_t)1717735,
-      (int32_t)472078);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)26U, (int32_t)-426683, (int32_t)1723600, (int32_t)-1803090,
-      (int32_t)1910376, (int32_t)-1667432, (int32_t)-1104333, (int32_t)-260646,
-      (int32_t)-3833893);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)28U, (int32_t)-2939036, (int32_t)-2235985, (int32_t)-420899,
-      (int32_t)-2286327, (int32_t)183443, (int32_t)-976891, (int32_t)1612842,
-      (int32_t)-3545687);
-  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(
-      re, (size_t)30U, (int32_t)-554416, (int32_t)3919660, (int32_t)-48306,
-      (int32_t)-1362209, (int32_t)3937738, (int32_t)1400424, (int32_t)-846154,
-      (int32_t)1976782);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)0U, 2091667, 3407706,
+                                           2316500, 3817976, -3342478, 2244091,
+                                           -2446433, -3562462);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)2U, 266997, 2434439,
+                                           -1235728, 3513181, -3520352,
+                                           -3759364, -1197226, -3193378);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)4U, 900702, 1859098,
+                                           909542, 819034, 495491, -1613174,
+                                           -43260, -522500);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)6U, -655327, -3122442,
+                                           2031748, 3207046, -3556995, -525098,
+                                           -768622, -3595838);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)8U, 342297, 286988,
+                                           -2437823, 4108315, 3437287, -3342277,
+                                           1735879, 203044);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)10U, 2842341, 2691481,
+                                           -2590150, 1265009, 4055324, 1247620,
+                                           2486353, 1595974);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)12U, -3767016, 1250494,
+                                           2635921, -3548272, -2994039, 1869119,
+                                           1903435, -1050970);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)14U, -1333058, 1237275,
+                                           -3318210, -1430225, -451100, 1312455,
+                                           3306115, -1962642);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)16U, -1279661, 1917081,
+                                           -2546312, -1374803, 1500165, 777191,
+                                           2235880, 3406031);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)18U, -542412, -2831860,
+                                           -1671176, -1846953, -2584293,
+                                           -3724270, 594136, -3776993);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)20U, -2013608, 2432395,
+                                           2454455, -164721, 1957272, 3369112,
+                                           185531, -1207385);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)22U, -3183426, 162844,
+                                           1616392, 3014001, 810149, 1652634,
+                                           -3694233, -1799107);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)24U, -3038916, 3523897,
+                                           3866901, 269760, 2213111, -975884,
+                                           1717735, 472078);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)26U, -426683, 1723600,
+                                           -1803090, 1910376, -1667432,
+                                           -1104333, -260646, -3833893);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)28U, -2939036, -2235985,
+                                           -420899, -2286327, 183443, -976891,
+                                           1612842, -3545687);
+  libcrux_ml_dsa_simd_avx2_ntt_butterfly_2(re, (size_t)30U, -554416, 3919660,
+                                           -48306, -1362209, 3937738, 1400424,
+                                           -846154, 1976782);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2412,10 +2291,10 @@ libcrux_ml_dsa_simd_avx2_invntt_simd_unit_invert_ntt_at_layer_0(
     __m256i simd_unit0, __m256i simd_unit1, int32_t zeta00, int32_t zeta01,
     int32_t zeta02, int32_t zeta03, int32_t zeta10, int32_t zeta11,
     int32_t zeta12, int32_t zeta13) {
-  __m256i a_shuffled = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)216, simd_unit0, __m256i);
-  __m256i b_shuffled0 = libcrux_intrinsics_avx2_mm256_shuffle_epi32(
-      (int32_t)216, simd_unit1, __m256i);
+  __m256i a_shuffled =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, simd_unit0, __m256i);
+  __m256i b_shuffled0 =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, simd_unit1, __m256i);
   __m256i lo_values =
       libcrux_intrinsics_avx2_mm256_unpacklo_epi64(a_shuffled, b_shuffled0);
   __m256i hi_values =
@@ -2431,10 +2310,10 @@ libcrux_ml_dsa_simd_avx2_invntt_simd_unit_invert_ntt_at_layer_0(
       libcrux_intrinsics_avx2_mm256_unpacklo_epi64(sums, differences);
   __m256i b_shuffled =
       libcrux_intrinsics_avx2_mm256_unpackhi_epi64(sums, differences);
-  __m256i a = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)216,
-                                                          a_shuffled0, __m256i);
-  __m256i b = libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)216,
-                                                          b_shuffled, __m256i);
+  __m256i a =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, a_shuffled0, __m256i);
+  __m256i b =
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(216, b_shuffled, __m256i);
   return (libcrux_ml_dsa_simd_avx2_vector_type_Vec256_x2{a, b});
 }
 
@@ -2457,69 +2336,53 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0(
     Eurydice_arr_cd0 *re) {
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)0U, (int32_t)1976782, (int32_t)-846154, (int32_t)1400424,
-      (int32_t)3937738, (int32_t)-1362209, (int32_t)-48306, (int32_t)3919660,
-      (int32_t)-554416);
+      re, (size_t)0U, 1976782, -846154, 1400424, 3937738, -1362209, -48306,
+      3919660, -554416);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)2U, (int32_t)-3545687, (int32_t)1612842, (int32_t)-976891,
-      (int32_t)183443, (int32_t)-2286327, (int32_t)-420899, (int32_t)-2235985,
-      (int32_t)-2939036);
+      re, (size_t)2U, -3545687, 1612842, -976891, 183443, -2286327, -420899,
+      -2235985, -2939036);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)4U, (int32_t)-3833893, (int32_t)-260646, (int32_t)-1104333,
-      (int32_t)-1667432, (int32_t)1910376, (int32_t)-1803090, (int32_t)1723600,
-      (int32_t)-426683);
+      re, (size_t)4U, -3833893, -260646, -1104333, -1667432, 1910376, -1803090,
+      1723600, -426683);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)6U, (int32_t)472078, (int32_t)1717735, (int32_t)-975884,
-      (int32_t)2213111, (int32_t)269760, (int32_t)3866901, (int32_t)3523897,
-      (int32_t)-3038916);
+      re, (size_t)6U, 472078, 1717735, -975884, 2213111, 269760, 3866901,
+      3523897, -3038916);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)8U, (int32_t)-1799107, (int32_t)-3694233, (int32_t)1652634,
-      (int32_t)810149, (int32_t)3014001, (int32_t)1616392, (int32_t)162844,
-      (int32_t)-3183426);
+      re, (size_t)8U, -1799107, -3694233, 1652634, 810149, 3014001, 1616392,
+      162844, -3183426);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)10U, (int32_t)-1207385, (int32_t)185531, (int32_t)3369112,
-      (int32_t)1957272, (int32_t)-164721, (int32_t)2454455, (int32_t)2432395,
-      (int32_t)-2013608);
+      re, (size_t)10U, -1207385, 185531, 3369112, 1957272, -164721, 2454455,
+      2432395, -2013608);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)12U, (int32_t)-3776993, (int32_t)594136, (int32_t)-3724270,
-      (int32_t)-2584293, (int32_t)-1846953, (int32_t)-1671176,
-      (int32_t)-2831860, (int32_t)-542412);
+      re, (size_t)12U, -3776993, 594136, -3724270, -2584293, -1846953, -1671176,
+      -2831860, -542412);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)14U, (int32_t)3406031, (int32_t)2235880, (int32_t)777191,
-      (int32_t)1500165, (int32_t)-1374803, (int32_t)-2546312, (int32_t)1917081,
-      (int32_t)-1279661);
+      re, (size_t)14U, 3406031, 2235880, 777191, 1500165, -1374803, -2546312,
+      1917081, -1279661);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)16U, (int32_t)-1962642, (int32_t)3306115, (int32_t)1312455,
-      (int32_t)-451100, (int32_t)-1430225, (int32_t)-3318210, (int32_t)1237275,
-      (int32_t)-1333058);
+      re, (size_t)16U, -1962642, 3306115, 1312455, -451100, -1430225, -3318210,
+      1237275, -1333058);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)18U, (int32_t)-1050970, (int32_t)1903435, (int32_t)1869119,
-      (int32_t)-2994039, (int32_t)-3548272, (int32_t)2635921, (int32_t)1250494,
-      (int32_t)-3767016);
+      re, (size_t)18U, -1050970, 1903435, 1869119, -2994039, -3548272, 2635921,
+      1250494, -3767016);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)20U, (int32_t)1595974, (int32_t)2486353, (int32_t)1247620,
-      (int32_t)4055324, (int32_t)1265009, (int32_t)-2590150, (int32_t)2691481,
-      (int32_t)2842341);
+      re, (size_t)20U, 1595974, 2486353, 1247620, 4055324, 1265009, -2590150,
+      2691481, 2842341);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)22U, (int32_t)203044, (int32_t)1735879, (int32_t)-3342277,
-      (int32_t)3437287, (int32_t)4108315, (int32_t)-2437823, (int32_t)286988,
-      (int32_t)342297);
+      re, (size_t)22U, 203044, 1735879, -3342277, 3437287, 4108315, -2437823,
+      286988, 342297);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)24U, (int32_t)-3595838, (int32_t)-768622, (int32_t)-525098,
-      (int32_t)-3556995, (int32_t)3207046, (int32_t)2031748, (int32_t)-3122442,
-      (int32_t)-655327);
+      re, (size_t)24U, -3595838, -768622, -525098, -3556995, 3207046, 2031748,
+      -3122442, -655327);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)26U, (int32_t)-522500, (int32_t)-43260, (int32_t)-1613174,
-      (int32_t)495491, (int32_t)819034, (int32_t)909542, (int32_t)1859098,
-      (int32_t)900702);
+      re, (size_t)26U, -522500, -43260, -1613174, 495491, 819034, 909542,
+      1859098, 900702);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)28U, (int32_t)-3193378, (int32_t)-1197226, (int32_t)-3759364,
-      (int32_t)-3520352, (int32_t)3513181, (int32_t)-1235728, (int32_t)2434439,
-      (int32_t)266997);
+      re, (size_t)28U, -3193378, -1197226, -3759364, -3520352, 3513181,
+      -1235728, 2434439, 266997);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_0_round(
-      re, (size_t)30U, (int32_t)-3562462, (int32_t)-2446433, (int32_t)2244091,
-      (int32_t)-3342478, (int32_t)3817976, (int32_t)2316500, (int32_t)3407706,
-      (int32_t)2091667);
+      re, (size_t)30U, -3562462, -2446433, 2244091, -3342478, 3817976, 2316500,
+      3407706, 2091667);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2561,53 +2424,37 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1(
     Eurydice_arr_cd0 *re) {
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)0U, (int32_t)3839961, (int32_t)-3628969, (int32_t)-3881060,
-      (int32_t)-3019102);
+      re, (size_t)0U, 3839961, -3628969, -3881060, -3019102);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)2U, (int32_t)-1439742, (int32_t)-812732, (int32_t)-1584928,
-      (int32_t)1285669);
+      re, (size_t)2U, -1439742, -812732, -1584928, 1285669);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)4U, (int32_t)1341330, (int32_t)1315589, (int32_t)-177440,
-      (int32_t)-2409325);
+      re, (size_t)4U, 1341330, 1315589, -177440, -2409325);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)6U, (int32_t)-1851402, (int32_t)3159746, (int32_t)-3553272,
-      (int32_t)189548);
+      re, (size_t)6U, -1851402, 3159746, -3553272, 189548);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)8U, (int32_t)-1316856, (int32_t)759969, (int32_t)-210977,
-      (int32_t)2389356);
+      re, (size_t)8U, -1316856, 759969, -210977, 2389356);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)10U, (int32_t)-3249728, (int32_t)1653064, (int32_t)-8578,
-      (int32_t)-3724342);
+      re, (size_t)10U, -3249728, 1653064, -8578, -3724342);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)12U, (int32_t)3958618, (int32_t)904516, (int32_t)-1100098,
-      (int32_t)44288);
+      re, (size_t)12U, 3958618, 904516, -1100098, 44288);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)14U, (int32_t)3097992, (int32_t)508951, (int32_t)264944,
-      (int32_t)-3343383);
+      re, (size_t)14U, 3097992, 508951, 264944, -3343383);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)16U, (int32_t)-1430430, (int32_t)1852771, (int32_t)1349076,
-      (int32_t)-381987);
+      re, (size_t)16U, -1430430, 1852771, 1349076, -381987);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)18U, (int32_t)-1308169, (int32_t)-22981, (int32_t)-1228525,
-      (int32_t)-671102);
+      re, (size_t)18U, -1308169, -22981, -1228525, -671102);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)20U, (int32_t)-2477047, (int32_t)-411027, (int32_t)-3693493,
-      (int32_t)-2967645);
+      re, (size_t)20U, -2477047, -411027, -3693493, -2967645);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)22U, (int32_t)2715295, (int32_t)2147896, (int32_t)-983419,
-      (int32_t)3412210);
+      re, (size_t)22U, 2715295, 2147896, -983419, 3412210);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)24U, (int32_t)126922, (int32_t)-3632928, (int32_t)-3157330,
-      (int32_t)-3190144);
+      re, (size_t)24U, 126922, -3632928, -3157330, -3190144);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)26U, (int32_t)-1000202, (int32_t)-4083598, (int32_t)1939314,
-      (int32_t)-1257611);
+      re, (size_t)26U, -1000202, -4083598, 1939314, -1257611);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)28U, (int32_t)-1585221, (int32_t)2176455, (int32_t)3475950,
-      (int32_t)-1452451);
+      re, (size_t)28U, -1585221, 2176455, 3475950, -1452451);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_1_round(
-      re, (size_t)30U, (int32_t)-3041255, (int32_t)-3677745, (int32_t)-1528703,
-      (int32_t)-3930395);
+      re, (size_t)30U, -3041255, -3677745, -1528703, -3930395);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2615,9 +2462,9 @@ static KRML_MUSTINLINE libcrux_ml_dsa_simd_avx2_vector_type_Vec256_x2
 libcrux_ml_dsa_simd_avx2_invntt_simd_unit_invert_ntt_at_layer_2(
     __m256i simd_unit0, __m256i simd_unit1, int32_t zeta0, int32_t zeta1) {
   __m256i lo_values = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)32, simd_unit0, simd_unit1, __m256i);
+      32, simd_unit0, simd_unit1, __m256i);
   __m256i hi_values = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)49, simd_unit0, simd_unit1, __m256i);
+      49, simd_unit0, simd_unit1, __m256i);
   __m256i differences = hi_values;
   libcrux_ml_dsa_simd_avx2_arithmetic_subtract(&differences, &lo_values);
   libcrux_ml_dsa_simd_avx2_arithmetic_add(&lo_values, &hi_values);
@@ -2626,9 +2473,9 @@ libcrux_ml_dsa_simd_avx2_invntt_simd_unit_invert_ntt_at_layer_2(
       zeta1, zeta1, zeta1, zeta1, zeta0, zeta0, zeta0, zeta0);
   libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(&differences, &zetas);
   __m256i a = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)32, sums, differences, __m256i);
+      32, sums, differences, __m256i);
   __m256i b = libcrux_intrinsics_avx2_mm256_permute2x128_si256(
-      (int32_t)49, sums, differences, __m256i);
+      49, sums, differences, __m256i);
   return (libcrux_ml_dsa_simd_avx2_vector_type_Vec256_x2{a, b});
 }
 
@@ -2648,37 +2495,37 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2(
     Eurydice_arr_cd0 *re) {
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)0U, (int32_t)-2797779, (int32_t)2071892);
+      re, (size_t)0U, -2797779, 2071892);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)2U, (int32_t)-2556880, (int32_t)3900724);
+      re, (size_t)2U, -2556880, 3900724);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)4U,
+                                                              3881043, 954230);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)6U,
+                                                              531354, 811944);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)4U, (int32_t)3881043, (int32_t)954230);
+      re, (size_t)8U, 3699596, -1600420);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)6U, (int32_t)531354, (int32_t)811944);
+      re, (size_t)10U, -2140649, 3507263);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)8U, (int32_t)3699596, (int32_t)-1600420);
+      re, (size_t)12U, -3821735, 3505694);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)10U, (int32_t)-2140649, (int32_t)3507263);
+      re, (size_t)14U, -1643818, -1699267);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)16U,
+                                                              -539299, 2348700);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)18U,
+                                                              -300467, 3539968);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)12U, (int32_t)-3821735, (int32_t)3505694);
+      re, (size_t)20U, -2867647, 3574422);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)14U, (int32_t)-1643818, (int32_t)-1699267);
+      re, (size_t)22U, -3043716, -3861115);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)16U, (int32_t)-539299, (int32_t)2348700);
+      re, (size_t)24U, 3915439, -2537516);
   libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)18U, (int32_t)-300467, (int32_t)3539968);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)20U, (int32_t)-2867647, (int32_t)3574422);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)22U, (int32_t)-3043716, (int32_t)-3861115);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)24U, (int32_t)3915439, (int32_t)-2537516);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)26U, (int32_t)-3592148, (int32_t)-1661693);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)28U, (int32_t)3530437, (int32_t)3077325);
-  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(
-      re, (size_t)30U, (int32_t)95776, (int32_t)2706023);
+      re, (size_t)26U, -3592148, -1661693);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)28U,
+                                                              3530437, 3077325);
+  libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_2_round(re, (size_t)30U,
+                                                              95776, 2706023);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -2694,8 +2541,8 @@ libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
               LIBCRUX_ML_DSA_SIMD_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R);
   __m256i prod02 = libcrux_intrinsics_avx2_mm256_mul_epi32(lhs, rhs);
   __m256i prod13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, lhs, __m256i),
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, rhs, __m256i));
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, lhs, __m256i),
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, rhs, __m256i));
   __m256i k02 = libcrux_intrinsics_avx2_mm256_mul_epi32(
       prod02, inverse_of_modulus_mod_montgomery_r);
   __m256i k13 = libcrux_intrinsics_avx2_mm256_mul_epi32(
@@ -2705,9 +2552,9 @@ libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
   __m256i res02 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod02, c02);
   __m256i res13 = libcrux_intrinsics_avx2_mm256_sub_epi32(prod13, c13);
   __m256i res02_shifted =
-      libcrux_intrinsics_avx2_mm256_shuffle_epi32((int32_t)245, res02, __m256i);
-  return libcrux_intrinsics_avx2_mm256_blend_epi32((int32_t)170, res02_shifted,
-                                                   res13, __m256i);
+      libcrux_intrinsics_avx2_mm256_shuffle_epi32(245, res02, __m256i);
+  return libcrux_intrinsics_avx2_mm256_blend_epi32(170, res02_shifted, res13,
+                                                   __m256i);
 }
 
 /**
@@ -2728,7 +2575,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_99(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)280005);
+            a_minus_b, 280005);
   }
 }
 
@@ -2750,7 +2597,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_1c(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)4010497);
+            a_minus_b, 4010497);
   }
 }
 
@@ -2772,7 +2619,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_6b(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-19422);
+            a_minus_b, -19422);
   }
 }
 
@@ -2794,7 +2641,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_44(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)1757237);
+            a_minus_b, 1757237);
   }
 }
 
@@ -2816,7 +2663,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_a8(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-3277672);
+            a_minus_b, -3277672);
   }
 }
 
@@ -2838,7 +2685,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_1f(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-1399561);
+            a_minus_b, -1399561);
   }
 }
 
@@ -2860,7 +2707,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_95(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-3859737);
+            a_minus_b, -3859737);
   }
 }
 
@@ -2882,7 +2729,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_3b(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-2118186);
+            a_minus_b, -2118186);
   }
 }
 
@@ -2904,7 +2751,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_7a(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-2108549);
+            a_minus_b, -2108549);
   }
 }
 
@@ -2926,7 +2773,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_e4(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)2619752);
+            a_minus_b, 2619752);
   }
 }
 
@@ -2948,7 +2795,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_de(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-1119584);
+            a_minus_b, -1119584);
   }
 }
 
@@ -2970,7 +2817,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_05(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-549488);
+            a_minus_b, -549488);
   }
 }
 
@@ -2992,7 +2839,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_d9(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)3585928);
+            a_minus_b, 3585928);
   }
 }
 
@@ -3014,7 +2861,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_3a(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-1079900);
+            a_minus_b, -1079900);
   }
 }
 
@@ -3036,7 +2883,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_3b0(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)1024112);
+            a_minus_b, 1024112);
   }
 }
 
@@ -3058,7 +2905,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_a0(
         re->data[j], re->data[j + (size_t)1U]);
     re->data[j + (size_t)1U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)2725464);
+            a_minus_b, 2725464);
   }
 }
 
@@ -3101,7 +2948,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_990(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)2680103);
+            a_minus_b, 2680103);
   }
 }
 
@@ -3123,7 +2970,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_6b0(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)3111497);
+            a_minus_b, 3111497);
   }
 }
 
@@ -3145,7 +2992,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_a80(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-2884855);
+            a_minus_b, -2884855);
   }
 }
 
@@ -3167,7 +3014,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_950(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)3119733);
+            a_minus_b, 3119733);
   }
 }
 
@@ -3189,7 +3036,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_7a0(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-2091905);
+            a_minus_b, -2091905);
   }
 }
 
@@ -3211,7 +3058,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_de0(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-359251);
+            a_minus_b, -359251);
   }
 }
 
@@ -3233,7 +3080,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_d90(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)2353451);
+            a_minus_b, 2353451);
   }
 }
 
@@ -3255,7 +3102,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_3b1(
         re->data[j], re->data[j + (size_t)2U]);
     re->data[j + (size_t)2U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)1826347);
+            a_minus_b, 1826347);
   }
 }
 
@@ -3290,7 +3137,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_991(
         re->data[j], re->data[j + (size_t)4U]);
     re->data[j + (size_t)4U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)466468);
+            a_minus_b, 466468);
   }
 }
 
@@ -3312,7 +3159,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_a81(
         re->data[j], re->data[j + (size_t)4U]);
     re->data[j + (size_t)4U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-876248);
+            a_minus_b, -876248);
   }
 }
 
@@ -3334,7 +3181,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_7a1(
         re->data[j], re->data[j + (size_t)4U]);
     re->data[j + (size_t)4U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-777960);
+            a_minus_b, -777960);
   }
 }
 
@@ -3356,7 +3203,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_d91(
         re->data[j], re->data[j + (size_t)4U]);
     re->data[j + (size_t)4U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)237124);
+            a_minus_b, 237124);
   }
 }
 
@@ -3387,7 +3234,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_992(
         re->data[j], re->data[j + (size_t)8U]);
     re->data[j + (size_t)8U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-518909);
+            a_minus_b, -518909);
   }
 }
 
@@ -3409,7 +3256,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_7a2(
         re->data[j], re->data[j + (size_t)8U]);
     re->data[j + (size_t)8U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)-2608894);
+            a_minus_b, -2608894);
   }
 }
 
@@ -3438,7 +3285,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_invntt_outer_3_plus_993(
         re->data[j], re->data[j + (size_t)16U]);
     re->data[j + (size_t)16U] =
         libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply_by_constant(
-            a_minus_b, (int32_t)25847);
+            a_minus_b, 25847);
   }
 }
 
@@ -3449,7 +3296,7 @@ static inline void libcrux_ml_dsa_simd_avx2_invntt_invert_ntt_at_layer_7(
 }
 
 #define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_MONTGOMERY_INV_INNER_FACTOR \
-  ((int32_t)41978)
+  (41978)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
@@ -3497,12 +3344,13 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
 libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(
     __m256i *simd_unit) {
-  __m256i shifted = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)0, simd_unit[0U], __m256i);
+  __m256i shifted =
+      libcrux_intrinsics_avx2_mm256_slli_epi32(0, simd_unit[0U], __m256i);
   __m256i quotient = libcrux_intrinsics_avx2_mm256_add_epi32(
-      shifted, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
+      shifted,
+      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)((uint32_t)1 << 22U)));
   __m256i quotient0 =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
+      libcrux_intrinsics_avx2_mm256_srai_epi32(23, quotient, __m256i);
   __m256i quotient_times_field_modulus =
       libcrux_intrinsics_avx2_mm256_mullo_epi32(
           quotient0, libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -4198,20 +4046,19 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_samplex4_matrix_flat_0a(
   for (size_t i = (size_t)0U; i < matrix.meta / (size_t)4U + (size_t)1U; i++) {
     size_t start_index = i;
     size_t start_index0 = start_index * (size_t)4U;
-    if (!(start_index0 >= matrix.meta)) {
-      size_t elements_requested;
-      if (start_index0 + (size_t)4U <= matrix.meta) {
-        elements_requested = (size_t)4U;
-      } else {
-        elements_requested = matrix.meta - start_index0;
-      }
-      libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_0a(
-          columns, seed, matrix, &rand_stack0, &rand_stack1, &rand_stack2,
-          &rand_stack3, Eurydice_array_to_slice_mut_f6(&tmp_stack),
-          start_index0, elements_requested);
-      continue;
+    if (start_index0 >= matrix.meta) {
+      break;
     }
-    break;
+    size_t elements_requested;
+    if (start_index0 + (size_t)4U <= matrix.meta) {
+      elements_requested = (size_t)4U;
+    } else {
+      elements_requested = matrix.meta - start_index0;
+    }
+    libcrux_ml_dsa_sample_sample_up_to_four_ring_elements_flat_0a(
+        columns, seed, matrix, &rand_stack0, &rand_stack1, &rand_stack2,
+        &rand_stack3, Eurydice_array_to_slice_mut_f6(&tmp_stack), start_index0,
+        elements_requested);
   }
 }
 
@@ -4942,7 +4789,7 @@ with types Eurydice_arr_dd
 
 */
 typedef struct Option_ec_s {
-  Option_b5_tags tag;
+  Option_08_tags tag;
   Eurydice_arr_dd f0;
 } Option_ec;
 
@@ -5616,7 +5463,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_encoding_signature_serialize_64(
     size_t i1 = i0;
     for (size_t i = (size_t)0U; i < (size_t)256U; i++) {
       size_t j = i;
-      if (hint.ptr[i1].data[j] == (int32_t)1) {
+      if (hint.ptr[i1].data[j] == 1) {
         signature.ptr[offset + true_hints_seen] = (uint8_t)j;
         true_hints_seen++;
       }
@@ -5764,9 +5611,8 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
     }
     memcpy(a_x_mask.data, repeat_expression,
            (size_t)6U * sizeof(Eurydice_arr_cd0));
-    Eurydice_arr_dd mask_ntt =
-        core_array__core__clone__Clone_for__Array_T__N___clone(
-            (size_t)5U, &mask, Eurydice_arr_cd0, Eurydice_arr_dd);
+    Eurydice_arr_dd mask_ntt = core_array__core__clone__Clone_for__T__N___clone(
+        (size_t)5U, &mask, Eurydice_arr_cd0, Eurydice_arr_dd);
     for (size_t i = (size_t)0U; i < (size_t)5U; i++) {
       size_t i0 = i;
       libcrux_ml_dsa_ntt_ntt_64(&mask_ntt.data[i0]);
@@ -5805,10 +5651,10 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
         &verifier_challenge);
     libcrux_ml_dsa_ntt_ntt_64(&verifier_challenge);
     Eurydice_arr_dd challenge_times_s1 =
-        core_array__core__clone__Clone_for__Array_T__N___clone(
+        core_array__core__clone__Clone_for__T__N___clone(
             (size_t)5U, &s1_as_ntt, Eurydice_arr_cd0, Eurydice_arr_dd);
     Eurydice_arr_b50 challenge_times_s2 =
-        core_array__core__clone__Clone_for__Array_T__N___clone(
+        core_array__core__clone__Clone_for__T__N___clone(
             (size_t)6U, &s2_as_ntt, Eurydice_arr_cd0, Eurydice_arr_b50);
     libcrux_ml_dsa_matrix_vector_times_ring_element_64(
         Eurydice_array_to_slice_mut_715(&challenge_times_s1),
@@ -5826,15 +5672,15 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
         Eurydice_array_to_slice_shared_715(&challenge_times_s2));
     if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
             Eurydice_array_to_slice_shared_713(&mask),
-            ((int32_t)1 << (uint32_t)
-                 LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
+            (int32_t)((uint32_t)1 << (uint32_t)
+                          LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
                 LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
       if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
               Eurydice_array_to_slice_shared_715(&w0),
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2 -
                   LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
         Eurydice_arr_b50 challenge_times_t0 =
-            core_array__core__clone__Clone_for__Array_T__N___clone(
+            core_array__core__clone__Clone_for__T__N___clone(
                 (size_t)6U, &t0_as_ntt, Eurydice_arr_cd0, Eurydice_arr_b50);
         libcrux_ml_dsa_matrix_vector_times_ring_element_64(
             Eurydice_array_to_slice_mut_716(&challenge_times_t0),
@@ -6248,35 +6094,35 @@ libcrux_ml_dsa_encoding_signature_deserialize_64(
         (size_t)hint_serialized.ptr[max_ones_in_hint + i1];
     if (current_true_hints_seen < previous_true_hints_seen) {
       malformed_hint = true;
-    } else if (current_true_hints_seen > max_ones_in_hint) {
-      malformed_hint = true;
-    } else {
-      for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
-           i++) {
-        size_t j = i;
-        if (j > previous_true_hints_seen) {
-          if (hint_serialized.ptr[j] <= hint_serialized.ptr[j - (size_t)1U]) {
-            malformed_hint = true;
-            break;
-          }
-        }
-        libcrux_ml_dsa_encoding_signature_set_hint(
-            out_hint, i1, (size_t)hint_serialized.ptr[j]);
-      }
-      if (!malformed_hint) {
-        previous_true_hints_seen = current_true_hints_seen;
-        continue;
-      }
+      break;
     }
-    break;
+    if (current_true_hints_seen > max_ones_in_hint) {
+      malformed_hint = true;
+      break;
+    }
+    for (size_t i = previous_true_hints_seen; i < current_true_hints_seen;
+         i++) {
+      size_t j = i;
+      if (j > previous_true_hints_seen) {
+        if (hint_serialized.ptr[j] <= hint_serialized.ptr[j - (size_t)1U]) {
+          malformed_hint = true;
+          break;
+        }
+      }
+      libcrux_ml_dsa_encoding_signature_set_hint(
+          out_hint, i1, (size_t)hint_serialized.ptr[j]);
+    }
+    if (malformed_hint) {
+      break;
+    }
+    previous_true_hints_seen = current_true_hints_seen;
   }
   for (size_t i = previous_true_hints_seen; i < max_ones_in_hint; i++) {
     size_t j = i;
-    if (!(hint_serialized.ptr[j] != 0U)) {
-      continue;
+    if (hint_serialized.ptr[j] != 0U) {
+      malformed_hint = true;
+      break;
     }
-    malformed_hint = true;
-    break;
   }
   Result_41 uu____2;
   if (malformed_hint) {
@@ -6297,12 +6143,13 @@ KRML_ATTRIBUTE_TARGET("avx2")
 static inline void
 libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_84(
     __m256i *simd_unit) {
-  __m256i shifted = libcrux_intrinsics_avx2_mm256_slli_epi32(
-      (int32_t)13, simd_unit[0U], __m256i);
+  __m256i shifted =
+      libcrux_intrinsics_avx2_mm256_slli_epi32(13, simd_unit[0U], __m256i);
   __m256i quotient = libcrux_intrinsics_avx2_mm256_add_epi32(
-      shifted, libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
+      shifted,
+      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)((uint32_t)1 << 22U)));
   __m256i quotient0 =
-      libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
+      libcrux_intrinsics_avx2_mm256_srai_epi32(23, quotient, __m256i);
   __m256i quotient_times_field_modulus =
       libcrux_intrinsics_avx2_mm256_mullo_epi32(
           quotient0, libcrux_intrinsics_avx2_mm256_set1_epi32(
@@ -6402,6 +6249,12 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_arithmetic_use_hint_64(
 }
 
 /**
+ The internal verification API.
+
+ If no `domain_separation_context` is supplied, it is assumed that
+ `message` already contains the domain separation.
+*/
+/**
 A monomorphic instance of
 libcrux_ml_dsa.ml_dsa_generic.ml_dsa_65.verify_internal with types
 libcrux_ml_dsa_simd_avx2_vector_type_Vec256,
@@ -6459,8 +6312,8 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_verify_internal_07(
   if (uu____1.tag == Ok) {
     if (libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
             Eurydice_array_to_slice_shared_713(&deserialized_signer_response),
-            ((int32_t)1 << (uint32_t)
-                 LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
+            (int32_t)((uint32_t)1 << (uint32_t)
+                          LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
                 LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
       uu____2 = (Result_41{
           Err,
@@ -6686,6 +6539,57 @@ libcrux_ml_dsa_ml_dsa_65_avx2_verify_pre_hashed_shake128(
       uu____0, uu____1, uu____2, uu____3,
       libcrux_ml_dsa_types_as_ref_c5_fa(signature));
 }
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_3_STEP ((size_t)8U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_3_STEP_BY \
+  ((size_t)1U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_4_STEP ((size_t)16U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_4_STEP_BY \
+  ((size_t)2U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_5_STEP ((size_t)32U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_5_STEP_BY \
+  ((size_t)4U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_6_STEP ((size_t)64U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_6_STEP_BY \
+  ((size_t)8U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_7_STEP \
+  ((size_t)128U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_INVERT_NTT_AT_LAYER_7_STEP_BY \
+  ((size_t)16U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_INVNTT_SIMD_UNIT_INVERT_NTT_AT_LAYER_0_SHUFFLE \
+  (216)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_BUTTERFLY_2_SHUFFLE (216)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP ((size_t)1U << 5U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_1 \
+  ((size_t)1U << 4U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_2 \
+  ((size_t)1U << 3U)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_BY \
+  (LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP /       \
+   LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_BY_1 \
+  (LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_1 /       \
+   LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
+
+#define LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_BY_2 \
+  (LIBCRUX_ML_DSA_SIMD_AVX2_NTT_NTT_AT_LAYER_5_TO_3_STEP_2 /       \
+   LIBCRUX_ML_DSA_SIMD_TRAITS_COEFFICIENTS_IN_SIMD_UNIT)
 
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline bool

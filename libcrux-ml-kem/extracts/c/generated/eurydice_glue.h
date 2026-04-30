@@ -163,8 +163,8 @@ typedef struct Eurydice_dst_ref_9a_s {
 #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t) \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array__core__clone__Clone_for__Array_T__N___clone( \
-    len, src, elem_type, _ret_t)                                \
+#define core_array__core__clone__Clone_for__T__N___clone(len, src, elem_type, \
+                                                         _ret_t)              \
   (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
@@ -423,12 +423,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
        : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1, \
                                EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
+#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
 typedef struct {

@@ -4,17 +4,32 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_mldsa_core_H
 #define libcrux_mldsa_core_H
 
 #include "eurydice_glue.h"
+
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_08_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct Option_08_s {
+  Option_08_tags tag;
+  size_t f0;
+} Option_08;
 
 static inline uint32_t core_num__i32__count_ones(int32_t x0);
 
@@ -375,15 +390,7 @@ static inline Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_ee0(
   return lit;
 }
 
-/**
-A monomorphic instance of Eurydice.arr
-with types int32_t
-with const generics
-- $256size_t
-*/
-typedef struct Eurydice_arr_c3_s {
-  int32_t data[256U];
-} Eurydice_arr_c3;
+typedef struct Eurydice_arr_c3_s Eurydice_arr_c3;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -394,6 +401,16 @@ typedef struct Eurydice_dst_ref_shared_22_s {
   const Eurydice_arr_c3 *ptr;
   size_t meta;
 } Eurydice_dst_ref_shared_22;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types int32_t
+with const generics
+- $256size_t
+*/
+typedef struct Eurydice_arr_c3_s {
+  int32_t data[256U];
+} Eurydice_arr_c3;
 
 /**
 A monomorphic instance of Eurydice.arr

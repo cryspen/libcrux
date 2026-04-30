@@ -12,8 +12,9 @@
 /******************************************************************************/
 
 /* ... for Linux */
-#if defined(__linux__) || defined(__CYGWIN__) || \
-    defined(__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__CYGWIN__) ||              \
+    defined(__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__) || \
+    defined(ESP_PLATFORM)
 #include <endian.h>
 
 /* ... for OSX */

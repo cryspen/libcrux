@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * Charon: ed22146b1cd4d0b578006a58b3299d41ecbe0fd4
+ * Eurydice: ca062d63b94b0ef7b954c811f35f9d54210fb478
+ * Karamel: 300903ed1f0e75a47a490a758af8a3e8ad203f9d
+ * F*: unset
+ * Libcrux: b112399a30ffb1de6d100a290da2900c07f18862
  */
 
 #ifndef libcrux_mlkem_portable_H
@@ -32,7 +32,7 @@ Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS \
-  ((int16_t)1353)
+  (1353)
 
 typedef Eurydice_arr_e2
     libcrux_ml_kem_vector_portable_vector_type_PortableVector;
@@ -129,15 +129,16 @@ libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_cond_subtract_3329_b8(
     Eurydice_arr_e2 v);
 
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_MULTIPLIER \
-  ((int32_t)20159)
+#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_BARRETT_MULTIPLIER (20159)
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT ((int32_t)26)
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT (26)
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_R \
-  ((int32_t)1 << (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT)
+  (                                            \
+      (int32_t)((uint32_t)1                    \
+                << (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT))
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS (3329)
 
 /**
  Signed Barrett Reduction
