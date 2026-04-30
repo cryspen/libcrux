@@ -137,6 +137,7 @@ let iota (state: t_Array u64 (mk_usize 25)) (round: usize)
 
 /// Keccak-f[1600] permutation — FIPS 202, Algorithm 7.
 ///   Rnd(A, ir) = ι(χ(π(ρ(θ(A)))), ir)
+[@@"opaque_to_smt"]
 let keccak_f (state: t_Array u64 (mk_usize 25)) : t_Array u64 (mk_usize 25) =
   let state:t_Array u64 (mk_usize 25) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
