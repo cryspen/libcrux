@@ -194,3 +194,172 @@ Existing memories that this audit confirmed are still load-bearing:
 SD3/SD4, lane split, reveal_opaque targeting, fstar-mcp session
 lifecycle, touch-unchanged-`.checked`, no-cache-nuke,
 for-loop-param-unshadowing, drive-to-the-top spike.
+
+---
+
+## Cross-sprint deltas (appended 2026-04-30 from ml-dsa-proofs)
+
+Source: `~/libcrux-ml-dsa-proofs/libcrux-ml-dsa/proofs/agent-status/cross-sprint-delta-2026-04-30.md`
+(commit `c38294d8e` on `ml-dsa-proofs`).
+
+### AP-4 (cross-sprint): `bits USIZE` opacity
+
+The hax proof-libs `.fsti` keeps
+`Rust_primitives.Integers.bits Rust_primitives.Integers.USIZE`
+opaque. Z3 cannot derive `v x < bits USIZE` from `v x < 64` under
+`fuel 0`, and `assert_norm` does not unfold it either.
+
+**Affects ml-kem**: any `1 << shift_amount` on a usize. Spot
+candidates: `compress.rs` width-`d` packing, `polynomial.rs` lane
+indexing, `serialize.rs` bit-position math.
+
+**Mitigation**: tighten the shift bound (`< 8`) so the obligation
+falls into a different proof path; or admit the module rather than
+detour into proof-libs.  **Do NOT** add
+`assert_norm (bits USIZE == 64)` — it doesn't help.
+
+First observed: ml-dsa `Shuffle_table` promotion attempt (`9da124ba5`).
+
+### AP-5 (cross-sprint): `assert_norm` for arithmetic constant chains with subtraction
+
+When a constant extracts to F* via a chain that includes a
+subtraction step, plain `assert (v $C == K)` fails under `fuel 0`
+even though Z3 can compute the value. Use `assert_norm`.
+
+**Affects ml-kem**: candidates include `BYTES_PER_RING_ELEMENT`
+(`COEFFICIENTS_IN_RING_ELEMENT * d / 8`),
+`RANKED_BYTES_PER_RING_ELEMENT`, the `C1_SIZE` /
+`C1_BLOCK_SIZE` family in `mlkem*.rs`. When a "Z3 can't prove
+`v $CONST == K`" failure shows up on a known constant, swap to
+`assert_norm` first.
+
+First observed: ml-dsa
+`Encoding.Verification_key.generate_serialized` (`5d32e16df`).
+
+### Makefile structure: ML-KEM already on ADMIT-allowlist
+
+ML-DSA flipped from `VERIFIED_MODULES` denylist to ML-KEM-style
+`ADMIT_MODULES` allowlist (`74922609a`). **No action for ml-kem** —
+already on the allowlist pattern. Today's milestone #0 added 8 new
+entries with explicit one-line reasons, consistent with the pattern.
+
+### Agent-prompt freshness — recommended audit pass
+
+ml-dsa's prompt had a factually wrong "design Hacspec_ml_dsa.Ntt
+from scratch" claim when 4318 lines of `Hacspec_ml_dsa.*` already
+existed. Fixed in `2420f7555`. **For ml-kem**: run the same 5-step
+audit on `proofs/agent-prompt-ml-kem.md` (~30 min):
+
+  1. Grep for "design", "create", "scaffold" + spec-module names;
+     check whether the spec already exists.
+  2. Add an "Existing spec inventory" near the top (file paths +
+     line counts of `specs/ml-kem/proofs/fstar/extraction/Hacspec_ml_kem.*`
+     and `specs/ml-kem/proofs/fstar/commute/`).
+  3. Add a "Recently closed (do not redo)" section — recent commits
+     and what they accomplished.
+  4. Replace any "rebuild from scratch" guidance with "grep first,
+     design only if missing".
+  5. Drop tip-SHAs from prompts; point at a maintained handoff doc.
+
+### Encoding-wrapper closure recipe (transferable to ml-kem)
+
+Pattern from ml-dsa `Verification_key.generate_serialized` (`5d32e16df`):
+
+```rust
+pub(crate) fn serialize<...>(input: &[T], ..., output: &mut [u8]) {
+    output[0..PREFIX_SIZE].copy_from_slice(prefix);
+    for i in 0..input.len() {
+        let offset = PREFIX_SIZE + i * CHUNK_SIZE;
+        callee::serialize(&input[i], &mut output[offset..offset + CHUNK_SIZE]);
+    }
+}
+```
+
+Closure recipe:
+  1. Hoist `input.len()` to a nameable binding so it can appear in
+     `loop_invariant!`.
+  2. `loop_invariant!` carries `v i <= input_len`,
+     `input_len <= MAX`, length identity on `output`, and the
+     per-element forall from the function's `requires`.
+  3. `assert_norm (v $CHUNK_SIZE == <literal>)` if the constant
+     extracts via a subtraction chain (AP-5).
+  4. Offset-arithmetic asserts: `v i < v $input_len`,
+     `v i * <chunk> <= (MAX - 1) * <chunk>`,
+     `(v i + 1) * <chunk> <= v $input_len * <chunk>`.
+  5. `--z3rlimit 400 --split_queries always --fuel 0 --ifuel 1`.
+
+**ML-KEM application targets** (proof_milestones.md):
+  - Row 11 `compress_then_serialize_message`
+  - Row 15 `compress_then_serialize_ring_element_u/v`
+  - Row 16 `deserialize_then_decompress_ring_element_u/v`
+  - Row 17 `compress_d`/`decompress_d` chunk wrappers (USER-13's
+    walled portion)
+
+Variable to watch: whether the per-element forall is opaque-predicate
+style (easier) vs expanded triple-forall (harder; more rlimit).
+
+### Optional: shared anti-pattern catalog
+
+AP-N text is currently inlined in each per-sprint agent prompt;
+drift is real (AP-2 in three places = three update sites). Optional
+move: top-level `anti-patterns.md` as the single source, per-sprint
+prompts cite by number + first-observed-in commit. Minor maintenance
+win; defer until AP-N count grows past 6.
+
+---
+
+## ML-KEM-side learnings to mirror back (2026-04-30, milestone #0)
+
+These emerged from today's `incremental` cargo-feature extraction
+work (commit `86c48def7`). Generalizable to ml-dsa / sha3 if they
+hit similar feature-gated submodules.
+
+### Hax `-i` filters don't bind cited-but-excluded submodules
+
+Filter `-libcrux_ml_kem::ind_cca::incremental::multiplexing::alloc::**`
+did NOT prevent `Libcrux_ml_kem.Ind_cca.Incremental.Multiplexing.Alloc.fst`
+from being written, because the parent `multiplexing.rs` cites
+`alloc::*` symbols. Hax extracts a stub of the excluded module to
+satisfy the citation.
+
+**Fallback**: post-extraction `os.remove()` of the offending files,
+added to `hax.py` after the patch-apply step. Coupled with a
+`Makefile` admit if the parent module survives.
+
+### `Rand_core.f_try_fill_bytes` lacks an F* model
+
+The hax proof-libs F* model for `rand_core::RngCore` only binds
+`f_fill_bytes` (infallible variant). Code calling
+`rng.try_fill_bytes(...)` extracts to `Rand_core.f_try_fill_bytes`
+which is undefined → Error 72. The `.Incremental.Rand` modules
+delete-after-extract is the workaround until the proof-lib gains
+the binding.
+
+If ml-dsa or sha3 add randomness wrappers, prefer `fill_bytes`
+over `try_fill_bytes` for any code path that hax extracts.
+
+### `not(hax)` mirroring at use-sites
+
+When a `mod foo { ... }` is gated `cfg(all(feature = "X", not(hax)))`,
+ALL `use foo::...` statements at consumers must mirror the same
+`not(hax)`, with a fallback path under `cfg(hax)`. Otherwise the
+hax build fails E0432 unresolved import. Today's fix:
+`src/ind_cca/incremental/multiplexing.rs` lines 17, 19, 45, 47.
+
+**Audit candidate for ml-dsa / sha3**: grep for
+`#\[cfg(all(.*not(hax).*))\] *mod` and verify all `use <that-mod>::`
+sites have a parallel guard. ~5 min per crate.
+
+### Verification-status script: macro-defined fns under-counted
+
+The `mlkem.rs` macros (`impl_incr_key_size!`, `impl_incr_platform!`)
+extract as `Mlkem*.Incremental.fst` files (per-variant macro
+expansions), not `Libcrux_ml_kem.Mlkem.fst`. The script's `mlkem*`
+group still reports 36 macro-defs as `Unv: 36` because no
+`.Mlkem.fst` exists. The actual fns are extracted, just under
+variant paths.
+
+**Future scope** for the verification-status script:
+follow-macro-instantiation logic, or a config-side
+"`mlkem.rs` instantiates into Mlkem512.Incremental + ..." mapping.
+Affects any crate that uses macro-based per-variant code generation.
