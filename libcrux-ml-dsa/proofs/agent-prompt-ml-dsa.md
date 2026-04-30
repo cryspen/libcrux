@@ -4,62 +4,143 @@ Paste this into a fresh Claude Code session opened in
 `~/libcrux-ml-dsa-proofs/libcrux-ml-dsa` (auto mode recommended).
 
 This prompt is informed by two prior audits whose synthesis is in
-`proofs/sprint-learnings.md`. Per cross-audit consensus: ML-DSA's
-biggest gap is **spec-module design, not proof effort.** Lead with
-that.
+`proofs/sprint-learnings.md`. The cross-audit consensus that the
+biggest gap is "spec-module design" was **based on a stale view** —
+in fact `specs/ml-dsa/proofs/fstar/extraction/Hacspec_ml_dsa.*`
+already provides a substantial extracted spec layer (see
+"Existing spec inventory" below).  The real gap is **wiring impl
+ensures to the existing Hacspec functions**, not designing the spec
+from scratch.
 
 ---
 
 You are a single-lane agent for the libcrux-ml-dsa F\* verification effort.
-Branch: `ml-dsa-proofs` (current tip `f7d7f6c9f`). Goal: close named
-milestones in `proofs/proof_milestones.md`.
+Branch: `ml-dsa-proofs` (current tip — see `proofs/post-merge-handoff.md`).
+Goal: close named milestones in `proofs/proof_milestones.md`.
 
-## Priority order — front-loaded on spec design
+## Existing spec inventory (DO NOT redesign — survey before wiring)
 
-  **0. `VERIFIED_MODULES` audit** — analogous to ML-KEM's `Ind_cpa.fst`
-     gap. ml-dsa's Makefile uses an *inverted* admit pattern:
-     `ADMIT_MODULES = $(filter-out VERIFIED_OR_SLOW_MODULES, $(wildcard *.fst))`.
-     Many modules in extraction have proper ensures but are admitted
-     because they aren't on the VERIFIED list. Scan
-     `proofs/fstar/extraction/Makefile`'s VERIFIED_MODULES list against
-     the actual extraction directory; for each module not on the list,
-     check if its fns have proper ensures and (if so) add it. Per
-     cross-audit, ML-DSA gained −119 lax this way in a prior pass —
-     repeat the discipline. Cheapest move available. ~1-2 sessions.
+  At `specs/ml-dsa/proofs/fstar/extraction/`:
+    - `Hacspec_ml_dsa.fst` — top-level umbrella.
+    - `Hacspec_ml_dsa.Ml_dsa.fst` (634 lines) — defines
+      `keygen_internal`, `sign_internal`, `verify_internal`. This
+      IS the FIPS-204 algorithmic spec.
+    - `Hacspec_ml_dsa.Ntt.fst` (189 lines) — forward NTT spec
+      with FIPS 204 zetas table, `bit_rev_8_`, etc.
+    - `Hacspec_ml_dsa.Encoding.fst` (1477 lines) — encoding spec
+      (T0/T1/error/gamma1/commitment/signature/signing_key/vk).
+    - `Hacspec_ml_dsa.Matrix.fst` (43 lines).
+    - `Hacspec_ml_dsa.Sampling.fst` (350 lines).
+    - `Hacspec_ml_dsa.Hash_functions.fst` (85 lines).
+    - `Hacspec_ml_dsa.Polynomial.fst` (434 lines),
+      `Hacspec_ml_dsa.Arithmetic.fst` (161),
+      `Hacspec_ml_dsa.Parameters.fst` (183).
 
-  **1. Design `Hacspec_ml_dsa.Ntt.*` spec module** — *this gates every
-     ml-dsa NTT correctness milestone* (rows 1-7 of milestone doc).
-     Currently no `Hacspec_ml_dsa.*` references exist anywhere in
-     `src/`. Mirror `Hacspec_ml_kem.{Invert_ntt, Ntt}` structure under
-     `specs/ml-dsa/proofs/fstar/extraction/`:
-       - `Hacspec_ml_dsa.Ntt.fst` — top-level forward `ntt` spec.
-       - `Hacspec_ml_dsa.Invntt.fst` — inverse spec.
-       - `Hacspec_ml_dsa.Commute.{Bridges, Chunk}.fst` (NEW directory) —
-         the impl↔spec bridge layer (analogue of
-         `specs/ml-kem/proofs/fstar/commute/`).
-     Do NOT wire any ensures yet. ~1 sprint. The bounds-only ensures
-     on `src/ntt.rs::{ntt, invert_ntt_montgomery, reduce,
-     ntt_multiply_montgomery}` stay as-is until the spec lands.
+  At `specs/ml-dsa/proofs/fstar/commute/`:
+    - `Hacspec_ml_dsa.Commute.Chunk.fst` (762 lines) — per-lane
+      commute lemmas (`lemma_reduce_lane_commute`,
+      `lemma_power2round_lane_commute`,
+      `lemma_decompose_bridge`, `lemma_compute_hint_bound`,
+      `lemma_mont_mul_bound_and_mod_q`, etc.). These already
+      bridge i32-level operations between impl and spec.
 
-  **2. Per-SIMD-unit NTT layer hacspec wiring (Portable, then AVX2)** —
-     once (1) lands. Mirror ML-KEM's `lemma_inv_ntt_layer_<N>_step_to_hacspec`
-     pattern. Trait posts at `src/simd/traits.rs` need per-branch
-     `inv_ntt_layer_<N>_step_branch_post` opaque predicates (SD3
-     pattern from ML-KEM). Below-trait propagates for free.
-     ~2-3 sprints across all 7 layers + their inverses.
+  Already wired: `src/simd/avx2.rs` and `src/simd/portable.rs`
+  cite the per-lane commute lemmas in their post-conditions.
+  Below-trait NTT bridges are partly in place via
+  `Hacspec_ml_kem.Spec` import paths in the include list.
 
-  **3. Top-level `ntt` / `invert_ntt_montgomery` correctness ensures
-     (rows 1-3)** — once (1) and (2) land, these are mechanical
-     compositions. ~1-2 sessions per fn.
+  The `Hacspec_ml_kem.Commute.Chunk.fst` reference IS NOT a
+  typo — both ml-kem and ml-dsa share some chunk-level reasoning
+  via the include path `libcrux-ml-kem/proofs/fstar/spec`.
 
-  **4. Design `Hacspec_ml_dsa.Encoding.*` spec modules** (rows 9-15) —
-     8 modules: T0, T1, gamma1, error, commitment, signature,
-     signing_key, verification_key. Analogous to (1) but for
-     encoding. ~1 sprint per encoding × 8 — front-loaded on the
-     spec definitions, then per-fn ensures wiring.
+## Recently closed (do not redo)
 
-  **5. Top-level API (sign, verify, generate_key_pair) correctness
-     (rows 17-23)** — gated on (1)+(2)+(3)+(4). Many sprints.
+  - **Makefile flipped to ml-kem allowlist style** (`74922609a`,
+    2026-04-30). `proofs/fstar/extraction/Makefile` now lists 20
+    explicit `ADMIT_MODULES` entries in 4 commented categories;
+    every other `.fst` is verified by full SMT. Newly-extracted
+    files default to verified, forcing an explicit Makefile entry
+    to admit.
+  - **`Encoding.Verification_key.generate_serialized`** body admit
+    closed (`5d32e16df`). Pattern: mirror `Signing_key.generate_serialized`
+    + `assert_norm` for the `RING_ELEMENT_OF_T1S_SIZE` constant chain.
+  - **`Constants.Ml_dsa_{44,65,87}_.fst`** promoted to verified
+    (`74922609a`). Pure const definitions; no source change required.
+
+## Deferred with concrete plan (do not start blind)
+
+  - **`Encoding.Signature.serialize`** — needs a count-of-ones
+    precondition that the caller (`sign_internal`) ensures via
+    `if ones_in_hint > MAX_ONES_IN_HINT { skip }`. Three options
+    enumerated in `proofs/post-merge-handoff.md` Session B note +
+    `proofs/outstanding-admits.md`. Estimate: 2-3 hr.
+
+## Priority order
+
+  **0. Spec inventory + gap analysis (1 session, before any wiring).**
+     The `Hacspec_ml_dsa.*` spec layer is already substantial but
+     was assumed missing in earlier prompts. Before wiring ensures:
+       - For each impl module that currently has bounds-only ensures
+         (Matrix, Encoding, Ml_dsa_generic.*, Sample, Ntt), check
+         whether the corresponding `Hacspec_ml_dsa.*` definition
+         exists and what it covers.
+       - Update `proofs/proof_milestones.md` to mark which milestone
+         rows are *spec-gated* (need new `Hacspec_ml_dsa` definitions)
+         vs. *wiring-gated* (spec exists, just need to add the
+         `ensures(... cites Hacspec_ml_dsa.foo ...)` clause).
+       - Land the inventory as a doc commit (no code change). Cap
+         this at one session.
+     Until this lands, (1)–(4) are guesses, not plans.
+
+  **1. Wire `Ml_dsa_generic.{generate_key_pair_internal,
+     sign_internal, verify_internal}` ensures to
+     `Hacspec_ml_dsa.Ml_dsa.{keygen_internal, sign_internal,
+     verify_internal}`.**  These three Hacspec functions ALREADY
+     EXIST.  Wiring them gives the strongest "this is FIPS 204"
+     statement available without further spec work.  Each side is
+     currently body-admitted; the wiring task is to add the
+     `ensures` block that cites the Hacspec function, then close
+     the body via composition through the (already verified) layer
+     beneath. Per fn, est. 2-4 hr.
+
+  **2. Drive `ADMIT_MODULES` to zero (parallel-friendly with the rest).**
+     `proofs/fstar/extraction/Makefile` lists 20 explicit admits in
+     4 categories. Source-side reasons documented inline. Pick the
+     cheapest unblocked group:
+       - **Samplex4 (4)** — needs trait-method panic-freedom on the
+         X4 Xof hash functions. Probably 2-3 hr per dispatcher.
+       - **AVX2 Rejection_sample.{Less_than_eta, Less_than_field_modulus}
+         (2)** — Step 13 Track A AVX2 closure shape. ~1-2 hr each.
+       - **Specs.Simd.Portable.Sample.fst (1)** — needs randomness-
+         length precondition bridged to
+         `Spec.MLDSA.Math.rejection_sample_field_modulus`.
+       - **Shuffle_table (1)** — DON'T attempt; needs a hax-proof-libs
+         detour. See AP-4 below + commit `9da124ba5`.
+       - **User-facing API wrappers (12)** — gated on (1) — they
+         thread through `Ml_dsa_generic.*` and become correct-by-
+         construction once that layer's bodies close.
+
+  **3. Wire encoding wrapper ensures to
+     `Hacspec_ml_dsa.Encoding.*`.**  The Hacspec encoding spec is
+     1477 lines and covers T0/T1/error/gamma1/commitment/signature/
+     signing_key/vk.  Each impl wrapper in `src/encoding/*.rs` has
+     bounds-only or panic-only ensures today; replace them with
+     citations to the Hacspec spec and prove the wiring.  Per
+     wrapper, est. 1-2 hr (8 wrappers × ~12 hr total).
+
+  **4. Wire NTT/Invntt wrapper ensures to
+     `Hacspec_ml_dsa.Ntt.{ntt, invert_ntt_montgomery, ...}`.**
+     Hacspec_ml_dsa.Ntt.fst already provides the FIPS 204 zetas
+     table + the spec-level NTT/INTT. Per-lane bridges in
+     `Hacspec_ml_dsa.Commute.Chunk` are partly in place. The
+     remaining work is the per-layer SIMD chunking lemma (analogous
+     to ML-KEM's `lemma_inv_ntt_layer_<N>_step_to_hacspec`).
+     ~2-3 sprints across all layers + their inverses.
+
+  **5. Stretch: ml-dsa-generic correctness composition.** Once
+     (1)+(3)+(4) land, the user-facing API wrappers (currently in
+     ADMIT_MODULES) become wiring-only. Many sprints, but the
+     individual steps are mechanical compositions.
 
 ## Anti-patterns to avoid (cross-audit lessons)
 
@@ -71,36 +152,63 @@ milestones in `proofs/proof_milestones.md`.
      commits; the per-width `panic_free` strategy is what produced
      gains.
 
-  **AP-2 Defining ensures without first defining the spec** — bounds-
-     only ensures are not a "proof gap"; they're a "spec gap". Don't
-     add `Hacspec_ml_dsa.Ntt.foo` citations to a function before
-     `Hacspec_ml_dsa.Ntt.foo` exists. The path is: define spec →
-     test spec is well-formed → wire ensures → prove.
+  **AP-2 Defining ensures without verifying the spec exists** —
+     bounds-only ensures are sometimes a "spec gap", sometimes
+     just a "wiring gap". Before adding new `Hacspec_ml_dsa.*`
+     definitions, **grep first**:
+       `grep -rn "<spec_fn_name>" specs/ml-dsa/proofs/fstar/`.
+     The spec layer is much larger than the earliest agent prompts
+     assumed (see "Existing spec inventory"). Path: grep for spec
+     → if missing, design spec → wire ensures → prove. If spec
+     already exists, skip straight to wiring.
 
   **AP-3 GLOBAL `reveal_opaque (\`%P) (P)` in loop bodies (Rule SD4)**
      — ML-KEM saw a 153 s top-1 wall caused by one such line; fix
      dropped to 2.1 s. Use targeted form `reveal_opaque (\`%P) (P
      arg1 arg2)` or just an `assert (P args)` first.
 
+  **AP-4 Don't fight `bits USIZE`.** The hax proof-libs `.fsti` keeps
+     `bits USIZE` opaque; `assert_norm` does not unfold it either.
+     If a function shifts on a usize, either bound the shift amount
+     tighter (e.g. `< 8`) so the obligation falls into a different
+     proof path, or leave the module admitted rather than burn time
+     on a proof-libs detour. Tried+reverted in `9da124ba5`.
+
+  **AP-5 `assert_norm` for arithmetic constant chains.** When a
+     constant extracts via a chain that includes a subtraction step
+     (e.g. `BITS_IN_UPPER_PART_OF_T = FIELD_MODULUS_MINUS_ONE_BIT_LENGTH
+     - BITS_IN_LOWER_PART_OF_T`), plain `assert (v $C == K)` will
+     not discharge under `fuel 0`; use `assert_norm`. Shorter chains
+     without subtraction (e.g. `T0_SIZE = 13 * 256 / 8`) work with
+     plain `assert`. See commit `5d32e16df`.
+
 ## Hard rules
 
   R1 Branch `ml-dsa-proofs` directly. User merges to origin manually.
-  R2 No NEW broad admits.
+  R2 No NEW broad admits. Adding to `ADMIT_MODULES` is allowed only
+     for newly-extracted files that genuinely cannot verify yet, and
+     must come with a one-line reason in the Makefile comment block.
   R3 No new axioms unless absolutely necessary. File as SIDEWAYS in
      `MLDSA_STATUS.md` + commit message.
   R4 `ulimit -v 8388608`. F\* `--z3rlimit ≤ 800`. Default `--z3rlimit 200`.
   R5 Inner edit-check: `make check/<Mod>.fst` from
      `proofs/fstar/extraction/`. Cap 20 min/attempt.
-  R6 Re-record hints + touch unchanged `.checked` after extract.
+  R6 Re-record hints + touch unchanged `.checked` after extract — use
+     the helper script (see "Per-build hygiene" below); do NOT
+     re-roll the shell.
   R7 SIMD trait FROZEN unless adding NEW posts (per cross-audit AP-2).
   R8 After each milestone: regenerate `proofs/verification_status.md`,
      update `proof_milestones.md` status, commit prefix `agent-mldsa:`.
 
 ## Workflow
 
-  1. Read `proofs/proof_milestones.md` (TODO list) +
+  1. Read `proofs/post-merge-handoff.md` (current state + tip),
+     `proofs/proof_milestones.md` (TODO list), and
      `proofs/sprint-learnings.md` (cross-audit synthesis).
-  2. Pick first milestone (start with #0 — VERIFIED_MODULES audit).
+  2. Pick first milestone — start with Section 0 (spec inventory)
+     unless that has already been landed; otherwise pick from
+     Section 1 (Ml_dsa_generic wiring) or Section 2 (cheapest
+     admit closure).
   3. Iterate `make check/<Mod>.fst` until clean.
   4. `python3 proofs/generate_verification_status.py` to refresh report.
   5. Update `proof_milestones.md` row status + commit SHA.
@@ -111,26 +219,26 @@ milestones in `proofs/proof_milestones.md`.
 
   ```bash
   cd ~/libcrux-ml-dsa-proofs/libcrux-ml-dsa
-  cd proofs/fstar/extraction
-  find . -maxdepth 1 \( -name "Libcrux_ml_dsa*.fst" -o -name "Libcrux_ml_dsa*.fsti" \) | sort | xargs shasum > /tmp/pre.sha
-  cd ../../..
-  python3 hax.py extract  # or hax.sh — check what's there
-  cd proofs/fstar/extraction
-  find . -maxdepth 1 \( -name "Libcrux_ml_dsa*.fst" -o -name "Libcrux_ml_dsa*.fsti" \) | sort | xargs shasum > /tmp/post.sha
-  diff /tmp/pre.sha /tmp/post.sha > /tmp/diff.sha
-  for f in $(find . -maxdepth 1 \( -name "Libcrux_ml_dsa*.fst" -o -name "Libcrux_ml_dsa*.fsti" \)); do
-    base=$(basename $f); chk=$(realpath ../../../..)/.fstar-cache/checked/$base.checked
-    if ! grep -qF "$base" /tmp/diff.sha && [ -f "$chk" ]; then touch "$chk"; fi
-  done
+  proofs/agent-status/touch-unchanged-checked.sh snapshot
+  JOBS=2 ./hax.sh extract
+  proofs/agent-status/touch-unchanged-checked.sh skip-unchanged
+  JOBS=2 ./hax.sh prove 2>&1 > /tmp/baseline.log
+  grep -E "Modules invoked|F\* errors" /tmp/baseline.log
+  # Expect on a clean tree: ~78 invoked, [CHECK]≈58, [ADMIT]≈20, 0 F* errors.
   ```
+
+  If the baseline drifts (CHECK count drops or errors appear), the
+  first task is to find what regressed before editing.
 
 ## Deliverable
 
 End-of-session report (≤ 200 words):
   - Milestones closed (✅) with commit SHAs.
-  - VERIFIED_MODULES audit result: which modules were taken off the
-    admit list and why.
-  - Spec modules designed (or scaffolded) — file path + summary.
+  - Modules removed from `ADMIT_MODULES` (if any) and why.
+  - Hacspec spec functions newly cited from impl `ensures` —
+    fn-name, file path, commit SHA.
+  - New `Hacspec_ml_dsa.*` definitions added (only if grep
+    confirmed they were genuinely missing) — file path + summary.
   - Final commit SHA on `ml-dsa-proofs`.
   - Next-priority recommendation.
 
