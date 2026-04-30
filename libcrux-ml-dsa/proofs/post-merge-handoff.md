@@ -136,13 +136,14 @@ sampling state machines + Xof-trait-dependent flows.
 `compute_w_approx`.  Strong pre/post; bodies admit.
 
 **Encoding.* wrappers — admit bodies**:
-`Verification_key.generate_serialized`, `Signature.serialize`.
+`Signature.serialize`.
 Closures already landed:
 - `Encoding.T0.deserialize_to_vector_then_ntt` (`577a112cf`).
 - `Encoding.Error.deserialize_to_vector_then_ntt` length-pres (`65940351b`).
 - `Encoding.Signing_key.generate_serialized` (`8fa040756`).
 - `Encoding.Verification_key.deserialize` (`743956689`).
 - `Encoding.Signature.deserialize` (PR 1348, `9c83b0279`).
+- `Encoding.Verification_key.generate_serialized` (Session B half).
 
 **Arithmetic.fst** — `power2round_vector` body admit (hax IndexMut
 quirk, see `outstanding-admits.md`).
@@ -176,7 +177,39 @@ the orchestrator's call chain.  Start with the smallest
 `src/encoding/{verification_key,signing_key,signature}.rs` body
 admits.  These are mostly offset-arithmetic and copy_from_slice
 threading.  Above-trait proved this is tractable (commits
-`8fa040756`, `743956689`).  Per-function 30-60 min.
+`8fa040756`, `743956689`).
+
+- ✅ `Verification_key.generate_serialized` — closed Session B.1.
+  Pattern: mirror Signing_key.generate_serialized (loop_invariant
+  carrying length + per-lane forall + offset arithmetic asserts).
+  One subtlety: `RING_ELEMENT_OF_T1S_SIZE` extracts via the chain
+  `BITS_IN_UPPER_PART_OF_T = FIELD_MODULUS_MINUS_ONE_BIT_LENGTH -
+  BITS_IN_LOWER_PART_OF_T`; Z3 cannot fold this under `fuel 0`,
+  so use `assert_norm (v $RING_ELEMENT_OF_T1S_SIZE == 320)`
+  (rather than plain `assert`, which works for the simpler
+  `RING_ELEMENT_OF_T0S_SIZE` chain).  rlimit 400, split_queries
+  always.
+
+- 🔵 `Signature.serialize` — DEFERRED to its own session (more
+  complex than the 30-60 min estimate).  The hint-pack inner loop
+  uses an unguarded `true_hints_seen` accumulator that the body
+  must show stays `<= max_ones_in_hint`.  Caller (`sign_internal`)
+  checks `if ones_in_hint > MAX_ONES_IN_HINT { skip }` before
+  calling, but expressing this as a function precondition needs
+  one of:
+    (a) a recursive F* spec helper `count_total_ones` defined in a
+        `hax_lib::fstar!` header block + bound `count_total_ones
+        hint <= v $max_ones_in_hint` in the precondition + monotonicity
+        across the i-loop;
+    (b) take the `actual_ones_in_hint: usize` count as a NEW
+        function parameter (caller already has it from `make_hint`
+        return value), with precondition tying it to the spec count;
+    (c) a defensive in-loop bound check `if hint[i][j] == 1 &&
+        true_hints_seen < max_ones_in_hint` that subtly changes
+        runtime semantics on out-of-spec inputs.
+  PR 1348's `deserialize` closure shows the helper-split pattern
+  needed here (split serialize into prefix + hint-write helper,
+  the helper carrying the count bound).  Estimate: 2-3 hr.
 
 ### Session C: AVX2 Rejection_sample.{Less_than_eta,Less_than_field_modulus}
 Promote the shuffle-table + samplers to CHECK.  Shape similar to

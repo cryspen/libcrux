@@ -7,6 +7,7 @@ use crate::{
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --fuel 0 --ifuel 1")]
 #[hax_lib::requires(fstar!(r#"
     Seq.length seed == 32 /\
     Seq.length t1 <= 8 /\
@@ -23,9 +24,26 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
     t1: &[PolynomialRingElement<SIMDUnit>],
     verification_key_serialized: &mut [u8],
 ) {
-    hax_lib::fstar!("admit ()");
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed);
-    for i in 0..t1.len() {
+    let t1_len = t1.len();
+    for i in 0..t1_len {
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= Seq.length $t1 /\
+              Seq.length $t1 <= 8 /\
+              v $t1_len == Seq.length $t1 /\
+              Seq.length $verification_key_serialized == 32 + Seq.length $t1 * 320 /\
+              (forall (k:nat). k < Seq.length $t1 ==>
+                (forall (j:nat). j < 32 ==>
+                  (forall (l:nat). l < 8 ==>
+                    v (Seq.index (i0._super_i2.f_repr (Seq.index (Seq.index $t1 k).f_simd_units j)) l) >= 0 /\
+                    v (Seq.index (i0._super_i2.f_repr (Seq.index (Seq.index $t1 k).f_simd_units j)) l) < pow2 10)))"#
+        ));
+        hax_lib::fstar!(
+            r#"assert_norm (v $RING_ELEMENT_OF_T1S_SIZE == 320);
+               assert (v i < v $t1_len);
+               assert (v i * 320 <= 7 * 320);
+               assert ((v i + 1) * 320 <= Seq.length $t1 * 320)"#
+        );
         let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
         t1::serialize::<SIMDUnit>(
             &t1[i],

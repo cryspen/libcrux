@@ -235,18 +235,19 @@ these are local to the above-trait lane.
     index + minimal `loop_invariant` (`i <= rows_in_a /\ rows_in_a <= 8 /\
     rows_in_a == Seq.length t1 /\ Seq.length serialized == rows_in_a * 320`)
     + `--z3rlimit 200`.  Verifies in ~2s.
-  - **generate_serialized**: BODY ADMIT RETAINED.  The `+ SEED_FOR_A_SIZE`
-    (= 32) offset in the per-iteration slice index compounds with the
-    multiplicative-bound check on `i * 320` and the function's triple-forall
-    precondition (`forall k j i. v >= 0 /\ ... < pow2 10`) to exhaust Z3
-    even at `--z3rlimit 800 --split_queries always`.  Quantifier-instantiation
-    explosion.  Compare `commitment.serialize_vector` which uses the OPAQUE
-    `is_pos_array_opaque (pow2 N - 1)` predicate inside the forall and
-    verifies cleanly.  Closure path: either (a) tighten `T1.serialize`'s
-    precondition in `t1.rs` to use `is_pos_array_opaque (pow2 10 - 1)`
-    (cascades to re-verify T1.fst), or (b) inline `lemma_is_pos_array_intro`
-    calls per (k, j) pair via `hax_lib::fstar!(...)`.  ~45-60 min;
-    cross-file scope.
+  - **generate_serialized**: CLOSED Session B.1 (2026-04-30).  Mirrored
+    `Signing_key.generate_serialized` pattern: hoist `t1.len()` into a
+    nameable `t1_len` binding, attach a `loop_invariant!` carrying the
+    triple-forall on t1 + length identity on `verification_key_serialized`,
+    plus offset-arithmetic asserts.  Two notable choices:
+    (i) `--z3rlimit 400 --split_queries always --fuel 0 --ifuel 1` (the
+    earlier estimate of explosion at rlimit 800 was correct for the previous
+    proof attempt that did not split; with split_queries and the right
+    invariant shape the obligations split into ~80 small queries that all
+    discharge); (ii) `assert_norm (v $RING_ELEMENT_OF_T1S_SIZE == 320)`
+    instead of plain `assert` — needed because `BITS_IN_UPPER_PART_OF_T =
+    FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T` adds an
+    extra unfold step that Z3 cannot fold under `fuel 0`.
 
 ### Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized
 - **File**: `src/encoding/signing_key.rs`
@@ -265,17 +266,23 @@ these are local to the above-trait lane.
   the body into 3 sub-functions (seed-write block, error-loop, t0-loop)
   with intermediate length post-conditions.  ~45 min.
 
-### Libcrux_ml_dsa.Encoding.Signature.{serialize,deserialize}
+### Libcrux_ml_dsa.Encoding.Signature.serialize
 - **File**: `src/encoding/signature.rs`
 - **Annotation**: `verification_status(panic_free)` + `hax_lib::fstar!("admit ()")`
 - **Phase added**: above-trait C.5 (`0d11b64a9`)
-- **Diagnosis**: most complex — `serialize` packs commitment_hash +
-  per-poly gamma1_serialize + hint-bit-pack with running
-  `true_hints_seen` counter and per-row written count.
-  `deserialize` does the inverse with malformed-hint detection
-  via `Result<(), VerificationError>` return.
-- **Suggested mitigation**: USER lane.  Same shape as ML-KEM
-  HintBitPack/HintBitUnpack analogs which were also USER-lane.
+- **Diagnosis**: `serialize` packs commitment_hash + per-poly
+  gamma1_serialize + hint-bit-pack with running `true_hints_seen`
+  counter and per-row written count.  Bounding the counter
+  requires a count-of-ones precondition that the caller
+  (`sign_internal`) ensures via `if ones_in_hint > MAX_ONES_IN_HINT
+  { skip }`, but expressing it in F* needs either a recursive
+  spec helper or a function-signature change.
+- **Suggested mitigation**: helper-split mirroring PR 1348's
+  `deserialize` closure — extract the hint-pack inner loop into
+  `write_signature_hints` and carry the count bound through it.
+  See post-merge-handoff Session B option list.
+
+`Encoding.Signature.deserialize` was closed in PR 1348 (`9c83b0279`).
 
 `set_hint` helper got a real `requires(i < out_hint.len() && j < 256)`
 in `0d11b64a9` (no admit needed there).
