@@ -48,7 +48,6 @@ let xor_block_into_state (state: t_Array u64 (mk_usize 25)) (block: t_Slice u8) 
 
 /// Extract `len` bytes from the rate portion of the state (little-endian, lane-interleaved).
 /// Corresponds to `Trunc_r(S)` in Algorithm 8.
-[@@"opaque_to_smt"]
 let squeeze_state
       (v_OUTPUT_LEN: usize)
       (state: t_Array u64 (mk_usize 25))
