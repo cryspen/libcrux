@@ -363,3 +363,53 @@ variant paths.
 follow-macro-instantiation logic, or a config-side
 "`mlkem.rs` instantiates into Mlkem512.Incremental + ..." mapping.
 Affects any crate that uses macro-based per-variant code generation.
+
+### Inverse → forward NTT pattern transfer is empirically robust
+
+Three forward NTT layers (1, 2, 3) closed first-try in one session
+(commits `c32653051`, `744b15937`, `0ea02c19e`) by mirroring the
+inverse-direction commits (`8358b1093`, `b7b49c358`+`4672cc005`,
+`fa2151ea8`+`43c9d45d5`) component-by-component.
+
+**Invariants** that hold across the inverse → forward transfer:
+  - **Lane assignment per branch is identical**: forward and
+    inverse layer-N trait `branch_post`s share the same
+    base/off/i1/j1/i2/j2 indexing.  Per-branch lane bridges port
+    over directly; only the per-lane FE equation differs.
+  - **Bridge structure is identical**: per-lane unfold helper +
+    per-branch-or-direct lane bridge + per-vector wrapper with
+    `Classical.forall_intro` + `Seq.lemma_eq_intro`.
+  - **Trait branch_post predicates already exist** at `traits.rs`
+    for layers 1, 2, 3 (both directions).  No need to author new
+    branch posts.
+
+**The single material divergence**: forward butterfly
+`(a + z*b, a - z*b)` requires asymmetric multiplication, vs
+inverse `inv_butterfly (a + b, (a - b) * z)`.  Empirically this
+needed `--z3rlimit 800 --split_queries always` on the per-lane
+**wrapper** for forward layer 2 (vs 400 for inverse).  Other
+positions (per-branch helpers, per-vector bridge) verified at the
+same rlimit.
+
+**Where the transfer breaks down (still open as of 2026-04-30)**:
+  - **Layer 4_plus**: multi-step (4 calls in
+    `ntt_binomially_sampled_ring_element`).  Inverse counterpart's
+    body itself is admitted (USER-14).  Bridge would need
+    `lemma_ntt_layer_int_vec_step_to_hacspec` mirroring
+    `lemma_inv_ntt_layer_int_vec_step_reduce_to_hacspec` at
+    `Bridges.fst:745`.  But strengthening
+    `ntt_layer_int_vec_step`'s post and chaining 16 per-chunk-pair
+    uses to a poly-level claim is the same gap that USER-14 is
+    tracking for inverse.
+  - **Layer 7**: between-chunk butterfly.  Single zeta in
+    Montgomery form (-1600 in the impl); no
+    `f_ntt_layer_7_step` trait function exists (the impl uses
+    `multiply_by_constant_bounded` + `add_bounded`/`sub_bounded`
+    directly, skipping the trait).  Bridge would need to identify
+    `mont_lift(-1600) == zeta(1)` and chain 8 chunk-pair operations
+    to a poly-level layer-7 claim.  Novel design.
+
+**Recommendation**: layers 4_plus and 7 are NOT one-session tasks.
+Treat them as separate USER-N items. Inverse 4_plus (USER-14) is
+the unblocking work — solving it gives a template for forward
+4_plus directly.
