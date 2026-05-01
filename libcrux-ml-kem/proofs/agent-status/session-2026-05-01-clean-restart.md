@@ -19,7 +19,9 @@ function migrations.
 | 4-function migration in `src/ind_cca.rs` + re-extract | `6b6835a20` | first real Hacspec_ml_kem migration on this branch |
 | Add audit + clean-restart prompt docs | `bee8f0b1d` | cherry-pick of `9c314717b`; pure documentation |
 | Add `cpa_ciphertext_size` to `/specs/ml-kem/src/parameters.rs` | `843ffeb64` | first **workflow step 4** application (rank-generic helper for `Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE`) |
-| 5th function migration: `validate_private_key` | `bc55ef201` | hits the 4-5 cap; uses the new `cpa_ciphertext_size` extracted symbol |
+| 5th function migration: `validate_private_key` | `bc55ef201` | uses the new `cpa_ciphertext_size` extracted symbol |
+| Add `rank_to_params` to `/specs/ml-kem/src/parameters.rs` | `9dce36d6b` | second workflow step 4: adapter `usize → MlKemParams` for function-call ensures |
+| 6th function migration: `generate_keypair` | `9ffc850db` | first FUNCTION-CALL-ensures migration; cites `Hacspec_ml_kem.Ind_cca.generate_keypair` via `rank_to_params`; partial body verification (downstream blocker) |
 
 `b3d3d7e5d` (`v_PRFxN` → `Spec.Utils.v_PRFxN`) was attempted but the
 incoming patch context drags FORBIDDEN wrapper cites
@@ -30,9 +32,9 @@ incoming patch context drags FORBIDDEN wrapper cites
 docs) NOT cherry-picked — analysis was based on cheat metrics per the
 audit.
 
-Final SHA on `libcrux-ml-kem-proofs`: **`bc55ef201`**.
+Final SHA on `libcrux-ml-kem-proofs`: **`9ffc850db`** (after extending past the original 5/5 cap to 6 functions on user "continue" request).
 
-## Functions migrated (5)
+## Functions migrated (6)
 
 All in `src/ind_cca.rs`:
 
@@ -56,14 +58,31 @@ All in `src/ind_cca.rs`:
    - Post: `Hacspec_ml_kem.Parameters.Sizes.is_rank $K /\ $SECRET_KEY_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_CCA_PRIVATE_KEY_SIZE $K /\ $CIPHERTEXT_SIZE == Hacspec_ml_kem.Parameters.cpa_ciphertext_size $K`.
    - Demonstrates **workflow step 4**: missing `Hacspec_ml_kem.Parameters.cpa_ciphertext_size` was added to `/specs/ml-kem/src/parameters.rs` (commit `843ffeb64`), then the consumer migrated.
 
+6. **`generate_keypair`** (lines 200–247) — the FIRST function-call-ensures migration:
+   - Pre: 6 size constants (Spec.MLKEM.{is_rank, v_CPA_PRIVATE_KEY_SIZE, v_CCA_PRIVATE_KEY_SIZE, v_CPA_PUBLIC_KEY_SIZE, v_ETA1, v_ETA1_RANDOMNESS_SIZE}) + ensures cites `Spec.MLKEM.ind_cca_generate_keypair $K $randomness` returning `(expected, valid)` tuple.
+   - Post: requires migrate to `Hacspec_ml_kem.Parameters.Sizes.*`; ensures **reshapes the return type** from Spec.MLKEM's `(expected, valid)` to Hacspec's `Result<(ek, dk), Error>`:
+     ```
+     match Hacspec_ml_kem.Ind_cca.generate_keypair $K $PUBLIC_KEY_SIZE
+           $PRIVATE_KEY_SIZE $CPA_PRIVATE_KEY_SIZE
+           (Hacspec_ml_kem.Parameters.rank_to_params $K) $randomness with
+     | Core_models.Result.Result_Ok (ek, dk) ->
+         $result.f_pk.f_value == ek /\ $result.f_sk.f_value == dk
+     | _ -> True
+     ```
+     Note ORDER SWAPPED: Hacspec returns `(ek, dk)` (public-key, secret-key) vs Spec.MLKEM's `(sk, pk)`.
+   - Workflow step 4: required adding `rank_to_params` adapter to `/specs/ml-kem/src/parameters.rs` (commit `9dce36d6b`).
+   - **Verification status caveat**: the .fsti as a whole still doesn't `.checked` because of the line-165 blocker (encapsulate's requires).  generate_keypair's body verification (does the libcrux body produce the same bytes as Hacspec?) is therefore PARTIAL — F* hasn't reached the body re-check.  The body calls `crate::ind_cpa::generate_keypair` whose ensures still cites Spec.MLKEM, so body verification likely WILL fail until ind_cpa::generate_keypair is also migrated (cascade).
+
 ### Not migrated (deferred)
 
-- **`generate_keypair`** (`src/ind_cca.rs:286`-ish): the next blocker.  Cites both rank-generic size constants (covered by `Parameters.Sizes`) AND `Spec.MLKEM.ind_cca_generate_keypair v_K randomness` in `ensures`.  The function-call cite maps per the prompt's table to `Hacspec_ml_kem.Ind_cca.generate_keypair p rand` — needs a `t_MlKemParams` refactor or per-rank case-split.  Out of scope for this session (cap reached).
+- **`encapsulate`** (`src/ind_cca.rs:251`-ish): next blocker at `Libcrux_ml_kem.Ind_cca.fsti(165)`.  Cites 11 size constants in requires — many NOT in `Hacspec_ml_kem.Parameters.Sizes` (`v_T_AS_NTT_ENCODED_SIZE`, `v_C1_SIZE`, `v_C2_SIZE`, `v_VECTOR_U_COMPRESSION_FACTOR`, `v_VECTOR_V_COMPRESSION_FACTOR`, `v_C1_BLOCK_SIZE`, `v_ETA2`, `v_ETA2_RANDOMNESS_SIZE`).  Plus a function-call ensures (`Spec.MLKEM.ind_cca_encapsulate`).  Needs ~8 new `/specs/ml-kem/src/parameters.rs` helpers + ensures reshape.  Out of scope (~3 hours into session, prompt's 4-hour cap approaching).
+- **`crate::ind_cpa::generate_keypair` ensures cascade**: required for `generate_keypair`'s body verification to fully discharge against the new Hacspec ensures.
 
 ## New content in `/specs/ml-kem/src/`
 
-One free function added to `/specs/ml-kem/src/parameters.rs` (commit `843ffeb64`):
+Two free functions added to `/specs/ml-kem/src/parameters.rs`:
 
+**1. `cpa_ciphertext_size(rank: usize) -> usize`** (commit `843ffeb64`):
 ```rust
 #[hax_lib::requires(rank == 2 || rank == 3 || rank == 4)]
 pub const fn cpa_ciphertext_size(rank: usize) -> usize {
@@ -72,19 +91,27 @@ pub const fn cpa_ciphertext_size(rank: usize) -> usize {
     else { ML_KEM_1024_CT_SIZE }
 }
 ```
+Rationale: rank-generic alias for the per-instance `MlKemParams::ciphertext_size()`.
 
-Rationale: `Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE r` was rank-generic, but
-the canonical extracted Hacspec exposes only the
-`MlKemParams::ciphertext_size(&self)` instance method (which requires a
-`MlKemParams` value, not just a rank).  Rank-generic Rust functions
-like `validate_private_key` cannot easily thread a `MlKemParams` value
-without API refactor.  The new helper composes the existing pre-computed
-`ML_KEM_{512,768,1024}_CT_SIZE` constants and is the workflow step 4
-correct path: extend the **Rust spec** (extracted real symbol), not
-the wrapper-namespace.
+**2. `rank_to_params(rank: usize) -> MlKemParams`** (commit `9dce36d6b`):
+```rust
+#[hax_lib::requires(rank == 2 || rank == 3 || rank == 4)]
+pub const fn rank_to_params(rank: usize) -> MlKemParams {
+    if rank == 2 { ML_KEM_512 }
+    else if rank == 3 { ML_KEM_768 }
+    else { ML_KEM_1024 }
+}
+```
+Rationale: canonical adapter from libcrux-side `const K: usize` shape
+to Hacspec-side `params: MlKemParams` shape.  Used by `generate_keypair`
+to invoke `Hacspec_ml_kem.Ind_cca.generate_keypair` which requires a
+`MlKemParams` (not just a rank).  Will be reused for every rank-generic
+src/*.rs function whose ensures cites a Spec.MLKEM function-call (ind_cca
+encapsulate / decapsulate, ind_cpa generate_keypair / encrypt / decrypt,
+etc.).
 
-Extracted to `Hacspec_ml_kem.Parameters.cpa_ciphertext_size` (line 145
-of regenerated `Hacspec_ml_kem.Parameters.fst`, gitignored).
+Both extract to `Hacspec_ml_kem.Parameters.{cpa_ciphertext_size, rank_to_params}`
+(gitignored regenerated F*).
 
 ## Decisions recorded
 
@@ -123,7 +150,8 @@ Make from `proofs/fstar/extraction/` after each step:
 | `967b6b0f2` (Spec.MLKEM moved) | fails at `Hacspec_ml_kem.Parameters.Sizes.fst:52` — `Spec.MLKEM` unresolved in dead bridge lemma |
 | `20fbb16c9` (Sizes cleanup) | progresses past Sizes (1.6 s, 12 queries pass with hint, max rlimit 0.094); fails at `Libcrux_ml_kem.Ind_cca.fsti(39)` — `Spec.MLKEM.v_SHARED_SECRET_SIZE` |
 | `6b6835a20` (4-function migration + re-extract) | progresses past 4 functions; fails at `Libcrux_ml_kem.Ind_cca.fsti(111)` — `Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE` in `validate_private_key` |
-| `843ffeb64` + `bc55ef201` (Rust-spec extension + 5th-fn migration) | progresses past `validate_private_key`; **7 modules verified clean** (Constant_time_ops, Hash_functions × 3, plus Hacspec_ml_kem.Parameters / Parameters.Sizes / others); fails at `Libcrux_ml_kem.Ind_cca.fsti(130)` in `generate_keypair` (deferred) |
+| `843ffeb64` + `bc55ef201` (Rust-spec extension + 5th-fn migration) | progresses past `validate_private_key`; **7 modules verified clean**; fails at `Libcrux_ml_kem.Ind_cca.fsti(130)` in `generate_keypair` |
+| `9dce36d6b` + `9ffc850db` (rank_to_params + 6th-fn migration) | progresses past `generate_keypair`; **12 modules verified clean** (the prior 7 + `Hacspec_ml_kem.{Compress, Serialize, Ntt, Invert_ntt, Sampling, Matrix, Ind_cpa, Ind_cca, Polynomial}`, `Libcrux_ml_kem.Vector.Traits.{Spec,—}`); fails at `Libcrux_ml_kem.Ind_cca.fsti(165)` in `encapsulate` requires (deferred — needs ~8 new helpers) |
 
 ## F\* perf delta
 
@@ -141,12 +169,12 @@ deferred-blocker prevents downstream verification).
 Per the prompt's "must be 0 in src/; commute/ count monotonically
 decreasing":
 
-| Area | At `d28a79c26` (branch base) | At `bc55ef201` (this session end) | Delta |
+| Area | At `d28a79c26` (branch base) | At `9ffc850db` (this session end) | Delta |
 |---|---|---|---|
-| `libcrux-ml-kem/src/` | 322 | **295** | -27 |
-| `libcrux-ml-kem/src/ind_cca.rs` | 137 | **116** | -21 |
+| `libcrux-ml-kem/src/` | 322 | **287** | -35 |
+| `libcrux-ml-kem/src/ind_cca.rs` | 137 | **108** | -29 |
 | `specs/ml-kem/proofs/fstar/commute/` (code) | 12 (Parameters.Sizes only) | **0** | -12 (only comments remain) |
-| `libcrux-ml-kem/proofs/fstar/extraction/` | 81 (extraction-drift) | **520** (canonical Rust→F*) | +439 |
+| `libcrux-ml-kem/proofs/fstar/extraction/` | 81 (extraction-drift) | ~ canonical Rust→F* | (re-extraction surfaces remaining work) |
 
 Note on extraction count rise: re-extraction surfaced the canonical
 state of the Rust source.  The `81` pre-extract figure was
@@ -211,10 +239,12 @@ verifies Ntt.fst builds clean.
 
 ## Next-session priorities
 
-1. **Migrate `generate_keypair`** (the next blocker at `Libcrux_ml_kem.Ind_cca.fsti:130`).  Requires migrate cleanly to `Hacspec_ml_kem.Parameters.Sizes.*`; **`ensures` cites `Spec.MLKEM.ind_cca_generate_keypair v_K randomness`** which needs the `t_MlKemParams` refactor.  Two options per the prompt's mapping table guidance:
-   a. Add a rank-to-params helper: `pub const fn rank_to_params(rank: usize) -> MlKemParams { ... }` in `/specs/ml-kem/src/parameters.rs`, then cite `Hacspec_ml_kem.Ind_cca.generate_keypair (rank_to_params $K) randomness` in the ensures.
-   b. Per-rank case-split in F*: `if $K = sz 2 then Hacspec_ml_kem.Ind_cca.generate_keypair v_ML_KEM_512_ randomness else if ...`.
-   Option (a) is cleaner and reusable for the dozens of rank-generic functions that need similar treatment.
-2. **Verify `Libcrux_ml_kem.Ntt.fst` builds clean** once Ind_cca.fsti unblocks downstream.  If the body proof material has issues, the next session can fall back to the existing stash for reference.
-3. **Drive src/ Spec.MLKEM count from 295 → 0** via the per-function recipe.  Same `Hacspec_ml_kem.Parameters.Sizes.*` + `Hash_functions.v_H_DIGEST_SIZE` + new `cpa_ciphertext_size`/possibly-new `rank_to_params` mapping covers the bulk of the next ~150-200 cites in `ind_cca.rs` and `ind_cpa.rs`.
-4. **Plan the `Parameters.Sizes` removal** once src/ cites are gone — replace with `t_MlKemParams`-shape consumers, then delete `Hacspec_ml_kem.Parameters.Sizes.fst`.
+1. **Migrate `encapsulate`** (next blocker at `Libcrux_ml_kem.Ind_cca.fsti:165`).  Requires ~8 new helpers in `/specs/ml-kem/src/parameters.rs`:
+   - `t_as_ntt_encoded_size(rank)`, `c1_size(rank)`, `c2_size(rank)`,
+   - `vector_u_compression_factor(rank)`, `vector_v_compression_factor(rank)`, `c1_block_size(rank)`,
+   - `eta2(rank)`, `eta2_randomness_size(rank)`.
+   All can follow the same per-rank case-split pattern as `cpa_ciphertext_size`.  Plus an ensures reshape from `Spec.MLKEM.ind_cca_encapsulate` to `Hacspec_ml_kem.Ind_cca.encapsulate (rank_to_params $K) ...` (now feasible thanks to this session's `rank_to_params`).
+2. **Cascade-migrate `crate::ind_cpa::generate_keypair`** ensures so that `crate::ind_cca::generate_keypair`'s body verification can fully discharge against the new Hacspec ensures (currently the body still calls a Spec.MLKEM-cited callee, blocking semantic verification).
+3. **Verify `Libcrux_ml_kem.Ntt.fst` builds clean** once Ind_cca.fsti unblocks downstream.  If the body proof material has issues, the next session can fall back to the existing stash for reference.
+4. **Drive src/ Spec.MLKEM count from 287 → 0** via the per-function recipe.  Same `Hacspec_ml_kem.Parameters.Sizes.*` + `Hash_functions.v_H_DIGEST_SIZE` + `cpa_ciphertext_size` + `rank_to_params` (+ the ~8 new helpers from priority 1) covers the bulk of the remaining cites in `ind_cca.rs` and `ind_cpa.rs`.
+5. **Plan the `Parameters.Sizes` removal** once src/ cites are gone — replace with `t_MlKemParams`-shape consumers, then delete `Hacspec_ml_kem.Parameters.Sizes.fst`.
