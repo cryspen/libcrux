@@ -200,14 +200,15 @@ pub(crate) fn validate_private_key_only<
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $CPA_PRIVATE_KEY_SIZE == Spec.MLKEM.v_CPA_PRIVATE_KEY_SIZE $K /\
-    $PRIVATE_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
-    $PUBLIC_KEY_SIZE == Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K /\
-    $ETA1 == Spec.MLKEM.v_ETA1 $K /\
-    $ETA1_RANDOMNESS_SIZE == Spec.MLKEM.v_ETA1_RANDOMNESS_SIZE $K"#))]
-#[hax_lib::ensures(|result| fstar!(r#"let (expected, valid) = Spec.MLKEM.ind_cca_generate_keypair $K $randomness in
-                                    valid ==> (${result}.f_sk.f_value, ${result}.f_pk.f_value) == expected"#))]
+#[hax_lib::requires(fstar!(r#"Hacspec_ml_kem.Parameters.Sizes.is_rank $K /\
+    $CPA_PRIVATE_KEY_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_CPA_PRIVATE_KEY_SIZE $K /\
+    $PRIVATE_KEY_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $PUBLIC_KEY_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_CPA_PUBLIC_KEY_SIZE $K /\
+    $ETA1 == Hacspec_ml_kem.Parameters.Sizes.v_ETA1 $K /\
+    $ETA1_RANDOMNESS_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_ETA1_RANDOMNESS_SIZE $K"#))]
+#[hax_lib::ensures(|result| fstar!(r#"match Hacspec_ml_kem.Ind_cca.generate_keypair $K $PUBLIC_KEY_SIZE $PRIVATE_KEY_SIZE $CPA_PRIVATE_KEY_SIZE (Hacspec_ml_kem.Parameters.rank_to_params $K) $randomness with
+                                    | Core_models.Result.Result_Ok (ek, dk) -> ${result}.f_pk.f_value == ek /\ ${result}.f_sk.f_value == dk
+                                    | _ -> True"#))]
 #[inline(always)]
 pub(crate) fn generate_keypair<
     const K: usize,
