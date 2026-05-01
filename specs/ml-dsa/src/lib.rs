@@ -1,5 +1,6 @@
 mod arithmetic;
 mod encoding;
+mod error;
 mod hash_functions;
 mod matrix;
 mod ml_dsa;
@@ -12,6 +13,7 @@ mod parameters;
 mod polynomial;
 mod sampling;
 
+pub use error::MlDsaError;
 pub use ml_dsa::{keygen_internal, sign_internal, verify_internal};
 pub use parameters::{
     pk_size, sig_size, MlDsaParams, ML_DSA_44, ML_DSA_44_C_TILDE_LEN, ML_DSA_44_PK_SIZE,

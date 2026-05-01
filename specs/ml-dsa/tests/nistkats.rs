@@ -105,8 +105,8 @@ fn run_sign_verify_kats<
             "KAT {i}: signature hash mismatch"
         );
 
-        let valid = verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(&pk, &m_prime, &sigma, params);
-        assert!(valid, "KAT {i}: verification failed");
+        verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(&pk, &m_prime, &sigma, params)
+            .unwrap_or_else(|e| panic!("KAT {i}: verification failed: {e:?}"));
     }
 }
 

@@ -150,13 +150,13 @@ fn run_sign_seed_tests<
                     test.tc_id,
                     test.comment
                 );
-                let valid =
-                    verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(&pk, &m_prime, &sigma, params);
-                assert!(
-                    valid,
-                    "tc_id={}: verify failed for valid signature",
-                    test.tc_id
-                );
+                verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(&pk, &m_prime, &sigma, params)
+                    .unwrap_or_else(|e| {
+                        panic!(
+                            "tc_id={}: verify failed for valid signature: {e:?}",
+                            test.tc_id
+                        )
+                    });
             }
         }
     }
@@ -253,8 +253,10 @@ fn run_verify_tests<
             }
 
             let m_prime = format_m_prime(&test.msg, &test.ctx);
-            let valid =
-                verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(pk, &m_prime, &test.sig, params);
+            let valid = verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(
+                pk, &m_prime, &test.sig, params,
+            )
+            .is_ok();
 
             if test.result == "valid" {
                 assert!(

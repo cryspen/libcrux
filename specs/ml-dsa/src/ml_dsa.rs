@@ -1,6 +1,7 @@
 use crate::arithmetic::mod_q;
 use crate::createi;
 use crate::encoding::*;
+use crate::error::MlDsaError;
 use crate::hash_functions::{h, h2, h3};
 use crate::matrix::matrix_vector_ntt;
 use crate::ntt::ntt;
@@ -75,7 +76,10 @@ pub fn keygen_internal<
 /// ML-DSA.Sign_internal(sk, M', rnd) — FIPS 204, Algorithm 7.
 ///
 /// Generates a signature for formatted message M' using private key sk.
-/// Returns None if all rejection sampling attempts fail (probability < 2⁻¹²⁸).
+/// Returns `Err(RejectionSamplingExhausted)` if all rejection sampling
+/// attempts fail (probability < 2⁻¹²⁸); `Err(SampleInBallExhausted)` is
+/// folded into rejection-loop continuation rather than propagated as
+/// a sign failure.
 #[hax_lib::fstar::verification_status(lax)]
 pub fn sign_internal<
     const K: usize,
@@ -88,7 +92,7 @@ pub fn sign_internal<
     m_prime: &[u8],
     rnd: &[u8; 32],
     params: &MlDsaParams,
-) -> Option<[u8; SIG_SIZE]> {
+) -> Result<[u8; SIG_SIZE], MlDsaError> {
     // 1. (ρ, K, tr, s1, s2, t0) ← skDecode(sk)
     let (rho, key, tr, s1, s2, t0) = sk_decode::<K, L>(sk, params);
 
@@ -107,11 +111,13 @@ pub fn sign_internal<
     let rho_pp: [u8; 64] = h3(&key, rnd, &mu);
 
     // 8–9. Rejection sampling loop
-    let mut result: Option<[u8; SIG_SIZE]> = None;
+    let mut result: Result<[u8; SIG_SIZE], MlDsaError> =
+        Err(MlDsaError::RejectionSamplingExhausted);
+    let mut signed = false;
     let mut kappa = 0usize;
 
     for _attempt in 0..1000 {
-        if result.is_none() {
+        if !signed {
             // 11. y ← ExpandMask(ρ'', κ)
             let y: [Polynomial; L] = expand_mask(&rho_pp, kappa, params.gamma1);
 
@@ -134,58 +140,71 @@ pub fn sign_internal<
             let mut c_tilde = [0u8; C_TILDE_LEN];
             c_tilde.copy_from_slice(&c_tilde_full[..C_TILDE_LEN]);
 
-            // 16. c ← SampleInBall(c̃)
-            let c = sample_in_ball(&c_tilde, params.tau);
-
-            // 17. ĉ ← NTT(c)
-            let c_hat = ntt(c);
-
-            // 18–19. cs1, cs2
-            let cs1_hat: [Polynomial; L] = scalar_vector_ntt(&c_hat, &s1_hat);
-            let cs1: [Polynomial; L] = vector_intt(&cs1_hat);
-            let cs2_hat: [Polynomial; K] = scalar_vector_ntt(&c_hat, &s2_hat);
-            let cs2: [Polynomial; K] = vector_intt(&cs2_hat);
-
-            // 20. z ← y + cs1
-            let z: [Polynomial; L] = vector_add(&y, &cs1);
-
-            // 21. r0 ← LowBits(w - cs2)
-            let w_minus_cs2: [Polynomial; K] = vector_sub(&w, &cs2);
-            let r0: [Polynomial; K] = vector_low_bits(&w_minus_cs2, params.gamma2);
-
-            // 23. Validity checks
-            if vector_infinity_norm(&z) >= params.gamma1 - params.beta
-                || vector_infinity_norm(&r0) >= params.gamma2 - params.beta
-            {
-                kappa += params.l;
-            } else {
-                // 25. ct0
-                let ct0_hat: [Polynomial; K] = scalar_vector_ntt(&c_hat, &t0_hat);
-                let ct0: [Polynomial; K] = vector_intt(&ct0_hat);
-
-                // 26. h ← MakeHint(-ct0, w - cs2 + ct0)
-                let neg_ct0: [Polynomial; K] = createi(|i| {
-                    let mut p = ZERO_POLY;
-                    for j in 0..256 {
-                        p[j] = if ct0[i][j] == 0 { 0 } else { Q - ct0[i][j] };
-                    }
-                    p
-                });
-                let w_cs2_ct0: [Polynomial; K] = vector_add(&w_minus_cs2, &ct0);
-                let (hint, hint_count) = vector_make_hint(&neg_ct0, &w_cs2_ct0, params.gamma2);
-
-                // 28. Check ||ct0||∞ < γ2 and hint count ≤ ω
-                if vector_infinity_norm(&ct0) >= params.gamma2 || hint_count > params.omega {
+            // 16. c ← SampleInBall(c̃).  On exhaustion (probabilistically
+            // impossible per the spec's 1024-byte buffer) we treat this
+            // attempt as a rejection and increment kappa.
+            match sample_in_ball(&c_tilde, params.tau) {
+                Err(_) => {
                     kappa += params.l;
-                } else {
-                    // 33. Encode signature
-                    let z_centered: [Polynomial; L] = createi(|i| poly_mod_pm(&z[i]));
-                    result = Some(sig_encode::<K, L, SIG_SIZE>(
-                        &c_tilde,
-                        &z_centered,
-                        &hint,
-                        params,
-                    ));
+                }
+                Ok(c) => {
+                    // 17. ĉ ← NTT(c)
+                    let c_hat = ntt(c);
+
+                    // 18–19. cs1, cs2
+                    let cs1_hat: [Polynomial; L] = scalar_vector_ntt(&c_hat, &s1_hat);
+                    let cs1: [Polynomial; L] = vector_intt(&cs1_hat);
+                    let cs2_hat: [Polynomial; K] = scalar_vector_ntt(&c_hat, &s2_hat);
+                    let cs2: [Polynomial; K] = vector_intt(&cs2_hat);
+
+                    // 20. z ← y + cs1
+                    let z: [Polynomial; L] = vector_add(&y, &cs1);
+
+                    // 21. r0 ← LowBits(w - cs2)
+                    let w_minus_cs2: [Polynomial; K] = vector_sub(&w, &cs2);
+                    let r0: [Polynomial; K] = vector_low_bits(&w_minus_cs2, params.gamma2);
+
+                    // 23. Validity checks
+                    if vector_infinity_norm(&z) >= params.gamma1 - params.beta
+                        || vector_infinity_norm(&r0) >= params.gamma2 - params.beta
+                    {
+                        kappa += params.l;
+                    } else {
+                        // 25. ct0
+                        let ct0_hat: [Polynomial; K] = scalar_vector_ntt(&c_hat, &t0_hat);
+                        let ct0: [Polynomial; K] = vector_intt(&ct0_hat);
+
+                        // 26. h ← MakeHint(-ct0, w - cs2 + ct0)
+                        let neg_ct0: [Polynomial; K] = createi(|i| {
+                            let mut p = ZERO_POLY;
+                            for j in 0..256 {
+                                p[j] = if ct0[i][j] == 0 { 0 } else { Q - ct0[i][j] };
+                            }
+                            p
+                        });
+                        let w_cs2_ct0: [Polynomial; K] =
+                            vector_add(&w_minus_cs2, &ct0);
+                        let (hint, hint_count) =
+                            vector_make_hint(&neg_ct0, &w_cs2_ct0, params.gamma2);
+
+                        // 28. Check ||ct0||∞ < γ2 and hint count ≤ ω
+                        if vector_infinity_norm(&ct0) >= params.gamma2
+                            || hint_count > params.omega
+                        {
+                            kappa += params.l;
+                        } else {
+                            // 33. Encode signature
+                            let z_centered: [Polynomial; L] =
+                                createi(|i| poly_mod_pm(&z[i]));
+                            result = Ok(sig_encode::<K, L, SIG_SIZE>(
+                                &c_tilde,
+                                &z_centered,
+                                &hint,
+                                params,
+                            ));
+                            signed = true;
+                        }
+                    }
                 }
             }
         }
@@ -201,7 +220,7 @@ pub fn sign_internal<
 #[hax_lib::requires(
     K <= 8 && L <= 8
     && C_TILDE_LEN <= 64 && W1_BYTES >= K * 192 && W1_BYTES <= 1024
-    && params.tau <= 256
+    && params.tau <= 64
     && params.omega <= 256
     && params.beta >= 0 && params.gamma1 > params.beta && params.gamma2 > params.beta
     && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
@@ -219,17 +238,17 @@ pub fn verify_internal<
     m_prime: &[u8],
     sigma: &[u8],
     params: &MlDsaParams,
-) -> bool {
+) -> Result<(), MlDsaError> {
     // 1. (ρ, t1) ← pkDecode(pk)
     let (rho, t1): ([u8; 32], [Polynomial; K]) = pk_decode(pk);
 
     // 2. (c̃, z, h) ← sigDecode(σ)
     match sig_decode::<K, L, C_TILDE_LEN>(sigma, params) {
-        None => false,
+        None => Err(MlDsaError::MalformedSignature),
         Some((c_tilde, z, h_arr)) => {
             // Check ||z||∞ < γ1 - β
             if vector_infinity_norm(&z) >= params.gamma1 - params.beta {
-                false
+                Err(MlDsaError::InvalidSignature)
             } else {
                 // 5. Â ← ExpandA(ρ)
                 let a_hat: [[Polynomial; L]; K] = expand_a(&rho);
@@ -240,44 +259,54 @@ pub fn verify_internal<
                 // 7. μ ← H(BytesToBits(tr) || M', 64)
                 let mu: [u8; 64] = h2(&tr, m_prime);
 
-                // 8. c ← SampleInBall(c̃)
-                let c = sample_in_ball(&c_tilde, params.tau);
+                // 8. c ← SampleInBall(c̃).  The 1024-byte buffer
+                // can in principle be exhausted (probabilistically
+                // impossible per the spec); surface that as an error.
+                match sample_in_ball(&c_tilde, params.tau) {
+                    Err(e) => Err(e),
+                    Ok(c) => {
+                        // 9. w'_Approx ← NTT⁻¹(Â ∘ NTT(z) − NTT(c) ∘ NTT(t1 · 2^d))
+                        let z_hat = vector_ntt(&z);
+                        let az_hat = matrix_vector_ntt(&a_hat, &z_hat);
+                        let c_hat = ntt(c);
+                        let two_d = 1i32 << D;
+                        let t1_scaled: [Polynomial; K] = createi(|i| {
+                            createi(|j| mod_q(t1[i][j] as i64 * two_d as i64))
+                        });
+                        let t1_2d_hat = vector_ntt(&t1_scaled);
+                        let ct1_hat: [Polynomial; K] = createi(|i| {
+                            crate::polynomial::poly_pointwise_mul(&c_hat, &t1_2d_hat[i])
+                        });
+                        let w_approx_hat: [Polynomial; K] = createi(|i| {
+                            crate::polynomial::poly_sub(&az_hat[i], &ct1_hat[i])
+                        });
+                        let w_approx: [Polynomial; K] = vector_intt(&w_approx_hat);
 
-                // 9. w'_Approx ← NTT⁻¹(Â ∘ NTT(z) − NTT(c) ∘ NTT(t1 · 2^d))
-                let z_hat = vector_ntt(&z);
-                let az_hat = matrix_vector_ntt(&a_hat, &z_hat);
-                let c_hat = ntt(c);
-                let two_d = 1i32 << D;
-                let t1_scaled: [Polynomial; K] =
-                    createi(|i| createi(|j| mod_q(t1[i][j] as i64 * two_d as i64)));
-                let t1_2d_hat = vector_ntt(&t1_scaled);
-                let ct1_hat: [Polynomial; K] =
-                    createi(|i| crate::polynomial::poly_pointwise_mul(&c_hat, &t1_2d_hat[i]));
-                let w_approx_hat: [Polynomial; K] =
-                    createi(|i| crate::polynomial::poly_sub(&az_hat[i], &ct1_hat[i]));
-                let w_approx: [Polynomial; K] = vector_intt(&w_approx_hat);
+                        // 10. w'1 ← UseHint(h, w'_Approx)
+                        hax_lib::fstar!(
+                            r#"assume(forall i. i < Seq.length w_approx ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index w_approx i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index w_approx i) j) < Rust_primitives.Integers.v ${Q}))"#
+                        );
+                        let w1_prime: [Polynomial; K] =
+                            vector_use_hint(&h_arr, &w_approx, params.gamma2);
 
-                // 10. w'1 ← UseHint(h, w'_Approx)
-                hax_lib::fstar!(
-                    r#"assume(forall i. i < Seq.length w_approx ==> (forall j. j < 256 ==> Rust_primitives.Integers.v (Seq.index (Seq.index w_approx i) j) >= 0 /\ Rust_primitives.Integers.v (Seq.index (Seq.index w_approx i) j) < Rust_primitives.Integers.v ${Q}))"#
-                );
-                let w1_prime: [Polynomial; K] = vector_use_hint(&h_arr, &w_approx, params.gamma2);
+                        // 12. c̃' ← H(μ || w1Encode(w'1), λ/4)
+                        let w1_encoded: [u8; W1_BYTES] = w1_encode(&w1_prime, params);
+                        let mut hash_input = [0u8; 1088];
+                        hash_input[..64].copy_from_slice(&mu);
+                        hash_input[64..64 + W1_BYTES].copy_from_slice(&w1_encoded);
+                        let c_tilde_prime_full: [u8; 64] =
+                            h(&hash_input[..64 + W1_BYTES]);
+                        let mut c_tilde_prime = [0u8; C_TILDE_LEN];
+                        c_tilde_prime.copy_from_slice(&c_tilde_prime_full[..C_TILDE_LEN]);
 
-                // 12. c̃' ← H(μ || w1Encode(w'1), λ/4)
-                let w1_encoded: [u8; W1_BYTES] = w1_encode(&w1_prime, params);
-                let mut hash_input = [0u8; 1088];
-                hash_input[..64].copy_from_slice(&mu);
-                hash_input[64..64 + W1_BYTES].copy_from_slice(&w1_encoded);
-                let c_tilde_prime_full: [u8; 64] = h(&hash_input[..64 + W1_BYTES]);
-                let mut c_tilde_prime = [0u8; C_TILDE_LEN];
-                c_tilde_prime.copy_from_slice(&c_tilde_prime_full[..C_TILDE_LEN]);
-
-                // 13. Check hint count ≤ ω and c̃ = c̃'
-                let hint_count = count_hints(&h_arr);
-                if hint_count > params.omega {
-                    false
-                } else {
-                    c_tilde == c_tilde_prime
+                        // 13. Check hint count ≤ ω and c̃ = c̃'
+                        let hint_count = count_hints(&h_arr);
+                        if hint_count > params.omega || c_tilde != c_tilde_prime {
+                            Err(MlDsaError::InvalidSignature)
+                        } else {
+                            Ok(())
+                        }
+                    }
                 }
             }
         }

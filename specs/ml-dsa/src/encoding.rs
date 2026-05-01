@@ -324,7 +324,7 @@ pub(crate) fn sk_decode<const K: usize, const L: usize>(
 /// The hint-pack buffer-size selection branches on the three FIPS 204
 /// parameter sets (`(γ1, ω, K) ∈ {(2¹⁷, 80, 4), (2¹⁹, 55, 6), (2¹⁹, 75, 8)}`),
 /// so the precondition must enumerate them.
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::fstar::options("--z3rlimit 400")]
 #[hax_lib::requires(
     L <= 8 && params.lambda <= 256
     && c_tilde.len() >= params.lambda / 4
