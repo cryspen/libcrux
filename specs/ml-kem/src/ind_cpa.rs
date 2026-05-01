@@ -75,14 +75,22 @@ fn concat_byte<const N: usize, const N1: usize>(a: &[u8; N], b: u8) -> [u8; N1] 
     && EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
     && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
     && (params.eta1 == 2 || params.eta1 == 3)
+    && key_generation_seed.len() == 32
 )]
 pub fn generate_keypair<const RANK: usize, const EK_SIZE: usize, const DK_PKE_SIZE: usize>(
     params: &MlKemParams,
-    key_generation_seed: &[u8; 32],
+    key_generation_seed: &[u8],
 ) -> Result<([u8; EK_SIZE], [u8; DK_PKE_SIZE]), BadRejectionSamplingRandomnessError> {
+    // Blocker B fix (2026-05-01): the prior signature took `&[u8; 32]`, forcing
+    // libcrux callers (which pass `&[u8]`) to bridge via `try_into().unwrap()`
+    // inside `hax_lib::ensures` annotations — a pattern with no precedent.
+    // We now accept `&[u8]` with a `len() == 32` requires; the body still
+    // copies into a fixed-size 33-byte buffer so the spec semantics are
+    // unchanged.
     hax_lib::debug_assert!(
         EK_SIZE == RANK * BYTES_PER_RING_ELEMENT + 32
             && DK_PKE_SIZE == RANK * BYTES_PER_RING_ELEMENT
+            && key_generation_seed.len() == 32
     );
     // (ρ,σ) ← G(d ‖ k)
     let mut g_input = [0u8; 33];
