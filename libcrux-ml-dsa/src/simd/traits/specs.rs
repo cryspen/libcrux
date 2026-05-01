@@ -229,8 +229,7 @@ let montgomery_multiply_lane_post (lhs rhs future_lhs: i32) : prop =
 
 let lemma_montgomery_multiply_lane_lookup (lhs rhs future_lhs: i32)
     : Lemma (requires montgomery_multiply_lane_post lhs rhs future_lhs)
-            (ensures (v future_lhs) % 8380417 == (v lhs * v rhs * 8265825) % 8380417)
-            [SMTPat (montgomery_multiply_lane_post lhs rhs future_lhs)] =
+            (ensures (v future_lhs) % 8380417 == (v lhs * v rhs * 8265825) % 8380417) =
   reveal_opaque (`%montgomery_multiply_lane_post)
                 (montgomery_multiply_lane_post lhs rhs future_lhs)
 
