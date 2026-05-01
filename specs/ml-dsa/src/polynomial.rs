@@ -155,15 +155,6 @@ pub(crate) fn vector_use_hint<const N: usize>(
     createi(|i| createi(|j| crate::arithmetic::use_hint(h[i][j], r[i][j], gamma2)))
 }
 
-/// Reduce each coefficient modulo q to [0, q-1].
-#[hax_lib::fstar::options("--z3rlimit 150")]
-pub(crate) fn poly_reduce(p: &Polynomial) -> Polynomial {
-    createi(|i| {
-        let r = (p[i] as i64 % Q as i64 + Q as i64) % Q as i64;
-        r as i32
-    })
-}
-
 /// Reduce each coefficient to centered representative in [-(q-1)/2, (q-1)/2].
 #[hax_lib::fstar::options("--z3rlimit 150")]
 pub(crate) fn poly_mod_pm(p: &Polynomial) -> Polynomial {

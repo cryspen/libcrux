@@ -118,44 +118,6 @@ pub(crate) fn coeff_norm(a: i32) -> i32 {
     }
 }
 
-/// Montgomery reduction.
-///
-/// Given t with `|t| < q · R / 2`, returns r with
-/// `r ≡ t · R⁻¹ (mod q)` and `|r| ≤ q`.
-///
-/// Used by the SIMD trait's `montgomery_multiply` to express the
-/// Montgomery-form result.  `R = 2³²`; the constant
-/// `R⁻¹ mod q = 8_265_825` is fixed by FIPS 204 q = 8_380_417.
-///
-/// The body literally multiplies `t * R⁻¹` in `i64`; that is a faithful
-/// mathematical equation but only well-typed when `|t · R⁻¹| < 2⁶³`, i.e.
-/// `|t| < 2⁶³ / 8_265_825 ≈ 2³⁹·⁹`.  Real callers (montgomery_multiply
-/// of two `i32`s) deliver `|t| < 2⁴⁶ < 2⁶²`, so the mul overflows
-/// in the absolute-worst case but is fine for the use-pattern.  We
-/// annotate the spec as `lax` so it typechecks without an artificial
-/// precondition that would invalidate downstream callers.
-#[inline]
-#[hax_lib::fstar::before(r#"#push-options "--admit_smt_queries true""#)]
-#[hax_lib::fstar::after(r#"#pop-options"#)]
-pub(crate) fn montgomery_reduce(t: i64) -> i32 {
-    const R_INV: i64 = 8_265_825;
-    mod_q(t * R_INV)
-}
-
-/// Multiply a coefficient by 2¹³ then reduce mod q.
-///
-/// Used by the SIMD trait's `shift_left_then_reduce<13>` to lift
-/// a t1 polynomial back into ring-element form before the verifier's
-/// `Â ◦ ẑ − ĉ ◦ NTT(t1·2ᵈ)` computation (FIPS 204 §6.3 Algorithm 8 line 9).
-///
-/// Precondition: `0 ≤ t ≤ 261_631 = ⌊2_143_289_343 / 2¹³⌋`, the bound
-/// matching the impl's Barrett-reduce input range.
-#[inline]
-#[hax_lib::requires(t >= 0 && t <= 261_631)]
-pub(crate) fn shift_left_then_reduce(t: i32) -> i32 {
-    mod_q((t as i64) << D)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
