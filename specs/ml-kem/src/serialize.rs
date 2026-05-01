@@ -150,8 +150,10 @@ pub fn byte_encode<const D32: usize, const D256: usize>(p: Polynomial, d: usize)
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(N < 16384 && d <= BITS_PER_COEFFICIENT && Nd == N * d)]
+#[hax_lib::ensures(|result|
+    hax_lib::forall(|i: usize| hax_lib::implies(i < N, result[i] < (1u16 << d))))]
 pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     input: &BitVector<Nd>,
     d: usize,
@@ -160,8 +162,14 @@ pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
     let result: [u16; N] = createi(|i| {
         let mut coefficient: u16 = 0;
         for j in 0..d {
+            // Loop invariant: coefficient holds the value assembled
+            // from the lower j bits, so it's strictly less than 2^j.
+            // Using addition instead of bit-OR makes the bound
+            // discharge tractable for Z3 (the bits are disjoint by
+            // construction, so OR == +).
+            hax_lib::loop_invariant!(|j: usize| coefficient < (1u16 << j));
             if input[i * d + j] {
-                coefficient |= 1u16 << j;
+                coefficient += 1u16 << j;
             }
         }
         coefficient
@@ -172,6 +180,8 @@ pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && N < 16384 / d && N < 16384 / 8 && N8 == N * 8 && Nd == N * d && Nd8 == Nd * 8)]
+#[hax_lib::ensures(|result|
+    hax_lib::forall(|i: usize| hax_lib::implies(i < N8, result[i] < (1u16 << d))))]
 pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, const Nd8: usize>(
     b: &[u8; Nd],
     d: usize,
@@ -183,20 +193,7 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
     bitvector_to_bounded_ints(&bv, d)
 }
 
-// Phase 3 note (2026-05-01): `panic_free` admits the `forall i. result[i].val
-// < (1u16 << d)` ensures.  Discharging it would require:
-//   1. Adding a `forall i. result[i] < (1u16 << d)` ensures to
-//      `bitvector_to_bounded_ints` (provable: each entry assembles d bits).
-//   2. Propagating that bound through `byte_decode_generic` (mechanical).
-//   3. At `byte_decode`, proving `(decoded[i] % FIELD_MODULUS) < (1u16 << d)`,
-//      which holds because for d == 12, FIELD_MODULUS = 3329 < 4096 = (1<<12),
-//      and for d < 12, decoded[i] < (1<<d) ≤ 4096 ≤ FIELD_MODULUS so the
-//      modulo is the identity.  The case-split is non-trivial in Z3 because
-//      `1u16 << d` for symbolic d resists simplification.
-// Estimated >30 min of proof work — out of Phase 3 budget.  Keeping
-// `panic_free`.
-#[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
 #[hax_lib::ensures(|result| hax_lib::forall(|i: usize| hax_lib::implies(i < 256, result[i].val < (1u16 << d))))]
 pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize) -> Polynomial {
