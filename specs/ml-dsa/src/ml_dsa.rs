@@ -400,3 +400,122 @@ pub fn verify_internal<
         }
     }
 }
+
+// ============================================================================
+// Public API — FIPS 204 §5.  Thin wrappers above the `_internal` triple
+// mirroring ML-KEM's `ind_cca::generate_keypair / encapsulate / decapsulate`
+// shape over their `_internal` counterparts.
+// ============================================================================
+
+/// FIPS 204, Algorithm 2 line 5 prefix byte: 0 ⇒ message is *not*
+/// pre-hashed; 1 would indicate `HashML-DSA` mode (not implemented here).
+const M_PRIME_PREFIX_PURE: u8 = 0;
+
+/// Maximum length of an `M′ = 0 ‖ |ctx| ‖ ctx ‖ M` buffer the spec
+/// will assemble (`format_m_prime` returns a `[u8; M_PRIME_BUF_LEN]`).
+/// Sized for 8 KiB messages plus the 257-byte ctx prefix; if a caller
+/// has a longer message it must format `M′` itself and call
+/// `sign_internal` / `verify_internal` directly.
+pub const M_PRIME_BUF_LEN: usize = 8192 + 257;
+
+/// FIPS 204, Algorithm 2 line 5: assemble `M′ = 0 ‖ |ctx| ‖ ctx ‖ M`
+/// into a fixed-size buffer; returns `(buffer, length)` so callers can
+/// slice the prefix.
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(ctx.len() <= 255 && message.len() <= 8192)]
+fn format_m_prime(
+    message: &[u8],
+    ctx: &[u8],
+) -> ([u8; M_PRIME_BUF_LEN], usize) {
+    let mut buf = [0u8; M_PRIME_BUF_LEN];
+    buf[0] = M_PRIME_PREFIX_PURE;
+    buf[1] = ctx.len() as u8;
+    let ctx_end = 2 + ctx.len();
+    buf[2..ctx_end].copy_from_slice(ctx);
+    let msg_end = ctx_end + message.len();
+    buf[ctx_end..msg_end].copy_from_slice(message);
+    (buf, msg_end)
+}
+
+/// ML-DSA.KeyGen(ξ) — FIPS 204, Algorithm 1.
+///
+/// Wraps `keygen_internal` for FIPS-API parity.  The spec is
+/// deterministic in ξ; a real impl draws ξ from an RNG.
+#[hax_lib::fstar::options("--z3rlimit 300")]
+#[hax_lib::requires(
+    K == params.k && L == params.l
+    && PK_SIZE == 32 + 320 * K
+    && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
+)]
+pub fn keygen<
+    const K: usize,
+    const L: usize,
+    const PK_SIZE: usize,
+    const SK_SIZE: usize,
+>(
+    xi: &[u8; 32],
+    params: &MlDsaParams,
+) -> ([u8; PK_SIZE], [u8; SK_SIZE]) {
+    keygen_internal::<K, L, PK_SIZE, SK_SIZE>(xi, params)
+}
+
+/// ML-DSA.Sign(sk, M, ctx, rnd) — FIPS 204, Algorithm 2 (non-pre-hashed).
+///
+/// Formats `M′ = 0 ‖ |ctx| ‖ ctx ‖ M` and delegates to `sign_internal`.
+#[hax_lib::requires(
+    ctx.len() <= 255 && message.len() <= 8192
+    && K == params.k && L == params.l
+    && C_TILDE_LEN <= 64 && C_TILDE_LEN >= params.lambda / 4
+    && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && params.gamma1 > params.beta && params.gamma2 > params.beta
+    && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
+    && (
+        (params.gamma1 == (1i32 << 17) && params.omega == 80 && K == 4) ||
+        (params.gamma1 == (1i32 << 19) && params.omega == 55 && K == 6) ||
+        (params.gamma1 == (1i32 << 19) && params.omega == 75 && K == 8)
+    )
+    && SIG_SIZE >= params.lambda / 4 + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
+)]
+pub fn sign<
+    const K: usize,
+    const L: usize,
+    const SIG_SIZE: usize,
+    const W1_BYTES: usize,
+    const C_TILDE_LEN: usize,
+>(
+    sk: &[u8],
+    message: &[u8],
+    ctx: &[u8],
+    rnd: &[u8; 32],
+    params: &MlDsaParams,
+) -> Result<[u8; SIG_SIZE], MlDsaError> {
+    let (buf, len) = format_m_prime(message, ctx);
+    sign_internal::<K, L, SIG_SIZE, W1_BYTES, C_TILDE_LEN>(sk, &buf[..len], rnd, params)
+}
+
+/// ML-DSA.Verify(pk, M, σ, ctx) — FIPS 204, Algorithm 3 (non-pre-hashed).
+///
+/// Formats `M′ = 0 ‖ |ctx| ‖ ctx ‖ M` and delegates to `verify_internal`.
+#[hax_lib::requires(
+    ctx.len() <= 255 && message.len() <= 8192
+    && K == params.k && L == params.l
+    && C_TILDE_LEN <= 64 && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && params.gamma1 > params.beta && params.gamma2 > params.beta
+    && pk.len() >= 32 + 320 * K
+    && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
+)]
+pub fn verify<
+    const K: usize,
+    const L: usize,
+    const C_TILDE_LEN: usize,
+    const W1_BYTES: usize,
+>(
+    pk: &[u8],
+    message: &[u8],
+    sigma: &[u8],
+    ctx: &[u8],
+    params: &MlDsaParams,
+) -> Result<(), MlDsaError> {
+    let (buf, len) = format_m_prime(message, ctx);
+    verify_internal::<K, L, C_TILDE_LEN, W1_BYTES>(pk, &buf[..len], sigma, params)
+}

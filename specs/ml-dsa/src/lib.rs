@@ -14,7 +14,7 @@ mod polynomial;
 mod sampling;
 
 pub use error::MlDsaError;
-pub use ml_dsa::{keygen_internal, sign_internal, verify_internal};
+pub use ml_dsa::{keygen, keygen_internal, sign, sign_internal, verify, verify_internal};
 pub use parameters::{
     pk_size, sig_size, MlDsaParams, ML_DSA_44, ML_DSA_44_C_TILDE_LEN, ML_DSA_44_PK_SIZE,
     ML_DSA_44_SIG_SIZE, ML_DSA_44_SK_SIZE, ML_DSA_44_W1_SIZE, ML_DSA_65, ML_DSA_65_C_TILDE_LEN,
