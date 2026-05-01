@@ -65,11 +65,15 @@ pub(crate) mod spec {
     /// the FE-arithmetic commute lemmas in
     /// `Hacspec_ml_kem.Commute.Chunk` (e.g.
     /// `lemma_base_case_mult_even_fe_commute`) time out.
-    /// `fstar!` escape used here for the ensures because the
-    /// "no-`fstar!`" cleanup mandate is scoped to ind_cpa annotations;
-    /// libcrux internal lift helpers may keep precise F*-side
-    /// refinements until the spec gains a Rust-callable predicate
-    /// for `v r.f_val == v x % 3329`.
+    ///
+    /// Pure-Rust form via `hax_lib::int::ToInt` + `Int::rem_euclid`
+    /// was attempted but extracts to `Hax_lib.Int.t_Int` /
+    /// `Hax_lib.Int.impl_Int__rem_euclid` — Z3 does not auto-bridge
+    /// that to the F* native `v x % 3329` form the bridges' SMT
+    /// queries are written against, so even simple bridges like
+    /// `lemma_add_fe_commute_mont` (proof was `()`) failed.  Keeping
+    /// the `fstar!` escape until the bridges are rewritten against
+    /// the `Hax_lib.Int` form (out of scope for this cleanup).
     #[hax_lib::ensures(|r| fstar!(r#"v ${r}.Hacspec_ml_kem.Parameters.f_val == v ${x} % 3329"#))]
     pub fn i16_to_spec_fe(x: i16) -> FieldElement {
         FieldElement::from_i16(x)
@@ -81,9 +85,8 @@ pub(crate) mod spec {
     /// posts and in `Hacspec_ml_kem.Commute.{Bridges, Chunk}`.
     ///
     /// `ensures` matches the prior F*-injection refinement:
-    /// `v r.f_val == (v x * 169) % 3329`.  Required by the FE-arithmetic
-    /// commute lemmas — without it Z3 times out trying to derive
-    /// the v_val from the body.
+    /// `v r.f_val == (v x * 169) % 3329`.  Same `fstar!` rationale
+    /// as `i16_to_spec_fe` above.
     #[hax_lib::ensures(|r| fstar!(r#"v ${r}.Hacspec_ml_kem.Parameters.f_val == (v ${x} * 169) % 3329"#))]
     pub fn mont_i16_to_spec_fe(x: i16) -> FieldElement {
         let q: i32 = 3329;
