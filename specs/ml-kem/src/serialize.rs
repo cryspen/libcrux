@@ -207,18 +207,21 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
     createi(|i| FieldElement::new(decoded[i] % FIELD_MODULUS))
 }
 
+/// Encode each polynomial of an NTT vector at 12 bits per coefficient,
+/// writing the result into `out`.  Companion to value-returning
+/// [`serialize_secret_key`].  Mirrors the existing
+/// [`byte_encode_into`] convention: the `_into` form is the canonical
+/// primitive; the value-returning form is a thin allocating wrapper.
 #[hax_lib::fstar::options("--z3rlimit 150")]
-#[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
-pub fn vector_encode_12<const RANK: usize, const T_SIZE: usize>(
-    vector: &Vector<RANK>,
-) -> [u8; T_SIZE] {
-    hax_lib::debug_assert!(T_SIZE == RANK * BYTES_PER_RING_ELEMENT);
-    let mut out = [0u8; T_SIZE];
+#[hax_lib::requires(RANK <= 4 && out.len() == RANK * BYTES_PER_RING_ELEMENT)]
+pub fn serialize_secret_key_into<const RANK: usize>(vector: &Vector<RANK>, out: &mut [u8]) {
+    hax_lib::debug_assert!(out.len() == RANK * BYTES_PER_RING_ELEMENT);
     for i in 0..RANK {
+        hax_lib::loop_invariant!(|_i: usize| out.len() == RANK * BYTES_PER_RING_ELEMENT);
         let encoded = byte_encode::<{ 32 * 12 }, { 256 * 12 }>(vector[i], 12);
-        out[i * 384..(i + 1) * 384].copy_from_slice(&encoded);
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
+            .copy_from_slice(&encoded);
     }
-    out
 }
 
 #[hax_lib::fstar::options("--z3rlimit 150")]
@@ -364,12 +367,15 @@ pub fn deserialize_ring_elements_reduced<const RANK: usize>(encoded: &[u8]) -> V
 
 /// Serialize a vector of polynomials with 12-bit coefficients.
 /// Corresponds to `serialize_secret_key` / `serialize_vector` in the implementation.
+/// Thin allocating wrapper around [`serialize_secret_key_into`].
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::requires(RANK <= 4 && T_SIZE == RANK * BYTES_PER_RING_ELEMENT)]
 pub fn serialize_secret_key<const RANK: usize, const T_SIZE: usize>(
     vector: &Vector<RANK>,
 ) -> [u8; T_SIZE] {
-    vector_encode_12::<RANK, T_SIZE>(vector)
+    let mut out = [0u8; T_SIZE];
+    serialize_secret_key_into::<RANK>(vector, &mut out);
+    out
 }
 
 /// Serialize a public key: encode the NTT vector t̂ concatenated with the seed ρ.
