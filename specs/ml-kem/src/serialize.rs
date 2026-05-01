@@ -183,6 +183,18 @@ pub fn byte_decode_generic<const N: usize, const N8: usize, const Nd: usize, con
     bitvector_to_bounded_ints(&bv, d)
 }
 
+// Phase 3 note (2026-05-01): `panic_free` admits the `forall i. result[i].val
+// < (1u16 << d)` ensures.  Discharging it would require:
+//   1. Adding a `forall i. result[i] < (1u16 << d)` ensures to
+//      `bitvector_to_bounded_ints` (provable: each entry assembles d bits).
+//   2. Propagating that bound through `byte_decode_generic` (mechanical).
+//   3. At `byte_decode`, proving `(decoded[i] % FIELD_MODULUS) < (1u16 << d)`,
+//      which holds because for d == 12, FIELD_MODULUS = 3329 < 4096 = (1<<12),
+//      and for d < 12, decoded[i] < (1<<d) ≤ 4096 ≤ FIELD_MODULUS so the
+//      modulo is the identity.  The case-split is non-trivial in Z3 because
+//      `1u16 << d` for symbolic d resists simplification.
+// Estimated >30 min of proof work — out of Phase 3 budget.  Keeping
+// `panic_free`.
 #[hax_lib::fstar::options("--z3rlimit 150")]
 #[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(d > 0 && d <= BITS_PER_COEFFICIENT && b.len() == 32 * d && D32 == 32 * d && D256 == 256 * d)]
