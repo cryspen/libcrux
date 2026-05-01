@@ -37,28 +37,67 @@ pub mod portable;
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
 
 // XXX: We don't want to copy this. But for eurydice we have to have this.
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::after(
-        interface,
-        r#"let to_spec_poly_t (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (p: t_PolynomialRingElement v_Vector) : Spec.MLKEM.polynomial =
-    createi (sz 256) (fun i -> Spec.MLKEM.Math.to_spec_fe 
-                                (Seq.index (i2._super_i2.f_repr 
-                                    (Seq.index p.f_coefficients (v i / 16))) (v i % 16)))
-let to_spec_vector_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_PolynomialRingElement v_Vector) r) : Spec.MLKEM.vector r =
-    createi r (fun i -> to_spec_poly_t #v_Vector (m.[i]))
-let to_spec_matrix_t (#r:Spec.MLKEM.rank) (#v_Vector: Type0)
-    {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-    (m:t_Array (t_Array (t_PolynomialRingElement v_Vector) r) r) : Spec.MLKEM.matrix r =
-    createi r (fun i -> to_spec_vector_t #r #v_Vector (m.[i]))"#
-    )
-)]
 #[derive(Clone, Copy)]
 #[repr(transparent)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
+}
+
+/// Impl→spec lift functions at the polynomial / vector / matrix level.
+///
+/// These bridge from the impl-side `PolynomialRingElement<Vector>`
+/// (a struct holding 16 trait-`Vector`s, each carrying 16 i16 lanes)
+/// to the canonical Hacspec spec types
+/// (`hacspec_ml_kem::parameters::{Polynomial, Vector, Matrix}`,
+/// equivalently `[FieldElement; 256]` / `[Polynomial; RANK]` /
+/// `[Vector<RANK>; RANK]`).
+///
+/// Defined here (NOT in `vector::traits::spec`) because they depend
+/// on `PolynomialRingElement` which lives at this layer.  The
+/// per-lane / per-array lifts (`i16_to_spec_fe`,
+/// `mont_i16_to_spec_fe`, `i16_to_spec_array`,
+/// `mont_i16_to_spec_array`) live in `vector::traits::spec` because
+/// they're at the vector-of-16-lanes layer.  These polynomial-level
+/// lifts compose `i16_to_spec_array` with the trait `to_i16_array`
+/// extraction over the 16 chunks.
+///
+/// One source of truth: the `_t` suffix of the prior F* injection is
+/// dropped (no longer F*-only).  These extract to
+/// `Libcrux_ml_kem.Vector.Spec.{poly_to_spec, vector_to_spec, matrix_to_spec}`.
+#[cfg(hax)]
+#[allow(dead_code, unused_variables)]
+pub(crate) mod spec {
+    use super::PolynomialRingElement;
+    use crate::vector::traits::spec::i16_to_spec_array;
+    use crate::vector::traits::Operations;
+    use hacspec_ml_kem::parameters::{createi, FieldElement};
+
+    /// Lift one impl `PolynomialRingElement<V>` (16 chunks × 16 lanes)
+    /// to the spec `[FieldElement; 256]` polynomial.  Each `i16`
+    /// coefficient is reduced via `i16_to_spec_fe` (Euclidean mod q).
+    pub fn poly_to_spec<V: Operations>(p: &PolynomialRingElement<V>) -> [FieldElement; 256] {
+        let flat: [i16; 256] = createi(|i| {
+            let chunk = V::to_i16_array(p.coefficients[i / 16]);
+            chunk[i % 16]
+        });
+        i16_to_spec_array(&flat)
+    }
+
+    /// Lift a rank-K array of impl polynomials to the spec
+    /// `[Polynomial; K]` vector.  Used by libcrux-side ensures that
+    /// state per-vector functional correctness against the Hacspec
+    /// reference (e.g. `serialize_public_key`).
+    pub fn vector_to_spec<const RANK: usize, V: Operations>(
+        v: &[PolynomialRingElement<V>; RANK],
+    ) -> [[FieldElement; 256]; RANK] {
+        createi(|i| poly_to_spec(&v[i]))
+    }
+
+    /// Lift a K×K matrix of impl polynomials to the spec
+    /// `[[Polynomial; K]; K]` matrix.
+    pub fn matrix_to_spec<const RANK: usize, V: Operations>(
+        m: &[[PolynomialRingElement<V>; RANK]; RANK],
+    ) -> [[[FieldElement; 256]; RANK]; RANK] {
+        createi(|i| vector_to_spec(&m[i]))
+    }
 }

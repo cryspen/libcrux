@@ -50,6 +50,70 @@ pub(crate) mod spec {
     //     Montgomery form (`zeta * R mod q`); the builders use
     //     `mont_i16_to_spec_fe` so the resulting slice holds plain
     //     abstract zetas that hacspec's ntt_layer_n expects.
+
+    use hacspec_ml_kem::parameters::{createi, FieldElement};
+
+    /// Plain-domain lift: x is a field representative mod q.
+    /// Maps any i16 to its canonical FieldElement under Euclidean
+    /// reduction.  Used by trait posts (`compress_post_N`,
+    /// `decompress_post_N`, ...) and by the polynomial-level lift
+    /// `poly_to_spec` in vector.rs.
+    pub fn i16_to_spec_fe(x: i16) -> FieldElement {
+        FieldElement::from_i16(x)
+    }
+
+    /// Montgomery-domain lift: x stores `v_abs * R mod q` with R = 2^16,
+    /// R^{-1} = 169 mod 3329.  Strips the R factor to recover the
+    /// abstract value.  Used in NTT / inverse-NTT / ntt_multiply trait
+    /// posts and in `Hacspec_ml_kem.Commute.{Bridges, Chunk}`.
+    pub fn mont_i16_to_spec_fe(x: i16) -> FieldElement {
+        let q: i32 = 3329;
+        let r = ((((x as i32) * 169) % q + q) % q) as u16;
+        FieldElement::new(r)
+    }
+
+    /// Pointwise plain-domain lift over an i16 array of any length.
+    pub fn i16_to_spec_array<const N: usize>(x: &[i16; N]) -> [FieldElement; N] {
+        createi(|i| i16_to_spec_fe(x[i]))
+    }
+
+    /// Pointwise Montgomery-domain lift over an i16 array of any length.
+    pub fn mont_i16_to_spec_array<const N: usize>(x: &[i16; N]) -> [FieldElement; N] {
+        createi(|i| mont_i16_to_spec_fe(x[i]))
+    }
+
+    /// Build a 1-element zeta slice from a single Montgomery-form
+    /// i16 zeta, holding the abstract plain zeta that hacspec expects.
+    pub fn zetas_1(z0: i16) -> [FieldElement; 1] {
+        createi(|_| mont_i16_to_spec_fe(z0))
+    }
+
+    /// Build a 2-element zeta slice from two Montgomery-form i16 zetas.
+    pub fn zetas_2(z0: i16, z1: i16) -> [FieldElement; 2] {
+        createi(|i| {
+            if i == 0 {
+                mont_i16_to_spec_fe(z0)
+            } else {
+                mont_i16_to_spec_fe(z1)
+            }
+        })
+    }
+
+    /// Build a 4-element zeta slice from four Montgomery-form i16 zetas.
+    pub fn zetas_4(z0: i16, z1: i16, z2: i16, z3: i16) -> [FieldElement; 4] {
+        createi(|i| {
+            if i == 0 {
+                mont_i16_to_spec_fe(z0)
+            } else if i == 1 {
+                mont_i16_to_spec_fe(z1)
+            } else if i == 2 {
+                mont_i16_to_spec_fe(z2)
+            } else {
+                mont_i16_to_spec_fe(z3)
+            }
+        })
+    }
+
     #[cfg_attr(
         hax,
         hax_lib::fstar::before(
@@ -108,68 +172,13 @@ let bounded_abs_i16_array (l: nat {l < pow2 15}) (x: t_Slice i16) : prop =
 
 let bounded_pos_i16_array (d: nat {d < 15}) (x: t_Slice i16) : prop =
     bounded_i16_array (mk_i16 0) (mk_i16 (pow2 d - 1)) x
-let map_array (#a #b:Type) (#len:usize)
-    (f: a -> b)
-    (s: t_Array a len)
-    : t_Array b len
-    = createi (length s) (fun i -> f (Seq.index s (v i)))
 
-(* Plain-domain lift: x is a field representative mod q.  The return
-   refinement pins `v result.f_val == v x % 3329`, so callers never
-   have to re-discharge the nonneg-modulo obligation. *)
-let i16_to_spec_fe (x: i16)
-    : r: Hacspec_ml_kem.Parameters.t_FieldElement
-        { v r.Hacspec_ml_kem.Parameters.f_val == v x % 3329 } =
-  FStar.Math.Lemmas.modulo_range_lemma (v x) 3329;
-  let m : nat = v x % 3329 in
-  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m }
-
-(* Montgomery-domain lift: x stores `v_abs * R mod q` with R = 2^16;
-   R^{-1} = 169 mod 3329.  Strips the R factor to recover the abstract
-   value. *)
-let mont_i16_to_spec_fe (x: i16)
-    : r: Hacspec_ml_kem.Parameters.t_FieldElement
-        { v r.Hacspec_ml_kem.Parameters.f_val == (v x * 169) % 3329 } =
-  FStar.Math.Lemmas.modulo_range_lemma (v x * 169) 3329;
-  let m : nat = (v x * 169) % 3329 in
-  { Hacspec_ml_kem.Parameters.f_val = mk_u16 m }
-
-let i16_to_spec_array (#n: usize)
-    (x: t_Array i16 n)
-    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
-  createi n (fun i ->
-    (i16_to_spec_fe (Seq.index x (v i)) <: Hacspec_ml_kem.Parameters.t_FieldElement))
-
-let mont_i16_to_spec_array (#n: usize)
-    (x: t_Array i16 n)
-    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement n =
-  createi n (fun i ->
-    (mont_i16_to_spec_fe (Seq.index x (v i)) <: Hacspec_ml_kem.Parameters.t_FieldElement))
-
-(* Build a small zeta slice from explicit i16 zetas, for passing to
-   hacspec's ntt_layer_n / ntt_inverse_layer_n / ntt_multiply_n.
-   The trait's ntt_layer_{1,2,3}_step / inv_ntt_* / ntt_multiply take
-   4 / 2 / 1 zetas as separate parameters.  Impl zetas are stored
-   in Montgomery form; the slice holds abstract plain zetas. *)
-let zetas_1 (z0: i16)
-    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 1) =
-  createi (mk_usize 1) (fun _ ->
-    (mont_i16_to_spec_fe z0 <: Hacspec_ml_kem.Parameters.t_FieldElement))
-
-let zetas_2 (z0 z1: i16)
-    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 2) =
-  createi (mk_usize 2) (fun i ->
-    (if v i = 0 then mont_i16_to_spec_fe z0 else mont_i16_to_spec_fe z1)
-      <: Hacspec_ml_kem.Parameters.t_FieldElement)
-
-let zetas_4 (z0 z1 z2 z3: i16)
-    : t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 4) =
-  createi (mk_usize 4) (fun i ->
-    (if v i = 0 then mont_i16_to_spec_fe z0
-     else if v i = 1 then mont_i16_to_spec_fe z1
-     else if v i = 2 then mont_i16_to_spec_fe z2
-     else mont_i16_to_spec_fe z3)
-      <: Hacspec_ml_kem.Parameters.t_FieldElement)
+(* `map_array` (used below by `bitwise_and_with_constant_constant_post`
+   and `shift_right_post`) lives in
+   `Hacspec_ml_kem.Commute.ProofUtils` as a generic helper marked for
+   hax-lib upstream.  Brought into scope so the trait-post specs can
+   cite it unqualified. *)
+open Hacspec_ml_kem.Commute.ProofUtils
 
 (* Hacspec equations stated elementwise over arrays of any length n.
    The trait instantiates them with n=16; the polynomial layer uses

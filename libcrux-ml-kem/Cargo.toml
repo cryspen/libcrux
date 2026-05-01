@@ -33,6 +33,11 @@ tls_codec = { version = "0.4.2", features = [
     "derive",
 ], default-features = false, optional = true }
 
+# Reference Hacspec spec — used by `#[cfg(hax)]` impl→spec lift functions
+# in vector/traits.rs (i16_to_spec_fe, etc.) and vector.rs (poly_to_spec, etc.).
+# Compiled in all builds; usage is `#[cfg(hax)]`-gated.
+hacspec_ml_kem = { path = "../specs/ml-kem" }
+
 [features]
 # By default all variants and std are enabled.
 default = ["default-no-std", "std"]
@@ -78,7 +83,6 @@ pqcp = []
 [dev-dependencies]
 rand = { version = "0.9", features = ["thread_rng"] }
 serde_json = { version = "1.0" }
-hacspec_ml_kem = { path = "../specs/ml-kem" }
 hacspec_sha3 = { path = "../specs/sha3" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
