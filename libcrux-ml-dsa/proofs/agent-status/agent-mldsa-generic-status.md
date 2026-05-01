@@ -2,7 +2,7 @@
 Updated: 2026-05-01T13:00:00Z
 Sub-task: Option 1 from handoff-2026-05-01-spec-impl-hookup.md — wire generate_key_pair ensures to Hacspec_ml_dsa.Ml_dsa.keygen_internal.
 ETA: ready for commit; downstream sweep in progress.
-Functions landed: 2 / 3 (generate_key_pair, verify)
+Functions landed: 3 / 3 (generate_key_pair, verify, sign)
 
 ## What landed
 

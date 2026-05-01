@@ -602,6 +602,20 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+        Core_models.Slice.impl__len #u8 ${context} <=. mk_usize 255 ==>
+        Core_models.Slice.impl__len #u8 ${message} <=. mk_usize 8192 ==>
+        Core_models.Slice.impl__len #u8 ${signing_key} >=. v_SIGNING_KEY_SIZE ==>
+        (let spec_result =
+           Hacspec_ml_dsa.Ml_dsa.sign
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_k
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_l
+              v_SIGNATURE_SIZE v_COMMITMENT_VECTOR_SIZE
+              (v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_lambda /! mk_usize 4)
+              ${signing_key} ${message} ${context} ${randomness}
+              v_HACSPEC_PARAMS in
+         Core_models.Result.impl__is_ok ${result} ==
+         Core_models.Result.impl__is_ok spec_result)"#))]
     pub(crate) fn sign<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
