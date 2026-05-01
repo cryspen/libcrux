@@ -651,19 +651,19 @@ let lemma_mul_const_fe_commute_plain (a c r: i16) :
    either `i16_to_spec_fe` or `mont_i16_to_spec_fe`; two lemmas per op. *)
 
 (* ────────────  Per-lane index helpers  ────────────
-   Expose `Seq.index (i16_to_spec_array x) j` as `i16_to_spec_fe (Seq.index x j)`
+   Expose `Seq.index (i16_to_spec_array (sz 16) x) j` as `i16_to_spec_fe (Seq.index x j)`
    for a `nat` index `j` (the trait's `_post` predicates quantify over nat).
    The underlying `createi_lemma` SMTPat only fires for `(v i)` with `i: usize`,
    so we wrap it once and use the nat variant throughout Layer 1. *)
 
 let lane_plain (#n: usize) (x: t_Array i16 n) (j: nat {j < v n}) :
-    Lemma (Seq.index (i16_to_spec_array x) j
+    Lemma (Seq.index (i16_to_spec_array n x) j
            == i16_to_spec_fe (Seq.index x j))
   = P.createi_lemma #P.t_FieldElement n #(usize -> P.t_FieldElement)
       (fun k -> (i16_to_spec_fe (Seq.index x (v k)) <: P.t_FieldElement)) (sz j)
 
 let lane_mont (#n: usize) (x: t_Array i16 n) (j: nat {j < v n}) :
-    Lemma (Seq.index (mont_i16_to_spec_array x) j
+    Lemma (Seq.index (mont_i16_to_spec_array n x) j
            == mont_i16_to_spec_fe (Seq.index x j))
   = P.createi_lemma #P.t_FieldElement n #(usize -> P.t_FieldElement)
       (fun k -> (mont_i16_to_spec_fe (Seq.index x (v k)) <: P.t_FieldElement)) (sz j)
@@ -676,19 +676,19 @@ let lemma_add_chunk_commutes_plain
     (ensures
        (let r = T.f_add lhs rhs in
         forall (j: nat). j < 16 ==>
-          Seq.index (i16_to_spec_array (T.f_repr r)) j
+          Seq.index (i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__add
-                 (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
-                 (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+                 (Seq.index (i16_to_spec_array (sz 16) (T.f_repr lhs)) j)
+                 (Seq.index (i16_to_spec_array (sz 16) (T.f_repr rhs)) j)))
   = let r = T.f_add lhs rhs in
     let lhs_arr = T.f_repr lhs in
     let rhs_arr = T.f_repr rhs in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__add
-               (Seq.index (i16_to_spec_array lhs_arr) j)
-               (Seq.index (i16_to_spec_array rhs_arr) j))
+               (Seq.index (i16_to_spec_array (sz 16) lhs_arr) j)
+               (Seq.index (i16_to_spec_array (sz 16) rhs_arr) j))
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain lhs_arr j;
@@ -705,19 +705,19 @@ let lemma_add_chunk_commutes_mont
     (ensures
        (let r = T.f_add lhs rhs in
         forall (j: nat). j < 16 ==>
-          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+          Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__add
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr lhs)) j)
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr rhs)) j)))
   = let r = T.f_add lhs rhs in
     let lhs_arr = T.f_repr lhs in
     let rhs_arr = T.f_repr rhs in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (mont_i16_to_spec_array r_arr) j
+        Seq.index (mont_i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__add
-               (Seq.index (mont_i16_to_spec_array lhs_arr) j)
-               (Seq.index (mont_i16_to_spec_array rhs_arr) j))
+               (Seq.index (mont_i16_to_spec_array (sz 16) lhs_arr) j)
+               (Seq.index (mont_i16_to_spec_array (sz 16) rhs_arr) j))
       = if j < 16 then begin
           lane_mont r_arr j;
           lane_mont lhs_arr j;
@@ -734,19 +734,19 @@ let lemma_sub_chunk_commutes_plain
     (ensures
        (let r = T.f_sub lhs rhs in
         forall (j: nat). j < 16 ==>
-          Seq.index (i16_to_spec_array (T.f_repr r)) j
+          Seq.index (i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__sub
-                 (Seq.index (i16_to_spec_array (T.f_repr lhs)) j)
-                 (Seq.index (i16_to_spec_array (T.f_repr rhs)) j)))
+                 (Seq.index (i16_to_spec_array (sz 16) (T.f_repr lhs)) j)
+                 (Seq.index (i16_to_spec_array (sz 16) (T.f_repr rhs)) j)))
   = let r = T.f_sub lhs rhs in
     let lhs_arr = T.f_repr lhs in
     let rhs_arr = T.f_repr rhs in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__sub
-               (Seq.index (i16_to_spec_array lhs_arr) j)
-               (Seq.index (i16_to_spec_array rhs_arr) j))
+               (Seq.index (i16_to_spec_array (sz 16) lhs_arr) j)
+               (Seq.index (i16_to_spec_array (sz 16) rhs_arr) j))
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain lhs_arr j;
@@ -763,19 +763,19 @@ let lemma_sub_chunk_commutes_mont
     (ensures
        (let r = T.f_sub lhs rhs in
         forall (j: nat). j < 16 ==>
-          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+          Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__sub
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr lhs)) j)
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr rhs)) j)))
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr lhs)) j)
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr rhs)) j)))
   = let r = T.f_sub lhs rhs in
     let lhs_arr = T.f_repr lhs in
     let rhs_arr = T.f_repr rhs in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (mont_i16_to_spec_array r_arr) j
+        Seq.index (mont_i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__sub
-               (Seq.index (mont_i16_to_spec_array lhs_arr) j)
-               (Seq.index (mont_i16_to_spec_array rhs_arr) j))
+               (Seq.index (mont_i16_to_spec_array (sz 16) lhs_arr) j)
+               (Seq.index (mont_i16_to_spec_array (sz 16) rhs_arr) j))
       = if j < 16 then begin
           lane_mont r_arr j;
           lane_mont lhs_arr j;
@@ -795,17 +795,17 @@ let lemma_multiply_by_constant_chunk_commutes
     (ensures
        (let r = T.f_multiply_by_constant vec c in
         forall (j: nat). j < 16 ==>
-          Seq.index (i16_to_spec_array (T.f_repr r)) j
+          Seq.index (i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__mul
-                 (Seq.index (i16_to_spec_array (T.f_repr vec)) j)
+                 (Seq.index (i16_to_spec_array (sz 16) (T.f_repr vec)) j)
                  (i16_to_spec_fe c)))
   = let r = T.f_multiply_by_constant vec c in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__mul
-               (Seq.index (i16_to_spec_array vec_arr) j)
+               (Seq.index (i16_to_spec_array (sz 16) vec_arr) j)
                (i16_to_spec_fe c))
       = if j < 16 then begin
           lane_plain r_arr j;
@@ -822,17 +822,17 @@ let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_mont
     (ensures
        (let r = T.f_montgomery_multiply_by_constant vec c in
         forall (j: nat). j < 16 ==>
-          Seq.index (mont_i16_to_spec_array (T.f_repr r)) j
+          Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__mul
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr vec)) j)
                  (mont_i16_to_spec_fe c)))
   = let r = T.f_montgomery_multiply_by_constant vec c in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (mont_i16_to_spec_array r_arr) j
+        Seq.index (mont_i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__mul
-               (Seq.index (mont_i16_to_spec_array vec_arr) j)
+               (Seq.index (mont_i16_to_spec_array (sz 16) vec_arr) j)
                (mont_i16_to_spec_fe c))
       = if j < 16 then begin
           lane_mont r_arr j;
@@ -850,17 +850,17 @@ let lemma_montgomery_multiply_by_constant_chunk_commutes_mont_plain
     (ensures
        (let r = T.f_montgomery_multiply_by_constant vec c in
         forall (j: nat). j < 16 ==>
-          Seq.index (i16_to_spec_array (T.f_repr r)) j
+          Seq.index (i16_to_spec_array (sz 16) (T.f_repr r)) j
             == P.impl_FieldElement__mul
-                 (Seq.index (mont_i16_to_spec_array (T.f_repr vec)) j)
+                 (Seq.index (mont_i16_to_spec_array (sz 16) (T.f_repr vec)) j)
                  (i16_to_spec_fe c)))
   = let r = T.f_montgomery_multiply_by_constant vec c in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
           == P.impl_FieldElement__mul
-               (Seq.index (mont_i16_to_spec_array vec_arr) j)
+               (Seq.index (mont_i16_to_spec_array (sz 16) vec_arr) j)
                (i16_to_spec_fe c))
       = if j < 16 then begin
           lane_plain r_arr j;
@@ -882,13 +882,13 @@ let lemma_barrett_reduce_chunk_commutes
     (requires TS.barrett_reduce_pre (T.f_repr vec))
     (ensures
        (let r = T.f_barrett_reduce vec in
-        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+        i16_to_spec_array (sz 16) (T.f_repr r) == i16_to_spec_array (sz 16) (T.f_repr vec)))
   = let r = T.f_barrett_reduce vec in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
-          == Seq.index (i16_to_spec_array vec_arr) j)
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
+          == Seq.index (i16_to_spec_array (sz 16) vec_arr) j)
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain vec_arr j;
@@ -896,7 +896,7 @@ let lemma_barrett_reduce_chunk_commutes
           lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
         end in
     Classical.forall_intro aux;
-    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
+    Seq.lemma_eq_intro (i16_to_spec_array (sz 16) r_arr) (i16_to_spec_array (sz 16) vec_arr)
 
 let lemma_cond_subtract_3329_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -905,13 +905,13 @@ let lemma_cond_subtract_3329_chunk_commutes
     (requires TS.cond_subtract_3329_pre (T.f_repr vec))
     (ensures
        (let r = T.f_cond_subtract_3329_ vec in
-        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+        i16_to_spec_array (sz 16) (T.f_repr r) == i16_to_spec_array (sz 16) (T.f_repr vec)))
   = let r = T.f_cond_subtract_3329_ vec in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
-          == Seq.index (i16_to_spec_array vec_arr) j)
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
+          == Seq.index (i16_to_spec_array (sz 16) vec_arr) j)
       = if j < 16 then begin
           lane_plain r_arr j;
           lane_plain vec_arr j;
@@ -919,7 +919,7 @@ let lemma_cond_subtract_3329_chunk_commutes
           lemma_barrett_fe_commute (Seq.index vec_arr j) (Seq.index r_arr j)
         end in
     Classical.forall_intro aux;
-    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
+    Seq.lemma_eq_intro (i16_to_spec_array (sz 16) r_arr) (i16_to_spec_array (sz 16) vec_arr)
 
 let lemma_to_unsigned_representative_chunk_commutes
     (#vV: Type0) {| i: T.t_Operations vV |}
@@ -928,14 +928,14 @@ let lemma_to_unsigned_representative_chunk_commutes
     (requires TS.to_unsigned_representative_pre (T.f_repr vec))
     (ensures
        (let r = T.f_to_unsigned_representative vec in
-        i16_to_spec_array (T.f_repr r) == i16_to_spec_array (T.f_repr vec)))
+        i16_to_spec_array (sz 16) (T.f_repr r) == i16_to_spec_array (sz 16) (T.f_repr vec)))
   = let r = T.f_to_unsigned_representative vec in
     let vec_arr = T.f_repr vec in
     let r_arr = T.f_repr r in
     assert (TS.to_unsigned_representative_post vec_arr r_arr);
     let aux (j: nat) : Lemma (j < 16 ==>
-        Seq.index (i16_to_spec_array r_arr) j
-          == Seq.index (i16_to_spec_array vec_arr) j)
+        Seq.index (i16_to_spec_array (sz 16) r_arr) j
+          == Seq.index (i16_to_spec_array (sz 16) vec_arr) j)
       = if j < 16 then begin
           let x = Seq.index vec_arr j in
           let y = Seq.index r_arr j in
@@ -946,7 +946,7 @@ let lemma_to_unsigned_representative_chunk_commutes
           lemma_barrett_fe_commute x y
         end in
     Classical.forall_intro aux;
-    Seq.lemma_eq_intro (i16_to_spec_array r_arr) (i16_to_spec_array vec_arr)
+    Seq.lemma_eq_intro (i16_to_spec_array (sz 16) r_arr) (i16_to_spec_array (sz 16) vec_arr)
 
 (* ────────────  Compress / decompress per-lane fe_commute  ────────────
    Per-lane lifts from the impl's integer formulas (as exposed by the
@@ -1095,9 +1095,9 @@ let lemma_decompress_ciphertext_coefficient_chunk_commutes
 (* ────────────  NTT-layer ops  ────────────
    Hacspec's `ntt_layer_n` at N = 16 takes half-size `len` and a zeta
    slice of length `N / (2·len)`.  The three trait steps instantiate:
-     `ntt_layer_1_step`   len = 2, 4 zetas  (zetas_4)
-     `ntt_layer_2_step`   len = 4, 2 zetas  (zetas_2)
-     `ntt_layer_3_step`   len = 8, 1 zeta   (zetas_1)
+     `ntt_layer_1_step`   len = 2, 4 zetas  (zetas_4_)
+     `ntt_layer_2_step`   len = 4, 2 zetas  (zetas_2_)
+     `ntt_layer_3_step`   len = 8, 1 zeta   (zetas_1_)
    Symmetric layout for the inverse NTT via `ntt_inverse_layer_n`. *)
 
 (* ────────────  Per-branch (concrete-b) layer-1 NTT helpers  ────────────
@@ -1283,11 +1283,11 @@ assume val lemma_ntt_multiply_chunk_commutes
                                   zeta0 zeta1 zeta2 zeta3)
     (ensures
        (let r = T.f_ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3 in
-        mont_i16_to_spec_array (T.f_repr r)
+        mont_i16_to_spec_array (sz 16) (T.f_repr r)
           == N.ntt_multiply_n (mk_usize 16)
-               (mont_i16_to_spec_array (T.f_repr lhs))
-               (mont_i16_to_spec_array (T.f_repr rhs))
-               (zetas_4 zeta0 zeta1 zeta2 zeta3)))
+               (mont_i16_to_spec_array (sz 16) (T.f_repr lhs))
+               (mont_i16_to_spec_array (sz 16) (T.f_repr rhs))
+               (zetas_4_ zeta0 zeta1 zeta2 zeta3)))
 
 (*** Phase 7a Tier-1 commute lemmas — Polynomial ***)
 
@@ -2198,7 +2198,7 @@ let lemma_add_standard_error_reduce_commute
    `createi_lemma` to surface the per-lane FE for an i16 array. *)
 let mont_array_lane (#n: usize)
     (x: t_Array i16 n) (i: usize { v i < v n }) :
-    Lemma (Seq.index (mont_i16_to_spec_array x) (v i)
+    Lemma (Seq.index (mont_i16_to_spec_array n x) (v i)
            == mont_i16_to_spec_fe (Seq.index x (v i)))
   = P.createi_lemma #P.t_FieldElement n
       #(usize -> P.t_FieldElement)
@@ -2206,9 +2206,9 @@ let mont_array_lane (#n: usize)
         (mont_i16_to_spec_fe (Seq.index x (v j)) <: P.t_FieldElement))
       i
 
-(* Per-lane unfold helper for `zetas_4`. *)
+(* Per-lane unfold helper for `zetas_4_`. *)
 let zetas_4_lane (z0 z1 z2 z3: i16) (i: usize { v i < 4 }) :
-    Lemma (Seq.index (zetas_4 z0 z1 z2 z3) (v i)
+    Lemma (Seq.index (zetas_4_ z0 z1 z2 z3) (v i)
            == (if v i = 0 then mont_i16_to_spec_fe z0
                else if v i = 1 then mont_i16_to_spec_fe z1
                else if v i = 2 then mont_i16_to_spec_fe z2
@@ -2297,15 +2297,15 @@ let lemma_ntt_layer_1_step_lane_bridge
     (requires
       TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
     (ensures
-      (let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
                                (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
-  = let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     (* Branch b = i / 4 ∈ {0,1,2,3}; reveal post for that branch. *)
     let b : nat = i / 4 in
     assert (b < 4);
@@ -2319,7 +2319,7 @@ let lemma_ntt_layer_1_step_lane_bridge
     lemma_ntt_layer_n_16_2_lane p_fe zs i;
     zetas_4_lane zeta0 zeta1 zeta2 zeta3 (sz b);
     (* Unfold per-array index helpers — these provide
-       `(mont_i16_to_spec_array x).[i] == mont_i16_to_spec_fe x.[i]`. *)
+       `(mont_i16_to_spec_array (sz 16) x).[i] == mont_i16_to_spec_fe x.[i]`. *)
     mont_array_lane out_arr (sz i);
     mont_array_lane in_arr (sz i);
     let idx : nat = i % 4 in
@@ -2346,17 +2346,17 @@ let lemma_ntt_layer_1_step_to_hacspec
     (requires TS.ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
     (ensures
        (let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           N.ntt_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 2)
-            (Rust_primitives.unsize (zetas_4 zeta0 zeta1 zeta2 zeta3))))
+            (Rust_primitives.unsize (zetas_4_ zeta0 zeta1 zeta2 zeta3))))
   = let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
                             (Rust_primitives.unsize zs) in
     assert (TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr);
@@ -2663,6 +2663,6 @@ let zetas_8 (z0 z1 z2 z3 z4 z5 z6 z7: i16)
         else mont_i16_to_spec_fe z7)
         <: P.t_FieldElement))
 
-(* Layer 5..7 inverse: shared shapes with the existing `zetas_1/2/4`
-   in `Vector.Traits.Spec`.  Layer 5: 4 zetas (zetas_4); Layer 6: 2
-   (zetas_2); Layer 7: 1 (zetas_1).  Provided by Spec module already.    *)
+(* Layer 5..7 inverse: shared shapes with the existing `zetas_1_/2/4`
+   in `Vector.Traits.Spec`.  Layer 5: 4 zetas (zetas_4_); Layer 6: 2
+   (zetas_2_); Layer 7: 1 (zetas_1_).  Provided by Spec module already.    *)

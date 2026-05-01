@@ -105,15 +105,15 @@ let lemma_ntt_layer_1_step_lane_bridge
     (requires
       TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
     (ensures
-      (let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
                                (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
-  = let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     (* Branch b = i / 4 ∈ {0,1,2,3}; reveal post for that branch. *)
     let b : nat = i / 4 in
     assert (b < 4);
@@ -127,7 +127,7 @@ let lemma_ntt_layer_1_step_lane_bridge
     lemma_ntt_layer_n_16_2_lane p_fe zs i;
     zetas_4_lane zeta0 zeta1 zeta2 zeta3 (sz b);
     (* Unfold per-array index helpers — these provide
-       `(mont_i16_to_spec_array x).[i] == mont_i16_to_spec_fe x.[i]`. *)
+       `(mont_i16_to_spec_array (sz 16) x).[i] == mont_i16_to_spec_fe x.[i]`. *)
     mont_array_lane out_arr (sz i);
     mont_array_lane in_arr (sz i);
     let idx : nat = i % 4 in
@@ -154,17 +154,17 @@ let lemma_ntt_layer_1_step_to_hacspec
     (requires TS.ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
     (ensures
        (let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           N.ntt_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 2)
-            (Rust_primitives.unsize (zetas_4 zeta0 zeta1 zeta2 zeta3))))
+            (Rust_primitives.unsize (zetas_4_ zeta0 zeta1 zeta2 zeta3))))
   = let r = T.f_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
                             (Rust_primitives.unsize zs) in
     assert (TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr);
@@ -206,15 +206,15 @@ let lemma_inv_ntt_layer_1_step_lane_bridge
     (requires
       TS.inv_ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
     (ensures
-      (let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 2)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
-  = let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let b : nat = i / 4 in
     assert (b < 4);
     assert (Spec.Utils.forall4 (fun (bb: nat{bb < 4}) ->
@@ -256,17 +256,17 @@ let lemma_inv_ntt_layer_1_step_to_hacspec
     (requires TS.inv_ntt_layer_1_step_pre (T.f_repr vec) zeta0 zeta1 zeta2 zeta3)
     (ensures
        (let r = T.f_inv_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           IN.ntt_inverse_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 2)
-            (Rust_primitives.unsize (zetas_4 zeta0 zeta1 zeta2 zeta3))))
+            (Rust_primitives.unsize (zetas_4_ zeta0 zeta1 zeta2 zeta3))))
   = let r = T.f_inv_ntt_layer_1_step vec zeta0 zeta1 zeta2 zeta3 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_4 zeta0 zeta1 zeta2 zeta3 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 2)
                                        (Rust_primitives.unsize zs) in
     assert (TS.inv_ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr);
@@ -282,10 +282,10 @@ let lemma_inv_ntt_layer_1_step_to_hacspec
 
 (*** Phase 7a (track A) — Inverse NTT layer 3 hacspec bridge ***)
 
-(* Per-lane unfold helper for `zetas_1`.  Layer-3 inverse uses a single
-   zeta, so `Seq.index (zetas_1 z0) 0 == mont_i16_to_spec_fe z0`. *)
+(* Per-lane unfold helper for `zetas_1_`.  Layer-3 inverse uses a single
+   zeta, so `Seq.index (zetas_1_ z0) 0 == mont_i16_to_spec_fe z0`. *)
 let zetas_1_lane (z0: i16) (i: usize { v i < 1 }) :
-    Lemma (Seq.index (zetas_1 z0) (v i) == mont_i16_to_spec_fe z0)
+    Lemma (Seq.index (zetas_1_ z0) (v i) == mont_i16_to_spec_fe z0)
   = P.createi_lemma #P.t_FieldElement (mk_usize 1)
       #(usize -> P.t_FieldElement)
       (fun (_: usize { _ <. mk_usize 1 }) ->
@@ -367,15 +367,15 @@ let lemma_inv_ntt_layer_3_step_lane_bridge
     (requires
       TS.inv_ntt_layer_3_step_post in_arr zeta0 out_arr)
     (ensures
-      (let zs = zetas_1 zeta0 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_1_ zeta0 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 8)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
-  = let zs = zetas_1 zeta0 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_1_ zeta0 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let b : nat = (i % 8) / 2 in
     assert (b < 4);
     assert (Spec.Utils.forall4 (fun (bb: nat{bb < 4}) ->
@@ -415,17 +415,17 @@ let lemma_inv_ntt_layer_3_step_to_hacspec
     (requires TS.inv_ntt_layer_3_step_pre (T.f_repr vec) zeta0)
     (ensures
        (let r = T.f_inv_ntt_layer_3_step vec zeta0 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           IN.ntt_inverse_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 8)
-            (Rust_primitives.unsize (zetas_1 zeta0))))
+            (Rust_primitives.unsize (zetas_1_ zeta0))))
   = let r = T.f_inv_ntt_layer_3_step vec zeta0 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_1 zeta0 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_1_ zeta0 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 8)
                                        (Rust_primitives.unsize zs) in
     assert (TS.inv_ntt_layer_3_step_post in_arr zeta0 out_arr);
@@ -440,9 +440,9 @@ let lemma_inv_ntt_layer_3_step_to_hacspec
 
 (*** Phase 7a (track A) — Inverse NTT layer 2 hacspec bridge ***)
 
-(* Per-lane unfold helper for `zetas_2`. *)
+(* Per-lane unfold helper for `zetas_2_`. *)
 let zetas_2_lane (z0 z1: i16) (i: usize { v i < 2 }) :
-    Lemma (Seq.index (zetas_2 z0 z1) (v i)
+    Lemma (Seq.index (zetas_2_ z0 z1) (v i)
            == (if v i = 0 then mont_i16_to_spec_fe z0
                else mont_i16_to_spec_fe z1))
   = P.createi_lemma #P.t_FieldElement (mk_usize 2)
@@ -521,18 +521,18 @@ let lemma_inv_ntt_layer_2_step_branch_0_lane_bridge
     (requires
       TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe 0 == Seq.index rhs 0 /\
        Seq.index r_fe 1 == Seq.index rhs 1 /\
        Seq.index r_fe 4 == Seq.index rhs 4 /\
        Seq.index r_fe 5 == Seq.index rhs 5))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
                   (TS.inv_ntt_layer_2_step_branch_post 0 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 0;
@@ -557,18 +557,18 @@ let lemma_inv_ntt_layer_2_step_branch_1_lane_bridge
     (requires
       TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe 2 == Seq.index rhs 2 /\
        Seq.index r_fe 3 == Seq.index rhs 3 /\
        Seq.index r_fe 6 == Seq.index rhs 6 /\
        Seq.index r_fe 7 == Seq.index rhs 7))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
                   (TS.inv_ntt_layer_2_step_branch_post 1 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 2;
@@ -593,18 +593,18 @@ let lemma_inv_ntt_layer_2_step_branch_2_lane_bridge
     (requires
       TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe 8 == Seq.index rhs 8 /\
        Seq.index r_fe 9 == Seq.index rhs 9 /\
        Seq.index r_fe 12 == Seq.index rhs 12 /\
        Seq.index r_fe 13 == Seq.index rhs 13))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
                   (TS.inv_ntt_layer_2_step_branch_post 2 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 8;
@@ -629,18 +629,18 @@ let lemma_inv_ntt_layer_2_step_branch_3_lane_bridge
     (requires
       TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe 10 == Seq.index rhs 10 /\
        Seq.index r_fe 11 == Seq.index rhs 11 /\
        Seq.index r_fe 14 == Seq.index rhs 14 /\
        Seq.index r_fe 15 == Seq.index rhs 15))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
                   (TS.inv_ntt_layer_2_step_branch_post 3 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_inverse_layer_n_16_4_lane p_fe zs 10;
@@ -675,9 +675,9 @@ let lemma_inv_ntt_layer_2_step_lane_bridge
     (requires
       TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                          (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
@@ -706,17 +706,17 @@ let lemma_inv_ntt_layer_2_step_to_hacspec
     (requires TS.inv_ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
     (ensures
        (let r = T.f_inv_ntt_layer_2_step vec zeta0 zeta1 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           IN.ntt_inverse_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 4)
-            (Rust_primitives.unsize (zetas_2 zeta0 zeta1))))
+            (Rust_primitives.unsize (zetas_2_ zeta0 zeta1))))
   = let r = T.f_inv_ntt_layer_2_step vec zeta0 zeta1 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = IN.ntt_inverse_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                        (Rust_primitives.unsize zs) in
     assert (TS.inv_ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr);
@@ -804,18 +804,18 @@ let lemma_ntt_layer_2_step_branch_0_lane_bridge
     (requires
       TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe 0 == Seq.index rhs 0 /\
        Seq.index r_fe 1 == Seq.index rhs 1 /\
        Seq.index r_fe 4 == Seq.index rhs 4 /\
        Seq.index r_fe 5 == Seq.index rhs 5))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.ntt_layer_2_step_branch_post)
                   (TS.ntt_layer_2_step_branch_post 0 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_layer_n_16_4_lane p_fe zs 0;
@@ -840,18 +840,18 @@ let lemma_ntt_layer_2_step_branch_1_lane_bridge
     (requires
       TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe 2 == Seq.index rhs 2 /\
        Seq.index r_fe 3 == Seq.index rhs 3 /\
        Seq.index r_fe 6 == Seq.index rhs 6 /\
        Seq.index r_fe 7 == Seq.index rhs 7))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.ntt_layer_2_step_branch_post)
                   (TS.ntt_layer_2_step_branch_post 1 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_layer_n_16_4_lane p_fe zs 2;
@@ -876,18 +876,18 @@ let lemma_ntt_layer_2_step_branch_2_lane_bridge
     (requires
       TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe 8 == Seq.index rhs 8 /\
        Seq.index r_fe 9 == Seq.index rhs 9 /\
        Seq.index r_fe 12 == Seq.index rhs 12 /\
        Seq.index r_fe 13 == Seq.index rhs 13))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.ntt_layer_2_step_branch_post)
                   (TS.ntt_layer_2_step_branch_post 2 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_layer_n_16_4_lane p_fe zs 8;
@@ -912,18 +912,18 @@ let lemma_ntt_layer_2_step_branch_3_lane_bridge
     (requires
       TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe 10 == Seq.index rhs 10 /\
        Seq.index r_fe 11 == Seq.index rhs 11 /\
        Seq.index r_fe 14 == Seq.index rhs 14 /\
        Seq.index r_fe 15 == Seq.index rhs 15))
-  = let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     reveal_opaque (`%TS.ntt_layer_2_step_branch_post)
                   (TS.ntt_layer_2_step_branch_post 3 in_arr zeta0 zeta1 out_arr);
     lemma_ntt_layer_n_16_4_lane p_fe zs 10;
@@ -957,9 +957,9 @@ let lemma_ntt_layer_2_step_lane_bridge
     (requires
       TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr)
     (ensures
-      (let zs = zetas_2 zeta0 zeta1 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_2_ zeta0 zeta1 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
@@ -988,17 +988,17 @@ let lemma_ntt_layer_2_step_to_hacspec
     (requires TS.ntt_layer_2_step_pre (T.f_repr vec) zeta0 zeta1)
     (ensures
        (let r = T.f_ntt_layer_2_step vec zeta0 zeta1 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           N.ntt_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 4)
-            (Rust_primitives.unsize (zetas_2 zeta0 zeta1))))
+            (Rust_primitives.unsize (zetas_2_ zeta0 zeta1))))
   = let r = T.f_ntt_layer_2_step vec zeta0 zeta1 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_2 zeta0 zeta1 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_2_ zeta0 zeta1 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 4)
                              (Rust_primitives.unsize zs) in
     assert (TS.ntt_layer_2_step_post in_arr zeta0 zeta1 out_arr);
@@ -1089,15 +1089,15 @@ let lemma_ntt_layer_3_step_lane_bridge
     (requires
       TS.ntt_layer_3_step_post in_arr zeta0 out_arr)
     (ensures
-      (let zs = zetas_1 zeta0 in
-       let p_fe = mont_i16_to_spec_array in_arr in
-       let r_fe = mont_i16_to_spec_array out_arr in
+      (let zs = zetas_1_ zeta0 in
+       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
        let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 8)
                                 (Rust_primitives.unsize zs) in
        Seq.index r_fe i == Seq.index rhs i))
-  = let zs = zetas_1 zeta0 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+  = let zs = zetas_1_ zeta0 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let b : nat = (i % 8) / 2 in
     assert (b < 4);
     assert (Spec.Utils.forall4 (fun (bb: nat{bb < 4}) ->
@@ -1133,17 +1133,17 @@ let lemma_ntt_layer_3_step_to_hacspec
     (requires TS.ntt_layer_3_step_pre (T.f_repr vec) zeta0)
     (ensures
        (let r = T.f_ntt_layer_3_step vec zeta0 in
-        mont_i16_to_spec_array (T.f_repr r) ==
+        mont_i16_to_spec_array (sz 16) (T.f_repr r) ==
           N.ntt_layer_n (mk_usize 16)
-            (mont_i16_to_spec_array (T.f_repr vec))
+            (mont_i16_to_spec_array (sz 16) (T.f_repr vec))
             (mk_usize 8)
-            (Rust_primitives.unsize (zetas_1 zeta0))))
+            (Rust_primitives.unsize (zetas_1_ zeta0))))
   = let r = T.f_ntt_layer_3_step vec zeta0 in
     let in_arr = T.f_repr vec in
     let out_arr = T.f_repr r in
-    let zs = zetas_1 zeta0 in
-    let p_fe = mont_i16_to_spec_array in_arr in
-    let r_fe = mont_i16_to_spec_array out_arr in
+    let zs = zetas_1_ zeta0 in
+    let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
+    let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
     let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 8)
                              (Rust_primitives.unsize zs) in
     assert (TS.ntt_layer_3_step_post in_arr zeta0 out_arr);

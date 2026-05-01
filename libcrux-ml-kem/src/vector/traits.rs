@@ -58,6 +58,19 @@ pub(crate) mod spec {
     /// reduction.  Used by trait posts (`compress_post_N`,
     /// `decompress_post_N`, ...) and by the polynomial-level lift
     /// `poly_to_spec` in vector.rs.
+    ///
+    /// The `ensures` is the F*-side refinement bridges depend on
+    /// (`v r.f_val == v x % 3329`).  Without it, Z3 cannot compute
+    /// the field-element value from a `i16_to_spec_fe x` term, and
+    /// the FE-arithmetic commute lemmas in
+    /// `Hacspec_ml_kem.Commute.Chunk` (e.g.
+    /// `lemma_base_case_mult_even_fe_commute`) time out.
+    /// `fstar!` escape used here for the ensures because the
+    /// "no-`fstar!`" cleanup mandate is scoped to ind_cpa annotations;
+    /// libcrux internal lift helpers may keep precise F*-side
+    /// refinements until the spec gains a Rust-callable predicate
+    /// for `v r.f_val == v x % 3329`.
+    #[hax_lib::ensures(|r| fstar!(r#"v ${r}.Hacspec_ml_kem.Parameters.f_val == v ${x} % 3329"#))]
     pub fn i16_to_spec_fe(x: i16) -> FieldElement {
         FieldElement::from_i16(x)
     }
@@ -66,6 +79,12 @@ pub(crate) mod spec {
     /// R^{-1} = 169 mod 3329.  Strips the R factor to recover the
     /// abstract value.  Used in NTT / inverse-NTT / ntt_multiply trait
     /// posts and in `Hacspec_ml_kem.Commute.{Bridges, Chunk}`.
+    ///
+    /// `ensures` matches the prior F*-injection refinement:
+    /// `v r.f_val == (v x * 169) % 3329`.  Required by the FE-arithmetic
+    /// commute lemmas — without it Z3 times out trying to derive
+    /// the v_val from the body.
+    #[hax_lib::ensures(|r| fstar!(r#"v ${r}.Hacspec_ml_kem.Parameters.f_val == (v ${x} * 169) % 3329"#))]
     pub fn mont_i16_to_spec_fe(x: i16) -> FieldElement {
         let q: i32 = 3329;
         let r = ((((x as i32) * 169) % q + q) % q) as u16;
