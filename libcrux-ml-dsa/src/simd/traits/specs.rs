@@ -120,8 +120,7 @@ let reduce_lane_post (input result: i32) : prop =
 let lemma_reduce_lane_lookup (input result: i32)
     : Lemma (requires reduce_lane_post input result)
             (ensures v result > -8380417 /\ v result < 8380417 /\
-                     (v result) % 8380417 == (v input) % 8380417)
-            [SMTPat (reduce_lane_post input result)] =
+                     (v result) % 8380417 == (v input) % 8380417) =
   reveal_opaque (`%reduce_lane_post) (reduce_lane_post input result)
 
 let lemma_reduce_lane_intro (input result: i32)
@@ -262,8 +261,7 @@ let shift_left_then_reduce_lane_post (input future: i32) : prop =
 let lemma_shift_left_then_reduce_lane_lookup (input future: i32)
     : Lemma (requires shift_left_then_reduce_lane_post input future)
             (ensures Spec.Utils.is_i32b 8380416 future /\
-                     (v future) % 8380417 == (v input * 8192) % 8380417)
-            [SMTPat (shift_left_then_reduce_lane_post input future)] =
+                     (v future) % 8380417 == (v input * 8192) % 8380417) =
   reveal_opaque (`%shift_left_then_reduce_lane_post)
                 (shift_left_then_reduce_lane_post input future)
 

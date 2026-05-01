@@ -52,9 +52,9 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
           let lane_post (j:nat{j < 8}) :
             Lemma (Spec.Utils.is_i32b 8380416
                      (Seq.index (i0._super_i2.f_repr (Seq.index ${re}.f_simd_units (v ${i}))) j)) =
-            assert (Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
-                      (Seq.index (i0._super_i2.f_repr (Seq.index ${old_re}.f_simd_units (v ${i}))) j)
-                      (Seq.index (i0._super_i2.f_repr (Seq.index ${re}.f_simd_units (v ${i}))) j))
+            Libcrux_ml_dsa.Simd.Traits.Specs.lemma_shift_left_then_reduce_lane_lookup
+              (Seq.index (i0._super_i2.f_repr (Seq.index ${old_re}.f_simd_units (v ${i}))) j)
+              (Seq.index (i0._super_i2.f_repr (Seq.index ${re}.f_simd_units (v ${i}))) j)
           in
           Classical.forall_intro lane_post;
           reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) Spec.Utils.is_i32b_array_opaque
