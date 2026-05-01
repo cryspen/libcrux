@@ -915,7 +915,6 @@ pub(crate) fn encrypt<
     message: &[u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
-    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLKEM.ind_cpa_encrypt) Spec.MLKEM.ind_cpa_encrypt"#);
     let unpacked_public_key =
         build_unpacked_public_key::<K, T_AS_NTT_ENCODED_SIZE, Vector, Hasher>(public_key);
 
@@ -1183,7 +1182,6 @@ pub(crate) fn decrypt<
     secret_key: &[u8],
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
-    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLKEM.ind_cpa_decrypt) Spec.MLKEM.ind_cpa_decrypt"#);
     // sˆ := Decode_12(sk)
     let mut secret_key_unpacked = IndCpaPrivateKeyUnpacked {
         secret_as_ntt: from_fn(|_| PolynomialRingElement::<Vector>::ZERO()),

@@ -34,13 +34,16 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
 
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
-        // Bridge: compress_1's post `bounded_pos_i16_array 1` (after reveal,
-        // `forall j. 0 <= v r[j] <= 1`) to serialize_1's pre `serialize_pre_N
-        // 1 r` (= `forall j. bounded r[j] 1` = `forall j. 0 <= v r[j] < 2`).
-        // Z3 needs the explicit instantiation; `bounded` is opaque-ish.
+        // Bridge: compress_1's post `bounded_pos_i16_array 1` (=
+        // `bounded_i16_array (mk_i16 0) (mk_i16 1)`) to serialize_1's pre
+        // `serialize_pre_N 1 r` (= `forall j. bounded r[j] 1`).  Targeted
+        // reveal (Rule SD4) — unfolds the opaque only for THIS instance,
+        // not universally; previously the global form polluted Z3 every
+        // loop iteration with the unbound forall.
         hax_lib::fstar!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 1)
+                         (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}));
                assert_norm (pow2 1 == 2);
                assert (forall (k: nat). {:pattern Seq.index
                        (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}) k}
@@ -67,12 +70,14 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
         let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 2]);
-        // Bridge: deserialize_1's post `forall j. bounded r[j] 1`
-        // (= `forall j. 0 <= v r[j] < 2`) to decompress_1's pre
-        // `bounded_pos_i16_array 1 r` (= same after reveal).
+        // Bridge: deserialize_1's post `forall j. bounded r[j] 1` (=
+        // `forall j. 0 <= v r[j] < 2`) to decompress_1's pre
+        // `bounded_pos_i16_array 1 r` (= `bounded_i16_array 0 1 r`).
+        // Targeted reveal (Rule SD4) — only the specific instance.
         hax_lib::fstar!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
-                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
+                       (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 1)
+                         (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}));
                assert_norm (pow2 1 == 2)"#
         );
         re.coefficients[i] = Vector::decompress_1(coefficient_compressed);
