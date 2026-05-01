@@ -633,6 +633,19 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    #[hax_lib::ensures(|result| fstar!(r#"
+        Core_models.Slice.impl__len #u8 ${context} <=. mk_usize 255 ==>
+        Core_models.Slice.impl__len #u8 ${message} <=. mk_usize 8192 ==>
+        (let spec_result =
+           Hacspec_ml_dsa.Ml_dsa.verify
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_k
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_l
+              (v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_lambda /! mk_usize 4)
+              v_COMMITMENT_VECTOR_SIZE
+              ${verification_key_serialized} ${message} ${signature_serialized} ${context}
+              v_HACSPEC_PARAMS in
+         Core_models.Result.impl__is_ok ${result} ==
+         Core_models.Result.impl__is_ok spec_result)"#))]
     pub(crate) fn verify<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
