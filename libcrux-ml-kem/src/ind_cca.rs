@@ -156,9 +156,9 @@ pub(crate) fn validate_public_key<
 /// and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(fstar!(r#"Spec.MLKEM.is_rank $K /\
-    $SECRET_KEY_SIZE == Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K /\
-    $CIPHERTEXT_SIZE == Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K"#))]
+#[hax_lib::requires(fstar!(r#"Hacspec_ml_kem.Parameters.Sizes.is_rank $K /\
+    $SECRET_KEY_SIZE == Hacspec_ml_kem.Parameters.Sizes.v_CCA_PRIVATE_KEY_SIZE $K /\
+    $CIPHERTEXT_SIZE == Hacspec_ml_kem.Parameters.cpa_ciphertext_size $K"#))]
 pub(crate) fn validate_private_key<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
