@@ -191,3 +191,130 @@ Action plan:
      If the structural index-bound is obvious from a loop invariant,
      replace `panic_free` with the default and add the invariant.
   3. Both are bounded-effort: ~30 min cap each.
+
+---
+
+# Session execution log (Phase 2 + Phase 3)
+
+## Phase 2 spec changes
+
+| Step | Commit | File | Before / After | Validation |
+|---|---|---|---|---|
+| **P1** | `329d4195e` | `specs/ml-kem/src/parameters.rs` | Added 16 rank-generic free-fn helpers + 2 constants (`SHARED_SECRET_SIZE`, `CPA_KEY_GENERATION_SEED_SIZE`, `t_as_ntt_encoded_size`, `ranked_bytes_per_ring_element`, `cpa_public_key_size`, `cpa_private_key_size`, `cca_private_key_size`, `vector_u_compression_factor`, `vector_v_compression_factor`, `c1_block_size`, `c1_size`, `c2_size`, `eta1`, `eta2`, `eta1_randomness_size`, `eta2_randomness_size`, `implicit_rejection_hash_input_size`).  All follow the `cpa_ciphertext_size`/`rank_to_params` 3-way `if` pattern. | `Hacspec_ml_kem.Parameters.fst.checked` re-verifies in 7s; max rlimit ≤15. |
+| **P2** | `57d1a5e61` | `specs/ml-kem/src/serialize.rs:367-376` | `serialize_public_key<RANK, EK_SIZE, T_SIZE>` → `serialize_public_key<RANK, EK_SIZE>`.  Body inlines per-ring-element `byte_encode` writes directly into `ek` instead of constructing a typed `[u8; T_SIZE]` intermediate. | `Hacspec_ml_kem.Serialize.fst.checked` re-verifies in 4.7s.  No changes to commute lemmas needed (no commute references to `serialize_public_key`). |
+| **P3** | `e63973e54` | `specs/ml-kem/src/ind_cpa.rs:79-82` | `ind_cpa::generate_keypair(..., key_generation_seed: &[u8; 32])` → `(..., key_generation_seed: &[u8])` with `len() == 32` requires.  Body unchanged. | `Hacspec_ml_kem.Ind_cpa.fst.checked` and `Hacspec_ml_kem.Ind_cca.fst.checked` re-verify clean.  Sole internal caller (`ind_cca::keygen_internal`) unchanged — Rust auto-coerces `&[u8;32]` → `&[u8]`. |
+
+### Why P3/P4 (audit's Blocker A on encrypt/encapsulate/decapsulate) was skipped
+
+After P2 the audit table flagged `encrypt::<RANK, U_SIZE, V_SIZE,
+CT_SIZE>` and `encapsulate::<RANK, EK_SIZE, U_SIZE, V_SIZE, CT_SIZE>`
+as Blocker A candidates (drop `U_SIZE, V_SIZE`).  Closer inspection of
+the libcrux call sites reversed this recommendation:
+
+- `libcrux-ml-kem/src/ind_cpa.rs:898` declares `encrypt<K, CIPHERTEXT_SIZE,
+  T_AS_NTT_ENCODED_SIZE, C1_LEN, C2_LEN, ...>` — **already** carries
+  `C1_LEN`/`C2_LEN` as separate const-generics.
+- `libcrux-ml-kem/src/ind_cca.rs:268` declares `encapsulate<K,
+  CIPHERTEXT_SIZE, PUBLIC_KEY_SIZE, T_AS_NTT_ENCODED_SIZE, C1_SIZE,
+  C2_SIZE, ...>` — same shape.
+
+So the Hacspec `<RANK, U_SIZE, V_SIZE, CT_SIZE>` is a **structural
+match** for the libcrux call site, not a mismatch.  Dropping them would
+introduce a mismatch.  P3/P4 in the original audit plan were
+**inverted recommendations**; this session corrects them by leaving
+those signatures unchanged and instead applying P3 to the genuine
+Blocker B (slice vs sized-array on `key_generation_seed`).
+
+### P5 (unpacked-shape spec helpers) — deferred
+
+Adding `generate_keypair_unpacked`, `encrypt_unpacked`,
+`decrypt_unpacked`, `ind_cca_unpack_*` would unblock unpacked-API
+ensures (audit rows 6, 10, 18, 34, 35, 37).  Each is a non-trivial new
+spec function defining its own `Result<(...), _>` shape.  Estimated
+30-60 min per helper × 6 helpers = out of session budget.  Deferred to
+a follow-up session.
+
+## Phase 3 strengthenings
+
+| Item | Outcome | Commit | Reason |
+|---|---|---|---|
+| `parameters.rs` `#[hax_lib::opaque]` on G/H/PRF/XOF/J | **Leave as-is** | — | Wrap `hacspec_sha3::*` (different verification crate); opacity is the intended spec-side interface to SHA-3 primitives. |
+| `ntt.rs:225` `get_zeta` `panic_free` (ensures `r.val >= 1`) | **Documented; kept `panic_free`** | `a4890d89a` | Tried removing `panic_free`.  Z3 fails: it knows ZETAS is a 128-element array but cannot materialize the contents to prove the per-element bound for an arbitrary index.  Bumping rlimit to 400 + fuel/ifuel didn't help (used rlimit 1).  Discharge requires a per-index `match` rewrite or an array-content axiom (R3 forbids axioms).  Out of 30-min budget. |
+| `serialize.rs:187` `byte_decode` `panic_free` (ensures `forall i. result[i].val < (1u16 << d)`) | **Documented; kept `panic_free`** | `76baea2b1` | A clean discharge needs (1) ensures on `bitvector_to_bounded_ints`, (2) propagation through `byte_decode_generic`, (3) case-split on `d == 12` vs `d < 12` at `byte_decode` (because `1u16 << d` for symbolic `d` resists Z3 simplification).  Estimated >30 min, out of budget. |
+| `Hacspec_ml_kem.Serialize.fst:313` extracted `admit ()` | Same as above (it's the panic-freedom admit injected by `panic_free`) | — | — |
+| `Hacspec_ml_kem.Ntt.fst:254` extracted `admit ()` | Same as above | — | — |
+
+No `lax`, no `ADMIT_MODULES`, no `--admit_smt_queries` markers in the
+spec extraction.  The two `admit ()` lines are the standard panic-freedom
+admits emitted by `verification_status(panic_free)`.
+
+## Open items / blockers / suggested next-session work
+
+### Blockers carried over (not introduced this session)
+
+1. **`Libcrux_ml_kem.Ind_cca.fsti:165`** — `Spec.MLKEM` not resolved.
+   Pre-existing impl-side blocker.  User has indicated they'll fix via
+   "additional conditions" in the .fsti requires/ensures rather than a
+   full migration.  Per the existing next-session prompt.
+
+2. **`Hacspec_ml_kem.Commute.Chunk.fst:1046`** —
+   `lemma_compress_1_chunk_commutes` fails with `Assertion failed` on
+   the `reveal_opaque (\`%TS.compress_1_lane_post)` call.  Confirmed
+   pre-existing (`git stash` baseline reproduces).  Blocks
+   `Hacspec_ml_kem.Commute.Bridges.fst.checked` transitively.  Likely
+   tied to the `hax-lib` upgrade since the audit was written.  Needs a
+   targeted lemma fix or a `--split_queries always` per-branch
+   workaround.
+
+### Suggested next-session work (priority order)
+
+1. **Per-function pure-Rust migration of `ind_cpa.rs` annotations**
+   using the new P1 helpers.  Mechanical; the helpers are now in place.
+   The `key_generation_seed: &[u8]` shape (P3) means `generate_keypair`
+   and `keygen_internal` migrations are now trivial (no `try_into`).
+
+2. **Per-function pure-Rust migration of `ind_cca.rs` annotations**.
+   `encapsulate` / `decapsulate` are now ready: their Hacspec
+   counterparts have signatures that structurally match the libcrux
+   call site.  Cite `rank_to_params(K)` for the `MlKemParams` arg.
+
+3. **Resolve Commute.Chunk failure** (separate session, separate
+   sprint) — would unblock the full commute-side build.
+
+4. **P5 unpacked-shape spec helpers** — only needed when the
+   `ind_cca::unpacked::*` migration is on the critical path.
+
+## Final tip / commits added
+
+Tip SHA: `76baea2b1`.
+
+Commits added this session (in order):
+
+- `16ab471a4` — `agent-mlkem: spec audit before refactor` (Phase 1)
+- `329d4195e` — `agent-mlkem: specs/ml-kem — add rank-generic size helpers (P1)`
+- `57d1a5e61` — `agent-mlkem: specs/ml-kem — drop redundant T_SIZE generic from serialize_public_key (P2)`
+- `e63973e54` — `agent-mlkem: specs/ml-kem — relax ind_cpa::generate_keypair seed to slice (P3)`
+- `a4890d89a` — `agent-mlkem: specs/ml-kem — document why get_zeta keeps panic_free (Phase 3)`
+- `76baea2b1` — `agent-mlkem: specs/ml-kem — document why byte_decode keeps panic_free (Phase 3)`
+
+Total: **6 commits**, all on `libcrux-ml-kem-proofs`, branch tip 5
+ahead of `origin/libcrux-ml-kem-proofs`.
+
+### Self-audit (R10 + R11)
+
+- **R10 (no wrappers, no namespace squatting)**: All P1 additions are
+  free functions in the existing `specs/ml-kem/src/parameters.rs` —
+  no new top-level Hacspec_ml_kem F* file created, no `unfold let`
+  alias over `Spec.MLKEM`, no wrapper.
+- **R11 (no `fstar!` escape in ind_cpa/ind_cca annotations)**: This
+  session edited `specs/ml-kem/src/*` only; did NOT touch
+  `libcrux-ml-kem/src/{ind_cpa,ind_cca}.rs` annotations.
+- **R3 (no new axioms)**: None introduced.  The `--fuel 0 --ifuel 0`
+  attempt on `get_zeta` was reverted.
+- **R4 (rlimit ≤ 800)**: Max rlimit used in any new annotation: 400
+  (the abandoned `get_zeta` attempt).  All shipped annotations use
+  the default 150 inherited from the existing module options.
+- **R6 (touch unchanged checked files)**: Done after every
+  `cargo hax into fstar` invocation in this session.
+- **R8 (no fstar-mcp)**: Confirmed; used `make` only.
+
