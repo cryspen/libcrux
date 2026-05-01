@@ -17,7 +17,7 @@ use crate::sampling::*;
     K <= 8 && L <= 8
     && PK_SIZE == 32 + 320 * K
     && (params.eta == 2 || params.eta == 4)
-    && SK_SIZE >= 128 + (L + K) * 128 + K * 416
+    && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
 )]
 pub fn keygen_internal<
     const K: usize,
@@ -207,7 +207,7 @@ pub fn sign_internal<
     && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
     && (params.gamma2 == (Q - 1) / 88 || params.gamma2 == (Q - 1) / 32)
     && pk.len() >= 32 + 320 * K
-    && sigma.len() >= C_TILDE_LEN + L * 640 + params.omega + K
+    && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]
 pub fn verify_internal<
     const K: usize,

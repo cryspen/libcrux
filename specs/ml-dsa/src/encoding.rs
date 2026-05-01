@@ -211,7 +211,7 @@ pub(crate) fn pk_decode<const K: usize>(pk: &[u8]) -> ([u8; 32], [Polynomial; K]
 
 /// skEncode(ρ, K, tr, s1, s2, t0) — Algorithm 24.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && SK_SIZE >= 128 + (L + K) * 128 + K * 416)]
+#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
 pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
     rho: &[u8; 32],
     key: &[u8; 32],
@@ -272,7 +272,7 @@ pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
 
 /// skDecode(sk) — Algorithm 25.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && sk.len() >= 128 + (L + K) * 128 + K * 416)]
+#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
 pub(crate) fn sk_decode<const K: usize, const L: usize>(
     sk: &[u8],
     params: &MlDsaParams,
@@ -320,13 +320,20 @@ pub(crate) fn sk_decode<const K: usize, const L: usize>(
 }
 
 /// sigEncode(c̃, z, h) — Algorithm 26.
-#[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::fstar::verification_status(lax)]
+///
+/// The hint-pack buffer-size selection branches on the three FIPS 204
+/// parameter sets (`(γ1, ω, K) ∈ {(2¹⁷, 80, 4), (2¹⁹, 55, 6), (2¹⁹, 75, 8)}`),
+/// so the precondition must enumerate them.
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(
-    K <= 8 && L <= 8 && params.omega <= 256 && params.lambda <= 256
-    && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
+    L <= 8 && params.lambda <= 256
     && c_tilde.len() >= params.lambda / 4
-    && SIG_SIZE >= params.lambda / 4 + L * 640 + params.omega + K
+    && (
+        (params.gamma1 == (1i32 << 17) && params.omega == 80 && K == 4) ||
+        (params.gamma1 == (1i32 << 19) && params.omega == 55 && K == 6) ||
+        (params.gamma1 == (1i32 << 19) && params.omega == 75 && K == 8)
+    )
+    && SIG_SIZE >= params.lambda / 4 + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]
 pub(crate) fn sig_encode<const K: usize, const L: usize, const SIG_SIZE: usize>(
     c_tilde: &[u8],
@@ -382,7 +389,7 @@ pub(crate) fn sig_encode<const K: usize, const L: usize, const SIG_SIZE: usize>(
 #[hax_lib::requires(
     K <= 8 && L <= 8 && params.omega <= 256 && C_TILDE_LEN <= 64
     && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
-    && sigma.len() >= C_TILDE_LEN + L * 640 + params.omega + K
+    && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]
 pub(crate) fn sig_decode<const K: usize, const L: usize, const C_TILDE_LEN: usize>(
     sigma: &[u8],

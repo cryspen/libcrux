@@ -146,23 +146,25 @@ pub(crate) fn expand_s<const K: usize, const L: usize>(
 /// ExpandMask(ρ'', κ) — FIPS 204, Algorithm 34.
 ///
 /// Samples a vector y ∈ R^ℓ with coefficients in [-γ1+1, γ1].
-#[hax_lib::fstar::verification_status(lax)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
+#[hax_lib::requires(
+    L <= 256 && kappa <= 65535 - L
+    && (gamma1 == (1i32 << 17) || gamma1 == (1i32 << 19))
+)]
 pub(crate) fn expand_mask<const L: usize>(
     rho_pp: &[u8; 64],
     kappa: usize,
     gamma1: i32,
 ) -> [Polynomial; L] {
-    let c = 1 + crate::parameters::bitlen(gamma1 as usize - 1);
-    let out_bytes = 32 * c;
     createi(|r| {
         let idx = (kappa + r) as u16;
         let seed = concat_u16_le(rho_pp, idx);
         if gamma1 == (1 << 17) {
             let buf: [u8; 576] = h(&seed);
-            crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize)
+            crate::encoding::bit_unpack(&buf, gamma1 as usize - 1, gamma1 as usize)
         } else {
             let buf: [u8; 640] = h(&seed);
-            crate::encoding::bit_unpack(&buf[..out_bytes], gamma1 as usize - 1, gamma1 as usize)
+            crate::encoding::bit_unpack(&buf, gamma1 as usize - 1, gamma1 as usize)
         }
     })
 }
