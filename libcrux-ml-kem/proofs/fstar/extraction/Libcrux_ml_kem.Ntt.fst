@@ -9,7 +9,7 @@ let _ =
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
-#push-options "--z3rlimit 200 --ext context_pruning"
+#push-options "--z3rlimit 800 --ext context_pruning --split_queries always"
 
 let ntt_at_layer_1_
       (#v_Vector: Type0)
@@ -21,6 +21,7 @@ let ntt_at_layer_1_
       (e_initial_coefficient_bound: usize)
      =
   let e_zeta_i_init:usize = zeta_i in
+  let e_re_init:t_Array v_Vector (mk_usize 16) = re.Libcrux_ml_kem.Vector.f_coefficients in
   let (re: Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector), (zeta_i: usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -37,11 +38,19 @@ let ntt_at_layer_1_
                 then
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     e_initial_coefficient_bound
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) == Seq.index e_re_init (v i)
                 else
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     (e_initial_coefficient_bound +! mk_usize 3328 <: usize)
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) ==
+                  Libcrux_ml_kem.Vector.Traits.f_ntt_layer_1_step #v_Vector
+                    (Seq.index e_re_init (v i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 64 +! mk_usize 4 *! i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 65 +! mk_usize 4 *! i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 66 +! mk_usize 4 *! i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 67 +! mk_usize 4 *! i))
               else b2t true))
       (re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
@@ -50,6 +59,17 @@ let ntt_at_layer_1_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! mk_usize 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+              (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit =
+            assert (zeta_i == mk_usize 64 +! mk_usize 4 *! round);
+            assert (zeta_i +! mk_usize 1 == mk_usize 65 +! mk_usize 4 *! round);
+            assert (zeta_i +! mk_usize 2 == mk_usize 66 +! mk_usize 4 *! round);
+            assert (zeta_i +! mk_usize 3 == mk_usize 67 +! mk_usize 4 *! round)
+          in
           let re:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -74,11 +94,42 @@ let ntt_at_layer_1_
           let zeta_i:usize = zeta_i +! mk_usize 3 in
           re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
   in
+  let _:Prims.unit =
+    let aux (j: nat)
+        : Lemma
+        (j < 16 ==>
+          Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                #v_Vector
+                (Seq.index re.f_coefficients j)) ==
+          Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+            (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                    #v_Vector
+                    (Seq.index e_re_init j)))
+            (mk_usize 2)
+            (Rust_primitives.unsize (Libcrux_ml_kem.Vector.Traits.Spec.zetas_4 (Libcrux_ml_kem.Polynomial.zeta
+                        (mk_usize 64 +! mk_usize 4 *! sz j))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 65 +! mk_usize 4 *! sz j))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 66 +! mk_usize 4 *! sz j))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 67 +! mk_usize 4 *! sz j))))) =
+      if j < 16
+      then
+        (reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+            (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7 * 3328)
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Seq.index e_re_init j)));
+          Hacspec_ml_kem.Commute.Bridges.lemma_ntt_layer_1_step_to_hacspec #v_Vector
+            (Seq.index e_re_init j)
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 64 +! mk_usize 4 *! sz j))
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 65 +! mk_usize 4 *! sz j))
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 66 +! mk_usize 4 *! sz j))
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 67 +! mk_usize 4 *! sz j)))
+    in
+    Classical.forall_intro aux
+  in
   zeta_i, re <: (usize & Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector)
 
 #pop-options
 
-#push-options "--z3rlimit 200 --ext context_pruning"
+#push-options "--z3rlimit 800 --ext context_pruning --split_queries always"
 
 let ntt_at_layer_2_
       (#v_Vector: Type0)
@@ -90,6 +141,7 @@ let ntt_at_layer_2_
       (e_initial_coefficient_bound: usize)
      =
   let e_zeta_i_init:usize = zeta_i in
+  let e_re_init:t_Array v_Vector (mk_usize 16) = re.Libcrux_ml_kem.Vector.f_coefficients in
   let (re: Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector), (zeta_i: usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -106,11 +158,17 @@ let ntt_at_layer_2_
                 then
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     e_initial_coefficient_bound
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) == Seq.index e_re_init (v i)
                 else
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     (e_initial_coefficient_bound +! mk_usize 3328 <: usize)
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) ==
+                  Libcrux_ml_kem.Vector.Traits.f_ntt_layer_2_step #v_Vector
+                    (Seq.index e_re_init (v i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 32 +! mk_usize 2 *! i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 33 +! mk_usize 2 *! i))
               else b2t true))
       (re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
@@ -119,6 +177,15 @@ let ntt_at_layer_2_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! mk_usize 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+              (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit =
+            assert (zeta_i == mk_usize 32 +! mk_usize 2 *! round);
+            assert (zeta_i +! mk_usize 1 == mk_usize 33 +! mk_usize 2 *! round)
+          in
           let re:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -141,11 +208,38 @@ let ntt_at_layer_2_
           let zeta_i:usize = zeta_i +! mk_usize 1 in
           re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
   in
+  let _:Prims.unit =
+    let aux (j: nat)
+        : Lemma
+        (j < 16 ==>
+          Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                #v_Vector
+                (Seq.index re.f_coefficients j)) ==
+          Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+            (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                    #v_Vector
+                    (Seq.index e_re_init j)))
+            (mk_usize 4)
+            (Rust_primitives.unsize (Libcrux_ml_kem.Vector.Traits.Spec.zetas_2 (Libcrux_ml_kem.Polynomial.zeta
+                        (mk_usize 32 +! mk_usize 2 *! sz j))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 33 +! mk_usize 2 *! sz j))))) =
+      if j < 16
+      then
+        (reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+            (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6 * 3328)
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Seq.index e_re_init j)));
+          Hacspec_ml_kem.Commute.Bridges.lemma_ntt_layer_2_step_to_hacspec #v_Vector
+            (Seq.index e_re_init j)
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 32 +! mk_usize 2 *! sz j))
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 33 +! mk_usize 2 *! sz j)))
+    in
+    Classical.forall_intro aux
+  in
   zeta_i, re <: (usize & Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector)
 
 #pop-options
 
-#push-options "--z3rlimit 200 --ext context_pruning"
+#push-options "--z3rlimit 800 --ext context_pruning --split_queries always"
 
 let ntt_at_layer_3_
       (#v_Vector: Type0)
@@ -157,6 +251,7 @@ let ntt_at_layer_3_
       (e_initial_coefficient_bound: usize)
      =
   let e_zeta_i_init:usize = zeta_i in
+  let e_re_init:t_Array v_Vector (mk_usize 16) = re.Libcrux_ml_kem.Vector.f_coefficients in
   let (re: Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector), (zeta_i: usize) =
     Rust_primitives.Hax.Folds.fold_range (mk_usize 0)
       (mk_usize 16)
@@ -173,11 +268,16 @@ let ntt_at_layer_3_
                 then
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     e_initial_coefficient_bound
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) == Seq.index e_re_init (v i)
                 else
                   Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #v_Vector
                     (e_initial_coefficient_bound +! mk_usize 3328 <: usize)
-                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector)
+                    (re.Libcrux_ml_kem.Vector.f_coefficients.[ i ] <: v_Vector) /\
+                  Seq.index re.f_coefficients (v i) ==
+                  Libcrux_ml_kem.Vector.Traits.f_ntt_layer_3_step #v_Vector
+                    (Seq.index e_re_init (v i))
+                    (Libcrux_ml_kem.Polynomial.zeta (mk_usize 16 +! i))
               else b2t true))
       (re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
       (fun temp_0_ round ->
@@ -186,6 +286,12 @@ let ntt_at_layer_3_
           in
           let round:usize = round in
           let zeta_i:usize = zeta_i +! mk_usize 1 in
+          let _:Prims.unit =
+            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+              (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5 * 3328)
+                  (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))
+          in
+          let _:Prims.unit = assert (zeta_i == mk_usize 16 +! round) in
           let re:Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
             {
               re with
@@ -205,6 +311,31 @@ let ntt_at_layer_3_
             Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector
           in
           re, zeta_i <: (Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector & usize))
+  in
+  let _:Prims.unit =
+    let aux (j: nat)
+        : Lemma
+        (j < 16 ==>
+          Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                #v_Vector
+                (Seq.index re.f_coefficients j)) ==
+          Hacspec_ml_kem.Ntt.ntt_layer_n (mk_usize 16)
+            (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_array (Libcrux_ml_kem.Vector.Traits.f_repr
+                    #v_Vector
+                    (Seq.index e_re_init j)))
+            (mk_usize 8)
+            (Rust_primitives.unsize (Libcrux_ml_kem.Vector.Traits.Spec.zetas_1 (Libcrux_ml_kem.Polynomial.zeta
+                        (mk_usize 16 +! sz j))))) =
+      if j < 16
+      then
+        (reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
+            (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5 * 3328)
+                (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (Seq.index e_re_init j)));
+          Hacspec_ml_kem.Commute.Bridges.lemma_ntt_layer_3_step_to_hacspec #v_Vector
+            (Seq.index e_re_init j)
+            (Libcrux_ml_kem.Polynomial.zeta (mk_usize 16 +! sz j)))
+    in
+    Classical.forall_intro aux
   in
   zeta_i, re <: (usize & Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector)
 
