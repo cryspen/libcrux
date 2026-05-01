@@ -15,9 +15,8 @@ use crate::sampling::*;
 /// Generates a public-private key pair from a 32-byte seed ξ.
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
-    K <= 8 && L <= 8
+    K == params.k && L == params.l
     && PK_SIZE == 32 + 320 * K
-    && (params.eta == 2 || params.eta == 4)
     && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
 )]
 pub fn keygen_internal<
@@ -218,13 +217,9 @@ pub fn sign_internal<
 /// Verifies signature σ for formatted message M' using public key pk.
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
-    K <= 8 && L <= 8
+    K == params.k && L == params.l
     && C_TILDE_LEN <= 64 && W1_BYTES >= K * 192 && W1_BYTES <= 1024
-    && params.tau <= 64
-    && params.omega <= 256
-    && params.beta >= 0 && params.gamma1 > params.beta && params.gamma2 > params.beta
-    && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
-    && (params.gamma2 == (Q - 1) / 88 || params.gamma2 == (Q - 1) / 32)
+    && params.gamma1 > params.beta && params.gamma2 > params.beta
     && pk.len() >= 32 + 320 * K
     && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]

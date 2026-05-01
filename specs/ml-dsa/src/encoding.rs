@@ -211,7 +211,7 @@ pub(crate) fn pk_decode<const K: usize>(pk: &[u8]) -> ([u8; 32], [Polynomial; K]
 
 /// skEncode(ρ, K, tr, s1, s2, t0) — Algorithm 24.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
+#[hax_lib::requires(K <= 8 && L <= 8 && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
 pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
     rho: &[u8; 32],
     key: &[u8; 32],
@@ -272,7 +272,7 @@ pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
 
 /// skDecode(sk) — Algorithm 25.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && L <= 8 && (params.eta == 2 || params.eta == 4) && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
+#[hax_lib::requires(K <= 8 && L <= 8 && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416)]
 pub(crate) fn sk_decode<const K: usize, const L: usize>(
     sk: &[u8],
     params: &MlDsaParams,
@@ -326,7 +326,7 @@ pub(crate) fn sk_decode<const K: usize, const L: usize>(
 /// so the precondition must enumerate them.
 #[hax_lib::fstar::options("--z3rlimit 400")]
 #[hax_lib::requires(
-    L <= 8 && params.lambda <= 256
+    L <= 8
     && c_tilde.len() >= params.lambda / 4
     && (
         (params.gamma1 == (1i32 << 17) && params.omega == 80 && K == 4) ||
@@ -387,8 +387,7 @@ pub(crate) fn sig_encode<const K: usize, const L: usize, const SIG_SIZE: usize>(
 /// Returns (c̃, z, h) or None if the hint is malformed.
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
-    K <= 8 && L <= 8 && params.omega <= 256 && C_TILDE_LEN <= 64
-    && (params.gamma1 == (1i32 << 17) || params.gamma1 == (1i32 << 19))
+    K <= 8 && L <= 8 && C_TILDE_LEN <= 64
     && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]
 pub(crate) fn sig_decode<const K: usize, const L: usize, const C_TILDE_LEN: usize>(
@@ -415,7 +414,7 @@ pub(crate) fn sig_decode<const K: usize, const L: usize, const C_TILDE_LEN: usiz
 ///
 /// Encodes the high-bits vector w1 into bytes for hashing.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && (params.gamma2 == (Q - 1) / 88 || params.gamma2 == (Q - 1) / 32) && W1_BYTES >= K * 192)]
+#[hax_lib::requires(K <= 8 && W1_BYTES >= K * 192)]
 pub(crate) fn w1_encode<const K: usize, const W1_BYTES: usize>(
     w1: &[Polynomial; K],
     params: &MlDsaParams,

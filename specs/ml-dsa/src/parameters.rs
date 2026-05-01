@@ -20,24 +20,41 @@ pub(crate) type Polynomial = [i32; 256];
 pub(crate) const ZERO_POLY: Polynomial = [0i32; 256];
 
 /// ML-DSA parameter set — FIPS 204, Table 1.
+///
+/// Field-level refinements (`#[hax_lib::refine(...)]`) bound each
+/// parameter to the union of values that the three FIPS 204 standard
+/// parameter sets (ML-DSA-44/65/87) take.  Construction sites for
+/// `ML_DSA_{44,65,87}` below discharge these refinements once; callers
+/// of any function taking `&MlDsaParams` then get the bounds for free
+/// without repeating them in every `#[hax_lib::requires]`.
+#[hax_lib::attributes]
 pub struct MlDsaParams {
     /// Matrix row dimension.
+    #[hax_lib::refine(k <= 8)]
     pub k: usize,
     /// Matrix column dimension.
+    #[hax_lib::refine(l <= 7)]
     pub l: usize,
     /// Number of ±1 coefficients in c — collision strength.
+    #[hax_lib::refine(tau <= 64)]
     pub tau: usize,
     /// Collision strength of c̃ in bits.
+    #[hax_lib::refine(lambda <= 256)]
     pub lambda: usize,
     /// Coefficient range for y.
+    #[hax_lib::refine(gamma1 == (1i32 << 17) || gamma1 == (1i32 << 19))]
     pub gamma1: i32,
     /// Low-order rounding range.
+    #[hax_lib::refine(gamma2 == (Q - 1) / 88 || gamma2 == (Q - 1) / 32)]
     pub gamma2: i32,
     /// Secret key coefficient bound.
+    #[hax_lib::refine(eta == 2 || eta == 4)]
     pub eta: usize,
     /// Maximum number of 1s in the hint h.
+    #[hax_lib::refine(omega <= 80)]
     pub omega: usize,
     /// Signing bound: τ · η.
+    #[hax_lib::refine(beta >= 0)]
     pub beta: i32,
 }
 
