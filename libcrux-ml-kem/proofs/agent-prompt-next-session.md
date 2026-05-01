@@ -235,7 +235,11 @@ free functions.  At that point: delete
 
 ## Hard rules (R1-R11)
 
-  R1  Branch `libcrux-ml-kem-proofs`.  DO NOT push.
+  R1  Branch `libcrux-ml-kem-proofs`.  Already pushed to
+      `origin/libcrux-ml-kem-proofs` (set as upstream).  You MAY
+      `git push` further commits on this branch, but DO NOT
+      force-push, DO NOT push to `main`, and DO NOT open a PR
+      without explicit user authorization.
   R2  No new admits beyond existing `lax` / `ADMIT_MODULES` carry-overs.
   R3  No new axioms.  If absolutely necessary, file as SIDEWAYS.
   R4  `--z3rlimit ≤ 800` HARD CAP; `≤ 400/query` under
@@ -303,5 +307,6 @@ Report at `proofs/agent-status/session-<date>-<suffix>.md`:
     in ind_cpa/ind_cca annotations?  If yes: violated the rules,
     revert.
 
-DO NOT push to origin.  DO NOT touch `~/libcrux-ml-dsa-proofs` or
-`~/libcrux-sha3-focused`.
+Push policy: see R1 (branch is already pushed; further pushes on
+this branch are OK, force-pushes / PRs / pushes to main are not).
+DO NOT touch `~/libcrux-ml-dsa-proofs` or `~/libcrux-sha3-focused`.
