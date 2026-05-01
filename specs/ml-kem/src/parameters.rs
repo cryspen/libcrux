@@ -127,6 +127,23 @@ pub const fn cpa_ciphertext_size(rank: usize) -> usize {
     }
 }
 
+/// Rank-to-`MlKemParams` lookup for rank-generic consumers that need to
+/// invoke a `MlKemParams`-shape Hacspec function (e.g.
+/// `Hacspec_ml_kem.Ind_cca.generate_keypair`) from an
+/// `hax_lib::requires`/`ensures` annotation.  This is the canonical
+/// adapter from the libcrux-side `const K: usize` shape to the
+/// Hacspec-side `params: MlKemParams` shape.
+#[hax_lib::requires(rank == 2 || rank == 3 || rank == 4)]
+pub const fn rank_to_params(rank: usize) -> MlKemParams {
+    if rank == 2 {
+        ML_KEM_512
+    } else if rank == 3 {
+        ML_KEM_768
+    } else {
+        ML_KEM_1024
+    }
+}
+
 #[allow(non_snake_case)]
 pub mod hash_functions {
     #[hax_lib::opaque]
