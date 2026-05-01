@@ -144,6 +144,12 @@ pub const fn rank_to_params(rank: usize) -> MlKemParams {
     }
 }
 
+/// Rank predicate: ML-KEM is parameterised over rank ∈ {2, 3, 4}.
+/// Use in `hax_lib::requires` to express rank refinement in pure Rust.
+pub const fn is_rank(rank: usize) -> bool {
+    rank == 2 || rank == 3 || rank == 4
+}
+
 #[allow(non_snake_case)]
 pub mod hash_functions {
     #[hax_lib::opaque]
@@ -189,6 +195,17 @@ impl FieldElement {
     #[hax_lib::requires(val < FIELD_MODULUS)]
     pub const fn new(val: u16) -> Self {
         Self { val }
+    }
+
+    /// Reduce an arbitrary `i16` (e.g. an impl-side coefficient or
+    /// Montgomery-domain value) into a canonical `FieldElement` in
+    /// [0, FIELD_MODULUS).  Used by the impl→spec lift functions
+    /// (`Libcrux_ml_kem.Vector.to_spec_*_t`) to bridge the trait-layer
+    /// `i16` representation to the spec-layer `FieldElement` form.
+    pub const fn from_i16(v: i16) -> FieldElement {
+        let q = FIELD_MODULUS as i32;
+        let r = (((v as i32) % q + q) % q) as u16;
+        FieldElement::new(r)
     }
 
     /// Addition in ℤ/q.
