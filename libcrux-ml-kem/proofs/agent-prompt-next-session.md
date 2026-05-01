@@ -1,245 +1,253 @@
-# Agent prompt — libcrux-ml-kem-proofs, post-cleanup-phase session
+# Agent prompt — libcrux-ml-kem-proofs, impl-side pure-Rust migration
 
 Paste this into a fresh Claude Code session opened in
 `~/libcrux-trait-opacify/libcrux-ml-kem` (auto mode recommended).
 
-You are a single-lane agent for the libcrux-ml-kem F\* verification effort.
+You are a single-lane agent for the libcrux-ml-kem F\* verification
+effort.  This session's goal: convert `#[hax_lib::requires(fstar!(...))]`
+and `#[hax_lib::ensures(fstar!(...))]` annotations in
+`libcrux-ml-kem/src/ind_cpa.rs` and `libcrux-ml-kem/src/ind_cca.rs`
+from `Spec.MLKEM.*` citations in F\* syntax to **pure-Rust** citations
+of `hacspec_ml_kem::*` (per R11).  The spec side has been stabilized in
+the prior session — your work is impl-side only.
 
 ## Read first (in order)
 
-  1. `proofs/agent-status/AUDIT-2026-05-01.md` — audit of the
-     2026-05-01 wrapper-namespace anti-pattern.  Establishes R10
-     (no wrappers, no namespace squatting) which still applies.
-  2. `proofs/agent-prompt-clean-restart.md` — the original clean-restart
-     mandate.  Still authoritative.  Contains R1-R10, the
-     Spec.MLKEM→Hacspec mapping table, and the workflow.
-  3. `proofs/agent-status/session-2026-05-01-clean-restart.md` —
-     session report through commit `098043966` (6 functions migrated,
-     `cpa_ciphertext_size` + `rank_to_params` added to spec).
-  4. The five cleanup commits' messages (`git log --format=full
-     -p e8b51b409..142238341 -- libcrux-ml-kem/src/vector/`):
-       - `e8b51b409` — spec helpers (`is_rank`, `FieldElement::from_i16`)
-       - `9ffc850db` — `generate_keypair` migration (1st function-call ensures)
-       - `60af8d332` — **lift functions: F* injection → Rust** (read this in detail)
-       - `703037930` — commute lemmas adapted to new extracted signatures
-       - `142238341` — documentation: why pure-Rust `to_int().rem_euclid()`
-                        ensures doesn't bridge to F* `v x % q`
+  1. `proofs/agent-status/spec-audit-2026-05-01.md` — function-by-function
+     audit (37 rows; impl ↔ Hacspec mapping).  **Lines 56-99 is the
+     authoritative table.**  The Phase 2/3 execution log appended at
+     line 197+ records the spec-side commits and what's deferred.
+  2. The 11 spec-side commits since `723539e40`:
+     ```
+     8ebbce94a — close byte_decode panic_free (Phase 3 done)
+     c13107543 — extract compress_then_serialize_u_into
+     baf5eb3d3 — extract serialize_secret_key_into; remove vector_encode_12
+     cb44addd3 — drop unused ensures from get_zeta, remove panic_free
+     356f617f5 — append Phase 2/3 execution log to spec audit
+     76baea2b1 — (superseded by 8ebbce94a) doc-only
+     a4890d89a — (superseded by cb44addd3) doc-only
+     e63973e54 — relax ind_cpa::generate_keypair seed to slice (P3)
+     57d1a5e61 — drop redundant T_SIZE generic from serialize_public_key (P2)
+     329d4195e — add 16 rank-generic size helpers to parameters.rs (P1)
+     16ab471a4 — spec audit before refactor
+     ```
+     Read commit messages for `baf5eb3d3` (the `_into` pattern + the
+     loop_invariant trick) and `8ebbce94a` (additive form for
+     bit-OR Z3 obstruction) — both surface non-obvious lessons that
+     apply to impl-side proofs too.
+  3. The original `proofs/agent-prompt-clean-restart.md` for R1-R10,
+     workflow, and Spec.MLKEM → Hacspec mapping table.
 
 ## Branch state at session start
 
 ```
-$ git log --oneline -7
-142238341 doc — why pure-Rust to_int().rem_euclid() ensures doesn't work
-703037930 cleanup — adapt commute lemmas to Rust-extracted lift signatures
-60af8d332 cleanup — promote impl→spec lift functions from F* injection to Rust
-e8b51b409 specs/ml-kem — add is_rank + FieldElement::from_i16 helpers
-098043966 update session report — 6th function (generate_keypair) migrated
-9ffc850db migrate generate_keypair off Spec.MLKEM (6th function)
-9dce36d6b specs/ml-kem — add rank_to_params adapter for Hacspec function calls
+$ git log --oneline -5
+8ebbce94a agent-mlkem: specs/ml-kem — close byte_decode panic_free (Phase 3)
+c13107543 agent-mlkem: specs/ml-kem — extract compress_then_serialize_u_into
+baf5eb3d3 agent-mlkem: specs/ml-kem — extract serialize_secret_key_into; remove vector_encode_12
+cb44addd3 agent-mlkem: specs/ml-kem — drop unused ensures from get_zeta, remove panic_free (Phase 3)
+356f617f5 agent-mlkem: append Phase 2/3 execution log to spec audit
 ```
 
-Branch: `libcrux-ml-kem-proofs`.  Tip: `142238341`.
+Branch: `libcrux-ml-kem-proofs`.  Tip: `8ebbce94a`.  Pushed to
+`origin/libcrux-ml-kem-proofs`.
 
-## Architecture (key facts as of `142238341`)
+## Spec state (what you have to call from pure-Rust ensures)
 
-### Spec helpers (`/specs/ml-kem/src/parameters.rs`)
+### `specs/ml-kem/src/parameters.rs` — rank-generic helpers
 
-  * `is_rank(rank: usize) -> bool` — `rank ∈ {2, 3, 4}`.
-  * `rank_to_params(rank: usize) -> MlKemParams` — adapter for
-    `MlKemParams`-shape Hacspec functions (e.g.
-    `Hacspec_ml_kem.Ind_cca.generate_keypair`).
-  * `cpa_ciphertext_size(rank: usize) -> usize` — rank-generic
-    ciphertext size (`Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE` migration target).
-  * `FieldElement::from_i16(v: i16) -> FieldElement` — Euclidean lift.
+Free functions added in commit `329d4195e` (P1) — all rank-only:
 
-### Impl→spec lift functions (single source of truth, all Rust)
+  * `is_rank(rank) -> bool`, `rank_to_params(rank) -> MlKemParams`
+  * `cpa_public_key_size(rank)`, `cca_private_key_size(rank)`,
+    `cpa_private_key_size(rank)`, `cpa_ciphertext_size(rank)`
+  * `t_as_ntt_encoded_size(rank)`, `ranked_bytes_per_ring_element(rank)`
+  * `c1_size(rank)`, `c2_size(rank)`, `c1_block_size(rank)`
+  * `vector_u_compression_factor(rank)`, `vector_v_compression_factor(rank)`
+  * `eta1(rank)`, `eta2(rank)`, `eta1_randomness_size(rank)`,
+    `eta2_randomness_size(rank)`
+  * `implicit_rejection_hash_input_size(rank)`
+  * Constants: `SHARED_SECRET_SIZE = 32`, `CPA_KEY_GENERATION_SEED_SIZE = 32`
 
-In **`libcrux-ml-kem/src/vector/traits.rs::spec`** (extracts to
-`Libcrux_ml_kem.Vector.Traits.Spec`):
+`MlKemParams` methods (`ek_size`, `dk_size`, `dk_pke_size`,
+`u_encoded_size`, `v_encoded_size`, `ciphertext_size`,
+`t_as_ntt_encoded_size`) are also available — pick whichever reads
+better at the call site.
 
-  * `i16_to_spec_fe(x: i16) -> FieldElement`  — plain-domain lift
-  * `mont_i16_to_spec_fe(x: i16) -> FieldElement` — Montgomery lift
-  * `i16_to_spec_array<const N>(x: &[i16; N]) -> [FE; N]`
-  * `mont_i16_to_spec_array<const N>(x: &[i16; N]) -> [FE; N]`
-  * `zetas_1(z0)`, `zetas_2(z0,z1)`, `zetas_4(z0..z3)` — extract as
-    `zetas_1_`, `zetas_2_`, `zetas_4_` in F* (hax digit-suffix mangling).
-    Commute lemmas already cite the trailing-`_` form.
+### `specs/ml-kem/src/serialize.rs` — `_into` pattern established
 
-In **`libcrux-ml-kem/src/vector.rs::spec`** (extracts to
-`Libcrux_ml_kem.Vector.Spec`):
+The encoding layer now consistently follows: `_into` is the canonical
+primitive (writes to `&mut [u8]`), value-returning is a thin allocating
+wrapper.  Three exemplars:
 
-  * `poly_to_spec<V: Operations>(p: &PolynomialRingElement<V>) -> [FE; 256]`
-  * `vector_to_spec<const RANK, V>` and `matrix_to_spec<const RANK, V>`
+  * `byte_encode_into(p, d, &mut out)` ↔ `byte_encode<D32, D256>(p, d) -> [u8; D32]`
+  * `serialize_secret_key_into<RANK>(vector, &mut out)` ↔
+    `serialize_secret_key<RANK, T_SIZE>(vector) -> [u8; T_SIZE]` (commit `baf5eb3d3`)
+  * `compress_then_serialize_u_into<RANK>(u, du, &mut out)` ↔
+    `compress_then_serialize_u<RANK, U_SIZE>(u, du) -> [u8; U_SIZE]` (commit `c13107543`)
 
-### Generic F* helpers
+### `specs/ml-kem/src/ind_cpa.rs`
 
-  * `Hacspec_ml_kem.Commute.ProofUtils.map_array` — pure F* generic
-    array-map.  Marked `TODO(upstream-to-hax-lib)` in the file's header.
+  * `ind_cpa::generate_keypair<RANK, EK_SIZE, DK_PKE_SIZE>(params, &[u8])`
+    now takes `key_generation_seed: &[u8]` (relaxed from `&[u8; 32]` in
+    commit `e63973e54`) so the libcrux side doesn't need an array bridge.
 
-### `fstar!` escape hatch — current usage policy
+### Verification status
 
-The cleanup mandate says: **no `fstar!` escape hatch in
-`src/ind_cpa.rs` or `src/ind_cca.rs` annotations** (the `requires` /
-`ensures` attributes).  Replace with pure-Rust expressions citing
-`hacspec_ml_kem::parameters::*` (`is_rank`, `rank_to_params(K)`,
-`MlKemParams::*` methods, `cpa_ciphertext_size`),
-`crate::vector::spec::*` (`poly_to_spec`, `vector_to_spec`,
-`matrix_to_spec`), `crate::vector::traits::spec::*`
-(`i16_to_spec_fe`, etc.), `crate::polynomial::spec::*`
-(`is_bounded_poly`, etc.).
+  * **All 10 `Hacspec_ml_kem.*.fst.checked` re-build clean** in ~28s.
+  * **No `lax`, no `panic_free`, no `admit ()`** anywhere in
+    `specs/ml-kem/src/` or extracted Hacspec_ml_kem F\*.  The
+    `panic_free` items the prior session documented as out-of-budget
+    (`get_zeta`, `byte_decode`) are both closed (commits `cb44addd3`,
+    `8ebbce94a`).
+  * `Hacspec_ml_kem.Commute.Chunk.fst:1046` failure remains
+    pre-existing (predates the prior session — confirmed by `git stash`
+    baseline).  Doesn't block impl-side migration.
+  * `Libcrux_ml_kem.Ind_cca.fsti(165)` blocker (Spec.MLKEM not resolved
+    in `encapsulate` requires) remains pre-existing.  Your impl-side
+    migrations may eventually fix this by replacing the offending
+    `Spec.MLKEM.*` cites with `hacspec_ml_kem::*` cites.
 
-**Documented exception**: `i16_to_spec_fe` and `mont_i16_to_spec_fe`
-themselves keep `hax_lib::ensures(fstar!(...))` because:
+## Pure-Rust ensures patterns — pick per shape
 
-  - The semantics is `v r.f_val == v x % 3329` (F* native).
-  - Pure-Rust `r.val.to_int() == x.to_int().rem_euclid(3329.to_int())`
-    extracts to `Hax_lib.Int.t_Int` + `impl_Int__rem_euclid` calls.
-  - Z3 doesn't auto-bridge those forms; commute bridges that
-    previously had `()` proofs went from <1s to >100s/query and
-    wedged the build.
-  - Sticking with `fstar!` for these two ensures **is allowed**.
-    Migrate only after the `Hax_lib.Int`-vs-native-int bridging is
-    solved (probably via SMTPat lemmas in
-    `Hacspec_ml_kem.Commute.ProofUtils`).
+There is **no precedent** in the codebase for pure-Rust ensures that
+do array-equality with a Hacspec function call (all existing
+array-equality ensures use `fstar!`).  You'll be pioneering.  Three
+patterns to choose between, depending on the impl function's output
+shape:
 
-### Commute lemmas (in `specs/ml-kem/proofs/fstar/commute/`)
+### Pattern A — value-returning function-call ensures
 
-Adapted to the new Rust-extracted signatures (commit `703037930`):
+When the impl returns a sized array AND the size is a libcrux const
+generic that lines up with a Hacspec const generic.  Example: existing
+`ind_cca::generate_keypair` (libcrux's K, PUBLIC_KEY_SIZE,
+PRIVATE_KEY_SIZE, CPA_PRIVATE_KEY_SIZE all match Hacspec's RANK,
+EK_SIZE, DK_SIZE, DK_PKE_SIZE).
 
-  * `i16_to_spec_array (T.f_repr r)` → `i16_to_spec_array (sz 16) (T.f_repr r)`
-    (~144 references; explicit positional `(v_N: usize)` from const-generic
-    extraction).
-  * Two generic-`n` lemmas (`lane_plain`, `lane_mont`, `mont_array_lane`
-    in `Chunk.fst`) pass the local `n` instead of `(sz 16)`.
-  * `zetas_1`/`zetas_2`/`zetas_4` → `zetas_1_`/`zetas_2_`/`zetas_4_` (~57 refs).
-
-Don't re-rename or revert these — both directions break Rust extraction.
-
-### Build state
-
-```
-$ cd libcrux-ml-kem/proofs/fstar/extraction
-$ make
-... 4 modules verify clean (Vector.Traits.Spec, Vector.Traits,
-    Commute.Chunk, Commute.Bridges) plus the Hacspec dep closure.
-... fails at Libcrux_ml_kem.Ind_cca.fsti(165):
-    Module name Spec.MLKEM could not be resolved
-    (encapsulate's `requires` cites Spec.MLKEM size constants).
+```rust
+#[hax_lib::ensures(|result|
+    match hacspec_ml_kem::ind_cca::generate_keypair::<K, PUBLIC_KEY_SIZE, PRIVATE_KEY_SIZE, CPA_PRIVATE_KEY_SIZE>(
+        &hacspec_ml_kem::parameters::rank_to_params(K),
+        randomness,
+    ) {
+        Ok((ek, dk)) => result.pk.value == ek && result.sk.value == dk,
+        Err(_) => true,
+    }
+)]
 ```
 
-This is a **pre-existing blocker** (predates this session's cleanup).
-The user has indicated they'll fix it via "additional conditions" in
-the .fsti requires/ensures rather than a full migration.  Don't
-attempt a full migration of `encapsulate` unless the .fsti blocker
-is still present after a `git pull` of the user's fix.
+### Pattern B — auxiliary-buffer ensures (slice-output impl)
 
-## Open work (priority order)
+When the impl writes into `&mut [u8]` (no const-generic for the size
+on the impl side).  Use the `_into` companion via an auxiliary buffer:
 
-### 1. Verify the Ind_cca.fsti:165 blocker is still pending
-
-```
-cd libcrux-ml-kem/proofs/fstar/extraction
-make 2>&1 | grep -E '\* Error' | head -3
+```rust
+#[hax_lib::ensures(|_| {
+    let mut expected = [0u8; PARENT_SIZE];  // or another known size
+    serialize_secret_key_into::<K>(&crate::vector::spec::vector_to_spec(key), &mut expected[..]);
+    out_future == expected[..K * BYTES_PER_RING_ELEMENT]
+})]
 ```
 
-If still fails at `Ind_cca.fsti(165)`: ask the user whether to
-proceed with their planned fix, or pivot to one of the items below.
+(This is *pioneered* — verify on one function before scaling out.)
 
-If it now passes: the next blocker will surface immediately
-downstream.  Likely candidates: `decapsulate`, then libcrux's
-`fstar!` escapes citing the old polynomial-lift names (item 2 below).
+### Pattern C — field-projection ensures (unpacked APIs)
 
-### 2. Migrate libcrux-side `fstar!` escapes off old polynomial-lift names
+When the impl mutates an unpacked struct.  Don't add a new spec helper
+unless absolutely necessary — instead, project fields and cite the
+existing packed helper:
 
-The lift-function cleanup (`60af8d332`) renamed the polynomial-level
-lifts and moved them to a different F* module:
+```rust
+#[hax_lib::ensures(|_| {
+    let unpacked_future = future(unpacked_public_key);
+    // project + cite packed helpers per field
+    unpacked_future.t_as_ntt == ... &&
+    unpacked_future.seed_for_A == ... &&
+    unpacked_future.A == ...
+})]
+```
 
-  * `Libcrux_ml_kem.Vector.to_spec_poly_t #_ p` → `Libcrux_ml_kem.Vector.Spec.poly_to_spec p`
-  * `Libcrux_ml_kem.Vector.to_spec_vector_t #_ #_ v` → `Libcrux_ml_kem.Vector.Spec.vector_to_spec v`
-  * `Libcrux_ml_kem.Vector.to_spec_matrix_t #_ #_ m` → `Libcrux_ml_kem.Vector.Spec.matrix_to_spec m`
+If a function genuinely needs a composed helper, **add it to
+`specs/ml-kem/src/{ind_cpa,ind_cca}.rs`** as a separate
+spec-side commit (per the workflow), then use it.
 
-These are cited in:
+## Open work — priority order
 
-  * `libcrux-ml-kem/src/ind_cpa.rs` (~5 sites in `fstar!()` blocks)
-  * `libcrux-ml-kem/src/ind_cca.rs` (~10 sites)
-  * `libcrux-ml-kem/src/ntt.rs` (commented out — ignore)
+### 1. Validate Pattern A on `ind_cca::generate_keypair` (line 199)
 
-Per the cleanup mandate, do these as part of the per-function
-pure-Rust conversion (item 3) rather than as in-place text
-replacements.  Each `fstar!()` block gets rewritten as a pure-Rust
-expression that calls `crate::vector::spec::poly_to_spec(p)` etc.
+Already partially-migrated in commit `9ffc850db` — currently uses
+`fstar!(...)` to cite `Hacspec_ml_kem.Parameters.Sizes.*` and
+`Hacspec_ml_kem.Ind_cca.generate_keypair`.  Convert to pure-Rust.
+Smallest blast radius (the Hacspec function's signature already lines
+up with the libcrux const generics).
 
-### 3. Per-function pure-Rust annotation conversion of `ind_cpa.rs`
+If this works, Pattern A is validated.  If it fails, capture the error
+shape and decide whether to (a) try a different formulation, (b) request
+a hax-lib feature, (c) accept that Pattern A doesn't work in this
+codebase and use only B/C.
 
-The original user mandate.  Pick ONE function at a time:
+### 2. Validate Pattern B on `ind_cpa::serialize_vector` (line 140)
 
-  - Convert `#[hax_lib::requires(fstar!(r#"..."#))]` to pure Rust.
-  - Convert `#[hax_lib::ensures(...)]` similarly.
-  - Convert any inline `hax_lib::fstar!(...)` body assertions in the
-    function (these are harder; some may need to stay as `fstar!`
-    if they cite F*-only constructs).
+Smallest slice-output function.  Use the new
+`serialize_secret_key_into::<K>(vector_to_spec(key), &mut expected[..])`
+auxiliary-buffer ensures.  Re-extract; verify
+`Libcrux_ml_kem.Ind_cpa.fst.checked` rebuilds (acknowledging the
+`Ind_cca.fsti(165)` blocker downstream — the `.fst` body verification
+may not reach if the .fsti has the blocker; verify what you can at
+the .fst[i] level).
 
-Mechanical patterns:
+If this works, Pattern B is validated and applies to:
+`serialize_public_key`, `serialize_public_key_mut`,
+`compress_then_serialize_u`, `serialize_unpacked_secret_key` (all
+slice-output).
 
-  ```
-  Spec.MLKEM.is_rank $K           →  hacspec_ml_kem::parameters::is_rank(K)
-  Spec.MLKEM.v_CPA_PUBLIC_KEY_SIZE $K
-                                  →  hacspec_ml_kem::parameters::rank_to_params(K).ek_size()
-  Spec.MLKEM.v_CCA_PRIVATE_KEY_SIZE $K
-                                  →  hacspec_ml_kem::parameters::rank_to_params(K).dk_size()
-  Spec.MLKEM.v_CPA_CIPHERTEXT_SIZE $K
-                                  →  hacspec_ml_kem::parameters::cpa_ciphertext_size(K)
-  Spec.MLKEM.v_SHARED_SECRET_SIZE →  hacspec_ml_kem::parameters::hash_functions::H_DIGEST_SIZE
-  Libcrux_ml_kem.Vector.to_spec_poly_t #$:Vector p
-                                  →  crate::vector::spec::poly_to_spec(p)
-  is_bounded_poly (sz 3328) p     →  crate::polynomial::spec::is_bounded_poly(3328, p)
-  forall (i:nat). i < v $K ==> P
-                                  →  hax_lib::forall(|i: usize| hax_lib::implies(i < K, P))
-  ```
+### 3. Validate Pattern C on `ind_cca::unpacked::generate_keypair` (line 871)
 
-For functions whose ensures cites a function-call form (e.g.
-`Spec.MLKEM.ind_cpa_encrypt`), use `rank_to_params(K)` to bridge to
-the `MlKemParams`-shape Hacspec.  See `generate_keypair` in
-`src/ind_cca.rs:200-247` (commit `9ffc850db`) for the pattern —
-match-on-Result for the return-type reshape.
+Smallest unpacked-API function.  Use field-projection ensures.  If a
+specific spec helper is genuinely needed (e.g. for the `A_transpose`
+or `implicit_rejection_value` projections), add it to
+`specs/ml-kem/src/ind_cca.rs` in a separate commit before doing the
+impl-side conversion.
 
-For symbols that don't have a Hacspec equivalent (e.g.
-`v_T_AS_NTT_ENCODED_SIZE`, `v_C1_SIZE`, `v_C2_SIZE`,
-`v_VECTOR_U_COMPRESSION_FACTOR`, `v_VECTOR_V_COMPRESSION_FACTOR`,
-`v_C1_BLOCK_SIZE`, `v_ETA2`, `v_ETA2_RANDOMNESS_SIZE`), follow
-**workflow step 4** from the clean-restart prompt: ADD the helper to
-`/specs/ml-kem/src/parameters.rs`, re-extract, then migrate the
-consumer.  Cap-friendly: ~8 such helpers cover the encapsulate
-requires entirely.
+### 4. After all three patterns validated: migrate the rest
 
-### 4. Per-function pure-Rust annotation conversion of `ind_cca.rs`
+Apply the validated patterns to every other impl function with
+`fstar!(...)` annotations.  Order suggestion (smallest-first):
 
-Same recipe as item 3.  This file has the function-call ensures
-patterns more often; expect to use `rank_to_params(K)` heavily.
+  - `ind_cpa.rs`: `serialize_public_key`, `serialize_public_key_mut`,
+    `serialize_vector`, `serialize_unpacked_secret_key`,
+    `compress_then_serialize_u`, `deserialize_vector`,
+    `build_unpacked_public_key`, `build_unpacked_public_key_mut`,
+    `decrypt`, `decrypt_unpacked`, `encrypt`, `encrypt_unpacked`,
+    `encrypt_c1`, `encrypt_c2`, `generate_keypair`,
+    `generate_keypair_unpacked`, `sample_ring_element_cbd`,
+    `sample_vector_cbd_then_ntt`.
+  - `ind_cca.rs`: `validate_public_key`, `validate_private_key{,_only}`,
+    `serialize_kem_secret_key{,_mut}`, `encapsulate`, `decapsulate`,
+    `unpacked::*`.
 
-### 5. Re-evaluate `Hacspec_ml_kem.Parameters.Sizes` removal
+For each, **commit per function** with `agent-mlkem:` prefix.  Cap at
+4-5 functions per session; cap iteration at 20 min/attempt (R5).
 
-The audit-grandfathered exception.  Once items 3 + 4 are done, every
-`Parameters.Sizes.*` consumer should be migrated to the canonical
-`MlKemParams::*` methods or the new `/specs/ml-kem/src/parameters.rs`
-free functions.  At that point: delete
-`specs/ml-kem/proofs/fstar/commute/Hacspec_ml_kem.Parameters.Sizes.fst`.
+### 5. Defer / out-of-scope
 
-### 6. Defer / out-of-scope
-
-  - Bridge proofs in commute/ rewriting against `Hax_lib.Int.t_Int`
-    form (would let us migrate `i16_to_spec_fe`/`mont_i16_to_spec_fe`
-    ensures off `fstar!`).  Substantial refactor.
-  - Upstreaming `map_array` from `Hacspec_ml_kem.Commute.ProofUtils`
-    to hax-lib's F* proof-libs.  Requires hax-lib PR.
+  - `Hacspec_ml_kem.Commute.Chunk.fst:1046` failure (separate sprint).
+  - Bridge proofs for `i16_to_spec_fe`/`mont_i16_to_spec_fe` (still
+    keep `fstar!` ensures per the documented exception in the prior
+    prompt — see "fstar! escape hatch policy").
+  - Audit row 16 (`deserialize_then_decompress_u_then_ntt` composed
+    helper).  May or may not be needed depending on how Pattern B
+    handles `deserialize_then_decompress_u`.  Add only if forced.
+  - P5 unpacked-shape helpers (audit rows 5, 6, 10, 18, 34, 35, 37).
+    Add per-function ONLY when Pattern C demonstrably fails for that
+    function — don't speculate.
 
 ## Hard rules (R1-R11)
 
   R1  Branch `libcrux-ml-kem-proofs`.  Already pushed to
-      `origin/libcrux-ml-kem-proofs` (set as upstream).  You MAY
-      `git push` further commits on this branch, but DO NOT
-      force-push, DO NOT push to `main`, and DO NOT open a PR
-      without explicit user authorization.
+      `origin/libcrux-ml-kem-proofs`.  You MAY `git push` further
+      commits.  DO NOT force-push, DO NOT push to `main`, and DO NOT
+      open a PR without explicit user authorization.
   R2  No new admits beyond existing `lax` / `ADMIT_MODULES` carry-overs.
   R3  No new axioms.  If absolutely necessary, file as SIDEWAYS.
   R4  `--z3rlimit ≤ 800` HARD CAP; `≤ 400/query` under
@@ -250,57 +258,72 @@ free functions.  At that point: delete
       `.checked` files (per `feedback_touch_unchanged_checked`).
   R7  Trait FROZEN — `src/vector/traits.rs`'s `Operations` /
       `Repr` definitions not edited.  The `spec` submodule below
-      it MAY be edited (it's the lift-functions module).
+      it MAY be edited.
   R8  No `fstar-mcp` (per `feedback_use_fstar_mcp` and
       `feedback_fstar_mcp_session_dies_after_make`).
   R9  Commit prefix `agent-mlkem:`.  Commit Rust-spec changes
-      separately from libcrux-side changes (per the original
-      workflow step 4).
-  R10 No wrappers.  No namespace-squatting.  No new F* specs in
+      separately from libcrux-side changes.
+  R10 No wrappers.  No namespace-squatting.  No new F\* specs in
       `Hacspec_ml_kem.*` (per the FORBIDDEN section of the
       clean-restart prompt).
-  R11 **Cleanup-phase**: no `fstar!` escape in `src/ind_cpa.rs` /
-      `src/ind_cca.rs` annotations.  The `vector::traits::spec`
-      lift-function ensures may keep `fstar!` until the Hax_lib.Int
-      bridge is solved (see "fstar! escape hatch policy" above).
+  R11 **No `fstar!` escape in `src/ind_cpa.rs` / `src/ind_cca.rs`
+      annotations.**  This is the goal of this session.  The two
+      documented exceptions (`i16_to_spec_fe`, `mont_i16_to_spec_fe`
+      ensures) live in `src/vector/traits.rs` — they are NOT touched.
+      If you find yourself wanting `fstar!` in an ensures, capture the
+      reason and ask the user before shipping it.
+
+### Loop-invariant lesson from the prior session (applies to your work)
+
+The prior session learned that `_into`-style functions writing to
+`&mut [u8]` need an explicit
+`hax_lib::loop_invariant!(|_i| out.len() == EXPECTED_SIZE)` to
+discharge per-iteration sub-slice index bounds when `out` is a slice
+parameter (vs. a typed array).  Without it Z3 reports "incomplete
+quantifiers" and refuses to prove `(i+1)*BLOCK <= out.len()`.  Same
+pattern likely recurs in any libcrux-side function with a slice-output
+loop.
+
+### Bit-OR vs addition lesson
+
+In bit-assembly loops, `coef |= 1u16 << j` resists Z3's bound proofs
+("incomplete quantifiers" on subtype check).  Rewriting to
+`coef += 1u16 << j` is semantically identical when the loop invariant
+guarantees the new bit isn't already set, and Z3 discharges the
+additive bound far more easily.  Watch for this pattern.
 
 ## Workflow
 
-  1. **Verify state**: branch is `libcrux-ml-kem-proofs`, tip `142238341`,
-     `make` from `proofs/fstar/extraction/` reproduces the
-     `Ind_cca.fsti:165` blocker (or whatever the user's fix moved
+  1. **Verify state**: branch is `libcrux-ml-kem-proofs`, tip
+     `8ebbce94a`, `make` from `proofs/fstar/extraction/` reproduces
+     the `Ind_cca.fsti:165` blocker (or whatever the user's fix moved
      it to).
-  2. **Pick ONE task** from the open-work list.  Smallest-coherent-
-     unit principle.
-  3. For **per-function migration**:
+  2. **Pick ONE function** from the open-work list.  Smallest-coherent-
+     unit principle.  Start with the three pattern-validation targets
+     (items 1-3 above) before scaling.
+  3. **Per-function migration**:
      a. Edit `src/<file>.rs` annotations to pure Rust.
      b. `python3 hax.py extract` from `libcrux-ml-kem/`.
-     c. Snapshot SHAs, touch unchanged `.checked`.
+     c. Snapshot SHAs, touch unchanged `.checked` files.
      d. `make` from `proofs/fstar/extraction/`.  Verify the
         target function's `.fst[i]` still loads and verifies.
-     e. Verify commute lemmas still build (run
-        `make /Users/karthik/libcrux-trait-opacify/.fstar-cache/checked/Hacspec_ml_kem.Commute.Bridges.fst.checked`
-        after re-extract; should re-replay hints fast).
+     e. Verify spec modules still build (run
+        `make /Users/karthik/libcrux-trait-opacify/.fstar-cache/checked/Hacspec_ml_kem.*.fst.checked`
+        to confirm no regression).
      f. Commit with `agent-mlkem:` prefix.
-  4. For **adding a `/specs/ml-kem/src/` helper** (workflow step 4):
-     a. Edit `/specs/ml-kem/src/parameters.rs` (or other spec file).
-     b. Commit Rust-spec change SEPARATELY from the consumer migration.
-     c. Re-extract, verify the new symbol appears in the extracted
-        `Hacspec_ml_kem.Parameters.fst`.
-     d. Then do the consumer migration as item 3.
-  5. **Cap**: 4-5 functions or 4 hours per session, whichever first.
-  6. After EACH milestone: optionally update
-     `proofs/agent-status/session-<date>.md` with a per-function
-     before/after snippet.
+  4. **Cap**: 4-5 functions or 4 hours per session, whichever first.
 
 ## End-of-session deliverable
 
 Report at `proofs/agent-status/session-<date>-<suffix>.md`:
 
-  - Functions migrated (file:line, before/after pre/post snippet).
-  - New content in `/specs/ml-kem/src/` (if any).
-  - F* perf delta on affected modules (cold vs warm, max rlimit used).
+  - Functions migrated (file:line, before/after pre/post snippet,
+    which Pattern (A/B/C) was used).
+  - New content in `/specs/ml-kem/src/` (if any — should be rare;
+    add only when forced).
+  - F\* perf delta on affected modules (cold vs warm, max rlimit used).
   - Final commit SHA.
+  - Pattern findings: did Pattern A/B/C work?  Any new gotchas?
   - **Self-audit (R10 + R11)**: did you create any wrapper, any
     `unfold let` alias over Spec.MLKEM, any new
     `Hacspec_ml_kem.<top-level>.fst` file, any new `fstar!` escape
