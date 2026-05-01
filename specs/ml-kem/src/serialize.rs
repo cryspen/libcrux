@@ -297,8 +297,37 @@ pub fn deserialize_to_uncompressed_ring_element(
     byte_decode::<{ 32 * 12 }, { 256 * 12 }>(serialized, 12)
 }
 
+/// Compress each polynomial in u to du bits, then serialize, writing
+/// into `out`.  Companion to value-returning [`compress_then_serialize_u`].
+/// Mirrors the [`byte_encode_into`] / [`serialize_secret_key_into`]
+/// convention: the `_into` form is the canonical primitive.
+#[hax_lib::fstar::options("--z3rlimit 150")]
+#[hax_lib::requires(
+    RANK <= 4
+    && (du == 10 || du == 11)
+    && out.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8
+)]
+pub fn compress_then_serialize_u_into<const RANK: usize>(
+    u: &Vector<RANK>,
+    du: usize,
+    out: &mut [u8],
+) {
+    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
+    for i in 0..RANK {
+        hax_lib::loop_invariant!(
+            |_i: usize| out.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8
+        );
+        byte_encode_into(
+            compress(u[i], du),
+            du,
+            &mut out[i * du_poly_size..(i + 1) * du_poly_size],
+        );
+    }
+}
+
 /// Compress each polynomial in u to du bits, then serialize.
 /// Corresponds to `compress_then_serialize_ring_element_u` in the implementation.
+/// Thin allocating wrapper around [`compress_then_serialize_u_into`].
 ///
 /// Note: The implementation dispatches on the compression factor (10 or 11).
 /// In the spec we use the generic compress + byte_encode path.
@@ -308,15 +337,8 @@ pub fn compress_then_serialize_u<const RANK: usize, const U_SIZE: usize>(
     u: &Vector<RANK>,
     du: usize,
 ) -> [u8; U_SIZE] {
-    let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
     let mut out = [0u8; U_SIZE];
-    for i in 0..RANK {
-        byte_encode_into(
-            compress(u[i], du),
-            du,
-            &mut out[i * du_poly_size..(i + 1) * du_poly_size],
-        );
-    }
+    compress_then_serialize_u_into::<RANK>(u, du, &mut out);
     out
 }
 
