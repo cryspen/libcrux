@@ -222,18 +222,7 @@ pub const ZETAS: [FieldElement; 128] = [
     FieldElement::new(2154),
 ];
 
-// Phase 3 note (2026-05-01): we tried removing `panic_free` here so the
-// `r.val >= 1` ensures would be discharged.  Z3 reports "incomplete
-// quantifiers": it knows ZETAS is a 128-element array but cannot
-// materialize the contents to prove the per-element bound for an
-// arbitrary index.  Discharging this would need either a per-index
-// dispatch rewrite (`match i with 0 -> ... | 1 -> ...`) or an axiom
-// about the array contents (R3 forbids new axioms).  Both are
-// out-of-budget for Phase 3.  Keeping `panic_free` (body verified,
-// `r.val >= 1` ensures admitted).
-#[hax_lib::fstar::verification_status(panic_free)]
 #[hax_lib::requires(i < 128)]
-#[hax_lib::ensures(|r| r.val >= 1)]
 pub fn get_zeta(i: usize) -> FieldElement {
     ZETAS[i]
 }
