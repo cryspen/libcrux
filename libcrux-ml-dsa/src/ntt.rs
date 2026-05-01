@@ -58,11 +58,20 @@ pub(crate) fn reduce<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUn
 #[hax_lib::ensures(|_| fstar!(r#"
     (forall (i:nat). i < 32 ==>
         Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-            (i0._super_i2.f_repr (Seq.index ${lhs}_future.f_simd_units i)))"#))]
+            (i0._super_i2.f_repr (Seq.index ${lhs}_future.f_simd_units i))) /\
+    (forall (i:nat). i < 32 ==>
+        Spec.Utils.forall8 (fun (l: nat{l < 8}) ->
+          Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
+            (Seq.index (i0._super_i2.f_repr (Seq.index lhs.f_simd_units i)) l)
+            (Seq.index (i0._super_i2.f_repr (Seq.index rhs.f_simd_units i)) l)
+            (Seq.index (i0._super_i2.f_repr (Seq.index ${lhs}_future.f_simd_units i)) l)))"#))]
 pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
     lhs: &mut PolynomialRingElement<SIMDUnit>,
     rhs: &PolynomialRingElement<SIMDUnit>,
 ) {
+    #[cfg(hax)]
+    let orig_lhs = lhs.clone();
+
     for i in 0..lhs.simd_units.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
             r#"v i <= 32 /\
@@ -71,7 +80,15 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
                   (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j))) /\
               (forall (j:nat). j < v i ==>
                 Spec.Utils.is_i32b_array_opaque (v ${FIELD_MAX})
-                  (i0._super_i2.f_repr (Seq.index lhs.f_simd_units j)))"#
+                  (i0._super_i2.f_repr (Seq.index lhs.f_simd_units j))) /\
+              (forall (j:nat). j >= v i /\ j < 32 ==>
+                Seq.index lhs.f_simd_units j == Seq.index orig_lhs.f_simd_units j) /\
+              (forall (j:nat). j < v i ==>
+                Spec.Utils.forall8 (fun (l: nat{l < 8}) ->
+                  Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
+                    (Seq.index (i0._super_i2.f_repr (Seq.index orig_lhs.f_simd_units j)) l)
+                    (Seq.index (i0._super_i2.f_repr (Seq.index rhs.f_simd_units j)) l)
+                    (Seq.index (i0._super_i2.f_repr (Seq.index lhs.f_simd_units j)) l)))"#
         ));
         SIMDUnit::montgomery_multiply(&mut lhs.simd_units[i], &rhs.simd_units[i]);
     }
