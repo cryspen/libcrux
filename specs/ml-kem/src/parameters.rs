@@ -109,6 +109,24 @@ pub const ML_KEM_1024_V_SIZE: usize = 160; // 256*5/8
 pub const ML_KEM_1024_CT_SIZE: usize = 1568; // U_SIZE + V_SIZE
 pub const ML_KEM_1024_J_INPUT_SIZE: usize = 1600; // 32 + 1568
 
+/// Rank-generic CPA ciphertext size, matching the Spec.MLKEM
+/// `v_CPA_CIPHERTEXT_SIZE` shape.  Use this in rank-generic
+/// `hax_lib::requires`/`ensures` annotations where threading a
+/// `MlKemParams` value would be an architectural refactor.  For
+/// fixed-rank consumers, prefer the `ML_KEM_{512,768,1024}_CT_SIZE`
+/// constants directly; for `MlKemParams`-aware callers, prefer
+/// `MlKemParams::ciphertext_size()`.
+#[hax_lib::requires(rank == 2 || rank == 3 || rank == 4)]
+pub const fn cpa_ciphertext_size(rank: usize) -> usize {
+    if rank == 2 {
+        ML_KEM_512_CT_SIZE
+    } else if rank == 3 {
+        ML_KEM_768_CT_SIZE
+    } else {
+        ML_KEM_1024_CT_SIZE
+    }
+}
+
 #[allow(non_snake_case)]
 pub mod hash_functions {
     #[hax_lib::opaque]
