@@ -414,7 +414,9 @@ pub(crate) fn sig_decode<const K: usize, const L: usize, const C_TILDE_LEN: usiz
 ///
 /// Encodes the high-bits vector w1 into bytes for hashing.
 #[hax_lib::fstar::options("--z3rlimit 300")]
-#[hax_lib::requires(K <= 8 && W1_BYTES >= K * 192)]
+#[hax_lib::requires(
+    K <= 8 && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 })
+)]
 pub(crate) fn w1_encode<const K: usize, const W1_BYTES: usize>(
     w1: &[Polynomial; K],
     params: &MlDsaParams,

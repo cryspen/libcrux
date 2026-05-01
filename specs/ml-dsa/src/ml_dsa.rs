@@ -83,7 +83,7 @@ pub fn keygen_internal<
 #[hax_lib::requires(
     K == params.k && L == params.l
     && C_TILDE_LEN <= 64 && C_TILDE_LEN >= params.lambda / 4
-    && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 }) && W1_BYTES <= 1024
     && kappa <= 65528
     && params.gamma1 > params.beta && params.gamma2 > params.beta
     && (
@@ -233,7 +233,7 @@ fn try_sign_iteration<
 #[hax_lib::requires(
     K == params.k && L == params.l
     && C_TILDE_LEN <= 64 && C_TILDE_LEN >= params.lambda / 4
-    && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 }) && W1_BYTES <= 1024
     && params.gamma1 > params.beta && params.gamma2 > params.beta
     && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
     && (
@@ -311,7 +311,7 @@ pub fn sign_internal<
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(
     K == params.k && L == params.l
-    && C_TILDE_LEN <= 64 && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && C_TILDE_LEN <= 64 && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 }) && W1_BYTES <= 1024
     && params.gamma1 > params.beta && params.gamma2 > params.beta
     && pk.len() >= 32 + 320 * K
     && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
@@ -466,7 +466,7 @@ pub fn keygen<
     ctx.len() <= 255 && message.len() <= 8192
     && K == params.k && L == params.l
     && C_TILDE_LEN <= 64 && C_TILDE_LEN >= params.lambda / 4
-    && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 }) && W1_BYTES <= 1024
     && params.gamma1 > params.beta && params.gamma2 > params.beta
     && sk.len() >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
     && (
@@ -499,7 +499,7 @@ pub fn sign<
 #[hax_lib::requires(
     ctx.len() <= 255 && message.len() <= 8192
     && K == params.k && L == params.l
-    && C_TILDE_LEN <= 64 && W1_BYTES >= K * 192 && W1_BYTES <= 1024
+    && C_TILDE_LEN <= 64 && W1_BYTES >= K * 32 * (if params.gamma2 == (Q - 1) / 88 { 6 } else { 4 }) && W1_BYTES <= 1024
     && params.gamma1 > params.beta && params.gamma2 > params.beta
     && pk.len() >= 32 + 320 * K
     && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
