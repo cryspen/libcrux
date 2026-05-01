@@ -53,7 +53,15 @@ pub(crate) mod generic {
     #[inline(always)]
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${signing_key}_future == Seq.length ${signing_key} /\
-        Seq.length ${verification_key}_future == Seq.length ${verification_key}"#))]
+        Seq.length ${verification_key}_future == Seq.length ${verification_key} /\
+        (let pk_spec, sk_spec =
+           Hacspec_ml_dsa.Ml_dsa.keygen_internal
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_k
+              v_HACSPEC_PARAMS.Hacspec_ml_dsa.Parameters.f_l
+              v_VERIFICATION_KEY_SIZE v_SIGNING_KEY_SIZE
+              ${randomness} v_HACSPEC_PARAMS in
+         Seq.equal ${signing_key}_future sk_spec /\
+         Seq.equal ${verification_key}_future pk_spec)"#))]
     pub(crate) fn generate_key_pair<
         SIMDUnit: Operations,
         Sampler: X4Sampler,

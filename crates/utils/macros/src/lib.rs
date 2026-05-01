@@ -83,6 +83,13 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
         let keypair_ident = format_ident!("MLDSA{}KeyPair", parameter_set_string);
         let sig_ident = format_ident!("MLDSA{}Signature", parameter_set_string);
 
+        // Inject a per-variant F* binding so the (shared) module body
+        // can refer to its Hacspec spec parameters by a stable name.
+        let fstar_params_decl = format!(
+            "let v_HACSPEC_PARAMS : Hacspec_ml_dsa.Parameters.t_MlDsaParams = Hacspec_ml_dsa.Parameters.v_ML_DSA_{}_",
+            parameter_set_string
+        );
+
         // add the variant at the end of the function name
         if let Some((_, ref content)) = content {
             let this_content = content.clone();
@@ -90,6 +97,7 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
                 #(#attrs)*
                 #[cfg(feature = #feature_name)]
                 #vis mod #modpath {
+                    #[hax_lib::fstar::after(#fstar_params_decl)]
                     use crate::constants::#modpath::*;
 
                     pub type #sk_ident = MLDSASigningKey<SIGNING_KEY_SIZE>;
