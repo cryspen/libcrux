@@ -22,7 +22,7 @@ k256 = { version = "0.13", features = [
     "arithmetic",
     "ecdh",
 ], default-features = false }
-p384 = { version = "0.13", default-features = false }
+p384 = { version = "0.13", default-features = false, features = ["arithmetic"] }
 x25519-dalek = { version = "2", features = ["static_secrets"] }
 chacha20poly1305 = { version = "0.10", default-features = false, features = [
     "alloc",
@@ -50,10 +50,7 @@ deterministic-prng = [
     "hpke-rs-crypto/std",
     "rand_core/std",
 ] # ⚠️ FOR TESTING ONLY.
-experimental = [
-    "dep:x-wing",
-    "dep:ml-kem"
-]
+experimental = ["dep:x-wing", "dep:ml-kem"]
 
 [[bench]]
 name = "bench_hkdf"
