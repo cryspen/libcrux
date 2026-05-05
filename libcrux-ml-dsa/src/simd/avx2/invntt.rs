@@ -622,7 +622,7 @@ mod tests {
             &mut re,
         );
 
-        SIMDUnit::reduce(&mut re.simd_units);
+        re.barrett_reduce();
 
         let _ = core::hint::black_box(SIMDUnit::invert_ntt_montgomery(&mut re.simd_units));
 

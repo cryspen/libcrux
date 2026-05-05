@@ -1,9 +1,9 @@
+use libcrux_intrinsics::avx2::*;
+
 use crate::{
     constants::{Gamma2, BITS_IN_LOWER_PART_OF_T, GAMMA2_V261_888, GAMMA2_V95_232},
     simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
 };
-
-use libcrux_intrinsics::avx2::*;
 
 #[inline]
 #[hax_lib::fstar::before(r#"open Spec.Intrinsics"#)]
@@ -142,15 +142,25 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256) {
     hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
 
-    let shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
+    let mut shifted = mm256_slli_epi32::<SHIFT_BY>(*simd_unit);
 
-    let quotient = mm256_add_epi32(shifted, mm256_set1_epi32(1 << 22));
+    barrett_reduce_simd_unit(&mut shifted);
+    *simd_unit = shifted;
+}
+
+#[inline]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    (forall i. to_i32x8 ${simd_unit}_future i ==
+        Spec.MLDSA.Math.barrett_red (to_i32x8 ${simd_unit} i))"#))]
+pub(super) fn barrett_reduce_simd_unit(simd_unit: &mut Vec256) {
+    let quotient = mm256_add_epi32(*simd_unit, mm256_set1_epi32(1 << 22));
     let quotient = mm256_srai_epi32::<23>(quotient);
 
     let quotient_times_field_modulus =
         mm256_mullo_epi32(quotient, mm256_set1_epi32(FIELD_MODULUS as i32));
 
-    *simd_unit = mm256_sub_epi32(shifted, quotient_times_field_modulus);
+    *simd_unit = mm256_sub_epi32(*simd_unit, quotient_times_field_modulus);
 }
 
 #[inline]

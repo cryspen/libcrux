@@ -1,9 +1,10 @@
-use super::arithmetic::{self, montgomery_multiply_fe_by_fer};
-use super::vector_type::Coefficients;
-use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
-
+use super::{
+    arithmetic::{self, montgomery_multiply_fe_by_fer},
+    vector_type::Coefficients,
+};
 #[cfg(hax)]
 use crate::simd::traits::specs::*;
+use crate::simd::traits::{COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
@@ -539,7 +540,7 @@ mod tests {
         );
 
         if reduce {
-            SIMDUnit::reduce(&mut re.simd_units);
+            re.barrett_reduce();
         }
 
         let _ = core::hint::black_box(SIMDUnit::invert_ntt_montgomery(&mut re.simd_units));
