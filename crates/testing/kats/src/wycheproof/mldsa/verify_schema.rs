@@ -92,7 +92,7 @@ pub enum Flag {
     ValidSignature,
     ZeroPublicKey,
     InfinityNormViolation,
-    InvalidSignature,
+    InvalidSignature
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]

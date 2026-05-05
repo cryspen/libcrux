@@ -12,7 +12,8 @@ pub struct Test {
     /// A brief description of the test case
     pub comment: String,
 
-    /// The message to sign
+    /// The message to sign (empty if flags contains [`Flag::Internal`])
+    #[serde(default)]
     #[serde(with = "hex::serde")]
     pub msg: Vec<u8>,
 
@@ -40,6 +41,8 @@ pub enum Flag {
     InvalidContext,
     ManySteps,
     ValidSignature,
+    /// A test vector with mu and no msg for use with Sign_internal and Verify_internal
+    Internal
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
