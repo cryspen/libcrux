@@ -44,5 +44,5 @@ fn parse(data: &str) -> Vec<TestVector> {
 }
 
 pub fn load() -> Vec<TestVector> {
-    parse(include_str!("tv/poly1305_tests.txt"))
+    parse(include_str!("../tv/poly1305_tests.txt"))
 }
