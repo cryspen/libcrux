@@ -36,9 +36,9 @@ fn parse(data: &str) -> Vec<TestVector> {
 }
 
 pub fn load_blake2b256() -> Vec<TestVector> {
-    parse(include_str!("../tv/blake2b256_tests.txt"))
+    parse(include_str!("../tv/blake2b-kat.txt"))
 }
 
 pub fn load_blake2s256() -> Vec<TestVector> {
-    parse(include_str!("../tv/blake2s256_tests.txt"))
+    parse(include_str!("../tv/blake2s-kat.txt"))
 }
