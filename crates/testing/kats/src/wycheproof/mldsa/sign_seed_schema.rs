@@ -29,7 +29,7 @@ pub struct TestGroup {
 
     /// 32-byte seed that generated the private key
     #[serde(with = "hex::serde")]
-    pub private_seed: [u8; 32],
+    pub private_seed: Vec<u8>,
 
     pub tests: Vec<Test>,
 

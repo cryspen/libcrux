@@ -41,6 +41,10 @@ macro_rules! wycheproof_sign_test {
                     let signing_key = MLDSASigningKey::new(signing_key_bytes.try_into().unwrap());
 
                     for test in test_group.tests {
+                        if test.flags.contains(&Flag::Internal) {
+                            // XXX these tests require the acvp feature flag which exposes the sign internal function
+                            continue;
+                        }
                         let message = test.msg;
                         let context = test.ctx;
 
@@ -64,12 +68,21 @@ macro_rules! wycheproof_sign_test {
                 let signing_randomness = [0u8; 32];
 
                 for test_group in katfile_serialized.test_groups {
+                    let Ok(private_seed) = test_group.private_seed.try_into() else {
+                        // The sign API ensures that the private seed is always 32-bytes.
+                        // We skip the test groups with invalid private seed sizes
+                        continue;
+                    };
                     let MLDSAKeyPair {
                         signing_key,
                         verification_key,
-                    } = $generate(test_group.private_seed);
+                    } = $generate(private_seed);
 
                     for test in test_group.tests {
+                        if test.flags.contains(&Flag::Internal) {
+                            // XXX these tests require the acvp feature flag which exposes the sign internal function
+                            continue;
+                        }
                         let message = test.msg;
                         let context = test.ctx;
 
