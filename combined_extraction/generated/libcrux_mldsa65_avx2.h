@@ -7,8 +7,8 @@
  * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 12602b67ac1ebf1b58692e189d25b96a34102093
+ * F*: unset
+ * Libcrux: a106ed85ae1ecf30fe5c39b90efd319b56d53239
  */
 
 
@@ -688,6 +688,24 @@ static KRML_MUSTINLINE void
 libcrux_ml_dsa_simd_avx2_montgomery_multiply_a2(__m256i *lhs, const __m256i *rhs)
 {
   libcrux_ml_dsa_simd_avx2_arithmetic_montgomery_multiply(lhs, rhs);
+}
+
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline void
+libcrux_ml_dsa_simd_avx2_arithmetic_barrett_reduce_simd_unit(__m256i *simd_unit)
+{
+  __m256i
+  quotient =
+    libcrux_intrinsics_avx2_mm256_add_epi32(simd_unit[0U],
+      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
+  __m256i quotient0 = libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
+  __m256i
+  quotient_times_field_modulus =
+    libcrux_intrinsics_avx2_mm256_mullo_epi32(quotient0,
+      libcrux_intrinsics_avx2_mm256_set1_epi32(LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS));
+  simd_unit[0U] =
+    libcrux_intrinsics_avx2_mm256_sub_epi32(simd_unit[0U],
+      quotient_times_field_modulus);
 }
 
 KRML_ATTRIBUTE_TARGET("avx2")
@@ -4647,39 +4665,13 @@ libcrux_ml_dsa_simd_avx2_invert_ntt_montgomery_a2(Eurydice_arr_cd0 *simd_units)
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.simd.avx2.arithmetic.shift_left_then_reduce
-with const generics
-- SHIFT_BY= 0
-*/
-KRML_ATTRIBUTE_TARGET("avx2")
-static inline void
-libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(__m256i *simd_unit)
-{
-  __m256i shifted = libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)0, simd_unit[0U], __m256i);
-  __m256i
-  quotient =
-    libcrux_intrinsics_avx2_mm256_add_epi32(shifted,
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
-  __m256i quotient0 = libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
-  __m256i
-  quotient_times_field_modulus =
-    libcrux_intrinsics_avx2_mm256_mullo_epi32(quotient0,
-      libcrux_intrinsics_avx2_mm256_set1_epi32(LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS));
-  simd_unit[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(shifted, quotient_times_field_modulus);
-}
-
-/**
 This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::avx2::vector_type::Vec256}
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_simd_avx2_reduce_a2(Eurydice_arr_cd0 *simd_units)
+libcrux_ml_dsa_simd_avx2_barrett_reduce_simd_unit_a2(__m256i *simd_unit)
 {
-  for (size_t i = (size_t)0U; i < (size_t)32U; i++)
-  {
-    size_t i0 = i;
-    libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_c3(&simd_units->data[i0]);
-  }
+  libcrux_ml_dsa_simd_avx2_arithmetic_barrett_reduce_simd_unit(simd_unit);
 }
 
 /**
@@ -5693,16 +5685,23 @@ libcrux_ml_dsa_polynomial_add_ff_64(Eurydice_arr_cd0 *self, const Eurydice_arr_c
 }
 
 /**
-A monomorphic instance of libcrux_ml_dsa.ntt.reduce
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.polynomial.barrett_reduce_ff
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
 with const generics
 
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
-libcrux_ml_dsa_ntt_reduce_64(Eurydice_arr_cd0 *re)
+libcrux_ml_dsa_polynomial_barrett_reduce_ff_64(Eurydice_arr_cd0 *self)
 {
-  libcrux_ml_dsa_simd_avx2_reduce_a2(re);
+  for (size_t i = (size_t)0U; i < (size_t)32U; i++)
+  {
+    size_t i0 = i;
+    libcrux_ml_dsa_simd_avx2_barrett_reduce_simd_unit_a2(&self->data[i0]);
+  }
 }
 
 /**
@@ -5752,7 +5751,7 @@ libcrux_ml_dsa_matrix_compute_as1_plus_s2_64(
   for (size_t i = (size_t)0U; i < result.meta; i++)
   {
     size_t i0 = i;
-    libcrux_ml_dsa_ntt_reduce_64(&result.ptr[i0]);
+    libcrux_ml_dsa_polynomial_barrett_reduce_ff_64(&result.ptr[i0]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_64(&result.ptr[i0]);
     libcrux_ml_dsa_polynomial_add_ff_64(&result.ptr[i0], &s1_s2.ptr[columns_in_a + i0]);
   }
@@ -6781,7 +6780,7 @@ libcrux_ml_dsa_matrix_compute_matrix_x_mask_64(
       libcrux_ml_dsa_ntt_ntt_multiply_montgomery_64(&product, &matrix.ptr[i1 * columns_in_a + j]);
       libcrux_ml_dsa_polynomial_add_ff_64(&result.ptr[i1], &product);
     }
-    libcrux_ml_dsa_ntt_reduce_64(&result.ptr[i1]);
+    libcrux_ml_dsa_polynomial_barrett_reduce_ff_64(&result.ptr[i1]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_64(&result.ptr[i1]);
   }
 }
@@ -8057,16 +8056,8 @@ libcrux_ml_dsa_simd_avx2_arithmetic_shift_left_then_reduce_84(__m256i *simd_unit
 {
   __m256i
   shifted = libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)13, simd_unit[0U], __m256i);
-  __m256i
-  quotient =
-    libcrux_intrinsics_avx2_mm256_add_epi32(shifted,
-      libcrux_intrinsics_avx2_mm256_set1_epi32((int32_t)1 << 22U));
-  __m256i quotient0 = libcrux_intrinsics_avx2_mm256_srai_epi32((int32_t)23, quotient, __m256i);
-  __m256i
-  quotient_times_field_modulus =
-    libcrux_intrinsics_avx2_mm256_mullo_epi32(quotient0,
-      libcrux_intrinsics_avx2_mm256_set1_epi32(LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS));
-  simd_unit[0U] = libcrux_intrinsics_avx2_mm256_sub_epi32(shifted, quotient_times_field_modulus);
+  libcrux_ml_dsa_simd_avx2_arithmetic_barrett_reduce_simd_unit(&shifted);
+  simd_unit[0U] = shifted;
 }
 
 /**
@@ -8137,7 +8128,7 @@ libcrux_ml_dsa_matrix_compute_w_approx_64(
     libcrux_ml_dsa_ntt_ntt_multiply_montgomery_64(&t1.ptr[i1], verifier_challenge_as_ntt);
     libcrux_ml_dsa_polynomial_subtract_ff_64(&inner_result, &t1.ptr[i1]);
     t1.ptr[i1] = inner_result;
-    libcrux_ml_dsa_ntt_reduce_64(&t1.ptr[i1]);
+    libcrux_ml_dsa_polynomial_barrett_reduce_ff_64(&t1.ptr[i1]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_64(&t1.ptr[i1]);
   }
 }
