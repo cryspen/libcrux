@@ -7,5 +7,8 @@ pub mod wycheproof;
 
 pub mod acvp;
 
+#[cfg(feature = "sha2")]
+pub mod sha2;
+
 #[cfg(feature = "poly1305")]
 pub mod poly1305;
