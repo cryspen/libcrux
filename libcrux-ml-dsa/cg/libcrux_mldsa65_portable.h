@@ -7,8 +7,8 @@
  * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * F*: unset
+ * Libcrux: cb8b9c1294f0e69fa9249d3699289a7dca5de318
  */
 
 #ifndef libcrux_mldsa65_portable_H

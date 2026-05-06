@@ -7,8 +7,8 @@
  * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
+ * F*: unset
+ * Libcrux: cb8b9c1294f0e69fa9249d3699289a7dca5de318
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -504,8 +504,9 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_simd_avx2_arithmetic_use_hint(
   __m256i r1 = uu____0.snd;
   libcrux_ml_dsa_simd_avx2_arithmetic_decompose(gamma2, r, &r0, &r1);
   __m256i all_zeros = libcrux_intrinsics_avx2_mm256_setzero_si256();
-  __m256i negate_hints =
-      libcrux_intrinsics_avx2_vec256_blendv_epi32(all_zeros, hint[0U], r0);
+  __m256i r0_gt_zero = libcrux_intrinsics_avx2_mm256_cmpgt_epi32(r0, all_zeros);
+  __m256i negate_hints = libcrux_intrinsics_avx2_vec256_blendv_epi32(
+      hint[0U], all_zeros, r0_gt_zero);
   __m256i negate_hints0 = libcrux_intrinsics_avx2_mm256_slli_epi32(
       (int32_t)1, negate_hints, __m256i);
   __m256i hints =
