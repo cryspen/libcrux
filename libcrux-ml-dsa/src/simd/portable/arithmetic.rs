@@ -447,7 +447,7 @@ fn barrett_reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b 2143289343 $simd_unit"#))]
+#[hax_lib::requires(fstar!(r#"Spec.Utils.is_i32b_array_opaque 2143289343 (${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)"#))]
 #[hax_lib::ensures(|_| fstar!(r#"
     Spec.Utils.is_i32b_array_opaque 8380416 (${simd_unit}_future.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) /\
     (forall i. i < 8 ==> Spec.MLDSA.Math.(
