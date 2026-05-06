@@ -4,14 +4,13 @@ macro_rules! sha2_test {
         #[allow(non_snake_case)]
         fn $test_name() {
             let tv = $kats_fn();
-            let mut c = 0;
-            for test in &tv.tests {
-                c += 1;
+            let test_cnt = tv.tests.len();
+            assert!(test_cnt > 0, "Empty test vector file");
+            for (i, test) in tv.tests.iter().enumerate() {
                 let digest = $hash_fn(&test.msg[0..test.msg_length / 8]);
-                assert_eq!(&digest[..], &test.digest[..], "test {c}: digest mismatch");
+                assert_eq!(&digest[..], &test.digest[..], "test {i}: digest mismatch");
             }
-            assert!(c > 0, "No tests were run");
-            eprintln!("Ran {c} tests for {}", stringify!($test_name));
+            eprintln!("Ran {test_cnt} tests for {}", stringify!($test_name));
         }
     };
 }
