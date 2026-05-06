@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -ex
 
+# GNU sed: system `sed` on Linux is already GNU sed; on macOS the system
+# `sed` is BSD and rejects the GNU `-i` form, so we need `gsed` (Homebrew
+# `gnu-sed` package) there. Detect at script start and route through $SED.
+if [ "$(uname)" = "Darwin" ]; then
+    SED="gsed"
+else
+    SED="sed"
+fi
+
 function extract_all() {
     extract crates/sys/platform \
         into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
@@ -79,14 +88,14 @@ function rename_core_models_files() {
         new_filename="Libcrux_core_models${filename#Core_models}"
         mv "$file" "$dir_path/$new_filename"
     done
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec "$SED" -i \
         -e 's/module Core_models/module Libcrux_core_models/g' \
         {} +
 }
 
 function rename_core_models_uses() {
     local target_dir="proofs/fstar/extraction"
-    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec sed -i'' \
+    find "$target_dir" -type f \( -name "*.fst" -o -name "*.fsti" \) -exec "$SED" -i \
         -e 's/Core_models\.Abstractions/Libcrux_core_models.Abstractions/g' \
         -e 's/Core_models\.Core_arch/Libcrux_core_models.Core_arch/g' \
         {} +
