@@ -37,22 +37,7 @@ pub(crate) struct KeccakXofState<
     sponge: bool,
 }
 
-/// Note: This function exists to work around a hax bug where `core::array::from_fn`
-/// is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
-/// instead of using the typeclass-based implicit parameter `#v_F` from
-/// `Core_models.Array.from_fn`.
-/// See: https://github.com/cryspen/hax/issues/1920
 #[inline(always)]
-#[hax_lib::fstar::replace(
-    "let buf_to_slices
-      (v_PARALLEL_LANES v_RATE: usize)
-      (buf: t_Array (t_Array u8 v_RATE) v_PARALLEL_LANES)
-    : t_Array (t_Slice u8) v_PARALLEL_LANES =
-  Core_models.Array.from_fn #(t_Slice u8)
-    v_PARALLEL_LANES
-    (fun i -> Core_models.Array.impl_23__as_slice #u8 v_RATE (buf.[ i ]))
-"
-)]
 fn buf_to_slices<const PARALLEL_LANES: usize, const RATE: usize>(
     buf: &[[u8; RATE]; PARALLEL_LANES],
 ) -> [&[u8]; PARALLEL_LANES] {
