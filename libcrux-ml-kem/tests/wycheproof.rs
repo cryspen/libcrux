@@ -1,6 +1,7 @@
 use libcrux_kats::wycheproof::mlkem::schema::*;
+use libcrux_kats::wycheproof::mlkem::TestGroupType;
 
-use libcrux_ml_kem::{MlKemCiphertext, MlKemPublicKey};
+use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey, MlKemPublicKey};
 
 macro_rules! wycheproof_test {
     ($name:ident, $parameter_set:expr, $module:path) => {
@@ -11,16 +12,24 @@ macro_rules! wycheproof_test {
             fn keygen_and_decaps() {
                 use $module::*;
 
-                let katfile = MlKemTests::load($parameter_set);
+                let katfile = MlKemTests::load($parameter_set, TestGroupType::MlKemTest);
 
                 for test_group in katfile.keygen_and_decaps_tests() {
                     for test in &test_group.tests {
+                        let Ok(seed) = test.seed.clone().try_into() else {
+                            assert_eq!(test.result, MlKemResult::Invalid);
+                            continue;
+                        };
+
                         // generate key pair
-                        let key_pair = generate_key_pair(test.seed.clone());
+                        let key_pair = generate_key_pair(seed);
 
                         // convert ciphertext
-                        let ciphertext: MlKemCiphertext<_> =
-                            <[u8; _]>::try_from(test.ciphertext.clone()).unwrap().into();
+                        let Ok(ciphertext) = <[u8; _]>::try_from(test.ciphertext.clone()) else {
+                            assert_eq!(test.result, MlKemResult::Invalid);
+                            continue;
+                        };
+                        let ciphertext: MlKemCiphertext<_> = ciphertext.into();
 
                         // validate keys
                         assert!(validate_private_key(key_pair.private_key(), &ciphertext));
@@ -41,26 +50,81 @@ macro_rules! wycheproof_test {
                     }
                 }
             }
+
             #[test]
             fn encaps() {
                 use $module::*;
-                let katfile = MlKemTests::load($parameter_set);
+                let katfile = MlKemTests::load($parameter_set, TestGroupType::MlKemEncapsTest);
 
                 for test_group in katfile.encaps_tests() {
                     for test in &test_group.tests {
-                        // all tests have an Invalid results and a `ModulusOverflow` flag
-                        assert_eq!(test.result, MlKemResult::Invalid);
-                        assert_eq!(test.flags, vec![Flag::ModulusOverflow]);
                         // convert to encapsulation key
-                        let bytes: [u8; _] = test
-                            .encapsulation_key
-                            .clone()
-                            .try_into()
-                            .expect("invalid length");
+                        let Ok(bytes) = <[u8; _]>::try_from(test.encapsulation_key.clone()) else {
+                            assert_eq!(test.result, MlKemResult::Invalid);
+                            continue;
+                        };
                         let encapsulation_key: MlKemPublicKey<_> = bytes.into();
 
-                        // validate the key (should fail for ModulusOverflow cases)
-                        assert!(!validate_public_key(&encapsulation_key));
+                        let is_valid = validate_public_key(&encapsulation_key);
+                        match test.result {
+                            MlKemResult::Invalid => assert!(
+                                !is_valid,
+                                "tc_id {} failed. key is valid but should be invalid",
+                                test.tc_id,
+                            ),
+                            MlKemResult::Valid => assert!(
+                                is_valid,
+                                "tc_id {} failed. key is invalid but should be valid",
+                                test.tc_id,
+                            ),
+                            MlKemResult::Acceptable => {
+                                unreachable!("MlKemResult::Acceptable not part of test vectors")
+                            }
+                        }
+                    }
+                }
+            }
+
+            #[test]
+            fn semi_expanded_decaps() {
+                use $module::*;
+
+                let katfile =
+                    MlKemTests::load($parameter_set, TestGroupType::MlKemDecapsValidationTest);
+
+                for test_group in katfile.semi_expanded_decaps_tests() {
+                    for test in &test_group.tests {
+                        // convert private key
+                        let Ok(bytes) = <[u8; _]>::try_from(test.decapsulation_key.clone()) else {
+                            assert_eq!(test.result, MlKemResult::Invalid);
+                            continue;
+                        };
+                        let private_key: MlKemPrivateKey<_> = bytes.into();
+
+                        // convert ciphertext
+                        let Ok(ciphertext) = <[u8; _]>::try_from(test.ciphertext.clone()) else {
+                            assert_eq!(test.result, MlKemResult::Invalid);
+                            continue;
+                        };
+                        let ciphertext: MlKemCiphertext<_> = ciphertext.into();
+
+                        // validate keys
+                        let is_valid = validate_private_key(&private_key, &ciphertext);
+                        match test.result {
+                            MlKemResult::Invalid => assert!(
+                                !is_valid,
+                                "tc_id {} failed. key is valid but should be invalid",
+                                test.tc_id,
+                            ),
+                            MlKemResult::Valid => assert!(
+                                is_valid,
+                                "tc_id {} failed. key is invalid but should be valid",
+                                test.tc_id,
+                            ),
+                            MlKemResult::Acceptable => {
+                                unreachable!("MlKemResult::Acceptable not part of test vectors")
+                            }
+                        }
                     }
                 }
             }
