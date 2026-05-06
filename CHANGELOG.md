@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- [#1399](https://github.com/cryspen/libcrux/pull/1399): Add a Rust spec for SHA-3
+
 ### Removed
 
 - [#1391](https://github.com/cryspen/libcrux/pull/1391): Remove support for HMAC-SHA1
