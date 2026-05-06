@@ -163,4 +163,3 @@ pub fn squeeze<const OUTPUT_LEN: usize>(state: State, rate: usize) -> [u8; OUTPU
 pub fn keccak<const OUTPUT_LEN: usize>(rate: usize, delim: u8, message: &[u8]) -> [u8; OUTPUT_LEN] {
     squeeze(absorb(rate, delim, message), rate)
 }
-

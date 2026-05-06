@@ -501,7 +501,6 @@ mod cross_spec_tests {
             spec_out[offset..offset + len]
         );
     }
-
 }
 
 /// NEON to_spec tests: verify that each permutation step on KeccakState<2, uint64x2_t>
