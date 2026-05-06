@@ -304,12 +304,13 @@ pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
 
     let all_zeros = mm256_setzero_si256();
 
-    // If r0 is negative, we have to subtract the hint, whereas if it is positive,
+    // If r0 is <=0, we have to subtract the hint, whereas if it is > 0,
     // we have to add the hint. We thus add signs to the hint vector accordingly:
     //
     // With this step, |negate_hints| will match |hint| in only those lanes in
-    // which the corresponding r0 value is negative, and will be 0 elsewhere.
-    let negate_hints = vec256_blendv_epi32(all_zeros, *hint, r0);
+    // which the corresponding r0 value is <= 0, and will be 0 elsewhere.
+    let r0_gt_zero = mm256_cmpgt_epi32(r0, all_zeros);
+    let negate_hints = vec256_blendv_epi32(*hint, all_zeros, r0_gt_zero);
 
     // If a lane in |negate_hints| is 1, it means the corresponding hint was 1,
     // and the lane value will be doubled. It will remain 0 otherwise.
