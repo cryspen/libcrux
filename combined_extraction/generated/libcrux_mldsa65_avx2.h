@@ -8,7 +8,7 @@
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: unset
- * Libcrux: a106ed85ae1ecf30fe5c39b90efd319b56d53239
+ * Libcrux: d3ed1c47cd34e327523d0f5444286676b7f7abe1
  */
 
 
@@ -584,7 +584,9 @@ libcrux_ml_dsa_simd_avx2_arithmetic_use_hint(int32_t gamma2, const __m256i *r, _
   __m256i r1 = uu____0.snd;
   libcrux_ml_dsa_simd_avx2_arithmetic_decompose(gamma2, r, &r0, &r1);
   __m256i all_zeros = libcrux_intrinsics_avx2_mm256_setzero_si256();
-  __m256i negate_hints = libcrux_intrinsics_avx2_vec256_blendv_epi32(all_zeros, hint[0U], r0);
+  __m256i r0_gt_zero = libcrux_intrinsics_avx2_mm256_cmpgt_epi32(r0, all_zeros);
+  __m256i
+  negate_hints = libcrux_intrinsics_avx2_vec256_blendv_epi32(hint[0U], all_zeros, r0_gt_zero);
   __m256i
   negate_hints0 = libcrux_intrinsics_avx2_mm256_slli_epi32((int32_t)1, negate_hints, __m256i);
   __m256i hints = libcrux_intrinsics_avx2_mm256_sub_epi32(hint[0U], negate_hints0);
