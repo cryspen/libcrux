@@ -6,3 +6,6 @@
 pub mod wycheproof;
 
 pub mod acvp;
+
+#[cfg(feature = "poly1305")]
+pub mod poly1305;
