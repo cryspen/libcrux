@@ -8,7 +8,7 @@
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: unset
- * Libcrux: a106ed85ae1ecf30fe5c39b90efd319b56d53239
+ * Libcrux: cb8b9c1294f0e69fa9249d3699289a7dca5de318
  */
 
 #ifndef libcrux_mldsa65_portable_H
@@ -1073,20 +1073,9 @@ static inline void libcrux_ml_dsa_simd_portable_montgomery_multiply_65(
 }
 
 static KRML_MUSTINLINE int32_t
-libcrux_ml_dsa_simd_portable_arithmetic_barrett_reduce_element(int32_t fe) {
+libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(int32_t fe) {
   int32_t quotient = (fe + ((int32_t)1 << 22U)) >> 23U;
   return fe - quotient * LIBCRUX_ML_DSA_SIMD_TRAITS_FIELD_MODULUS;
-}
-
-static inline void
-libcrux_ml_dsa_simd_portable_arithmetic_barrett_reduce_simd_unit(
-    Eurydice_arr_d4 *simd_unit) {
-  for (size_t i = (size_t)0U; i < (size_t)8U; i++) {
-    size_t i0 = i;
-    simd_unit->data[i0] =
-        libcrux_ml_dsa_simd_portable_arithmetic_barrett_reduce_element(
-            simd_unit->data[i0]);
-  }
 }
 
 static KRML_MUSTINLINE int32_t_x2
@@ -3913,12 +3902,33 @@ static inline void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_65(
 }
 
 /**
+A monomorphic instance of
+libcrux_ml_dsa.simd.portable.arithmetic.shift_left_then_reduce with const
+generics
+- SHIFT_BY= 0
+*/
+static KRML_MUSTINLINE void
+libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
+    Eurydice_arr_d4 *simd_unit) {
+  for (size_t i = (size_t)0U; i < (size_t)8U; i++) {
+    size_t i0 = i;
+    simd_unit->data[i0] =
+        libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(
+            simd_unit->data[i0] << (uint32_t)(int32_t)0);
+  }
+}
+
+/**
 This function found in impl {libcrux_ml_dsa::simd::traits::Operations for
 libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-static inline void libcrux_ml_dsa_simd_portable_barrett_reduce_simd_unit_65(
-    Eurydice_arr_d4 *simd_unit) {
-  libcrux_ml_dsa_simd_portable_arithmetic_barrett_reduce_simd_unit(simd_unit);
+static inline void libcrux_ml_dsa_simd_portable_reduce_65(
+    Eurydice_arr_a4 *simd_units) {
+  for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
+    size_t i0 = i;
+    libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_c3(
+        &simd_units->data[i0]);
+  }
 }
 
 typedef struct Eurydice_borrow_slice_u8_x2_s {
@@ -4716,22 +4726,13 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_add_ff_37(
 }
 
 /**
-This function found in impl
-{libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0,
-TraitClause@1]}
-*/
-/**
-A monomorphic instance of libcrux_ml_dsa.polynomial.barrett_reduce_ff
+A monomorphic instance of libcrux_ml_dsa.ntt.reduce
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-static KRML_MUSTINLINE void libcrux_ml_dsa_polynomial_barrett_reduce_ff_37(
-    Eurydice_arr_a4 *self) {
-  for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
-    size_t i0 = i;
-    libcrux_ml_dsa_simd_portable_barrett_reduce_simd_unit_65(&self->data[i0]);
-  }
+static KRML_MUSTINLINE void libcrux_ml_dsa_ntt_reduce_37(Eurydice_arr_a4 *re) {
+  libcrux_ml_dsa_simd_portable_reduce_65(re);
 }
 
 /**
@@ -4770,7 +4771,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_as1_plus_s2_37(
   }
   for (size_t i = (size_t)0U; i < result.meta; i++) {
     size_t i0 = i;
-    libcrux_ml_dsa_polynomial_barrett_reduce_ff_37(&result.ptr[i0]);
+    libcrux_ml_dsa_ntt_reduce_37(&result.ptr[i0]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&result.ptr[i0]);
     libcrux_ml_dsa_polynomial_add_ff_37(&result.ptr[i0],
                                         &s1_s2.ptr[columns_in_a + i0]);
@@ -5667,7 +5668,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_matrix_x_mask_37(
           &product, &matrix.ptr[i1 * columns_in_a + j]);
       libcrux_ml_dsa_polynomial_add_ff_37(&result.ptr[i1], &product);
     }
-    libcrux_ml_dsa_polynomial_barrett_reduce_ff_37(&result.ptr[i1]);
+    libcrux_ml_dsa_ntt_reduce_37(&result.ptr[i1]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&result.ptr[i1]);
   }
 }
@@ -6686,9 +6687,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_84(
     Eurydice_arr_d4 *simd_unit) {
   for (size_t i = (size_t)0U; i < (size_t)8U; i++) {
     size_t i0 = i;
-    simd_unit->data[i0] = simd_unit->data[i0] << (uint32_t)(int32_t)13;
+    simd_unit->data[i0] =
+        libcrux_ml_dsa_simd_portable_arithmetic_reduce_element(
+            simd_unit->data[i0] << (uint32_t)(int32_t)13);
   }
-  libcrux_ml_dsa_simd_portable_arithmetic_barrett_reduce_simd_unit(simd_unit);
 }
 
 /**
@@ -6749,7 +6751,7 @@ static KRML_MUSTINLINE void libcrux_ml_dsa_matrix_compute_w_approx_37(
                                                   verifier_challenge_as_ntt);
     libcrux_ml_dsa_polynomial_subtract_ff_37(&inner_result, &t1.ptr[i1]);
     t1.ptr[i1] = inner_result;
-    libcrux_ml_dsa_polynomial_barrett_reduce_ff_37(&t1.ptr[i1]);
+    libcrux_ml_dsa_ntt_reduce_37(&t1.ptr[i1]);
     libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(&t1.ptr[i1]);
   }
 }

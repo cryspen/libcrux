@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- (libcrux-ml-dsa) [#1398](https://github.com/cryspen/libcrux/pull/1398): Fix incorrect AVX2 use_hint implementation
+
 ### Removed
 
 - [#1391](https://github.com/cryspen/libcrux/pull/1391): Remove support for HMAC-SHA1
