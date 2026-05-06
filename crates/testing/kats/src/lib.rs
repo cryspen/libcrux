@@ -6,3 +6,6 @@
 pub mod wycheproof;
 
 pub mod acvp;
+
+#[cfg(feature = "sha2")]
+pub mod sha2;

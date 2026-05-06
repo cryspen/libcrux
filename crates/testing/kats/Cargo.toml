@@ -15,7 +15,9 @@ repository.workspace = true
 hex = { version = "0.4.3", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
+cavp = { path = "../../../cavp", optional = true }
 
 [features]
 mldsa = []
 mlkem = []
+sha2 = ["dep:cavp"]
