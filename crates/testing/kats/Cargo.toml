@@ -21,3 +21,4 @@ serde_json = { version = "1.0" }
 mldsa = []
 mlkem = []
 sha2 = ["dep:cavp"]
+poly1305 = []

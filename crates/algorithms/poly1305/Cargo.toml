@@ -19,3 +19,4 @@ libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 
 [dev-dependencies]
 libcrux-poly1305 = { path = ".", features = ["expose-hacl"] }
+libcrux-kats = { workspace = true, features = ["poly1305"] }
