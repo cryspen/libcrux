@@ -16,10 +16,10 @@ module Proof_Utils.NatFold
     α/β/η-equivalent inline lambdas whose refinement types differ only
     syntactically.
 
-    Earlier attempts to discharge these equalities via [fold_range_ext]
-    (see [Libcrux_sha3.Proof_utils.Folds]) ran into the same wall: the
-    pointwise hypothesis of [fold_range_ext] is a ∀-quantified closure
-    equality, which SMT cannot prove for hax-extracted lambdas.
+    Earlier attempts to discharge these equalities via the standard
+    [fold_range_ext] form ran into the same wall: the pointwise
+    hypothesis of [fold_range_ext] is a ∀-quantified closure equality,
+    which SMT cannot prove for hax-extracted lambdas.
 
     ----------------------------------------------------------------
     Solution
@@ -60,8 +60,7 @@ module Proof_Utils.NatFold
          - Relate the nat-fold to a recursive helper via structural
            induction.
 
-    See [Test_Norm_Plain] and [Test_Keccakf_NatFold] for worked examples.
-    See also [EquivImplSpec.Keccakf.Generic.lemma_keccakf1600_is_rounds] for
+    See [EquivImplSpec.Keccakf.Generic.lemma_keccakf1600_is_rounds] for
     a real-world application. *)
 
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"

@@ -40,14 +40,14 @@ module EquivImplSpec.Keccakf.Generic
      (trivial wrappers around lane_correctness fields)
    - One-round and multi-round composition (assuming per-step lemmas)
 
-   Admitted (library-level, same as portable proof):
+   Library-level lemmas (discharged via Proof_Utils.Lemmas + EquivImplSpec.Keccakf.SpecRounds):
    - [Proof_Utils.Lemmas.lemma_rotate_left_zero]: rotate_left(x, 0) == x
    - [Proof_Utils.Lemmas.logand_commutative]: (a &. b) == (b &. a)
    - lemma_rho_offsets_values: RHO_OFFSETS array element values
    - lemma_keccakf1600_is_rounds: fold_range bridge (impl side)
    - lemma_keccak_f_is_rounds: fold_range bridge (spec side)
 
-   PROOF STRATEGY for the to_spec admits:
+   PROOF STRATEGY for the to_spec lemmas:
 
    Each to_spec lemma follows the same pattern:
    1. Use the generic impl-side lemma to know what each slot contains
@@ -1283,7 +1283,7 @@ let lemma_rho_thru_4_extract_lane
     (spec-side 25-position result with matching offsets), the goal reduces to
     pointwise equality + [eq_intro]. *)
 
-(* Theta+Rho commutativity (2026-05-04: factored as 5 row-helpers + a dispatcher).
+(* Theta+Rho commutativity (factored as 5 row-helpers + a dispatcher).
 
    The cumulative [lemma_rho_thru_4_extract_lane] supplies all 25 impl-side
    per-index equalities; [lemma_rho_theta_spec] supplies the matching 25
