@@ -15,15 +15,30 @@ use hax_lib::int::*;
 /// Corresponds to the `S ⊕ (Pi || 0^c)` step of Algorithm 8.
 #[hax_lib::requires(rate <= 200 && rate % 8 == 0 && block.len() >= rate)]
 pub fn xor_block_into_state(state: State, block: &[u8], rate: usize) -> State {
-    createi(|i| {
-        if i < rate / 8 {
-            // The slice is exactly 8 bytes (since `i < rate / 8` and
-            // `block.len() >= rate`), so `try_into::<[u8; 8]>` cannot fail.
-            state[i] ^ u64::from_le_bytes(block[8 * i..8 * i + 8].try_into().unwrap())
-        } else {
-            state[i]
-        }
-    })
+    #[cfg(charon)] // https://github.com/AeneasVerif/aeneas/issues/924
+    {
+        core::array::from_fn(|i| {
+            if i < rate / 8 {
+                // The slice is exactly 8 bytes (since `i < rate / 8` and
+                // `block.len() >= rate`), so `try_into::<[u8; 8]>` cannot fail.
+                state[i] ^ u64::from_le_bytes(block[8 * i..8 * i + 8].try_into().unwrap())
+            } else {
+                state[i]
+            }
+        })
+    }
+    #[cfg(not(charon))]
+    {
+        createi(|i| {
+            if i < rate / 8 {
+                // The slice is exactly 8 bytes (since `i < rate / 8` and
+                // `block.len() >= rate`), so `try_into::<[u8; 8]>` cannot fail.
+                state[i] ^ u64::from_le_bytes(block[8 * i..8 * i + 8].try_into().unwrap())
+            } else {
+                state[i]
+            }
+        })
+    }
 }
 
 /// Extract `len` bytes from the rate portion of the state (little-endian, lane-interleaved).

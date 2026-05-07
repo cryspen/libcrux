@@ -1,3 +1,5 @@
+#![cfg_attr(charon, feature(register_tool))]
+#![cfg_attr(charon, register_tool(charon))]
 /// Keccak-f[1600] permutation — exposed for cross-spec testing.
 pub mod keccak_f;
 mod sha3;
