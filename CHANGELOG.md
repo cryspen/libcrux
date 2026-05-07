@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [#1399](https://github.com/cryspen/libcrux/pull/1399): Add a Rust spec for SHA-3
+### Fixed
+
+- (libcrux-ml-dsa) [#1398](https://github.com/cryspen/libcrux/pull/1398): Fix incorrect AVX2 use_hint implementation
 
 ### Removed
 
