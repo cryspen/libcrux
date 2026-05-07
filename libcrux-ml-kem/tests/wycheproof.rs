@@ -69,12 +69,12 @@ macro_rules! wycheproof_test {
                         match test.result {
                             MlKemResult::Invalid => assert!(
                                 !is_valid,
-                                "tc_id {} failed. key is valid but should be invalid",
+                                "tc_id {} failed. invalid public key passes key validation",
                                 test.tc_id,
                             ),
                             MlKemResult::Valid => assert!(
                                 is_valid,
-                                "tc_id {} failed. key is invalid but should be valid",
+                                "tc_id {} failed. valid public key rejected by key validation",
                                 test.tc_id,
                             ),
                             MlKemResult::Acceptable => {
@@ -113,12 +113,12 @@ macro_rules! wycheproof_test {
                         match test.result {
                             MlKemResult::Invalid => assert!(
                                 !is_valid,
-                                "tc_id {} failed. key is valid but should be invalid",
+                                "tc_id {} failed. invalid private key passes key validation",
                                 test.tc_id,
                             ),
                             MlKemResult::Valid => assert!(
                                 is_valid,
-                                "tc_id {} failed. key is invalid but should be valid",
+                                "tc_id {} failed. valid private key rejected by key validation",
                                 test.tc_id,
                             ),
                             MlKemResult::Acceptable => {
