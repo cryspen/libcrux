@@ -23,6 +23,7 @@ pub struct TestGroup {
 pub struct Test {
     pub tc_id: usize,
     pub flags: Vec<String>,
+    pub comment: String,
     #[serde(with = "hex::serde")]
     pub key: Vec<u8>,
     #[serde(rename = "iv", with = "hex::serde")]
