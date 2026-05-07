@@ -75,16 +75,14 @@ libcrux_impl!(
 mod tests {
     #![allow(non_snake_case)]
     use super::*;
-
     use crate::v1::traits::PSQ;
     macro_rules! libcrux_test {
         ($alg:ident) => {
             #[test]
             fn $alg() {
-                use rand::TryRngCore;
+                use rand_core::UnwrapErr;
 
-                let mut os_rng = rand::rng();
-                let mut rng = os_rng.unwrap_mut();
+                let mut rng = UnwrapErr(rand::rng());
                 let (sk, pk) = $alg::generate_key_pair(&mut rng).unwrap();
                 let sctx = b"test context";
                 let (psk_initiator, message) = $alg::encapsulate_psq(&pk, sctx, &mut rng).unwrap();

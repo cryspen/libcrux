@@ -146,8 +146,7 @@ pub trait Select {
 #[cfg(any(hax, not(target_arch = "aarch64")))]
 mod portable {
     use super::{Select, Swap};
-    use crate::traits::Declassify;
-    use crate::U8;
+    use crate::{traits::Declassify, U8};
     #[cfg(feature = "check-secret-independence")]
     use crate::{traits::*, U16, U32, U64};
 
@@ -299,7 +298,7 @@ mod aarch64 {
     /// of `select32` and `select64`, determining the used register
     /// width.
     macro_rules! impl_select {
-        ($ty:ty, $secret_ty:ty, $select: ident) => {
+        ($ty:ty, $secret_ty:ty, $select:ident) => {
             impl Select for $ty {
                 #[inline]
                 fn select(&mut self, other: &Self, selector: U8) {
@@ -419,12 +418,13 @@ mod select {
     extern crate std;
     use core::fmt::Debug;
 
-    use super::*;
-    use rand::{rng, Fill, Rng, RngCore};
+    use rand::{rng, Fill, Rng, RngExt};
 
-    fn test<T: Classify + Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
+    use super::*;
+
+    fn test<T: Classify + Default + Copy + PartialEq + Eq + Debug + Fill>(rng: &mut impl Rng)
     where
-        [T]: Fill + Select,
+        [T]: Select,
     {
         let selector: u8 = rng.random::<u8>() & 1;
         // XXX: Setting `selector` as follows will break the selection in release mode on `aarch64`.
@@ -512,13 +512,14 @@ mod swap {
     extern crate std;
     use core::fmt::Debug;
 
+    use rand::{rng, Fill, Rng, RngExt};
+
     use super::*;
-    use rand::{rng, Fill, Rng, RngCore};
 
     /// Test swap on public integers.
-    fn test<T: Default + Copy + PartialEq + Eq + Debug>(rng: &mut impl RngCore)
+    fn test<T: Default + Copy + PartialEq + Eq + Debug + Fill>(rng: &mut impl Rng)
     where
-        [T]: Fill + Swap,
+        [T]: Swap,
     {
         let selector = rng.random::<u8>() & 1;
         // XXX: Setting `selector` as follows will break the swap in release mode on `aarch64`.

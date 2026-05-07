@@ -51,8 +51,18 @@ macro_rules! wycheproof_verify_test {
                         $verify(&verification_key, &message, &context, &signature);
 
                     match test.result {
-                        VerifyResult::Valid => assert!(verification_result.is_ok()),
-                        VerifyResult::Invalid => assert!(verification_result.is_err()),
+                        VerifyResult::Valid => assert!(
+                            verification_result.is_ok(),
+                            "failed tc_id {} (unexpected invalid): {}",
+                            test.tc_id,
+                            test.comment
+                        ),
+                        VerifyResult::Invalid => assert!(
+                            verification_result.is_err(),
+                            "failed tc_id {} (unexpected valid): {}",
+                            test.tc_id,
+                            test.comment
+                        ),
                     }
                 }
             }

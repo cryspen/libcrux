@@ -1,9 +1,10 @@
 use std::{fs::File, io::BufReader};
 
+use rand_core::UnwrapErr;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
-fn randbuf<const N: usize>(rng: &mut impl rand_core::RngCore) -> [u8; N] {
+fn randbuf<const N: usize>(rng: &mut impl rand_core::Rng) -> [u8; N] {
     let mut buf = [0; N];
     rng.fill_bytes(&mut buf);
     buf
@@ -259,10 +260,7 @@ fn chachapoly_self_test_rand() {
     let msg = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
 
-    use rand_core::TryRngCore;
-
-    let mut os_rng = rand_core::OsRng;
-    let mut rng = os_rng.unwrap_mut();
+    let mut rng = UnwrapErr(rand::rngs::SysRng);
 
     let key: [u8; 32] = randbuf(&mut rng);
     let nonce: [u8; 12] = randbuf(&mut rng);
@@ -281,10 +279,7 @@ fn chachapoly_test_invalid_buffer_lengths() {
     let msg = b"hacspec rulez";
     let aad = b"associated data" as &[u8];
 
-    use rand_core::TryRngCore;
-
-    let mut os_rng = rand_core::OsRng;
-    let mut rng = os_rng.unwrap_mut();
+    let mut rng = UnwrapErr(rand::rngs::SysRng);
 
     let key: [u8; 32] = randbuf(&mut rng);
     let nonce: [u8; 12] = randbuf(&mut rng);
