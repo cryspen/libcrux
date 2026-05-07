@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 242687bfb0fbc29107b95a0f3e72202e9978064b
+ * Charon: db1b72c6b2fdb686fe0c00e95e3415978d3ce1f9
+ * Eurydice: 01a00d0c9df19a58c2b8513f049354b4719d5922
+ * Karamel: 2fe560bbae17fe8a855b0dcf462db18ec37edc02
+ * F*: 9c3cf2e2f27cefc577e423f272e5c33f8c11f2bc
+ * Libcrux: e75f8edd9f168ae08eeea8aaf1445bc6111c2356
  */
 
 
@@ -73,7 +73,7 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
  If `selector` is not zero, return the bytes in `rhs`; return the bytes in
  `lhs` otherwise.
 */
-static KRML_NOINLINE Eurydice_arr_600
+static KRML_NOINLINE Eurydice_arr_ec
 libcrux_ml_kem_constant_time_ops_select_ct(
   Eurydice_borrow_slice_u8 lhs,
   Eurydice_borrow_slice_u8 rhs,
@@ -82,18 +82,19 @@ libcrux_ml_kem_constant_time_ops_select_ct(
 {
   uint8_t
   mask = core_num__u8__wrapping_sub(libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  Eurydice_arr_600 out = { .data = { 0U } };
+  Eurydice_arr_ec out = { .data = { 0U } };
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE; i++)
   {
     size_t i0 = i;
     uint8_t
-    outi = ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) | ((uint32_t)rhs.ptr[i0] & (uint32_t)~mask);
+    outi =
+      ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) | ((uint32_t)rhs.ptr[i0] & (~(uint32_t)mask & 0xFFU));
     out.data[i0] = outi;
   }
   return out;
 }
 
-static KRML_NOINLINE Eurydice_arr_600
+static KRML_NOINLINE Eurydice_arr_ec
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
   Eurydice_borrow_slice_u8 lhs,
   Eurydice_borrow_slice_u8 rhs,
@@ -103,7 +104,7 @@ libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
   return libcrux_ml_kem_constant_time_ops_select_ct(lhs, rhs, selector);
 }
 
-static KRML_NOINLINE Eurydice_arr_600
+static KRML_NOINLINE Eurydice_arr_ec
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
   Eurydice_borrow_slice_u8 lhs_c,
   Eurydice_borrow_slice_u8 rhs_c,

@@ -32,6 +32,7 @@ files:
         - [ Eurydice, arr_88]
         - [ Eurydice, arr_910]
         - [ Eurydice, arr_6d]
+        - [ Eurydice, arr_6c]
         - [ core, result, unwrap_26_ab ]
         - [ core, result, Result_a4 ]
     api:
@@ -65,9 +66,9 @@ files:
         - [Eurydice, arr_c0]
         - [Eurydice, arr_05]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, KeccakState_55]
-        - [Eurydice, arr_c0]
-        - [Eurydice, arr_05]
+        - [libcrux_sha3, generic_keccak, KeccakState_7d]
+        - [Eurydice, arr_c40]
+        - [Eurydice, arr_50]
       monomorphizations_of:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
@@ -153,6 +154,7 @@ files:
         - [libcrux_ml_dsa, ml_dsa_generic, instantiations, portable, "*"]
       monomorphizations_exact:
         - [libcrux_ml_dsa, pre_hash, PreHashResult]
+        - [core, result, Result_24]
         - [core, result, Result_a8]
         - [core, option, Option_84]
 

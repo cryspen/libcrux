@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
- * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
- * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
- * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 242687bfb0fbc29107b95a0f3e72202e9978064b
+ * Charon: db1b72c6b2fdb686fe0c00e95e3415978d3ce1f9
+ * Eurydice: 01a00d0c9df19a58c2b8513f049354b4719d5922
+ * Karamel: 2fe560bbae17fe8a855b0dcf462db18ec37edc02
+ * F*: 9c3cf2e2f27cefc577e423f272e5c33f8c11f2bc
+ * Libcrux: e75f8edd9f168ae08eeea8aaf1445bc6111c2356
  */
 
 
@@ -41,7 +41,7 @@ A monomorphic instance of libcrux_ml_dsa.types.MLDSASignature
 with const generics
 - $3309size_t
 */
-typedef Eurydice_arr_96 libcrux_ml_dsa_types_MLDSASignature_8f;
+typedef Eurydice_arr_0c libcrux_ml_dsa_types_MLDSASignature_aa;
 
 /**
  A reference to the raw byte array.
@@ -55,8 +55,8 @@ with const generics
 - SIZE= 3309
 */
 static inline const
-Eurydice_arr_96
-*libcrux_ml_dsa_types_as_ref_c5_fa(const Eurydice_arr_96 *self)
+Eurydice_arr_0c
+*libcrux_ml_dsa_types_as_ref_c5_5c(const Eurydice_arr_0c *self)
 {
   return self;
 }
@@ -73,8 +73,8 @@ with const generics
 - SIZE= 1952
 */
 static inline const
-Eurydice_arr_4a
-*libcrux_ml_dsa_types_as_ref_7f_97(const Eurydice_arr_4a *self)
+Eurydice_arr_29
+*libcrux_ml_dsa_types_as_ref_7f_a2(const Eurydice_arr_29 *self)
 {
   return self;
 }
@@ -86,7 +86,7 @@ with types (), libcrux_ml_dsa_types_VerificationError
 */
 typedef struct Result_41_s
 {
-  Result_80_tags tag;
+  Result_57_tags tag;
   libcrux_ml_dsa_types_VerificationError f0;
 }
 Result_41;
@@ -103,27 +103,11 @@ with const generics
 - SIZE= 4032
 */
 static inline const
-Eurydice_arr_d10
-*libcrux_ml_dsa_types_as_ref_9b_09(const Eurydice_arr_d10 *self)
+Eurydice_arr_24
+*libcrux_ml_dsa_types_as_ref_9b_e5(const Eurydice_arr_24 *self)
 {
   return self;
 }
-
-/**
-A monomorphic instance of core.result.Result
-with types libcrux_ml_dsa_types_MLDSASignature_8f, libcrux_ml_dsa_types_SigningError
-
-*/
-typedef struct Result_97_s
-{
-  Result_80_tags tag;
-  union {
-    Eurydice_arr_96 case_Ok;
-    libcrux_ml_dsa_types_SigningError case_Err;
-  }
-  val;
-}
-Result_97;
 
 /**
 A monomorphic instance of core.result.Result
@@ -132,7 +116,7 @@ with types (), libcrux_ml_dsa_types_SigningError
 */
 typedef struct Result_53_s
 {
-  Result_80_tags tag;
+  Result_57_tags tag;
   libcrux_ml_dsa_types_SigningError f0;
 }
 Result_53;
@@ -148,9 +132,9 @@ A monomorphic instance of libcrux_ml_dsa.types.zero_c5
 with const generics
 - SIZE= 3309
 */
-static inline Eurydice_arr_96 libcrux_ml_dsa_types_zero_c5_fa(void)
+static inline Eurydice_arr_0c libcrux_ml_dsa_types_zero_c5_5c(void)
 {
-  return (KRML_CLITERAL(Eurydice_arr_96){ .data = { 0U } });
+  return (KRML_CLITERAL(Eurydice_arr_0c){ .data = { 0U } });
 }
 
 /**
@@ -159,12 +143,12 @@ with const generics
 - $1952size_t
 - $4032size_t
 */
-typedef struct libcrux_ml_dsa_types_MLDSAKeyPair_06_s
+typedef struct libcrux_ml_dsa_types_MLDSAKeyPair_d5_s
 {
-  Eurydice_arr_d10 signing_key;
-  Eurydice_arr_4a verification_key;
+  Eurydice_arr_24 signing_key;
+  Eurydice_arr_29 verification_key;
 }
-libcrux_ml_dsa_types_MLDSAKeyPair_06;
+libcrux_ml_dsa_types_MLDSAKeyPair_d5;
 
 /**
  Build
@@ -177,7 +161,7 @@ A monomorphic instance of libcrux_ml_dsa.types.new_7f
 with const generics
 - SIZE= 1952
 */
-static inline Eurydice_arr_4a libcrux_ml_dsa_types_new_7f_97(Eurydice_arr_4a value)
+static inline Eurydice_arr_29 libcrux_ml_dsa_types_new_7f_a2(Eurydice_arr_29 value)
 {
   return value;
 }
@@ -193,7 +177,7 @@ A monomorphic instance of libcrux_ml_dsa.types.new_9b
 with const generics
 - SIZE= 4032
 */
-static inline Eurydice_arr_d10 libcrux_ml_dsa_types_new_9b_09(Eurydice_arr_d10 value)
+static inline Eurydice_arr_24 libcrux_ml_dsa_types_new_9b_e5(Eurydice_arr_24 value)
 {
   return value;
 }
