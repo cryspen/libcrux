@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.8] (2026-03-19)
 
+- [#1292](https://github.com/cryspen/libcrux/pull/1292): Add portable implementations of CSHAKE-128 and CSHAKE-256 (https://github.com/kraemv)
+
 ### Fixed
 
 - [#1352](https://github.com/cryspen/libcrux/pull/1352): Fix SHA-3 XOF squeeze and AVX2 store function

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- [#1292](https://github.com/cryspen/libcrux/pull/1292): Add support for KMAC (https://github.com/kraemv)
+
 ### Fixed
 
 - (libcrux-ml-dsa) [#1398](https://github.com/cryspen/libcrux/pull/1398): Fix incorrect AVX2 use_hint implementation
