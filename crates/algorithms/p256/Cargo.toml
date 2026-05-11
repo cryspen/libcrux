@@ -30,6 +30,8 @@ check-secret-independence = [
 
 
 [dev-dependencies]
+libcrux-p256 = { workspace = true, features = ["expose-hacl"] }
 libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ] }
+libcrux-kats = { workspace = true, features = ["ecdh"] }
