@@ -19,6 +19,7 @@ serde_json = { version = "1.0" }
 
 [features]
 ecdh = []
+ecdsa = []
 mldsa = []
 mlkem = []
 sha2 = ["dep:cavp"]
