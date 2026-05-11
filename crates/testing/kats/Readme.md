@@ -11,6 +11,11 @@ This crate provides KAT test vectors for:
 - ML-KEM (wycheproof)
     - keygen/decaps
     - encaps
+- p256 (wycheproof)
+    - ECDH
+    - ECDSA
+- poly1305 (boringssl)
+- SHA-2 (NIST)
 
 ⚠️ NOTE: This crate serves as an internal testing dependency for other `libcrux`
 crates, and is not intended to be used directly.
