@@ -17,7 +17,7 @@ crates, and is not intended to be used directly.
 
 ## Source
 
-The JSON files for wycheproof ML-KEM and ML-DSA were taken from `https://github.com/C2SP/wycheproof`
+The JSON files for wycheproof were taken from `https://github.com/C2SP/wycheproof`
 * As of commit [6d9d6de30f02e229dfc160323722c3ddac866181](https://github.com/C2SP/wycheproof/tree/6d9d6de30f02e229dfc160323722c3ddac866181)
 
 The JSON files for ACVP ML-KEM and ML-DSA were taken from `https://github.com/usnistgov/ACVP-Server`
