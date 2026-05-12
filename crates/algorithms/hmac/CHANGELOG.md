@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#1434](https://github.com/cryspen/libcrux/pull/1434): Update dependencies: `libcrux-hacl-rs`
 - [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-sha2`
 
 ## [0.0.6] (2026-02-12)

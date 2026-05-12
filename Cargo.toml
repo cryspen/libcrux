@@ -93,13 +93,13 @@ libcrux-aead = { version = "=0.0.8-rc.2", path = "crates/primitives/aead" }
 libcrux-aesgcm = { version = "=0.0.8-rc.2", path = "crates/algorithms/aesgcm" }
 libcrux-blake2 = { version = "=0.0.7-rc.1", path = "crates/algorithms/blake2" }
 libcrux-chacha20poly1305 = { version = "=0.0.8-rc.2", path = "crates/algorithms/chacha20poly1305" }
-libcrux-poly1305 = { version = "=0.0.5", path = "crates/algorithms/poly1305" }
+libcrux-poly1305 = { version = "=0.0.6-rc.1", path = "crates/algorithms/poly1305" }
 libcrux-ecdsa = { version = "=0.0.7-rc.2", path = "crates/algorithms/ecdsa" }
 libcrux-ed25519 = { version = "=0.0.8-rc.1", path = "crates/algorithms/ed25519" }
-libcrux-hacl-rs = { version = "=0.0.4", path = "crates/utils/hacl-rs" }
+libcrux-hacl-rs = { version = "=0.0.5-rc.1", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.7-rc.2", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.7-rc.2", path = "crates/algorithms/hmac" }
-libcrux-intrinsics = { version = "=0.0.6", path = "crates/utils/intrinsics" }
+libcrux-intrinsics = { version = "=0.0.7-rc.1", path = "crates/utils/intrinsics" }
 libcrux-digest = { version = "=0.0.8-rc.1", path = "crates/primitives/digest" }
 libcrux-rsa = { version = "=0.0.7-rc.1", path = "crates/algorithms/rsa" }
 libcrux-sha2 = { version = "=0.0.7-rc.1", path = "crates/algorithms/sha2" }
@@ -113,7 +113,7 @@ libcrux-psq = { version = "=0.0.9-rc.2", path = "libcrux-psq" }
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
 libcrux-ecdh = { version = "=0.0.7-rc.2", path = "libcrux-ecdh", default-features = false }
-libcrux-curve25519 = { version = "=0.0.7-rc.1", path = "crates/algorithms/curve25519", default-features = false }
+libcrux-curve25519 = { version = "=0.0.7-rc.2", path = "crates/algorithms/curve25519", default-features = false }
 libcrux-ml-kem = { version = "=0.0.9-rc.1", path = "libcrux-ml-kem", default-features = false }
 libcrux-p256 = { version = "=0.0.7-rc.1", path = "crates/algorithms/p256", default-features = false }
 

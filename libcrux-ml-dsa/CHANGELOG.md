@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#1434](https://github.com/cryspen/libcrux/pull/1434): Update dependencies: `core-models`, `libcrux-intrinsics`
 - [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-sha3`
 
 ## [0.0.8] (2026-03-19)

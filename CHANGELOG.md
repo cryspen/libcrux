@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#1434](https://github.com/cryspen/libcrux/pull/1434): Update dependencies: `libcrux-hacl-rs`, `libcrux-poly1305`, `libcrux-curve25519`
 - [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-ed25519`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-aesgcm`, `libcrux-blake2`, `libcrux-chacha20poly1305`, `libcrux-p256`, `libcrux-curve25519`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-hmac`, `libcrux-hkdf`, `libcrux-rsa`, `libcrux-ecdsa`, `libcrux-ecdh`, `libcrux-digest`, `libcrux-psq`, `libcrux-ml-dsa`, `libcrux-aead`
 - [#1412](https://github.com/cryspen/libcrux/pull/1412): Update dependencies: `libcrux-aead`, `libcrux-aesgcm`, `libcrux-chacha20poly1305`, `libcrux-ecdsa`, `libcrux-hkdf`, `libcrux-hmac`, `libcrux-kem`, `libcrux-ml-dsa`, `libcrux-psq`, `libcrux-ecdh`, `libcrux-hpke-rs`
 - (libcrux-ecdh) [#1385](https://github.com/cryspen/libcrux/pull/1385): Update RNG trait bounds on key generation functions from rand v0.9 `Rng` trait to rand v0.10 `Rng` trait
