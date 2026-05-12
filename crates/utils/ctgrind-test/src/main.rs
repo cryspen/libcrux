@@ -31,7 +31,7 @@ pub fn main() {
     let secret = black_box([0xDE, 0xAD, 0xBE, 0xEF]);
     let public = black_box([0xDE, 0xAD, 0xBE, 0x00]);
 
-    // 1. POISON THE SECRET: Tell Valgrind to treat this memory as uninitialized
+    // 1. CLASSIFY THE SECRET: Tell Valgrind to treat this memory as uninitialized
     // We use `let _ =` because `mark_memory` returns the number of unaddressable bytes (usize)
     let _ = memcheck::mark_memory(
         secret.as_ptr() as *const c_void,
@@ -41,7 +41,7 @@ pub fn main() {
     // --- TEST SECURE FUNCTION ---
     let mut res_sec = compare_secure(&secret, &public);
 
-    // Unpoison the result so we can safely branch/print it
+    // Unclassify the result so we can safely branch/print it
     let _ = memcheck::mark_memory(
         &mut res_sec as *mut _ as *mut c_void,
         std::mem::size_of_val(&res_sec),
@@ -52,7 +52,7 @@ pub fn main() {
     // --- TEST INSECURE FUNCTION ---
     let mut res_insec = compare_insecure(&secret, &public);
 
-    // Unpoison the result
+    // Declassify the result
     let _ = memcheck::mark_memory(
         &mut res_insec as *mut _ as *mut c_void,
         std::mem::size_of_val(&res_insec),

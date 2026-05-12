@@ -16,8 +16,9 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
 ) -> bool {
     let mut result = false;
     for i in 0..vector.len() {
-        result = result || vector[i].infinity_norm_exceeds(bound);
+        result = result | vector[i].infinity_norm_exceeds(bound);
     }
+
     result
 }
 

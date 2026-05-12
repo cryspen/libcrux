@@ -25,3 +25,6 @@ path = "src/bin/mlkem.rs"
 [[bin]]
 name = "mldsa"
 path = "src/bin/mldsa.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(valgrind_ct_test)'] }
