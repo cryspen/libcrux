@@ -242,6 +242,12 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
+[profile.release-debug]
+inherits = "release"
+debug = true
+strip = false
+
+
 # XXX: Not needed anymore, but nice for test speed
 # [profile.dev.package."libcrux-ml-dsa"]
 # opt-level = 1

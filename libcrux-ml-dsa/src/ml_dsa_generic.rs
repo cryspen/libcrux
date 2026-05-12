@@ -3,6 +3,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
+    ct_test::ct_declassify,
     encoding::{self},
     hash_functions::{shake128, shake256},
     matrix::{
@@ -26,6 +27,8 @@ pub(crate) mod multiplexing;
 
 #[libcrux_macros::ml_dsa_parameter_sets(44, 65, 87)]
 pub(crate) mod generic {
+    use crate::ct_test::ct_classify;
+
     use super::*;
 
     // Derived constants
@@ -153,6 +156,11 @@ pub(crate) mod generic {
         let (s2_serialized, t0_serialized) =
             remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
 
+        ct_classify(&randomness);
+        ct_classify(seed_for_signing);
+        ct_classify(s1_serialized);
+        ct_classify(s2_serialized);
+
         // Deserialize s1, s2, and t0.
         let mut s1_as_ntt = [PolynomialRingElement::zero(); COLUMNS_IN_A];
         let mut s2_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
@@ -262,6 +270,8 @@ pub(crate) mod generic {
                 shake.squeeze(&mut commitment_hash_candidate);
             }
 
+            ct_declassify(&commitment_hash_candidate);
+
             let mut verifier_challenge = PolynomialRingElement::zero();
             sample_challenge_ring_element::<SIMDUnit, Shake256>(
                 &commitment_hash_candidate,
@@ -281,11 +291,18 @@ pub(crate) mod generic {
             add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
             subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
 
-            if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
+            let mask_invalid =
+                vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA);
+
+            ct_declassify(&mask_invalid);
+
+            if mask_invalid {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
-                if vector_infinity_norm_exceeds::<SIMDUnit>(&w0, GAMMA2 - BETA) {
+                let w0_invalid = vector_infinity_norm_exceeds::<SIMDUnit>(&w0, GAMMA2 - BETA);
+                ct_declassify(&w0_invalid);
+                if w0_invalid {
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
@@ -300,6 +317,8 @@ pub(crate) mod generic {
                         // XXX: https://github.com/hacspec/hax/issues/1171
                         // continue;
                     } else {
+                        ct_declassify(&w0);
+                        ct_declassify(&challenge_times_t0);
                         add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
                         let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
                         let ones_in_hint =

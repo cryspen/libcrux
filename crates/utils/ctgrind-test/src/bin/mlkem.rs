@@ -21,13 +21,13 @@ fn test_decapsulate() {
     let cpa_sk_len = sk_bytes.len() - pk_len - H_DIGEST_LEN - Z_LEN; // 768
     let z_offset = cpa_sk_len + pk_len + H_DIGEST_LEN; // 1600
 
-    // Poison CPA secret key
+    // Classify CPA secret key
     let _ = memcheck::mark_memory(
         sk_bytes.as_ptr() as *const c_void,
         cpa_sk_len,
         MemState::Undefined,
     );
-    // Poison implicit rejection value z
+    // Classify implicit rejection value z
     let _ = memcheck::mark_memory(
         sk_bytes[z_offset..].as_ptr() as *const c_void,
         Z_LEN,
@@ -36,12 +36,8 @@ fn test_decapsulate() {
 
     let mut ss = mlkem512::decapsulate(key_pair.private_key(), &ct);
 
-    // Unpoison shared secret before use.
-    let _ = memcheck::mark_memory(
-        ss.as_mut_ptr() as *mut c_void,
-        ss.len(),
-        MemState::Defined,
-    );
+    // Declassify shared secret before use.
+    let _ = memcheck::mark_memory(ss.as_mut_ptr() as *mut c_void, ss.len(), MemState::Defined);
     println!("mlkem512 shared secret: {:02x?}", &ss[..4]);
 }
 
