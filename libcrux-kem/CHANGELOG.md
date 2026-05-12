@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#1434](https://github.com/cryspen/libcrux/pull/1434): Update dependencies: `libcrux-curve25519`
 - [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-ml-kem`, `libcrux-p256`, `libcrux-curve25519`, `libcrux-sha3`, `libcrux-ecdh`
 - [#1412](https://github.com/cryspen/libcrux/pull/1412): Update dependencies: `libcrux-ecdh`
 - [#1385](https://github.com/cryspen/libcrux/pull/1385): Update trait bounds to use `rand` version 0.10
