@@ -6,6 +6,7 @@ macro_rules! wycheproof_test {
     ($name:ident, $parameter_set:expr, $module:path) => {
         mod $name {
             use super::*;
+            use libcrux_kats::wycheproof::TestResult;
 
             #[test]
             fn keygen_and_decaps() {
@@ -37,7 +38,7 @@ macro_rules! wycheproof_test {
                         assert_eq!(shared_secret_from_decapsulate, test.shared_secret.as_ref());
 
                         // assert result is valid
-                        assert_eq!(test.result, MlKemResult::Valid);
+                        assert_eq!(test.result, TestResult::Valid);
                     }
                 }
             }
@@ -49,7 +50,7 @@ macro_rules! wycheproof_test {
                 for test_group in katfile.encaps_tests() {
                     for test in &test_group.tests {
                         // all tests have an Invalid results and a `ModulusOverflow` flag
-                        assert_eq!(test.result, MlKemResult::Invalid);
+                        assert_eq!(test.result, TestResult::Invalid);
                         assert_eq!(test.flags, vec![Flag::ModulusOverflow]);
                         // convert to encapsulation key
                         let bytes: [u8; _] = test
