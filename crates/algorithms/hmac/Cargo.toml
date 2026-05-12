@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-hmac"
-version = "0.0.7-rc.1"
+version = "0.0.7-rc.2"
 description = "Libcrux HMAC implementation"
 readme = "Readme.md"
 

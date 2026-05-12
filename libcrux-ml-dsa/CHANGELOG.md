@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.9-rc.1] (2026-05-11)
+## [0.0.9-rc.2] (2026-05-12)
 
 ### Fixed
 
 - [#1398](https://github.com/cryspen/libcrux/pull/1398): Fix incorrect AVX2 use_hint implementation
 - [#1395](https://github.com/cryspen/libcrux/pull/1395): Fully reduce iNTT inputs on AVX2
+
+### Changed
+
+- [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-sha3`
 
 ## [0.0.8] (2026-03-19)
 
