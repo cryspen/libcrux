@@ -117,7 +117,7 @@ pub struct MlKemTest {
     pub shared_secret: Vec<u8>,
 
     /// Test result
-    pub result: MlKemResult,
+    pub result: TestResult,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -148,7 +148,7 @@ pub struct MlKemEncapsTest {
     pub shared_secret: Vec<u8>,
 
     /// Test result
-    pub result: MlKemResult,
+    pub result: TestResult,
 }
 
 #[derive(PartialEq, Serialize, Deserialize)]
@@ -170,7 +170,7 @@ pub struct MlKemDecapsValidationTest {
     pub ciphertext: Vec<u8>,
 
     /// Test result
-    pub result: MlKemResult,
+    pub result: TestResult,
 }
 
 #[derive(Hash, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -180,12 +180,4 @@ pub enum Flag {
     IncorrectCiphertextLength,
     IncorrectDecapsulationKeyLength,
     InvalidDecapsulationKey,
-}
-
-#[derive(PartialEq, Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum MlKemResult {
-    Invalid,
-    Valid,
-    Acceptable,
 }
