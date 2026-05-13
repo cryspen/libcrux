@@ -3,7 +3,7 @@ name = "libcrux-p256"
 description = "Formally verified P-256 implementation"
 readme = "Readme.md"
 
-version = "0.0.7-rc.1"
+version = "0.0.7"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
