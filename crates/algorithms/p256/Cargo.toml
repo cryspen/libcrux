@@ -3,7 +3,7 @@ name = "libcrux-p256"
 description = "Formally verified P-256 implementation"
 readme = "Readme.md"
 
-version = "0.0.6"
+version = "0.0.7"
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -13,7 +13,7 @@ repository.workspace = true
 [dependencies]
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
 libcrux-traits.workspace = true
-libcrux-hacl-rs = { version = "=0.0.4", path = "../../utils/hacl-rs/" }
+libcrux-hacl-rs.workspace = true
 libcrux-secrets.workspace = true
 libcrux-sha2 = { workspace = true, features = [
     "expose-hacl",
