@@ -47,10 +47,10 @@ macro_rules! wycheproof_sign_test {
                         let signature = $sign(&signing_key, &message, &context, signing_randomness);
 
                         if let Err(SigningError::ContextTooLongError) = signature {
-                            assert!(test.result == SignResult::Invalid)
+                            assert!(test.result == TestResult::Invalid)
                         }
 
-                        if test.result == SignResult::Valid {
+                        if test.result == TestResult::Valid {
                             assert_eq!(signature.unwrap().as_slice(), test.sig.as_slice());
                         }
                     }
@@ -76,14 +76,14 @@ macro_rules! wycheproof_sign_test {
                         let signature = $sign(&signing_key, &message, &context, signing_randomness);
 
                         if let Err(SigningError::ContextTooLongError) = signature {
-                            assert!(test.result == SignResult::Invalid)
+                            assert!(test.result == TestResult::Invalid)
                         }
 
                         if let Ok(signature) = signature {
-                            if test.result == SignResult::Valid {
+                            if test.result == TestResult::Valid {
                                 // check that the signature matches the expected signature
                                 assert_eq!(signature.as_slice(), test.sig.as_slice());
-                            } else if test.result == SignResult::Invalid {
+                            } else if test.result == TestResult::Invalid {
                                 // if a signature is generated, but it is invalid,
                                 // check that our own implementation agrees with this judgement,
                                 let verification_result =

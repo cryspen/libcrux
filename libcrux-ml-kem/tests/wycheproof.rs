@@ -7,6 +7,7 @@ macro_rules! wycheproof_test {
     ($name:ident, $parameter_set:expr, $module:path) => {
         mod $name {
             use super::*;
+            use libcrux_kats::wycheproof::TestResult;
 
             #[test]
             fn keygen_and_decaps() {
@@ -17,7 +18,7 @@ macro_rules! wycheproof_test {
                 for test_group in katfile.keygen_and_decaps_tests() {
                     for test in &test_group.tests {
                         let Ok(seed) = test.seed.clone().try_into() else {
-                            assert_eq!(test.result, MlKemResult::Invalid);
+                            assert_eq!(test.result, TestResult::Invalid);
                             continue;
                         };
 
@@ -26,7 +27,7 @@ macro_rules! wycheproof_test {
 
                         // convert ciphertext
                         let Ok(ciphertext) = <[u8; _]>::try_from(test.ciphertext.clone()) else {
-                            assert_eq!(test.result, MlKemResult::Invalid);
+                            assert_eq!(test.result, TestResult::Invalid);
                             continue;
                         };
                         let ciphertext: MlKemCiphertext<_> = ciphertext.into();
@@ -46,7 +47,7 @@ macro_rules! wycheproof_test {
                         assert_eq!(shared_secret_from_decapsulate, test.shared_secret.as_ref());
 
                         // assert result is valid
-                        assert_eq!(test.result, MlKemResult::Valid);
+                        assert_eq!(test.result, TestResult::Valid);
                     }
                 }
             }
@@ -60,25 +61,25 @@ macro_rules! wycheproof_test {
                     for test in &test_group.tests {
                         // convert to encapsulation key
                         let Ok(bytes) = <[u8; _]>::try_from(test.encapsulation_key.clone()) else {
-                            assert_eq!(test.result, MlKemResult::Invalid);
+                            assert_eq!(test.result, TestResult::Invalid);
                             continue;
                         };
                         let encapsulation_key: MlKemPublicKey<_> = bytes.into();
 
                         let is_valid = validate_public_key(&encapsulation_key);
                         match test.result {
-                            MlKemResult::Invalid => assert!(
+                            TestResult::Invalid => assert!(
                                 !is_valid,
                                 "tc_id {} failed. invalid public key passes key validation",
                                 test.tc_id,
                             ),
-                            MlKemResult::Valid => assert!(
+                            TestResult::Valid => assert!(
                                 is_valid,
                                 "tc_id {} failed. valid public key rejected by key validation",
                                 test.tc_id,
                             ),
-                            MlKemResult::Acceptable => {
-                                unreachable!("MlKemResult::Acceptable not part of test vectors")
+                            TestResult::Acceptable => {
+                                unreachable!("TestResult::Acceptable not part of test vectors")
                             }
                         }
                     }
@@ -96,14 +97,14 @@ macro_rules! wycheproof_test {
                     for test in &test_group.tests {
                         // convert private key
                         let Ok(bytes) = <[u8; _]>::try_from(test.decapsulation_key.clone()) else {
-                            assert_eq!(test.result, MlKemResult::Invalid);
+                            assert_eq!(test.result, TestResult::Invalid);
                             continue;
                         };
                         let private_key: MlKemPrivateKey<_> = bytes.into();
 
                         // convert ciphertext
                         let Ok(ciphertext) = <[u8; _]>::try_from(test.ciphertext.clone()) else {
-                            assert_eq!(test.result, MlKemResult::Invalid);
+                            assert_eq!(test.result, TestResult::Invalid);
                             continue;
                         };
                         let ciphertext: MlKemCiphertext<_> = ciphertext.into();
@@ -111,18 +112,18 @@ macro_rules! wycheproof_test {
                         // validate keys
                         let is_valid = validate_private_key(&private_key, &ciphertext);
                         match test.result {
-                            MlKemResult::Invalid => assert!(
+                            TestResult::Invalid => assert!(
                                 !is_valid,
                                 "tc_id {} failed. invalid private key passes key validation",
                                 test.tc_id,
                             ),
-                            MlKemResult::Valid => assert!(
+                            TestResult::Valid => assert!(
                                 is_valid,
                                 "tc_id {} failed. valid private key rejected by key validation",
                                 test.tc_id,
                             ),
-                            MlKemResult::Acceptable => {
-                                unreachable!("MlKemResult::Acceptable not part of test vectors")
+                            TestResult::Acceptable => {
+                                unreachable!("TestResult::Acceptable not part of test vectors")
                             }
                         }
                     }
