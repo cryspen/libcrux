@@ -61,17 +61,17 @@ docker run --rm -v "$PWD":/app -w /app valgrind bash -c "
 > and aborts with `disInstr: unhandled instruction`. The Docker image runs a Linux environment
 > where Valgrind works correctly.
 
-## What is and isn't undefined
+## What is and isn't marked undefined
 
 Only the genuinely secret bytes are marked as undefined. Public data embedded in key structs must stay
 clean or Valgrind produces false positives in public sampling routines.
 
-**ML-KEM private key** (`[cpa_sk | pk | H(pk) | z]`, 1632 bytes for ML-KEM-512):
+**ML-KEM private key** (`[cpa_sk | pk | H(pk) | z]`, e.g. 1632 bytes for ML-KEM-512):
 - Undefined: `cpa_sk` (first 768 bytes) and `z` (last 32 bytes)
 - Not Undefined: embedded public key and `H(pk)` — these are used in the FO re-encryption
   step to reconstruct matrix A from the public seed ρ
 
-**ML-DSA signing key** (`[ρ | K | tr | s₁, s₂, t₀]`, 2560 bytes for ML-DSA-44):
+**ML-DSA signing key** (`[ρ | K | tr | s₁, s₂, t₀]`, e.g. 2560 bytes for ML-DSA-44):
 - Undefined: `K` (bytes 32–64) and `s₁, s₂` (bytes 128–896)
 - Not Undefined: `ρ` (public seed for matrix A), `tr` (hash of verification key) and `t₀` (𝑑 least significant bits of each coefficient of the uncompressed public-key polynomial 𝐭)
 
