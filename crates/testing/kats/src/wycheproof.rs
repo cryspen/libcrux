@@ -3,6 +3,12 @@
 #[cfg(feature = "chacha20poly1305")]
 pub mod aead;
 
+#[cfg(feature = "ecdh")]
+pub mod ecdh;
+
+#[cfg(feature = "ecdsa")]
+pub mod ecdsa;
+
 #[cfg(feature = "mldsa")]
 pub mod mldsa;
 
