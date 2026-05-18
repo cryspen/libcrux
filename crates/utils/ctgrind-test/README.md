@@ -42,14 +42,14 @@ docker run --rm -v "$PWD":/app -w /app valgrind bash -c \
 
 # ML-DSA
 docker run --rm -v "$PWD":/app -w /app valgrind bash -c \
-  "RUSTGLAGS='--cfg valgrind_ct_test' cargo build -p ctgrind-test --profile release-debug --bin mldsa && valgrind --error-exitcode=1 --track-origins=yes ./target/release-debug/mldsa"
+  "RUSTFLAGS='--cfg valgrind_ct_test' cargo build -p ctgrind-test --profile release-debug --bin mldsa && valgrind --error-exitcode=1 --track-origins=yes ./target/release-debug/mldsa"
 ```
 
 Run all three in one go:
 
 ```sh
 docker run --rm -v "$PWD":/app -w /app valgrind bash -c "
-  RUSTGLAGS='--cfg valgrind_ct_test' cargo build -p ctgrind-test --profile release-debug &&
+  RUSTFLAGS='--cfg valgrind_ct_test' cargo build -p ctgrind-test --profile release-debug &&
   echo '--- SHA3 ---'  && valgrind --error-exitcode=1 --track-origins=yes ./target/release-debug/sha3 &&
   echo '--- ML-KEM ---' && valgrind --error-exitcode=1 --track-origins=yes ./target/release-debug/mlkem &&
   echo '--- ML-DSA ---' && valgrind --error-exitcode=1 --track-origins=yes ./target/release-debug/mldsa
