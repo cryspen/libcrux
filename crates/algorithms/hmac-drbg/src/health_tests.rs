@@ -130,8 +130,8 @@ impl<const OUTLEN: usize> HealthState<OUTLEN> {
 
     /// Block-level tests run on each generated V block.
     ///
-    /// - **Test 1** (NIST 800-90C §9.3.3): `new_block ≠ v_before` (HMAC fixed-point).
-    /// - **Test 2** (AIS 20/31 T4): `new_block ≠ prev_block` (consecutive identical blocks).
+    /// Neither NIST 800-90C  nor AIS 20/31 seem to give clear guidance here. What we do here are
+    /// reasonable checks that we can extend later.
     ///
     /// Returns `true` if a test failed (caller must call `zeroize_and_poison` and
     /// return `Error::HealthCheckFailed`).  On success the internal `prev_block` is
