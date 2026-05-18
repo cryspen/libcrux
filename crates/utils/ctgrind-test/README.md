@@ -124,3 +124,17 @@ where `mask` and `verifier_challenge` are hold values that are part of
 the signature to be serialized, and A and t are part of the public
 key.
 
+### `challenge_times_t0` after norm checks have passed
+[(link)](https://github.com/cryspen/libcrux/blob/jonas%2Fct-mldsa/libcrux-ml-dsa/src/ml_dsa_generic.rs#L357)
+
+After the norm checks have passed it is safe to serialize the
+signature, so any value that could be derived from the signature and
+the public key is safe to leak.
+
+`t0` is technically part of the signing key, but
+only for compression of the public key. It can be considered
+public. `verifier_challenge` will be part of the signature that is now
+safe to serialize.
+
+cf. FIPS 204, section 6.1
+(https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
