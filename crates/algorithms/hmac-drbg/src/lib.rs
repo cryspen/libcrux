@@ -202,6 +202,11 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             return Err(InstantiateError::HealthCheckFailed);
         }
 
+        #[cfg(not(feature = "health-tests"))]
+        if entropy_input.len() < MIN_ENTROPY_BYTES {
+            return Err(InstantiateError::InsufficientEntropy);
+        }
+
         let mut drbg = Self {
             _alg: PhantomData,
             key: [0x00u8; OUTLEN],
@@ -387,13 +392,25 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         rng: &mut R,
         personalization_string: &[u8],
     ) -> Result<Self, InstantiateFromRngError> {
+        // XXX: Why is this not MIN_ENTROPY_BYTES??
         let mut entropy = [0u8; OUTLEN];
+
         let mut nonce = [0u8; OUTLEN];
         rng.try_fill_bytes(&mut entropy)
             .map_err(|_| InstantiateFromRngError::RngError)?;
         rng.try_fill_bytes(&mut nonce)
             .map_err(|_| InstantiateFromRngError::RngError)?;
-        Self::new(&entropy, &nonce, personalization_string).map_err(InstantiateFromRngError::from)
+        Self::new(&entropy, &nonce, personalization_string).map_err(|error| match error {
+            InstantiateError::InputTooLarge => InstantiateFromRngError::InputTooLarge,
+
+            #[cfg(feature = "health-tests")]
+            InstantiateError::HealthCheckFailed => InstantiateFromRngError::HealthCheckFailed,
+
+            // we provide OUTLEN bytes of entropy, which is enough (>= MIN_ENTROPY_BYTES)
+            // XXX: Why is this not MIN_ENTROPY_BYTES??
+            #[cfg(not(feature = "health-tests"))]
+            InstantiateError::InsufficientEntropy => unreachable!(),
+        })
     }
 
     /// Instantiate from the system RNG ([`rand::rngs::SysRng`]).
@@ -417,10 +434,22 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         rng: &mut R,
         additional_input: &[u8],
     ) -> Result<(), ReseedFromRngError<R::Error>> {
+        // XXX: Why is this not MIN_ENTROPY_BYTES??
         let mut entropy = [0u8; OUTLEN];
+
         rng.try_fill_bytes(&mut entropy)
             .map_err(ReseedFromRngError::RngError)?;
         self.reseed(&entropy, additional_input)
-            .map_err(ReseedFromRngError::from)
+            .map_err(|error| match error {
+                ReseedError::InputTooLarge => ReseedFromRngError::InputTooLarge,
+
+                #[cfg(feature = "health-tests")]
+                ReseedError::HealthCheckFailed => ReseedFromRngError::HealthCheckFailed,
+
+                // we provide OUTLEN bytes of entropy, which is enough (>= MIN_ENTROPY_BYTES)
+                // XXX: Why is this not MIN_ENTROPY_BYTES??
+                #[cfg(not(feature = "health-tests"))]
+                ReseedError::InsufficientEntropy => unreachable!(),
+            })
     }
 }

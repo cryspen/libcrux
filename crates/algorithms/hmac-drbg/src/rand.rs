@@ -311,7 +311,10 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
         let drbg = match HmacDrbg::new(entropy, nonce, personalization) {
             Ok(drbg) => drbg,
             Err(error) => match error {
+                // We know how much data we inject and it's fine
                 crate::InstantiateError::InputTooLarge => unreachable!(),
+                // the provided entropy is MIN_ENTROPY_BYTES, so it is enough
+                crate::InstantiateError::InsufficientEntropy => unreachable!(),
             },
         };
 

@@ -16,6 +16,10 @@ pub enum ReseedError {
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,
 
+    /// The entropy provided is insufficient.
+    #[cfg(not(feature = "health-tests"))]
+    InsufficientEntropy,
+
     /// A continuous health test detected a catastrophic internal failure
     /// (feature `health-tests`). The DRBG is permanently poisoned; discard
     /// the instance. This should never occur in correct operation.
@@ -30,6 +34,10 @@ pub enum ReseedError {
 pub enum InstantiateError {
     /// The combined seed material exceeds the internal limit.
     InputTooLarge,
+
+    /// The entropy provided is insufficient.
+    #[cfg(not(feature = "health-tests"))]
+    InsufficientEntropy,
 
     /// A continuous health test detected a catastrophic internal failure
     /// (feature `health-tests`). The DRBG is permanently poisoned; discard
@@ -128,6 +136,9 @@ impl fmt::Display for ReseedError {
         match *self {
             ReseedError::InputTooLarge => f.write_str("seed material exceeds maximum allowed size"),
 
+            #[cfg(not(feature = "health-tests"))]
+            ReseedError::InsufficientEntropy => f.write_str("provided entropy is insufficient"),
+
             #[cfg(feature = "health-tests")]
             ReseedError::HealthCheckFailed => {
                 f.write_str("continuous health test failed: DRBG is permanently poisoned")
@@ -142,6 +153,10 @@ impl fmt::Display for InstantiateError {
         match self {
             InstantiateError::InputTooLarge => {
                 f.write_str("seed material exceeds maximum allowed size")
+            }
+            #[cfg(not(feature = "health-tests"))]
+            InstantiateError::InsufficientEntropy => {
+                f.write_str("provided entropy is insufficient")
             }
             #[cfg(feature = "health-tests")]
             InstantiateError::HealthCheckFailed => {
@@ -220,30 +235,6 @@ impl From<libcrux_hmac::Error> for UpdateError {
     fn from(error: libcrux_hmac::Error) -> Self {
         match error {
             libcrux_hmac::Error::InvalidInputLength => UpdateError::InputTooLarge,
-        }
-    }
-}
-
-#[cfg(feature = "rand")]
-impl From<InstantiateError> for InstantiateFromRngError {
-    fn from(value: InstantiateError) -> Self {
-        match value {
-            InstantiateError::InputTooLarge => InstantiateFromRngError::InputTooLarge,
-
-            #[cfg(feature = "health-tests")]
-            InstantiateError::HealthCheckFailed => InstantiateFromRngError::HealthCheckFailed,
-        }
-    }
-}
-
-#[cfg(feature = "rand")]
-impl<T> From<ReseedError> for ReseedFromRngError<T> {
-    fn from(value: ReseedError) -> Self {
-        match value {
-            ReseedError::InputTooLarge => ReseedFromRngError::InputTooLarge,
-
-            #[cfg(feature = "health-tests")]
-            ReseedError::HealthCheckFailed => ReseedFromRngError::HealthCheckFailed,
         }
     }
 }
