@@ -27,9 +27,8 @@ pub(crate) mod multiplexing;
 
 #[libcrux_macros::ml_dsa_parameter_sets(44, 65, 87)]
 pub(crate) mod generic {
-    use crate::ct_test::ct_classify;
-
     use super::*;
+    use crate::ct_test::ct_classify;
 
     // Derived constants
     const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
@@ -291,18 +290,19 @@ pub(crate) mod generic {
             add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
             subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
 
-            let mask_invalid =
-                vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA);
-
-            ct_declassify(&mask_invalid);
-
-            if mask_invalid {
+            // NOTE: Regarding the norm checks below, it is safe to
+            // leak the index of a violating coefficient during ML-DSA
+            // signature generation.
+            //
+            // See section 5.5 of the Dilithium Specification for
+            // Round 3 of the NIST Post-Quantum Cryptography
+            // Standardization.
+            // (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
+            if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
             } else {
-                let w0_invalid = vector_infinity_norm_exceeds::<SIMDUnit>(&w0, GAMMA2 - BETA);
-                ct_declassify(&w0_invalid);
-                if w0_invalid {
+                if vector_infinity_norm_exceeds::<SIMDUnit>(&w0, GAMMA2 - BETA) {
                     // XXX: https://github.com/hacspec/hax/issues/1171
                     // continue;
                 } else {
