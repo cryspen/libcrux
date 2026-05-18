@@ -99,3 +99,13 @@ in the random oracle model.
 Standardization.
 (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
 
+### Infinity Norm Checks
+[(link)](https://github.com/cryspen/libcrux/blob/jonas%2Fct-mldsa/libcrux-ml-dsa/src/polynomial.rs#L80)
+
+It is safe to leak the index of a violating coefficient during ML-DSA
+signature generation.
+
+See section 5.5 of the Dilithium Specification for Round 3 of the NIST
+Post-Quantum Cryptography Standardization.
+(https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
+
