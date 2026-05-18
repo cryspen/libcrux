@@ -176,7 +176,7 @@ mod health_tests {
         drbg.poison_for_testing();
         let mut out = [0u8; 32];
         assert_eq!(
-            drbg.generate(&mut out, None).unwrap_err(),
+            drbg.generate(&mut out, &[]).unwrap_err(),
             GenerateError::HealthCheckFailed
         );
     }
@@ -196,7 +196,7 @@ mod health_tests {
         let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
         let mut out = [0u8; 32];
         for _ in 0..10 {
-            drbg.generate(&mut out, None).unwrap();
+            drbg.generate(&mut out, &[]).unwrap();
             assert!(!drbg.is_poisoned());
         }
     }
@@ -206,7 +206,7 @@ mod health_tests {
         let mut drbg = HmacDrbgSha384::new(&E48, &[0u8; 24], &[]).unwrap();
         let mut out = [0u8; 48];
         for _ in 0..10 {
-            drbg.generate(&mut out, None).unwrap();
+            drbg.generate(&mut out, &[]).unwrap();
             assert!(!drbg.is_poisoned());
         }
     }
@@ -216,7 +216,7 @@ mod health_tests {
         let mut drbg = HmacDrbgSha512::new(&E64, &[0u8; 32], &[]).unwrap();
         let mut out = [0u8; 64];
         for _ in 0..10 {
-            drbg.generate(&mut out, None).unwrap();
+            drbg.generate(&mut out, &[]).unwrap();
             assert!(!drbg.is_poisoned());
         }
     }
@@ -227,9 +227,9 @@ mod health_tests {
         // after reseed must not falsely detect a collision with pre-reseed output.
         let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
         let mut out = [0u8; 32];
-        drbg.generate(&mut out, None).unwrap();
+        drbg.generate(&mut out, &[]).unwrap();
         drbg.reseed(&R32, &[]).unwrap();
-        drbg.generate(&mut out, None).unwrap();
+        drbg.generate(&mut out, &[]).unwrap();
         assert!(!drbg.is_poisoned());
     }
 

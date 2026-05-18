@@ -45,13 +45,13 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         let mut buf = [0u8; 4];
-        self.generate(&mut buf, None)?;
+        self.generate(&mut buf, &[])?;
         Ok(u32::from_le_bytes(buf))
     }
 
     fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
         let mut buf = [0u8; 8];
-        self.generate(&mut buf, None)?;
+        self.generate(&mut buf, &[])?;
         Ok(u64::from_le_bytes(buf))
     }
 
@@ -66,7 +66,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
         let mut written = 0;
         while written < dst.len() {
             let chunk = (dst.len() - written).min(MAX_GENERATE_BYTES);
-            self.generate(&mut dst[written..written + chunk], None)?;
+            self.generate(&mut dst[written..written + chunk], &[])?;
             written += chunk;
         }
         Ok(())
@@ -339,7 +339,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
             }
         }
 
-        match self.drbg.generate(dst, None) {
+        match self.drbg.generate(dst, &[]) {
             Ok(()) => (),
             // we just ensured that no reseed is required
             Err(crate::GenerateError::ReseedRequired) => unreachable!(),
