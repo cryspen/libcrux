@@ -19,7 +19,7 @@
 //! let mut output = [0u8; 32];
 //! // per-generate domain separation, e.g. usage of generated entropy inside protocol
 //! let additional_input = b"gen-ephemeral";
-//! drbg.generate(&mut output, Some(additional_input)).unwrap();
+//! drbg.generate(&mut output, additional_input).unwrap();
 //! ```
 #![no_std]
 #![deny(unsafe_code)]
