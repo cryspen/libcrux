@@ -317,6 +317,19 @@ pub(crate) mod generic {
                         // XXX: https://github.com/hacspec/hax/issues/1171
                         // continue;
                     } else {
+                        // After the norm checks have passed it is
+                        // safe to serialize the signature, so any
+                        // value that could be derived from the
+                        // signature and the public key is safe to
+                        // leak.
+
+                        // Declassification:
+                        // At this point `w0` = w - c * s2, and
+                        //
+                        //     A * `mask` - `verifier_challenge` * t = w - c * s2
+                        //
+                        // where `mask` and `verifier_challenge` are part of the signature to be serialized,
+                        // and A and t are part of the public key.
                         ct_declassify(&w0);
                         ct_declassify(&challenge_times_t0);
                         add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
