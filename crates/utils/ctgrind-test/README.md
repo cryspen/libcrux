@@ -75,3 +75,27 @@ clean or Valgrind produces false positives in public sampling routines.
 - Undefined: `K` (bytes 32–64) and `s₁, s₂` (bytes 128–896)
 - Not Undefined: `ρ` (public seed for matrix A), `tr` (hash of verification key) and `t₀` (𝑑 least significant bits of each coefficient of the uncompressed public-key polynomial 𝐭)
 
+## Declassifications in ML-DSA
+
+The signing operation in ML-DSA includes some operations that
+technically depend on secret data, but are in fact safe under the
+assumptions of the Dilithium security proof. In these cases we
+explicitly mark the memory as `MemState::Defined` for valgrind, in
+order to avoid false positives.
+
+### Verifier Challenge
+[(link)](https://github.com/cryspen/libcrux/blob/jonas%2Fct-mldsa/libcrux-ml-dsa/src/ml_dsa_generic.rs#L285)
+
+Revealing the verifier challenge `commitment_hash_candidate` is safe
+in the random oracle model.
+
+> The challenge reveals information about H(μ||w₁) also
+> in the case of rejected y, but this does not reveal any
+> information about the secret key when H is modelled as
+> a random oracle and w₁ has high min-entropy.
+
+-- Section 5.5 of the Dilithium Specification for Round
+3 of the NIST Post-Quantum Cryptography
+Standardization.
+(https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
+
