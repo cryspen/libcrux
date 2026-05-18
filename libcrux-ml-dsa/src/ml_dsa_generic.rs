@@ -331,6 +331,16 @@ pub(crate) mod generic {
                         // where `mask` and `verifier_challenge` are part of the signature to be serialized,
                         // and A and t are part of the public key.
                         ct_declassify(&w0);
+
+                        // Declassification: `t0` is technically part
+                        // of the signing key, but only for
+                        // compression of the public key. It can be
+                        // considered public. `verifier_challenge`
+                        // will be part of the signature that is now
+                        // safe to serialize.
+                        //
+                        // cf. FIPS 204, section 6.1
+                        // (https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
                         ct_declassify(&challenge_times_t0);
                         add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
                         let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
