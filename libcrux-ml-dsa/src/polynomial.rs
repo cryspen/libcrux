@@ -1,7 +1,6 @@
-use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
-
 #[cfg(hax)]
 use crate::simd::traits::specs::*;
+use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT, SIMD_UNITS_IN_RING_ELEMENT};
 
 #[derive(Clone, Copy)]
 #[hax_lib::fstar::after("open Libcrux_ml_dsa.Simd.Traits.Specs")]
@@ -11,6 +10,14 @@ pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
 
 #[hax_lib::attributes]
 impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
+    #[inline(always)]
+    // Barrett reduce all coefficients.
+    pub(crate) fn barrett_reduce(&mut self) {
+        for i in 0..self.simd_units.len() {
+            SIMDUnit::barrett_reduce_simd_unit(&mut self.simd_units[i]);
+        }
+    }
+
     pub(crate) fn zero() -> Self {
         Self {
             simd_units: [SIMDUnit::zero(); SIMD_UNITS_IN_RING_ELEMENT],

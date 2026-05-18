@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 146b7dce58cb11ca8010b1c947c3437a959dcd88
- * Eurydice: cdf02f9d8ed0d73f88c0a495c5b79359a51398fc
- * Karamel: 8e7262955105599e91f3a99c9ab3d3387f7046f2
+ * Charon: 377317d6b25702c46ffff072fa00a3e32095e46f
+ * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
+ * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: 89901492c020c74b82d811d27f3149c222d9b8b5
- * Libcrux: 4faeb5fdd7bdf29c1f30136c8f32fe24c06cfab0
+ * Libcrux: a53e03cfd7b424560bdfefc9d483f87faacd3122
  */
 
 #ifndef libcrux_sha3_avx2_H
@@ -195,7 +195,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_5b(
-    Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offset) {
+    Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offset) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
     size_t i4 = i;
     size_t start = offset + (size_t)32U * i4;
@@ -350,7 +350,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_sha3_simd_avx2_load_block_8f_5b(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start) {
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start) {
   libcrux_sha3_simd_avx2_load_block_5b(self, input, start);
 }
 
@@ -2027,7 +2027,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_block_80_97(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start) {
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start) {
   libcrux_sha3_simd_avx2_load_block_8f_5b(self, input, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
 }
@@ -2040,9 +2040,9 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_last_ad(
-    Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start,
+    Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t start,
     size_t len) {
-  Eurydice_arr_91 buffers = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
+  Eurydice_arr_1a buffers = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
   for (size_t i = (size_t)0U; i < (size_t)4U; i++) {
     size_t i0 = i;
     Eurydice_slice_copy(
@@ -2058,7 +2058,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_last_ad(
         (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;
   }
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = {
+  Eurydice_arr_cd lvalue = {
       {Eurydice_array_to_slice_shared_d4(buffers.data),
        Eurydice_array_to_slice_shared_d4(&buffers.data[1U]),
        Eurydice_array_to_slice_shared_d4(&buffers.data[2U]),
@@ -2081,7 +2081,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_sha3_simd_avx2_load_last_8f_ad(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start,
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start,
     size_t len) {
   libcrux_sha3_simd_avx2_load_last_ad(self, input, start, len);
 }
@@ -2100,7 +2100,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_80_fb(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start,
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start,
     size_t len) {
   libcrux_sha3_simd_avx2_load_last_8f_ad(self, input, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
@@ -2284,19 +2284,18 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_simd256_keccak4_ad(
-    const Eurydice_arr_e9 *data, Eurydice_mut_borrow_slice_u8 out0,
+    const Eurydice_arr_cd *data, Eurydice_mut_borrow_slice_u8 out0,
     Eurydice_mut_borrow_slice_u8 out1, Eurydice_mut_borrow_slice_u8 out2,
     Eurydice_mut_borrow_slice_u8 out3) {
   Eurydice_arr_05 s = libcrux_sha3_generic_keccak_new_80_a6();
-  size_t data_len = Eurydice_slice_len(data->data[0U], uint8_t);
+  size_t data_len = data->data->meta;
   for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++) {
     size_t i0 = i;
     libcrux_sha3_generic_keccak_absorb_block_80_97(&s, data, i0 * (size_t)136U);
   }
   size_t rem = data_len % (size_t)136U;
   libcrux_sha3_generic_keccak_absorb_final_80_fb(&s, data, data_len - rem, rem);
-  size_t outlen = Eurydice_slice_len(
-      (Eurydice_borrow_slice_u8{out0.ptr, out0.meta}), uint8_t);
+  size_t outlen = out0.meta;
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U) {
@@ -2329,7 +2328,7 @@ static KRML_MUSTINLINE void libcrux_sha3_avx2_x4_shake256(
     Eurydice_mut_borrow_slice_u8 out0, Eurydice_mut_borrow_slice_u8 out1,
     Eurydice_mut_borrow_slice_u8 out2, Eurydice_mut_borrow_slice_u8 out3) {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = {{input0, input1, input2, input3}};
+  Eurydice_arr_cd lvalue = {{input0, input1, input2, input3}};
   libcrux_sha3_generic_keccak_simd256_keccak4_ad(&lvalue, out0, out1, out2,
                                                  out3);
 }
@@ -2353,7 +2352,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_block_3a(
-    Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offset) {
+    Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offset) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
     size_t i4 = i;
     size_t start = offset + (size_t)32U * i4;
@@ -2502,9 +2501,9 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_last_c6(
-    Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start,
+    Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t start,
     size_t len) {
-  Eurydice_arr_a6 buffers = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
+  Eurydice_arr_b3 buffers = {{{{0U}}, {{0U}}, {{0U}}, {{0U}}}};
   for (size_t i = (size_t)0U; i < (size_t)4U; i++) {
     size_t i0 = i;
     Eurydice_slice_copy(
@@ -2520,7 +2519,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_load_last_c6(
         (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;
   }
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = {
+  Eurydice_arr_cd lvalue = {
       {Eurydice_array_to_slice_shared_7b(buffers.data),
        Eurydice_array_to_slice_shared_7b(&buffers.data[1U]),
        Eurydice_array_to_slice_shared_7b(&buffers.data[2U]),
@@ -2543,7 +2542,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static inline void libcrux_sha3_simd_avx2_load_last_8f_c6(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start,
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start,
     size_t len) {
   libcrux_sha3_simd_avx2_load_last_c6(self, input, start, len);
 }
@@ -2562,7 +2561,7 @@ with const generics
 */
 KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_absorb_final_80_fb0(
-    Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start,
+    Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start,
     size_t len) {
   libcrux_sha3_simd_avx2_load_last_8f_c6(self, input, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_a6(self);
@@ -2577,12 +2576,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     Eurydice_arr_05 *s, Eurydice_borrow_slice_u8 data0,
     Eurydice_borrow_slice_u8 data1, Eurydice_borrow_slice_u8 data2,
     Eurydice_borrow_slice_u8 data3) {
-  Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = {{data0, data1, data2, data3}};
-  const Eurydice_arr_e9 *uu____1 = &lvalue;
-  libcrux_sha3_generic_keccak_absorb_final_80_fb0(
-      uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
+  Eurydice_arr_cd lvalue = {{data0, data1, data2, data3}};
+  libcrux_sha3_generic_keccak_absorb_final_80_fb0(s, &lvalue, (size_t)0U,
+                                                  data0.meta);
 }
 
 /**
@@ -2890,12 +2887,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
     Eurydice_arr_05 *s, Eurydice_borrow_slice_u8 data0,
     Eurydice_borrow_slice_u8 data1, Eurydice_borrow_slice_u8 data2,
     Eurydice_borrow_slice_u8 data3) {
-  Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = {{data0, data1, data2, data3}};
-  const Eurydice_arr_e9 *uu____1 = &lvalue;
-  libcrux_sha3_generic_keccak_absorb_final_80_fb(
-      uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
+  Eurydice_arr_cd lvalue = {{data0, data1, data2, data3}};
+  libcrux_sha3_generic_keccak_absorb_final_80_fb(s, &lvalue, (size_t)0U,
+                                                 data0.meta);
 }
 
 /**
@@ -2929,8 +2924,8 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
     Eurydice_arr_05 *s, Eurydice_mut_borrow_slice_u8 out0,
     Eurydice_mut_borrow_slice_u8 out1, Eurydice_mut_borrow_slice_u8 out2,
     Eurydice_mut_borrow_slice_u8 out3) {
-  libcrux_sha3_generic_keccak_simd256_squeeze_first_block_81_5b(s, out0, out1,
-                                                                out2, out3);
+  libcrux_sha3_generic_keccak_simd256_squeeze_first_block_81_5b(
+      &s[0U], out0, out1, out2, out3);
 }
 
 /**

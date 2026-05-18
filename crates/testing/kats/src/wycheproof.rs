@@ -1,5 +1,14 @@
 //! Wycheproof Known Answer Tests
 
+#[cfg(feature = "chacha20poly1305")]
+pub mod aead;
+
+#[cfg(feature = "ecdh")]
+pub mod ecdh;
+
+#[cfg(feature = "ecdsa")]
+pub mod ecdsa;
+
 #[cfg(feature = "mldsa")]
 pub mod mldsa;
 
@@ -10,3 +19,4 @@ pub mod mlkem;
 pub mod hmac;
 
 pub mod schema_common;
+pub use schema_common::TestResult;

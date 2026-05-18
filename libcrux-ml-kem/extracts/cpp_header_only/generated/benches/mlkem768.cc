@@ -17,7 +17,7 @@ void generate_random(uint8_t *output, uint32_t output_len) {
 }
 
 static void kyber768_key_generation(benchmark::State &state) {
-  Eurydice_arr_06 keygen_rand;
+  Eurydice_arr_060 keygen_rand;
   memset(keygen_rand.data, 0x13, 64);
 
   auto key_pair =
@@ -29,7 +29,7 @@ static void kyber768_key_generation(benchmark::State &state) {
 }
 
 static void kyber768_key_generation_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 keygen_rand;
+  Eurydice_arr_060 keygen_rand;
   memset(keygen_rand.data, 0x13, 64);
 
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -44,7 +44,7 @@ static void kyber768_key_generation_unpacked(benchmark::State &state) {
 }
 
 static void kyber768_encapsulation(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair =
@@ -63,7 +63,7 @@ static void kyber768_encapsulation(benchmark::State &state) {
 }
 
 static void kyber768_encapsulation_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -84,7 +84,7 @@ static void kyber768_encapsulation_unpacked(benchmark::State &state) {
 }
 
 static void kyber768_decapsulation(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair =
@@ -105,7 +105,7 @@ static void kyber768_decapsulation(benchmark::State &state) {
 }
 
 static void kyber768_decapsulation_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   std::unique_ptr<
@@ -143,7 +143,7 @@ BENCHMARK(kyber768_decapsulation_unpacked);
 #include "libcrux_mlkem768_neon.h"
 
 static void kyber768_key_generation_neon(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
@@ -154,7 +154,7 @@ static void kyber768_key_generation_neon(benchmark::State &state) {
 }
 
 static void kyber768_encapsulation_neon(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
@@ -171,7 +171,7 @@ static void kyber768_encapsulation_neon(benchmark::State &state) {
 }
 
 static void kyber768_decapsulation_neon(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
@@ -199,7 +199,7 @@ BENCHMARK(kyber768_decapsulation_neon);
 #include "libcrux_mlkem768_avx2.h"
 
 static void kyber768_key_generation_avx2(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
@@ -210,7 +210,7 @@ static void kyber768_key_generation_avx2(benchmark::State &state) {
 }
 
 static void kyber768_key_generation_avx2_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -227,7 +227,7 @@ static void kyber768_key_generation_avx2_unpacked(benchmark::State &state) {
 }
 
 static void kyber768_encapsulation_avx2(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
@@ -244,7 +244,7 @@ static void kyber768_encapsulation_avx2(benchmark::State &state) {
 }
 
 static void kyber768_encapsulation_avx2_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -265,7 +265,7 @@ static void kyber768_encapsulation_avx2_unpacked(benchmark::State &state) {
 }
 
 static void kyber768_decapsulation_avx2(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
@@ -285,7 +285,7 @@ static void kyber768_decapsulation_avx2(benchmark::State &state) {
 }
 
 static void kyber768_decapsulation_avx2_unpacked(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked key_pair =
@@ -319,7 +319,7 @@ BENCHMARK(kyber768_decapsulation_avx2_unpacked);
 #include "inc/symcrypt.h"
 
 static void symcrypt_kyber768_key_generation(benchmark::State &state) {
-  Eurydice_arr_06 randomness;
+  Eurydice_arr_060 randomness;
   memset(randomness.data, 0x13, 64);
 
   auto pKey = SymCryptMlKemkeyAllocate(SymCryptMlKemParamsDraft203MlKem768);

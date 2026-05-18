@@ -182,6 +182,8 @@ typedef struct Eurydice_dst_ref_9a_s {
 #define core_array_TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq_slice_shared(sz, a1, s2, t, _) \
+  (memcmp((a1)->data, (s2)->ptr, sz * sizeof(t)) == 0)
 
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
 #define Eurydice_array_eq_slice(sz, a1, s2, t, _) \
