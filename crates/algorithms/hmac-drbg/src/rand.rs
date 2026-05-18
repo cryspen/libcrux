@@ -344,7 +344,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
             // we just ensured that no reseed is required
             Err(crate::GenerateError::ReseedRequired) => unreachable!(),
             // We know how much data we request and it's fine
-            Err(crate::GenerateError::RequestTooLarge) => unreachable!(),
+            Err(crate::GenerateError::RequestInvalid) => unreachable!(),
             // Again, the input size is safe.
             Err(crate::GenerateError::InputTooLarge) => unreachable!(),
         }

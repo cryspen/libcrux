@@ -69,7 +69,7 @@ pub const RESEED_INTERVAL: u64 = 1 << 48;
 /// Maximum number of bytes that can be requested in a single [`HmacDrbg::generate`] call
 /// (SP 800-90A §10.1 Tables 1 and 2).
 ///
-/// Requesting more returns [`GenerateError::RequestTooLarge`].
+/// Requesting more returns [`GenerateError::RequestInvalid`].
 pub const MAX_GENERATE_BYTES: usize = 65_536;
 
 /// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
