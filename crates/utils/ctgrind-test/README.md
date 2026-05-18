@@ -109,3 +109,18 @@ See section 5.5 of the Dilithium Specification for Round 3 of the NIST
 Post-Quantum Cryptography Standardization.
 (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
 
+### `w0` after norm checks have passed
+[(link)](https://github.com/cryspen/libcrux/blob/jonas%2Fct-mldsa/libcrux-ml-dsa/src/ml_dsa_generic.rs#L350)
+
+After the norm checks have passed it is safe to serialize the
+signature, so any value that could be derived from the signature and
+the public key is safe to leak.
+
+At this point `w0` = w - c * s2, and
+
+    A * `mask` - `verifier_challenge` * t = w - c * s2
+
+where `mask` and `verifier_challenge` are hold values that are part of
+the signature to be serialized, and A and t are part of the public
+key.
+
