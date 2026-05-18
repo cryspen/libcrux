@@ -269,6 +269,19 @@ pub(crate) mod generic {
                 shake.squeeze(&mut commitment_hash_candidate);
             }
 
+            // Declassification: Revealing the verifier challenge
+            // `commitment_hash_candidate` is safe in the random
+            // oracle model.
+            //
+            // "The challenge reveals information about H(μ||w₁) also
+            // in the case of rejected y, but this does not reveal any
+            // information about the secret key when H is modelled as
+            // a random oracle and w₁ has high min-entropy."
+            //
+            // -- Section 5.5 of the Dilithium Specification for Round
+            // 3 of the NIST Post-Quantum Cryptography
+            // Standardization.
+            // (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
             ct_declassify(&commitment_hash_candidate);
 
             let mut verifier_challenge = PolynomialRingElement::zero();
