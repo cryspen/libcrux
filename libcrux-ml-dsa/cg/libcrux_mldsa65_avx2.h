@@ -5459,12 +5459,26 @@ libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
   bool result = false;
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
     size_t i0 = i;
-    result = result || libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
-                           &self->data[i0], bound);
+    bool coeff_exceeds = libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
+        &self->data[i0], bound);
+    bool uu____0;
+    if (result) {
+      uu____0 = true;
+    } else {
+      uu____0 = coeff_exceeds;
+    }
+    result = uu____0;
   }
   return result;
 }
 
+/**
+ CAUTION: This function must only be called with inputs for
+ which it is safe to leak the index of a violating coefficient.
+
+ For all norm checks during ML-DSA signature generation it is
+ safe to leak the index of a violating coefficient.
+*/
 /**
 A monomorphic instance of libcrux_ml_dsa.arithmetic.vector_infinity_norm_exceeds
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
@@ -5478,9 +5492,14 @@ libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
   bool result = false;
   for (size_t i = (size_t)0U; i < vector.meta; i++) {
     size_t i0 = i;
-    bool uu____0 = result;
-    result = uu____0 || libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
-                            &vector.ptr[i0], bound);
+    bool uu____0;
+    if (result) {
+      uu____0 = true;
+    } else {
+      uu____0 = libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
+          &vector.ptr[i0], bound);
+    }
+    result = uu____0;
   }
   return result;
 }
@@ -5824,19 +5843,15 @@ libcrux_ml_dsa_ml_dsa_generic_ml_dsa_65_sign_internal_07(
         LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_ROWS_IN_A,
         Eurydice_array_to_slice_mut_716(&w0),
         Eurydice_array_to_slice_shared_715(&challenge_times_s2));
-    bool mask_invalid =
-        libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
+    if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
             Eurydice_array_to_slice_shared_713(&mask),
             ((int32_t)1 << (uint32_t)
                  LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA1_EXPONENT) -
-                LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA);
-    if (!mask_invalid) {
-      bool w0_invalid =
-          libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
+                LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
+      if (!libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
               Eurydice_array_to_slice_shared_715(&w0),
               LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_GAMMA2 -
-                  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA);
-      if (!w0_invalid) {
+                  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_BETA)) {
         Eurydice_arr_b50 challenge_times_t0 =
             core_array__core__clone__Clone_for__Array_T__N___clone(
                 (size_t)6U, &t0_as_ntt, Eurydice_arr_cd0, Eurydice_arr_b50);
