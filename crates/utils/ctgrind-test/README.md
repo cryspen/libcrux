@@ -81,55 +81,5 @@ The signing operation in ML-DSA includes some operations that
 technically depend on secret data, but are in fact safe under the
 assumptions of the Dilithium security proof [1][dilithium-round3]. In these cases we
 explicitly mark the memory as `MemState::Defined` for valgrind, in
-order to avoid false positives.
-
-### Verifier Challenge
-
-Revealing the verifier challenge `commitment_hash_candidate` is safe
-in the random oracle model.
-
-> The challenge reveals information about H(μ||w₁) also
-> in the case of rejected y, but this does not reveal any
-> information about the secret key when H is modelled as
-> a random oracle and w₁ has high min-entropy.
-
--- Section 5.5 of the [Dilithium Specification for Round
-3 of the NIST Post-Quantum Cryptography
-Standardization][dilithium-round3].
-
-### Infinity Norm Checks
-
-It is safe to leak the index of a violating coefficient during ML-DSA
-signature generation.
-
-See section 5.5 of the [Dilithium Specification for Round 3 of the NIST
-Post-Quantum Cryptography Standardization][dilithium-round3].
-
-
-### `w0` after norm checks have passed
-
-After the norm checks have passed it is safe to serialize the
-signature, so any value that could be derived from the signature and
-the public key is safe to leak.
-
-At this point `w0` = w - c * s2, and
-
-    A * `mask` - `verifier_challenge` * t = w - c * s2
-
-where `mask` and `verifier_challenge` are hold values that are part of
-the signature to be serialized, and A and t are part of the public
-key.
-
-### `challenge_times_t0` after norm checks have passed
-
-After the norm checks have passed it is safe to serialize the
-signature, so any value that could be derived from the signature and
-the public key is safe to leak.
-
-`t0` is technically part of the signing key, but only for compression
-of the public key. It can be considered public. `verifier_challenge`
-will be part of the signature that is now safe to serialize, cf. [FIPS
-204, section
-6.1](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
-
-[dilithium-round3]: https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
+order to avoid false positives. The reasoning for each declassify operation 
+is given in the ML-DSA implementation.
