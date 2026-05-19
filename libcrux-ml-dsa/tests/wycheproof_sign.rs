@@ -44,14 +44,25 @@ macro_rules! wycheproof_sign_test {
                         let message = test.msg;
                         let context = test.ctx;
 
+                        if test.flags.contains(&Flag::InvalidPrivateKey) {
+                            // We do not perform validation of s1/s2 during signing. This is
+                            // not required by FIPS 204 or FIPS 140-3.
+                            // Additional context: https://github.com/pq-code-package/mldsa-native/pull/1003
+                            continue;
+                        }
+
                         let signature = $sign(&signing_key, &message, &context, signing_randomness);
 
                         if let Err(SigningError::ContextTooLongError) = signature {
-                            assert!(test.result == TestResult::Invalid)
+                            assert!(test.result == TestResult::Invalid);
+                            assert!(test.flags.contains(&Flag::InvalidContext));
+                            continue;
                         }
 
                         if test.result == TestResult::Valid {
                             assert_eq!(signature.unwrap().as_slice(), test.sig.as_slice());
+                        } else {
+                            panic!("tc_id: {}, unexpected test failure", test.tc_id)
                         }
                     }
                 }
