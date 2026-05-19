@@ -37,36 +37,36 @@ impl<T: Scalar> Declassify for Secret<T> {
 }
 
 // Classify a reference to a scalar
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret values is the same
 impl<'a, T: Scalar> ClassifyRef for &'a T {
     type ClassifiedRef = &'a Secret<T>;
     fn classify_ref(self) -> &'a Secret<T> {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Declassify a reference to a scalar
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret values is the same
 impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 /// Classify a mutable reference to a slice
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret slices is the same
 pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
+    // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+    //       the memory representation of the public and secret slices is the same
     unsafe { core::mem::transmute(x) }
 }
 
 /// Declassify a mutable reference to a slice
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret slices is the same
 pub fn declassify_mut_slice<T: Scalar>(x: &mut [Secret<T>]) -> &mut [T] {
+    // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+    //       the memory representation of the public and secret slices is the same
     unsafe { core::mem::transmute(x) }
 }
 

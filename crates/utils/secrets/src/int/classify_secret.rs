@@ -59,101 +59,101 @@ impl<T: Scalar, const N: usize, const M: usize> Declassify for [[Secret<T>; N]; 
 }
 
 // Mutable references to scalars can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> ClassifyRefMut for &'a mut T {
     type ClassifiedRefMut = &'a mut Secret<T>;
     fn classify_ref_mut(self) -> &'a mut Secret<T> {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Mutable references to scalars can be declassified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> DeclassifyRefMut for &'a mut Secret<T> {
     type DeclassifiedRefMut = &'a mut T;
     fn declassify_ref_mut(self) -> &'a mut T {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Immutable references to slices can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> ClassifyRef for &'a [T] {
     type ClassifiedRef = &'a [Secret<T>];
     fn classify_ref(self) -> &'a [Secret<T>] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret slices is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Immutable references to slices can be declassified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> DeclassifyRef for &'a [Secret<T>] {
     type DeclassifiedRef = &'a [T];
     fn declassify_ref(self) -> &'a [T] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret slices is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Mutable references to scalars can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> ClassifyRefMut for &'a mut [T] {
     type ClassifiedRefMut = &'a mut [Secret<T>];
     fn classify_ref_mut(self) -> &'a mut [Secret<T>] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret slices is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Mutable references to scalars can be declassified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar> DeclassifyRefMut for &'a mut [Secret<T>] {
     type DeclassifiedRefMut = &'a mut [T];
     fn declassify_ref_mut(self) -> &'a mut [T] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret slices is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Immutable references to arrays can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar, const N: usize> ClassifyRef for &'a [T; N] {
     type ClassifiedRef = &'a [Secret<T>; N];
     fn classify_ref(self) -> &'a [Secret<T>; N] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret arrays is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Immutable references to arrays can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar, const N: usize> DeclassifyRef for &'a [Secret<T>; N] {
     type DeclassifiedRef = &'a [T; N];
     fn declassify_ref(self) -> &'a [T; N] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret arrays is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Mutable references to arrays can be classified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar, const N: usize> ClassifyRefMut for &'a mut [T; N] {
     type ClassifiedRefMut = &'a mut [Secret<T>; N];
     fn classify_ref_mut(self) -> &'a mut [Secret<T>; N] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret arrays is the same
         unsafe { core::mem::transmute(self) }
     }
 }
 
 // Mutable references to arrays can be declassified
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory represnetation of the public and secret slices is the same
 impl<'a, T: Scalar, const N: usize> DeclassifyRefMut for &'a mut [Secret<T>; N] {
     type DeclassifiedRefMut = &'a mut [T; N];
     fn declassify_ref_mut(self) -> &'a mut [T; N] {
+        // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
+        //       the memory representation of the public and secret arrays is the same
         unsafe { core::mem::transmute(self) }
     }
 }
