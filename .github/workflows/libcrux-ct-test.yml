@@ -3,9 +3,9 @@ name: Libcrux - Constant Time Tests
 on:
   merge_group:
   push:
-    branches: ["main", "dev"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "dev"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions: {}
