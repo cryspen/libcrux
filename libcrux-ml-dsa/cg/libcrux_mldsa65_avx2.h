@@ -8,7 +8,7 @@
  * Eurydice: b227478b67c6a6e2ff611f978f10d6b7f26472ac
  * Karamel: 4e64d915da3c172d1dfad805b8e1a46beff938bc
  * F*: unset
- * Libcrux: d3ed1c47cd34e327523d0f5444286676b7f7abe1
+ * Libcrux: dirty
  */
 
 #ifndef libcrux_mldsa65_avx2_H
@@ -5459,18 +5459,26 @@ libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_64(
   bool result = false;
   for (size_t i = (size_t)0U; i < (size_t)32U; i++) {
     size_t i0 = i;
+    bool coeff_exceeds = libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
+        &self->data[i0], bound);
     bool uu____0;
     if (result) {
       uu____0 = true;
     } else {
-      uu____0 = libcrux_ml_dsa_simd_avx2_infinity_norm_exceeds_a2(
-          &self->data[i0], bound);
+      uu____0 = coeff_exceeds;
     }
     result = uu____0;
   }
   return result;
 }
 
+/**
+ CAUTION: This function must only be called with inputs for
+ which it is safe to leak the index of a violating coefficient.
+
+ For all norm checks during ML-DSA signature generation it is
+ safe to leak the index of a violating coefficient.
+*/
 /**
 A monomorphic instance of libcrux_ml_dsa.arithmetic.vector_infinity_norm_exceeds
 with types libcrux_ml_dsa_simd_avx2_vector_type_Vec256
@@ -5495,6 +5503,21 @@ libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_64(
   }
   return result;
 }
+
+/**
+ Declassify secret memory.
+
+ No-op if `valgrind_ct_test` cfg is not enabled.
+*/
+/**
+A monomorphic instance of libcrux_ml_dsa.ct_test.ct_declassify
+with types Eurydice_arr libcrux_ml_dsa_polynomial_PolynomialRingElement
+libcrux_ml_dsa_simd_avx2_vector_type_Vec256[[$6size_t]]
+
+*/
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline void libcrux_ml_dsa_ct_test_ct_declassify_040(
+    const Eurydice_arr_b50 *val) {}
 
 /**
 This function found in impl

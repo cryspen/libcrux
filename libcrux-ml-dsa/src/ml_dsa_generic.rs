@@ -3,6 +3,7 @@ use crate::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
     },
     constants::*,
+    ct_test::ct_declassify,
     encoding::{self},
     hash_functions::{shake128, shake256},
     matrix::{
@@ -27,6 +28,7 @@ pub(crate) mod multiplexing;
 #[libcrux_macros::ml_dsa_parameter_sets(44, 65, 87)]
 pub(crate) mod generic {
     use super::*;
+    use crate::ct_test::ct_classify;
 
     // Derived constants
     const ROW_COLUMN: usize = ROWS_IN_A + COLUMNS_IN_A;
@@ -153,6 +155,11 @@ pub(crate) mod generic {
         let (s2_serialized, t0_serialized) =
             remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
 
+        ct_classify(&randomness);
+        ct_classify(seed_for_signing);
+        ct_classify(s1_serialized);
+        ct_classify(s2_serialized);
+
         // Deserialize s1, s2, and t0.
         let mut s1_as_ntt = [PolynomialRingElement::zero(); COLUMNS_IN_A];
         let mut s2_as_ntt = [PolynomialRingElement::zero(); ROWS_IN_A];
@@ -262,6 +269,21 @@ pub(crate) mod generic {
                 shake.squeeze(&mut commitment_hash_candidate);
             }
 
+            // Declassification: Revealing the verifier challenge
+            // `commitment_hash_candidate` is safe in the random
+            // oracle model.
+            //
+            // "The challenge reveals information about H(μ||w₁) also
+            // in the case of rejected y, but this does not reveal any
+            // information about the secret key when H is modelled as
+            // a random oracle and w₁ has high min-entropy."
+            //
+            // -- Section 5.5 of the Dilithium Specification for Round
+            // 3 of the NIST Post-Quantum Cryptography
+            // Standardization.
+            // (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
+            ct_declassify(&commitment_hash_candidate);
+
             let mut verifier_challenge = PolynomialRingElement::zero();
             sample_challenge_ring_element::<SIMDUnit, Shake256>(
                 &commitment_hash_candidate,
@@ -281,6 +303,14 @@ pub(crate) mod generic {
             add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
             subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
 
+            // NOTE: Regarding the norm checks below, it is safe to
+            // leak the index of a violating coefficient during ML-DSA
+            // signature generation.
+            //
+            // See section 5.5 of the Dilithium Specification for
+            // Round 3 of the NIST Post-Quantum Cryptography
+            // Standardization.
+            // (https://pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf)
             if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
                 // continue;
@@ -300,6 +330,31 @@ pub(crate) mod generic {
                         // XXX: https://github.com/hacspec/hax/issues/1171
                         // continue;
                     } else {
+                        // After the norm checks have passed it is
+                        // safe to serialize the signature, so any
+                        // value that could be derived from the
+                        // signature and the public key is safe to
+                        // leak.
+
+                        // Declassification:
+                        // At this point `w0` = w - c * s2, and
+                        //
+                        //     A * `mask` - `verifier_challenge` * t = w - c * s2
+                        //
+                        // where `mask` and `verifier_challenge` are part of the signature to be serialized,
+                        // and A and t are part of the public key.
+                        ct_declassify(&w0);
+
+                        // Declassification: `t0` is technically part
+                        // of the signing key, but only for
+                        // compression of the public key. It can be
+                        // considered public. `verifier_challenge`
+                        // will be part of the signature that is now
+                        // safe to serialize.
+                        //
+                        // cf. FIPS 204, section 6.1
+                        // (https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
+                        ct_declassify(&challenge_times_t0);
                         add_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_t0);
                         let mut hint_candidate = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
                         let ones_in_hint =
