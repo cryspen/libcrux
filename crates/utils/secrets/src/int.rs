@@ -16,12 +16,12 @@ mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
 
-// A macro defining const constructors for secret/public integers
+// A macro defining constructors for secret/public integers
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
         #[allow(non_snake_case)]
         #[inline(always)]
-        pub const fn $name(v: $t) -> $st {
+        pub fn $name(v: $t) -> $st {
             secret(v)
         }
     };

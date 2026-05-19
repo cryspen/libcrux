@@ -2,6 +2,7 @@
 //! These implementations are meant to be used when feature `check-secret-independence` is set
 use super::classify_secret::*;
 use crate::traits::*;
+use crate::valgrind_mem_requests::{ct_classify, ct_declassify};
 use core::ops::*;
 
 pub type I8 = Secret<i8>;
@@ -16,7 +17,7 @@ pub type I128 = Secret<i128>;
 pub type U128 = Secret<u128>;
 
 // Construct a secret integer
-pub const fn secret<T>(x: T) -> Secret<T> {
+pub fn secret<T>(x: T) -> Secret<T> {
     Secret(x)
 }
 
@@ -24,6 +25,7 @@ pub const fn secret<T>(x: T) -> Secret<T> {
 impl<T: Scalar> Classify for T {
     type Classified = Secret<T>;
     fn classify(self) -> Secret<Self> {
+        ct_classify(&self);
         secret(self)
     }
 }
@@ -32,6 +34,7 @@ impl<T: Scalar> Classify for T {
 impl<T: Scalar> Declassify for Secret<T> {
     type Declassified = T;
     fn declassify(self) -> T {
+        ct_declassify(&self);
         self.0
     }
 }
@@ -40,6 +43,7 @@ impl<T: Scalar> Declassify for Secret<T> {
 impl<'a, T: Scalar> ClassifyRef for &'a T {
     type ClassifiedRef = &'a Secret<T>;
     fn classify_ref(self) -> &'a Secret<T> {
+        ct_classify(self);
         // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
         //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
@@ -50,6 +54,7 @@ impl<'a, T: Scalar> ClassifyRef for &'a T {
 impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
     type DeclassifiedRef = &'a T;
     fn declassify_ref(self) -> &'a T {
+        ct_declassify(self);
         // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
         //       the memory representation of the public and secret values is the same
         unsafe { core::mem::transmute(self) }
@@ -58,6 +63,7 @@ impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
 
 /// Classify a mutable reference to a slice
 pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
+    ct_classify(x);
     // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
     //       the memory representation of the public and secret slices is the same
     unsafe { core::mem::transmute(x) }
@@ -65,6 +71,7 @@ pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
 
 /// Declassify a mutable reference to a slice
 pub fn declassify_mut_slice<T: Scalar>(x: &mut [Secret<T>]) -> &mut [T] {
+    ct_declassify(x);
     // SAFETY: this is safe since the `Secret` type is `repr(transparent)`, so
     //       the memory representation of the public and secret slices is the same
     unsafe { core::mem::transmute(x) }
