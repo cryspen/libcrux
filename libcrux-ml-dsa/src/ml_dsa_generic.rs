@@ -111,6 +111,10 @@ pub(crate) mod generic {
             );
         }
 
+        // Declassification: `t` is part of the public key, but split
+        // into t0 and t1 for public key compression.
+        ct_declassify(&t0);
+
         let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
 
