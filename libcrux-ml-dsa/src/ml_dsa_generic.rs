@@ -92,6 +92,8 @@ pub(crate) mod generic {
         let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         {
             let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
+            // Declassification: `seed_for_a` is part of the public key.
+            ct_declassify(seed_for_a);
             Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
 
             let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
