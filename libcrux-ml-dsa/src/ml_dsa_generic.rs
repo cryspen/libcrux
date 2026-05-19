@@ -65,6 +65,8 @@ pub(crate) mod generic {
         signing_key: &mut [u8],
         verification_key: &mut [u8],
     ) {
+        ct_classify(&randomness);
+
         // Check key sizes
         #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
