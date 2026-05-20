@@ -16,12 +16,12 @@ mod public_integers;
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
 
-// A macro defining const constructors for secret/public integers
+// A macro defining constructors for secret/public integers
 macro_rules! impl_new {
     ($name:ident, $t:ty, $st:ty) => {
         #[allow(non_snake_case)]
         #[inline(always)]
-        pub const fn $name(v: $t) -> $st {
+        pub fn $name(v: $t) -> $st {
             secret(v)
         }
     };
@@ -145,36 +145,39 @@ pub trait Select {
 
 #[cfg(any(hax, not(target_arch = "aarch64")))]
 mod portable {
+    use core::ops::{BitAnd, BitXor, Neg, Not};
+
     use super::{Select, Swap};
-    use crate::{traits::Declassify, U8};
+    use crate::Declassify;
     #[cfg(feature = "check-secret-independence")]
-    use crate::{traits::*, U16, U32, U64};
+    use crate::IntOps;
+    use crate::{CastOps, U16, U32, U64, U8};
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
-    fn is_non_zero_32(selector: u8) -> u32 {
+    fn is_non_zero_32(selector: U8) -> U32 {
         core::hint::black_box(
-            ((!(core::hint::black_box(selector) as u32)).wrapping_add(1) >> 31) & 1,
+            ((!(core::hint::black_box(selector).as_u32())).wrapping_add(U32(1)) >> 31) & U32(1),
         )
     }
 
     // Don't inline this to avoid that the compiler optimizes this out.
     #[inline(never)]
-    fn is_non_zero_64(selector: u8) -> u64 {
+    fn is_non_zero_64(selector: U8) -> U64 {
         core::hint::black_box(
-            ((!(core::hint::black_box(selector) as u64)).wrapping_add(1) >> 63) & 1,
+            ((!(core::hint::black_box(selector).as_u64())).wrapping_add(U64(1)) >> 63) & U64(1),
         )
     }
 
     /// This macro implements `Select` for public integer type
     /// `&[$ty]` and its secret version `&[$secret_ty]`.
     macro_rules! impl_select {
-        ($ty:ty, $secret_ty:ty, $is_non_zero:ident) => {
+        ($ty:ty, $secret_ty:ident, $is_non_zero:ident, $cast:path) => {
             impl Select for [$ty] {
                 fn select(&mut self, other: &Self, selector: crate::U8) {
-                    let mask = ($is_non_zero(selector.declassify()) as $ty).wrapping_sub(1);
+                    let mask = $cast($is_non_zero(selector)).wrapping_sub($secret_ty(1));
                     for i in 0..self.len() {
-                        self[i] = (self[i] & mask) | (other[i] & !mask);
+                        self[i] = ((mask & self[i]) | (!mask & other[i])).declassify();
                     }
                 }
             }
@@ -182,55 +185,61 @@ mod portable {
             #[cfg(feature = "check-secret-independence")]
             impl Select for [$secret_ty] {
                 fn select(&mut self, other: &Self, selector: crate::U8) {
-                    let lhs = self.declassify_ref_mut();
-                    let rhs = other.declassify_ref();
-                    lhs.select(rhs, selector);
+                    let mask = $cast($is_non_zero(selector)).wrapping_sub($secret_ty(1));
+                    for i in 0..self.len() {
+                        self[i] = (mask & self[i]) | (!mask & other[i]);
+                    }
                 }
             }
         };
     }
 
-    impl_select!(u8, U8, is_non_zero_32);
-    impl_select!(u16, U16, is_non_zero_32);
-    impl_select!(u32, U32, is_non_zero_32);
-    impl_select!(u64, U64, is_non_zero_64);
+    impl_select!(u8, U8, is_non_zero_32, CastOps::as_u8);
+    impl_select!(u16, U16, is_non_zero_32, CastOps::as_u16);
+    impl_select!(u32, U32, is_non_zero_32, CastOps::as_u32);
+    impl_select!(u64, U64, is_non_zero_64, CastOps::as_u64);
 
-    macro_rules! swap64 {
-        ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
-            let mask = core::hint::black_box(
-                ((((!($selector as u64)).wrapping_add(1) >> 63) & 1) as $t).wrapping_sub(1),
-            );
-            for i in 0..$lhs.len() {
-                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
-                $lhs[i] ^= dummy;
-                $rhs[i] ^= dummy;
-            }
-        };
+    /// Compute the mask for ct swapping
+    fn ct_swap_mask<Int, Uint>(
+        selector: U8,
+        to_signed: impl Fn(U8) -> Int,
+        to_unsigned: impl Fn(Int) -> Uint,
+    ) -> Uint
+    where
+        Int: Neg<Output = Int>,
+    {
+        let selector = core::hint::black_box(selector);
+        // if selector == 0, then mask = -(0) == 00...00
+        // if selector == 1, then mask = -(1) == 11...11
+        let mask = to_unsigned(-(to_signed(selector)));
+        core::hint::black_box(mask)
     }
 
-    macro_rules! swap32 {
-        ($t:ty, $lhs:expr, $rhs:expr, $selector:expr) => {
-            let mask = core::hint::black_box(
-                ((((!(core::hint::black_box($selector) as u32)).wrapping_add(1) >> 31) & 1) as $t)
-                    .wrapping_sub(1),
-            );
-            for i in 0..$lhs.len() {
-                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
-                $lhs[i] ^= dummy;
-                $rhs[i] ^= dummy;
-            }
-        };
+    fn ct_swap_loop<T, S>(lhs: &mut [T], rhs: &mut [T], mask: S, declassify: impl Fn(S) -> T)
+    where
+        S: Copy + Not<Output = S> + BitAnd<T, Output = S> + BitXor<T, Output = S>,
+        T: Copy + BitXor<Output = T> + BitAnd<Output = T> + Not<Output = T>,
+    {
+        // XXX Should this be a debug_assert or a real assert? With the current version
+        // the indexing will panic if rhs.len() < lhs.len() but not when lhs.len() < rhs.len()
+        // in release mode
+        debug_assert_eq!(lhs.len(), rhs.len());
+        for i in 0..lhs.len() {
+            let dummy = mask & (lhs[i] ^ rhs[i]);
+            lhs[i] = declassify(dummy ^ lhs[i]);
+            rhs[i] = declassify(dummy ^ rhs[i]);
+        }
     }
 
     /// This macro implements `Swap` for public integer type
     /// `&[$ty]` and its secret version `&[$secret_ty]`.
     macro_rules! impl_swap {
-        ($ty:ty, $secret_ty:ty, $swap:ident) => {
+        ($ty:ty, $secret_ty:ty, $unsigned_cast:expr, $signed_cast:expr) => {
             impl Swap for [$ty] {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
-                    debug_assert_eq!(self.len(), other.len());
-                    $swap!($ty, self, other, selector.declassify());
+                    let mask = ct_swap_mask(selector, $signed_cast, $unsigned_cast);
+                    ct_swap_loop(self, other, mask, Declassify::declassify);
                 }
             }
 
@@ -238,26 +247,27 @@ mod portable {
             impl Swap for [$secret_ty] {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
-                    debug_assert_eq!(self.len(), other.len());
-                    let lhs = self.declassify_ref_mut();
-                    let rhs = other.declassify_ref_mut();
-                    $swap!($ty, lhs, rhs, selector.declassify());
+                    let mask = ct_swap_mask(selector, $signed_cast, $unsigned_cast);
+                    // Here the generic parameters S and T are both `Secret`, so we
+                    // don't need (and don't want!) to declassify
+                    ct_swap_loop(self, other, mask, core::convert::identity);
                 }
             }
         };
     }
 
-    impl_swap!(u8, U8, swap32);
-    impl_swap!(u16, U16, swap32);
-    impl_swap!(u32, U32, swap32);
-    impl_swap!(u64, U64, swap64);
+    impl_swap!(u8, U8, CastOps::as_u8, CastOps::as_i8);
+    impl_swap!(u16, U16, CastOps::as_u16, CastOps::as_i16);
+    impl_swap!(u32, U32, CastOps::as_u32, CastOps::as_i32);
+    impl_swap!(u64, U64, CastOps::as_u64, CastOps::as_i64);
 }
 
 #[cfg(all(not(hax), target_arch = "aarch64"))]
 mod aarch64 {
-    use core::arch::asm;
-
     use super::*;
+    use crate::valgrind_mem_requests::{ct_classify, ct_declassify};
+
+    use core::arch::asm;
 
     macro_rules! select64 {
         ($lhs:expr, $rhs:expr, $selector:expr) => {
@@ -302,7 +312,15 @@ mod aarch64 {
             impl Select for $ty {
                 #[inline]
                 fn select(&mut self, other: &Self, selector: U8) {
-                    $select!(self, other, selector.declassify());
+                    let selector = selector.declassify();
+                    // Reclassify the selector for valgrind check
+                    ct_classify(&selector);
+                    $select!(self, other, selector);
+                    // Because the selector is classified, this also taints
+                    // self and other. As these are not secret types, it is
+                    // okay to declassify them
+                    ct_declassify(self);
+                    ct_declassify(other);
                 }
             }
 
@@ -310,9 +328,13 @@ mod aarch64 {
             impl Select for $secret_ty {
                 #[inline]
                 fn select(&mut self, other: &Self, selector: U8) {
+                    let selector = selector.declassify();
+                    ct_classify(&selector);
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref();
-                    lhs.select(rhs, selector);
+                    ct_classify(lhs);
+                    ct_classify(rhs);
+                    $select!(lhs, rhs, selector);
                 }
             }
         };
@@ -382,7 +404,14 @@ mod aarch64 {
             impl Swap for $ty {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
-                    $swap!(self, other, selector.declassify());
+                    let selector = selector.declassify();
+                    ct_classify(&selector);
+                    $swap!(self, other, selector);
+                    // Because the selector is classified, this also taints
+                    // self and other. As these are not secret types, it is
+                    // okay to declassify them
+                    ct_declassify(self);
+                    ct_declassify(other);
                 }
             }
 
@@ -390,9 +419,13 @@ mod aarch64 {
             impl Swap for $secret_ty {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
+                    let selector = selector.declassify();
+                    ct_classify(&selector);
                     let lhs = self.declassify_ref_mut();
                     let rhs = other.declassify_ref_mut();
-                    lhs.cswap(rhs, selector);
+                    ct_classify(lhs);
+                    ct_classify(rhs);
+                    $swap!(lhs, rhs, selector);
                 }
             }
         };
