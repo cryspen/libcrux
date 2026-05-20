@@ -11,7 +11,7 @@ where
     D: arrayref::DigestIncremental<OUTLEN>,
     D::IncrementalState: InitializeDigestState,
 {
-    /// Inner hash state already primed with ipad.
+    /// Inner hash state already primed with K xor ipad.
     pub(crate) inner: D::IncrementalState,
     pub(crate) opad: [u8; BLOCK],
 }
@@ -24,6 +24,9 @@ where
 {
     /// Initialize a new streaming HMAC computation with the given key.
     fn new(key: &[u8]) -> Result<Self, Error> {
+        debug_assert!(OUTLEN <= BLOCK);
+        debug_assert!(BLOCK <= u32::MAX as usize);
+
         if key.len() > u32::MAX as usize {
             return Err(Error::InvalidInputLength);
         }
@@ -41,19 +44,24 @@ where
             key_block[..OUTLEN].copy_from_slice(&hashed);
         }
 
-        let mut ipad = [0u8; BLOCK];
-        let mut opad = [0u8; BLOCK];
+        let mut k_xor_ipad = [0u8; BLOCK];
+        let mut k_xor_opad = [0u8; BLOCK];
 
         for i in 0..BLOCK {
-            ipad[i] = key_block[i] ^ 0x36;
-            opad[i] = key_block[i] ^ 0x5c;
+            k_xor_ipad[i] = key_block[i] ^ 0x36;
+            k_xor_opad[i] = key_block[i] ^ 0x5c;
         }
 
-        // Prime the inner state with ipad so subsequent updates feed data directly.
+        // Prime the inner state with `k_xor_ipad` so subsequent updates feed data directly.
+        // The update should only fail if we submit too much data, and `k_xor_ipad` is just a single
+        // block long, so short enough.
         let mut inner = Digest::IncrementalState::new();
-        Digest::update(&mut inner, &ipad).expect("HMAC: ipad update failed");
+        Digest::update(&mut inner, &k_xor_ipad).expect("HMAC: ipad update failed");
 
-        Ok(Self { inner, opad })
+        Ok(Self {
+            inner,
+            opad: k_xor_opad,
+        })
     }
 
     fn update(&mut self, data: &[u8]) -> Result<(), Error> {
@@ -61,11 +69,11 @@ where
     }
 
     fn finalize(mut self, dst: &mut [u8; OUTLEN]) {
-        // Inner hash: finalize SHA-2(ipad || data).
+        // Inner hash: finalize H((K xor ipad) || data).
         let mut inner_hash = [0u8; OUTLEN];
         Digest::finish(&mut self.inner, &mut inner_hash);
 
-        // Outer hash: SHA-2(opad || inner_hash).
+        // Outer hash: H((K xor opad) || inner_hash).
         let mut outer = Digest::IncrementalState::new();
         Digest::update(&mut outer, &self.opad).expect("self.opad.len() is always <= u32::MAX");
         Digest::update(&mut outer, &inner_hash).expect("inner_hash.len() is always <= u32::MAX");

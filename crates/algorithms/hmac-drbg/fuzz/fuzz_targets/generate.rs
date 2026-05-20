@@ -11,7 +11,7 @@
 //!
 //! Checks:
 //!   - No panic or undefined behaviour for any input.
-//!   - `RequestTooLarge` iff output_len == 0 or output_len > MAX_GENERATE_BYTES.
+//!   - `RequestInvalid` iff output_len == 0 or output_len > MAX_GENERATE_BYTES.
 //!   - On success the output buffer is fully written (no uninitialised bytes leak).
 #![no_main]
 
