@@ -145,6 +145,8 @@ pub trait Select {
 
 #[cfg(any(hax, not(target_arch = "aarch64")))]
 mod portable {
+    use core::ops::{BitAnd, BitXor, Neg, Not};
+
     use super::{Select, Swap};
     use crate::Declassify;
     #[cfg(feature = "check-secret-independence")]
@@ -197,42 +199,47 @@ mod portable {
     impl_select!(u32, U32, is_non_zero_32, CastOps::as_u32);
     impl_select!(u64, U64, is_non_zero_64, CastOps::as_u64);
 
-    macro_rules! swap64 {
-        ($t:ty, $cast:path, $opt_declassify:expr, $lhs:expr, $rhs:expr, $selector:expr) => {
-            let mask = core::hint::black_box(
-                $cast(((!($selector.as_u64())).wrapping_add(1) >> 63) & 1).wrapping_sub(1),
-            );
-            for i in 0..$lhs.len() {
-                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
-                $lhs[i] = $opt_declassify(dummy ^ $lhs[i]);
-                $rhs[i] = $opt_declassify(dummy ^ $rhs[i]);
-            }
-        };
+    /// Compute the mask for ct swapping
+    fn ct_swap_mask<Int, Uint>(
+        selector: U8,
+        to_signed: impl Fn(U8) -> Int,
+        to_unsigned: impl Fn(Int) -> Uint,
+    ) -> Uint
+    where
+        Int: Neg<Output = Int>,
+    {
+        let selector = core::hint::black_box(selector);
+        // if selector == 0, then mask = -(0) == 00...00
+        // if selector == 1, then mask = -(1) == 11...11
+        let mask = to_unsigned(-(to_signed(selector)));
+        core::hint::black_box(mask)
     }
 
-    macro_rules! swap32 {
-        ($t:ty, $cast:path, $opt_declassify:expr, $lhs:expr, $rhs:expr, $selector:expr) => {
-            let mask = core::hint::black_box(
-                $cast(((!(core::hint::black_box($selector).as_u32())).wrapping_add(1) >> 31) & 1)
-                    .wrapping_sub(1),
-            );
-            for i in 0..$lhs.len() {
-                let dummy = !mask & ($lhs[i] ^ $rhs[i]);
-                $lhs[i] = $opt_declassify(dummy ^ $lhs[i]);
-                $rhs[i] = $opt_declassify(dummy ^ $rhs[i]);
-            }
-        };
+    fn ct_swap_loop<T, S>(lhs: &mut [T], rhs: &mut [T], mask: S, declassify: impl Fn(S) -> T)
+    where
+        S: Copy + Not<Output = S> + BitAnd<T, Output = S> + BitXor<T, Output = S>,
+        T: Copy + BitXor<Output = T> + BitAnd<Output = T> + Not<Output = T>,
+    {
+        // XXX Should this be a debug_assert or a real assert? With the current version
+        // the indexing will panic if rhs.len() < lhs.len() but not when lhs.len() < rhs.len()
+        // in release mode
+        debug_assert_eq!(lhs.len(), rhs.len());
+        for i in 0..lhs.len() {
+            let dummy = mask & (lhs[i] ^ rhs[i]);
+            lhs[i] = declassify(dummy ^ lhs[i]);
+            rhs[i] = declassify(dummy ^ rhs[i]);
+        }
     }
 
     /// This macro implements `Swap` for public integer type
     /// `&[$ty]` and its secret version `&[$secret_ty]`.
     macro_rules! impl_swap {
-        ($ty:ty, $secret_ty:ty, $swap:ident, $cast:path) => {
+        ($ty:ty, $secret_ty:ty, $unsigned_cast:expr, $signed_cast:expr) => {
             impl Swap for [$ty] {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
-                    debug_assert_eq!(self.len(), other.len());
-                    $swap!($ty, $cast, Declassify::declassify, self, other, selector);
+                    let mask = ct_swap_mask(selector, $signed_cast, $unsigned_cast);
+                    ct_swap_loop(self, other, mask, Declassify::declassify);
                 }
             }
 
@@ -240,17 +247,19 @@ mod portable {
             impl Swap for [$secret_ty] {
                 #[inline]
                 fn cswap(&mut self, other: &mut Self, selector: U8) {
-                    debug_assert_eq!(self.len(), other.len());
-                    $swap!($ty, $cast, |x| x, self, other, selector);
+                    let mask = ct_swap_mask(selector, $signed_cast, $unsigned_cast);
+                    // Here the generic parameters S and T are both `Secret`, so we
+                    // don't need (and don't want!) to declassify
+                    ct_swap_loop(self, other, mask, core::convert::identity);
                 }
             }
         };
     }
 
-    impl_swap!(u8, U8, swap32, CastOps::as_u8);
-    impl_swap!(u16, U16, swap32, CastOps::as_u16);
-    impl_swap!(u32, U32, swap32, CastOps::as_u32);
-    impl_swap!(u64, U64, swap64, CastOps::as_u64);
+    impl_swap!(u8, U8, CastOps::as_u8, CastOps::as_i8);
+    impl_swap!(u16, U16, CastOps::as_u16, CastOps::as_i16);
+    impl_swap!(u32, U32, CastOps::as_u32, CastOps::as_i32);
+    impl_swap!(u64, U64, CastOps::as_u64, CastOps::as_i64);
 }
 
 #[cfg(all(not(hax), target_arch = "aarch64"))]
