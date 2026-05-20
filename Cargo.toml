@@ -44,6 +44,8 @@ members = [
     "crates/algorithms/ed25519",
     "crates/algorithms/hkdf",
     "crates/algorithms/hmac",
+    "crates/algorithms/hmac-drbg",
+    "crates/algorithms/hmac-drbg/fuzz",
     "crates/algorithms/p256",
     "crates/algorithms/poly1305",
     "crates/algorithms/rsa",
@@ -100,6 +102,7 @@ libcrux-ed25519 = { version = "=0.0.8", path = "crates/algorithms/ed25519" }
 libcrux-hacl-rs = { version = "=0.0.5", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.7", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.7", path = "crates/algorithms/hmac" }
+libcrux-hmac-drbg = { version = "=0.0.4", path = "crates/algorithms/hmac-drbg" }
 libcrux-intrinsics = { version = "=0.0.7", path = "crates/utils/intrinsics" }
 libcrux-digest = { version = "=0.0.8", path = "crates/primitives/digest" }
 libcrux-rsa = { version = "=0.0.7", path = "crates/algorithms/rsa" }
@@ -124,6 +127,9 @@ libcrux-kats = { path = "crates/testing/kats" }
 # Utilities
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
 libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
+
+# 3rd Party
+rand = { version = "0.10", default-features = false }
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
@@ -154,7 +160,8 @@ all_algorithms = [
     "mlkem",
     "mldsa",
     "rsapss",
-    "poly1305"
+    "poly1305",
+    "hmac_drbg",
 ]
 aes_gcm = []
 blake2 = []
@@ -171,6 +178,7 @@ mlkem = []
 mldsa = []
 rsapss = []
 poly1305 = []
+hmac_drbg = []
 
 # Primitives
 all_primitives = ["aead", "digest", "kem"]
@@ -208,6 +216,7 @@ libcrux-ecdsa.workspace = true
 libcrux-ed25519.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-hmac.workspace = true
+libcrux-hmac-drbg.workspace = true
 libcrux-ml-kem.workspace = true
 libcrux-ml-dsa.workspace = true
 libcrux-p256.workspace = true
@@ -225,11 +234,13 @@ wasm-bindgen = { version = "0.2.87", optional = true }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 
 [dev-dependencies]
+
+rand.workspace = true
+
 clap = { version = "4.5", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"
-rand = { version = "0.10" }
 rand_chacha = { version = "0.10.0" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
