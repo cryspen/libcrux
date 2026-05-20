@@ -65,6 +65,8 @@ pub(crate) mod generic {
         signing_key: &mut [u8],
         verification_key: &mut [u8],
     ) {
+        ct_classify(&randomness);
+
         // Check key sizes
         #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
@@ -90,6 +92,8 @@ pub(crate) mod generic {
         let mut t0 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         {
             let mut a_as_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); ROW_X_COLUMN];
+            // Declassification: `seed_for_a` is part of the public key.
+            ct_declassify(seed_for_a);
             Sampler::matrix_flat::<SIMDUnit>(COLUMNS_IN_A, seed_for_a, &mut a_as_ntt);
 
             let mut s1_ntt = [PolynomialRingElement::<SIMDUnit>::zero(); COLUMNS_IN_A];
@@ -106,6 +110,10 @@ pub(crate) mod generic {
                 &mut t0,
             );
         }
+
+        // Declassification: `t` is part of the public key, but split
+        // into t0 and t1 for public key compression.
+        ct_declassify(&t0);
 
         let mut t1 = [PolynomialRingElement::<SIMDUnit>::zero(); ROWS_IN_A];
         power2round_vector::<SIMDUnit>(&mut t0, &mut t1);
