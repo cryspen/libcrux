@@ -11,11 +11,11 @@ repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
 hpke-rs-crypto = { version = "0.6.1", path = "../traits" }
-libcrux-ecdh = { version = "0.0.6", default-features = false }
-libcrux-hkdf = { version = "0.0.6" }
-libcrux-kem = { version = "0.0.7", default-features = false }
-libcrux-aead = { version = "0.0.7" }
-libcrux-traits = { version = "0.0.6", default-features = false }
+libcrux-ecdh = { version = "0.0.7", default-features = false }
+libcrux-hkdf = { version = "0.0.7" }
+libcrux-kem = { version = "0.0.8", default-features = false }
+libcrux-aead = { version = "0.0.8" }
+libcrux-traits = { version = "0.0.7", default-features = false }
 # RustCrypto curves not available in libcrux
 # TODO: These should be replaced with libcrux implementations as soon as they
 # are available.

@@ -15,14 +15,14 @@ pub mod error;
 pub mod types;
 
 // re-export trait
-pub use rand_core::{CryptoRng, RngCore};
+pub use rand::{CryptoRng, Rng, TryCryptoRng, TryRng};
 use zeroize::Zeroize;
 
 /// The [`HpkeCrypto`] trait defines the necessary cryptographic functions used
 /// in the HPKE implementation.
 pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// The PRNG implementation returned in [`HpkeCrypto::prng()`].
-    type HpkePrng: RngCore + CryptoRng + HpkeTestRng + Zeroize;
+    type HpkePrng: CryptoRng + HpkeTestRng + Zeroize;
 
     /// The name of the implementation.
     fn name() -> String;

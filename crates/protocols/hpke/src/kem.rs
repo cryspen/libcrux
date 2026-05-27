@@ -1,6 +1,6 @@
 use alloc::{vec, vec::Vec};
 
-use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto, RngCore};
+use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto, Rng};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::{dh_kem, util, Hpke};

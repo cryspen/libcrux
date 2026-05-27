@@ -6,7 +6,7 @@
 //! ```
 //! use hpke_rs::{*, hpke_types::*};
 //! use hpke_rs_libcrux::HpkeLibcrux;
-//! use hpke_rs_crypto::{HpkeCrypto, RngCore};
+//! use hpke_rs_crypto::{HpkeCrypto, Rng};
 //!
 //! // Set up hpke mode.
 //! let mut hpke = Hpke::<HpkeLibcrux>::new(Mode::Base, KemAlgorithm::DhKem25519,
@@ -46,7 +46,7 @@
 //! ```
 //! use hpke_rs::{*, hpke_types::*};
 //! use hpke_rs_libcrux::HpkeLibcrux;
-//! use hpke_rs_crypto::{HpkeCrypto, RngCore};
+//! use hpke_rs_crypto::{HpkeCrypto, Rng};
 //!
 //! // Set up hpke mode.
 //! let mut hpke = Hpke::<HpkeLibcrux>::new(Mode::Base, KemAlgorithm::DhKem25519,
@@ -111,6 +111,8 @@ use alloc::{
 
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
+#[cfg(not(feature = "hpke-test-prng"))]
+use hpke_rs_crypto::TryRng;
 use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto,
@@ -127,9 +129,6 @@ pub use hpke_rs_rust_crypto as rustcrypto;
 /// Re-export of the libcrux crate.
 #[cfg(feature = "libcrux")]
 pub use hpke_rs_libcrux as libcrux;
-
-#[cfg(not(feature = "hpke-test-prng"))]
-use rand_core::TryRngCore;
 
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};

@@ -5,12 +5,13 @@ extern crate alloc;
 
 use alloc::{string::String, vec::Vec};
 use core::fmt::Display;
+use rand_core_new::TryRng;
 use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    CryptoRng, HpkeCrypto, HpkeTestRng, RngCore,
+    HpkeCrypto, HpkeTestRng,
 };
 use p256::{
     elliptic_curve::ecdh::diffie_hellman as p256diffie_hellman, PublicKey as p256PublicKey,
@@ -358,27 +359,7 @@ impl rand_old::CryptoRng for HpkeRustCryptoPrng {}
 
 use rand_old::RngCore as _;
 
-impl RngCore for HpkeRustCryptoPrng {
-    fn next_u32(&mut self) -> u32 {
-        self.rng.next_u32()
-    }
-
-    fn next_u64(&mut self) -> u64 {
-        self.rng.next_u64()
-    }
-
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.fill_bytes(dest);
-    }
-}
-
-impl CryptoRng for HpkeRustCryptoPrng {}
-
-// Implement rand_core 0.10 traits for compatibility with x-wing and ml-kem
-// crates which depend on rand_core 0.10.
-// The blanket impls in rand_core 0.10 automatically provide `Rng` (from
-// `TryRng<Error = Infallible>`) and `CryptoRng` (from `TryCryptoRng`).
-impl rand_core_new::TryRng for HpkeRustCryptoPrng {
+impl TryRng for HpkeRustCryptoPrng {
     type Error = core::convert::Infallible;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {

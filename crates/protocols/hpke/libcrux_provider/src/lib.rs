@@ -9,7 +9,7 @@ use zeroize::Zeroize;
 use hpke_rs_crypto::{
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    CryptoRng, HpkeCrypto, HpkeTestRng,
+    HpkeCrypto, HpkeTestRng,
 };
 
 #[cfg(feature = "rustcrypto-p-curves")]
@@ -23,7 +23,7 @@ use p521::{
     SecretKey as P521SecretKey,
 };
 
-use rand::{rngs::SysRng, Rng, SeedableRng};
+use rand::{rngs::SysRng, Rng, SeedableRng, TryCryptoRng, TryRng};
 use rand_core::UnwrapErr;
 
 /// The Libcrux HPKE Provider
@@ -546,21 +546,24 @@ fn concat(values: &[&[u8]]) -> Vec<u8> {
     values.join(&[][..])
 }
 
-impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
-    fn next_u32(&mut self) -> u32 {
-        self.rng.next_u32()
+impl TryCryptoRng for HpkeLibcruxPrng {}
+
+impl TryRng for HpkeLibcruxPrng {
+    // TODO: Make use of fallible drbg.
+    type Error = core::convert::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        Ok(self.rng.next_u32())
     }
 
-    fn next_u64(&mut self) -> u64 {
-        self.rng.next_u64()
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        Ok(self.rng.next_u64())
     }
 
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.fill_bytes(dest)
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        Ok(self.rng.fill_bytes(dst))
     }
 }
-
-impl CryptoRng for HpkeLibcruxPrng {}
 
 impl HpkeTestRng for HpkeLibcruxPrng {
     type Error = Error;
@@ -577,7 +580,7 @@ impl HpkeTestRng for HpkeLibcruxPrng {
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        use hpke_rs_crypto::RngCore;
+        use hpke_rs_crypto::Rng;
 
         self.fill_bytes(dest);
         Ok(())
