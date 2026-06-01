@@ -7,8 +7,8 @@
  * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
- * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: dirty
+ * F*: unset
+ * Libcrux: c4e5e5e511bbc4c53f826163f57bfd10e9228911
  */
 
 
@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "libcrux_mlkem_core.h"
 #include "combined_core.h"
@@ -79,7 +82,7 @@ libcrux_ml_kem_constant_time_ops_select_ct(
 {
   uint8_t
   mask = core_num__u8__wrapping_sub(libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  Eurydice_arr_ec out = { { 0U } };
+  Eurydice_arr_ec out = { .data = { 0U } };
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE; i++)
   {
     size_t i0 = i;
@@ -117,6 +120,9 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
       selector);
 }
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_ct_ops_H_DEFINED
 #endif /* libcrux_ct_ops_H */

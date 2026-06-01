@@ -7,8 +7,8 @@
  * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
- * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: dirty
+ * F*: unset
+ * Libcrux: c4e5e5e511bbc4c53f826163f57bfd10e9228911
  */
 
 
@@ -18,6 +18,9 @@
 #include "eurydice_glue.h"
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "combined_core.h"
 
@@ -54,7 +57,7 @@ This function found in impl {libcrux_secrets::int::CastOps for i16}
 static KRML_MUSTINLINE uint8_t libcrux_secrets_int_as_u8_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_90((uint8_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
+    libcrux_secrets_int_public_integers_classify_27_90((uint8_t)libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
 /**
@@ -63,7 +66,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u8}
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_59(uint8_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_90(self));
+    libcrux_secrets_int_public_integers_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_public_integers_declassify_d8_90(self));
 }
 
 /**
@@ -72,7 +75,7 @@ This function found in impl {libcrux_secrets::int::CastOps for i16}
 static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
+    libcrux_secrets_int_public_integers_classify_27_a8((int32_t)libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
 /**
@@ -81,7 +84,7 @@ This function found in impl {libcrux_secrets::int::CastOps for i32}
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_36(int32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_a8(self));
+    libcrux_secrets_int_public_integers_classify_27_39((int16_t)libcrux_secrets_int_public_integers_declassify_d8_a8(self));
 }
 
 /**
@@ -90,7 +93,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u32}
 static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_b8(uint32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
+    libcrux_secrets_int_public_integers_classify_27_a8((int32_t)libcrux_secrets_int_public_integers_declassify_d8_df(self));
 }
 
 /**
@@ -99,7 +102,7 @@ This function found in impl {libcrux_secrets::int::CastOps for i16}
 static KRML_MUSTINLINE uint16_t libcrux_secrets_int_as_u16_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_de((uint16_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
+    libcrux_secrets_int_public_integers_classify_27_de((uint16_t)libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
 /**
@@ -108,7 +111,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u16}
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_ca(uint16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
+    libcrux_secrets_int_public_integers_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_public_integers_declassify_d8_de(self));
 }
 
 /**
@@ -117,7 +120,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u16}
 static KRML_MUSTINLINE uint64_t libcrux_secrets_int_as_u64_ca(uint16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_49((uint64_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
+    libcrux_secrets_int_public_integers_classify_27_49((uint64_t)(uint32_t)libcrux_secrets_int_public_integers_declassify_d8_de(self));
 }
 
 /**
@@ -126,7 +129,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u64}
 static KRML_MUSTINLINE uint32_t libcrux_secrets_int_as_u32_a3(uint64_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_df((uint32_t)libcrux_secrets_int_classify_public_declassify_d8_49(self));
+    libcrux_secrets_int_public_integers_classify_27_df((uint32_t)libcrux_secrets_int_public_integers_declassify_d8_49(self));
 }
 
 /**
@@ -135,7 +138,7 @@ This function found in impl {libcrux_secrets::int::CastOps for u32}
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_b8(uint32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
+    libcrux_secrets_int_public_integers_classify_27_39((int16_t)libcrux_secrets_int_public_integers_declassify_d8_df(self));
 }
 
 /**
@@ -144,7 +147,7 @@ This function found in impl {libcrux_secrets::int::CastOps for i16}
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_27_39(libcrux_secrets_int_classify_public_declassify_d8_39(self));
+    libcrux_secrets_int_public_integers_classify_27_39(libcrux_secrets_int_public_integers_declassify_d8_39(self));
 }
 
 /**
@@ -158,9 +161,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_ec
 libcrux_ml_kem_utils_into_padded_array_ce(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_ec out = { { 0U } };
+  Eurydice_arr_ec out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d46(&out,
-      (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -176,7 +179,7 @@ with const generics
 */
 static inline Eurydice_arr_7d libcrux_ml_kem_types_default_d3_79(void)
 {
-  return (Eurydice_arr_7d{ { 0U } });
+  return (KRML_CLITERAL(Eurydice_arr_7d){ .data = { 0U } });
 }
 
 /**
@@ -214,7 +217,7 @@ with const generics
 static inline libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types_from_17_bc(Eurydice_arr_7d sk, Eurydice_arr_5f pk)
 {
-  return (libcrux_ml_kem_mlkem768_MlKem768KeyPair{ sk, pk });
+  return (KRML_CLITERAL(libcrux_ml_kem_mlkem768_MlKem768KeyPair){ .sk = sk, .pk = pk });
 }
 
 /**
@@ -297,7 +300,7 @@ with const generics
 - K= 3
 */
 static KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_800 *prf_inputs, uint8_t domain_separator)
+libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_fd *prf_inputs, uint8_t domain_separator)
 {
   for (size_t i = (size_t)0U; i < (size_t)3U; i++)
   {
@@ -316,12 +319,12 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
 */
-static KRML_MUSTINLINE Eurydice_arr_fa
+static KRML_MUSTINLINE Eurydice_arr_fa0
 libcrux_ml_kem_utils_into_padded_array_29(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_fa out = { { 0U } };
+  Eurydice_arr_fa0 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d412(&out,
-      (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -338,9 +341,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_31
 libcrux_ml_kem_utils_into_padded_array_de(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_31 out = { { 0U } };
+  Eurydice_arr_31 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d40(&out,
-      (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -371,9 +374,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_af
 libcrux_ml_kem_utils_into_padded_array_66(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_af out = { { 0U } };
+  Eurydice_arr_af out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d411(&out,
-      (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -390,9 +393,9 @@ with const generics
 static KRML_MUSTINLINE Eurydice_arr_c7
 libcrux_ml_kem_utils_into_padded_array_c9(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_c7 out = { { 0U } };
+  Eurydice_arr_c7 out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d410(&out,
-      (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = slice.meta })),
     slice,
     uint8_t);
   return out;
@@ -454,15 +457,18 @@ libcrux_ml_kem_types_unpack_private_key_64(Eurydice_borrow_slice_u8 private_key)
   Eurydice_borrow_slice_u8 implicit_rejection_value = uu____2.snd;
   return
     (
-      Eurydice_borrow_slice_u8_x4{
-        ind_cpa_secret_key,
-        ind_cpa_public_key,
-        ind_cpa_public_key_hash,
-        implicit_rejection_value
+      KRML_CLITERAL(Eurydice_borrow_slice_u8_x4){
+        .fst = ind_cpa_secret_key,
+        .snd = ind_cpa_public_key,
+        .thd = ind_cpa_public_key_hash,
+        .f3 = implicit_rejection_value
       }
     );
 }
 
+#if defined(__cplusplus)
+}
+#endif
 
 #define libcrux_mlkem_core_H_DEFINED
 #endif /* libcrux_mlkem_core_H */
