@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1481](https://github.com/cryspen/libcrux/pull/1481): Improved models for SIMD intrinsics: unify the AVX2/NEON F* trust axioms and reference models across the ML-KEM/SHA-3/ML-DSA proof branches, add hardware differential-test tooling, and prove the ARM64 NEON SHA3 fallback implementations
+- [#1481](https://github.com/cryspen/libcrux/pull/1481): Improved models for SIMD intrinsics
 
 ## [0.0.5] (2026-07-15)
 
