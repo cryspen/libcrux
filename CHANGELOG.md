@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1481](https://github.com/cryspen/libcrux/pull/1481): Improved models for SIMD intrinsics
+- (libcrux-intrinsics, core-models) [#1481](https://github.com/cryspen/libcrux/pull/1481): Improved models for SIMD intrinsics
 
 ## [0.0.5] (2026-07-15)
 
