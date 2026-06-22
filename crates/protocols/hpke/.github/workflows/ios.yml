@@ -15,7 +15,7 @@ jobs:
     runs-on: macos-15-intel
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Setup MacOS
       run: |
         rustup target install aarch64-apple-darwin
