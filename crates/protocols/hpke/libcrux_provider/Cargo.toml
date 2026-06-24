@@ -7,7 +7,7 @@ license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-libcrux"
 description = "Crypto backend for HPKE using formally verified code from libcrux."
 readme = "Readme.md"
-repository = "https://github.com/cryspen/hpke-rs"
+repository = "https://github.com/celabshq/hpke-rs"
 
 [dependencies]
 hpke-rs-crypto = { version = "0.6.1", path = "../traits" }
