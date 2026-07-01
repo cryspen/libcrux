@@ -401,6 +401,13 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             // into our buffer and copy out the partial prefix.
             let trailing = out_len - last_full;
             if trailing > 0 {
+                // At this point, we have consumed the complete squeeze_buf and can fill it
+                // again to consume it partially for the trailing block.
+                // XXX(RH): I tried adding a hax_lib::assert for this, but couldn't get it to verify.
+                //  I assume this is because the statement relies on the control flow in a way that
+                //  is difficult to track for F*, not because it is wrong. 
+                #[cfg(not(any(hax, eurydice)))]
+                debug_assert_eq!(self.squeeze_pos, RATE);
                 self.inner.keccakf1600();
                 self.inner.squeeze::<RATE>(&mut self.squeeze_buf, 0, RATE);
                 out[last_full..out_len].copy_from_slice(&self.squeeze_buf[..trailing]);
