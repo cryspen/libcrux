@@ -48,7 +48,8 @@ pub(crate) struct KeccakXofState<
     //   consumed).
     // - `squeeze_pos < RATE` means `squeeze_buf[squeeze_pos..RATE]`
     //   still needs to be returned to the caller on the next squeeze.
-    squeeze_pos: usize,
+    // Note: pub(crate) so that portable.rs can access it for verification invariants
+    pub(crate) squeeze_pos: usize,
 }
 
 /// Note: This function exists to work around a hax bug where `core::array::from_fn`

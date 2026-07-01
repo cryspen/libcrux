@@ -122,9 +122,13 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
 
         /// Shake128 squeeze
-        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
-        #[hax_lib::ensures(|_|
+        #[hax_lib::requires(
             keccak_xof_state_inv(168, self.state.buf_len) &&
+            self.state.squeeze_pos <= 168
+        )]
+        #[hax_lib::ensures(|_|
+            keccak_xof_state_inv(168, future(self).state.buf_len) &&
+            future(self).state.squeeze_pos <= 168 &&
             future(out).len() == out.len()
         )]
         fn squeeze(&mut self, out: &mut [u8]) {
@@ -158,9 +162,13 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         }
 
         /// Shake256 squeeze
-        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
-        #[hax_lib::ensures(|_|
+        #[hax_lib::requires(
             keccak_xof_state_inv(136, self.state.buf_len) &&
+            self.state.squeeze_pos <= 136
+        )]
+        #[hax_lib::ensures(|_|
+            keccak_xof_state_inv(136, future(self).state.buf_len) &&
+            future(self).state.squeeze_pos <= 136 &&
             future(out).len() == out.len()
         )]
         fn squeeze(&mut self, out: &mut [u8]) {
