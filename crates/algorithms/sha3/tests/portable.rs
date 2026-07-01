@@ -378,3 +378,24 @@ fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain() {
 
     assert_eq!(single, multi);
 }
+
+#[test]
+fn issue_1362_xof_squeeze_empty_outputs() {
+    let mut state1 = incremental::Shake128Xof::new();
+    state1.absorb_final(test_vectors::HELLO);
+    let mut single = [0u8; 400];
+    state1.squeeze(&mut single);
+
+    let mut state2 = incremental::Shake128Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 400];
+    // First call: 50 bytes (leaves 118 bytes leftover in the squeeze buffer).
+    state2.squeeze(&mut multi[0..50]);
+    state2.squeeze(&mut multi[50..50]);
+    state2.squeeze(&mut multi[50..50]);
+    // Second call: 350 bytes — drains the 118 leftover, then extracts an
+    // additional full block plus a partial trailing block.
+    state2.squeeze(&mut multi[50..400]);
+
+    assert_eq!(single, multi);
+}
