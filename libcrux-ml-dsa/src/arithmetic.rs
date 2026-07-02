@@ -227,6 +227,10 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"let use_hint_bound (gamma2:i32) : usize = if v gamma2 = v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_ then mk_usize 44 else mk_usize 16"#)]
+// The non-negative upper bound on the UseHint output that matches the commitment
+// serialization width: `pow2 BITS_PER_COMMITMENT_COEFFICIENT - 1` = 63 (gamma2 = (q-1)/88,
+// 6-bit coefficients) or 15 (gamma2 = (q-1)/32, 4-bit coefficients).
+#[hax_lib::fstar::before(r#"let use_hint_serialize_bound (gamma2:i32) : usize = if v gamma2 = v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_ then mk_usize 63 else mk_usize 15"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::fstar::verification_status(panic_free)]
@@ -237,9 +241,21 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
          v (${hint.len()}) <= 8 /\
          Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_256_array_slice ${hint} /\
          Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${re_vector}}"#))]
+// JUSTIFICATION for the added (admitted, panic_free) non-negative-range post: the
+// per-lane UseHint output (FIPS 204, Alg. 40) is `w1' in {0, .., (q-1)/(2*gamma2)-1}`,
+// i.e. NON-NEGATIVE and `<= (q-1)/(2*gamma2)-1` = 43 (gamma2=(q-1)/88) or 15
+// (gamma2=(q-1)/32).  Those maxima fit in `BITS_PER_COMMITMENT_COEFFICIENT` bits
+// (6 resp. 4), hence `0 <= w1' <= pow2 BITS - 1` = `use_hint_serialize_bound gamma2`
+// (= 63 resp. 15) — the non-negative lane range that `commitment::serialize_vector`
+// consumes (via `lemma_lane_range_pos_to_pos_array_slice`).  This is the same UseHint
+// range the existing symmetric `is_bounded_poly_slice (use_hint_bound=44/16)` post
+// already rests on; the extra conjunct just also exposes non-negativity (which the
+// symmetric `|x| < b` form dropped).  Verified per-lane by the concrete
+// `SIMDUnit::use_hint` impls' `use_hint_lane_post` (== Hacspec UseHint value).
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${re_vector}_future == Seq.length re_vector /\
-    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (use_hint_bound $gamma2) ${re_vector}_future"#))]
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (use_hint_bound $gamma2) ${re_vector}_future /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice (mk_usize 0) (use_hint_serialize_bound $gamma2) ${re_vector}_future"#))]
 pub(crate) fn use_hint<SIMDUnit: Operations>(
     gamma2: Gamma2,
     hint: &[[i32; COEFFICIENTS_IN_RING_ELEMENT]],

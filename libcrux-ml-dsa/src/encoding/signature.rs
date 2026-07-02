@@ -171,6 +171,27 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     Seq.length $out_commitment_hash >= v $commitment_hash_size /\
     Seq.length $out_signer_response == v $columns_in_a /\
     Seq.length $out_hint == v $rows_in_a"#))]
+// JUSTIFICATION for the added (admitted, panic_free) posts.  All hold on BOTH the
+// Ok and Err return paths (the `|_|` ensures ignores the result):
+//  * Length preservation of the three `&mut` outputs: each is written strictly
+//    in place (copy_from_slice into the commitment-hash prefix; gamma1::deserialize
+//    into each out_signer_response[i]; out_hint[i][j] = 0 / set_hint), and an
+//    in-place write never changes a slice's length.
+//  * `is_bounded_poly_slice 8380416 out_signer_response`: the first loop runs
+//    UNCONDITIONALLY over all `columns_in_a` entries (before any Err is produced),
+//    writing each via `gamma1::deserialize`, whose MACHINE-CHECKED post gives, per
+//    simd-unit, `is_i32b_array_opaque (pow2 gamma1_exponent)` — i.e. |coeff| <
+//    2^gamma1_exponent <= 2^19 = 524288 < 8380416 (FIELD_MAX).
+//  * `is_binary_256_array_slice out_hint`: out_hint is initialised to all zeros,
+//    then (only on the `!malformed_hint` path) `write_hint_rows` writes solely via
+//    `set_hint`, which sets a single coefficient to `1` at a `< 256` index; on the
+//    malformed path out_hint stays all zeros.  So every coefficient is 0 or 1.
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${out_commitment_hash}_future == Seq.length $out_commitment_hash /\
+    Seq.length ${out_signer_response}_future == Seq.length $out_signer_response /\
+    Seq.length ${out_hint}_future == Seq.length $out_hint /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${out_signer_response}_future /\
+    Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_256_array_slice ${out_hint}_future"#))]
 pub(crate) fn deserialize<SIMDUnit: Operations>(
     columns_in_a: usize,
     rows_in_a: usize,

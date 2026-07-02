@@ -455,6 +455,13 @@ pub(crate) mod generic {
     /// `message` already contains the domain separation.
     #[allow(non_snake_case)]
     #[inline(always)]
+    // verify_internal's monolithic VC splits into ~160 sub-queries; the heaviest
+    // (compute_w_approx's precondition in the ML-DSA-87 context, k=8/l=7) is
+    // budget-bound.  `--z3refresh` is REQUIRED alongside `--split_queries always`:
+    // without it, Z3's state accumulates across sub-queries in the full-module build
+    // and that one query drifts past 800 (flaky cold); with a fresh solver per
+    // sub-query it lands at ~640/800 deterministically.  (44/65 use <45.)
+    #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh"))]
     pub(crate) fn verify_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -467,7 +474,28 @@ pub(crate) mod generic {
         domain_separation_context: Option<DomainSeparationContext>,
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        hax_lib::fstar!("admit ()");
+        // Concrete-constant facts, stated GENERICALLY across the 44/65/87
+        // parameter sets (each is either definitional — e.g. ROW_X_COLUMN is
+        // *defined* as ROWS_IN_A*COLUMNS_IN_A — or a disjunction/inequality that
+        // holds for every set), so `assert_norm` reduces each per monomorphization.
+        // They discharge the concrete-constant preconditions of the callees below
+        // (signature::deserialize, compute_w_approx, use_hint, serialize_vector,
+        // vector_infinity_norm_exceeds's bound arithmetic).
+        hax_lib::fstar!(
+            r#"
+            assert_norm (v ${GAMMA1_EXPONENT} == 17 \/ v ${GAMMA1_EXPONENT} == 19);
+            assert_norm (v ${GAMMA1_RING_ELEMENT_SIZE} == 32 * (1 + v ${GAMMA1_EXPONENT}));
+            assert_norm (v ${ROWS_IN_A} > 0);
+            assert_norm (v ${ROWS_IN_A} <= 8);
+            assert_norm (v ${COLUMNS_IN_A} <= 7);
+            assert_norm (v ${ROW_X_COLUMN} == v ${ROWS_IN_A} * v ${COLUMNS_IN_A});
+            assert_norm (v ${BETA} >= 0 /\ v ${BETA} <= 524288);
+            assert_norm (v ${SIGNATURE_SIZE} == v ${COMMITMENT_HASH_SIZE} + v ${GAMMA1_RING_ELEMENT_SIZE} * v ${COLUMNS_IN_A} + v ${MAX_ONES_IN_HINT} + v ${ROWS_IN_A});
+            assert_norm (v ${GAMMA2} == v ${crate::constants::GAMMA2_V95_232} \/ v ${GAMMA2} == v ${crate::constants::GAMMA2_V261_888});
+            assert_norm (v ${COMMITMENT_RING_ELEMENT_SIZE} == 128 \/ v ${COMMITMENT_RING_ELEMENT_SIZE} == 192);
+            assert_norm (v (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) == pow2 (v ${COMMITMENT_RING_ELEMENT_SIZE} / 32) - 1)
+            "#
+        );
         // Per FIPS 204 §3.6.2, an implementation that accepts inputs for σ
         // or pk of any other length than specified shall return false.  The
         // typed arguments enforce this at compile time for direct Rust
@@ -538,10 +566,71 @@ pub(crate) mod generic {
         );
         ntt(&mut verifier_challenge);
 
-        // Move signer response into ntt
+        // Move signer response into ntt.  Loop invariant: the processed prefix
+        // [0,i) is NTT_OUTPUT_BOUND (75423744), the unprocessed suffix [i,len) is
+        // still FIELD_MAX (8380416, from signature::deserialize's post); after the
+        // loop the whole slice is 75423744, matching compute_w_approx's
+        // signer_response precondition.  (Mirror of generate_key_pair's s1_ntt loop
+        // + use_hint's per-iteration extend / post-loop range->slice conversion.)
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
+                 (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${deserialized_signer_response}"#
+        );
         for i in 0..deserialized_signer_response.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"v $i <= Seq.length ${deserialized_signer_response} /\
+                   Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
+                       (mk_usize 75423744) (mk_usize 0) $i ${deserialized_signer_response} /\
+                   (forall (k:nat). v $i <= k /\ k < Seq.length ${deserialized_signer_response} ==>
+                      Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                          (mk_usize 8380416) (Seq.index ${deserialized_signer_response} k))"#
+            ));
+            // The suffix bound at k=i is exactly ntt's FIELD_MAX precondition.
+            hax_lib::fstar!(
+                r#"assert (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                            (mk_usize 8380416) (Seq.index ${deserialized_signer_response} (v $i)))"#
+            );
+            #[cfg(hax)]
+            let iter_start: &[PolynomialRingElement<SIMDUnit>] =
+                deserialized_signer_response.to_vec().as_slice();
             ntt(&mut deserialized_signer_response[i]);
+            // ntt's post gives is_bounded_poly 75423744 on the updated entry; extend
+            // the processed range from [0,i) to [0,i+1) via the standalone lemma.
+            hax_lib::fstar!(
+                r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
+                     (mk_usize 75423744) $i iter_start ${deserialized_signer_response}"#
+            );
         }
+        // After the loop the processed range covers [0,len); lift range -> slice.
+        hax_lib::fstar!(
+            r#"
+            let _:Prims.unit =
+              let aux (k:nat{k < Seq.length ${deserialized_signer_response}}) :
+                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                         (mk_usize 75423744) (Seq.index ${deserialized_signer_response} k)) =
+                Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup
+                  (mk_usize 75423744) (mk_usize 0)
+                  (Core_models.Slice.impl__len ${deserialized_signer_response})
+                  ${deserialized_signer_response} k
+              in Classical.forall_intro aux
+            in
+            Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
+              (mk_usize 75423744) ${deserialized_signer_response}"#
+        );
+        // Widen t1's lane range 0..1023 (verification_key::deserialize post) to
+        // 0..261631 (compute_w_approx's precondition; [0,1023] subset [0,261631]).
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_widen
+                 (mk_usize 0) (mk_usize 1023) (mk_usize 261631) ${t1}"#
+        );
+        // compute_w_approx's `Seq.length matrix == rows_in_a * columns_in_a` sees
+        // matrix's length as a resolved literal (= ROW_X_COLUMN); pin the two
+        // parameter-set constants to their literal values via `normalize_term` so
+        // the product reduces to that literal (generic: no hardcoded value).
+        hax_lib::fstar!(
+            r#"assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}));
+               assert_norm (v ${COLUMNS_IN_A} == normalize_term (v ${COLUMNS_IN_A}))"#
+        );
         compute_w_approx::<SIMDUnit>(
             ROWS_IN_A,
             COLUMNS_IN_A,
@@ -554,8 +643,39 @@ pub(crate) mod generic {
         // Compute the commitment hash again to validate the signature.
         let mut recomputed_commitment_hash = [0; COMMITMENT_HASH_SIZE];
         {
+            // Weaken compute_w_approx's `is_bounded_poly_slice 4211177 t1` to the
+            // FIELD_MAX bound (8380416) that use_hint's precondition wants
+            // (4211177 <= 8380416), per element then re-introduce the slice atom.
+            hax_lib::fstar!(
+                r#"
+                let _:Prims.unit =
+                  let aux (k:nat{k < Seq.length ${t1}}) :
+                    Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) (Seq.index ${t1} k)) =
+                    Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup (mk_usize 4211177) ${t1} k;
+                    Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_higher (mk_usize 4211177) (mk_usize 8380416) (Seq.index ${t1} k)
+                  in Classical.forall_intro aux
+                in
+                Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro (mk_usize 8380416) ${t1}"#
+            );
             use_hint::<SIMDUnit>(GAMMA2, &deserialized_hint, &mut t1);
             let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
+            // use_hint's post `is_lane_range_poly_slice 0 (use_hint_serialize_bound GAMMA2) t1`
+            // -> the per-simd-unit non-negative `is_pos_array_opaque` bound that
+            // serialize_vector requires.  The top-of-body assert_norm established
+            // `use_hint_serialize_bound GAMMA2 == pow2 (COMMITMENT_RING_ELEMENT_SIZE/32) - 1`,
+            // so the two bounds coincide.
+            hax_lib::fstar!(
+                r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_pos_array_slice
+                     (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) ${t1}"#
+            );
+            // serialize_vector's `Seq.length serialized == ring_element_size * Seq.length vector`
+            // sees serialized/t1 lengths as resolved literals; pin the constants so
+            // COMMITMENT_RING_ELEMENT_SIZE * (len t1 = ROWS_IN_A) reduces to the
+            // literal COMMITMENT_VECTOR_SIZE.
+            hax_lib::fstar!(
+                r#"assert_norm (v ${COMMITMENT_RING_ELEMENT_SIZE} == normalize_term (v ${COMMITMENT_RING_ELEMENT_SIZE}));
+                   assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}))"#
+            );
             encoding::commitment::serialize_vector::<SIMDUnit>(
                 COMMITMENT_RING_ELEMENT_SIZE,
                 &t1,

@@ -426,6 +426,36 @@ let lemma_is_lane_range_poly_slice_intro
       (ensures is_lane_range_poly_slice lo hi arr)
   = reveal_opaque (`%is_lane_range_poly_slice) (is_lane_range_poly_slice lo hi arr)
 
+(* Widen the upper bound of an asymmetric lane range: [lo, hi1] implies
+   [lo, hi2] when hi1 <= hi2 (every lane already in the tighter interval is
+   in the looser one).  Used by verify_internal to lift
+   verification_key::deserialize's `is_lane_range_poly_slice 0 1023 t1` to
+   compute_w_approx's `is_lane_range_poly_slice 0 261631 t1` precondition. *)
+let lemma_is_lane_range_poly_slice_widen
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (lo hi1 hi2: usize)
+      (arr: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Lemma
+      (requires is_lane_range_poly_slice lo hi1 arr /\ v hi1 <= v hi2)
+      (ensures is_lane_range_poly_slice lo hi2 arr)
+  = let aux (k: nat{k < Seq.length arr})
+        : Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi2 (Seq.index arr k)) =
+      lemma_is_lane_range_poly_slice_lookup lo hi1 arr k;
+      let p = Seq.index arr k in
+      let aux_jm (j: nat{j < 32}) (m: nat{m < 8})
+          : Lemma (v (i0._super_i2.f_repr (Seq.index p.f_simd_units j) `Seq.index` m) >= v lo /\
+                   v (i0._super_i2.f_repr (Seq.index p.f_simd_units j) `Seq.index` m) <= v hi2) =
+        lemma_is_lane_range_poly_lookup lo hi1 p j m
+      in
+      Classical.forall_intro_2 aux_jm;
+      lemma_is_lane_range_poly_intro lo hi2 p
+    in
+    Classical.forall_intro aux;
+    lemma_is_lane_range_poly_slice_intro lo hi2 arr
+
 (* Bridge + widen: lanes in [0, b1] (asymmetric, b1 <= b2) imply
    |lane| <= b2 (symmetric, possibly looser).  Collapses the
    lane-range -> bounded-poly conversion plus an upper-bound widening

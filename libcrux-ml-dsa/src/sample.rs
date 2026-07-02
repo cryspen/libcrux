@@ -526,6 +526,18 @@ fn inside_out_shuffle(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(lax)]
+// JUSTIFICATION for the admitted (lax) post `is_bounded_poly 8380416 re`:
+// `result: [i32; 256]` is initialised to all zeros and `inside_out_shuffle`
+// only ever writes `1`/`-1` (line ~516) or copies an already-present entry
+// (line ~513), so every entry stays in {-1, 0, 1} regardless of how many
+// rejection iterations run.  `from_i32_array` copies these values into `re`'s
+// coefficients, hence every coefficient c satisfies |c| <= 1 < 8380416.  This
+// is the exact FIPS-204 verifier-challenge polynomial (coefficients in {-1,0,1}
+// with `number_of_ones` nonzero).  (The body stays `lax` because the
+// rejection `while !done` loop has no decreases measure — the standard
+// rejection-sampling carve-out; the bound holds independently of termination.)
+#[cfg_attr(hax, hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) ${re}_future"#)))]
 pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     seed: &[u8],
     number_of_ones: usize,

@@ -110,8 +110,14 @@ pub(crate) mod shake256 {
         fn absorb_final(&mut self, input: &[u8]);
 
         /// Squeeze output bytes
+        // Length preservation stated with `Seq.length` (not `.len()`/`impl__len`)
+        // so a caller squeezing into a fixed-size `[u8; N]` buffer can coerce the
+        // returned slice back to the array (the array refinement is on
+        // `Seq.length`). Equivalent to the previous `future(out).len() == out.len()`;
+        // squeeze writes in place and never changes the buffer length. Matches the
+        // `Seq.length`-form posts of the sibling `f_shake256`/`squeeze_first_block`.
         #[requires(true)]
-        #[ensures(|_| future(out).len() == out.len())]
+        #[ensures(|_| fstar!(r#"Seq.length ${out}_future == Seq.length $out"#))]
         fn squeeze(&mut self, out: &mut [u8]);
     }
 }
