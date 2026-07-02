@@ -351,12 +351,22 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             out[..take]
                 .copy_from_slice(&self.squeeze_buf[self.squeeze_pos..self.squeeze_pos + take]);
             self.squeeze_pos += take;
+            #[cfg(hax)]
+            hax_lib::assert!(self.squeeze_pos <= RATE);
             out_offset = take;
         }
 
         if out_offset == out_len {
             return;
         }
+
+        // If out_offset != out_len, then out_len > out_offset and
+        // we have consumed the complete squeeze_buf for the first
+        // out_offset bytes. As a result, self.squeeze_pos == RATE
+        // and from here on, it is safe to squeeze new output into
+        // squeeze_buf if needed.
+        #[cfg(hax)]
+        hax_lib::assert!(self.squeeze_pos == RATE);
 
         // 2) Need more output: permute (unless this is the very first
         //    squeeze, in which case the absorb already permuted).
@@ -373,6 +383,8 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             // Sub-RATE request: extract a full block into our buffer
             // and copy out the requested prefix; the rest is preserved
             // for the next call.
+            // self.squeeze_buf has been consumed completely, so we can
+            // overwrite it.
             self.inner.squeeze::<RATE>(&mut self.squeeze_buf, 0, RATE);
             out[out_offset..out_len].copy_from_slice(&self.squeeze_buf[..remaining]);
             self.squeeze_pos = remaining;
@@ -387,12 +399,9 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
 
             // Apply f then extract for each subsequent full block.
             for i in 1..blocks {
-                hax_lib::loop_invariant!(
-                    |_: usize| 
-                    out.len() == out_len && 
-                    self_buf_len == self.buf_len && 
-                    self_squeeze_pos == self.squeeze_pos
-                );
+                hax_lib::loop_invariant!(|_: usize| out.len() == out_len
+                    && self_buf_len == self.buf_len
+                    && self_squeeze_pos == self.squeeze_pos);
                 #[cfg(hax)]
                 hax_lib::assert!(
                     out_offset.to_int() + i.to_int() * RATE.to_int() <= out.len().to_int()
@@ -406,14 +415,9 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             // into our buffer and copy out the partial prefix.
             let trailing = out_len - last_full;
             if trailing > 0 {
-                // At this point, we have consumed the complete squeeze_buf and can fill it
-                // again to consume it partially for the trailing block.
-                // XXX(RH): I tried adding a hax_lib::assert for this, but couldn't get it to verify.
-                //  I assume this is because the statement relies on the control flow in a way that
-                //  is difficult to track for F*, not because it is wrong. 
-                #[cfg(not(any(hax, eurydice)))]
-                debug_assert_eq!(self.squeeze_pos, RATE);
                 self.inner.keccakf1600();
+                // self.squeeze_buf has been consumed completely, so we can
+                // overwrite it.
                 self.inner.squeeze::<RATE>(&mut self.squeeze_buf, 0, RATE);
                 out[last_full..out_len].copy_from_slice(&self.squeeze_buf[..trailing]);
                 self.squeeze_pos = trailing;
