@@ -382,11 +382,16 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
 
             #[cfg(hax)]
             let self_buf_len = self.buf_len;
+            #[cfg(hax)]
+            let self_squeeze_pos = self.squeeze_pos;
 
             // Apply f then extract for each subsequent full block.
             for i in 1..blocks {
                 hax_lib::loop_invariant!(
-                    |_: usize| out.len() == out_len && self_buf_len == self.buf_len
+                    |_: usize| 
+                    out.len() == out_len && 
+                    self_buf_len == self.buf_len && 
+                    self_squeeze_pos == self.squeeze_pos
                 );
                 #[cfg(hax)]
                 hax_lib::assert!(
@@ -412,8 +417,6 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 self.inner.squeeze::<RATE>(&mut self.squeeze_buf, 0, RATE);
                 out[last_full..out_len].copy_from_slice(&self.squeeze_buf[..trailing]);
                 self.squeeze_pos = trailing;
-            } else {
-                self.squeeze_pos = RATE;
             }
         }
     }
