@@ -674,7 +674,6 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
-        hax_lib::fstar!("admit ()");
         let domain_separation_context = match DomainSeparationContext::new(context, None) {
             Ok(dsc) => dsc,
             Err(_) => return Err(SigningError::ContextTooLongError),
@@ -689,6 +688,7 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
     #[cfg_attr(hax, hax_lib::ensures(|result| {
         hax_lib::implies(
             context.len() <= 255
@@ -723,7 +723,6 @@ pub(crate) mod generic {
         context: &[u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        hax_lib::fstar!("admit ()");
         let mut signature = MLDSASignature::zero();
 
         // [eurydice] doesn't support ?
@@ -741,6 +740,7 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
     #[cfg_attr(hax, hax_lib::ensures(|result| {
         hax_lib::implies(
             context.len() <= 255 && message.len() <= 8192,
@@ -771,7 +771,6 @@ pub(crate) mod generic {
         context: &[u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        hax_lib::fstar!("admit ()");
         // We manually do the matching here to make Eurydice happy.
         let domain_separation_context = match DomainSeparationContext::new(context, None) {
             Ok(dsc) => dsc,
