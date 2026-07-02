@@ -405,7 +405,12 @@ pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: sh
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+// Panic-free: `gamma1_exponent ∈ {17,19}` (GAMMA1_EXPONENT for every ML-DSA
+// parameter set) makes the `_ => unreachable!()` arm dead and satisfies the
+// inner `gamma1::deserialize` precondition (which requires the same); the two
+// match arms size `out` to `32*(1+gamma1_exponent)` exactly.  No rejection
+// loop here, so the body verifies (was needlessly `lax`).
+#[hax_lib::requires(gamma1_exponent == 17 || gamma1_exponent == 19)]
 fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     seed: &[u8; 66],
     result: &mut PolynomialRingElement<SIMDUnit>,
