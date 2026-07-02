@@ -432,7 +432,20 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+// Panic-freedom preconditions (all established by the sole caller,
+// `ml_dsa_generic::sign_internal`, at ml_dsa_generic.rs:318):
+//  * `dimension = COLUMNS_IN_A ∈ {4,5,7}` and `gamma1_exponent = GAMMA1_EXPONENT
+//    ∈ {17,19}` for every ML-DSA parameter set (kills the `_ => unreachable!()`
+//    arm and satisfies the inner `gamma1::deserialize` precondition);
+//  * `mask` is `[_; COLUMNS_IN_A]`, so `Seq.length mask == dimension`;
+//  * the domain separator starts at 0 and grows by `dimension` per rejection
+//    attempt, ≤ `REJECTION_SAMPLE_BOUND_SIGN (814) * dimension (≤7) = 5698`, so
+//    `domain_separator + dimension <= 65535` and the `u16` never overflows.
+#[hax_lib::requires(fstar!(r#"
+    (v $dimension == 4 \/ v $dimension == 5 \/ v $dimension == 7) /\
+    (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
+    Seq.length $mask == v $dimension /\
+    v $domain_separator + v $dimension <= 65535"#))]
 pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,
     Shake256: shake256::DsaXof,
@@ -449,11 +462,20 @@ pub(crate) fn sample_mask_vector<
     debug_assert!(dimension == 4 || dimension == 5 || dimension == 7);
     // So we can always sample 4 elements in one go first.
 
-    let seed0 = add_error_domain_separator(seed, *domain_separator);
-    let seed1 = add_error_domain_separator(seed, *domain_separator + 1);
-    let seed2 = add_error_domain_separator(seed, *domain_separator + 2);
-    let seed3 = add_error_domain_separator(seed, *domain_separator + 3);
-    *domain_separator += 4;
+    // Capture the entry value of the domain separator so the tail loop below
+    // can derive each iteration's separator arithmetically (`ds0 + i`) rather
+    // than threading a running `*domain_separator` through the fold. That keeps
+    // the tail loop single-mutable (it writes only `mask`), which the
+    // panic-freedom proof needs: a tuple-state `(domain_separator, mask)` fold
+    // carrying a `Seq.length mask == dimension` invariant hits an unclosable
+    // fold-init subtyping check. This is behavior-identical — the domain
+    // separators consumed are still `ds0, ds0+1, .., ds0+dimension-1` and the
+    // final `*domain_separator` is still `ds0 + dimension`.
+    let ds0 = *domain_separator;
+    let seed0 = add_error_domain_separator(seed, ds0);
+    let seed1 = add_error_domain_separator(seed, ds0 + 1);
+    let seed2 = add_error_domain_separator(seed, ds0 + 2);
+    let seed3 = add_error_domain_separator(seed, ds0 + 3);
 
     match gamma1_exponent {
         17 => {
@@ -464,10 +486,24 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out3, &mut mask[3]);
+            // Collect the four `[u8; 576]` buffers into one array so the
+            // four `gamma1::deserialize` calls become a loop: this keeps at
+            // most one `deserialize` postcondition live per iteration
+            // (instead of four unrolled ones), which the panic-freedom proof
+            // needs. `outs[j]: [u8; 576]` carries its length in its type, so
+            // `deserialize`'s `Seq.length serialized == 32*(1+17) = 576`
+            // precondition discharges without a symbolic-length invariant.
+            let outs = [out0, out1, out2, out3];
+            #[allow(clippy::needless_range_loop)]
+            for j in 0..4 {
+                hax_lib::loop_invariant!(|j: usize| fstar!(
+                    r#"v $j <= 4 /\
+                       Seq.length $mask == v $dimension /\
+                       (v $dimension == 4 \/ v $dimension == 5 \/ v $dimension == 7) /\
+                       v $gamma1_exponent == 17"#
+                ));
+                encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &outs[j], &mut mask[j]);
+            }
         }
         19 => {
             let mut out0 = [0; 640];
@@ -477,22 +513,36 @@ pub(crate) fn sample_mask_vector<
             Shake256X4::shake256_x4(
                 &seed0, &seed1, &seed2, &seed3, &mut out0, &mut out1, &mut out2, &mut out3,
             );
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out0, &mut mask[0]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out1, &mut mask[1]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out2, &mut mask[2]);
-            encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &out3, &mut mask[3]);
+            // See the `17 =>` arm: same loop refactor, buffers are `[u8; 640]`
+            // and `32*(1+19) = 640`.
+            let outs = [out0, out1, out2, out3];
+            #[allow(clippy::needless_range_loop)]
+            for j in 0..4 {
+                hax_lib::loop_invariant!(|j: usize| fstar!(
+                    r#"v $j <= 4 /\
+                       Seq.length $mask == v $dimension /\
+                       (v $dimension == 4 \/ v $dimension == 5 \/ v $dimension == 7) /\
+                       v $gamma1_exponent == 19"#
+                ));
+                encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &outs[j], &mut mask[j]);
+            }
         }
         _ => unreachable!(),
     }
 
     #[allow(clippy::needless_range_loop)]
     for i in 4..dimension {
-        let seed = add_error_domain_separator(seed, *domain_separator);
-        *domain_separator += 1;
-
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v $i <= v $dimension /\
+               Seq.length $mask == v $dimension /\
+               (v $dimension == 4 \/ v $dimension == 5 \/ v $dimension == 7) /\
+               (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19)"#
+        ));
         // TODO: For 87 we may want to do another 4 and discard 1.
+        let seed = add_error_domain_separator(seed, ds0 + i as u16);
         sample_mask_ring_element::<SIMDUnit, Shake256>(&seed, &mut mask[i], gamma1_exponent);
     }
+    *domain_separator = ds0 + dimension as u16;
 }
 
 #[inline(always)]
