@@ -565,10 +565,20 @@ Each function is classified at exactly one proof tier (highest wins):
 - **Math**: has an `#[ensures(...)]` annotation that proves SOME non-trivial property,
   but doesn't match the bounds or hacspec patterns.
 - **Bounds**: ensures uses range/interval predicates (e.g. `is_i16b`, `is_bounded_*`).
-- **Hacspec**: ensures cites the high-level mathematical specification (e.g. `Spec.MLKEM.*`).
+- **Hacspec**: ensures cites the high-level mathematical specification (e.g. `Spec.MLDSA.*`, `Hacspec_ml_dsa.*`).
 
 The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free + Math
 + Bounds + Hacspec — i.e., total minus lax minus unverified.
+
+**Accepted carve-outs (`Lax` by design, not actionable).** A handful of `Lax` markers are
+*not* on the zero-lax work-list: they wrap unbounded rejection-sampling loops
+(`while !done {{ … }}`) whose termination is only probabilistic, so F\\* cannot discharge
+panic-freedom/termination without a statistical argument. These are trusted by design,
+mirroring ML-KEM's `sample_from_xof` carve-out. In ML-DSA they are the 3 rejection loops
+in `sample` (`sample_up_to_four_ring_elements_flat`, `sample_four_error_ring_elements`,
+`sample_challenge_ring_element`) and the 2 X4-XOF panic-freedom markers in `samplex4`
+(`t_X4Sampler`, `matrix_flat`). Subtracting these ~5 accepted carve-outs from the `Lax`
+column gives the actionable zero-lax target.
 
 """
 
