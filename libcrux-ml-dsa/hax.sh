@@ -12,7 +12,18 @@ function extract_all() {
         -C --features simd128,simd256 ";" \
         into -i "-libcrux_core_models::**" \
         fstar --z3rlimit 80
-    
+
+    # Extract the ml-dsa reference spec (crate `hacspec_ml_dsa`).  The
+    # hand-written Spec.MLDSA.Math.fsti and Hacspec_ml_dsa.Commute.Chunk
+    # depend on these `Hacspec_ml_dsa.*` modules; without this step the
+    # ml-dsa proof build is RED (Error 72: module Hacspec_ml_dsa could
+    # not be resolved).  Mirrors libcrux-ml-kem/hax.py's spec extraction.
+    # NOTE: if cargo reports the crate is fresh and skips it (writes no
+    # THIR export -> hax panics with a NotFound in run_command), force a
+    # rebuild with `touch specs/ml-dsa/src/*.rs` (or `cargo clean -p
+    # hacspec_ml_dsa`) before re-running.
+    extract specs/ml-dsa into -i "+**" fstar
+
     extract libcrux-ml-dsa \
         -C --features simd128,simd256 ";" \
         into -i "+**" \
