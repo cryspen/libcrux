@@ -301,10 +301,8 @@ fn bug1_xof_squeeze_multi_call_consistency() {
 /// partially-consumed squeeze block.
 #[test]
 fn issue_1362_xof_streaming_squeeze_partial_chunks_shake128() {
-    let mut state1 = incremental::Shake128Xof::new();
-    state1.absorb_final(test_vectors::HELLO);
     let mut single = [0u8; 600];
-    state1.squeeze(&mut single);
+    shake128(&mut single, test_vectors::HELLO);
 
     // Chunks: 100 (< RATE), 100, 100, 200 (> RATE), 100. None are RATE-aligned.
     let mut state2 = incremental::Shake128Xof::new();
@@ -322,10 +320,8 @@ fn issue_1362_xof_streaming_squeeze_partial_chunks_shake128() {
 /// Same as the SHAKE128 test, but for SHAKE256 (RATE = 136).
 #[test]
 fn issue_1362_xof_streaming_squeeze_partial_chunks_shake256() {
-    let mut state1 = incremental::Shake256Xof::new();
-    state1.absorb_final(test_vectors::HELLO);
     let mut single = [0u8; 500];
-    state1.squeeze(&mut single);
+    shake256(&mut single, test_vectors::HELLO);
 
     let mut state2 = incremental::Shake256Xof::new();
     state2.absorb_final(test_vectors::HELLO);
@@ -343,10 +339,8 @@ fn issue_1362_xof_streaming_squeeze_partial_chunks_shake256() {
 /// forcing a buffer drain on every call.
 #[test]
 fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake128() {
-    let mut state1 = incremental::Shake128Xof::new();
-    state1.absorb_final(test_vectors::HELLO);
     let mut single = [0u8; 350]; // > 2 * RATE so we cross block boundaries
-    state1.squeeze(&mut single);
+    shake128(&mut single, test_vectors::HELLO);
 
     let mut state2 = incremental::Shake128Xof::new();
     state2.absorb_final(test_vectors::HELLO);
@@ -362,17 +356,15 @@ fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake128() {
 /// partial squeeze: drain leftover, then extract more than one further block.
 #[test]
 fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain() {
-    let mut state1 = incremental::Shake128Xof::new();
-    state1.absorb_final(test_vectors::HELLO);
     let mut single = [0u8; 400];
-    state1.squeeze(&mut single);
+    shake128(&mut single, test_vectors::HELLO);
 
     let mut state2 = incremental::Shake128Xof::new();
     state2.absorb_final(test_vectors::HELLO);
     let mut multi = [0u8; 400];
     // First call: 50 bytes (leaves 118 bytes leftover in the squeeze buffer).
     state2.squeeze(&mut multi[0..50]);
-    // Second call: 350 bytes — drains the 118 leftover, then extracts an
+    // Second call: 350 bytes - drains the 118 leftover, then extracts an
     // additional full block plus a partial trailing block.
     state2.squeeze(&mut multi[50..400]);
 
@@ -381,20 +373,31 @@ fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain() {
 
 #[test]
 fn issue_1362_xof_squeeze_empty_outputs() {
-    let mut state1 = incremental::Shake128Xof::new();
-    state1.absorb_final(test_vectors::HELLO);
     let mut single = [0u8; 400];
-    state1.squeeze(&mut single);
+    shake128(&mut single, test_vectors::HELLO);
 
     let mut state2 = incremental::Shake128Xof::new();
     state2.absorb_final(test_vectors::HELLO);
     let mut multi = [0u8; 400];
-    // First call: 50 bytes (leaves 118 bytes leftover in the squeeze buffer).
     state2.squeeze(&mut multi[0..50]);
     state2.squeeze(&mut multi[50..50]);
     state2.squeeze(&mut multi[50..50]);
-    // Second call: 350 bytes — drains the 118 leftover, then extracts an
-    // additional full block plus a partial trailing block.
+    state2.squeeze(&mut multi[50..400]);
+
+    assert_eq!(single, multi);
+}
+
+#[test]
+fn issue_1362_xof_start_with_empty_squeeze() {
+    let mut single = [0u8; 400];
+    shake128(&mut single, test_vectors::HELLO);
+
+    let mut state2 = incremental::Shake128Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 400];
+    state2.squeeze(&mut multi[0..0]);
+    state2.squeeze(&mut multi[0..50]);
+    state2.squeeze(&mut multi[50..50]);
     state2.squeeze(&mut multi[50..400]);
 
     assert_eq!(single, multi);
