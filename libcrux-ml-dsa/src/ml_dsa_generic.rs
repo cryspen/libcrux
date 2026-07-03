@@ -225,6 +225,17 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    // The signing key arrives as a `&[u8]` slice (the fixed-array length is
+    // erased at the generic boundary), so we need its exact length to prove the
+    // five `split_at` calls below are panic-free and to discharge the
+    // `t0_serialized` length precondition of `t0::deserialize_to_vector_then_ntt`.
+    // The top-level API always passes a `[u8; SIGNING_KEY_SIZE]`, so the
+    // instantiation wrappers discharge this from the array type.
+    #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Seq.length $signing_key == v ${SIGNING_KEY_SIZE}"#)))]
+    // Like verify_internal, the pre-loop VC (5 split_at + s1/s2/t0 deserialize +
+    // matrix_flat + derive_message_representative + shake) saturates the module
+    // default rlimit as one monolithic query; split + z3refresh lands it.
+    #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh"))]
     pub(crate) fn sign_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -239,7 +250,6 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
-        hax_lib::fstar!("admit ()");
         // Split the signing key into its parts.
         let (seed_for_a, remaining_serialized) = signing_key.split_at(SEED_FOR_A_SIZE);
         let (seed_for_signing, remaining_serialized) =
@@ -251,6 +261,29 @@ pub(crate) mod generic {
             remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
         let (s2_serialized, t0_serialized) =
             remaining_serialized.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
+
+        // The T0 remainder length must chain back through all five splits to
+        // SIGNING_KEY_SIZE.  Unfolding `signing_key_size` (via assert_norm on the
+        // constant relationship) lets the ERROR_RING_ELEMENT_SIZE terms cancel so
+        // t0_serialized's length equals RING_ELEMENT_OF_T0S_SIZE * ROWS_IN_A,
+        // which is exactly what t0::deserialize_to_vector_then_ntt requires
+        // (t0_as_ntt has length ROWS_IN_A).  Placed BEFORE the ring-element array
+        // declarations so the five-slice reconciliation runs in a small typing
+        // context — for ml-dsa-87 (k=8/l=7) the same assert after the arrays
+        // saturates rlimit 800; here it lands at ~73.
+        hax_lib::fstar!(
+            r#"
+            assert_norm (v ${SIGNING_KEY_SIZE} ==
+                v ${SEED_FOR_A_SIZE} +
+                v ${SEED_FOR_SIGNING_SIZE} +
+                v ${BYTES_FOR_VERIFICATION_KEY_HASH} +
+                v ${ERROR_RING_ELEMENT_SIZE} * v ${COLUMNS_IN_A} +
+                v ${ERROR_RING_ELEMENT_SIZE} * v ${ROWS_IN_A} +
+                v ${RING_ELEMENT_OF_T0S_SIZE} * v ${ROWS_IN_A});
+            assert (Seq.length ${t0_serialized} ==
+                v ${RING_ELEMENT_OF_T0S_SIZE} * v ${ROWS_IN_A})
+            "#
+        );
 
         // Deserialize s1, s2, and t0.
         let mut s1_as_ntt = [PolynomialRingElement::zero(); COLUMNS_IN_A];
@@ -308,6 +341,13 @@ pub(crate) mod generic {
         // probability of failure at 2⁻²⁵⁶ or less.
         //
         // [FIPS 204, Appendix C]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#appendix.C
+        // FOLLOW-UP (#7, Blocker 2/3): the rejection-sampling loop invariant
+        // (v domain_separator_for_mask <= v attempt * COLUMNS_IN_A /\ attempt <=
+        // REJECTION_SAMPLE_BOUND_SIGN), decreases (REJECTION_SAMPLE_BOUND_SIGN -
+        // attempt), and the ~15 loop-body callee preconditions are not yet
+        // discharged.  The pre-loop (splits + deserialize + matrix_flat +
+        // derive_message_representative + shake) IS verified panic-free above.
+        hax_lib::fstar!("admit ()");
         while attempt < REJECTION_SAMPLE_BOUND_SIGN {
             attempt += 1;
 
@@ -780,6 +820,9 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    // Propagates sign_internal's signing-key length precondition; discharged by
+    // the fixed-array instantiation wrappers.
+    #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Seq.length $signing_key == v ${SIGNING_KEY_SIZE}"#)))]
     pub(crate) fn sign_mut<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -830,6 +873,11 @@ pub(crate) mod generic {
                 ).is_ok(),
         )
     }))]
+    // Propagates sign_mut's signing-key length precondition; discharged by the
+    // fixed-array instantiation wrappers.  The functional ensures above already
+    // treats `signing_key.len() >= SIGNING_KEY_SIZE` as a hypothesis, so this
+    // exact-length requires is strictly compatible.
+    #[cfg_attr(hax, hax_lib::requires(fstar!(r#"Seq.length $signing_key == v ${SIGNING_KEY_SIZE}"#)))]
     pub(crate) fn sign<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
