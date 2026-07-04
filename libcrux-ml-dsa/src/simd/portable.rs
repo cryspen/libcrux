@@ -482,7 +482,12 @@ impl Operations for Coefficients {
             $gamma2
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i)
-            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i))"#))]
+            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i)) /\
+        ((forall (i: nat{i < 8}).
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) >= 0 /\
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) < 8380417) ==>
+          v $result ==
+          Spec.MLDSA.Math.compute_hint (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future))"#))]
     fn compute_hint(
         low: &Coefficients,
         high: &Coefficients,
@@ -529,7 +534,13 @@ impl Operations for Coefficients {
             // Discharge `v result <= 8` from the spec popcount under binary
             // hint (each lane ∈ {0, 1}, so total ≤ 8).
             Hacspec_ml_dsa.Commute.Chunk.lemma_compute_hint_bound
-                (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#
+                (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint});
+            // Count post: the free compute_hint proves `v result ==
+            // Spec.MLDSA.Math.compute_hint hint.f_values` UNCONDITIONALLY, and
+            // Portable f_repr hint == hint.f_values, so the guarded trait
+            // conjunct follows (its high-nonneg guard is irrelevant here).
+            assert (Rust_primitives.Integers.v result ==
+                Spec.MLDSA.Math.compute_hint (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}))"#
         );
         result
     }

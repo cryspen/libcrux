@@ -1,5 +1,5 @@
 [
-  "f0ceaf949ca75a219067c580e2918870",
+  "29e95ba432da3bc0c53531d9dbbacac5",
   [
     [
       "Libcrux_ml_dsa.Hash_functions.Shake256.v_BLOCK_SIZE",
@@ -881,62 +881,6 @@
       [ "@query" ],
       0,
       "dc57f5d4fdc9e4736faada231d669513"
-    ],
-    [
-      "Libcrux_ml_dsa.Hash_functions.Shake256.t_Xof",
-      1,
-      0,
-      1,
-      [
-        "@query", "assumption_Rust_primitives.Integers.int_t__uu___haseq",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Integers.usize",
-        "typing_tok_Rust_primitives.Integers.USIZE@tok"
-      ],
-      0,
-      "cc13580066445f60257b82d0ecb6d294"
-    ],
-    [
-      "Libcrux_ml_dsa.Hash_functions.Shake256.__proj__Mkt_Xof__item__f_squeeze_post",
-      1,
-      0,
-      1,
-      [
-        "@query", "assumption_Rust_primitives.Integers.int_t__uu___haseq",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Integers.usize",
-        "typing_tok_Rust_primitives.Integers.USIZE@tok"
-      ],
-      0,
-      "07f9b8c2bffeeb9aedee585dd99fa470"
-    ],
-    [
-      "Libcrux_ml_dsa.Hash_functions.Shake256.__proj__Mkt_Xof__item__f_squeeze_post",
-      2,
-      0,
-      1,
-      [
-        "@query", "assumption_Rust_primitives.Integers.int_t__uu___haseq",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Integers.usize",
-        "typing_tok_Rust_primitives.Integers.USIZE@tok"
-      ],
-      0,
-      "78d36fc2811bc43014826809ad5729be"
-    ],
-    [
-      "Libcrux_ml_dsa.Hash_functions.Shake256.f_squeeze_post",
-      1,
-      0,
-      1,
-      [
-        "@query", "assumption_Rust_primitives.Integers.int_t__uu___haseq",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Integers.usize",
-        "typing_tok_Rust_primitives.Integers.USIZE@tok"
-      ],
-      0,
-      "90d537ec91d48c5d94a34445c256a751"
     ]
   ]
 ]

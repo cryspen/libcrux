@@ -319,8 +319,50 @@ let lemma_or_and_mask_bit (a c: i32)
   logor_lemma a c;
   logand_lemma (mk_i32 1) (mk_i32 1);
   lemma_ones_zero_v ()
+
+(* For a lane that is all-ones/all-zero on both operands, the movemask sign bit
+   `(a|.c) <. 0` and the low bit `(a|.c) &. 1` agree (both == a=ones||c=ones).
+   This is the per-lane link between the AVX2 popcount (which counts sign bits)
+   and the returned hint (which is the low bit). *)
+let lemma_or_sign_and (a c: i32)
+    : Lemma
+      (requires (a == zero \/ a == ones) /\ (c == zero \/ c == ones))
+      (ensures
+        (if (a |. c <: i32) <. mk_i32 0 then 1 else 0) ==
+        v (cast ((a |. c <: i32) &. mk_i32 1) <: usize)) =
+  logor_lemma a c;
+  logand_lemma (mk_i32 1) (mk_i32 1);
+  lemma_ones_zero_v ()
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 80"
+(* Unfold Spec.MLDSA.Math.compute_hint (a repeati over 8 lanes) into the
+   explicit 8-term lane sum, so the AVX2 popcount count-post (an 8-lane sum)
+   can be bridged to compute_hint at the trait wrapper. *)
+let lemma_compute_hint_8 (arr: t_Array i32 (mk_usize 8))
+    : Lemma
+      (ensures
+        Spec.MLDSA.Math.compute_hint arr ==
+        v (cast (arr.[ mk_usize 0 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 1 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 2 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 3 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 4 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 5 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 6 ] <: i32) <: usize) +
+        v (cast (arr.[ mk_usize 7 ] <: i32) <: usize)) =
+  Spec.Utils.eq_repeati0 (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0;
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 0);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 1);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 2);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 3);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 4);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 5);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 6);
+  Spec.Utils.unfold_repeati (mk_usize 8) (Spec.MLDSA.Math.hint_counter arr) 0 (mk_usize 7)
+#pop-options
 "#
 )]
+#[cfg_attr(hax, hax_lib::fstar::options("--split_queries always --z3rlimit 100"))]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     (v $gamma2 == v $GAMMA2_V261_888 \/ v $gamma2 == v $GAMMA2_V95_232) /\
@@ -333,7 +375,18 @@ let lemma_or_and_mask_bit (a c: i32)
     (forall (i: u64{v i < 8}). {:pattern (to_i32x8 ${hint}_future i)}
         (v (to_i32x8 $high i) >= 0 /\ v (to_i32x8 $high i) < 8380417) ==>
         v (to_i32x8 ${hint}_future i) ==
-        Spec.MLDSA.Math.compute_one_hint (v (to_i32x8 $low i)) (v (to_i32x8 $high i)) (v $gamma2))"#))]
+        Spec.MLDSA.Math.compute_one_hint (v (to_i32x8 $low i)) (v (to_i32x8 $high i)) (v $gamma2)) /\
+    ((forall (i: u64{v i < 8}).
+        v (to_i32x8 $high i) >= 0 /\ v (to_i32x8 $high i) < 8380417) ==>
+      v $result ==
+      v (cast (to_i32x8 ${hint}_future (mk_u64 0)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 1)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 2)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 3)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 4)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 5)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 6)) <: usize) +
+      v (cast (to_i32x8 ${hint}_future (mk_u64 7)) <: usize))"#))]
 pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut Vec256) -> usize {
     let minus_gamma2 = mm256_set1_epi32(-gamma2);
     let gamma2_vec = mm256_set1_epi32(gamma2);
@@ -377,6 +430,57 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
               (to_i32x8 ${low_equals_minus_gamma2_and_high_is_nonzero} i)
           else () in
         Classical.forall_intro aux
+    "#
+    );
+    // Count post: relate `result = count_ones(movemask(raw))` to the 8-lane sum
+    // of the (binary) hint under the high-nonneg guard.  `movemask_ps` returns
+    // `sum_j (raw_j < 0 ? 2^j : 0)`, so `count_ones` == #{negative raw lanes};
+    // `lemma_or_sign_and` links each raw sign bit to the returned hint's low bit.
+    hax_lib::fstar!(
+        r#"
+        let raw : Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
+          Libcrux_intrinsics.Avx2.mm256_or_si256 ${low_within_bound}
+            ${low_equals_minus_gamma2_and_high_is_nonzero} in
+        Spec.Intrinsics.mm256_movemask_ps_lemma raw;
+        Libcrux_ml_dsa.Proof_utils.lemma_count_ones_byte_exact ${hints_mask}
+          (to_i32x8 raw (mk_u64 0) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 1) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 2) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 3) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 4) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 5) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 6) <. mk_i32 0)
+          (to_i32x8 raw (mk_u64 7) <. mk_i32 0);
+        let aux2 (i: u64{v i < 8})
+            : Lemma
+            (requires v (to_i32x8 ${high} i) >= 0 /\ v (to_i32x8 ${high} i) < 8380417)
+            (ensures
+              (if to_i32x8 raw i <. mk_i32 0 then 1 else 0) ==
+              v (cast (to_i32x8 ${hint} i) <: usize))
+        =
+          lemma_or_sign_and (to_i32x8 ${low_within_bound} i)
+            (to_i32x8 ${low_equals_minus_gamma2_and_high_is_nonzero} i)
+        in
+        introduce
+          (forall (i: u64{v i < 8}). v (to_i32x8 ${high} i) >= 0 /\ v (to_i32x8 ${high} i) < 8380417) ==>
+          (v ${result} ==
+            v (cast (to_i32x8 ${hint} (mk_u64 0)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 1)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 2)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 3)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 4)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 5)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 6)) <: usize) +
+            v (cast (to_i32x8 ${hint} (mk_u64 7)) <: usize))
+        with _.
+          (aux2 (mk_u64 0);
+           aux2 (mk_u64 1);
+           aux2 (mk_u64 2);
+           aux2 (mk_u64 3);
+           aux2 (mk_u64 4);
+           aux2 (mk_u64 5);
+           aux2 (mk_u64 6);
+           aux2 (mk_u64 7))
     "#
     );
     result

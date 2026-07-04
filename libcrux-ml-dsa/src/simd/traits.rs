@@ -182,7 +182,11 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             $gamma2
             (Seq.index (f_repr ${low}) i)
             (Seq.index (f_repr ${high}) i)
-            (Seq.index (f_repr ${hint}_future) i))"#))]
+            (Seq.index (f_repr ${hint}_future) i)) /\
+        ((forall (i: nat{i < 8}).
+            v (Seq.index (f_repr ${high}) i) >= 0 /\
+            v (Seq.index (f_repr ${high}) i) < 8380417) ==>
+          v $result == Spec.MLDSA.Math.compute_hint (f_repr ${hint}_future))"#))]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize;
 
     #[hax_lib::requires(fstar!(r#"

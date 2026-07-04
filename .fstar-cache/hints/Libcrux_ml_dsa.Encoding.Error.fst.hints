@@ -31,7 +31,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "78ce6440a0a4b4b630772a07d8af0515"
+      "2af8d08fcaed30273748a3c704fe830e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Error.serialize",
@@ -161,7 +161,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f64689e34d67a0705dd2decceaa77005"
+      "d815affef5f68562748857a2a4b3a289"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Error.deserialize",
@@ -311,7 +311,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "de47f589d46052a715a816cda12c511a"
+      "6bad4aac8ed869c54e3cf7cebe51f7ec"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Error.deserialize_to_vector_then_ntt",

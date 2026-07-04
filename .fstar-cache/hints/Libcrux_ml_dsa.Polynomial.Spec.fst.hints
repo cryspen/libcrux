@@ -1,5 +1,5 @@
 [
-  "d337d6d97863f32d9aea2da9f2d6985a",
+  "e120a43f2141f3c9ccd0a41d42887876",
   [
     [
       "Libcrux_ml_dsa.Polynomial.Spec.is_bounded_simd_unit",
@@ -56,7 +56,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cd1eccc73831ccad94c3bc3c37e64493"
+      "acebab68b530e0341184d283eab5f439"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly",
@@ -125,7 +125,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e170273bceeeb59294a81167c8d382f6"
+      "80d76f115a25f4b52b9b1e52b7ee10d0"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_lookup",
@@ -197,7 +197,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6ee4721df68ad8c89d5cf58c7e8c2f5b"
+      "21ee0bf11e0e25847c72052c5fd579dc"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro",
@@ -268,7 +268,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0374c3dd43978e5031ed3234d2ca7b98"
+      "863bb5bf13f2cfa1b4ab03a99a09ee3c"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_higher",
@@ -365,7 +365,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "42c0b65477266485f55e5a698532db10"
+      "8a7dc28583e53a3b6a16d56750b20765"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range",
@@ -374,7 +374,7 @@
       1,
       [ "@query" ],
       0,
-      "0fd1e7e90e7e322920e33d408b9e4d9c"
+      "b8b96cc5c56d59218ff1f59dc048567c"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup",
@@ -392,7 +392,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "885f246aa3688c47a4f2b598fa739117"
+      "0fbdbc64e219aa74a52c863b4af1fdda"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro",
@@ -401,7 +401,7 @@
       1,
       [ "@query", "l_quant_interp_4a8698ff1fdc3ef432f39434b53ed9d2" ],
       0,
-      "18f3c35d769acd44eee349a91f23867f"
+      "5d5b0b051b6aab4854e15f385a7f4256"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update",
@@ -442,7 +442,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "32cfc3f43d25c640e015af9914f6461a"
+      "2e6cb466efaa53cd42611e5bf3911d42"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup",
@@ -460,7 +460,7 @@
         "refinement_interpretation_Tm_refine_96a272e7777555e70c3e2335147615ef"
       ],
       0,
-      "54ac57b20ea0b5dc5da4127fbced6ada"
+      "8a952e596791f46185eef54bdffa5015"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro",
@@ -469,7 +469,7 @@
       1,
       [ "@query", "l_quant_interp_270d2aad741c1e7d8c16183802369a9a" ],
       0,
-      "fa65494b1f7a3c155b90ccc423ad2239"
+      "3afee193051572c0d2bab51b10adea74"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.is_strict_lower_poly",
@@ -538,7 +538,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c7b72cff377bf0bb72a911c33f4c3b49"
+      "c4d10554598e52e802bbe841dbaa4b6a"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_strict_lower_poly_lookup",
@@ -610,7 +610,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2c0756f629b464b1bb9f715cca0ccb77"
+      "91559bf6fc26fab7f25fc38eb96c66d9"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_strict_lower_poly_intro",
@@ -681,7 +681,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "870c94641b49726496f4985d25be651b"
+      "87e8057dc407cf0aa9562a0cfc342564"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_strict_lower_poly_slice_lookup",
@@ -699,7 +699,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "53af20e7142fee132aeb906d30e92fbc"
+      "ff7c769421f6c3e8144ec91515603f5a"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_strict_lower_poly_slice_intro",
@@ -708,7 +708,7 @@
       1,
       [ "@query", "l_quant_interp_e70f22bb4af039aa18ce49154527c738" ],
       0,
-      "5e24a905d403e82f6461eb3a9625eab7"
+      "a6d753a1a30fa1bf4c56619024d0c887"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly",
@@ -752,7 +752,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "b698d91df8e51de4ca473c3e5c22e686"
+      "7974149ae36a2e5146a7360b80b1239d"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_lookup",
@@ -791,7 +791,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "1c75e2f935456c7a366ff21538135c2f"
+      "88e9a827b872e2fd03eaf557c6751486"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_intro",
@@ -827,7 +827,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "6ef816de5fbc87e58b2e315f20f0a578"
+      "a86174f75dd832554b061ac9b52b92aa"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_lookup",
@@ -845,7 +845,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "0062bfc00bba7cafc51774973220d24d"
+      "71b6371b29a1d25932edd8a563c4ad99"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_intro",
@@ -854,7 +854,53 @@
       1,
       [ "@query", "l_quant_interp_c2138f738e8faac70aa83158b286895f" ],
       0,
-      "5a676d90e4ecea429cd71d24d2b1702b"
+      "589a28067e03d2645ed36af654a02769"
+    ],
+    [
+      "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_widen",
+      1,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Core_models.Ops.Function_interpretation_Tm_arrow_527d0c4b8598d265b3ecc95b6df26a30",
+        "data_elim_Libcrux_ml_dsa.Polynomial.Mkt_PolynomialRingElement",
+        "data_elim_Libcrux_ml_dsa.Simd.Traits.Mkt_Operations",
+        "data_elim_Libcrux_ml_dsa.Simd.Traits.Mkt_Repr",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Arrays.t_Slice",
+        "equation_Rust_primitives.Integers.i32",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_usize",
+        "equation_Rust_primitives.Integers.usize",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement",
+        "fuel_guarded_inversion_Libcrux_ml_dsa.Simd.Traits.t_Operations",
+        "fuel_guarded_inversion_Libcrux_ml_dsa.Simd.Traits.t_Repr",
+        "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
+        "int_inversion",
+        "kinding_Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement@tok",
+        "lemma_Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_lookup",
+        "proj_equation_Libcrux_ml_dsa.Polynomial.Mkt_PolynomialRingElement_@f_simd_units",
+        "proj_equation_Libcrux_ml_dsa.Simd.Traits.Mkt_Operations_@_super_i2",
+        "proj_equation_Libcrux_ml_dsa.Simd.Traits.Mkt_Repr_@f_repr_pre",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_160fe7faad9a466b3cae8455bac5be60",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_da1b0dfb8283502ec162998a8bbb6431",
+        "refinement_interpretation_Tm_refine_e263604a64d343fa5112de970172906b",
+        "refinement_interpretation_Tm_refine_eb348ef4b41a8a2dcabc274137018492",
+        "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca",
+        "token_correspondence_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Repr__item__f_repr_pre",
+        "typing_FStar.Seq.Base.index",
+        "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
+      ],
+      0,
+      "42f9734bf8ab48cd11fea42e8f3132f0"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_bounded_poly",
@@ -927,7 +973,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "72cf66e58b8197760b94dcce903d91ee"
+      "8e00814531aa5bed32f7cb296718b2fc"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_bounded_poly_slice",
@@ -953,7 +999,7 @@
         "refinement_interpretation_Tm_refine_eb348ef4b41a8a2dcabc274137018492"
       ],
       0,
-      "bbd6f704c6eb8628874f1e2d8498803f"
+      "0a2a22e5b330ecdec5e7dd9bd81c90e6"
     ],
     [
       "Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_pos_array_slice",
@@ -1029,7 +1075,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "48f707cdd7dedd18382ea2cad587fae6"
+      "f4a7eb79d54e72344532e05ea9c07b0a"
     ]
   ]
 ]

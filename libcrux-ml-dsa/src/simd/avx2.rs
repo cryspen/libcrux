@@ -390,7 +390,12 @@ pub(crate) fn decompose_with_proof(
         $gamma2
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i)
-        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i))"#))]
+        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i)) /\
+    ((forall (i: nat{i < 8}).
+        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) >= 0 /\
+        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) < 8380417) ==>
+      v $result ==
+      Spec.MLDSA.Math.compute_hint (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future))"#))]
 pub(crate) fn compute_hint_with_proof(
     low: &AVX2SIMDUnit,
     high: &AVX2SIMDUnit,
@@ -435,7 +440,25 @@ pub(crate) fn compute_hint_with_proof(
         Classical.forall_intro pf_bin;
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque)
           (Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
-              (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}))"#
+              (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}));
+        // Count post: forward the free compute_hint's guarded count.  The free fn
+        // proves (u64-guard on high.f_value) ==> v result == sum_j v(cast (to_i32x8
+        // tmp0 j)); bridge relates the wrapper's f_repr-guard to that u64-guard and
+        // the tmp0 lanes to (f_repr hint), and lemma_compute_hint_8 folds the sum
+        // into Spec.MLDSA.Math.compute_hint (f_repr hint).  All three facts are
+        // unconditional, so F* chains the two guarded implications automatically.
+        let hb (i: u64{v i < 8}) : Lemma
+            (Spec.Intrinsics.to_i32x8 ${high}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i ==
+              Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) (v i)) =
+          bridge ${high} (v i) in
+        Classical.forall_intro hb;
+        let hh (j: nat{j < 8}) : Lemma
+            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) j ==
+              Spec.Intrinsics.to_i32x8 ${hint}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 j)) =
+          bridge ${hint} j in
+        Classical.forall_intro hh;
+        Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_compute_hint_8
+          (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#
     );
     result
 }
@@ -875,7 +898,12 @@ impl Operations for AVX2SIMDUnit {
             $gamma2
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i)
-            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i))"#))]
+            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future) i)) /\
+        ((forall (i: nat{i < 8}).
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) >= 0 /\
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) < 8380417) ==>
+          v $result ==
+          Spec.MLDSA.Math.compute_hint (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future))"#))]
     fn compute_hint(low: &Self, high: &Self, gamma2: i32, hint: &mut Self) -> usize {
         compute_hint_with_proof(low, high, gamma2, hint)
     }
