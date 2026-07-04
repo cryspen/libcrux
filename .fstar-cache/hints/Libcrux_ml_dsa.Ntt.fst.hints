@@ -88,7 +88,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "702b3f35577eab14f01cd93577f521c5"
+      "e96f12578e02fa3889bd74ef5bc90f31"
     ],
     [
       "Libcrux_ml_dsa.Ntt.invert_ntt_montgomery",
@@ -168,7 +168,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2c0fbfdee8b0b23f073f029507425aaf"
+      "610fa085c27117c62c6576d079d117a1"
     ],
     [
       "Libcrux_ml_dsa.Ntt.reduce",
@@ -271,7 +271,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "29de0c8d51a7f00a5f488a00a89f519b"
+      "328e30ce39816c298a9029a6ea93f4bf"
     ],
     [
       "Libcrux_ml_dsa.Ntt.ntt_multiply_montgomery",
@@ -401,7 +401,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "591be036d58fe3a0b76e100da4b15250"
+      "835f277efe87f34863921cc173d22f31"
     ]
   ]
 ]

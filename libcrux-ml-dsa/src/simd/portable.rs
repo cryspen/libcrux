@@ -421,7 +421,10 @@ impl Operations for Coefficients {
             $gamma2
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
-            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i))"#))]
+            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+        Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
@@ -452,6 +455,15 @@ impl Operations for Coefficients {
                     $gamma2 r r0 r1
             in
             Classical.forall_intro pf_eq;
+            // Non-negativity + < q: the arithmetic post already gives per-lane
+            // `r1 >= 0 /\ r1 < (q-1)/(2*gamma2)` (< 44/16 under the gamma2
+            // case-split), so each lane of `high` lies in [0, q).
+            let pf_nonneg (k: nat{k < 8}) : Lemma
+                (ensures
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) >= 0 /\
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417) = ()
+            in
+            Classical.forall_intro pf_nonneg;
             // Bound conjuncts: per-lane bounds from arithmetic post → array-level
             // is_i32b_array opaque on both gamma2 branches.
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)

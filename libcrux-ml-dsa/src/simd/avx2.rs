@@ -302,7 +302,10 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2S
         $gamma2
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
-        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i))"#))]
+        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+    Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+      v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
+      v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
 pub(crate) fn decompose_with_proof(
     gamma2: Gamma2,
     simd_unit: &AVX2SIMDUnit,
@@ -354,7 +357,11 @@ pub(crate) fn decompose_with_proof(
                     Spec.Utils.is_i32b 261888
                         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}) k) /\
                     Spec.Utils.is_i32b 16
-                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) ) =
+                        (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k)) /\
+                // Non-negativity of the high part, unconditional in gamma2 (both
+                // branches of lemma_decompose_bound give 0 <= r1 < 44/16 < q).
+                (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) >= 0 /\
+                 v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417) ) =
             let r = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k in
             Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_spec_eq_decompose
                 $gamma2 r;
@@ -879,7 +886,10 @@ impl Operations for AVX2SIMDUnit {
             $gamma2
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
-            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i))"#))]
+            (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+        Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
         decompose_with_proof(gamma2, simd_unit, low, high)
     }

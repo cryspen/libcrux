@@ -35,6 +35,7 @@ function extract_all() {
         fstar --z3rlimit 80
 
     patch_matrix_typeclass libcrux-ml-dsa
+    patch_arithmetic_typeclass libcrux-ml-dsa
 }
 
 # Post-extraction patch: hax extracts `ntt_dot_accumulate`'s inner fold
@@ -84,6 +85,43 @@ function patch_matrix_typeclass() {
         # Downstream `make check Matrix.fst` will surface the typeclass
         # error if the patch didn't apply.
     fi
+}
+
+# Post-extraction patch: `decompose_vector` takes two `&mut` slices (`low`,
+# `high`), which hax extracts as an outer fold over tuple state `(high, low)`.
+# Inside the body F*'s `Index` typeclass tactic resolves `.[ ]` on the FIRST
+# binder (`high`, and the immutable `t`) but FAILS on the SECOND binder
+# (`low.[ i ]`) under the strengthened loop invariant's subtyping context
+# (Error 228 "Tactic failed"; same tuple-state root cause as
+# `patch_matrix_typeclass`).  hax emits only an element-type ascription, not
+# the receiver ascription the tactic needs, so we add `(low <: t_Slice ...)`
+# here.  Scoped via an awk range on the top-level `let` to the
+# `decompose_vector` decl ONLY, so the unrelated `low.[ i ]` in `make_hint`
+# is left alone.  The rewrite is idempotent (the patched text contains no
+# `low.[ i ]` substring), so re-running on an already-patched file is a no-op.
+function patch_arithmetic_typeclass() {
+    TARGET="$1"
+    shift 1
+    go_to "$TARGET"
+
+    local target_file="proofs/fstar/extraction/Libcrux_ml_dsa.Arithmetic.fst"
+    if [ ! -f "$target_file" ]; then
+        msg "$BLUE" "patch_arithmetic_typeclass: ${BOLD}$target_file${RESET} not found, skipping"
+        return
+    fi
+
+    if ! grep -q 'low\.\[ i \]' "$target_file"; then
+        msg "$BLUE" "patch_arithmetic_typeclass: no un-ascribed low.[ i ] found, skipping"
+        return
+    fi
+
+    local tmp="${target_file}.tc.tmp"
+    awk '
+      /^let / { indv = ($0 ~ /^let decompose_vector/) ? 1 : 0 }
+      indv { gsub(/low\.\[ i \]/, "(low <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)).[ i ]") }
+      { print }
+    ' "$target_file" > "$tmp" && mv "$tmp" "$target_file"
+    msg "$BLUE" "patched ${BOLD}$target_file${RESET} (decompose_vector tuple-state Index workaround)"
 }
 
 function prove() {

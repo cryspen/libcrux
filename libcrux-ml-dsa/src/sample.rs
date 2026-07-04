@@ -492,7 +492,12 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
 // in absolute value — the uniform bound `ntt` / `compute_matrix_x_mask` need on
 // the mask.  Proven (not admitted) via a `is_bounded_poly_range` loop invariant
 // threaded through both loops, mirroring `matrix::compute_matrix_x_mask`.
+// The output domain separator advances by exactly `dimension` — needed by the
+// sign_internal rejection loop to maintain `domain_separator <= attempt * dimension`
+// (so `sample_mask_vector`'s `domain_separator + dimension <= 65535` precondition
+// holds on every attempt).  Proven: the final `*domain_separator` is `ds0 + dimension`.
 #[hax_lib::ensures(|_| fstar!(r#"
+    v ${domain_separator}_future == v $domain_separator + v $dimension /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${mask}_future"#))]
 pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,

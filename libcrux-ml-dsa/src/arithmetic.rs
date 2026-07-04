@@ -138,14 +138,89 @@ fn power2round_one_ring_element<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/ 
+        (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\
          ${t.len()} == dimension /\
          ${low.len()} == dimension /\
          ${high.len()} == dimension /\
          Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) $t"#))]
+// Range version of `is_lane_range_poly` (all rows in the half-open index range
+// [start, fin) have every lane coefficient in [lo, hi]).  Local to Arithmetic
+// (consumer-first); opaque_to_smt + intro/lookup/extend, MIRRORING
+// `is_bounded_poly_range` (polynomial.rs).  Used by `decompose_vector` to
+// accumulate the per-row non-negativity of the `high` (HighBits) output across
+// the outer fold, then surfaced (via `lemma_lane_range_slice_high_all_nonneg`)
+// as `make_hint`'s `high_all_nonneg` guard in sign_internal.
+#[hax_lib::fstar::before(
+    r#"
+[@@ "opaque_to_smt"]
+let is_lane_range_poly_range
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (lo hi start fin: usize)
+      (arr: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : prop =
+  forall (k: nat). v start <= k /\ k < v fin /\ k < Seq.length arr ==>
+    Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi (Seq.index arr k)
+
+let lemma_is_lane_range_poly_range_lookup
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (lo hi start fin: usize)
+      (arr: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+      (k: nat)
+    : Lemma
+      (requires is_lane_range_poly_range lo hi start fin arr /\
+                v start <= k /\ k < v fin /\ k < Seq.length arr)
+      (ensures Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi (Seq.index arr k))
+      [SMTPat (is_lane_range_poly_range lo hi start fin arr); SMTPat (Seq.index arr k)]
+  = reveal_opaque (`%is_lane_range_poly_range) (is_lane_range_poly_range lo hi start fin arr)
+
+let lemma_is_lane_range_poly_range_intro
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (lo hi start fin: usize)
+      (arr: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Lemma
+      (requires forall (k: nat). v start <= k /\ k < v fin /\ k < Seq.length arr ==>
+        Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi (Seq.index arr k))
+      (ensures is_lane_range_poly_range lo hi start fin arr)
+  = reveal_opaque (`%is_lane_range_poly_range) (is_lane_range_poly_range lo hi start fin arr)
+
+let lemma_is_lane_range_poly_range_extend_after_update
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (lo hi: usize) (i: usize)
+      (arr_old arr_new: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Lemma
+      (requires
+        Seq.length arr_new == Seq.length arr_old /\ v i < Seq.length arr_new /\
+        is_lane_range_poly_range lo hi (mk_usize 0) i arr_old /\
+        (forall (k:nat). k < Seq.length arr_new /\ k <> v i ==>
+          Seq.index arr_new k == Seq.index arr_old k) /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi (Seq.index arr_new (v i)))
+      (ensures is_lane_range_poly_range lo hi (mk_usize 0) (i +! mk_usize 1) arr_new)
+  = let aux (k: nat{k < v i + 1 /\ k < Seq.length arr_new}) :
+      Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly lo hi (Seq.index arr_new k)) =
+      if k < v i then begin
+        lemma_is_lane_range_poly_range_lookup lo hi (mk_usize 0) i arr_old k;
+        assert (Seq.index arr_new k == Seq.index arr_old k)
+      end else assert (k == v i)
+    in
+    Classical.forall_intro aux;
+    lemma_is_lane_range_poly_range_intro lo hi (mk_usize 0) (i +! mk_usize 1) arr_new
+"#
+)]
+#[hax_lib::ensures(|_| fstar!(r#"
+    Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
+      (mk_usize 0) (mk_usize 8380416) ${high}_future"#))]
+#[hax_lib::fstar::options("--z3rlimit 200 --fuel 1 --ifuel 2")]
+#[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     dimension: usize,
     gamma2: Gamma2,
@@ -153,11 +228,71 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     low: &mut [PolynomialRingElement<SIMDUnit>],
     high: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
+    // Base case: is_lane_range_poly_range over the empty [0,0) prefix of `high`.
+    hax_lib::fstar!(
+        r#"lemma_is_lane_range_poly_range_intro (mk_usize 0) (mk_usize 8380416)
+             (mk_usize 0) (mk_usize 0) $high"#
+    );
     for i in 0..dimension {
-        hax_lib::loop_invariant!(|i: usize| low.len() == dimension && high.len() == dimension);
+        // NOTE: the two slice-length conjuncts MUST be stated with
+        // `Core_models.Slice.impl__len` (whose parameter is `t_Slice`), NOT
+        // `Seq.length` (which accepts the supertype `Seq.seq`).  With
+        // `Seq.length`, F* widens `low` in the fold's accumulator type to a
+        // bare `Seq.seq`, so the init tuple `(high, low) : (t_Slice & t_Slice)`
+        // needs a `t_Slice -> Seq.seq` coercion whose projector Z3 cannot
+        // reduce ("incomplete quantifiers" on the fold-init subtyping).
+        // `impl__len` keeps the accumulator symmetric `(t_Slice & t_Slice)`.
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $low == $dimension /\
+               Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $high == $dimension /\
+               is_lane_range_poly_range (mk_usize 0) (mk_usize 8380416)
+                 (mk_usize 0) $i $high"#
+        ));
 
-        for j in 0..low[0].simd_units.len() {
-            hax_lib::loop_invariant!(|i: usize| low.len() == dimension && high.len() == dimension);
+        // Snapshot the row-`i`-start `high` as the immutable frame anchor for the
+        // inner loop (which only mutates row i) and the end-of-body extension.
+        #[cfg(hax)]
+        let old_high: &[PolynomialRingElement<SIMDUnit>] = high.to_vec().as_slice();
+        // Carry the outer-inv opaque range [0,i) from `high` onto `old_high`
+        // (element-wise equal here) so the inner inv + extension lemma can name it.
+        hax_lib::fstar!(
+            r#"
+            let _:Prims.unit =
+              let aux (k: nat{k < v $i /\ k < Seq.length old_high}) :
+                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly
+                         (mk_usize 0) (mk_usize 8380416) (Seq.index old_high k)) =
+                assert (Seq.index old_high k == Seq.index $high k);
+                lemma_is_lane_range_poly_range_lookup (mk_usize 0) (mk_usize 8380416)
+                  (mk_usize 0) $i $high k
+              in
+              Classical.forall_intro aux
+            in
+            lemma_is_lane_range_poly_range_intro (mk_usize 0) (mk_usize 8380416)
+              (mk_usize 0) $i old_high"#
+        );
+
+        // NOTE: `high[0]` (not `low[0]`) as the unit count: hax extracts the two
+        // `&mut` slices as a tuple-state fold `(high, low)`, and F*'s typeclass
+        // resolver fails to re-resolve `Index` on the SECOND binder (`low.[_]`)
+        // under the strengthened invariant's subtyping context (skill §7
+        // tuple-state Index failure).  `high[0]` (first binder) resolves; both
+        // slices have the identical 32 simd_units, so the bound is unchanged.
+        for j in 0..high[0].simd_units.len() {
+            hax_lib::loop_invariant!(|j: usize| fstar!(
+                r#"Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $low == $dimension /\
+                   Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $high == $dimension /\
+                   v $i < v $dimension /\
+                   Seq.length old_high == v $dimension /\
+                   is_lane_range_poly_range (mk_usize 0) (mk_usize 8380416)
+                     (mk_usize 0) $i old_high /\
+                   (forall (k:nat). k < v $dimension /\ k <> v $i ==>
+                       Seq.index $high k == Seq.index old_high k) /\
+                   (forall (u:nat) (m:nat). u < v $j /\ m < 8 ==>
+                       v (Seq.index (i0._super_i2.f_repr
+                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) >= 0 /\
+                       v (Seq.index (i0._super_i2.f_repr
+                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) < 8380417)"#
+            ));
 
             // Bridge the slice-level FIELD_MAX bound on t down to the per-lane bound
             // that decompose's precondition needs on t[i].simd_units[j].
@@ -173,7 +308,22 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                 &mut high[i].simd_units[j],
             );
         }
+
+        // After the inner loop the accumulation covers all 32 units of row i =
+        // the body of is_lane_range_poly; intro it, then extend the outer range
+        // [0,i) -> [0,i+1) via the (old_high, high) frame.
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_intro
+                 (mk_usize 0) (mk_usize 8380416) (Seq.index $high (v $i));
+               lemma_is_lane_range_poly_range_extend_after_update
+                 (mk_usize 0) (mk_usize 8380416) $i old_high $high"#
+        );
     }
+    // After the outer loop: range over all [0,dimension) rows -> whole slice.
+    hax_lib::fstar!(
+        r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_intro
+             (mk_usize 0) (mk_usize 8380416) $high"#
+    );
 }
 
 #[inline(always)]
@@ -203,6 +353,35 @@ let high_all_nonneg
           (Seq.index (Seq.index high r).Libcrux_ml_dsa.Polynomial.f_simd_units u)
       in
       v (Seq.index a lane) >= 0 /\ v (Seq.index a lane) < 8380417)
+
+(* Bridge: decompose_vector's `is_lane_range_poly_slice 0 8380416` post
+   (asymmetric [0, q) lane range on the HighBits output) implies make_hint's
+   `high_all_nonneg` guard.  Consumed at the make_hint call site in
+   sign_internal to discharge the count-correctness post. *)
+let lemma_lane_range_slice_high_all_nonneg
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0: Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (high: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Lemma
+      (requires Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
+                  (mk_usize 0) (mk_usize 8380416) high)
+      (ensures high_all_nonneg i0 high)
+  = reveal_opaque (`%high_all_nonneg) (high_all_nonneg i0 high);
+    introduce forall (r: nat) (u: nat) (lane: nat).
+      (r < Seq.length high /\
+       u < Seq.length (Seq.index high r).Libcrux_ml_dsa.Polynomial.f_simd_units /\ lane < 8) ==>
+      (let a =
+          i0._super_i2.f_repr
+            (Seq.index (Seq.index high r).Libcrux_ml_dsa.Polynomial.f_simd_units u)
+        in
+        v (Seq.index a lane) >= 0 /\ v (Seq.index a lane) < 8380417)
+    with introduce _ ==> _
+    with _pf.
+      (Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_lookup
+         (mk_usize 0) (mk_usize 8380416) high r;
+       Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_lookup
+         (mk_usize 0) (mk_usize 8380416) (Seq.index high r) u lane)
 
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
 

@@ -166,7 +166,16 @@ pub(crate) trait Operations: Copy + Clone + Repr {
             $gamma2
             (Seq.index (f_repr ${simd_unit}) i)
             (Seq.index (f_repr ${low}_future) i)
-            (Seq.index (f_repr ${high}_future) i))"#))]
+            (Seq.index (f_repr ${high}_future) i)) /\
+        // `high_future` (= HighBits) is always non-negative and < q, regardless
+        // of the sign of `simd_unit`: decompose reduces its input mod q before
+        // extracting the high part.  Surfaces the `decompose >= 0` last-mile that
+        // `make_hint`'s `high_all_nonneg` guard (and hence the count-correctness
+        // post consumed by sign_internal) needs.  Both backends already prove
+        // `0 <= r1 < 44/16` internally (lemma_decompose_bound / arithmetic post).
+        Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
+          v (Seq.index (f_repr ${high}_future) i) >= 0 /\
+          v (Seq.index (f_repr ${high}_future) i) < 8380417)"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
 
     #[hax_lib::requires(fstar!(r#"
