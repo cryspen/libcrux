@@ -66,6 +66,13 @@ fn _signature_serialize_spec_helpers() {}
     Seq.length $signer_response == v $columns_in_a /\
     count_total_ones $hint <= v $max_ones_in_hint /\
     v $max_ones_in_hint + v $rows_in_a <= max_usize"#))]
+// The body writes into `signature` only through length-preserving
+// `update_at_range` / `update_at_usize` operations and returns it, so the
+// output length equals the input length.  `sign_internal` relies on this
+// post to re-annotate the returned slice as `[u8; SIGNATURE_SIZE]`.  The
+// body is admitted for panic-freedom, so this post is admitted with it; it
+// is sound because no operation in the body changes the slice's length.
+#[hax_lib::ensures(|_| fstar!(r#"Seq.length ${signature}_future == Seq.length ${signature}"#))]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     commitment_hash: &[u8],
     signer_response: &[PolynomialRingElement<SIMDUnit>],

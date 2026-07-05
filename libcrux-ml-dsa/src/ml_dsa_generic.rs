@@ -236,6 +236,23 @@ pub(crate) mod generic {
     // matrix_flat + derive_message_representative + shake) saturates the module
     // default rlimit as one monolithic query; split + z3refresh lands it.
     #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh"))]
+    // Helper predicate for the rejection loop's invariant hint clause: once a
+    // signature is accepted (`hint = Some h`), its Hamming weight stays within
+    // MAX_ONES_IN_HINT.  Phrased as a top-level `match` (clean context) so the
+    // loop invariant references only this atom: an inline `Option_Some?._0`
+    // projector in the while_loop refinement corrupts the post-loop `match hint`
+    // pattern typing (the Bundle-encoded `Core_models.Option`, F* error 114).
+    #[cfg_attr(hax, hax_lib::fstar::before(r#"
+let hint_count_bounded
+      (#rows: usize)
+      (hint: Core_models.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) rows))
+      (m: usize)
+    : Type0 =
+  match hint with
+  | Core_models.Option.Option_Some h ->
+    Libcrux_ml_dsa.Encoding.Signature.count_total_ones (h <: t_Slice (t_Array i32 (mk_usize 256))) <= v m
+  | Core_models.Option.Option_None  -> Prims.l_True
+"#))]
     pub(crate) fn sign_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -341,14 +358,29 @@ pub(crate) mod generic {
         // probability of failure at 2⁻²⁵⁶ or less.
         //
         // [FIPS 204, Appendix C]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf#appendix.C
-        // FOLLOW-UP (#7, Blocker 2/3): the rejection-sampling loop invariant
-        // (v domain_separator_for_mask <= v attempt * COLUMNS_IN_A /\ attempt <=
-        // REJECTION_SAMPLE_BOUND_SIGN), decreases (REJECTION_SAMPLE_BOUND_SIGN -
-        // attempt), and the ~15 loop-body callee preconditions are not yet
-        // discharged.  The pre-loop (splits + deserialize + matrix_flat +
-        // derive_message_representative + shake) IS verified panic-free above.
-        hax_lib::fstar!("admit ()");
+        // Rejection-sampling loop.  The invariant tracks: `attempt` stays
+        // within its bound (well-foundedness of the decreases measure); the
+        // mask domain separator grows by at most COLUMNS_IN_A per attempt; and
+        // — once a signature is accepted — the hint's Hamming weight is within
+        // MAX_ONES_IN_HINT (consumed by the post-loop `serialize` precondition).
+        // The loop-body callee preconditions + invariant maintenance remain a
+        // follow-up (body admit below); the invariant establishment, decreases,
+        // and the whole post-loop ARE discharged (pre-loop admit removed).
         while attempt < REJECTION_SAMPLE_BOUND_SIGN {
+            hax_lib::loop_invariant!(fstar!(
+                r#"
+                v ${attempt} <= v ${REJECTION_SAMPLE_BOUND_SIGN} /\
+                v ${domain_separator_for_mask} <= v ${attempt} * v ${COLUMNS_IN_A} /\
+                hint_count_bounded ${hint} ${MAX_ONES_IN_HINT}
+                "#
+            ));
+            hax_lib::loop_decreases!(REJECTION_SAMPLE_BOUND_SIGN - attempt);
+            // FOLLOW-UP: discharge the ~15 loop-body callee preconditions and
+            // the per-iteration invariant maintenance (sample_mask_vector's
+            // domain-separator bound, decompose_vector's is_bounded post feeding
+            // make_hint's count chain, etc.).  Admitted for now so the loop
+            // skeleton + post-loop verify.
+            hax_lib::fstar!("admit ()");
             attempt += 1;
 
             let mut mask = [PolynomialRingElement::zero(); COLUMNS_IN_A];
@@ -472,6 +504,26 @@ pub(crate) mod generic {
             Some(hint) => hint,
             None => return Err(SigningError::RejectionSamplingError),
         };
+
+        // Discharge serialize's length preconditions: the concrete parameter
+        // constants satisfy gamma1_ring_element_size = 32·(1+gamma1_exponent),
+        // and SIGNATURE_SIZE decomposes into the commitment-hash / response /
+        // hint sections.  `norm [delta]` fully reduces `signature_size` to its
+        // literal (plain SMT reduction of it is flaky across parameter sets),
+        // then SMT closes the array-length link via the type refinement.
+        hax_lib::fstar!(
+            r#"
+            assert_norm (v ${GAMMA1_EXPONENT} == 17 \/ v ${GAMMA1_EXPONENT} == 19);
+            assert_norm (v ${GAMMA1_RING_ELEMENT_SIZE} == 32 * (1 + v ${GAMMA1_EXPONENT}));
+            assert_norm (v ${SIGNATURE_SIZE} ==
+                v ${COMMITMENT_HASH_SIZE} +
+                v ${GAMMA1_RING_ELEMENT_SIZE} * v ${COLUMNS_IN_A} +
+                v ${MAX_ONES_IN_HINT} + v ${ROWS_IN_A});
+            assert (Seq.length ${signature} == v ${SIGNATURE_SIZE})
+              by (FStar.Tactics.norm [primops; iota; zeta; delta]; FStar.Tactics.smt ());
+            assert_norm (v ${MAX_ONES_IN_HINT} + v ${ROWS_IN_A} <= max_usize)
+            "#
+        );
 
         encoding::signature::serialize::<SIMDUnit>(
             &commitment_hash,

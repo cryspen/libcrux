@@ -84,6 +84,13 @@ fn deserialize<SIMDUnit: Operations>(
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == v $RING_ELEMENT_OF_T0S_SIZE * Seq.length ring_elements /\
     Seq.length ring_elements <= 8"#))]
+// Length-preservation post (mirrors `error::deserialize_to_vector_then_ntt`):
+// the body only writes `ring_elements[i]` in place, so the vector length is
+// unchanged.  Needed by `sign_internal` to re-annotate the result as
+// `[PolynomialRingElement; ROWS_IN_A]`.  Admitted with the panic_free body;
+// sound because the fold mutates elements without changing the slice length.
+#[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${ring_elements}_future == Seq.length ${ring_elements}"#))]
 #[hax_lib::fstar::verification_status(panic_free)]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
