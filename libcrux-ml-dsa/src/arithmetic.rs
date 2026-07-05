@@ -236,7 +236,9 @@ let lemma_is_lane_range_poly_range_extend_after_update
 )]
 #[hax_lib::ensures(|_| fstar!(r#"
     Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
-      (mk_usize 0) (mk_usize 8380416) ${high}_future"#))]
+      (mk_usize 0) (mk_usize 8380416) ${high}_future /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
+      (mk_usize 8380416) ${low}_future"#))]
 #[hax_lib::fstar::options("--z3rlimit 200 --fuel 1 --ifuel 2")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
@@ -251,6 +253,14 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
         r#"lemma_is_lane_range_poly_range_intro (mk_usize 0) (mk_usize 8380416)
              (mk_usize 0) (mk_usize 0) $high"#
     );
+    // Base case (low side): is_bounded_poly_range over the empty [0,0) prefix
+    // of `low`.  Mirrors the `high` base above; the outer inv then accumulates
+    // the per-row |low| < FIELD_MAX bound (subtract_vectors in sign_internal
+    // consumes it) exactly as the `high` inv accumulates the [0,q) range.
+    hax_lib::fstar!(
+        r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
+             (mk_usize 8380416) (mk_usize 0) (mk_usize 0) $low"#
+    );
     for i in 0..dimension {
         // NOTE: the two slice-length conjuncts MUST be stated with
         // `Core_models.Slice.impl__len` (whose parameter is `t_Slice`), NOT
@@ -264,7 +274,9 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
             r#"Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $low == $dimension /\
                Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $high == $dimension /\
                is_lane_range_poly_range (mk_usize 0) (mk_usize 8380416)
-                 (mk_usize 0) $i $high"#
+                 (mk_usize 0) $i $high /\
+               Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
+                 (mk_usize 8380416) (mk_usize 0) $i $low"#
         ));
 
         // Snapshot the row-`i`-start `high` as the immutable frame anchor for the
@@ -289,6 +301,26 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
               (mk_usize 0) $i old_high"#
         );
 
+        // Same snapshot + carryover for `low` (the mutated inner loop only
+        // touches row i; `old_low` anchors the [0,i) frame for the extension).
+        #[cfg(hax)]
+        let old_low: &[PolynomialRingElement<SIMDUnit>] = low.to_vec().as_slice();
+        hax_lib::fstar!(
+            r#"
+            let _:Prims.unit =
+              let aux (k: nat{k < v $i /\ k < Seq.length old_low}) :
+                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                         (mk_usize 8380416) (Seq.index old_low k)) =
+                assert (Seq.index old_low k == Seq.index $low k);
+                Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup
+                  (mk_usize 8380416) (mk_usize 0) $i $low k
+              in
+              Classical.forall_intro aux
+            in
+            Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
+              (mk_usize 8380416) (mk_usize 0) $i old_low"#
+        );
+
         // NOTE: `high[0]` (not `low[0]`) as the unit count: hax extracts the two
         // `&mut` slices as a tuple-state fold `(high, low)`, and F*'s typeclass
         // resolver fails to re-resolve `Index` on the SECOND binder (`low.[_]`)
@@ -309,7 +341,17 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                        v (Seq.index (i0._super_i2.f_repr
                             (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) >= 0 /\
                        v (Seq.index (i0._super_i2.f_repr
-                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) < 8380417)"#
+                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) < 8380417) /\
+                   Seq.length old_low == v $dimension /\
+                   Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
+                     (mk_usize 8380416) (mk_usize 0) $i old_low /\
+                   (forall (k:nat). k < v $dimension /\ k <> v $i ==>
+                       Seq.index ($low <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) k ==
+                       Seq.index old_low k) /\
+                   (forall (u:nat). u < v $j ==>
+                       Spec.Utils.is_i32b_array_opaque (v (mk_usize 8380416))
+                         (i0._super_i2.f_repr
+                            (Seq.index (Seq.index ($low <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)) (v $i)).f_simd_units u)))"#
             ));
 
             // Bridge the slice-level FIELD_MAX bound on t down to the per-lane bound
@@ -325,6 +367,20 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                 &mut low[i].simd_units[j],
                 &mut high[i].simd_units[j],
             );
+
+            // Widen the per-unit `low` bound that `decompose`'s post supplies
+            // (|low| <= gamma2, i.e. 95232 or 261888 depending on the gamma2
+            // case guaranteed by the requires) up to FIELD_MAX = 8380416 so it
+            // matches the inner-inv `is_i32b_array_opaque (v (mk_usize 8380416))`
+            // accumulator.  Both `is_i32b_array_larger` implications are put in
+            // scope; the requires' gamma2 disjunction + decompose's conditional
+            // low-bound post then discharge the widened bound in either case.
+            hax_lib::fstar!(
+                r#"Spec.Utils.is_i32b_array_larger 95232 (v (mk_usize 8380416))
+                     (i0._super_i2.f_repr (Seq.index (Seq.index $low (v $i)).f_simd_units (v $j)));
+                   Spec.Utils.is_i32b_array_larger 261888 (v (mk_usize 8380416))
+                     (i0._super_i2.f_repr (Seq.index (Seq.index $low (v $i)).f_simd_units (v $j)))"#
+            );
         }
 
         // After the inner loop the accumulation covers all 32 units of row i =
@@ -336,11 +392,26 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                lemma_is_lane_range_poly_range_extend_after_update
                  (mk_usize 0) (mk_usize 8380416) $i old_high $high"#
         );
+        // Same intro + extend for `low`: at inner-loop exit all 32 units of
+        // row i satisfy is_i32b_array_opaque 8380416 = body of is_bounded_poly;
+        // extend the outer [0,i) -> [0,i+1) range via the (old_low, low) frame.
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
+                 (mk_usize 8380416) (Seq.index $low (v $i));
+               Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
+                 (mk_usize 8380416) $i old_low $low"#
+        );
     }
     // After the outer loop: range over all [0,dimension) rows -> whole slice.
     hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_intro
              (mk_usize 0) (mk_usize 8380416) $high"#
+    );
+    // Same for `low`: the outer inv's [0,dimension) range = every row -> whole
+    // slice; discharges the `is_bounded_poly_slice 8380416 low` post conjunct.
+    hax_lib::fstar!(
+        r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
+             (mk_usize 8380416) $low"#
     );
 }
 
