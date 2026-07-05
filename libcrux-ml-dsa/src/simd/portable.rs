@@ -41,7 +41,7 @@ impl Repr for Coefficients {}
 // ---------------------------------------------------------------------------
 
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
-    Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+    Spec.Utils.is_i32b_array_opaque (2 * v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
         (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result"#))]
@@ -397,7 +397,7 @@ impl Operations for Coefficients {
     }
 
     #[requires(fstar!(r#"v $bound > 0 /\
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
+        Spec.Utils.is_i32b_array_opaque (2 * v ${specs::FIELD_MAX}) (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit})"#))]
     #[ensures(|result| fstar!(r#"
         Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
             (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result"#))]

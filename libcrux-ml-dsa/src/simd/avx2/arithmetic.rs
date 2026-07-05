@@ -186,8 +186,11 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Vec256
 #[inline]
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 300")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
-    (forall i. Spec.Utils.is_i32b (v $FIELD_MODULUS - 1) (to_i32x8 ${simd_unit} i))"#))]
+// Input bound relaxed to `2·(q-1)` (was `q-1`); see the trait declaration in
+// `simd/traits.rs`.  Panic-free at `2q`: `mm256_abs_epi32` is exact for any
+// lane `> i32::MIN` (`mm256_abs_epi32_lemma`), and `2q ≪ -i32::MIN`.
+#[hax_lib::requires(fstar!(r#"v $bound > 0 /\
+    (forall i. Spec.Utils.is_i32b (2 * (v $FIELD_MODULUS - 1)) (to_i32x8 ${simd_unit} i))"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     $result == false <==> 
         (forall i. Spec.Utils.is_i32b (v $bound - 1) (to_i32x8 ${simd_unit} i))"#))]

@@ -372,8 +372,11 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
 // additional KATs.
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// Input bound relaxed to `2·(q-1)` (was `q-1`); see the trait declaration in
+// `simd/traits.rs`.  Panic-free at `2q`: `2 * coefficient` (line below) peaks
+// at ≈ 33.5M, far under i32::MAX.
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
-        Spec.Utils.is_i32b_array_opaque (v $FIELD_MODULUS - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
+        Spec.Utils.is_i32b_array_opaque (2 * (v $FIELD_MODULUS - 1)) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
     $result == false <==>
         Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]

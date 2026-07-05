@@ -67,8 +67,12 @@ let lemma_gather (c0: bv256) (j: nat{j<8}) (r: nat{r<3}) (s: nat{s<8})
 
 let v_MASK : i32 = (mk_i32 1 <<! mk_i32 23 <: i32) -! mk_i32 1
 
-(* Layer A core: the gathered+masked vector's lane j == the spec coefficient, given se's bytes. *)
-#push-options "--z3rlimit 600 --ifuel 2 --fuel 1"
+(* Layer A core: the gathered+masked vector's lane j == the spec coefficient, given se's bytes.
+   --z3refresh: this heavy 32-bit bitvector-extensionality proof cold-saturates one auto-split
+   sub-query without a fresh solver per query. Its recorded hint transitively depends on
+   Simd.Traits, so any change there (e.g. the 2026-07-05 infinity_norm precond relaxation)
+   invalidates the hint and forces this cold reverify; --z3refresh keeps it deterministic. *)
+#push-options "--z3rlimit 600 --ifuel 2 --fuel 1 --z3refresh"
 let lemma_layerA_se (se: t_Array u8 (mk_usize 32)) (input: t_Slice u8) (j:nat{j<8})
   : Lemma
     (requires Seq.length input == 24 /\
@@ -118,7 +122,8 @@ let lemma_se_bytes (input: t_Slice u8)
 #pop-options
 
 (* full Layer A: the real bytestream gather == the spec coefficient *)
-#push-options "--z3rlimit 600 --ifuel 2 --fuel 2"
+(* --z3refresh: same cold-reverify stability as lemma_layerA_se (which this calls). *)
+#push-options "--z3rlimit 600 --ifuel 2 --fuel 2 --z3refresh"
 let lemma_layerA (input: t_Slice u8) (j:nat{j<8})
   : Lemma (requires Seq.length input == 24)
           (ensures to_i32x8 (bytestream_to_potential_coefficients input) (mk_u64 j)

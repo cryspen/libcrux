@@ -629,6 +629,14 @@ let hint_count_bounded
             Err(e) => return Err(e),
         };
 
+        // `vector_infinity_norm_exceeds`'s input precondition was relaxed from
+        // `FIELD_MAX` to `2 * FIELD_MAX = 16760832` (so `sign_internal` can
+        // pass its `< 2q`-bounded `w0`/`mask`).  `deserialize` gives the tight
+        // `is_bounded_poly_slice 8380416` post; weaken it to the `16760832`
+        // pre here (monotone in the bound: `q - 1 <= 2 * (q - 1)`).
+        hax_lib::fstar!(
+            "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_higher (mk_usize 8380416) (mk_usize 16760832) $deserialized_signer_response"
+        );
         // We use if-else branches because early returns will not go through hax.
         if vector_infinity_norm_exceeds::<SIMDUnit>(
             &deserialized_signer_response,

@@ -6,8 +6,11 @@ use crate::{
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// Input bound relaxed to `2·(q-1) = 16760832` (was `q-1`); see the SIMD trait
+// declaration in `simd/traits.rs`.  The narrowing ensures below is exact for
+// any input, so it is unaffected.
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
-        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) $vector"#))]
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 16760832) $vector"#))]
 // Narrowing: a `false` result means every ring element is strictly `< bound`
 // (per-lane, in absolute value). Propagated from `infinity_norm_exceeds`' iff
 // post; the sign rejection loop uses it to tighten `w0`/`mask` to `< bound`
@@ -32,8 +35,8 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
         // Bridge the slice-level FIELD_MAX bound to the per-row poly bound (and unfold
         // it) so infinity_norm_exceeds' per-lane forall precondition discharges.
         hax_lib::fstar!(
-            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup (mk_usize 8380416) $vector (v $i);
-               reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly) (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) (Seq.index $vector (v $i)))"#
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup (mk_usize 16760832) $vector (v $i);
+               reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly) (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 16760832) (Seq.index $vector (v $i)))"#
         );
         result = result || vector[i].infinity_norm_exceeds(bound);
     }

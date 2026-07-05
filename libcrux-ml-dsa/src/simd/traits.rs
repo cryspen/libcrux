@@ -134,8 +134,17 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|_| specs::sub_post(&lhs.repr(), &rhs.repr(), &future(lhs).repr()))]
     fn subtract(lhs: &mut Self, rhs: &Self);
 
+    // Input bound is `2 * FIELD_MAX` (= 2·(q-1)), not `FIELD_MAX`: the sign
+    // rejection loop checks the norm of `w0`/`mask` coefficients that
+    // `add_vectors`/`subtract_vectors` produce as sums/differences of two
+    // `<q`-bounded values, hence bounded by `2·(q-1)`.  Relaxing this pre is
+    // sound (weaker requirement, no caller breaks) and the impls stay
+    // panic-free at `2q`: Portable's abs uses `2*coefficient` (≈ 33.5M, far
+    // under i32::MAX) and Avx2's `mm256_abs_epi32` is exact for any lane
+    // `> i32::MIN` (`mm256_abs_epi32_lemma`).  The iff post is unaffected —
+    // it is exact for any input.
     #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
-        Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
+        Spec.Utils.is_i32b_array_opaque (2 * v ${specs::FIELD_MAX}) (f_repr ${simd_unit})"#))]
     #[hax_lib::ensures(|result| fstar!(r#"
         Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
             (f_repr ${simd_unit}) $bound $result"#))]

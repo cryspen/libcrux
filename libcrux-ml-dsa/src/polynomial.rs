@@ -218,6 +218,30 @@ let lemma_is_bounded_poly_slice_intro
         Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly b (Seq.index arr k))
       (ensures is_bounded_poly_slice b arr)
   = reveal_opaque (`%is_bounded_poly_slice) (is_bounded_poly_slice b arr)
+
+(* Monotonicity at the slice level: tighter bound implies looser bound.
+   Slice analogue of `lemma_is_bounded_poly_higher`.  Consumed by
+   `verify_internal` to weaken `signature::deserialize`'s
+   `is_bounded_poly_slice 8380416` post to the `2 * FIELD_MAX = 16760832`
+   pre of `vector_infinity_norm_exceeds` (relaxed so the sign rejection loop
+   can pass its `<2q`-bounded w0/mask). *)
+let lemma_is_bounded_poly_slice_higher
+      (#v_SIMDUnit: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i0:
+          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
+      (b1 b2: usize)
+      (arr: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit))
+    : Lemma
+      (requires is_bounded_poly_slice b1 arr /\ v b1 <= v b2)
+      (ensures is_bounded_poly_slice b2 arr)
+  = let lemma_row (k: nat{k < Seq.length arr}) :
+      Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly b2 (Seq.index arr k)) =
+      lemma_is_bounded_poly_slice_lookup b1 arr k;
+      lemma_is_bounded_poly_higher b1 b2 (Seq.index arr k)
+    in
+    Classical.forall_intro lemma_row;
+    lemma_is_bounded_poly_slice_intro b2 arr
 "#
         )
     )]
@@ -621,9 +645,12 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
+    // Input bound relaxed to `2·(q-1)` (was `q-1`); see the SIMD trait
+    // declaration in `simd/traits.rs`.  The narrowing ensures below is exact
+    // for any input, so it is unaffected.
     #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
         (forall i. Spec.Utils.is_i32b_array_opaque
-            (v ${FIELD_MAX})
+            (2 * v ${FIELD_MAX})
             (i0._super_i2.f_repr (Seq.index self.f_simd_units i)))"#))]
     // Narrowing direction of the SIMD trait's iff post: when the result is
     // `false`, every coefficient is strictly `< bound` in absolute value. The
