@@ -117,9 +117,18 @@ fn deserialize<SIMDUnit: Operations>(
     v $ring_element_size == 32 * (match $eta with
                                   | Libcrux_ml_dsa.Constants.Eta_Two -> 3
                                   | Libcrux_ml_dsa.Constants.Eta_Four -> 4)"#))]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --split_queries always")]
+// FULLY VERIFIED (no panic_free admit): the loop invariant tracks
+// `is_i32b_array_opaque NTT_OUTPUT_BOUND` per lane across the processed prefix
+// `ring_elements[0..i]`; at loop exit (i == n == len) that covers every element.
+// The post-loop `fstar!` bridge re-derives it as `is_bounded_poly_slice
+// NTT_OUTPUT_BOUND` and BOTH posts (length + bound) are discharged against the
+// body — no admit.  Consumed by `sign_internal`, which passes
+// `s1_as_ntt`/`s2_as_ntt` (< NTT_OUTPUT_BOUND) to `vector_times_ring_element`.
 #[hax_lib::ensures(|_| fstar!(r#"
-    Seq.length ${ring_elements}_future == Seq.length $ring_elements"#))]
+    Seq.length ${ring_elements}_future == Seq.length $ring_elements /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
+      (mk_usize 75423744) ${ring_elements}_future"#))]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     eta: Eta,
     ring_element_size: usize,
@@ -165,6 +174,19 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         );
         ntt(&mut ring_elements[i]);
     }
+    // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
+    // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
+    // required by the post (machine-checked here in the panic_free body).
+    hax_lib::fstar!(r#"
+        let aux (k: nat{k < Seq.length ring_elements}) :
+          Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                   (mk_usize 75423744) (Seq.index ring_elements k)) =
+          Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
+            (mk_usize 75423744) (Seq.index ring_elements k)
+        in
+        Classical.forall_intro aux;
+        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
+          (mk_usize 75423744) ring_elements"#);
 }
 
 #[cfg(test)]

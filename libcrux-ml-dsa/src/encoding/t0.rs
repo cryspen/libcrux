@@ -84,14 +84,21 @@ fn deserialize<SIMDUnit: Operations>(
 #[hax_lib::requires(fstar!(r#"
     Seq.length $serialized == v $RING_ELEMENT_OF_T0S_SIZE * Seq.length ring_elements /\
     Seq.length ring_elements <= 8"#))]
-// Length-preservation post (mirrors `error::deserialize_to_vector_then_ntt`):
-// the body only writes `ring_elements[i]` in place, so the vector length is
-// unchanged.  Needed by `sign_internal` to re-annotate the result as
-// `[PolynomialRingElement; ROWS_IN_A]`.  Admitted with the panic_free body;
-// sound because the fold mutates elements without changing the slice length.
+// FULLY VERIFIED (no panic_free admit).  Length-preservation post: the body
+// only writes `ring_elements[i]` in place, so the slice length is unchanged
+// (needed by `sign_internal` to re-annotate as `[PolynomialRingElement;
+// ROWS_IN_A]`).  The NTT_OUTPUT_BOUND slice bound is derived from the loop
+// invariant (per-lane `is_i32b_array_opaque NTT_OUTPUT_BOUND` across
+// `ring_elements[0..i]`); at loop exit (i == n == len) it covers every element,
+// and the post-loop `fstar!` bridge re-derives `is_bounded_poly_slice
+// NTT_OUTPUT_BOUND`.  BOTH posts are discharged against the body — no admit.
+// Consumed by `sign_internal` (t0_as_ntt < NTT_OUTPUT_BOUND into
+// `vector_times_ring_element`).
 #[hax_lib::ensures(|_| fstar!(r#"
-    Seq.length ${ring_elements}_future == Seq.length ${ring_elements}"#))]
-#[hax_lib::fstar::verification_status(panic_free)]
+    Seq.length ${ring_elements}_future == Seq.length ${ring_elements} /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
+      (mk_usize 75423744) ${ring_elements}_future"#))]
+#[hax_lib::fstar::options("--z3rlimit 200 --ext context_pruning --split_queries always")]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     serialized: &[u8],
     ring_elements: &mut [PolynomialRingElement<SIMDUnit>],
@@ -131,6 +138,19 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         );
         ntt(&mut ring_elements[i]);
     }
+    // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
+    // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
+    // required by the post (machine-checked here in the panic_free body).
+    hax_lib::fstar!(r#"
+        let aux (k: nat{k < Seq.length ring_elements}) :
+          Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                   (mk_usize 75423744) (Seq.index ring_elements k)) =
+          Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
+            (mk_usize 75423744) (Seq.index ring_elements k)
+        in
+        Classical.forall_intro aux;
+        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
+          (mk_usize 75423744) ring_elements"#);
 }
 
 #[cfg(test)]

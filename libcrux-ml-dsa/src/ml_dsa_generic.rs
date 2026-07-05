@@ -371,7 +371,11 @@ let hint_count_bounded
                 r#"
                 v ${attempt} <= v ${REJECTION_SAMPLE_BOUND_SIGN} /\
                 v ${domain_separator_for_mask} <= v ${attempt} * v ${COLUMNS_IN_A} /\
-                hint_count_bounded ${hint} ${MAX_ONES_IN_HINT}
+                hint_count_bounded ${hint} ${MAX_ONES_IN_HINT} /\
+                Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${s1_as_ntt} /\
+                Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${s2_as_ntt} /\
+                Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${t0_as_ntt} /\
+                Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${matrix}
                 "#
             ));
             hax_lib::loop_decreases!(REJECTION_SAMPLE_BOUND_SIGN - attempt);
