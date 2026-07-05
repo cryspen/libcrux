@@ -8,12 +8,27 @@ use crate::{
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
         Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) $vector"#))]
+// Narrowing: a `false` result means every ring element is strictly `< bound`
+// (per-lane, in absolute value). Propagated from `infinity_norm_exceeds`' iff
+// post; the sign rejection loop uses it to tighten `w0`/`mask` to `< bound`
+// after each norm check (which the downstream add_vectors/make_hint bounds need).
+#[hax_lib::ensures(|result| fstar!(r#"(b2t (not $result)) ==>
+        (forall (k:nat). k < Seq.length $vector ==>
+          (forall (j:nat). j < 32 ==>
+             Spec.Utils.is_i32b_array_opaque (v $bound)
+               (i0._super_i2.f_repr (Seq.index (Seq.index $vector k).f_simd_units j))))"#))]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
 ) -> bool {
     let mut result = false;
     for i in 0..vector.len() {
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"v i <= Seq.length $vector /\
+            ((b2t (not result)) ==>
+              (forall (k:nat). k < v i ==>
+                (forall (j:nat). j < 32 ==>
+                   Spec.Utils.is_i32b_array_opaque (v $bound)
+                     (i0._super_i2.f_repr (Seq.index (Seq.index $vector k).f_simd_units j)))))"#));
         // Bridge the slice-level FIELD_MAX bound to the per-row poly bound (and unfold
         // it) so infinity_norm_exceeds' per-lane forall precondition discharges.
         hax_lib::fstar!(

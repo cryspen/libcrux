@@ -621,14 +621,35 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     }
 
     #[inline(always)]
-    #[hax_lib::requires(fstar!(r#"v $bound > 0 /\ 
-        (forall i. Spec.Utils.is_i32b_array_opaque 
-            (v ${FIELD_MAX}) 
+    #[hax_lib::requires(fstar!(r#"v $bound > 0 /\
+        (forall i. Spec.Utils.is_i32b_array_opaque
+            (v ${FIELD_MAX})
             (i0._super_i2.f_repr (Seq.index self.f_simd_units i)))"#))]
+    // Narrowing direction of the SIMD trait's iff post: when the result is
+    // `false`, every coefficient is strictly `< bound` in absolute value. The
+    // sign rejection loop consumes this to recover the tight `< bound` bound on
+    // `w0`/`mask` once an infinity-norm check passes (which the downstream
+    // add_vectors/make_hint bounds need).
+    #[hax_lib::ensures(|result| fstar!(r#"(b2t (not $result)) ==>
+        (forall (j:nat). j < 32 ==>
+            Spec.Utils.is_i32b_array_opaque (v $bound)
+              (i0._super_i2.f_repr (Seq.index self.f_simd_units j)))"#))]
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut result = false;
         for i in 0..self.simd_units.len() {
-            result = result || SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
+            hax_lib::loop_invariant!(|i: usize| fstar!(r#"v i <= 32 /\
+                ((b2t (not result)) ==>
+                  (forall (j:nat). j < v i ==>
+                     Spec.Utils.is_i32b_array_opaque (v $bound)
+                       (i0._super_i2.f_repr (Seq.index self.f_simd_units j))))"#));
+            let exceeds_i = SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
+            // Reveal the trait's iff post and the opaque i32-array bound so Z3 can
+            // turn `not exceeds_i` into the per-lane `< bound` fact for unit `i`.
+            hax_lib::fstar!(
+                r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post) (Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post);
+                   reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"#
+            );
+            result = result || exceeds_i;
         }
 
         result
