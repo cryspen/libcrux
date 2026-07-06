@@ -1,11 +1,11 @@
 [package]
 name = "libcrux-hacl"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-homepage.workspace = true
-repository.workspace = true
+version = "0.0.4"
+edition = "2021"
+authors = ["CE Labs"]
+license = "Apache-2.0"
+homepage = "https://github.com/celabshq/libcrux"
+repository = "https://github.com/celabshq/libcrux"
 readme = "Readme.md"
 description = "hacl sys crate of libcrux."
 
