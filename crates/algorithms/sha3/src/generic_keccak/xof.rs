@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[cfg(hax)]
-use crate::proof_utils::{keccak_xof_state_inv, valid_rate};
+use crate::proof_utils::valid_rate;
 
 // TODO: Should not be needed. Use hax_lib::fstar::options("") below.
 // Known bug: https://github.com/cryspen/hax/issues/1698
@@ -90,7 +90,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         valid_rate(RATE)
     )]
     #[hax_lib::ensures(|result|
-        keccak_xof_state_inv(RATE, result.buf_len) &&
+        result.state_inv() &&
         result.squeeze_pos == RATE
     )]
     pub(crate) fn new() -> Self {
@@ -125,10 +125,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     // Note: consciously not inlining this function to avoid using too much stack
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(RATE, self.buf_len)
+        self.state_inv()
     )]
     #[hax_lib::ensures(|consumed|
-        keccak_xof_state_inv(RATE, future(self).buf_len) &&
+        future(self).state_inv() &&
         if consumed == 0 {
             future(self).buf_len == self.buf_len && (
                 self.buf_len == 0 ||
@@ -148,12 +148,17 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         if self.buf_len != 0 && input_len >= RATE - self.buf_len {
             let consumed = RATE - self.buf_len;
 
+            // ghost variables for F* proof
             #[cfg(hax)]
-            let self_buf_len = self.buf_len; // ghost variable for F* proof
+            let self_buf_len = self.buf_len;
+            #[cfg(hax)]
+            let self_squeeze_pos = self.squeeze_pos;
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
-                hax_lib::loop_invariant!(|_: usize| { self.buf_len == self_buf_len });
+                hax_lib::loop_invariant!(|_: usize| {
+                    self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
+                });
 
                 self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
             }
@@ -168,10 +173,10 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     // Note: consciously not inlining this function to avoid using too much stack
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(RATE, self.buf_len)
+        self.state_inv()
     )]
     #[hax_lib::ensures(|remainder|
-        keccak_xof_state_inv(RATE, future(self).buf_len) &&
+        future(self).state_inv() &&
         future(self).buf_len.to_int() + remainder.to_int() <= RATE.to_int()
     )]
     pub(crate) fn absorb_full(&mut self, inputs: &[&[u8]; PARALLEL_LANES]) -> usize
@@ -210,15 +215,16 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let remainder = input_to_consume % RATE;
 
         #[cfg(hax)]
-        let (self_buf_len, end) = {
+        let (self_buf_len, self_squeeze_pos, end) = {
             let end = consumed + num_blocks * RATE;
-            #[cfg(hax)]
             hax_lib::assert!(end <= inputs[0].len());
-            (self.buf_len, end)
+            (self.buf_len, self.squeeze_pos, end)
         };
 
         for i in 0..num_blocks {
-            hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
+            hax_lib::loop_invariant!(
+                |_: usize| self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
+            );
             #[cfg(hax)]
             crate::proof_utils::lemma_mul_succ_le(i, num_blocks, RATE);
 
@@ -246,9 +252,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     #[inline(always)]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(RATE, self.buf_len)
+        self.state_inv()
     )]
-    #[hax_lib::ensures(|_| keccak_xof_state_inv(RATE, future(self).buf_len))]
+    #[hax_lib::ensures(|_| future(self).state_inv())]
     pub(crate) fn absorb(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
@@ -270,10 +276,14 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
             #[cfg(hax)]
             let self_buf_len = self.buf_len;
+            #[cfg(hax)]
+            let self_squeeze_pos = self.squeeze_pos;
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
-                hax_lib::loop_invariant!(|_: usize| self.buf_len == self_buf_len);
+                hax_lib::loop_invariant!(
+                    |_: usize| self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
+                );
 
                 self.buf[i][self.buf_len..self.buf_len + remainder]
                     .copy_from_slice(&inputs[i][input_len - remainder..input_len]);
@@ -290,9 +300,9 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
     #[inline(always)]
     #[hax_lib::requires(
         PARALLEL_LANES == 1 &&
-        keccak_xof_state_inv(RATE, self.buf_len)
+        self.state_inv()
     )]
-    #[hax_lib::ensures(|_| keccak_xof_state_inv(RATE, future(self).buf_len))]
+    #[hax_lib::ensures(|_| future(self).state_inv())]
     pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: &[&[u8]; PARALLEL_LANES])
     where
         KeccakState<PARALLEL_LANES, STATE>: Absorb<PARALLEL_LANES>,
@@ -323,11 +333,11 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// See https://github.com/cryspen/libcrux/issues/1362.
     #[inline(always)]
     #[hax_lib::requires(
-        keccak_xof_state_inv(RATE, self.buf_len) &&
+        self.state_inv() &&
         self.squeeze_pos <= RATE
     )]
     #[hax_lib::ensures(|_|
-        keccak_xof_state_inv(RATE, future(self).buf_len) &&
+        future(self).state_inv() &&
         future(self).squeeze_pos <= RATE &&
         future(out).len() == out.len()
     )]
@@ -422,6 +432,23 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
                 out[last_full..out_len].copy_from_slice(&self.squeeze_buf[..trailing]);
                 self.squeeze_pos = trailing;
             }
+        }
+    }
+}
+
+#[cfg(hax)]
+mod proof_utils {
+    impl<
+            const PARALLEL_LANES: usize,
+            const RATE: usize,
+            State: super::KeccakItem<PARALLEL_LANES>,
+        > super::KeccakXofState<PARALLEL_LANES, RATE, State>
+    {
+        // XXX If https://github.com/cryspen/hax/issues/899 is fixed, we should be able
+        // to remove this predicate which we thread through a lot of the methods and
+        // replace it with a refinement macro on the struct.
+        pub(crate) fn state_inv(&self) -> bool {
+            crate::proof_utils::valid_rate(RATE) && self.buf_len <= RATE && self.squeeze_pos <= RATE
         }
     }
 }
