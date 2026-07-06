@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2) [#1493](https://github.com/cryspen/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
+- (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2, libcrux-hmac) [#1493](https://github.com/cryspen/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 - (libcrux-secrets) [#1446](https://github.com/cryspen/libcrux/pull/1446): Remove const qualifier of secret types constructors
 - (libcrux-secrets) [#1462](https://github.com/cryspen/libcrux/pull/1462): More robust casts instead of transmutes when checking secret independence
 - (libcrux-sha3) [1454](https://github.com/cryspen/libcrux/pull/1454): `debug_assert` that generic `LEN` matches algorithm in `hash` function
