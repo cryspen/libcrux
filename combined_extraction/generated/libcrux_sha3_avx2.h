@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: c2593afcf1c70df94fe6b696747fa02197763c3b
+ * Libcrux: bc35d2f21221fbea025ce4f6780bea527ee525d6
  */
 
 
@@ -2595,7 +2595,7 @@ libcrux_sha3_simd_avx2_store_block_b2(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)0U, (size_t)8U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
@@ -2605,7 +2605,7 @@ libcrux_sha3_simd_avx2_store_block_b2(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)8U, (size_t)16U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
@@ -2615,7 +2615,7 @@ libcrux_sha3_simd_avx2_store_block_b2(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)16U, (size_t)24U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
@@ -2625,7 +2625,7 @@ libcrux_sha3_simd_avx2_store_block_b2(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)24U, (size_t)32U })),
         uint8_t);
     }
@@ -2640,21 +2640,21 @@ libcrux_sha3_simd_avx2_store_block_b2(
         libcrux_sha3_traits_get_ij_5d(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s, (core_ops_range_Range_87{ (size_t)0U, rem8 })),
+        Eurydice_array_to_subslice_shared_d41(&u8s, (core_ops_range_Range_87{ (size_t)0U, rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)8U, (size_t)8U + rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)16U, (size_t)16U + rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)24U, (size_t)24U + rem8 })),
         uint8_t);
     }
@@ -2908,7 +2908,7 @@ libcrux_sha3_simd_avx2_store_block_60(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)0U, (size_t)8U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
@@ -2918,7 +2918,7 @@ libcrux_sha3_simd_avx2_store_block_60(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)8U, (size_t)16U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
@@ -2928,7 +2928,7 @@ libcrux_sha3_simd_avx2_store_block_60(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)16U, (size_t)24U })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
@@ -2938,7 +2938,7 @@ libcrux_sha3_simd_avx2_store_block_60(
               offset + (size_t)8U * (k + (size_t)1U)
             }
           )),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)24U, (size_t)32U })),
         uint8_t);
     }
@@ -2953,21 +2953,21 @@ libcrux_sha3_simd_avx2_store_block_60(
         libcrux_sha3_traits_get_ij_5d(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s, (core_ops_range_Range_87{ (size_t)0U, rem8 })),
+        Eurydice_array_to_subslice_shared_d41(&u8s, (core_ops_range_Range_87{ (size_t)0U, rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)8U, (size_t)8U + rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)16U, (size_t)16U + rem8 })),
         uint8_t);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
           (core_ops_range_Range_87{ offset_rem8, offset_rem8 + rem8 })),
-        Eurydice_array_to_subslice_shared_d4(&u8s,
+        Eurydice_array_to_subslice_shared_d41(&u8s,
           (core_ops_range_Range_87{ (size_t)24U, (size_t)24U + rem8 })),
         uint8_t);
     }
