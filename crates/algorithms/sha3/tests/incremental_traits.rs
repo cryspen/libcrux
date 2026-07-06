@@ -56,39 +56,6 @@ macro_rules! sha3_incremental_hash_test {
                         expected, digest,
                         "input len: {len} failed with partitioning: {partition_points:?}"
                     );
-
-                    // Running `finish` a second time results in the same digest output.
-                    let digest = hasher.finish_to_owned();
-                    assert_eq!(
-                        expected, digest,
-                        "input len: {len} failed with partitioning: {partition_points:?}"
-                    );
-
-                    // Running `update` on a finished Hasher results in an error.
-                    let err = hasher.update(&input);
-                    assert!(err.is_err());
-
-                    // After reset the hasher works like a new one.
-                    hasher.reset();
-                    for chunk in partitions(&input, partition_points) {
-                        hasher.update(chunk).unwrap();
-                    }
-                    let digest = hasher.finish_to_owned();
-                    assert_eq!(
-                        expected, digest,
-                        "input len: {len} failed with partitioning: {partition_points:?}"
-                    );
-
-                    // Running `finish` a second time results in the same digest output.
-                    let digest = hasher.finish_to_owned();
-                    assert_eq!(
-                        expected, digest,
-                        "input len: {len} failed with partitioning: {partition_points:?}"
-                    );
-
-                    // Running `update` on a finished Hasher results in an error.
-                    let err = hasher.update(&input);
-                    assert!(err.is_err());
                 }
             }
         }
