@@ -22,7 +22,7 @@ mod private {
     impl Sealed for super::CShake256 {}
 
     /// Proof-only supertrait of [`super::CShake`] carrying the internal Keccak
-    /// XOF state invariants as a ghost predicate. It is implemented generically
+    /// XOF state invariant as a ghost predicate. It is implemented generically
     /// for every `RATE`, so the generic `CShake` impl can unfold it, while
     /// `kmac` (generic over `CShake`) sees it abstractly. No runtime meaning.
     #[cfg(not(eurydice))]
@@ -120,12 +120,10 @@ impl Xof<168> for Shake128Xof {
 
     /// Shake128 squeeze
     #[hax_lib::requires(
-        self.state.state_inv() &&
-        self.state.squeeze_pos <= 168
+        self.state.state_inv()
     )]
     #[hax_lib::ensures(|_|
         future(self).state.state_inv() &&
-        future(self).state.squeeze_pos <= 168 &&
         future(out).len() == out.len()
     )]
     fn squeeze(&mut self, out: &mut [u8]) {
@@ -158,12 +156,10 @@ impl Xof<168> for CShake128 {
     }
 
     #[hax_lib::requires(
-        self.state.state_inv() &&
-        self.state.squeeze_pos <= 168
+        self.state.state_inv()
     )]
     #[hax_lib::ensures(|_|
         self.state.state_inv() &&
-        self.state.squeeze_pos <= 168 &&
         future(out).len() == out.len()
     )]
     fn squeeze(&mut self, out: &mut [u8]) {
@@ -198,12 +194,10 @@ impl Xof<136> for Shake256Xof {
 
     /// Shake256 squeeze
     #[hax_lib::requires(
-        self.state.state_inv() &&
-        self.state.squeeze_pos <= 136
+        self.state.state_inv()
     )]
     #[hax_lib::ensures(|_|
         future(self).state.state_inv() &&
-        future(self).state.squeeze_pos <= 136 &&
         future(out).len() == out.len()
     )]
     fn squeeze(&mut self, out: &mut [u8]) {
@@ -236,12 +230,10 @@ impl Xof<136> for CShake256 {
     }
 
     #[hax_lib::requires(
-        self.state.state_inv() &&
-        self.state.squeeze_pos <= 136
+        self.state.state_inv()
     )]
     #[hax_lib::ensures(|_|
         self.state.state_inv() &&
-        self.state.squeeze_pos <= 136 &&
         future(out).len() == out.len()
     )]
     fn squeeze(&mut self, out: &mut [u8]) {

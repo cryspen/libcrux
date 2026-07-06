@@ -30,8 +30,7 @@ pub(crate) struct KeccakXofState<
     buf: [[u8; RATE]; PARALLEL_LANES],
 
     // Buffered length.
-    // Note: pub(crate) so that portable.rs can access it for verification invariants
-    pub(crate) buf_len: usize,
+    buf_len: usize,
 
     // Needs sponge.
     sponge: bool,
@@ -48,8 +47,7 @@ pub(crate) struct KeccakXofState<
     //   consumed).
     // - `squeeze_pos < RATE` means `squeeze_buf[squeeze_pos..RATE]`
     //   still needs to be returned to the caller on the next squeeze.
-    // Note: pub(crate) so that portable.rs can access it for verification invariants
-    pub(crate) squeeze_pos: usize,
+    squeeze_pos: usize,
 }
 
 /// Note: This function exists to work around a hax bug where `core::array::from_fn`
@@ -324,21 +322,13 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
     /// Squeeze output bytes into `out`.
     ///
-    /// Supports arbitrary-sized requests across multiple calls. Bytes
-    /// from the most recently squeezed RATE-byte block that exceed the
-    /// caller's request are buffered internally so that the next call
-    /// can resume from that block before permuting again. This avoids
-    /// the previous restriction that all chunks except the last had to
-    /// be a multiple of `RATE` bytes.
-    /// See https://github.com/cryspen/libcrux/issues/1362.
+    /// Supports arbitrary-sized requests across multiple calls.
     #[inline(always)]
     #[hax_lib::requires(
-        self.state_inv() &&
-        self.squeeze_pos <= RATE
+        self.state_inv()
     )]
     #[hax_lib::ensures(|_|
         future(self).state_inv() &&
-        future(self).squeeze_pos <= RATE &&
         future(out).len() == out.len()
     )]
     pub(crate) fn squeeze(&mut self, out: &mut [u8])
@@ -351,9 +341,9 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             return;
         }
 
-        // 1) Drain any leftover bytes from the previously squeezed block.
-        //    `squeeze_pos < RATE` only after a previous partial squeeze
-        //    that did not consume the full RATE-byte block.
+        // Drain any leftover bytes from the previously squeezed block.
+        // `squeeze_pos < RATE` only after a previous partial squeeze
+        // that did not consume the full RATE-byte block.
         let mut out_offset = 0;
         if self.squeeze_pos < RATE {
             let avail = RATE - self.squeeze_pos;
