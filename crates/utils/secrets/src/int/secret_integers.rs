@@ -174,32 +174,32 @@ impl<U, T: ShlAssign<U> + Scalar> ShlAssign<U> for Secret<T> {
     }
 }
 
-// Implement Intops for secret integers
+// Implement inherent methods for secret integers
 macro_rules! impl_int_ops {
     ($t:ty) => {
-        impl IntOps for Secret<$t> {
-            fn wrapping_add<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+        impl Secret<$t> {
+            pub fn wrapping_add<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_add(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_sub<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+            pub fn wrapping_sub<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_sub(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_mul<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+            pub fn wrapping_mul<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_mul(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_neg(self) -> Self {
+            pub fn wrapping_neg(self) -> Self {
                 self.declassify().wrapping_neg().classify()
             }
-            fn rotate_left(self, rhs: u32) -> Self {
+            pub fn rotate_left(self, rhs: u32) -> Self {
                 self.declassify().rotate_left(rhs).classify()
             }
-            fn rotate_right(self, rhs: u32) -> Self {
+            pub fn rotate_right(self, rhs: u32) -> Self {
                 self.declassify().rotate_right(rhs).classify()
             }
         }
@@ -216,20 +216,20 @@ impl_int_ops!(i32);
 impl_int_ops!(i64);
 impl_int_ops!(i128);
 
-// Implement EncodingOps for secret integers
+// Implement encoding inherent methods for secret integers
 macro_rules! impl_encode_ops {
     ($t:ty, $N:literal) => {
-        impl EncodeOps<U8, $N> for Secret<$t> {
-            fn to_le_bytes(&self) -> [U8; $N] {
+        impl Secret<$t> {
+            pub fn to_le_bytes(&self) -> [U8; $N] {
                 self.0.to_le_bytes().classify()
             }
-            fn to_be_bytes(&self) -> [U8; $N] {
+            pub fn to_be_bytes(&self) -> [U8; $N] {
                 self.0.to_be_bytes().classify()
             }
-            fn from_le_bytes(x: [U8; $N]) -> Self {
+            pub fn from_le_bytes(x: [U8; $N]) -> Self {
                 <$t>::from_le_bytes(x.declassify()).classify()
             }
-            fn from_be_bytes(x: [U8; $N]) -> Self {
+            pub fn from_be_bytes(x: [U8; $N]) -> Self {
                 <$t>::from_be_bytes(x.declassify()).classify()
             }
         }
