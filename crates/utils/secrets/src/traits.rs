@@ -51,10 +51,6 @@ impl Scalar for i64 {}
 #[cfg(not(eurydice))]
 impl Scalar for i128 {}
 
-
-
-
-
 // XXX These impls for SIMD registers need to be adapted should we want to support hax
 //  extraction with check-secret-independence enabled at some point.
 
