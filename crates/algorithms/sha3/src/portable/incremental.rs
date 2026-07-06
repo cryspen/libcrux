@@ -32,11 +32,6 @@ mod private {
         #[hax_lib::requires(true)]
         #[hax_lib::ensures(|_| true)]
         fn cshake_inv(&self) -> bool;
-
-        #[cfg(hax)]
-        #[hax_lib::requires(true)]
-        #[hax_lib::ensures(|_| true)]
-        fn cshake_squeeze_inv(&self) -> bool;
     }
 
     #[hax_lib::attributes]
@@ -47,15 +42,6 @@ mod private {
         #[hax_lib::ensures(|_| true)]
         fn cshake_inv(&self) -> bool {
             self.state.state_inv()
-        }
-
-        #[cfg(hax)]
-        #[hax_lib::requires(true)]
-        #[hax_lib::ensures(|_| true)]
-        fn cshake_squeeze_inv(&self) -> bool {
-            // XXX I tried replacing self.state.state_inv() with self.cshake_inv but that leads to
-            // an F* extraction where a typeclass constraint can't be solved
-            self.state.state_inv() && self.state.squeeze_pos <= RATE
         }
     }
 }
@@ -91,8 +77,8 @@ pub trait CShake<const RATE: usize>: private::Sealed + private::CShakeInv {
     fn absorb_final_cshake(&mut self, input: &[u8]);
 
     /// Squeeze output bytes
-    #[hax_lib::requires(self.cshake_squeeze_inv())]
-    #[hax_lib::ensures(|_| future(self).cshake_squeeze_inv())]
+    #[hax_lib::requires(self.cshake_inv())]
+    #[hax_lib::ensures(|_| future(self).cshake_inv())]
     fn squeeze_cshake(&mut self, out: &mut [u8]);
 }
 
@@ -407,8 +393,8 @@ where
         self.state.absorb_final::<0x4u8>(&[input]);
     }
 
-    #[hax_lib::requires(self.cshake_squeeze_inv())]
-    #[hax_lib::ensures(|_| future(self).cshake_squeeze_inv())]
+    #[hax_lib::requires(self.cshake_inv())]
+    #[hax_lib::ensures(|_| future(self).cshake_inv())]
     fn squeeze_cshake(&mut self, out: &mut [u8]) {
         self.state.squeeze(out);
     }
