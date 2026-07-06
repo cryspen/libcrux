@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - [#1456](https://github.com/cryspen/libcrux/pull/1456): Fix out of bounds indexing in avx2 SHAKE-256 implementation
+- [#1389](https://github.com/celabshq/libcrux/pull/1389): Fix partial Block output of incremental XOF API
 
 ### Changed
 
