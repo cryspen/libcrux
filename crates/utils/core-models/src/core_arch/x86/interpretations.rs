@@ -475,9 +475,12 @@ pub mod int_vec {
 
     pub fn _mm256_bsrli_epi128<const IMM8: i32>(a: i128x2) -> i128x2 {
         i128x2::from_fn(|i| {
-            let tmp = IMM8 % 256;
-            let tmp = tmp % 16;
-            ((a[i] as u128) >> (tmp * 8)) as i128
+            let imm8 = IMM8.rem_euclid(256);
+            if imm8 > 15 {
+                0
+            } else {
+                ((a[i] as u128) >> (imm8 * 8)) as i128
+            }
         })
     }
 
