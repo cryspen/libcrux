@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: dirty
+ * Libcrux: b9ffe96702a2c9bbc73a573b3df838d1b2607fd1
  */
 
 #ifndef libcrux_sha3_portable_H
@@ -3391,6 +3391,8 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_55_s {
   Eurydice_arr_88 buf;
   size_t buf_len;
   bool sponge;
+  Eurydice_arr_c5 squeeze_buf;
+  size_t squeeze_pos;
 } libcrux_sha3_generic_keccak_xof_KeccakXofState_55;
 
 typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_55
@@ -3408,6 +3410,8 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_8d_s {
   Eurydice_arr_0b buf;
   size_t buf_len;
   bool sponge;
+  Eurydice_arr_ff squeeze_buf;
+  size_t squeeze_pos;
 } libcrux_sha3_generic_keccak_xof_KeccakXofState_8d;
 
 typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
