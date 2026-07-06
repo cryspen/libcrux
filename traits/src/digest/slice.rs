@@ -11,10 +11,8 @@ pub trait Hash {
 
 /// A trait for incremental hashing, where the output is written to a provided slice.
 pub trait DigestIncremental: super::DigestIncrementalBase {
-    /// Writes the digest into `digest`.
-    ///
-    /// Note that the digest state can be continued to be used, to extend the digest.
-    fn finish(state: &mut Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
+    /// Writes the digest into `digest`, consuming the hasher.
+    fn finish(state: Self::IncrementalState, digest: &mut [u8]) -> Result<usize, FinishError>;
 }
 
 /// Error indicating that finalizing failed.
@@ -104,7 +102,7 @@ macro_rules! impl_digest_incremental_trait {
     ($type:ty => $incremental_state:ty, $len:expr) => {
         impl $crate::digest::slice::DigestIncremental for $type {
             fn finish(
-                state: &mut Self::IncrementalState,
+                state: Self::IncrementalState,
                 digest: &mut [u8],
             ) -> Result<usize, $crate::digest::slice::FinishError> {
                 let digest: &mut [u8; $len] = digest

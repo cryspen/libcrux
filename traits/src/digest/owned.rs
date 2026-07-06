@@ -1,10 +1,9 @@
 //! This module contains the traits and related errors for hashers that take array references as
 //! arguments and return values as arrays.
-//!
-
-use super::arrayref;
 
 pub use arrayref::HashError;
+
+use super::arrayref;
 
 /// A trait for oneshot hashing, where the output is returned as an array.
 pub trait Hash<const OUTPUT_LEN: usize> {
@@ -14,10 +13,8 @@ pub trait Hash<const OUTPUT_LEN: usize> {
 
 /// A trait for incremental hashing, where the output is returned as an array.
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
-    /// Returns the digest as an array.
-    ///
-    /// Note that the digest state can be continued to be used, to extend the digest.
-    fn finish(state: &mut Self::IncrementalState) -> [u8; OUTPUT_LEN];
+    /// Returns the digest as an array, consuming the hasher.
+    fn finish(state: Self::IncrementalState) -> [u8; OUTPUT_LEN];
 }
 
 impl<const OUTPUT_LEN: usize, D: arrayref::Hash<OUTPUT_LEN>> Hash<OUTPUT_LEN> for D {
@@ -29,7 +26,7 @@ impl<const OUTPUT_LEN: usize, D: arrayref::Hash<OUTPUT_LEN>> Hash<OUTPUT_LEN> fo
 impl<const OUTPUT_LEN: usize, D: arrayref::DigestIncremental<OUTPUT_LEN>>
     DigestIncremental<OUTPUT_LEN> for D
 {
-    fn finish(state: &mut Self::IncrementalState) -> [u8; OUTPUT_LEN] {
+    fn finish(state: Self::IncrementalState) -> [u8; OUTPUT_LEN] {
         let mut digest = [0; OUTPUT_LEN];
         Self::finish(state, &mut digest);
         digest
