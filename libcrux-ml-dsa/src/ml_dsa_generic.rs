@@ -379,12 +379,11 @@ let hint_count_bounded
                 "#
             ));
             hax_lib::loop_decreases!(REJECTION_SAMPLE_BOUND_SIGN - attempt);
-            // FOLLOW-UP: discharge the ~15 loop-body callee preconditions and
-            // the per-iteration invariant maintenance (sample_mask_vector's
-            // domain-separator bound, decompose_vector's is_bounded post feeding
-            // make_hint's count chain, etc.).  Admitted for now so the loop
-            // skeleton + post-loop verify.
-            hax_lib::fstar!("admit ()");
+            // The loop-body callee preconditions up to `decompose_vector` are
+            // discharged below (sample_mask_vector, the mask NTT, compute_matrix_x_mask,
+            // decompose_vector).  The remaining ones — from `serialize_vector` onward —
+            // and the per-iteration invariant maintenance are still admitted (see the
+            // `admit ()` before `serialize_vector` below).
             attempt += 1;
 
             let mut mask = [PolynomialRingElement::zero(); COLUMNS_IN_A];
@@ -402,15 +401,83 @@ let hint_count_bounded
             {
                 let mut a_x_mask = [PolynomialRingElement::zero(); ROWS_IN_A];
                 let mut mask_ntt = mask.clone();
+                // NTT the mask.  Loop invariant mirrors `vector_times_ring_element`:
+                // processed prefix is `is_bounded_poly_range 75423744` (ntt's output
+                // bound), the untouched suffix still equals `mask` (which carries the
+                // `is_bounded_poly_slice 8380416` bound sample_mask_vector produced),
+                // giving ntt's `is_bounded_poly 8380416` precond on each element.
+                hax_lib::fstar!(
+                    r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
+                         (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${mask_ntt}"#
+                );
                 for i in 0..mask_ntt.len() {
+                    hax_lib::loop_invariant!(|i: usize| fstar!(
+                        r#"v $i <= Seq.length ${mask_ntt} /\
+                          Seq.length ${mask_ntt} == Seq.length ${mask} /\
+                          Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${mask} /\
+                          Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
+                              (mk_usize 75423744) (mk_usize 0) $i ${mask_ntt} /\
+                          (forall (k: nat). v $i <= k /\ k < Seq.length ${mask_ntt} ==>
+                              Seq.index ${mask_ntt} k == Seq.index ${mask} k)"#
+                    ));
+                    #[cfg(hax)]
+                    let iter_start: &[PolynomialRingElement<SIMDUnit>] =
+                        mask_ntt.to_vec().as_slice();
+                    hax_lib::fstar!(
+                        r#"assert (Seq.index ${mask_ntt} (v $i) == Seq.index ${mask} (v $i));
+                           Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup
+                             (mk_usize 8380416) ${mask} (v $i)"#
+                    );
                     ntt(&mut mask_ntt[i]);
+                    hax_lib::fstar!(
+                        r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
+                             (mk_usize 75423744) $i iter_start ${mask_ntt}"#
+                    );
                 }
+                // compute_matrix_x_mask precond: per-element bounds on matrix (from
+                // the loop invariant's `is_bounded_poly_slice 8380416 matrix`) and
+                // mask_ntt (from the NTT loop's exit range), plus the length link
+                // `Seq.length matrix == ROWS_IN_A * COLUMNS_IN_A` — pin the two param
+                // constants to their literals via normalize_term so the product reduces.
+                hax_lib::fstar!(
+                    r#"
+                    let _:Prims.unit =
+                      let aux (k: nat{k < Seq.length ${matrix}}) :
+                        Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) (Seq.index ${matrix} k)) =
+                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup (mk_usize 8380416) ${matrix} k
+                      in Classical.forall_intro aux
+                    in
+                    let _:Prims.unit =
+                      let aux (k: nat{k < Seq.length ${mask_ntt}}) :
+                        Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 75423744) (Seq.index ${mask_ntt} k)) =
+                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup (mk_usize 75423744) (mk_usize 0)
+                          (Core_models.Slice.impl__len (${mask_ntt} <: t_Slice (Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)))
+                          ${mask_ntt} k
+                      in Classical.forall_intro aux
+                    in
+                    assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}));
+                    assert_norm (v ${COLUMNS_IN_A} == normalize_term (v ${COLUMNS_IN_A}))"#
+                );
                 compute_matrix_x_mask::<SIMDUnit>(
                     ROWS_IN_A,
                     COLUMNS_IN_A,
                     &matrix,
                     &mask_ntt,
                     &mut a_x_mask,
+                );
+                // decompose_vector precond: `is_bounded_poly_slice 8380416 a_x_mask`
+                // (from compute_matrix_x_mask's per-row post) and the gamma2 disjunction
+                // (GAMMA2 is a param-set literal; normalize the whole disjunction).
+                hax_lib::fstar!(
+                    r#"
+                    let _:Prims.unit =
+                      let aux (k: nat{k < Seq.length ${a_x_mask}}) :
+                        Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) (Seq.index ${a_x_mask} k)) = ()
+                      in Classical.forall_intro aux;
+                      Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro (mk_usize 8380416) ${a_x_mask}
+                    in
+                    assert_norm (v ${GAMMA2} == v Libcrux_ml_dsa.Constants.v_GAMMA2_V261_888_ \/
+                                 v ${GAMMA2} == v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_)"#
                 );
                 decompose_vector::<SIMDUnit>(
                     ROWS_IN_A,
@@ -424,6 +491,17 @@ let hint_count_bounded
             let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
             {
                 let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
+                // FOLLOW-UP (chunk 2): the remaining rejection-loop-body callee
+                // preconditions from here on — serialize_vector's commitment bound
+                // (each w1 coeff in [0, pow2(COMMITMENT_RING_ELEMENT_SIZE/32)-1], which
+                // needs decompose_vector's `high` post strengthened to the tight w1
+                // range; the verify path already has the is_pos_array_opaque machinery
+                // via use_hint_serialize_bound), the three vector_infinity_norm_exceeds
+                // calls, add/subtract_vectors, make_hint, and the per-iteration
+                // invariant maintenance — remain admitted.  The body up to this point
+                // (sample_mask_vector, ntt, compute_matrix_x_mask, decompose_vector)
+                // is discharged.
+                hax_lib::fstar!("admit ()");
                 encoding::commitment::serialize_vector::<SIMDUnit>(
                     COMMITMENT_RING_ELEMENT_SIZE,
                     &commitment,

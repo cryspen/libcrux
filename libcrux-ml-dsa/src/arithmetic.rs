@@ -235,6 +235,8 @@ let lemma_is_lane_range_poly_range_extend_after_update
 "#
 )]
 #[hax_lib::ensures(|_| fstar!(r#"
+    Seq.length ${low}_future == Seq.length $low /\
+    Seq.length ${high}_future == Seq.length $high /\
     Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
       (mk_usize 0) (mk_usize 8380416) ${high}_future /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice

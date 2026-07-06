@@ -498,6 +498,7 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
 // holds on every attempt).  Proven: the final `*domain_separator` is `ds0 + dimension`.
 #[hax_lib::ensures(|_| fstar!(r#"
     v ${domain_separator}_future == v $domain_separator + v $dimension /\
+    Seq.length ${mask}_future == Seq.length $mask /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) ${mask}_future"#))]
 pub(crate) fn sample_mask_vector<
     SIMDUnit: Operations,
