@@ -1,15 +1,14 @@
-use crate::impl_hacl::*;
-
-use libcrux_traits::Digest;
-
-use libcrux_traits::digest::{
-    arrayref, slice, DigestIncrementalBase, InitializeDigestState, UpdateError,
+use libcrux_traits::{
+    digest::{arrayref, slice, DigestIncrementalBase, InitializeDigestState, UpdateError},
+    Digest,
 };
+
+use crate::impl_hacl::*;
 
 // Streaming API - This is the recommended one.
 // For implementations based on hacl_rs (over hacl-c)
 macro_rules! impl_hash {
-    ($hasher_name:ident, $name:ident, $state_name:ty, $digest_size:literal) => {
+    ($hasher_name:ident, $name:ident, $state_name:ty, $digest_size:literal, $test_name:ident) => {
         #[derive(Clone, Default)]
 
         #[doc = concat!("A struct that implements [`libcrux_traits::digest`] traits.")]
@@ -69,7 +68,7 @@ macro_rules! impl_hash {
         impl arrayref::DigestIncremental<$digest_size> for $name {
 
             #[inline(always)]
-            fn finish(state: &mut Self::IncrementalState, digest: &mut [u8; $digest_size]) {
+            fn finish(state: Self::IncrementalState, digest: &mut [u8; $digest_size]) {
                 state.finish (digest);
             }
 
@@ -77,11 +76,16 @@ macro_rules! impl_hash {
         slice::impl_hash_trait!($name => $digest_size);
         slice::impl_digest_incremental_trait!($name => $state_name, $digest_size);
 
+
+        #[test]
+        fn $test_name() {
+            libcrux_traits::digest::tests::simple::<$digest_size, $name>();
+        }
     };
 }
 
-impl_hash!(Sha224Hasher, Sha224Hash, Sha224, 28);
-impl_hash!(Sha256Hasher, Sha256Hash, Sha256, 32);
+impl_hash!(Sha224Hasher, Sha224Hash, Sha224, 28, sha224_traits_test);
+impl_hash!(Sha256Hasher, Sha256Hash, Sha256, 32, sha256_traits_test);
 
-impl_hash!(Sha384Hasher, Sha384Hash, Sha384, 48);
-impl_hash!(Sha512Hasher, Sha512Hash, Sha512, 64);
+impl_hash!(Sha384Hasher, Sha384Hash, Sha384, 48, sha384_traits_test);
+impl_hash!(Sha512Hasher, Sha512Hash, Sha512, 64, sha512_traits_test);
