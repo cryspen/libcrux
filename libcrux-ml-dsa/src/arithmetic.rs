@@ -239,8 +239,18 @@ let lemma_is_lane_range_poly_range_extend_after_update
     Seq.length ${high}_future == Seq.length $high /\
     Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
       (mk_usize 0) (mk_usize 8380416) ${high}_future /\
+    Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
+      (mk_usize 0) (use_hint_serialize_bound $gamma2) ${high}_future /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
       (mk_usize 8380416) ${low}_future"#))]
+// `use_hint_serialize_bound` (moved here from `use_hint` so `decompose_vector`
+// can reference it) is the NON-NEGATIVE serialization width of the commitment
+// (= `pow2 BITS_PER_COMMITMENT_COEFFICIENT - 1`): 63 (gamma2 = (q-1)/88, 6-bit)
+// or 15 (gamma2 = (q-1)/32, 4-bit).  The tight `is_lane_range_poly_slice 0
+// (use_hint_serialize_bound gamma2)` post above is what `commitment::
+// serialize_vector` (sign_internal) consumes; the loose `0 8380416` post is
+// kept for `make_hint`'s `high_all_nonneg` guard.
+#[hax_lib::fstar::before(r#"let use_hint_serialize_bound (gamma2:i32) : usize = if v gamma2 = v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_ then mk_usize 63 else mk_usize 15"#)]
 #[hax_lib::fstar::options("--z3rlimit 200 --fuel 1 --ifuel 2")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations>(
@@ -253,6 +263,13 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     // Base case: is_lane_range_poly_range over the empty [0,0) prefix of `high`.
     hax_lib::fstar!(
         r#"lemma_is_lane_range_poly_range_intro (mk_usize 0) (mk_usize 8380416)
+             (mk_usize 0) (mk_usize 0) $high"#
+    );
+    // Same empty-prefix base for the TIGHT [0, use_hint_serialize_bound gamma2]
+    // range on `high` (parallel to the loose 8380416 one; discharges the tight
+    // `is_lane_range_poly_slice` post consumed by serialize_vector).
+    hax_lib::fstar!(
+        r#"lemma_is_lane_range_poly_range_intro (mk_usize 0) (use_hint_serialize_bound $gamma2)
              (mk_usize 0) (mk_usize 0) $high"#
     );
     // Base case (low side): is_bounded_poly_range over the empty [0,0) prefix
@@ -277,6 +294,8 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                Core_models.Slice.impl__len #(Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit) $high == $dimension /\
                is_lane_range_poly_range (mk_usize 0) (mk_usize 8380416)
                  (mk_usize 0) $i $high /\
+               is_lane_range_poly_range (mk_usize 0) (use_hint_serialize_bound $gamma2)
+                 (mk_usize 0) $i $high /\
                Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
                  (mk_usize 8380416) (mk_usize 0) $i $low"#
         ));
@@ -300,6 +319,23 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
               Classical.forall_intro aux
             in
             lemma_is_lane_range_poly_range_intro (mk_usize 0) (mk_usize 8380416)
+              (mk_usize 0) $i old_high"#
+        );
+        // Same carryover for the TIGHT [0, use_hint_serialize_bound gamma2] range
+        // onto old_high (parallel to the loose one above).
+        hax_lib::fstar!(
+            r#"
+            let _:Prims.unit =
+              let aux (k: nat{k < v $i /\ k < Seq.length old_high}) :
+                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly
+                         (mk_usize 0) (use_hint_serialize_bound $gamma2) (Seq.index old_high k)) =
+                assert (Seq.index old_high k == Seq.index $high k);
+                lemma_is_lane_range_poly_range_lookup (mk_usize 0) (use_hint_serialize_bound $gamma2)
+                  (mk_usize 0) $i $high k
+              in
+              Classical.forall_intro aux
+            in
+            lemma_is_lane_range_poly_range_intro (mk_usize 0) (use_hint_serialize_bound $gamma2)
               (mk_usize 0) $i old_high"#
         );
 
@@ -337,13 +373,17 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                    Seq.length old_high == v $dimension /\
                    is_lane_range_poly_range (mk_usize 0) (mk_usize 8380416)
                      (mk_usize 0) $i old_high /\
+                   is_lane_range_poly_range (mk_usize 0) (use_hint_serialize_bound $gamma2)
+                     (mk_usize 0) $i old_high /\
                    (forall (k:nat). k < v $dimension /\ k <> v $i ==>
                        Seq.index $high k == Seq.index old_high k) /\
                    (forall (u:nat) (m:nat). u < v $j /\ m < 8 ==>
                        v (Seq.index (i0._super_i2.f_repr
                             (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) >= 0 /\
                        v (Seq.index (i0._super_i2.f_repr
-                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) < 8380417) /\
+                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) < 8380417 /\
+                       v (Seq.index (i0._super_i2.f_repr
+                            (Seq.index (Seq.index $high (v $i)).f_simd_units u)) m) <= v (use_hint_serialize_bound $gamma2)) /\
                    Seq.length old_low == v $dimension /\
                    Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
                      (mk_usize 8380416) (mk_usize 0) $i old_low /\
@@ -383,6 +423,18 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                    Spec.Utils.is_i32b_array_larger 261888 (v (mk_usize 8380416))
                      (i0._super_i2.f_repr (Seq.index (Seq.index $low (v $i)).f_simd_units (v $j)))"#
             );
+            // Tight w1 bound on the HighBits unit just written: decompose's post
+            // gives high[i][j] < 44 (gamma2=95232) resp. < 16 (gamma2=261888);
+            // the function's gamma2 disjunction (requires) then case-splits
+            // `use_hint_serialize_bound gamma2` (= 63 resp. 15) to `high[i][j] <=
+            // use_hint_serialize_bound gamma2` (43<=63 resp. 15<=15).  Stated
+            // per-lane so the inner-inv tight accumulator extends to unit j.
+            hax_lib::fstar!(
+                r#"assert (forall (m:nat). m < 8 ==>
+                     v (Seq.index (i0._super_i2.f_repr
+                          (Seq.index (Seq.index $high (v $i)).f_simd_units (v $j))) m)
+                       <= v (use_hint_serialize_bound $gamma2))"#
+            );
         }
 
         // After the inner loop the accumulation covers all 32 units of row i =
@@ -393,6 +445,16 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
                  (mk_usize 0) (mk_usize 8380416) (Seq.index $high (v $i));
                lemma_is_lane_range_poly_range_extend_after_update
                  (mk_usize 0) (mk_usize 8380416) $i old_high $high"#
+        );
+        // Same intro + extend for the TIGHT [0, use_hint_serialize_bound gamma2]
+        // range: the inner-inv tight accumulator (all 32 units <= bound) intros
+        // is_lane_range_poly on row i, then the (old_high, high) frame extends
+        // the outer tight range [0,i) -> [0,i+1).
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_intro
+                 (mk_usize 0) (use_hint_serialize_bound $gamma2) (Seq.index $high (v $i));
+               lemma_is_lane_range_poly_range_extend_after_update
+                 (mk_usize 0) (use_hint_serialize_bound $gamma2) $i old_high $high"#
         );
         // Same intro + extend for `low`: at inner-loop exit all 32 units of
         // row i satisfy is_i32b_array_opaque 8380416 = body of is_bounded_poly;
@@ -408,6 +470,13 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations>(
     hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_intro
              (mk_usize 0) (mk_usize 8380416) $high"#
+    );
+    // Same for the TIGHT [0, use_hint_serialize_bound gamma2] range: whole-slice
+    // intro discharges the tight `is_lane_range_poly_slice` post consumed by
+    // `commitment::serialize_vector` in sign_internal.
+    hax_lib::fstar!(
+        r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_intro
+             (mk_usize 0) (use_hint_serialize_bound $gamma2) $high"#
     );
     // Same for `low`: the outer inv's [0,dimension) range = every row -> whole
     // slice; discharges the `is_bounded_poly_slice 8380416 low` post conjunct.
@@ -1164,10 +1233,9 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::before(r#"let use_hint_bound (gamma2:i32) : usize = if v gamma2 = v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_ then mk_usize 44 else mk_usize 16"#)]
-// The non-negative upper bound on the UseHint output that matches the commitment
-// serialization width: `pow2 BITS_PER_COMMITMENT_COEFFICIENT - 1` = 63 (gamma2 = (q-1)/88,
-// 6-bit coefficients) or 15 (gamma2 = (q-1)/32, 4-bit coefficients).
-#[hax_lib::fstar::before(r#"let use_hint_serialize_bound (gamma2:i32) : usize = if v gamma2 = v Libcrux_ml_dsa.Constants.v_GAMMA2_V95_232_ then mk_usize 63 else mk_usize 15"#)]
+// `use_hint_serialize_bound` (the non-negative commitment-serialization width,
+// 63 resp. 15) is now defined as a `fstar::before` on `decompose_vector`
+// (earlier in this file), so it is in scope here without a duplicate `let`.
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::fstar::verification_status(panic_free)]
