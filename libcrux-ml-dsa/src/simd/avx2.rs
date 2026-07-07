@@ -303,9 +303,15 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2S
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+    // Strict gamma2-conditional upper bound on HighBits (tight w1 range < 44/16);
+    // see the trait `decompose` decl for the full justification.
     Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
       v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
-      v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
+      v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417 /\
+      (v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 44) /\
+      (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 16))"#))]
 pub(crate) fn decompose_with_proof(
     gamma2: Gamma2,
     simd_unit: &AVX2SIMDUnit,
@@ -361,7 +367,13 @@ pub(crate) fn decompose_with_proof(
                 // Non-negativity of the high part, unconditional in gamma2 (both
                 // branches of lemma_decompose_bound give 0 <= r1 < 44/16 < q).
                 (v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) >= 0 /\
-                 v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417) ) =
+                 v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417) /\
+                // Strict gamma2-conditional upper bound (tight w1 range < 44/16),
+                // directly from lemma_decompose_bound's `r1 < (q-1)/(2*gamma2)`.
+                (v $gamma2 == 95232 ==>
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 44) /\
+                (v $gamma2 == 261888 ==>
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 16) ) =
             let r = Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k in
             Hacspec_ml_dsa.Commute.Chunk.lemma_decompose_spec_eq_decompose
                 $gamma2 r;
@@ -887,9 +899,16 @@ impl Operations for AVX2SIMDUnit {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+        // Strict gamma2-conditional upper bound on HighBits (tight w1 range < 44/16);
+        // see the trait `decompose` decl for the full justification.  Forwarded from
+        // decompose_with_proof, which proves this conjunct.
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
-          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417 /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 44) /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 16))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
         decompose_with_proof(gamma2, simd_unit, low, high)
     }

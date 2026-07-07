@@ -422,9 +422,15 @@ impl Operations for Coefficients {
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${low}_future) i)
             (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i)) /\
+        // Strict gamma2-conditional upper bound on HighBits (tight w1 range < 44/16);
+        // see the trait `decompose` decl for the full justification.
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) >= 0 /\
-          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417)"#))]
+          v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 8380417 /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 44) /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 16))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
         hax_lib::fstar!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
@@ -461,7 +467,11 @@ impl Operations for Coefficients {
             let pf_nonneg (k: nat{k < 8}) : Lemma
                 (ensures
                     v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) >= 0 /\
-                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417) = ()
+                    v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 8380417 /\
+                    (v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+                        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 44) /\
+                    (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+                        v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) k) < 16)) = ()
             in
             Classical.forall_intro pf_nonneg;
             // Bound conjuncts: per-lane bounds from arithmetic post → array-level

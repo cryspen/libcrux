@@ -182,9 +182,19 @@ pub(crate) trait Operations: Copy + Clone + Repr {
         // `make_hint`'s `high_all_nonneg` guard (and hence the count-correctness
         // post consumed by sign_internal) needs.  Both backends already prove
         // `0 <= r1 < 44/16` internally (lemma_decompose_bound / arithmetic post).
+        // Strict, gamma2-conditional upper bound on HighBits = the TIGHT w1 range
+        // `< (q-1)/(2*gamma2)` (44 resp. 16).  The symmetric `is_i32b_array_opaque
+        // 44/16` conjunct above only exposes |high| <= 44/16 (inclusive); this strict
+        // `< 16` (= `<= 15`) is what `commitment::serialize_vector` needs for the
+        // gamma2=(q-1)/32 (ML-DSA-44) set, where pow2(BITS)-1 = 15 and the inclusive
+        // 16 is one too loose.  Both backends prove `r1 < (q-1)/(2*gamma2)` internally.
         Spec.Utils.forall8 (fun (i: nat{i < 8}) ->
           v (Seq.index (f_repr ${high}_future) i) >= 0 /\
-          v (Seq.index (f_repr ${high}_future) i) < 8380417)"#))]
+          v (Seq.index (f_repr ${high}_future) i) < 8380417 /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V95_232} ==>
+            v (Seq.index (f_repr ${high}_future) i) < 44) /\
+          (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
+            v (Seq.index (f_repr ${high}_future) i) < 16))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self);
 
     #[hax_lib::requires(fstar!(r#"
