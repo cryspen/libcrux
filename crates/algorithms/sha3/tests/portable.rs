@@ -352,10 +352,25 @@ fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake128() {
     assert_eq!(single, multi);
 }
 
+#[test]
+fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake256() {
+    let mut single = [0u8; 350]; // > 2 * RATE so we cross block boundaries
+    shake256(&mut single, test_vectors::HELLO);
+
+    let mut state2 = incremental::Shake256Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 350];
+    for i in 0..350 {
+        state2.squeeze(&mut multi[i..i + 1]);
+    }
+
+    assert_eq!(single, multi);
+}
+
 /// Squeeze that crosses a block boundary inside one call after a previous
 /// partial squeeze: drain leftover, then extract more than one further block.
 #[test]
-fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain() {
+fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake128() {
     let mut single = [0u8; 400];
     shake128(&mut single, test_vectors::HELLO);
 
@@ -372,7 +387,21 @@ fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain() {
 }
 
 #[test]
-fn issue_1362_xof_squeeze_empty_outputs() {
+fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake256() {
+    let mut single = [0u8; 400];
+    shake256(&mut single, test_vectors::HELLO);
+
+    let mut state2 = incremental::Shake256Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 400];
+    state2.squeeze(&mut multi[0..50]);
+    state2.squeeze(&mut multi[50..400]);
+
+    assert_eq!(single, multi);
+}
+
+#[test]
+fn issue_1362_xof_squeeze_empty_outputs_shake128() {
     let mut single = [0u8; 400];
     shake128(&mut single, test_vectors::HELLO);
 
@@ -388,11 +417,43 @@ fn issue_1362_xof_squeeze_empty_outputs() {
 }
 
 #[test]
-fn issue_1362_xof_start_with_empty_squeeze() {
+fn issue_1362_xof_squeeze_empty_outputs_shake256() {
+    let mut single = [0u8; 400];
+    shake256(&mut single, test_vectors::HELLO);
+
+    let mut state2 = incremental::Shake256Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 400];
+    state2.squeeze(&mut multi[0..50]);
+    state2.squeeze(&mut multi[50..50]);
+    state2.squeeze(&mut multi[50..50]);
+    state2.squeeze(&mut multi[50..400]);
+
+    assert_eq!(single, multi);
+}
+
+#[test]
+fn issue_1362_xof_start_with_empty_squeeze_shake128() {
     let mut single = [0u8; 400];
     shake128(&mut single, test_vectors::HELLO);
 
     let mut state2 = incremental::Shake128Xof::new();
+    state2.absorb_final(test_vectors::HELLO);
+    let mut multi = [0u8; 400];
+    state2.squeeze(&mut multi[0..0]);
+    state2.squeeze(&mut multi[0..50]);
+    state2.squeeze(&mut multi[50..50]);
+    state2.squeeze(&mut multi[50..400]);
+
+    assert_eq!(single, multi);
+}
+
+#[test]
+fn issue_1362_xof_start_with_empty_squeeze_shake256() {
+    let mut single = [0u8; 400];
+    shake256(&mut single, test_vectors::HELLO);
+
+    let mut state2 = incremental::Shake256Xof::new();
     state2.absorb_final(test_vectors::HELLO);
     let mut multi = [0u8; 400];
     state2.squeeze(&mut multi[0..0]);
