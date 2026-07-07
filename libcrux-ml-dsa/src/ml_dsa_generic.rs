@@ -491,22 +491,37 @@ let hint_count_bounded
             let mut commitment_hash_candidate = [0; COMMITMENT_HASH_SIZE];
             {
                 let mut commitment_serialized = [0u8; COMMITMENT_VECTOR_SIZE];
-                // FOLLOW-UP (chunk 2): the remaining rejection-loop-body callee
-                // preconditions from here on — serialize_vector's commitment bound
-                // (each w1 coeff in [0, pow2(COMMITMENT_RING_ELEMENT_SIZE/32)-1], which
-                // needs decompose_vector's `high` post strengthened to the tight w1
-                // range; the verify path already has the is_pos_array_opaque machinery
-                // via use_hint_serialize_bound), the three vector_infinity_norm_exceeds
-                // calls, add/subtract_vectors, make_hint, and the per-iteration
-                // invariant maintenance — remain admitted.  The body up to this point
-                // (sample_mask_vector, ntt, compute_matrix_x_mask, decompose_vector)
-                // is discharged.
-                hax_lib::fstar!("admit ()");
+                // decompose_vector (chunk 2 step B) now gives `commitment` (its
+                // HighBits output) the tight non-negative lane range
+                // `is_lane_range_poly_slice 0 (use_hint_serialize_bound GAMMA2)`.
+                // Mirror the verify path (verify_internal serialize_vector block):
+                // pin `use_hint_serialize_bound GAMMA2 == pow2(COMMITMENT_RING_
+                // ELEMENT_SIZE/32) - 1`, convert the lane range to serialize_vector's
+                // per-unit `is_pos_array_opaque` precondition, and pin the length
+                // constants so `Seq.length serialized == COMMITMENT_RING_ELEMENT_SIZE *
+                // Seq.length commitment` reduces to the literal COMMITMENT_VECTOR_SIZE.
+                hax_lib::fstar!(
+                    r#"assert_norm (v (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) == pow2 (v ${COMMITMENT_RING_ELEMENT_SIZE} / 32) - 1)"#
+                );
+                hax_lib::fstar!(
+                    r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_pos_array_slice
+                         (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) ${commitment}"#
+                );
+                hax_lib::fstar!(
+                    r#"assert_norm (v ${COMMITMENT_RING_ELEMENT_SIZE} == normalize_term (v ${COMMITMENT_RING_ELEMENT_SIZE}));
+                       assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}))"#
+                );
                 encoding::commitment::serialize_vector::<SIMDUnit>(
                     COMMITMENT_RING_ELEMENT_SIZE,
                     &commitment,
                     &mut commitment_serialized,
                 );
+                // FOLLOW-UP (chunks 3-9): the remaining rejection-loop-body callee
+                // preconditions from here on — the three vector_infinity_norm_exceeds
+                // calls, add/subtract_vectors, make_hint (FC done 419ab93a0), the
+                // Bundle t_Option invariant, and the per-iteration invariant
+                // maintenance — remain admitted.
+                hax_lib::fstar!("admit ()");
 
                 let mut shake = Shake256Xof::init();
                 shake.absorb(&message_representative);
