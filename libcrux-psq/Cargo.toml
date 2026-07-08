@@ -15,8 +15,8 @@ publish = true
 bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
-libcrux-traits.workspace = true
-libcrux-kem = { workspace = true, features = [
+libcrux-traits = { workspace = true, default-features = true }
+libcrux-kem = { workspace = true, default-features = true, features = [
     "codec",
 ] }
 libcrux-chacha20poly1305.workspace = true

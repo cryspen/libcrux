@@ -13,7 +13,7 @@ repository.workspace = true
 [dependencies]
 libcrux-hacl-rs.workspace = true
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits.workspace = true
+libcrux-traits = { workspace = true, default-features = true }
 libcrux-secrets.workspace = true
 
 [features]
@@ -24,6 +24,6 @@ check-secret-independence = [
 ]
 
 [dev-dependencies]
-libcrux-traits = { workspace = true, features = [
+libcrux-traits = { workspace = true, default-features = true, features = [
     "generic-tests",
 ] }

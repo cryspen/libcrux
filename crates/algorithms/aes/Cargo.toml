@@ -16,7 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 libcrux-intrinsics.workspace = true
 libcrux-platform.workspace = true
-libcrux-traits.workspace = true
+libcrux-traits = { workspace = true, default-features = true }
 libcrux-secrets.workspace = true
 
 [features]

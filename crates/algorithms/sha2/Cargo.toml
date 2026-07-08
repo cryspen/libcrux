@@ -16,9 +16,9 @@ expose-hacl = []
 [dependencies]
 libcrux-hacl-rs.workspace = true
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits.workspace = true
+libcrux-traits = { workspace = true, default-features = true }
 
 [dev-dependencies]
-libcrux-traits = { workspace = true, features = ["generic-tests"] }
+libcrux-traits = { workspace = true, default-features = true, features = ["generic-tests"] }
 libcrux-kats = { workspace = true, features = ["sha2"] }
 hex = "0.4.3"
