@@ -1,0 +1,30 @@
+name: iOS
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup MacOS
+      run: |
+        rustup target install aarch64-apple-darwin
+        rustup target install aarch64-apple-ios
+    - name: Apple Silicon Build
+      run: |
+        cargo build --target aarch64-apple-darwin --tests --verbose
+        cargo build --release --target aarch64-apple-darwin --tests --verbose
+    - name: iOS build
+      run: |
+        cargo build --target aarch64-apple-ios --tests --verbose
+        cargo build --release --target aarch64-apple-ios --tests --verbose

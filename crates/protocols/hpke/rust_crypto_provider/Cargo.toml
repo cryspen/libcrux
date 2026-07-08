@@ -1,0 +1,69 @@
+[package]
+name = "hpke-rs-rust-crypto"
+version = "0.6.1"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs-rust-crypto"
+description = "Crypto backend for HPKE using native Rust crypto."
+readme = "Readme.md"
+repository = "https://github.com/celabshq/hpke-rs"
+
+[dependencies]
+hpke-rs-crypto = { version = "0.6.1", path = "../traits" }
+# Rust crypto
+hkdf = { version = "0.13" }
+sha2 = { version = "0.11", default-features = false }
+p256 = { version = "0.13", features = [
+    "arithmetic",
+    "ecdh",
+], default-features = false }
+k256 = { version = "0.13", features = [
+    "arithmetic",
+    "ecdh",
+], default-features = false }
+p384 = { version = "0.13", default-features = false, features = ["arithmetic"] }
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = [
+    "alloc",
+] }
+aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
+# Post-quantum KEMs
+# XXX: These are broken and pre-releases. Dropping them until they are stable.
+x-wing = { version = "0.1.0-rc.0", default-features = false, optional = true }
+ml-kem = { version = "0.3.0-rc.0", default-features = false, optional = true }
+# Randomness
+rand_core = { version = "0.6", features = ["getrandom"] }
+rand_core_new = { version = "0.10", package = "rand_core", default-features = false }
+rand_old = { version = "0.8", package = "rand", default-features = false }
+rand_chacha = { version = "0.3", default-features = false }
+zeroize = "1.8.2"
+subtle = { version = "2.6.1", default-features = false }
+
+[dev-dependencies]
+criterion = { version = "0.8", features = ["html_reports"] }
+rand = { version = "0.10" }
+
+[features]
+std = ["rand_core/std", "rand_old/std"]
+deterministic-prng = [
+    "hpke-rs-crypto/std",
+    "rand_core/std",
+] # ⚠️ FOR TESTING ONLY.
+experimental = ["dep:x-wing", "dep:ml-kem"]
+
+[[bench]]
+name = "bench_hkdf"
+harness = false
+
+[[bench]]
+name = "bench_p256"
+harness = false
+
+[[bench]]
+name = "bench_k256"
+harness = false
+
+[[bench]]
+name = "bench_x25519"
+harness = false
