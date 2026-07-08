@@ -539,10 +539,10 @@ let hint_count_bounded
             // precond `is_bounded_poly 8380416` directly (same opaque atom, same
             // term); ntt then yields `is_bounded_poly 75423744 verifier_challenge`
             // (available to downstream chunks).
-            // FOLLOW-UP (chunks 6-9): add/subtract_vectors, the three
-            // vector_infinity_norm_exceeds calls, add_vectors(w0,
-            // challenge_times_t0), make_hint (FC done 419ab93a0), the Bundle t_Option
-            // invariant, and the per-iteration invariant maintenance — remain admitted.
+            // FOLLOW-UP (chunks 7-9): the three vector_infinity_norm_exceeds calls,
+            // add_vectors(w0, challenge_times_t0), make_hint (FC done 419ab93a0), the
+            // Bundle t_Option invariant, and the per-iteration invariant maintenance —
+            // remain admitted.
 
             // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
             // another iteration of the loop.
@@ -559,10 +559,20 @@ let hint_count_bounded
             // to challenge_times_s{1,2} by congruence. verifier_challenge carries
             // `is_bounded_poly 75423744` from chunk 4's ntt post. Both vtre calls then
             // yield `is_bounded_poly_slice 8380416 challenge_times_s{1,2}`.
-            hax_lib::fstar!("admit ()");
 
             add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
             subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
+            // Chunk 6: the add_vectors + subtract_vectors calls above are now verified.
+            // Both share the contract `requires is_bounded_poly_slice 8380416 {lhs,rhs}`,
+            // `ensures is_bounded_poly_slice 16760832 lhs_future`. All four operand bounds
+            // are already in scope: `mask` carries `is_bounded_poly_slice 8380416` from
+            // sample_mask_vector (the mask NTT loop mutated the clone `mask_ntt`, not
+            // `mask`); `w0` carries it from decompose_vector's low post; and
+            // challenge_times_s{1,2} carry it from chunk 5's vtre post. Lengths are
+            // COLUMNS_IN_A / ROWS_IN_A respectively. After these, `mask` and `w0` both
+            // carry `is_bounded_poly_slice 16760832` (= 2q), matching the 2q-relaxed
+            // precond of the chunk-7 vector_infinity_norm_exceeds wrappers.
+            hax_lib::fstar!("admit ()");
 
             if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
