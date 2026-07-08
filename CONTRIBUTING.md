@@ -89,7 +89,7 @@ If your pull request includes such a non-default dependency (e.g., a Git or path
 Using a non-[crates.io](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-cratesio) dependency in a PR is acceptable for development. However, **before merging**, the dependency must be updated to point to a released version of `hax`.
 If a new `hax` release is required for your PR to be merged, please [open an issue on the hax repository](https://github.com/cryspen/hax/issues/new?title=Release%20request&body=For%20libcrux%20PR%20%23XX,%20I%20need%20a%20release%20of%20hax.) to request it.
 
-### Policy on AI-Generated Submissions
+### Policy on LLM-Assisted Submissions
 
 We are supportive of responsible AI use in software development.
 AI can be a helpful tool, and we do not object to contributors using it as part of their workflow for writing code, drafting issues, or conducting security research.
