@@ -539,11 +539,10 @@ let hint_count_bounded
             // precond `is_bounded_poly 8380416` directly (same opaque atom, same
             // term); ntt then yields `is_bounded_poly 75423744 verifier_challenge`
             // (available to downstream chunks).
-            // FOLLOW-UP (chunks 5-9): vector_times_ring_element ×2, add/subtract_vectors,
-            // the three vector_infinity_norm_exceeds calls, add_vectors(w0,
+            // FOLLOW-UP (chunks 6-9): add/subtract_vectors, the three
+            // vector_infinity_norm_exceeds calls, add_vectors(w0,
             // challenge_times_t0), make_hint (FC done 419ab93a0), the Bundle t_Option
             // invariant, and the per-iteration invariant maintenance — remain admitted.
-            hax_lib::fstar!("admit ()");
 
             // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
             // another iteration of the loop.
@@ -552,6 +551,15 @@ let hint_count_bounded
 
             vector_times_ring_element::<SIMDUnit>(&mut challenge_times_s1, &verifier_challenge);
             vector_times_ring_element::<SIMDUnit>(&mut challenge_times_s2, &verifier_challenge);
+            // Chunk 5: the two vector_times_ring_element calls above are now verified.
+            // Each requires `is_bounded_poly_slice 75423744 vector` on the (cloned) s1/s2
+            // operand and `is_bounded_poly 75423744 ring_element` on verifier_challenge.
+            // The loop invariant carries `is_bounded_poly_slice 75423744 {s1,s2}_as_ntt`;
+            // the array clone's return type is refined `r == self`, so the bound transfers
+            // to challenge_times_s{1,2} by congruence. verifier_challenge carries
+            // `is_bounded_poly 75423744` from chunk 4's ntt post. Both vtre calls then
+            // yield `is_bounded_poly_slice 8380416 challenge_times_s{1,2}`.
+            hax_lib::fstar!("admit ()");
 
             add_vectors::<SIMDUnit>(COLUMNS_IN_A, &mut mask, &challenge_times_s1);
             subtract_vectors::<SIMDUnit>(ROWS_IN_A, &mut w0, &challenge_times_s2);
