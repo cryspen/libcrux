@@ -1,6 +1,10 @@
-name: test coverage
+name: HPKE - test coverage
 
 on: [push]
+
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
 
 jobs:
   check:

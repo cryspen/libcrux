@@ -1,4 +1,4 @@
-name: Build & Test
+name: HPKE - Build & Test
 
 on:
   push:
@@ -12,6 +12,10 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
 
 jobs:
   build:
@@ -44,7 +48,7 @@ jobs:
       run: cargo test --verbose -F "std,serialization,hazmat,rustcrypto,libcrux"
       # RC Provider
     - name: Build Debug RC provider all features
-      working-directory: rust_crypto_provider
+      working-directory: ./crates/protocols/hpke/rust_crypto_provider
       run: cargo build --verbose -F "std"
     # Apple Silicon
     - if: matrix.os == 'macos-15-intel'
@@ -129,4 +133,4 @@ jobs:
           targets: thumbv7em-none-eabihf
       - name: build crates in no-std mode
         run: cargo check --target thumbv7em-none-eabihf
-        working-directory: no-std-support-check
+        working-directory: ./crates/protocols/hpke/no-std-support-check

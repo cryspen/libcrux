@@ -1,4 +1,4 @@
-name: Benchmarks
+name: HPKE - Benchmarks
 
 on:
   push:
@@ -9,6 +9,10 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
 
 jobs:
   build:
@@ -28,5 +32,5 @@ jobs:
     - name: HPKE Benchmarks
       run: cargo bench manual_benches
     - name: HPKE Rust Crypto Benchmarks
-      working-directory: rust_crypto_provider
+      working-directory: ./crates/protocols/hpke/rust_crypto_provider
       run: cargo bench

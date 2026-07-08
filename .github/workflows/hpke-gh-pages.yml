@@ -1,9 +1,13 @@
-name: Deploy Docs
+name: HPKE - Deploy Docs
 
 on:
   push:
     branches:
       - main
+
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
 
 jobs:
   rustdoc:
