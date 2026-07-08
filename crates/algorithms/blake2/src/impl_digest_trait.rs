@@ -1,9 +1,8 @@
-use crate::impl_hacl::*;
 use libcrux_traits::digest::{
     arrayref, slice, DigestIncrementalBase, Hasher, InitializeDigestState, UpdateError,
 };
 
-use crate::impl_hacl::SupportsOutLen;
+use crate::impl_hacl::{SupportsOutLen, *};
 
 macro_rules! impl_digest_traits {
     ($out_size:ident, $type:ty, $blake2:ty, $hasher:ty, $set:ty, $builder:ty) => {
@@ -37,7 +36,7 @@ macro_rules! impl_digest_traits {
                         UpdateError::Unknown => arrayref::HashError::Unknown,
                     },
                 )?;
-                <Self as arrayref::DigestIncremental<$out_size>>::finish(&mut digest_state, digest);
+                <Self as arrayref::DigestIncremental<$out_size>>::finish(digest_state, digest);
 
                 Ok(())
             }
@@ -87,7 +86,7 @@ macro_rules! impl_digest_traits {
             $set: SupportsOutLen<$out_size>,
         {
             fn finish(
-                state: &mut Self::IncrementalState,
+                state: Self::IncrementalState,
                 digest: &mut [u8],
             ) -> Result<usize, slice::FinishError> {
                 let digest: &mut [u8; $out_size] = digest
@@ -105,7 +104,7 @@ macro_rules! impl_digest_traits {
             // implement for supported digest lengths only
             $set: SupportsOutLen<$out_size>,
         {
-            fn finish(state: &mut Self::IncrementalState, dst: &mut [u8; $out_size]) {
+            fn finish(state: Self::IncrementalState, dst: &mut [u8; $out_size]) {
                 state.finalize(dst)
             }
         }

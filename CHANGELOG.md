@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- (libcrux-sha3) [#1493](https://github.com/cryspen/libcrux/pull/1493): Provide instantiable `libcrux-traits` incremental hashing API
 - (libcrux-secrets) [#1460](https://github.com/cryspen/libcrux/issues/1460): Fix incorrect cmp in aarch64 select/swap implementation
 - (libcrux-sha3) [#1456](https://github.com/cryspen/libcrux/pull/1456): Fix out of bounds indexing in avx2 SHAKE-256 implementation
 - (libcrux-sha3) [#1389](https://github.com/celabshq/libcrux/pull/1389): Fix partial Block output of incremental XOF API
 
 ### Changed
 
+- (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2) [#1493](https://github.com/cryspen/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 - (libcrux-secrets) [#1446](https://github.com/cryspen/libcrux/pull/1446): Remove const qualifier of secret types constructors
 - (libcrux-secrets) [#1462](https://github.com/cryspen/libcrux/pull/1462): More robust casts instead of transmutes when checking secret independence
 - (libcrux-sha3) [1454](https://github.com/cryspen/libcrux/pull/1454): `debug_assert` that generic `LEN` matches algorithm in `hash` function

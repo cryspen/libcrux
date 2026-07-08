@@ -1,6 +1,5 @@
 //! This module contains the traits and related errors for hashers that take array references as
 //! arguments and write the outputs to mutable array references.
-//!
 
 #[derive(Debug, PartialEq)]
 /// Error indicating that hashing failed.
@@ -30,10 +29,8 @@ mod error_in_core {
 
 /// A trait for incremental hashing, where the output is written into a provided buffer.
 pub trait DigestIncremental<const OUTPUT_LEN: usize>: super::DigestIncrementalBase {
-    /// Writes the digest into `digest`.
-    ///
-    /// Note that the digest state can be continued to be used, to extend the digest.
-    fn finish(state: &mut Self::IncrementalState, digest: &mut [u8; OUTPUT_LEN]);
+    /// Writes the digest into `digest`, consuming the hasher.
+    fn finish(state: Self::IncrementalState, digest: &mut [u8; OUTPUT_LEN]);
 }
 
 /// A trait for oneshot hashing, where the output is written into a provided buffer.
