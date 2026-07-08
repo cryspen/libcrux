@@ -526,14 +526,6 @@ let hint_count_bounded
             // (chunk 3): Shake256Xof::{init,absorb,absorb_final,squeeze} all carry
             // `requires(true)`, mirroring verify_internal's proven shake block and
             // sign_internal's own mask_seed shake block (both above this point).
-            // FOLLOW-UP (chunks 4-9): the remaining rejection-loop-body callee
-            // preconditions from here on — sample_challenge_ring_element + ntt,
-            // vector_times_ring_element, add/subtract_vectors, the three
-            // vector_infinity_norm_exceeds calls, add_vectors(w0, challenge_times_t0),
-            // make_hint (FC done 419ab93a0), the Bundle t_Option invariant, and the
-            // per-iteration invariant maintenance — remain admitted.
-            hax_lib::fstar!("admit ()");
-
             let mut verifier_challenge = PolynomialRingElement::zero();
             sample_challenge_ring_element::<SIMDUnit, Shake256>(
                 &commitment_hash_candidate,
@@ -541,6 +533,17 @@ let hint_count_bounded
                 &mut verifier_challenge,
             );
             ntt(&mut verifier_challenge);
+            // The sample_challenge_ring_element + ntt calls above are now verified
+            // (chunk 4): sample_challenge carries `requires(true)` and ensures
+            // `is_bounded_poly 8380416 verifier_challenge`, which discharges ntt's
+            // precond `is_bounded_poly 8380416` directly (same opaque atom, same
+            // term); ntt then yields `is_bounded_poly 75423744 verifier_challenge`
+            // (available to downstream chunks).
+            // FOLLOW-UP (chunks 5-9): vector_times_ring_element ×2, add/subtract_vectors,
+            // the three vector_infinity_norm_exceeds calls, add_vectors(w0,
+            // challenge_times_t0), make_hint (FC done 419ab93a0), the Bundle t_Option
+            // invariant, and the per-iteration invariant maintenance — remain admitted.
+            hax_lib::fstar!("admit ()");
 
             // We need to clone here in case we need s1_as_ntt or s2_as_ntt again in
             // another iteration of the loop.
