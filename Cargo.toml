@@ -217,7 +217,7 @@ getrandom = { version = "0.4", optional = true }
 hax-lib.workspace = true
 
 # External Cryspen code.
-hpke-rs = { version = "0.6", features = ["libcrux"] }
+hpke-rs = { workspace = true, features = ["libcrux"] }
 
 # Primitives
 libcrux-aead.workspace = true
