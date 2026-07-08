@@ -262,9 +262,7 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
                 KdfAlgorithm::HkdfSha512
             }
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
-                KdfAlgorithm::HkdfSha256
-            }
+            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => KdfAlgorithm::HkdfSha256,
         }
     }
 }
