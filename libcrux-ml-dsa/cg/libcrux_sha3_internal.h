@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: 60f03ba9c773b802938be7ee922635a1714afcfc
+ * Libcrux: 143703c95bd07c8bcb35425a04231d9c432dae62
  */
 
 #ifndef libcrux_sha3_internal_H
@@ -40,6 +40,8 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_8d_s {
   Eurydice_arr_0b buf;
   size_t buf_len;
   bool sponge;
+  Eurydice_arr_ff squeeze_buf;
+  size_t squeeze_pos;
 } libcrux_sha3_generic_keccak_xof_KeccakXofState_8d;
 
 typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
@@ -2380,16 +2382,16 @@ with const generics
 */
 static inline libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
 libcrux_sha3_generic_keccak_xof_new_35_e9(void) {
-  libcrux_sha3_generic_keccak_xof_KeccakXofState_8d lit;
-  lit.inner = libcrux_sha3_generic_keccak_new_80_71();
+  Eurydice_arr_7c uu____0 = libcrux_sha3_generic_keccak_new_80_71();
+  Eurydice_arr_0b uu____1;
   Eurydice_arr_ff repeat_expression[1U];
   for (size_t i = (size_t)0U; i < (size_t)1U; i++) {
     repeat_expression[i] = libcrux_sha3_generic_keccak_xof_zero_block_35_e9();
   }
-  memcpy(lit.buf.data, repeat_expression, (size_t)1U * sizeof(Eurydice_arr_ff));
-  lit.buf_len = (size_t)0U;
-  lit.sponge = false;
-  return lit;
+  memcpy(uu____1.data, repeat_expression, (size_t)1U * sizeof(Eurydice_arr_ff));
+  return (libcrux_sha3_generic_keccak_xof_KeccakXofState_8d{
+      uu____0, uu____1, (size_t)0U, false,
+      libcrux_sha3_generic_keccak_xof_zero_block_35_e9(), (size_t)136U});
 }
 
 /**
@@ -2420,32 +2422,69 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_76(
     Eurydice_mut_borrow_slice_u8 out) {
   size_t out_len = out.meta;
   if (!(out_len == (size_t)0U)) {
-    if (self->sponge) {
-      libcrux_sha3_generic_keccak_keccakf1600_80_71(&self->inner);
-    }
-    if (out_len > (size_t)0U) {
-      size_t blocks = out_len / (size_t)136U;
-      size_t last = out_len - out_len % (size_t)136U;
-      if (blocks == (size_t)0U) {
-        libcrux_sha3_simd_portable_squeeze_9b_b2(&self->inner, out, (size_t)0U,
-                                                 out_len);
+    size_t out_offset = (size_t)0U;
+    if (self->squeeze_pos < (size_t)136U) {
+      size_t avail = (size_t)136U - self->squeeze_pos;
+      size_t take;
+      if (avail < out_len) {
+        take = avail;
       } else {
-        libcrux_sha3_simd_portable_squeeze_9b_b2(&self->inner, out, (size_t)0U,
+        take = out_len;
+      }
+      Eurydice_slice_copy(
+          Eurydice_slice_subslice_to_mut_72(out, take),
+          Eurydice_array_to_subslice_shared_d4(
+              &self->squeeze_buf,
+              (core_ops_range_Range_87{self->squeeze_pos,
+                                       self->squeeze_pos + take})),
+          uint8_t);
+      self->squeeze_pos += take;
+      out_offset = take;
+    }
+    if (!(out_offset == out_len)) {
+      if (self->sponge) {
+        libcrux_sha3_generic_keccak_keccakf1600_80_71(&self->inner);
+      }
+      self->sponge = true;
+      size_t remaining = out_len - out_offset;
+      size_t blocks = remaining / (size_t)136U;
+      size_t last_full = out_offset + blocks * (size_t)136U;
+      if (blocks == (size_t)0U) {
+        libcrux_sha3_simd_portable_squeeze_9b_b2(
+            &self->inner, Eurydice_array_to_slice_mut_58(&self->squeeze_buf),
+            (size_t)0U, (size_t)136U);
+        Eurydice_mut_borrow_slice_u8 uu____0 = Eurydice_slice_subslice_mut_c8(
+            out, (core_ops_range_Range_87{out_offset, out_len}));
+        Eurydice_slice_copy(uu____0,
+                            Eurydice_array_to_subslice_to_shared_210(
+                                &self->squeeze_buf, remaining),
+                            uint8_t);
+        self->squeeze_pos = remaining;
+      } else {
+        libcrux_sha3_simd_portable_squeeze_9b_b2(&self->inner, out, out_offset,
                                                  (size_t)136U);
         for (size_t i = (size_t)1U; i < blocks; i++) {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_71(&self->inner);
           libcrux_sha3_simd_portable_squeeze_9b_b2(
-              &self->inner, out, i0 * (size_t)136U, (size_t)136U);
+              &self->inner, out, out_offset + i0 * (size_t)136U, (size_t)136U);
         }
-        if (last < out_len) {
+        size_t trailing = out_len - last_full;
+        if (trailing > (size_t)0U) {
           libcrux_sha3_generic_keccak_keccakf1600_80_71(&self->inner);
-          libcrux_sha3_simd_portable_squeeze_9b_b2(&self->inner, out, last,
-                                                   out_len - last);
+          libcrux_sha3_simd_portable_squeeze_9b_b2(
+              &self->inner, Eurydice_array_to_slice_mut_58(&self->squeeze_buf),
+              (size_t)0U, (size_t)136U);
+          Eurydice_mut_borrow_slice_u8 uu____1 = Eurydice_slice_subslice_mut_c8(
+              out, (core_ops_range_Range_87{last_full, out_len}));
+          Eurydice_slice_copy(uu____1,
+                              Eurydice_array_to_subslice_to_shared_210(
+                                  &self->squeeze_buf, trailing),
+                              uint8_t);
+          self->squeeze_pos = trailing;
         }
       }
     }
-    self->sponge = true;
   }
 }
 

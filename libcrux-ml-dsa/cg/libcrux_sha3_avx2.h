@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: 60f03ba9c773b802938be7ee922635a1714afcfc
+ * Libcrux: 143703c95bd07c8bcb35425a04231d9c432dae62
  */
 
 #ifndef libcrux_sha3_avx2_H
@@ -2372,7 +2372,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
                   out0, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)0U, (size_t)8U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2380,7 +2380,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
                   out1, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)8U, (size_t)16U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2388,7 +2388,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
                   out2, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)16U, (size_t)24U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2396,7 +2396,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
                   out3, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)24U, (size_t)32U})),
               uint8_t);
         }
@@ -2413,14 +2413,14 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
               Eurydice_slice_subslice_mut_c8(
                   out0,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)0U, rem8})),
               uint8_t);
           Eurydice_slice_copy(
               Eurydice_slice_subslice_mut_c8(
                   out1,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)8U, (size_t)8U + rem8})),
               uint8_t);
@@ -2428,7 +2428,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
               Eurydice_slice_subslice_mut_c8(
                   out2,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)16U, (size_t)16U + rem8})),
               uint8_t);
@@ -2436,7 +2436,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_b2(
               Eurydice_slice_subslice_mut_c8(
                   out3,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)24U, (size_t)24U + rem8})),
               uint8_t);
@@ -2701,7 +2701,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
                   out0, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)0U, (size_t)8U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2709,7 +2709,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
                   out1, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)8U, (size_t)16U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2717,7 +2717,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
                   out2, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)16U, (size_t)24U})),
               uint8_t);
           Eurydice_slice_copy(
@@ -2725,7 +2725,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
                   out3, (core_ops_range_Range_87{
                             offset + (size_t)8U * k,
                             offset + (size_t)8U * (k + (size_t)1U)})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)24U, (size_t)32U})),
               uint8_t);
         }
@@ -2742,14 +2742,14 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
               Eurydice_slice_subslice_mut_c8(
                   out0,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s, (core_ops_range_Range_87{(size_t)0U, rem8})),
               uint8_t);
           Eurydice_slice_copy(
               Eurydice_slice_subslice_mut_c8(
                   out1,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)8U, (size_t)8U + rem8})),
               uint8_t);
@@ -2757,7 +2757,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
               Eurydice_slice_subslice_mut_c8(
                   out2,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)16U, (size_t)16U + rem8})),
               uint8_t);
@@ -2765,7 +2765,7 @@ static KRML_MUSTINLINE void libcrux_sha3_simd_avx2_store_block_60(
               Eurydice_slice_subslice_mut_c8(
                   out3,
                   (core_ops_range_Range_87{offset_rem8, offset_rem8 + rem8})),
-              Eurydice_array_to_subslice_shared_d4(
+              Eurydice_array_to_subslice_shared_d40(
                   &u8s,
                   (core_ops_range_Range_87{(size_t)24U, (size_t)24U + rem8})),
               uint8_t);

@@ -29,8 +29,9 @@ function extract_all() {
         -i "-**::neon::**" \
         -i "-**::simd128::**" \
         -i "-**::simd256::**" \
-        fstar --z3rlimit 80 \
-        --interfaces "+** -**::generic_keccak::constants::** -**::proof_utils::** -libcrux_sha3::portable::**"
+        fstar --z3rlimit 80 #\
+        # XXX Extraction with interfaces currently doesn't work due to state_inv refactoring
+        # --interfaces "+** -**::generic_keccak::constants::** -libcrux_sha3::proof_utils::** -libcrux_sha3::portable::**"
 }
 
 function prove() {

@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: 60f03ba9c773b802938be7ee922635a1714afcfc
+ * Libcrux: 143703c95bd07c8bcb35425a04231d9c432dae62
  */
 
 #ifndef libcrux_mldsa_avx2_H
@@ -1068,7 +1068,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
       upper_4);
   Eurydice_slice_copy(
       out,
-      Eurydice_array_to_subslice_shared_d4(
+      Eurydice_array_to_subslice_shared_d40(
           &serialized, (core_ops_range_Range_87{(size_t)0U, (size_t)20U})),
       uint8_t);
 }
@@ -1123,7 +1123,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
       upper_4);
   Eurydice_slice_copy(
       out,
-      Eurydice_array_to_subslice_shared_d4(
+      Eurydice_array_to_subslice_shared_d40(
           &serialized, (core_ops_range_Range_87{(size_t)0U, (size_t)18U})),
       uint8_t);
 }
@@ -5186,7 +5186,7 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_18(
       libcrux_ml_dsa_hash_functions_simd256_squeeze_first_block_8c(&state);
   Eurydice_array_u8x8 arr;
   memcpy(arr.data,
-         Eurydice_array_to_subslice_shared_d40(
+         Eurydice_array_to_subslice_shared_d4(
              &randomness0, (core_ops_range_Range_87{(size_t)0U, (size_t)8U}))
              .ptr,
          (size_t)8U * sizeof(uint8_t));
