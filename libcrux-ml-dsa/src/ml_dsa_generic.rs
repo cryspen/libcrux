@@ -516,19 +516,23 @@ let hint_count_bounded
                     &commitment,
                     &mut commitment_serialized,
                 );
-                // FOLLOW-UP (chunks 3-9): the remaining rejection-loop-body callee
-                // preconditions from here on — the three vector_infinity_norm_exceeds
-                // calls, add/subtract_vectors, make_hint (FC done 419ab93a0), the
-                // Bundle t_Option invariant, and the per-iteration invariant
-                // maintenance — remain admitted.
-                hax_lib::fstar!("admit ()");
-
                 let mut shake = Shake256Xof::init();
                 shake.absorb(&message_representative);
                 shake.absorb_final(&commitment_serialized);
 
                 shake.squeeze(&mut commitment_hash_candidate);
             }
+            // The shake absorb/absorb_final/squeeze XOF ops above are now verified
+            // (chunk 3): Shake256Xof::{init,absorb,absorb_final,squeeze} all carry
+            // `requires(true)`, mirroring verify_internal's proven shake block and
+            // sign_internal's own mask_seed shake block (both above this point).
+            // FOLLOW-UP (chunks 4-9): the remaining rejection-loop-body callee
+            // preconditions from here on — sample_challenge_ring_element + ntt,
+            // vector_times_ring_element, add/subtract_vectors, the three
+            // vector_infinity_norm_exceeds calls, add_vectors(w0, challenge_times_t0),
+            // make_hint (FC done 419ab93a0), the Bundle t_Option invariant, and the
+            // per-iteration invariant maintenance — remain admitted.
+            hax_lib::fstar!("admit ()");
 
             let mut verifier_challenge = PolynomialRingElement::zero();
             sample_challenge_ring_element::<SIMDUnit, Shake256>(
