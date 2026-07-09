@@ -7,7 +7,7 @@ license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-rust-crypto"
 description = "Crypto backend for HPKE using native Rust crypto."
 readme = "Readme.md"
-repository = "https://github.com/celabshq/hpke-rs"
+repository = "https://github.com/celabshq/libcrux"
 
 [dependencies]
 hpke-rs-crypto.workspace = true

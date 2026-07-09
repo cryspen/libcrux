@@ -11,5 +11,5 @@ hpke-rs is still pre-release and does not support any specific versions yet.
 
 ## Reporting a Vulnerability
 
-Use the private [Github vulnerability reporting](https://github.com/celabshq/hpke-rs/security)
+Use the private [Github vulnerability reporting](https://github.com/celabshq/libcrux/security)
 or send an email to [security-reports@celabs.eu](mailto:security-reports@celabs.eu)
