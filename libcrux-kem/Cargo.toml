@@ -22,7 +22,7 @@ libcrux-sha3.workspace = true
 libcrux-ecdh.workspace = true
 libcrux-curve25519.workspace = true
 libcrux-p256.workspace = true
-libcrux-traits = { workspace = true, default-features = true }
+libcrux-traits.workspace = true
 
 rand = { version = "0.10", default-features = false }
 tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
@@ -40,6 +40,6 @@ libcrux-kem = { path = "./", features = ["tests"] }
 rand = { version = "0.10", features = ["sys_rng"] }
 rand_core = { version = "0.10" }
 hex = { version = "0.4.3", features = ["serde"] }
-libcrux-traits = { workspace = true, default-features = true, features = [
+libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ] }

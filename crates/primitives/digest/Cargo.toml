@@ -14,7 +14,7 @@ repository.workspace = true
 libcrux-blake2 = { workspace = true, optional = true }
 libcrux-sha2 = { workspace = true, optional = true }
 libcrux-sha3 = { workspace = true, optional = true }
-libcrux-traits = { workspace = true, default-features = true, optional = true }
+libcrux-traits = { workspace = true, optional = true }
 
 [features]
 blake2 = ["dep:libcrux-blake2", "dep:libcrux-traits"]

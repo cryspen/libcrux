@@ -16,7 +16,7 @@ libcrux-poly1305 = { version = "=0.0.6", path = "../poly1305/", features = [
 ] }
 libcrux-hacl-rs.workspace = true
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits = { workspace = true, default-features = true }
+libcrux-traits.workspace = true
 libcrux-secrets.workspace = true
 
 [dev-dependencies]
