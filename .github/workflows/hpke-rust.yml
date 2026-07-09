@@ -1,0 +1,141 @@
+name: HPKE - Build & Test
+
+on:
+  pull_request:
+    # Run only when something changes in hpke-rs, or its direct workspace dependencies
+    paths:
+      - 'crates/protocols/hpke/**'
+      - 'crates/algorithms/sha3/**/*.rs'
+      - 'libcrux-ecdh/**/*.rs'
+      - 'crates/algorithms/hkdf/**/*.rs'
+      - 'crates/primitives/aead/**/*.rs'
+      - 'libcrux-kem/**/*.rs'
+      - 'traits/**/*.rs'
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15-intel
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
+    - name: Run tests all features
+      run: cargo test --verbose --no-default-features -F "std,serialization,hazmat,rustcrypto,libcrux,experimental"
+      # Release
+    - name: Build Release
+      run: cargo build --release --verbose
+    - name: Run tests all features
+      run: cargo test --release --verbose -F "std,serialization,hazmat,rustcrypto,libcrux"
+      # Debug
+    - name: Build Debug
+      run: cargo build --verbose
+    - name: Run tests all features
+      run: cargo test --verbose -F "std,serialization,hazmat,rustcrypto,libcrux"
+      # RC Provider
+    - name: Build Debug RC provider all features
+      working-directory: ./crates/protocols/hpke/rust_crypto_provider
+      run: cargo build --verbose -F "std"
+    # Apple Silicon
+    - if: matrix.os == 'macos-15-intel'
+      run: |
+        rustup target install aarch64-apple-darwin
+        rustup target install aarch64-apple-ios
+    - name: Build
+      run: cargo build --verbose
+    - name: Apple Silicon Build
+      if: matrix.os == 'macos-15-intel'
+      run: |
+        cargo build --target aarch64-apple-darwin --tests --verbose
+        cargo build --release --target aarch64-apple-darwin --tests --verbose
+    # ARM64 iOS
+    - name: iOS aarch64
+      if: matrix.os == 'macos-15-intel'
+      run: |
+        cargo build --target aarch64-apple-ios --tests --verbose
+        cargo build --release --target aarch64-apple-ios --tests --verbose
+  cross-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # 32-bit Linux
+          - target: i686-unknown-linux-gnu
+            rust: stable
+            deps: sudo apt update && sudo apt install gcc-multilib
+          # wasm
+          - target: wasm32-unknown-unknown
+            rust: stable
+          # ARM64 Android
+          - target: aarch64-linux-android
+            rust: stable
+          # ARM64 iOS
+          - target: aarch64-apple-ios
+            rust: stable
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+      - run: ${{ matrix.deps }}
+      - run: cargo build --target ${{ matrix.target }}
+      - run: cargo build --target ${{ matrix.target }} --release
+
+  fuzz:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15-intel
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      - name: Install latest nightly
+        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        with:
+          toolchain: nightly
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+      - name: Fuzz Base w/ RustCrypto
+        run: cargo fuzz run base -- -runs=10000
+
+  no-std-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      # we use a target that lacks a pre-compiled libstd to check if any dependency is using libstd
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        with:
+          toolchain: stable
+          targets: thumbv7em-none-eabihf
+      - name: build crates in no-std mode
+        run: cargo check --target thumbv7em-none-eabihf
+        working-directory: ./crates/protocols/hpke/no-std-support-check

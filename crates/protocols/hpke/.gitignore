@@ -1,0 +1,10 @@
+/target
+Cargo.lock
+**/*.rs.bk
+.vscode/
+libcrux_provider/target
+no-std-support-check/target
+rust_crypto_provider/target
+traits/target/
+.DS_Store
+/.idea

@@ -1,0 +1,32 @@
+name: HPKE - Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
+
+jobs:
+  rustdoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hecrj/setup-rust-action@master
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Build docs
+        run: |
+          cargo doc -F "std,serialization,hazmat,rustcrypto,libcrux" --no-deps
+          touch ../../../target/doc/hpke_rs/.nojekyll
+          cat > ../../../target/doc/hpke_rs/index.html <<EOF
+          <!doctype html>
+          <html><head>
+            <meta http-equiv="refresh" content="0; URL='hpke_rs/index.html'" />
+          </head></html>
+          EOF
+      - name: Deploy to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ../../../target/doc/hpke_rs

@@ -1,0 +1,64 @@
+[package]
+name = "hpke-rs"
+version = "0.6.1"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs"
+description = "HPKE Implementation"
+readme = "Readme.md"
+repository = "https://github.com/celabshq/libcrux"
+exclude = ["/tests"]
+
+[dependencies]
+log = "0.4"
+serde = { version = "1.0", features = ["derive"], optional = true }
+tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
+subtle = { version = "2.6", default-features = false }
+zeroize = { version = "1.5", features = ["zeroize_derive"] }
+hpke-rs-crypto.workspace = true
+libcrux-sha3.workspace = true
+hpke-rs-rust-crypto = { workspace = true, optional = true }
+hpke-rs-libcrux = { workspace = true, optional = true }
+
+[features]
+default = []
+std = [
+    "hpke-rs-crypto/std",
+    "hpke-rs-rust-crypto?/std",
+    "hpke-rs-libcrux?/std",
+]
+serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
+hazmat = []
+rustcrypto = ["dep:hpke-rs-rust-crypto"]
+libcrux = ["dep:hpke-rs-libcrux"]
+libcrux-rustcrypto-p-curves = ["hpke-rs-libcrux?/rustcrypto-p-curves"]
+experimental = ["hpke-rs-rust-crypto?/experimental"]
+draft-connolly-cfrg-hpke-mlkem = ["hpke-rs-libcrux?/draft-connolly-cfrg-hpke-mlkem"]
+
+hpke-test = ["std"]
+hpke-test-prng = [
+    "hpke-rs-rust-crypto?/deterministic-prng",
+    "hpke-rs-libcrux?/deterministic-prng",
+] # ⚠️ Enable testing PRNG - DO NOT USE
+
+[dev-dependencies]
+hpke-rs-crypto = { version = "0.6.1", path = "./traits", features = ["std"] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+lazy_static = "1.4"
+rayon = "1.5"
+hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
+hpke-rs-rust-crypto = { version = "0.6.1", path = "./rust_crypto_provider" }
+hpke-rs-libcrux = { version = "0.6.1", path = "./libcrux_provider" }
+rand = { version = "0.10" }
+pretty_env_logger = "0.5"
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "bench"
+harness = false
+
+[[bench]]
+name = "manual_benches"
+harness = false

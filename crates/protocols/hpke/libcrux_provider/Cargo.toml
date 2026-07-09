@@ -1,0 +1,61 @@
+[package]
+name = "hpke-rs-libcrux"
+version = "0.6.1"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs-libcrux"
+description = "Crypto backend for HPKE using formally verified code from libcrux."
+readme = "Readme.md"
+repository = "https://github.com/celabshq/libcrux"
+
+[dependencies]
+hpke-rs-crypto.workspace = true
+libcrux-ecdh.workspace = true
+libcrux-hkdf.workspace = true
+libcrux-kem.workspace = true
+libcrux-aead.workspace = true
+libcrux-traits.workspace = true
+# RustCrypto curves not available in libcrux
+# TODO: These should be replaced with libcrux implementations as soon as they
+# are available.
+p384 = { version = "0.14.0-rc.8", features = [
+    "arithmetic",
+    "ecdh",
+], default-features = false, optional = true }
+p521 = { version = "0.14.0-rc.8", features = [
+    "arithmetic",
+    "ecdh",
+], default-features = false, optional = true }
+# Randomness
+rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
+rand_core = { version = "0.10" }
+rand_chacha = { version = "0.10", default-features = false }
+zeroize = "1.8.2"
+
+[dev-dependencies]
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[features]
+deterministic-prng = [] # ⚠️ FOR TESTING ONLY.
+rustcrypto-p-curves = ["dep:p384", "dep:p521"]
+draft-connolly-cfrg-hpke-mlkem = []
+std = [
+    "rand/std",
+    "rand_chacha/std",
+    "libcrux-ecdh/std",
+    "libcrux-kem/std",
+    "hpke-rs-crypto/std",
+]
+
+[[bench]]
+name = "bench_hkdf"
+harness = false
+
+[[bench]]
+name = "bench_p256"
+harness = false
+
+[[bench]]
+name = "bench_x25519"
+harness = false
