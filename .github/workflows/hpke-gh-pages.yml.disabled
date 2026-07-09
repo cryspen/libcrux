@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: hecrj/setup-rust-action@master
-      - uses: actions/checkout@master
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Build docs
         run: |
           cargo doc -F "std,serialization,hazmat,rustcrypto,libcrux" --no-deps
