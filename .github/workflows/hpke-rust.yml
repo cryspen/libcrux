@@ -1,11 +1,16 @@
 name: HPKE - Build & Test
 
 on:
-  push:
-    branches:
-      - '*'
   pull_request:
-    branches: [ main ]
+    # Run only when something changes in hpke-rs, or its direct workspace dependencies
+    paths:
+      - 'crates/protocols/hpke/**'
+      - 'crates/algorithms/sha3/**/*.rs'
+      - 'libcrux-ecdh/**/*.rs'
+      - 'crates/algorithms/hkdf/**/*.rs'
+      - 'crates/primitives/aead/**/*.rs'
+      - 'libcrux-kem/**/*.rs'
+      - 'traits/**/*.rs'
 
 permissions:
   contents: read
