@@ -157,8 +157,6 @@ pub trait Select {
 mod portable {
     use super::{Select, Swap};
     use crate::Declassify;
-    #[cfg(feature = "check-secret-independence")]
-    use crate::IntOps;
     use crate::{CastOps, U16, U32, U64, U8};
     use core::hint::black_box;
 

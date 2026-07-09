@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#1491](https://github.com/cryspen/libcrux/issues/1491): Replace `IntOps` and `EncodeOps` traits with inherent methods on `Secret`
 - [#1446](https://github.com/cryspen/libcrux/pull/1446): Remove const qualifier of secret types constructors
 - [#1462](https://github.com/cryspen/libcrux/pull/1462): More robust casts instead of transmutes when checking secret independence
 - [#1484](https://github.com/cryspen/libcrux/pull/1484): seal scalar trait and synchronize De-/Classify trait impls for public/secret types
