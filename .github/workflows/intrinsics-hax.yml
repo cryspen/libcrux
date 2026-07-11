@@ -13,6 +13,7 @@ on:
   merge_group:
     paths:
       - "crates/utils/intrinsics/**"
+      - "crates/utils/core-models/**"
       - "fstar-helpers/fstar-bitvec/Bitvec.U64Rotate.fst"
       - "fstar-helpers/fstar-bitvec/Bitvec.VxarqProof.fst"
       - "fstar-helpers/fstar-bitvec/Bitvec.Sha3FallbackProof.fst"
@@ -21,6 +22,7 @@ on:
     branches: ["dev", "main"]
     paths:
       - "crates/utils/intrinsics/**"
+      - "crates/utils/core-models/**"
       - "fstar-helpers/fstar-bitvec/Bitvec.U64Rotate.fst"
       - "fstar-helpers/fstar-bitvec/Bitvec.VxarqProof.fst"
       - "fstar-helpers/fstar-bitvec/Bitvec.Sha3FallbackProof.fst"
@@ -82,9 +84,26 @@ jobs:
         working-directory: crates/utils/intrinsics/proofs/fstar
         run: make verify -j "$(nproc)"
 
+  # Trust-base coverage gate: re-runs the intrinsics audit, asserts the T1
+  # surface + D6.1/D6.2 coverage counts have not drifted/regressed, and runs the
+  # core-models differential test suite. This runner is x86_64, so plain
+  # `cargo test -p core-models` exercises the AVX2 `mk!` differential tests
+  # natively (they are gated on `target_arch = "x86_64"`); the NEON `mk!` suite
+  # is `target_arch = "aarch64"`-gated and instead proved in F* by
+  # `verify-fallbacks` above. No hax/F* toolchain needed here.
+  trust-base-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: 🔎 Intrinsics trust-base parity + coverage gate
+        run: ./crates/utils/core-models/scripts/check-intrinsics-parity.sh
+
   intrinsics-hax-status:
     if: ${{ always() }}
-    needs: [get-hax-ref, verify-fallbacks]
+    needs: [get-hax-ref, verify-fallbacks, trust-base-parity]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

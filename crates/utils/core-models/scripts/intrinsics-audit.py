@@ -733,6 +733,25 @@ def write_md(
     )
     out.append("")
 
+    out.append("## Trusted auxiliary F\\* axioms (outside T1)")
+    out.append("")
+    out.append(
+        "Beyond the per-wrapper trust ladder, the hand-written F\\* helper "
+        "libraries under `fstar-helpers/fstar-bitvec/` carry one auxiliary "
+        "`assume`d axiom. It is listed here so the trust surface is complete "
+        "(this axiom is *not* a T1 wrapper and so has no CSV row):"
+    )
+    out.append("")
+    out.append(
+        "- **`Bitvec.U64Rotate.lemma_u64_rotate_left_decomp`** — the bit-vector "
+        "identity `rotate_left x sh == (x <<! sh) ^. (x >>! (64 - sh))` for "
+        "`0 < sh < 64`. Used (via `SMTPat`) by the NEON SHA-3 fallback proofs "
+        "`_vxarq_u64` / `_vrax1q_u64`. Standard and auditable on one page "
+        "(Hacker's Delight §2-15 / SMT-LIB rotate semantics); currently an "
+        "`assume`, dischargeable from `FStar.UInt`/`FStar.BV` (follow-up "
+        "`bug1-vxarq`, sketched in `Bitvec.U64Rotate.fst`)."
+    )
+    out.append("")
     out.append("## Notes / caveats")
     out.append("")
     out.append(
@@ -810,8 +829,8 @@ def main() -> int:
     p.add_argument(
         "--print-summary",
         action="store_true",
-        help="Also print a one-line D6.* summary to stdout (always emitted as "
-        "the last line regardless of this flag).",
+        help="Deprecated no-op: the one-line D6.* summary is always printed as "
+        "the last stdout line. Accepted for backward compatibility.",
     )
     args = p.parse_args()
 
@@ -832,11 +851,8 @@ def main() -> int:
     write_csv(t1, args.csv)
     write_md(t1, t2_map, t3, args.md)
 
-    summary = emit_summary_line(t1)
-    if args.print_summary:
-        print(summary)
-    else:
-        print(summary)
+    # The one-line D6.* summary is always emitted as the last stdout line.
+    print(emit_summary_line(t1))
     return 0
 
 

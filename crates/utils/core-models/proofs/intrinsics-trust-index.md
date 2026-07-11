@@ -11,7 +11,7 @@ See `crates/utils/core-models/INTRINSICS-TRUST-PLAN.md` for the trust-ladder def
 |---|---:|---:|---:|---:|
 | **D6.1** Rust-model coverage | 92.8% (180/194) | 87.0% (87/100) | 98.9% (93/94) | 100% |
 | **D6.2** Test coverage | 92.8% (180/194) | 87.0% (87/100) | 98.9% (93/94) | 100% |
-| **D6.3** F\* spec coverage | 86.6% (168/194) | 81.0% (81/100) | 92.6% (87/94) | 100% |
+| **D6.3** F\* spec coverage | 87.1% (169/194) | 81.0% (81/100) | 93.6% (88/94) | 100% |
 | **D6.4** Audit consistency | 61.9% (120/194) | — | — | 100% |
 | **D6.5** F\* spec proven | 0.0% (0/194) | — | — | 0% (deferred) |
 
@@ -51,6 +51,12 @@ Companion CSV: `intrinsics-trust-index.csv` — one row per T1 wrapper.
 
 Columns:
 `name`, `arch`, `in_T1`, `underlying`, `has_body`, `has_mk_test`, `has_extract_ensures`, `has_extract_opaque`, `has_specintrinsics_lemma`, `audit_consistent`, `fstar_proven`, `trust_level`.
+
+## Trusted auxiliary F\* axioms (outside T1)
+
+Beyond the per-wrapper trust ladder, the hand-written F\* helper libraries under `fstar-helpers/fstar-bitvec/` carry one auxiliary `assume`d axiom. It is listed here so the trust surface is complete (this axiom is *not* a T1 wrapper and so has no CSV row):
+
+- **`Bitvec.U64Rotate.lemma_u64_rotate_left_decomp`** — the bit-vector identity `rotate_left x sh == (x <<! sh) ^. (x >>! (64 - sh))` for `0 < sh < 64`. Used (via `SMTPat`) by the NEON SHA-3 fallback proofs `_vxarq_u64` / `_vrax1q_u64`. Standard and auditable on one page (Hacker's Delight §2-15 / SMT-LIB rotate semantics); currently an `assume`, dischargeable from `FStar.UInt`/`FStar.BV` (follow-up `bug1-vxarq`, sketched in `Bitvec.U64Rotate.fst`).
 
 ## Notes / caveats
 

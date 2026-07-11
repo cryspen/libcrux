@@ -15,10 +15,23 @@ REPO = Path(__file__).resolve().parents[4]
 
 CSV_PATH = REPO / "crates/utils/core-models/proofs/intrinsics-trust-index.csv"
 
+# Consumer crates whose Rust sources are scanned for call sites of each
+# spec-free T1 intrinsic wrapper. Keyed by a short display label; the value is
+# the crate `src/` root (relative to the repo root, `REPO`).
+#
+# To register a new consumer crate (e.g. a future algorithm that calls the
+# intrinsics), add one entry here pointing at its `src/` directory. Roots that
+# do not exist on disk are skipped silently (see `classify_wrapper`), so an
+# entry for an optional/not-yet-present crate is harmless.
+#
+# NB: the SHA-3 sources moved from the legacy `libcrux-sha3/src` to
+# `crates/algorithms/sha3/src`; the AES/KMAC algorithm crates live alongside it.
 SEARCH_ROOTS = {
     "ml-kem":  REPO / "libcrux-ml-kem/src",
     "ml-dsa":  REPO / "libcrux-ml-dsa/src",
-    "sha-3":   REPO / "libcrux-sha3/src",
+    "sha-3":   REPO / "crates/algorithms/sha3/src",
+    "aes":     REPO / "crates/algorithms/aes/src",
+    "kmac":    REPO / "crates/algorithms/kmac/src",
 }
 
 # Annotations that describe the proof status of a Rust function.

@@ -30,8 +30,8 @@ AUDIT="crates/utils/core-models/scripts/intrinsics-audit.py"
 
 # Coverage thresholds (counts, not percentages — exact integer comparison).
 # Update in lockstep with the CSV when new wrappers gain body+test.
-EXPECT_T1=193
-EXPECT_T1_AVX2=99
+EXPECT_T1=194
+EXPECT_T1_AVX2=100
 EXPECT_T1_ARM64=94
 THRESHOLD_D61=180
 THRESHOLD_D62=180
