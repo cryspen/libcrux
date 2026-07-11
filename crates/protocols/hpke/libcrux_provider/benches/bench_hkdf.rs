@@ -14,7 +14,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 (salt.clone(), ikm.clone())
             },
             |(salt, ikm)| {
-                let _ = HpkeLibcrux::kdf_extract(KdfAlgorithm::HkdfSha256, &salt, &ikm);
+                let _ = HpkeLibcrux::kdf_extract(TwoStageKdfAlgorithm::HkdfSha256, &salt, &ikm);
             },
             BatchSize::SmallInput,
         )
@@ -29,7 +29,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 (prk.clone(), info.clone())
             },
             |(prk, info)| {
-                let _ = HpkeLibcrux::kdf_expand(KdfAlgorithm::HkdfSha256, &prk, &info, 32);
+                let _ = HpkeLibcrux::kdf_expand(TwoStageKdfAlgorithm::HkdfSha256, &prk, &info, 32);
             },
             BatchSize::SmallInput,
         )

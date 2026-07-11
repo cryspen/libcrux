@@ -2,7 +2,11 @@
 
 use alloc::{string::ToString, vec::Vec};
 
-use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto};
+use hpke_rs_crypto::{
+    error::Error,
+    types::{KdfAlgorithm, KemAlgorithm, TwoStageKdfAlgorithm},
+    HpkeCrypto,
+};
 
 use crate::util::*;
 use crate::{
@@ -10,15 +14,23 @@ use crate::{
     kem::*,
 };
 
+/// The two-stage KDF for a DH-based KEM. DH KEMs always pair with an HKDF KDF,
+/// so the conversion is infallible in practice.
+#[inline]
+fn dh_kdf(alg: KemAlgorithm) -> Result<TwoStageKdfAlgorithm, Error> {
+    TwoStageKdfAlgorithm::try_from(KdfAlgorithm::from(alg))
+}
+
 fn extract_and_expand<Crypto: HpkeCrypto>(
     alg: KemAlgorithm,
     pk: PublicKey,
     kem_context: &[u8],
     suite_id: &[u8],
 ) -> Result<Vec<u8>, Error> {
-    let prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "eae_prk", &pk)?;
+    let kdf = dh_kdf(alg)?;
+    let prk = labeled_extract::<Crypto>(kdf, &[], suite_id, "eae_prk", &pk)?;
     labeled_expand::<Crypto>(
-        alg.into(),
+        kdf,
         &prk,
         suite_id,
         "shared_secret",
@@ -55,11 +67,12 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
     suite_id: &[u8],
     ikm: &[u8],
 ) -> Result<(PublicKey, PrivateKey), Error> {
-    let dkp_prk = labeled_extract::<Crypto>(alg.into(), &[], suite_id, "dkp_prk", ikm)?;
+    let kdf = dh_kdf(alg)?;
+    let dkp_prk = labeled_extract::<Crypto>(kdf, &[], suite_id, "dkp_prk", ikm)?;
 
     let sk = match alg {
         KemAlgorithm::DhKem25519 => PrivateKey(labeled_expand::<Crypto>(
-            alg.into(),
+            kdf,
             &dkp_prk,
             suite_id,
             "sk",
@@ -81,7 +94,7 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
             // the loop will always terminate.
             loop {
                 let candidate = labeled_expand::<Crypto>(
-                    alg.into(),
+                    kdf,
                     &dkp_prk,
                     suite_id,
                     "candidate",

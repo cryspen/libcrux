@@ -47,18 +47,34 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
             types::KdfAlgorithm::HkdfSha256 => 32,
             types::KdfAlgorithm::HkdfSha384 => 48,
             types::KdfAlgorithm::HkdfSha512 => 64,
+            // `Nh` for the SHAKE KDFs per draft-ietf-hpke-pq Table 1.
+            types::KdfAlgorithm::Shake128 => 32,
+            types::KdfAlgorithm::Shake256 => 64,
+            types::KdfAlgorithm::TurboShake128 => 32,
+            types::KdfAlgorithm::TurboShake256 => 64,
         }
     }
 
-    /// KDF Extract
-    fn kdf_extract(alg: types::KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error>;
+    /// KDF Extract (two-stage KDFs only).
+    fn kdf_extract(
+        alg: types::TwoStageKdfAlgorithm,
+        salt: &[u8],
+        ikm: &[u8],
+    ) -> Result<Vec<u8>, Error>;
 
-    /// KDF Expand
+    /// KDF Expand (two-stage KDFs only).
     fn kdf_expand(
-        alg: types::KdfAlgorithm,
+        alg: types::TwoStageKdfAlgorithm,
         prk: &[u8],
         info: &[u8],
         output_size: usize,
+    ) -> Result<Vec<u8>, Error>;
+
+    /// KDF Derive (single-stage KDFs only): derive `l` bytes from `ikm`.
+    fn kdf_derive(
+        alg: types::SingleStageKdfAlgorithm,
+        ikm: &[u8],
+        l: usize,
     ) -> Result<Vec<u8>, Error>;
 
     /// Diffie-Hellman

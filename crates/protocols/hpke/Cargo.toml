@@ -21,6 +21,12 @@ libcrux-sha3.workspace = true
 hpke-rs-rust-crypto = { workspace = true, optional = true }
 hpke-rs-libcrux = { workspace = true, optional = true }
 
+# `--all-features` does not build: `draft-connolly-cfrg-hpke-mlkem` and
+# `draft-ietf-hpke-pq` are mutually exclusive. Pin a working set for docs.rs.
+[package.metadata.docs.rs]
+no-default-features = true
+features = ["std", "serialization", "hazmat", "rustcrypto", "libcrux", "draft-ietf-hpke-pq"]
+
 [features]
 default = []
 std = [
@@ -35,6 +41,10 @@ libcrux = ["dep:hpke-rs-libcrux"]
 libcrux-rustcrypto-p-curves = ["hpke-rs-libcrux?/rustcrypto-p-curves"]
 experimental = ["hpke-rs-rust-crypto?/experimental"]
 draft-connolly-cfrg-hpke-mlkem = ["hpke-rs-libcrux?/draft-connolly-cfrg-hpke-mlkem"]
+draft-ietf-hpke-pq = [
+    "libcrux",
+    "hpke-rs-libcrux/draft-ietf-hpke-pq"
+]
 
 hpke-test = ["std"]
 hpke-test-prng = [
@@ -58,6 +68,12 @@ criterion = { version = "0.8", features = ["html_reports"] }
 [[bench]]
 name = "bench"
 harness = false
+required-features = ["libcrux", "rustcrypto"]
+
+[[bench]]
+name = "bench_pq"
+harness = false
+required-features = ["draft-ietf-hpke-pq", "libcrux"]
 
 [[bench]]
 name = "manual_benches"
