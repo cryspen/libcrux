@@ -49,6 +49,37 @@ pub mod test {
             FunArray::from_fn(|_| T::random())
         }
     }
+
+    /// Boundary / extreme scalar values for corner-case tests.
+    ///
+    /// Random fuzzing (`HasRandom`) samples the whole range uniformly and so
+    /// almost never hits type extremes, the sign boundary, or small
+    /// magnitudes — exactly where saturation / overflow / wraparound bugs
+    /// live (e.g. `vqdmulhq_s16(i16::MIN, i16::MIN)`). These lists make those
+    /// inputs explicit so every arithmetic model is exercised at its corners.
+    pub trait HasCorners: Sized + Copy + 'static {
+        fn corners() -> &'static [Self];
+    }
+    macro_rules! mk_has_corners_signed {
+        ($($ty:ty),*) => {
+            $(impl HasCorners for $ty {
+                fn corners() -> &'static [Self] {
+                    &[<$ty>::MIN, <$ty>::MIN + 1, -2, -1, 0, 1, 2, <$ty>::MAX - 1, <$ty>::MAX]
+                }
+            })*
+        };
+    }
+    macro_rules! mk_has_corners_unsigned {
+        ($($ty:ty),*) => {
+            $(impl HasCorners for $ty {
+                fn corners() -> &'static [Self] {
+                    &[0, 1, 2, <$ty>::MAX / 2, <$ty>::MAX / 2 + 1, <$ty>::MAX - 1, <$ty>::MAX]
+                }
+            })*
+        };
+    }
+    mk_has_corners_signed!(i8, i16, i32, i64, i128);
+    mk_has_corners_unsigned!(u8, u16, u32, u64, u128);
 }
 
 #[cfg(test)]
