@@ -11,13 +11,26 @@ let logand_lemma_forall #t:
               logand a a == a) =
   FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
 
+(* NOTE: the upstream hax `Rust_primitives.Integers.logand_mask_lemma` states
+   `pow2 m < maxint t` as a CONCLUSION, which is FALSE at m = bits t - 1 for signed
+   t (e.g. i32: pow2 31 = 2^31 > maxint = 2^31 - 1). Here we move it into the
+   ANTECEDENT, where it is a sound guard AND supplies the range witness that types
+   `mk_int (pow2 m)`; and we discharge from the library lemma instead of `admit ()`.
+   Verified in the ml-dsa F* build (xval-mldsa, check/Spec.Intrinsics.fsti green).
+   (The upstream axiom's own bad conjunct is a separate, out-of-scope issue; this
+   wrapper has no consumers.) *)
 let logand_mask_lemma_forall #t:
-  Lemma (forall a m.
-              m < bits t ==>
-              (pow2 m < maxint t /\
+  Lemma (forall (a: int_t t) (m: nat).
+              (m < bits t /\ pow2 m < maxint t) ==>
                logand a (sub #t (mk_int #t (pow2 m)) (mk_int #t 1)) ==
-               mk_int (v a % pow2 m))) =
-  admit()
+               mk_int (v a % pow2 m)) =
+  let aux (a: int_t t) (m: nat)
+    : Lemma ((m < bits t /\ pow2 m < maxint t) ==>
+               logand a (sub #t (mk_int #t (pow2 m)) (mk_int #t 1)) ==
+               mk_int (v a % pow2 m)) =
+    if m < bits t then logand_mask_lemma a m
+  in
+  FStar.Classical.forall_intro_2 aux
 
 let logxor_lemma_forall #t:
   Lemma (forall a. 
@@ -198,7 +211,9 @@ val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0}) vector i
           == (
                let lane = v i / 128 in
                let local_index = v i % 128 in
-               let shift = v shift * 8 in
+               (* reduce the byte count mod 256 to match core-models `_mm256_bsrli_epi128`
+                  (rem_euclid); identity for the in-range [0,15] byte shifts actually used. *)
+               let shift = (v shift % 256) * 8 in
                let j = local_index + shift in
                if j < 0 || j >= 128 then Bit_Zero else vector.(mk_int (lane * 128 + j))
              )
@@ -230,7 +245,7 @@ val mm256_srlv_epi32_bv_lemma
         let nth_chunk:u64 = i /! v_CHUNK in
         let shift = if nth_chunk <. v_SHIFTS then v (to_i32x8 shifts nth_chunk) else 0 in
         let local_index = v nth_bit + shift in
-        if local_index < v v_CHUNK && local_index >= 0
+        if shift >= 0 && local_index < v v_CHUNK && local_index >= 0
         then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
         else Bit_Zero)
       )
@@ -247,7 +262,7 @@ val mm_sllv_epi32_bv_lemma vector shifts i
         let nth_chunk:u64 = i /! v_CHUNK in
         let shift = if nth_chunk <. v_SHIFTS then v (to_i32x4 shifts nth_chunk) else 0 in
         let local_index = v nth_bit - shift in
-        if local_index < v v_CHUNK && local_index >= 0
+        if shift >= 0 && local_index < v v_CHUNK && local_index >= 0
         then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
         else Bit_Zero)
       )
@@ -267,7 +282,7 @@ val mm256_sllv_epi32_bv_lemma
         let nth_chunk:u64 = i /! v_CHUNK in
         let shift = if nth_chunk <. v_SHIFTS then v (to_i32x8 shifts nth_chunk) else 0 in
         let local_index = v nth_bit - shift in
-        if local_index < v v_CHUNK && local_index >= 0
+        if shift >= 0 && local_index < v v_CHUNK && local_index >= 0
         then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
         else Bit_Zero)
       )
@@ -287,7 +302,7 @@ val mm256_srlv_epi64_bv_lemma
         let nth_chunk:u64 = i /! v_CHUNK in
         let shift = if nth_chunk <. v_SHIFTS then v (to_i64x4 shifts nth_chunk) else 0 in
         let local_index = v nth_bit + shift in
-        if local_index < v v_CHUNK && local_index >= 0
+        if shift >= 0 && local_index < v v_CHUNK && local_index >= 0
         then vector.( (nth_chunk *! v_CHUNK) +! mk_int local_index )
         else Bit_Zero)
       )
@@ -567,9 +582,12 @@ val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
 val mm256_slli_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
   Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
          (
-         if v_IMM8 <. mk_i32 0 || v_IMM8 >. mk_i32 31
+         (* rem_euclid (low 8 bits), matching sibling mm256_srai_epi32_lemma and
+            core-models `_mm256_slli_epi32` — not a raw signed range check. *)
+         let imm8:i32 = Core_models.Num.impl_i32__rem_euclid v_IMM8 (mk_i32 256) in
+         if imm8 >. mk_i32 31
          then mk_i32 0
-         else shift_left_opaque (to_i32x8 a i) v_IMM8
+         else shift_left_opaque (to_i32x8 a i) imm8
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i)]
 
