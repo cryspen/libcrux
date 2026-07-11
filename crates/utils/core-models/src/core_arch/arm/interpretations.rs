@@ -103,10 +103,16 @@ pub mod int_vec {
     /// `result[i] = saturate_to_i16( (2 * a[i] * b[i]) >> 16 )`.
     /// Saturation only fires for the (i16::MIN, i16::MIN) corner case (which
     /// would yield a value >= 2^15 = i16 overflow).
+    ///
+    /// We compute `(a*b) >> 15`, which equals `(2*a*b) >> 16` exactly, instead
+    /// of doubling first: `2 * a * b` overflows `i32` at `(i16::MIN, i16::MIN)`
+    /// (`2^31 > i32::MAX`), whereas `a * b` always fits (`|a*b| <= 2^30`). This
+    /// matches the overflow-safe formulation of the F* axiom in
+    /// `arm64_extract.rs::_vqdmulhq_s16`.
     pub fn vqdmulhq_s16(a: i16x8, b: i16x8) -> i16x8 {
         i16x8::from_fn(|i| {
-            let prod: i32 = 2 * (a[i] as i32) * (b[i] as i32);
-            let hi: i32 = prod >> 16;
+            let prod: i32 = (a[i] as i32) * (b[i] as i32);
+            let hi: i32 = prod >> 15;
             if hi > i16::MAX as i32 {
                 i16::MAX
             } else if hi < i16::MIN as i32 {
@@ -123,10 +129,14 @@ pub mod int_vec {
     }
 
     /// Saturating doubling multiply by scalar, i32 lanes (4-wide).
+    ///
+    /// As with `vqdmulhq_s16`, we use `(a*b) >> 31 == (2*a*b) >> 32` to avoid
+    /// the `i64` overflow of `2 * a * b` at `(i32::MIN, i32::MIN)` (`2^63 >
+    /// i64::MAX`); `a * b` fits since `|a*b| <= 2^62`.
     pub fn vqdmulhq_n_s32(a: i32x4, b: i32) -> i32x4 {
         i32x4::from_fn(|i| {
-            let prod: i64 = 2 * (a[i] as i64) * (b as i64);
-            let hi: i64 = prod >> 32;
+            let prod: i64 = (a[i] as i64) * (b as i64);
+            let hi: i64 = prod >> 31;
             if hi > i32::MAX as i64 {
                 i32::MAX
             } else if hi < i32::MIN as i64 {
@@ -844,7 +854,7 @@ pub mod int_vec {
         use super::*;
         use crate::abstractions::bitvec::BitVec;
         use crate::core_arch::arm::upstream;
-        use crate::helpers::test::HasRandom;
+        use crate::helpers::test::{HasCorners, HasRandom};
 
         /// Same `mk!` shape as the x86 tests. Works for intrinsics whose
         /// return type has `From<...> for BitVec<N>` AND its inverse.
@@ -928,6 +938,40 @@ pub mod int_vec {
         mk!(vqdmulhq_s16(a: BitVec, b: BitVec));
         mk!(vqdmulhq_n_s16(a: BitVec, b: i16));
         mk!(vqdmulhq_n_s32(a: BitVec, b: i32));
+
+        /// Corner-case *differential* check against real NEON silicon.
+        ///
+        /// The `mk!` tests above use random inputs, which essentially never
+        /// hit `(i16::MIN, i16::MIN)` — the exact input where `vqdmulhq_s16`'s
+        /// `2*a*b` used to overflow `i32`. Here we drive the model AND the
+        /// hardware intrinsic with splat vectors of every `HasCorners` value
+        /// and require bit-exact agreement, so the overflow-safe `(a*b)>>15`
+        /// fix is validated against the chip, not just against our oracle.
+        #[test]
+        fn vqdmulh_corners_vs_hardware() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av = BitVec::<128>::from_slice(&[a; 8], 16);
+                    let bv = BitVec::<128>::from_slice(&[b; 8], 16);
+                    // vqdmulhq_s16
+                    let m = BitVec::from(super::vqdmulhq_s16(av.into(), bv.into()));
+                    let h = BitVec::from(unsafe { upstream::vqdmulhq_s16(av.into(), bv.into()) });
+                    assert_eq!(m, h, "vqdmulhq_s16 a={a} b={b}");
+                    // vqdmulhq_n_s16 (scalar b)
+                    let m = BitVec::from(super::vqdmulhq_n_s16(av.into(), b));
+                    let h = BitVec::from(unsafe { upstream::vqdmulhq_n_s16(av.into(), b) });
+                    assert_eq!(m, h, "vqdmulhq_n_s16 a={a} b={b}");
+                }
+            }
+            for &a in i32::corners() {
+                for &b in i32::corners() {
+                    let av = BitVec::<128>::from_slice(&[a; 4], 32);
+                    let m = BitVec::from(super::vqdmulhq_n_s32(av.into(), b));
+                    let h = BitVec::from(unsafe { upstream::vqdmulhq_n_s32(av.into(), b) });
+                    assert_eq!(m, h, "vqdmulhq_n_s32 a={a} b={b}");
+                }
+            }
+        }
 
         // Bitwise.
         mk!(vandq_s16(a: BitVec, b: BitVec));
@@ -1200,6 +1244,191 @@ pub mod int_vec {
                     upstream::vst1q_u8(out.as_mut_ptr(), loaded);
                 }
                 assert_eq!(arr, out);
+            }
+        }
+    }
+
+    /// Host-independent corner-case tests for the NEON int-vec models.
+    ///
+    /// Unlike the `tests` module above, these are NOT gated on
+    /// `target_arch = "aarch64"`: the models are pure Rust, so they run on
+    /// **every** CI target (arm and intel). Each model is compared against a
+    /// wide-precision *oracle* that recomputes the intrinsic's spec in a type
+    /// that cannot overflow, evaluated on the extreme lane values from
+    /// `HasCorners` (MIN / MAX / -1 / 0 / small). This pins the exact
+    /// saturating/wrapping result and, because `cargo test` builds in debug,
+    /// also fails on any intermediate `i32`/`i64` overflow — the class of bug
+    /// that `vqdmulhq_s16(i16::MIN, i16::MIN)` used to hide behind random
+    /// fuzzing.
+    #[cfg(test)]
+    mod corner_tests {
+        use super::*;
+        use crate::abstractions::funarr::FunArray;
+        use crate::helpers::test::HasCorners;
+
+        // ---- oracles (wide precision, cannot overflow) ------------------
+
+        fn oracle_vqdmulh_s16(a: i16, b: i16) -> i16 {
+            let hi = (2i64 * a as i64 * b as i64) >> 16;
+            hi.clamp(i16::MIN as i64, i16::MAX as i64) as i16
+        }
+        fn oracle_vqdmulh_s32(a: i32, b: i32) -> i32 {
+            let hi = (2i128 * a as i128 * b as i128) >> 32;
+            hi.clamp(i32::MIN as i128, i32::MAX as i128) as i32
+        }
+
+        // ---- saturating doubling multiplies (the flagged bug class) -----
+
+        #[test]
+        fn vqdmulhq_s16_corners() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av: i16x8 = FunArray::from_fn(|_| a);
+                    let bv: i16x8 = FunArray::from_fn(|_| b);
+                    let want: i16x8 = FunArray::from_fn(|_| oracle_vqdmulh_s16(a, b));
+                    assert_eq!(vqdmulhq_s16(av, bv), want, "a={a} b={b}");
+                }
+            }
+        }
+
+        #[test]
+        fn vqdmulhq_n_s16_corners() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av: i16x8 = FunArray::from_fn(|_| a);
+                    let want: i16x8 = FunArray::from_fn(|_| oracle_vqdmulh_s16(a, b));
+                    assert_eq!(vqdmulhq_n_s16(av, b), want, "a={a} b={b}");
+                }
+            }
+        }
+
+        #[test]
+        fn vqdmulhq_n_s32_corners() {
+            for &a in i32::corners() {
+                for &b in i32::corners() {
+                    let av: i32x4 = FunArray::from_fn(|_| a);
+                    let want: i32x4 = FunArray::from_fn(|_| oracle_vqdmulh_s32(a, b));
+                    assert_eq!(vqdmulhq_n_s32(av, b), want, "a={a} b={b}");
+                }
+            }
+        }
+
+        // ---- widening multiplies and multiply-accumulate ----------------
+
+        #[test]
+        fn vmull_s16_corners() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av: i16x4 = FunArray::from_fn(|_| a);
+                    let bv: i16x4 = FunArray::from_fn(|_| b);
+                    let want: i32x4 = FunArray::from_fn(|_| a as i32 * b as i32);
+                    assert_eq!(vmull_s16(av, bv), want, "a={a} b={b}");
+                }
+            }
+        }
+
+        #[test]
+        fn vmlal_s16_corners() {
+            for &acc in i32::corners() {
+                for &b in i16::corners() {
+                    for &c in i16::corners() {
+                        let accv: i32x4 = FunArray::from_fn(|_| acc);
+                        let bv: i16x4 = FunArray::from_fn(|_| b);
+                        let cv: i16x4 = FunArray::from_fn(|_| c);
+                        let want: i32x4 =
+                            FunArray::from_fn(|_| acc.wrapping_add(b as i32 * c as i32));
+                        assert_eq!(vmlal_s16(accv, bv, cv), want, "acc={acc} b={b} c={c}");
+                    }
+                }
+            }
+        }
+
+        // ---- plain (wrapping) multiplies and add/sub --------------------
+
+        #[test]
+        fn vmulq_s16_corners() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av: i16x8 = FunArray::from_fn(|_| a);
+                    let bv: i16x8 = FunArray::from_fn(|_| b);
+                    let want: i16x8 = FunArray::from_fn(|_| a.wrapping_mul(b));
+                    assert_eq!(vmulq_s16(av, bv), want, "a={a} b={b}");
+                }
+            }
+        }
+
+        #[test]
+        fn vaddq_vsubq_s16_corners() {
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av: i16x8 = FunArray::from_fn(|_| a);
+                    let bv: i16x8 = FunArray::from_fn(|_| b);
+                    let want_add: i16x8 = FunArray::from_fn(|_| a.wrapping_add(b));
+                    let want_sub: i16x8 = FunArray::from_fn(|_| a.wrapping_sub(b));
+                    assert_eq!(vaddq_s16(av, bv), want_add, "a={a} b={b}");
+                    assert_eq!(vsubq_s16(av, bv), want_sub, "a={a} b={b}");
+                }
+            }
+        }
+
+        // ---- horizontal reductions (accumulator wrap) -------------------
+        //
+        // Mixed lanes (each set to a distinct corner) exercise the running
+        // accumulator, not just N copies of one value.
+        #[test]
+        fn vaddvq_s16_corners() {
+            let cs = i16::corners();
+            let av: i16x8 = FunArray::from_fn(|i| cs[(i as usize) % cs.len()]);
+            let want: i16 = (0..8u64).fold(0i16, |acc, i| acc.wrapping_add(av[i]));
+            assert_eq!(vaddvq_s16(av), want);
+            // Also the all-MAX splat: 8 * i16::MAX must wrap, not panic.
+            let hi: i16x8 = FunArray::from_fn(|_| i16::MAX);
+            assert_eq!(vaddvq_s16(hi), i16::MAX.wrapping_mul(8));
+        }
+
+        // ---- shifts at boundary counts, extreme operands ----------------
+        //
+        // Arithmetic right shift of i16::MIN must sign-extend; logical left
+        // shift of MAX must drop the top bits without panicking.
+        #[test]
+        fn vshrq_n_s16_corners() {
+            for &a in i16::corners() {
+                let av: i16x8 = FunArray::from_fn(|_| a);
+                assert_eq!(vshrq_n_s16::<1>(av), FunArray::from_fn(|_| a >> 1), "a={a}");
+                assert_eq!(
+                    vshrq_n_s16::<15>(av),
+                    FunArray::from_fn(|_| a >> 15),
+                    "a={a}"
+                );
+            }
+        }
+
+        #[test]
+        fn vshlq_n_s16_corners() {
+            for &a in i16::corners() {
+                let av: i16x8 = FunArray::from_fn(|_| a);
+                assert_eq!(
+                    vshlq_n_s16::<1>(av),
+                    FunArray::from_fn(|_| ((a as u16).wrapping_shl(1)) as i16),
+                    "a={a}"
+                );
+                assert_eq!(
+                    vshlq_n_s16::<15>(av),
+                    FunArray::from_fn(|_| ((a as u16).wrapping_shl(15)) as i16),
+                    "a={a}"
+                );
+            }
+        }
+
+        // ---- table lookup: index at / past the 16-byte boundary ---------
+        #[test]
+        fn vqtbl1q_u8_corners() {
+            let t: u8x16 = FunArray::from_fn(|i| i as u8 + 100);
+            // Indices 0,15 in-range; 16,17,127,128,255 all out-of-range -> 0.
+            for &(idx, want) in &[(0u8, 100u8), (15, 115), (16, 0), (17, 0), (255, 0)] {
+                let iv: u8x16 = FunArray::from_fn(|_| idx);
+                let got = vqtbl1q_u8(t, iv);
+                assert!((0..16u64).all(|i| got[i] == want), "idx={idx}");
             }
         }
     }

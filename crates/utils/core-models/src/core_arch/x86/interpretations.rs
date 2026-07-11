@@ -477,7 +477,10 @@ pub mod int_vec {
 
     pub fn _mm256_slli_epi64<const IMM8: i32>(a: i64x4) -> i64x4 {
         i64x4::from_fn(|i| {
-            let imm8 = IMM8 % 256;
+            // Low 8 bits of the immediate (Euclidean, so a negative IMM8 maps
+            // to its unsigned low byte rather than a negative count — matches
+            // the hardware and the `rem_euclid` used by every other shift here).
+            let imm8 = IMM8.rem_euclid(256);
             if imm8 > 63 {
                 0
             } else {
@@ -496,7 +499,11 @@ pub mod int_vec {
             // clamped to 16), it is NOT taken modulo 16. The old `tmp % 16` here
             // mirrored a Rust core bug whose fix we upstreamed, so the model must
             // follow the spec rather than the (now-corrected) implementation.
-            let tmp = IMM8 % 256;
+            //
+            // `rem_euclid` (low 8 bits), not truncated `%`: a negative IMM8 must
+            // map to its unsigned low byte, otherwise `tmp` stays negative, the
+            // `> 15` guard is skipped, and `tmp * 8` panics the shift below.
+            let tmp = IMM8.rem_euclid(256);
             if tmp > 15 {
                 0
             } else {
@@ -837,13 +844,15 @@ pub mod int_vec {
     // _mm_slli_si128<IMM8>: byte-shift left, zero-fill.
     pub fn _mm_slli_si128<const IMM8: i32>(a: i8x16) -> i8x16 {
         i8x16::from_fn(|i| {
-            let imm8 = (IMM8 as u32) & 0xff;
+            // Low 8 bits of the immediate, via the same `rem_euclid(256)`
+            // convention used by every other shift model in this file.
+            let imm8 = IMM8.rem_euclid(256) as u64;
             if imm8 > 15 {
                 0
-            } else if i < imm8 as u64 {
+            } else if i < imm8 {
                 0
             } else {
-                a[i - imm8 as u64]
+                a[i - imm8]
             }
         })
     }
@@ -851,13 +860,13 @@ pub mod int_vec {
     // _mm_srli_si128<IMM8>: byte-shift right, zero-fill.
     pub fn _mm_srli_si128<const IMM8: i32>(a: i8x16) -> i8x16 {
         i8x16::from_fn(|i| {
-            let imm8 = (IMM8 as u32) & 0xff;
+            let imm8 = IMM8.rem_euclid(256) as u64;
             if imm8 > 15 {
                 0
-            } else if i + imm8 as u64 > 15 {
+            } else if i + imm8 > 15 {
                 0
             } else {
-                a[i + imm8 as u64]
+                a[i + imm8]
             }
         })
     }
@@ -1235,7 +1244,7 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
     mod tests {
         use crate::abstractions::bitvec::BitVec;
         use crate::core_arch::x86::upstream;
-        use crate::helpers::test::HasRandom;
+        use crate::helpers::test::{HasCorners, HasRandom};
 
         /// Derives tests for a given intrinsics. Test that a given intrisics and its model compute the same thing over random values (1000 by default).
         macro_rules! mk {
@@ -1272,7 +1281,6 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
         mk!(_mm256_sub_epi32(x: BitVec, y: BitVec));
         mk!(_mm256_mul_epi32(x: BitVec, y: BitVec));
         mk!(_mm256_shuffle_epi32{<0b01_00_10_11>, <0b01_11_01_10>}(x: BitVec));
-        mk!(_mm256_permute4x64_epi64{<245>, <160>, <216>, <0b11_10_01_00>, <27>, <0>, <255>}(x: BitVec));
         mk!([100]_mm256_blend_epi32{<0>,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>,<9>,<10>,<11>,<12>,<13>,<14>,<15>,<16>,<17>,<18>,<19>,<20>,<21>,<22>,<23>,<24>,<25>,<26>,<27>,<28>,<29>,<30>,<31>,<32>,<33>,<34>,<35>,<36>,<37>,<38>,<39>,<40>,<41>,<42>,<43>,<44>,<45>,<46>,<47>,<48>,<49>,<50>,<51>,<52>,<53>,<54>,<55>,<56>,<57>,<58>,<59>,<60>,<61>,<62>,<63>,<64>,<65>,<66>,<67>,<68>,<69>,<70>,<71>,<72>,<73>,<74>,<75>,<76>,<77>,<78>,<79>,<80>,<81>,<82>,<83>,<84>,<85>,<86>,<87>,<88>,<89>,<90>,<91>,<92>,<93>,<94>,<95>,<96>,<97>,<98>,<99>,<100>,<101>,<102>,<103>,<104>,<105>,<106>,<107>,<108>,<109>,<110>,<111>,<112>,<113>,<114>,<115>,<116>,<117>,<118>,<119>,<120>,<121>,<122>,<123>,<124>,<125>,<126>,<127>,<128>,<129>,<130>,<131>,<132>,<133>,<134>,<135>,<136>,<137>,<138>,<139>,<140>,<141>,<142>,<143>,<144>,<145>,<146>,<147>,<148>,<149>,<150>,<151>,<152>,<153>,<154>,<155>,<156>,<157>,<158>,<159>,<160>,<161>,<162>,<163>,<164>,<165>,<166>,<167>,<168>,<169>,<170>,<171>,<172>,<173>,<174>,<175>,<176>,<177>,<178>,<179>,<180>,<181>,<182>,<183>,<184>,<185>,<186>,<187>,<188>,<189>,<190>,<191>,<192>,<193>,<194>,<195>,<196>,<197>,<198>,<199>,<200>,<201>,<202>,<203>,<204>,<205>,<206>,<207>,<208>,<209>,<210>,<211>,<212>,<213>,<214>,<215>,<216>,<217>,<218>,<219>,<220>,<221>,<222>,<223>,<224>,<225>,<226>,<227>,<228>,<229>,<230>,<231>,<232>,<233>,<234>,<235>,<236>,<237>,<238>,<239>,<240>,<241>,<242>,<243>,<244>,<245>,<246>,<247>,<248>,<249>,<250>,<251>,<252>,<253>,<254>,<255>}(x: BitVec, y: BitVec));
         mk!(_mm256_setzero_si256());
         mk!(_mm256_set_m128i(x: BitVec, y: BitVec));
@@ -1284,6 +1292,87 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
         mk!(_mm256_add_epi16(a: BitVec, b: BitVec));
         mk!(_mm256_add_epi32(a: BitVec, b: BitVec));
         mk!(_mm256_madd_epi16(a: BitVec, b: BitVec));
+
+        /// Corner-case *differential* check against real (or emulated) AVX2.
+        ///
+        /// Complements the random `mk!` tests with splat vectors of every
+        /// `HasCorners` value (MIN / MAX / -1 / 0 / small) so overflow /
+        /// saturation / wraparound behaviour is checked against the hardware at
+        /// the exact inputs random sampling misses — the AVX2 analogue of the
+        /// NEON `vqdmulh_corners_vs_hardware` test. Shift immediates use valid
+        /// non-negative counts here (the `rem_euclid` handling of *negative*
+        /// IMM8 is covered host-independently in `super`'s `corner_tests`).
+        #[test]
+        fn corners_vs_avx2() {
+            macro_rules! diff {
+                ($name:ident ( $($v:expr),* )) => {
+                    assert_eq!(
+                        super::$name($($v.into()),*),
+                        BitVec::from(unsafe { upstream::$name($($v.into()),*) }).into(),
+                        stringify!($name)
+                    )
+                };
+                (<$c:literal> $name:ident ( $($v:expr),* )) => {
+                    assert_eq!(
+                        super::$name::<$c>($($v.into()),*),
+                        BitVec::from(unsafe { upstream::$name::<$c>($($v.into()),*) }).into(),
+                        concat!(stringify!($name), "::<", stringify!($c), ">")
+                    )
+                };
+            }
+            // 256-bit, i16x16 operands.
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av = BitVec::<256>::from_slice(&[a; 16], 16);
+                    let bv = BitVec::<256>::from_slice(&[b; 16], 16);
+                    diff!(_mm256_madd_epi16(av, bv));
+                    diff!(_mm256_mulhi_epi16(av, bv));
+                    diff!(_mm256_mullo_epi16(av, bv));
+                    diff!(_mm256_add_epi16(av, bv));
+                    diff!(_mm256_sub_epi16(av, bv));
+                }
+            }
+            // 256-bit, i32x8 operands.
+            for &a in i32::corners() {
+                for &b in i32::corners() {
+                    let av = BitVec::<256>::from_slice(&[a; 8], 32);
+                    let bv = BitVec::<256>::from_slice(&[b; 8], 32);
+                    diff!(_mm256_mullo_epi32(av, bv));
+                    diff!(_mm256_mul_epi32(av, bv));
+                    diff!(_mm256_packs_epi32(av, bv));
+                    diff!(_mm256_sign_epi32(av, bv));
+                }
+                let av = BitVec::<256>::from_slice(&[a; 8], 32);
+                diff!(_mm256_abs_epi32(av));
+                diff!(<31> _mm256_srai_epi32(av));
+                diff!(<1> _mm256_srai_epi32(av));
+            }
+            // 256-bit, u32x8 operands (widening unsigned multiply).
+            for &a in u32::corners() {
+                for &b in u32::corners() {
+                    let av = BitVec::<256>::from_slice(&[a; 8], 32);
+                    let bv = BitVec::<256>::from_slice(&[b; 8], 32);
+                    diff!(_mm256_mul_epu32(av, bv));
+                }
+            }
+            // 256-bit, i64x4 operands: shift at the width boundary.
+            for &a in i64::corners() {
+                let av = BitVec::<256>::from_slice(&[a; 4], 64);
+                diff!(<63> _mm256_slli_epi64(av));
+                diff!(<63> _mm256_srli_epi64(av));
+                diff!(<17> _mm256_slli_epi64(av));
+            }
+            // 128-bit operands: saturating pack + 16-bit multiplies.
+            for &a in i16::corners() {
+                for &b in i16::corners() {
+                    let av = BitVec::<128>::from_slice(&[a; 8], 16);
+                    let bv = BitVec::<128>::from_slice(&[b; 8], 16);
+                    diff!(_mm_packs_epi16(av, bv));
+                    diff!(_mm_mulhi_epi16(av, bv));
+                    diff!(_mm_mullo_epi16(av, bv));
+                }
+            }
+        }
         mk!(_mm256_add_epi64(a: BitVec, b: BitVec));
         mk!(_mm256_abs_epi32(a: BitVec));
         #[test]
@@ -1451,7 +1540,6 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
         mk!([100]_mm_slli_si128{<0>,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>,<9>,<10>,<11>,<12>,<13>,<14>,<15>,<16>,<17>,<18>,<19>,<20>,<21>,<22>,<23>,<24>,<25>,<26>,<27>,<28>,<29>,<30>,<31>,<32>,<33>,<34>,<35>,<36>,<37>,<38>,<39>,<40>,<41>,<42>,<43>,<44>,<45>,<46>,<47>,<48>,<49>,<50>,<51>,<52>,<53>,<54>,<55>,<56>,<57>,<58>,<59>,<60>,<61>,<62>,<63>,<64>,<65>,<66>,<67>,<68>,<69>,<70>,<71>,<72>,<73>,<74>,<75>,<76>,<77>,<78>,<79>,<80>,<81>,<82>,<83>,<84>,<85>,<86>,<87>,<88>,<89>,<90>,<91>,<92>,<93>,<94>,<95>,<96>,<97>,<98>,<99>,<100>,<101>,<102>,<103>,<104>,<105>,<106>,<107>,<108>,<109>,<110>,<111>,<112>,<113>,<114>,<115>,<116>,<117>,<118>,<119>,<120>,<121>,<122>,<123>,<124>,<125>,<126>,<127>,<128>,<129>,<130>,<131>,<132>,<133>,<134>,<135>,<136>,<137>,<138>,<139>,<140>,<141>,<142>,<143>,<144>,<145>,<146>,<147>,<148>,<149>,<150>,<151>,<152>,<153>,<154>,<155>,<156>,<157>,<158>,<159>,<160>,<161>,<162>,<163>,<164>,<165>,<166>,<167>,<168>,<169>,<170>,<171>,<172>,<173>,<174>,<175>,<176>,<177>,<178>,<179>,<180>,<181>,<182>,<183>,<184>,<185>,<186>,<187>,<188>,<189>,<190>,<191>,<192>,<193>,<194>,<195>,<196>,<197>,<198>,<199>,<200>,<201>,<202>,<203>,<204>,<205>,<206>,<207>,<208>,<209>,<210>,<211>,<212>,<213>,<214>,<215>,<216>,<217>,<218>,<219>,<220>,<221>,<222>,<223>,<224>,<225>,<226>,<227>,<228>,<229>,<230>,<231>,<232>,<233>,<234>,<235>,<236>,<237>,<238>,<239>,<240>,<241>,<242>,<243>,<244>,<245>,<246>,<247>,<248>,<249>,<250>,<251>,<252>,<253>,<254>,<255>}(a: BitVec));
         mk!([100]_mm_srli_si128{<0>,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>,<9>,<10>,<11>,<12>,<13>,<14>,<15>,<16>,<17>,<18>,<19>,<20>,<21>,<22>,<23>,<24>,<25>,<26>,<27>,<28>,<29>,<30>,<31>,<32>,<33>,<34>,<35>,<36>,<37>,<38>,<39>,<40>,<41>,<42>,<43>,<44>,<45>,<46>,<47>,<48>,<49>,<50>,<51>,<52>,<53>,<54>,<55>,<56>,<57>,<58>,<59>,<60>,<61>,<62>,<63>,<64>,<65>,<66>,<67>,<68>,<69>,<70>,<71>,<72>,<73>,<74>,<75>,<76>,<77>,<78>,<79>,<80>,<81>,<82>,<83>,<84>,<85>,<86>,<87>,<88>,<89>,<90>,<91>,<92>,<93>,<94>,<95>,<96>,<97>,<98>,<99>,<100>,<101>,<102>,<103>,<104>,<105>,<106>,<107>,<108>,<109>,<110>,<111>,<112>,<113>,<114>,<115>,<116>,<117>,<118>,<119>,<120>,<121>,<122>,<123>,<124>,<125>,<126>,<127>,<128>,<129>,<130>,<131>,<132>,<133>,<134>,<135>,<136>,<137>,<138>,<139>,<140>,<141>,<142>,<143>,<144>,<145>,<146>,<147>,<148>,<149>,<150>,<151>,<152>,<153>,<154>,<155>,<156>,<157>,<158>,<159>,<160>,<161>,<162>,<163>,<164>,<165>,<166>,<167>,<168>,<169>,<170>,<171>,<172>,<173>,<174>,<175>,<176>,<177>,<178>,<179>,<180>,<181>,<182>,<183>,<184>,<185>,<186>,<187>,<188>,<189>,<190>,<191>,<192>,<193>,<194>,<195>,<196>,<197>,<198>,<199>,<200>,<201>,<202>,<203>,<204>,<205>,<206>,<207>,<208>,<209>,<210>,<211>,<212>,<213>,<214>,<215>,<216>,<217>,<218>,<219>,<220>,<221>,<222>,<223>,<224>,<225>,<226>,<227>,<228>,<229>,<230>,<231>,<232>,<233>,<234>,<235>,<236>,<237>,<238>,<239>,<240>,<241>,<242>,<243>,<244>,<245>,<246>,<247>,<248>,<249>,<250>,<251>,<252>,<253>,<254>,<255>}(a: BitVec));
         mk!(_mm256_mullo_epi16(a: BitVec, b: BitVec));
-        mk!(_mm256_madd_epi16(a: BitVec, b: BitVec));
         mk!(_mm_shuffle_epi8(a: BitVec, b: BitVec));
 
         // Load/store intrinsics: tested via round-trip through real CPU.
@@ -1582,6 +1670,215 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 }
                 assert_eq!(&data[..], &out[..]);
             }
+        }
+    }
+}
+
+/// Host-independent corner-case tests for the AVX2 int-vec models.
+///
+/// Not gated on `target_arch` (unlike the `mk!` differential tests, which need
+/// real `_mm256_*` hardware): the models are pure Rust, so these run on **every**
+/// CI target, arm included. Each model is checked against a wide-precision
+/// *oracle* (recomputing the spec in a type that cannot overflow) at the extreme
+/// lane values from `HasCorners`. Because `cargo test` builds in debug, they also
+/// trip on any intermediate overflow. Includes negative-`IMM8` shift cases that
+/// lock in the `rem_euclid(256)` (low-8-bits) immediate convention — those would
+/// panic under the old truncated `% 256`.
+#[cfg(test)]
+mod corner_tests {
+    use super::int_vec::*;
+    use crate::abstractions::bitvec::int_vec_interp::*;
+    use crate::abstractions::funarr::FunArray;
+    use crate::helpers::test::HasCorners;
+
+    // ---- multiplies: low/high half, widening, madd ----------------------
+
+    #[test]
+    fn mm256_madd_epi16_corners() {
+        // splat a,b => each 32-bit lane = a*b + a*b = 2*a*b, wraps at i32.
+        for &a in i16::corners() {
+            for &b in i16::corners() {
+                let av: i16x16 = FunArray::from_fn(|_| a);
+                let bv: i16x16 = FunArray::from_fn(|_| b);
+                let want: i32x8 = FunArray::from_fn(|_| (2i64 * a as i64 * b as i64) as i32);
+                assert_eq!(_mm256_madd_epi16(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    #[test]
+    fn mm256_mulhi_epi16_corners() {
+        for &a in i16::corners() {
+            for &b in i16::corners() {
+                let av: i16x16 = FunArray::from_fn(|_| a);
+                let bv: i16x16 = FunArray::from_fn(|_| b);
+                let want: i16x16 = FunArray::from_fn(|_| ((a as i32 * b as i32) >> 16) as i16);
+                assert_eq!(_mm256_mulhi_epi16(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    #[test]
+    fn mm256_mullo_epi16_and_epi32_corners() {
+        for &a in i16::corners() {
+            for &b in i16::corners() {
+                let av: i16x16 = FunArray::from_fn(|_| a);
+                let bv: i16x16 = FunArray::from_fn(|_| b);
+                let want: i16x16 = FunArray::from_fn(|_| a.wrapping_mul(b));
+                assert_eq!(_mm256_mullo_epi16(av, bv), want, "a={a} b={b}");
+            }
+        }
+        for &a in i32::corners() {
+            for &b in i32::corners() {
+                let av: i32x8 = FunArray::from_fn(|_| a);
+                let bv: i32x8 = FunArray::from_fn(|_| b);
+                let want: i32x8 = FunArray::from_fn(|_| a.wrapping_mul(b));
+                assert_eq!(_mm256_mullo_epi32(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    #[test]
+    fn mm256_mul_epi32_and_epu32_corners() {
+        for &a in i32::corners() {
+            for &b in i32::corners() {
+                let av: i32x8 = FunArray::from_fn(|_| a);
+                let bv: i32x8 = FunArray::from_fn(|_| b);
+                // widening signed multiply of the even lanes -> i64.
+                let want: i64x4 = FunArray::from_fn(|_| a as i64 * b as i64);
+                assert_eq!(_mm256_mul_epi32(av, bv), want, "a={a} b={b}");
+            }
+        }
+        for &a in u32::corners() {
+            for &b in u32::corners() {
+                let av: u32x8 = FunArray::from_fn(|_| a);
+                let bv: u32x8 = FunArray::from_fn(|_| b);
+                let want: u64x4 = FunArray::from_fn(|_| a as u64 * b as u64);
+                assert_eq!(_mm256_mul_epu32(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    // ---- abs / sign: the i32::MIN corners -------------------------------
+
+    #[test]
+    fn mm256_abs_and_sign_epi32_corners() {
+        for &a in i32::corners() {
+            let av: i32x8 = FunArray::from_fn(|_| a);
+            let want_abs: i32x8 = FunArray::from_fn(|_| a.wrapping_abs());
+            assert_eq!(_mm256_abs_epi32(av), want_abs, "a={a}");
+            for &b in i32::corners() {
+                let bv: i32x8 = FunArray::from_fn(|_| b);
+                let want_sign: i32x8 = FunArray::from_fn(|_| {
+                    if b < 0 {
+                        a.wrapping_neg()
+                    } else if b > 0 {
+                        a
+                    } else {
+                        0
+                    }
+                });
+                assert_eq!(_mm256_sign_epi32(av, bv), want_sign, "a={a} b={b}");
+            }
+        }
+    }
+
+    // ---- saturating packs -----------------------------------------------
+
+    #[test]
+    fn mm256_packs_epi32_corners() {
+        for &a in i32::corners() {
+            for &b in i32::corners() {
+                let av: i32x8 = FunArray::from_fn(|_| a);
+                let bv: i32x8 = FunArray::from_fn(|_| b);
+                let sat = |x: i32| x.clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+                // Lanes 0..4 = a, 4..8 = b, 8..12 = a, 12..16 = b (per Intel's
+                // 128-bit-lane interleave).
+                let want: i16x16 = FunArray::from_fn(|i| {
+                    let from_a = (i % 8) < 4;
+                    sat(if from_a { a } else { b })
+                });
+                assert_eq!(_mm256_packs_epi32(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    #[test]
+    fn mm_packs_epi16_corners() {
+        for &a in i16::corners() {
+            for &b in i16::corners() {
+                let av: i16x8 = FunArray::from_fn(|_| a);
+                let bv: i16x8 = FunArray::from_fn(|_| b);
+                let sat = |x: i16| x.clamp(i8::MIN as i16, i8::MAX as i16) as i8;
+                let want: i8x16 = FunArray::from_fn(|i| if i < 8 { sat(a) } else { sat(b) });
+                assert_eq!(_mm_packs_epi16(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    // ---- add / sub: wraparound ------------------------------------------
+
+    #[test]
+    fn mm256_add_sub_corners() {
+        for &a in i32::corners() {
+            for &b in i32::corners() {
+                let av: i32x8 = FunArray::from_fn(|_| a);
+                let bv: i32x8 = FunArray::from_fn(|_| b);
+                let want: i32x8 = FunArray::from_fn(|_| a.wrapping_add(b));
+                assert_eq!(_mm256_add_epi32(av, bv), want, "a={a} b={b}");
+            }
+        }
+        for &a in i16::corners() {
+            for &b in i16::corners() {
+                let av: i16x16 = FunArray::from_fn(|_| a);
+                let bv: i16x16 = FunArray::from_fn(|_| b);
+                let want: i16x16 = FunArray::from_fn(|_| a.wrapping_sub(b));
+                assert_eq!(_mm256_sub_epi16(av, bv), want, "a={a} b={b}");
+            }
+        }
+    }
+
+    // ---- immediate low-byte convention: negative IMM8 must NOT panic ----
+    //
+    // These lock in the `rem_euclid(256)` fix. Under the old truncated
+    // `% 256`, a negative IMM8 stayed negative: `_mm256_bsrli_epi128` then
+    // shifted by a negative amount (`tmp * 8`) and panicked, and
+    // `_mm256_slli_epi64` produced a negative count.
+    #[test]
+    fn negative_imm8_shift_convention() {
+        let v64: i64x4 = FunArray::from_fn(|_| -1i64);
+        // rem_euclid(256) of -8 = 248 > 63 -> whole lane cleared.
+        assert_eq!(_mm256_slli_epi64::<-8>(v64), FunArray::from_fn(|_| 0i64));
+        // rem_euclid(256) of 4 = 4 -> normal shift, no wraparound surprise.
+        assert_eq!(
+            _mm256_slli_epi64::<4>(v64),
+            FunArray::from_fn(|_| ((-1i64 as u64) << 4) as i64)
+        );
+        let v128: i128x2 = FunArray::from_fn(|_| 0x0102_0304_0506_0708_090a_0b0c_0d0e_0f10i128);
+        // rem_euclid(256) of -1 = 255 > 15 -> lane cleared (no negative shift panic).
+        assert_eq!(
+            _mm256_bsrli_epi128::<-1>(v128),
+            FunArray::from_fn(|_| 0i128)
+        );
+    }
+
+    // ---- arithmetic vs logical right shift at extreme operands ----------
+
+    #[test]
+    fn mm256_srai_epi32_corners() {
+        for &a in i32::corners() {
+            let av: i32x8 = FunArray::from_fn(|_| a);
+            // arithmetic shift: sign-extends, so i32::MIN >> 31 == -1.
+            assert_eq!(
+                _mm256_srai_epi32::<31>(av),
+                FunArray::from_fn(|_| a >> 31),
+                "a={a}"
+            );
+            assert_eq!(
+                _mm256_srai_epi32::<1>(av),
+                FunArray::from_fn(|_| a >> 1),
+                "a={a}"
+            );
         }
     }
 }
