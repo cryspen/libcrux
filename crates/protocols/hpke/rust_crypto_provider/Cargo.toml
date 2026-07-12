@@ -33,10 +33,9 @@ aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 x-wing = { version = "0.1.0-rc.0", default-features = false, optional = true }
 ml-kem = { version = "0.3.0-rc.0", default-features = false, optional = true }
 # Randomness
-rand_core = { version = "0.6", features = ["getrandom"] }
-rand_core_new = { version = "0.10", package = "rand_core", default-features = false }
-rand_old = { version = "0.8", package = "rand", default-features = false }
-rand_chacha = { version = "0.3", default-features = false }
+rand_core = { version = "0.10", default-features = false }
+rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
+rand_chacha = { version = "0.10", default-features = false }
 zeroize = "1.8.2"
 subtle = { version = "2.6.1", default-features = false }
 
@@ -45,11 +44,8 @@ criterion = { version = "0.8", features = ["html_reports"] }
 rand = { version = "0.10" }
 
 [features]
-std = ["rand_core/std", "rand_old/std"]
-deterministic-prng = [
-    "hpke-rs-crypto/std",
-    "rand_core/std",
-] # ⚠️ FOR TESTING ONLY.
+std = ["rand/std", "rand_chacha/std"]
+deterministic-prng = ["hpke-rs-crypto/std", "rand/std"] # ⚠️ FOR TESTING ONLY.
 experimental = ["dep:x-wing", "dep:ml-kem"]
 
 [[bench]]
