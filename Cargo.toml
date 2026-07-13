@@ -142,7 +142,7 @@ libcrux-kats = { path = "crates/testing/kats" }
 
 # Utilities
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
-libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
+libcrux-secrets = { version = "=0.0.6-pre.1", path = "crates/utils/secrets" }
 
 # Encodings
  tls_codec = { version = "0.5.0", features = ["derive"], default-features = false }

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#1457](https://github.com/cryspen/libcrux/pull/1457): Add dependency on libcrux-secrets for optional valgrind integration
 
+### Changed
+
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-secrets`
+
 ## [0.0.9] (2026-05-13)
 
 ### Fixed

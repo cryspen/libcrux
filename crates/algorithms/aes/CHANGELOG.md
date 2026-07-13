@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-secrets`
 - [#1474](https://github.com/cryspen/libcrux/pull/1474): Change crate name from `libcrux-aesgcm` to `libcrux-aes`
 
 ## [0.0.8] (2026-05-13)

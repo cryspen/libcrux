@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependency `libcrux-secrets`
 - [#1493](https://github.com/cryspen/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 
 ## [0.0.7] (2026-05-13)
