@@ -134,7 +134,7 @@ fn derive_pk_binder(
     libcrux_hkdf::sha2_256::hkdf(
         &mut binder,
         &[],
-        &SerializeBytes::tls_serialize(&key.key).map_err(SessionError::Serialize)?,
+        &key.key.tls_serialize_bytes().map_err(SessionError::Serialize)?,
         &info_buf,
     )
     .map_err(|_| SessionError::CryptoError)?;
@@ -382,7 +382,7 @@ impl Session {
                 context,
                 separator: *PSQ_EXPORT_CONTEXT,
             }
-            .tls_serialize()
+            .tls_serialize_bytes()
             .map_err(SessionError::Serialize)?,
         )
         .map_err(|_| SessionError::CryptoError)
