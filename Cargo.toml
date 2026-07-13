@@ -134,7 +134,7 @@ libcrux-kem = { version = "=0.0.8", path = "libcrux-kem", default-features = fal
 libcrux-traits = { version = "=0.0.8-pre.1", path = "traits" }
 libcrux-ecdh = { version = "=0.0.7", path = "libcrux-ecdh", default-features = false }
 libcrux-curve25519 = { version = "=0.0.8-pre.1", path = "crates/algorithms/curve25519", default-features = false }
-libcrux-ml-kem = { version = "=0.0.9", path = "libcrux-ml-kem", default-features = false }
+libcrux-ml-kem = { version = "=0.0.10-pre.1", path = "libcrux-ml-kem", default-features = false }
 libcrux-p256 = { version = "=0.0.7", path = "crates/algorithms/p256", default-features = false }
 
 # Test utilities
