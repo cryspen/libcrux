@@ -49,7 +49,7 @@ serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.6.1", path = "./rust_crypto_provider" }
+hpke-rs-rust-crypto = { workspace = true, path = "./rust_crypto_provider" }
 hpke-rs-libcrux = { version = "0.6.1", path = "./libcrux_provider" }
 rand = { version = "0.10" }
 pretty_env_logger = "0.5"
