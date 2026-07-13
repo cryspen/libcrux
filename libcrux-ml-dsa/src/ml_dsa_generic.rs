@@ -669,6 +669,127 @@ let hint_count_bounded
         Ok(())
     }
 
+    // Move the signer response into the NTT domain.  Loop invariant: the
+    // processed prefix [0,i) is NTT_OUTPUT_BOUND (75423744), the unprocessed
+    // suffix [i,len) is still FIELD_MAX (8380416, from the caller's precondition
+    // = signature::deserialize's post); after the loop the whole slice is
+    // 75423744, matching compute_w_approx's signer_response precondition.
+    //
+    // Factored out of verify_internal so the `fold_range` term does not thread
+    // through verify_internal's top-level VC: at the compute_w_approx call site
+    // the response is an opaque value carrying only `is_bounded_poly_slice
+    // 75423744` (this fn's post), not the whole per-row NTT fold.  That keeps
+    // verify_internal's top-level VC size-independent — the ML-DSA-87 (k=8/l=7)
+    // saturation was the compute_w_approx precondition sub-query carrying this
+    // fold term.  (Mirror of generate_key_pair's s1_ntt loop.)
+    #[inline(always)]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")
+    )]
+    #[cfg_attr(hax, hax_lib::requires(fstar!(r#"
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) $signer_response"#)))]
+    #[cfg_attr(hax, hax_lib::ensures(|_| fstar!(r#"
+        Seq.length ${signer_response}_future == Seq.length $signer_response /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${signer_response}_future"#)))]
+    fn ntt_signer_response<SIMDUnit: Operations>(
+        signer_response: &mut [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    ) {
+        hax_lib::fstar!(
+            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
+                 (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${signer_response}"#
+        );
+        for i in 0..signer_response.len() {
+            hax_lib::loop_invariant!(|i: usize| fstar!(
+                r#"v $i <= Seq.length ${signer_response} /\
+                   Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
+                       (mk_usize 75423744) (mk_usize 0) $i ${signer_response} /\
+                   (forall (k:nat). v $i <= k /\ k < Seq.length ${signer_response} ==>
+                      Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                          (mk_usize 8380416) (Seq.index ${signer_response} k))"#
+            ));
+            // The suffix bound at k=i is exactly ntt's FIELD_MAX precondition.
+            hax_lib::fstar!(
+                r#"assert (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                            (mk_usize 8380416) (Seq.index ${signer_response} (v $i)))"#
+            );
+            #[cfg(hax)]
+            let iter_start: &[PolynomialRingElement<SIMDUnit>] =
+                signer_response.to_vec().as_slice();
+            ntt(&mut signer_response[i]);
+            // ntt's post gives is_bounded_poly 75423744 on the updated entry; extend
+            // the processed range from [0,i) to [0,i+1) via the standalone lemma.
+            hax_lib::fstar!(
+                r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
+                     (mk_usize 75423744) $i iter_start ${signer_response}"#
+            );
+        }
+        // After the loop the processed range covers [0,len); lift range -> slice.
+        hax_lib::fstar!(
+            r#"
+            let _:Prims.unit =
+              let aux (k:nat{k < Seq.length ${signer_response}}) :
+                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
+                         (mk_usize 75423744) (Seq.index ${signer_response} k)) =
+                Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup
+                  (mk_usize 75423744) (mk_usize 0)
+                  (Core_models.Slice.impl__len ${signer_response})
+                  ${signer_response} k
+              in Classical.forall_intro aux
+            in
+            Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
+              (mk_usize 75423744) ${signer_response}"#
+        );
+    }
+
+    // Fixed-length wrapper around `compute_w_approx`.  `compute_w_approx` takes
+    // *slices*, so it requires `Seq.length matrix == rows_in_a * columns_in_a`
+    // (a nonlinear product) as an explicit precondition.  Discharging that
+    // conjunct inside verify_internal's large ML-DSA-87 (k=8/l=7) context
+    // saturates Z3 — context pollution poisons even the trivial ground fact
+    // `56 == 8 * 7` (this was the verify_internal cliff, localized to
+    // compute_w_approx's precondition sub-query).  Taking the operands as
+    // fixed-size arrays lets the `Seq.length` facts reduce definitionally and
+    // the product discharge by `assert_norm` in *this* helper's minimal
+    // context; verify_internal's call site is then left only the (opaque,
+    // cheap) bound atoms — keeping its top-level VC size-independent.
+    #[inline(always)]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::options("--z3rlimit 300 --ext context_pruning --split_queries always")
+    )]
+    #[cfg_attr(hax, hax_lib::requires(fstar!(r#"
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 8380416) $matrix /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) $signer_response /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 75423744) $verifier_challenge_as_ntt /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice (mk_usize 0) (mk_usize 261631) $t1"#)))]
+    #[cfg_attr(hax, hax_lib::ensures(|_| fstar!(r#"
+        Seq.length ${t1}_future == Seq.length $t1 /\
+        Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 4211177) ${t1}_future"#)))]
+    fn compute_w_approx_fixed<SIMDUnit: Operations>(
+        matrix: &[PolynomialRingElement<SIMDUnit>; ROW_X_COLUMN],
+        signer_response: &[PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+        verifier_challenge_as_ntt: &PolynomialRingElement<SIMDUnit>,
+        t1: &mut [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    ) {
+        // `ROW_X_COLUMN` is *defined* as `ROWS_IN_A * COLUMNS_IN_A`; assert_norm
+        // reduces each per monomorphization, discharging compute_w_approx's
+        // `Seq.length matrix == rows * cols` (matrix has fixed length ROW_X_COLUMN).
+        hax_lib::fstar!(
+            r#"assert_norm (v ${ROWS_IN_A} <= 8);
+               assert_norm (v ${COLUMNS_IN_A} <= 7);
+               assert_norm (v ${ROW_X_COLUMN} == v ${ROWS_IN_A} * v ${COLUMNS_IN_A})"#
+        );
+        compute_w_approx::<SIMDUnit>(
+            ROWS_IN_A,
+            COLUMNS_IN_A,
+            matrix,
+            signer_response,
+            verifier_challenge_as_ntt,
+            t1,
+        );
+    }
+
     /// The internal verification API.
     ///
     /// If no `domain_separation_context` is supplied, it is assumed that
@@ -797,74 +918,26 @@ let hint_count_bounded
         );
         ntt(&mut verifier_challenge);
 
-        // Move signer response into ntt.  Loop invariant: the processed prefix
-        // [0,i) is NTT_OUTPUT_BOUND (75423744), the unprocessed suffix [i,len) is
-        // still FIELD_MAX (8380416, from signature::deserialize's post); after the
-        // loop the whole slice is 75423744, matching compute_w_approx's
-        // signer_response precondition.  (Mirror of generate_key_pair's s1_ntt loop
-        // + use_hint's per-iteration extend / post-loop range->slice conversion.)
-        hax_lib::fstar!(
-            r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
-                 (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${deserialized_signer_response}"#
-        );
-        for i in 0..deserialized_signer_response.len() {
-            hax_lib::loop_invariant!(|i: usize| fstar!(
-                r#"v $i <= Seq.length ${deserialized_signer_response} /\
-                   Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_range
-                       (mk_usize 75423744) (mk_usize 0) $i ${deserialized_signer_response} /\
-                   (forall (k:nat). v $i <= k /\ k < Seq.length ${deserialized_signer_response} ==>
-                      Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
-                          (mk_usize 8380416) (Seq.index ${deserialized_signer_response} k))"#
-            ));
-            // The suffix bound at k=i is exactly ntt's FIELD_MAX precondition.
-            hax_lib::fstar!(
-                r#"assert (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
-                            (mk_usize 8380416) (Seq.index ${deserialized_signer_response} (v $i)))"#
-            );
-            #[cfg(hax)]
-            let iter_start: &[PolynomialRingElement<SIMDUnit>] =
-                deserialized_signer_response.to_vec().as_slice();
-            ntt(&mut deserialized_signer_response[i]);
-            // ntt's post gives is_bounded_poly 75423744 on the updated entry; extend
-            // the processed range from [0,i) to [0,i+1) via the standalone lemma.
-            hax_lib::fstar!(
-                r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
-                     (mk_usize 75423744) $i iter_start ${deserialized_signer_response}"#
-            );
-        }
-        // After the loop the processed range covers [0,len); lift range -> slice.
-        hax_lib::fstar!(
-            r#"
-            let _:Prims.unit =
-              let aux (k:nat{k < Seq.length ${deserialized_signer_response}}) :
-                Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
-                         (mk_usize 75423744) (Seq.index ${deserialized_signer_response} k)) =
-                Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_lookup
-                  (mk_usize 75423744) (mk_usize 0)
-                  (Core_models.Slice.impl__len ${deserialized_signer_response})
-                  ${deserialized_signer_response} k
-              in Classical.forall_intro aux
-            in
-            Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
-              (mk_usize 75423744) ${deserialized_signer_response}"#
-        );
+        // Move signer response into the NTT domain.  Factored into a helper so
+        // the per-row NTT `fold_range` term does not thread through this
+        // function's top-level VC (see `ntt_signer_response`); at the
+        // compute_w_approx call site the response is opaque, carrying only
+        // `is_bounded_poly_slice 75423744` — this keeps verify_internal's VC
+        // size-independent (fixes the ML-DSA-87 k=8/l=7 saturation).
+        ntt_signer_response::<SIMDUnit>(&mut deserialized_signer_response);
         // Widen t1's lane range 0..1023 (verification_key::deserialize post) to
         // 0..261631 (compute_w_approx's precondition; [0,1023] subset [0,261631]).
         hax_lib::fstar!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_widen
                  (mk_usize 0) (mk_usize 1023) (mk_usize 261631) ${t1}"#
         );
-        // compute_w_approx's `Seq.length matrix == rows_in_a * columns_in_a` sees
-        // matrix's length as a resolved literal (= ROW_X_COLUMN); pin the two
-        // parameter-set constants to their literal values via `normalize_term` so
-        // the product reduces to that literal (generic: no hardcoded value).
-        hax_lib::fstar!(
-            r#"assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}));
-               assert_norm (v ${COLUMNS_IN_A} == normalize_term (v ${COLUMNS_IN_A}))"#
-        );
-        compute_w_approx::<SIMDUnit>(
-            ROWS_IN_A,
-            COLUMNS_IN_A,
+        // compute_w_approx requires `Seq.length matrix == rows_in_a * columns_in_a`
+        // (a nonlinear product) because it takes slices; discharging that in this
+        // large k=8/l=7 context saturates Z3 (the ML-DSA-87 verify_internal cliff).
+        // The fixed-array wrapper `compute_w_approx_fixed` discharges the length
+        // facts in its own minimal context, so here only the (opaque, cheap) bound
+        // atoms remain — keeping this VC size-independent.
+        compute_w_approx_fixed::<SIMDUnit>(
             &matrix,
             &deserialized_signer_response,
             &verifier_challenge,
