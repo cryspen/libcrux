@@ -7,4 +7,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
 - [#1292](https://github.com/cryspen/libcrux/pull/1292): Initial version of this crate (https://github.com/kraemv)

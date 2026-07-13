@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`, `libcrux-sha3`
 
 ## [0.6.1] - 2026-03-20
 
