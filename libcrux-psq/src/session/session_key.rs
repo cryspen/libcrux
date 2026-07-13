@@ -34,7 +34,7 @@ fn session_key_id(key: &AEADKeyNonce) -> Result<[u8; SESSION_ID_LENGTH], Error> 
     libcrux_hkdf::sha2_256::hkdf(
         &mut session_id,
         SESSION_KEY_SALT,
-        &SerializeBytes::tls_serialize(&key).map_err(Error::Serialize)?,
+        &key.tls_serialize_bytes().map_err(Error::Serialize)?,
         SESSION_KEY_INFO,
     )
     .map_err(|_| Error::CryptoError)?;

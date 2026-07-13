@@ -122,8 +122,8 @@ impl<'a> Size for SharedSecret<'a> {
 }
 
 impl<'a> SerializeBytes for SharedSecret<'a> {
-    fn tls_serialize(&self) -> Result<Vec<u8>, tls_codec::Error> {
-        SerializeBytes::tls_serialize(&self.0.as_ref())
+    fn tls_serialize_bytes(&self) -> Result<Vec<u8>, tls_codec::Error> {
+        self.0.as_ref().tls_serialize_bytes()
     }
 }
 
