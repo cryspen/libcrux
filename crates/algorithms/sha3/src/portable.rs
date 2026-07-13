@@ -99,6 +99,11 @@ pub mod incremental {
     #[cfg(hax)]
     use crate::proof_utils::keccak_xof_state_inv;
 
+    // Bring the proof-only invariant trait into scope so its method can be
+    // named in `CShake` contracts on the concrete `CShakeIncremental` type.
+    #[cfg(hax)]
+    use private::CShakeInv;
+
     mod private {
         pub trait Sealed {}
 
@@ -116,6 +121,41 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
         "
         )]
         impl Sealed for super::Shake256Xof {}
+
+        #[cfg(not(eurydice))]
+        #[hax_lib::fstar::replace(
+            "
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl_cshake__from__private (v_RATE: usize)
+  : t_Sealed (t_CShakeIncremental v_RATE) = { __marker_trait_t_Sealed = () }
+        "
+        )]
+        impl<const RATE: usize> Sealed for super::CShakeIncremental<RATE> {}
+
+        /// Proof-only supertrait of [`super::CShake`] carrying the internal
+        /// Keccak XOF state invariant as a ghost predicate. It is implemented
+        /// generically for every `RATE`, so the generic `CShake` impl can
+        /// unfold it, while `kmac` (generic over `CShake`) sees it abstractly.
+        /// No runtime meaning.
+        #[cfg(not(eurydice))]
+        #[hax_lib::attributes]
+        pub trait CShakeInv {
+            #[cfg(hax)]
+            #[hax_lib::requires(true)]
+            #[hax_lib::ensures(|_| true)]
+            fn cshake_inv(&self) -> bool;
+        }
+
+        #[hax_lib::attributes]
+        #[cfg(not(eurydice))]
+        impl<const RATE: usize> CShakeInv for super::CShakeIncremental<RATE> {
+            #[cfg(hax)]
+            #[hax_lib::requires(true)]
+            #[hax_lib::ensures(|_| true)]
+            fn cshake_inv(&self) -> bool {
+                crate::proof_utils::keccak_xof_state_inv(RATE, self.state.buf_len)
+            }
+        }
     }
     use super::*;
 
@@ -208,6 +248,233 @@ let impl__from__private: t_Sealed t_Shake256Xof = { __marker_trait_t_Sealed = ()
             future(out).len() == out.len()
         )]
         fn squeeze(&mut self, out: &mut [u8]) {
+            self.state.squeeze(out);
+        }
+    }
+
+    /// A portable, incremental implementation of CSHAKE for a given absorption rate.
+    #[cfg(not(eurydice))]
+    pub struct CShakeIncremental<const RATE: usize> {
+        pub(crate) state: KeccakXofState<1, RATE, u64>,
+    }
+
+    /// A portable, incremental implementation of CSHAKE-128.
+    #[cfg(not(eurydice))]
+    pub type CShake128 = CShakeIncremental<168>;
+    /// A portable, incremental implementation of CSHAKE-256.
+    #[cfg(not(eurydice))]
+    pub type CShake256 = CShakeIncremental<136>;
+
+    #[cfg(not(eurydice))]
+    mod cshake {
+        // From https://github.com/hoxxep/MACs/blob/kmac-submission/kmac/src/encoding.rs
+        fn zero_bytes(num: usize) -> u8 {
+            let zero_bits = (num | 1usize).leading_zeros();
+            let zero_bits = (zero_bits % 64) as u8;
+            zero_bits / 8
+        }
+
+        #[inline(always)]
+        /// Left-encode a single byte.
+        pub fn left_encode_byte(num: u8) -> [u8; 2] {
+            [1u8, num]
+        }
+
+        #[hax_lib::ensures(|result| result.len() <= 9)]
+        #[inline(always)]
+        pub(crate) fn encode(num: usize, buffer: &mut [u8; 9], left_encode: bool) -> &[u8] {
+            let zero_size = zero_bytes(num);
+            let zero_length = zero_size as usize;
+            let be_bytes = num.to_be_bytes();
+            let encoding_length = be_bytes.len() - zero_length;
+            let encoding_size = encoding_length as u8;
+            debug_assert!(0 < encoding_length);
+            debug_assert!(encoding_length <= 8);
+            let output_length = encoding_length + 1;
+            if left_encode {
+                buffer[0] = encoding_size;
+                buffer[1..output_length].copy_from_slice(&be_bytes[zero_length..]);
+            } else {
+                buffer[0..encoding_length].copy_from_slice(&be_bytes[zero_length..]);
+                buffer[encoding_length] = encoding_size;
+            }
+
+            &buffer[..output_length]
+        }
+
+        #[hax_lib::ensures(|result| result.len() <= 9)]
+        #[inline(always)]
+        /// Left-encode any `num < u64::MAX`.
+        pub fn left_encode(num: usize, buffer: &mut [u8; 9]) -> &[u8] {
+            encode(num, buffer, true)
+        }
+
+        #[hax_lib::ensures(|result| result.len() <= 9)]
+        #[inline(always)]
+        /// Right-encode any `num < u64::MAX`.
+        pub fn right_encode(num: usize, buffer: &mut [u8; 9]) -> &[u8] {
+            encode(num, buffer, false)
+        }
+    }
+    #[cfg(not(eurydice))]
+    pub use cshake::{left_encode, left_encode_byte, right_encode};
+
+    #[hax_lib::attributes]
+    /// A trait for portable, incremental CSHAKE implementations
+    // XXX: The names here have the `_cshake` suffix to work around an F* extraction name clash bug.
+    #[cfg(not(eurydice))]
+    pub trait CShake<const RATE: usize>: private::Sealed + private::CShakeInv {
+        /// Create new absorb state
+        #[hax_lib::requires(RATE == 136 || RATE == 168)]
+        #[hax_lib::ensures(|result| result.cshake_inv())]
+        fn new_cshake(name: &[u8], customization: &[u8]) -> Self;
+
+        /// Absorb input
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn absorb_cshake(&mut self, input: &[u8]);
+
+        /// Absorb final input (may be empty)
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn absorb_final_cshake(&mut self, input: &[u8]);
+
+        /// Squeeze output bytes
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn squeeze_cshake(&mut self, out: &mut [u8]);
+    }
+
+    #[hax_lib::attributes]
+    #[cfg(not(eurydice))]
+    impl Xof<168> for CShake128 {
+        /// CShake128 new state
+        #[hax_lib::ensures(|result| keccak_xof_state_inv(168, result.state.buf_len))]
+        fn new() -> Self {
+            Self {
+                state: KeccakXofState::<1, 168, u64>::new(),
+            }
+        }
+
+        /// CShake128 absorb
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(168, future(self).state.buf_len))]
+        fn absorb(&mut self, input: &[u8]) {
+            self.state.absorb(&[input]);
+        }
+
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(168, future(self).state.buf_len))]
+        fn absorb_final(&mut self, input: &[u8]) {
+            self.state.absorb_final::<0x4u8>(&[input]);
+        }
+
+        #[hax_lib::requires(keccak_xof_state_inv(168, self.state.buf_len))]
+        #[hax_lib::ensures(|_|
+            keccak_xof_state_inv(168, self.state.buf_len) &&
+            future(out).len() == out.len()
+        )]
+        fn squeeze(&mut self, out: &mut [u8]) {
+            self.state.squeeze(out);
+        }
+    }
+
+    #[hax_lib::attributes]
+    #[cfg(not(eurydice))]
+    impl Xof<136> for CShake256 {
+        /// CShake256 new state
+        #[hax_lib::ensures(|result| keccak_xof_state_inv(136, result.state.buf_len))]
+        fn new() -> Self {
+            Self {
+                state: KeccakXofState::<1, 136, u64>::new(),
+            }
+        }
+
+        /// CShake256 absorb
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(136, future(self).state.buf_len))]
+        fn absorb(&mut self, input: &[u8]) {
+            self.state.absorb(&[input]);
+        }
+
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
+        #[hax_lib::ensures(|_| keccak_xof_state_inv(136, future(self).state.buf_len))]
+        fn absorb_final(&mut self, input: &[u8]) {
+            self.state.absorb_final::<0x4u8>(&[input]);
+        }
+
+        #[hax_lib::requires(keccak_xof_state_inv(136, self.state.buf_len))]
+        #[hax_lib::ensures(|_|
+            keccak_xof_state_inv(136, self.state.buf_len) &&
+            future(out).len() == out.len()
+        )]
+        fn squeeze(&mut self, out: &mut [u8]) {
+            self.state.squeeze(out);
+        }
+    }
+
+    #[hax_lib::attributes]
+    #[cfg(not(eurydice))]
+    impl<const RATE: usize> CShake<RATE> for CShakeIncremental<RATE>
+    where
+        CShakeIncremental<RATE>: private::Sealed,
+    {
+        #[hax_lib::requires(RATE == 136 || RATE == 168)]
+        #[hax_lib::ensures(|result| result.cshake_inv())]
+        fn new_cshake(name: &[u8], customization: &[u8]) -> Self {
+            let mut state = KeccakXofState::<1, RATE, u64>::new();
+
+            let zeros = [0u8; RATE];
+            let name_bits = name.len() << 3;
+            let customization_bits = customization.len() << 3;
+            let mut b = [0u8; 9];
+
+            // Left bytepad
+            state.absorb(&[&left_encode_byte(RATE as u8)]);
+            // Encode name string
+            let name_bits_encoding = left_encode(name_bits, &mut b);
+            let name_bits_encoding_len = name_bits_encoding.len();
+            state.absorb(&[name_bits_encoding]);
+            state.absorb(&[name]);
+
+            // Encode customization string
+            let customization_encoding = left_encode(customization_bits, &mut b);
+            let customization_encoding_len = customization_encoding.len();
+            state.absorb(&[customization_encoding]);
+            state.absorb(&[customization]);
+
+            // Pad zeros.
+            // `buffer_len` is only ever used modulo `RATE` (to compute `n_zeros`),
+            // so we reduce `name.len()` modulo `RATE` here. This keeps the sum
+            // small enough to provably never overflow `usize` while leaving
+            // `buffer_len % RATE` unchanged.
+            let buffer_len = 2
+                + name.len() % RATE
+                + name_bits_encoding_len
+                + customization_encoding_len
+                + (customization.len() % RATE);
+            let n_zeros = (RATE - (buffer_len % RATE)) % RATE;
+            debug_assert!(n_zeros < RATE);
+            state.absorb(&[&zeros[..n_zeros]]);
+
+            Self { state }
+        }
+
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn absorb_cshake(&mut self, input: &[u8]) {
+            self.state.absorb(&[input]);
+        }
+
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn absorb_final_cshake(&mut self, input: &[u8]) {
+            self.state.absorb_final::<0x4u8>(&[input]);
+        }
+
+        #[hax_lib::requires(self.cshake_inv())]
+        #[hax_lib::ensures(|_| future(self).cshake_inv())]
+        fn squeeze_cshake(&mut self, out: &mut [u8]) {
             self.state.squeeze(out);
         }
     }
