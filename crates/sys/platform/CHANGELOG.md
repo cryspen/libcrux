@@ -7,4 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.3] (2026-01-12)
 
-- [#1265](https://github.com/cryspen/libcrux/pull/1265): Simplify AArch64 feature checks, use atomics instead of static mut (@jrose-signal)
+- [#1265](https://github.com/celabshq/libcrux/pull/1265): Simplify AArch64 feature checks, use atomics instead of static mut (@jrose-signal)

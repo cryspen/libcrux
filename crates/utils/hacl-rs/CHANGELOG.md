@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#1391](https://github.com/cryspen/libcrux/pull/1391): Remove some unnecessary allocations
+- [#1391](https://github.com/celabshq/libcrux/pull/1391): Remove some unnecessary allocations
 
 ## [0.0.4] (2025-11-05)
 
 ## [0.0.3] (2025-06-30)
 
-- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependency `macros`
+- [#993](https://github.com/celabshq/libcrux/pull/993): Update dependency `macros`

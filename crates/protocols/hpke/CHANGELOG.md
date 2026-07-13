@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`, `libcrux-sha3`, `hpke-rs-libcrux`
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`, `libcrux-sha3`, `hpke-rs-libcrux`
 - [#147](https://github.com/celabshq/hpke-rs/pull/147): Add P384 and P521 DHKEM support for the libcrux provider via RustCrypto crates guarded behind the `libcrux-rustcrypto-p-curves` feature flag.
 - [#146](https://github.com/celabshq/hpke-rs/pull/146): Add support for ML-KEM768 and ML-KEM1024 gated behind the `draft-connolly-cfrg-hpke-mlkem` feature flag.
 
@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.1] - 2026-02-02
 
-- [#114](https://github.com/cryspen/libcrux/pull/114): Update dependency `libcrux-sha3`
+- [#114](https://github.com/celabshq/libcrux/pull/114): Update dependency `libcrux-sha3`
 
 ## [0.5.0] - 2025-12-16
 

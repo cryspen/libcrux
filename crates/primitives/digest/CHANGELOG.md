@@ -9,31 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`
 
 ## [0.0.8] (2026-05-13)
 
 ### Changed
 
-- [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`
+- [#1433](https://github.com/celabshq/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`
 
 ## [0.0.7] (2026-03-19)
 
 ### Changed
 
-- [#1368](https://github.com/cryspen/libcrux/pull/1368): Update dependencies: `libcrux-sha3`
+- [#1368](https://github.com/celabshq/libcrux/pull/1368): Update dependencies: `libcrux-sha3`
 
 ## [0.0.6] (2026-02-12)
 
 ### Changed
 
-- [#1324](https://github.com/cryspen/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-sha2`, `libcrux-sha3`, `libcrux-blake2`
+- [#1324](https://github.com/celabshq/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-sha2`, `libcrux-sha3`, `libcrux-blake2`
 
 ## [0.0.5] (2026-01-26)
 
-- [#1297](https://github.com/cryspen/libcrux/pull/1297): Update dependencies
-- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependency `libcrux-sha3`
+- [#1297](https://github.com/celabshq/libcrux/pull/1297): Update dependencies
+- [#1280](https://github.com/celabshq/libcrux/pull/1280): Update dependency `libcrux-sha3`
 
 ## [0.0.4] (2025-11-05)
 
-- [#1179](https://github.com/cryspen/libcrux/pull/1179): Initial version of `libcrux-digest`
+- [#1179](https://github.com/celabshq/libcrux/pull/1179): Initial version of `libcrux-digest`

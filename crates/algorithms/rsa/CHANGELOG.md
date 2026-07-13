@@ -9,29 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-sha2`
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-sha2`
 
 ## [0.0.7] (2026-05-13)
 
 ### Changed
 
-- [#1434](https://github.com/cryspen/libcrux/pull/1434): Update dependencies: `libcrux-hacl-rs`
-- [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-sha2`
+- [#1434](https://github.com/celabshq/libcrux/pull/1434): Update dependencies: `libcrux-hacl-rs`
+- [#1433](https://github.com/celabshq/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-sha2`
 
 ## [0.0.6] (2026-02-12)
 
 ### Changed
 
-- [#1324](https://github.com/cryspen/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-sha2`
+- [#1324](https://github.com/celabshq/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-sha2`
 
 
 ## [0.0.5] (2026-01-26)
 
-- [#1297](https://github.com/cryspen/libcrux/pull/1297): Update dependencies
+- [#1297](https://github.com/celabshq/libcrux/pull/1297): Update dependencies
 
 ## [0.0.4] (2025-11-05)
 
 ## [0.0.3] (2025-06-30)
 
-- [#922](https://github.com/cryspen/libcrux/pull/922): Upgrade `libcrux-traits` and `libcrux-sha2` dependencies to latest, `no_std`-compatible versions
-- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependencies `hacl-rs` and `macros`
+- [#922](https://github.com/celabshq/libcrux/pull/922): Upgrade `libcrux-traits` and `libcrux-sha2` dependencies to latest, `no_std`-compatible versions
+- [#993](https://github.com/celabshq/libcrux/pull/993): Update dependencies `hacl-rs` and `macros`

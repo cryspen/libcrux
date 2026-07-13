@@ -7,4 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.1-pre.1] (2026-07-13)
 
-- [#1382](https://github.com/cryspen/libcrux/pull/1382): Initial version of this crate
+- [#1382](https://github.com/celabshq/libcrux/pull/1382): Initial version of this crate
