@@ -41,7 +41,9 @@ fn _signature_serialize_spec_helpers() {}
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 400 --fuel 1 --ifuel 1 --split_queries always""#)]
+#[hax_lib::fstar::before(
+    r#"#push-options "--z3rlimit 400 --fuel 1 --ifuel 1 --split_queries always""#
+)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 // FIPS 204 §7.2 Algorithm 20 (sigEncode) sizing requirement: the
 // serialized signature is `commitment_hash || signer_response || hint`,
@@ -157,7 +159,9 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::verification_status(panic_free)]
-#[hax_lib::fstar::before(r#"#push-options "--z3rlimit 1500 --fuel 2 --ifuel 4 --split_queries always""#)]
+#[hax_lib::fstar::before(
+    r#"#push-options "--z3rlimit 1500 --fuel 2 --ifuel 4 --split_queries always""#
+)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 // FIPS 204 §7.2 (sigDecode) sizing: the serialized signature is the
 // concatenation `commitment_hash || signer_response || hint`, with
@@ -223,22 +227,26 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // Anchor the post-split lengths so the loop invariants below can
     // refer to `Seq.length signer_response_serialized` and
     // `Seq.length hint_serialized` directly.
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         assert (Seq.length $rest_of_serialized ==
                   v $signature_size - v $commitment_hash_size);
         assert (Seq.length $signer_response_serialized ==
                   v $gamma1_ring_element_size * v $columns_in_a);
         assert (Seq.length $hint_serialized ==
-                  v $max_ones_in_hint + v $rows_in_a)"#);
+                  v $max_ones_in_hint + v $rows_in_a)"#
+    );
 
     for i in 0..columns_in_a {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             v $i <= v $columns_in_a /\
             (v $gamma1_exponent == 17 \/ v $gamma1_exponent == 19) /\
             v $gamma1_ring_element_size == 32 * (1 + v $gamma1_exponent) /\
             Seq.length $signer_response_serialized ==
                 v $gamma1_ring_element_size * v $columns_in_a /\
-            Seq.length $out_signer_response == v $columns_in_a"#));
+            Seq.length $out_signer_response == v $columns_in_a"#
+        ));
         encoding::gamma1::deserialize::<SIMDUnit>(
             gamma1_exponent,
             &signer_response_serialized
@@ -255,13 +263,17 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // spec decoding followed by zeros, which is what `verify_internal`'s
     // proof obligation needs.
     for i in 0..rows_in_a {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
-            v $i <= v $rows_in_a /\ Seq.length $out_hint == v $rows_in_a"#));
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
+            v $i <= v $rows_in_a /\ Seq.length $out_hint == v $rows_in_a"#
+        ));
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+            hax_lib::loop_invariant!(|j: usize| fstar!(
+                r#"
                 v $j <= 256 /\
                 v $i < v $rows_in_a /\
-                Seq.length $out_hint == v $rows_in_a"#));
+                Seq.length $out_hint == v $rows_in_a"#
+            ));
             out_hint[i][j] = 0;
         }
     }
@@ -280,12 +292,14 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     }
 
     for j in previous_true_hints_seen..max_ones_in_hint {
-        hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|j: usize| fstar!(
+            r#"
             v $j >= v $previous_true_hints_seen /\
             v $j <= v $max_ones_in_hint /\
             v $previous_true_hints_seen <= v $max_ones_in_hint /\
             Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
-            v $rows_in_a > 0"#));
+            v $rows_in_a > 0"#
+        ));
         if hint_serialized[j] != 0 {
             // ensures padding indices are zero
             // return Err(VerificationError::MalformedHintError);
@@ -335,10 +349,12 @@ fn validate_hint_rows(
     let mut malformed_hint = false;
 
     for i in 0..rows_in_a {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             v $i <= v $rows_in_a /\
             v $previous_true_hints_seen <= v $max_ones_in_hint /\
-            Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a"#));
+            Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a"#
+        ));
         if !malformed_hint {
             let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
 
@@ -348,14 +364,15 @@ fn validate_hint_rows(
                 malformed_hint = true;
             } else {
                 for j in previous_true_hints_seen..current_true_hints_seen {
-                    hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+                    hax_lib::loop_invariant!(|j: usize| fstar!(
+                        r#"
                         v $j >= v $previous_true_hints_seen /\
                         v $j <= v $current_true_hints_seen /\
                         v $current_true_hints_seen <= v $max_ones_in_hint /\
                         Seq.length $hint_serialized ==
-                            v $max_ones_in_hint + v $rows_in_a"#));
-                    if j > previous_true_hints_seen
-                        && hint_serialized[j] <= hint_serialized[j - 1]
+                            v $max_ones_in_hint + v $rows_in_a"#
+                    ));
+                    if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1]
                     {
                         malformed_hint = true;
                     }
@@ -389,11 +406,13 @@ fn write_hint_rows(
     let mut previous_true_hints_seen = 0usize;
 
     for i in 0..rows_in_a {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             v $i <= v $rows_in_a /\
             v $previous_true_hints_seen <= v $max_ones_in_hint /\
             Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
-            Seq.length $out_hint == v $rows_in_a"#));
+            Seq.length $out_hint == v $rows_in_a"#
+        ));
         let current_true_hints_seen = hint_serialized[max_ones_in_hint + i] as usize;
         // Guard duplicates the validate_hint_rows check; it is also
         // necessary as a pre for the inner slice access below.
@@ -404,13 +423,15 @@ fn write_hint_rows(
             // validate_hint_rows; defensive only.
         } else {
             for j in previous_true_hints_seen..current_true_hints_seen {
-                hax_lib::loop_invariant!(|j: usize| fstar!(r#"
+                hax_lib::loop_invariant!(|j: usize| fstar!(
+                    r#"
                     v $j >= v $previous_true_hints_seen /\
                     v $j <= v $current_true_hints_seen /\
                     v $current_true_hints_seen <= v $max_ones_in_hint /\
                     Seq.length $hint_serialized == v $max_ones_in_hint + v $rows_in_a /\
                     Seq.length $out_hint == v $rows_in_a /\
-                    v $i < v $rows_in_a"#));
+                    v $i < v $rows_in_a"#
+                ));
                 set_hint(out_hint, i, hint_serialized[j] as usize);
             }
             previous_true_hints_seen = current_true_hints_seen;

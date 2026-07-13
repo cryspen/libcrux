@@ -1,6 +1,6 @@
-use hax_lib::{forall, implies, Prop};
 #[cfg(hax)]
 use hax_lib::prop::*;
+use hax_lib::{forall, implies, Prop};
 
 /// Checks if all slices in an array have the same length.
 pub(crate) fn slices_same_len<const N: usize>(slices: &[&[u8]; N]) -> Prop {
@@ -15,8 +15,12 @@ pub(crate) fn slices_same_len<const N: usize>(slices: &[&[u8]; N]) -> Prop {
 #[cfg(hax)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 pub(crate) fn modifies_range(a: &[u8], fa: &[u8], lo: usize, hi: usize) -> Prop {
-    forall(|k: usize| implies(k < a.len() && k < fa.len() && (k < lo || k >= hi), a[k] == fa[k]))
-        & (a.len() == fa.len()).to_prop()
+    forall(|k: usize| {
+        implies(
+            k < a.len() && k < fa.len() && (k < lo || k >= hi),
+            a[k] == fa[k],
+        )
+    }) & (a.len() == fa.len()).to_prop()
 }
 
 /// Frame composition: a modification of `[lo,mid)` followed by a

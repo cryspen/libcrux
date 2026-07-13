@@ -35,7 +35,9 @@ T.is_i32b_poly_avx2 4211177 ${re}_future /\
         #[cfg(hax)]
         let s8 = re.clone();
         scale_montgomery_avx2(re);
-        hax_lib::fstar!(r#"PI.lemma_invert_top (C.simd_units_to_array (T.chunks_of_re_avx2 s0)) (C.simd_units_to_array (T.chunks_of_re_avx2 s8)) (C.simd_units_to_array (T.chunks_of_re_avx2 re))"#);
+        hax_lib::fstar!(
+            r#"PI.lemma_invert_top (C.simd_units_to_array (T.chunks_of_re_avx2 s0)) (C.simd_units_to_array (T.chunks_of_re_avx2 s8)) (C.simd_units_to_array (T.chunks_of_re_avx2 re))"#
+        );
     }
 
     unsafe { inv_inner(re) };
@@ -1491,7 +1493,8 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     outer_3_plus::<{ (14 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1024112>(re);
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2725464>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
     assert_norm (pow2 0 == 1);
     assert_norm (pow2 1 == 2);
     assert_norm (pow2 4 == 16);
@@ -1545,7 +1548,8 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     assert (forall i. (to_i32x8 (Seq.index ${re} 30).f_value i, to_i32x8 (Seq.index ${re} 31).f_value i) ==
       inv_ntt_step (mk_i32 (zeta_r 16)) (to_i32x8 (Seq.index ${orig_re} 30).f_value i, to_i32x8 (Seq.index ${orig_re} 31).f_value i));
     lemma_inv_l3_avx2_assemble ${orig_re} ${re}
-    "#);
+    "#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -1816,7 +1820,8 @@ unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
     let s7 = re.clone();
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1826347>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
     assert_norm (zeta_r 15 == 2680103);
     assert_norm (zeta_r 14 == 3111497);
     assert_norm (zeta_r 13 == (-2884855));
@@ -1827,7 +1832,8 @@ unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
     assert_norm (zeta_r 8 == 1826347);
     lemma_inv_l4_transport ${orig_re} ${s1} ${s2} ${s3} ${s4} ${s5} ${s6} ${s7} ${re};
     lemma_inv_l4_avx2_assemble ${orig_re} ${re}
-    "#);
+    "#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -2010,14 +2016,16 @@ unsafe fn invert_ntt_at_layer_5(re: &mut AVX2RingElement) {
     let s3 = re.clone();
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 237124>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
     assert_norm (zeta_r 7 == 466468);
     assert_norm (zeta_r 6 == (-876248));
     assert_norm (zeta_r 5 == (-777960));
     assert_norm (zeta_r 4 == 237124);
     lemma_inv_l5_transport ${orig_re} ${s1} ${s2} ${s3} ${re};
     lemma_inv_l5_avx2_assemble ${orig_re} ${re}
-    "#);
+    "#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -2153,12 +2161,14 @@ unsafe fn invert_ntt_at_layer_6(re: &mut AVX2RingElement) {
     let s1 = re.clone();
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
     assert_norm (zeta_r 3 == (-518909));
     assert_norm (zeta_r 2 == (-2608894));
     lemma_inv_l6_transport ${orig_re} ${s1} ${re};
     lemma_inv_l6_avx2_assemble ${orig_re} ${re}
-    "#);
+    "#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -2174,7 +2184,6 @@ unsafe fn invert_ntt_at_layer_7(re: &mut AVX2RingElement) {
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 }
-
 
 #[inline(always)]
 #[allow(unsafe_code)]
@@ -3815,19 +3824,23 @@ unsafe fn scale_montgomery_avx2(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let s8 = re.clone();
     for i in 0..re.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
 T.is_i32b_poly_avx2 (256 * 8380416) s8 /\
 (forall (k:nat). k < v $i ==>
    (forall (l:nat). l < 8 ==> Spec.Utils.is_i32b 4211177 (to_i32x8 (Seq.index ${re} k).f_value (mk_u64 l))) /\
    PI.chunk_scaled (Seq.index (T.chunks_of_re_avx2 s8) k) (Seq.index (T.chunks_of_re_avx2 ${re}) k)) /\
 (forall (k:nat). (k >= v $i /\ k < 32) ==> (Seq.index ${re} k) == (Seq.index s8 k))
-"#));
+"#
+        ));
         #[cfg(hax)]
         let re_old = re.clone();
         #[cfg(hax)]
         let orig_unit = re[i];
         re[i].value = arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR);
-        hax_lib::fstar!(r#"lemma_inv_scale_step s8 re i orig_unit; lemma_inv_scale_carryover s8 re_old re i"#);
+        hax_lib::fstar!(
+            r#"lemma_inv_scale_step s8 re i orig_unit; lemma_inv_scale_carryover s8 re_old re i"#
+        );
     }
     hax_lib::fstar!(r#"lemma_inv_scale_finalize s8 re"#);
 }

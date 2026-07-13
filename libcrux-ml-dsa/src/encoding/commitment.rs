@@ -20,8 +20,7 @@ fn serialize<SIMDUnit: Operations>(re: &PolynomialRingElement<SIMDUnit>, seriali
         ));
         SIMDUnit::commitment_serialize(
             &re.simd_units[i],
-            &mut serialized
-                [i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
+            &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
         );
     }
 }

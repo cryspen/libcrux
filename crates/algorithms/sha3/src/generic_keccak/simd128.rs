@@ -178,10 +178,8 @@ fn squeeze2_blocks<const RATE: usize>(
     );
     s.squeeze2::<RATE>(out0, out1, 0, RATE);
     for i in 1..blocks {
-        hax_lib::loop_invariant!(|i: usize| (out0.len() == out0_len
-            && out1.len() == out1_len)
-            .to_prop()
-            & {
+        hax_lib::loop_invariant!(
+            |i: usize| (out0.len() == out0_len && out1.len() == out1_len).to_prop() & {
                 fstar!(
                     r#"v $i >= 1 /\ v $i <= v $blocks /\
                        (v $outlen < v Core_models.Num.impl_usize__MAX - 200 ==>
@@ -213,7 +211,8 @@ fn squeeze2_blocks<const RATE: usize>(
                                $RATE <: Seq.seq u8)
                             (v $i * v $RATE)))"#
                 )
-            });
+            }
+        );
         #[cfg(hax)]
         lemma_mul_succ_le(i, blocks, RATE);
 

@@ -14,9 +14,9 @@
 //! gets its own clean `.fst` and the per-module SMT context is
 //! actually small.
 
-pub(crate) mod wrappers;
 pub(crate) mod load;
 pub(crate) mod store;
+pub(crate) mod wrappers;
 
 // Re-export `uint64x2_t` so callers (`neon.rs`, `generic_keccak`) can
 // reference `crate::simd::arm64::uint64x2_t` exactly as before the split.

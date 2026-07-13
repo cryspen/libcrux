@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt,
-    polynomial::PolynomialRingElement, simd::traits::Operations,
+    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::PolynomialRingElement,
+    simd::traits::Operations,
 };
 
 #[cfg(hax)]
@@ -40,8 +40,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
         ));
         SIMDUnit::t0_serialize(
             &re.simd_units[i],
-            &mut serialized
-                [i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
+            &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
         );
     }
 }
@@ -115,8 +114,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
                   Spec.Utils.is_i32b_array_opaque (v ${NTT_OUTPUT_BOUND})
                     (i0._super_i2.f_repr (Seq.index (Seq.index ring_elements k).f_simd_units j))))"#
         ));
-        let bytes =
-            &serialized[i * RING_ELEMENT_OF_T0S_SIZE..(i + 1) * RING_ELEMENT_OF_T0S_SIZE];
+        let bytes = &serialized[i * RING_ELEMENT_OF_T0S_SIZE..(i + 1) * RING_ELEMENT_OF_T0S_SIZE];
         deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
         // Lift `pow2 12` per-lane → `NTT_BASE_BOUND = FIELD_MAX` per-lane,
         // then to `is_bounded_poly FIELD_MAX` so `ntt`'s pre discharges.
@@ -141,7 +139,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
     // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
     // required by the post (machine-checked here in the panic_free body).
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         let aux (k: nat{k < Seq.length ring_elements}) :
           Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
                    (mk_usize 75423744) (Seq.index ring_elements k)) =
@@ -150,7 +149,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         in
         Classical.forall_intro aux;
         Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
-          (mk_usize 75423744) ring_elements"#);
+          (mk_usize 75423744) ring_elements"#
+    );
 }
 
 #[cfg(test)]

@@ -1745,13 +1745,15 @@ unsafe fn ntt_at_layer_0(re: &mut AVX2RingElement) {
         re, 30, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154, 1976782,
     );
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert (l0_post orig_re ${re});
 lemma_l0post_to_sym orig_re ${re};
 assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX == 8380416);
 lemma_l0_full_avx2 orig_re ${re}
   (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND + 7 * v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX)
-"#);
+"#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -1789,13 +1791,15 @@ unsafe fn ntt_at_layer_1(re: &mut AVX2RingElement) {
     butterfly_4(re, 28, 1285669, -1584928, -812732, -1439742);
     butterfly_4(re, 30, -3019102, -3881060, -3628969, 3839961);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert (l1_post orig_re ${re});
 lemma_l1post_to_sym orig_re ${re};
 assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX == 8380416);
 lemma_l1_full_avx2 orig_re ${re}
   (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND + 6 * v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX)
-"#);
+"#
+    );
 }
 
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
@@ -1833,13 +1837,15 @@ unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
     butterfly_8(re, 28, 3900724, -2556880);
     butterfly_8(re, 30, 2071892, -2797779);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert (l2_post orig_re ${re});
 lemma_l2post_to_sym orig_re ${re};
 assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX == 8380416);
 lemma_l2_full_avx2 orig_re ${re}
   (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND + 5 * v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX)
-"#);
+"#
+    );
 }
 
 /// This is equivalent to the pqclean 0 and 1
@@ -2114,7 +2120,9 @@ let q76_bound
 #pop-options
 "#
     )]
-    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#)]
+    #[hax_lib::fstar::options(
+        r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#
+    )]
     #[hax_lib::requires(fstar!(r#"
         v $bnd + 8380416 < pow2 31 /\
         v $step_by > 0 /\
@@ -2190,7 +2198,9 @@ let q76_bound
     // 4-pair REAL quad (= Avx2NttTheory.quad's contract; body = 4 real mul_bf).
     // lo-units base..base+3 paired with +sb.
     #[inline(always)]
-    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#)]
+    #[hax_lib::fstar::options(
+        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
+    )]
     #[hax_lib::requires(fstar!(r#"
         v $bnd + 8380416 < pow2 31 /\
         v $sb > 0 /\ v $base + 3 + v $sb < 32 /\ v $base + 4 <= v $base + v $sb /\
@@ -2265,7 +2275,9 @@ let q76_bound
     // standalone bound + L6-value drivers.  Kept SEPARATE so the 7_6 fn's VC stays
     // lean (just the layer-atom composition).
     #[inline(always)]
-    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#)]
+    #[hax_lib::fstar::options(
+        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
+    )]
     #[hax_lib::requires(fstar!(r#"
         Avx2NttTheory.is_i32b_poly_avx2 8380416 $re /\
         $field_modulus ==
@@ -2444,7 +2456,9 @@ let q76_bound
 "#))]
 unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     #[inline(always)]
-    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#)]
+    #[hax_lib::fstar::options(
+        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
+    )]
     #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     #[hax_lib::requires(fstar!(r#"
         (v v_STEP == 8 \/ v v_STEP == 16 \/ v v_STEP == 32) /\
@@ -2474,7 +2488,9 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
         // (mont-mul on unit index+step_by, then sub/add cross) + the
         // unit_post_cross_avx2 producer proof.
         #[inline(always)]
-        #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#)]
+        #[hax_lib::fstar::options(
+            r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#
+        )]
         #[hax_lib::requires(fstar!(r#"
             v $step_by > 0 /\
             v $index + v $step_by < 32 /\
@@ -3073,7 +3089,9 @@ let lemma_window_forall32_from_modwin
 "#))]
 pub(crate) fn ntt(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#)]
+    #[hax_lib::fstar::options(
+        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
+    )]
     #[hax_lib::fstar::before(
         r#"
 (* CHUNKS-EQ bridge helper: the LOCAL `chunks_of_re_avx2` (Ntt.fst) and the

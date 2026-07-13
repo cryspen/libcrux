@@ -58,7 +58,8 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
 // obligations (i/13 < 8 for to_i32x8, i/8 < 13 for the output) discharge
 // cheaply.  Stating this forall inside `serialize` re-checks its well-formedness
 // in the SMTPat-polluted body context, where the trivial div facts saturate.
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--ifuel 0 --z3rlimit 400"
 let lemma_t0_serialize_post
       (out: t_Slice u8)
@@ -95,7 +96,8 @@ let lemma_t0_serialize_post
     with (i / 13) (i % 13)
   )
 #pop-options
-"#)]
+"#
+)]
 #[inline(always)]
 #[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 340 --split_queries always"#)]
 #[hax_lib::requires(fstar!(r#"Seq.length $out == 13 /\
@@ -111,16 +113,20 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     let simd_unit_changed = change_interval(simd_unit);
-    hax_lib::fstar!(r#"reveal_opaque_arithmetic_ops #I32;
+    hax_lib::fstar!(
+        r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_changed j) >= 0 /\
                   v (to_i32x8 $simd_unit_changed j) <= pow2 13 - 1);
-        i32_lt_pow2_n_to_bit_zero_lemma 13 $simd_unit_changed"#);
+        i32_lt_pow2_n_to_bit_zero_lemma 13 $simd_unit_changed"#
+    );
     let bits_sequential = serialize_aux(simd_unit_changed);
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
 
     out.copy_from_slice(&serialized[0..13]);
-    hax_lib::fstar!(r#"lemma_t0_serialize_post $out $bits_sequential $simd_unit_changed $simd_unit"#);
+    hax_lib::fstar!(
+        r#"lemma_t0_serialize_post $out $bits_sequential $simd_unit_changed $simd_unit"#
+    );
 }
 
 #[inline(always)]

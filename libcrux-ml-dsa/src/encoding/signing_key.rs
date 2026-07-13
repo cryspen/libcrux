@@ -66,8 +66,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
         verification_key,
         &mut verification_key_hash,
     );
-    signing_key_serialized[SEED_SIGNING_END..VK_HASH_END]
-        .copy_from_slice(&verification_key_hash);
+    signing_key_serialized[SEED_SIGNING_END..VK_HASH_END].copy_from_slice(&verification_key_hash);
 
     let s1_2_len = s1_2.len();
     let t0_offset_base = VK_HASH_END + s1_2_len * error_ring_element_size;
@@ -100,11 +99,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
         );
         let lo = VK_HASH_END + i * error_ring_element_size;
         let hi = lo + error_ring_element_size;
-        encoding::error::serialize::<SIMDUnit>(
-            eta,
-            &s1_2[i],
-            &mut signing_key_serialized[lo..hi],
-        );
+        encoding::error::serialize::<SIMDUnit>(eta, &s1_2[i], &mut signing_key_serialized[lo..hi]);
     }
 
     let t0_len = t0.len();
@@ -142,9 +137,6 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
         );
         let lo = t0_offset_base + i * RING_ELEMENT_OF_T0S_SIZE;
         let hi = lo + RING_ELEMENT_OF_T0S_SIZE;
-        encoding::t0::serialize::<SIMDUnit>(
-            &t0[i],
-            &mut signing_key_serialized[lo..hi],
-        );
+        encoding::t0::serialize::<SIMDUnit>(&t0[i], &mut signing_key_serialized[lo..hi]);
     }
 }

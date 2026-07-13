@@ -102,7 +102,11 @@ pub fn test_infinity_norm_exceeds_matches_spec() {
     for _ in 0..ITERATIONS {
         let coeffs = random_simd_unit_signed(&mut rng, GAMMA1_19);
         let bound = random_coefficient(&mut rng, GAMMA1_19);
-        let max_abs = coeffs.iter().map(|x| x.unsigned_abs() as i32).max().unwrap();
+        let max_abs = coeffs
+            .iter()
+            .map(|x| x.unsigned_abs() as i32)
+            .max()
+            .unwrap();
         let expected = max_abs >= bound;
         // TODO: requires Operations + impl-type accessibility.
         // Intended body:

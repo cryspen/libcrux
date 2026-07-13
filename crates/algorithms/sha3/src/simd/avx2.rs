@@ -12,9 +12,9 @@
 //! Keeping this file content-free is what tells hax NOT to emit a
 //! `Libcrux_sha3.Simd.Avx2.Bundle.fst`.
 
-pub(crate) mod wrappers;
 pub(crate) mod load;
 pub(crate) mod store;
+pub(crate) mod wrappers;
 
 // `Libcrux_sha3.Simd.Avx2.fst` is referenced by the (frozen)
 // equivalence proofs (`EquivImplSpec.{Keccakf,Sponge}.Avx2.*`) and

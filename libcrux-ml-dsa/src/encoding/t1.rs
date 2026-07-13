@@ -17,13 +17,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 ) {
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
     for i in 0..re.simd_units.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(
-            r#"v i <= 32 /\ Seq.length serialized == 320"#
-        ));
+        hax_lib::loop_invariant!(|i: usize| fstar!(r#"v i <= 32 /\ Seq.length serialized == 320"#));
         SIMDUnit::t1_serialize(
             &re.simd_units[i],
-            &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT
-                ..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
+            &mut serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT],
         );
     }
 }

@@ -52,7 +52,10 @@ pub(crate) mod generic {
 
     #[inline(always)]
     #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
-    #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always"))]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always")
+    )]
     // FOLLOW-UP (2026-05-08): the requires clause
     //   signing_key.len() == SIGNING_KEY_SIZE && verification_key.len() == VERIFICATION_KEY_SIZE
     // (added by 60a8497e8) was dropped here to restore HEAD to a clean verify.
@@ -235,7 +238,10 @@ pub(crate) mod generic {
     // Like verify_internal, the pre-loop VC (5 split_at + s1/s2/t0 deserialize +
     // matrix_flat + derive_message_representative + shake) saturates the module
     // default rlimit as one monolithic query; split + z3refresh lands it.
-    #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh"))]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh")
+    )]
     // Helper predicate for the rejection loop's invariant hint clause: once a
     // signature is accepted (`hint = Some h`), its Hamming weight stays within
     // MAX_ONES_IN_HINT.  Phrased as a top-level `match` (clean context) so the
@@ -675,7 +681,10 @@ let hint_count_bounded
     // without it, Z3's state accumulates across sub-queries in the full-module build
     // and that one query drifts past 800 (flaky cold); with a fresh solver per
     // sub-query it lands at ~640/800 deterministically.  (44/65 use <45.)
-    #[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh"))]
+    #[cfg_attr(
+        hax,
+        hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh")
+    )]
     pub(crate) fn verify_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,

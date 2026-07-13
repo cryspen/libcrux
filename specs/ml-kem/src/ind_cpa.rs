@@ -56,10 +56,8 @@ pub fn sample_vector_cbd<const RANK: usize>(
     domain_separator: u8,
 ) -> Vector<RANK> {
     createi(|i| {
-        let prf_input: [u8; 33] = concat_byte::<32, 33>(
-            seed.try_into().unwrap(),
-            domain_separator + i as u8,
-        );
+        let prf_input: [u8; 33] =
+            concat_byte::<32, 33>(seed.try_into().unwrap(), domain_separator + i as u8);
         sample_secret(eta, &prf_input)
     })
 }
@@ -276,11 +274,7 @@ pub fn encrypt<
     let A_as_ntt: Matrix<RANK> = sample_matrix_A(seed_for_A, false)?;
 
     encrypt_unpacked::<RANK, U_SIZE, V_SIZE, CT_SIZE>(
-        params,
-        &t_as_ntt,
-        &A_as_ntt,
-        message,
-        randomness,
+        params, &t_as_ntt, &A_as_ntt, message, randomness,
     )
 }
 

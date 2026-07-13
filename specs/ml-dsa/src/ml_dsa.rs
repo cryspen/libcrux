@@ -287,9 +287,7 @@ pub fn sign_internal<
     // try_sign_iteration precondition.  We assume this invariant rather
     // than threading it through F*'s multi-state loop_invariant syntax.
     for _attempt in 0..1000 {
-        hax_lib::fstar!(
-            r#"assume(Rust_primitives.Integers.v kappa <= 65528)"#
-        );
+        hax_lib::fstar!(r#"assume(Rust_primitives.Integers.v kappa <= 65528)"#);
         if !signed {
             match try_sign_iteration::<K, L, SIG_SIZE, W1_BYTES, C_TILDE_LEN>(
                 &a_hat, &s1_hat, &s2_hat, &t0_hat, &mu, &rho_pp, kappa, params,
@@ -361,16 +359,14 @@ pub fn verify_internal<
                         let az_hat = matrix_vector_ntt(&a_hat, &z_hat);
                         let c_hat = ntt(c);
                         let two_d = 1i32 << D;
-                        let t1_scaled: [Polynomial; K] = createi(|i| {
-                            createi(|j| mod_q(t1[i][j] as i64 * two_d as i64))
-                        });
+                        let t1_scaled: [Polynomial; K] =
+                            createi(|i| createi(|j| mod_q(t1[i][j] as i64 * two_d as i64)));
                         let t1_2d_hat = vector_ntt(&t1_scaled);
                         let ct1_hat: [Polynomial; K] = createi(|i| {
                             crate::polynomial::poly_pointwise_mul(&c_hat, &t1_2d_hat[i])
                         });
-                        let w_approx_hat: [Polynomial; K] = createi(|i| {
-                            crate::polynomial::poly_sub(&az_hat[i], &ct1_hat[i])
-                        });
+                        let w_approx_hat: [Polynomial; K] =
+                            createi(|i| crate::polynomial::poly_sub(&az_hat[i], &ct1_hat[i]));
                         let w_approx: [Polynomial; K] = vector_intt(&w_approx_hat);
 
                         // 10. w'1 ← UseHint(h, w'_Approx)
@@ -385,8 +381,7 @@ pub fn verify_internal<
                         let mut hash_input = [0u8; 1088];
                         hash_input[..64].copy_from_slice(&mu);
                         hash_input[64..64 + W1_BYTES].copy_from_slice(&w1_encoded);
-                        let c_tilde_prime_full: [u8; 64] =
-                            h(&hash_input[..64 + W1_BYTES]);
+                        let c_tilde_prime_full: [u8; 64] = h(&hash_input[..64 + W1_BYTES]);
                         let mut c_tilde_prime = [0u8; C_TILDE_LEN];
                         c_tilde_prime.copy_from_slice(&c_tilde_prime_full[..C_TILDE_LEN]);
 
@@ -426,10 +421,7 @@ pub const M_PRIME_BUF_LEN: usize = 8192 + 257;
 /// slice the prefix.
 #[hax_lib::fstar::options("--z3rlimit 300")]
 #[hax_lib::requires(ctx.len() <= 255 && message.len() <= 8192)]
-fn format_m_prime(
-    message: &[u8],
-    ctx: &[u8],
-) -> ([u8; M_PRIME_BUF_LEN], usize) {
+fn format_m_prime(message: &[u8], ctx: &[u8]) -> ([u8; M_PRIME_BUF_LEN], usize) {
     let mut buf = [0u8; M_PRIME_BUF_LEN];
     buf[0] = M_PRIME_PREFIX_PURE;
     buf[1] = ctx.len() as u8;
@@ -450,12 +442,7 @@ fn format_m_prime(
     && PK_SIZE == 32 + 320 * K
     && SK_SIZE >= 128 + (L + K) * 32 * (if params.eta == 2 { 3 } else { 4 }) + K * 416
 )]
-pub fn keygen<
-    const K: usize,
-    const L: usize,
-    const PK_SIZE: usize,
-    const SK_SIZE: usize,
->(
+pub fn keygen<const K: usize, const L: usize, const PK_SIZE: usize, const SK_SIZE: usize>(
     xi: &[u8; 32],
     params: &MlDsaParams,
 ) -> ([u8; PK_SIZE], [u8; SK_SIZE]) {
@@ -507,12 +494,7 @@ pub fn sign<
     && pk.len() >= 32 + 320 * K
     && sigma.len() >= C_TILDE_LEN + L * 32 * (if params.gamma1 == (1i32 << 17) { 18 } else { 20 }) + params.omega + K
 )]
-pub fn verify<
-    const K: usize,
-    const L: usize,
-    const C_TILDE_LEN: usize,
-    const W1_BYTES: usize,
->(
+pub fn verify<const K: usize, const L: usize, const C_TILDE_LEN: usize, const W1_BYTES: usize>(
     pk: &[u8],
     message: &[u8],
     sigma: &[u8],

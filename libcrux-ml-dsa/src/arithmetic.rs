@@ -26,12 +26,14 @@ pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
 ) -> bool {
     let mut result = false;
     for i in 0..vector.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"v i <= Seq.length $vector /\
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"v i <= Seq.length $vector /\
             ((b2t (not result)) ==>
               (forall (k:nat). k < v i ==>
                 (forall (j:nat). j < 32 ==>
                    Spec.Utils.is_i32b_array_opaque (v $bound)
-                     (i0._super_i2.f_repr (Seq.index (Seq.index $vector k).f_simd_units j)))))"#));
+                     (i0._super_i2.f_repr (Seq.index (Seq.index $vector k).f_simd_units j)))))"#
+        ));
         // Bridge the slice-level FIELD_MAX bound to the per-row poly bound (and unfold
         // it) so infinity_norm_exceeds' per-lane forall precondition discharges.
         hax_lib::fstar!(

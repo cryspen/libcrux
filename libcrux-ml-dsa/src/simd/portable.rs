@@ -97,9 +97,7 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut Coefficients, rhs: &Coeff
       Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}_future) i))"#))]
-pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(
-    simd_unit: &mut Coefficients,
-) {
+pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _orig = simd_unit.clone();
     hax_lib::fstar!(
@@ -197,7 +195,8 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
     let _orig = simd_units.clone();
 
     for i in 0..simd_units.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             v $i <= 32 /\
             (forall (j:nat{j < 32}). j < v $i ==>
                 Spec.Utils.is_i32b_array_opaque 8380416
@@ -208,12 +207,14 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
                     Spec.MLDSA.Math.mod_q
                         (v (Seq.index (Seq.index ${simd_units} j).Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values k)))) /\
             (forall (j:nat{j < 32}). j >= v $i ==>
-                Seq.index ${simd_units} j == Seq.index ${_orig} j)"#));
+                Seq.index ${simd_units} j == Seq.index ${_orig} j)"#
+        ));
 
         arithmetic::reduce(&mut simd_units[i]);
     }
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
         let pf (j: nat{j < 32}) : Lemma
             (ensures Spec.Utils.forall8 (fun (k: nat{k < 8}) ->
@@ -234,7 +235,8 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
             Classical.forall_intro pfk
         in
         Classical.forall_intro pf
-    "#);
+    "#
+    );
 }
 
 // Functional NTT surfacing (Track B).  `ntt_with_proof` carries the strong
@@ -250,7 +252,10 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
 // (createi over `f_repr`) equals `simd_units_to_array (chunks_of_re re)` (the
 // view the free fn proves against).  For Portable `f_repr c == c.f_values`
 // (defeq), so both reduce element-wise to `(re[j/8]).f_values[j%8]`.
-#[cfg_attr(hax, hax_lib::fstar::before(r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        r#"
 let lemma_ntt_view_portable
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
     : Lemma (Libcrux_ml_dsa.Simd.Traits.ntt_poly_view re ==
@@ -280,7 +285,9 @@ let lemma_ntt_view_portable
     in
     Classical.forall_intro aux;
     Seq.lemma_eq_intro lhs rhs
-"#))]
+"#
+    )
+)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.forall32 (fun (i: nat{i < 32}) ->
         Spec.Utils.is_i32b_array_opaque
@@ -320,11 +327,16 @@ pub(crate) fn ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_
 // 32×8 flatten) and `Spec.MLDSA.Math.to_mont` (byte-identical to — hence defeq
 // with — `Portable.Invntt.to_mont`, which the free fn's post uses;
 // `lemma_to_mont_eq` makes that bridge explicit for the intro).
-#[cfg_attr(hax, hax_lib::fstar::before(r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        r#"
 let lemma_to_mont_eq (y: t_Array i32 (mk_usize 256))
     : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt.to_mont y == Spec.MLDSA.Math.to_mont y)
   = ()
-"#))]
+"#
+    )
+)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.forall32 (fun (i: nat{i < 32}) ->
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})

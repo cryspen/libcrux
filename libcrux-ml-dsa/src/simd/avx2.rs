@@ -69,9 +69,7 @@ pub(crate) fn infinity_norm_exceeds_with_proof(simd_unit: &AVX2SIMDUnit, bound: 
       Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) i)
         (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}_future) i))"#))]
-pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(
-    simd_unit: &mut AVX2SIMDUnit,
-) {
+pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(simd_unit: &mut AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig = *simd_unit;
     shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value);
@@ -165,7 +163,8 @@ pub(crate) fn add_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig = *lhs;
     arithmetic::add(&mut lhs.value, &rhs.value);
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_pre)
             (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
@@ -190,7 +189,8 @@ pub(crate) fn add_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
         in
         Classical.forall_intro pfk
-    "#);
+    "#
+    );
 }
 
 #[inline(always)]
@@ -204,7 +204,8 @@ pub(crate) fn subtract_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig = *lhs;
     arithmetic::subtract(&mut lhs.value, &rhs.value);
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre)
             (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig})
@@ -229,7 +230,8 @@ pub(crate) fn subtract_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}) k)
         in
         Classical.forall_intro pfk
-    "#);
+    "#
+    );
 }
 
 #[inline(always)]
@@ -576,7 +578,8 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [AVX2SIMDUnit; SIMD_UNITS_IN_RI
     let _orig = simd_units.clone();
 
     for i in 0..simd_units.len() {
-        hax_lib::loop_invariant!(|i: usize| fstar!(r#"
+        hax_lib::loop_invariant!(|i: usize| fstar!(
+            r#"
             v $i <= 32 /\
             (forall (j:nat{j < 32}). j < v $i ==>
                 (forall (k:nat{k < 8}).
@@ -588,12 +591,14 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [AVX2SIMDUnit; SIMD_UNITS_IN_RI
                             (Seq.index ${_orig} j).Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value
                             (mk_u64 k)))) /\
             (forall (j:nat{j < 32}). j >= v $i ==>
-                Seq.index ${simd_units} j == Seq.index ${_orig} j)"#));
+                Seq.index ${simd_units} j == Seq.index ${_orig} j)"#
+        ));
 
         arithmetic::reduce(&mut simd_units[i].value);
     }
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         let pf (j: nat{j < 32}) : Lemma
             (ensures
                 Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
@@ -632,7 +637,8 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [AVX2SIMDUnit; SIMD_UNITS_IN_RI
                     (Libcrux_ml_dsa.Simd.Traits.f_repr (Seq.index ${simd_units} j)))
         in
         Classical.forall_intro pf
-    "#);
+    "#
+    );
 }
 
 // Functional NTT surfacing (Track B) for AVX2.  `ntt_with_proof` carries the
@@ -756,11 +762,16 @@ pub(crate) fn ntt_with_proof(simd_units: &mut AVX2RingElement) {
 // invert_ntt_with_proof.  Reuses lemma_ntt_view_avx2 (same flatten) and
 // Spec.MLDSA.Math.to_mont (defeq with Portable.Invntt.to_mont, which the free
 // AVX2 invert post uses via PI.to_mont; lemma_to_mont_eq_avx2 bridges them).
-#[cfg_attr(hax, hax_lib::fstar::before(r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        r#"
 let lemma_to_mont_eq_avx2 (y: t_Array i32 (mk_usize 256))
     : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt.to_mont y == Spec.MLDSA.Math.to_mont y)
   = ()
-"#))]
+"#
+    )
+)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.forall32 (fun (i: nat{i < 32}) ->
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})

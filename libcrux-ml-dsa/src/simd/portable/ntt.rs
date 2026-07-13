@@ -7,7 +7,8 @@ use crate::simd::traits::specs::*;
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
     (* Project the 32 SIMD units to the flat-chunk view the Commute.Chunk
        poly lemmas consume: chunk b = re.[b].f_values (t_Array i32 8). *)
     let chunks_of_re (re:t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
@@ -15,8 +16,10 @@ use crate::simd::traits::specs::*;
       = Hacspec_ml_dsa.createi #(t_Array i32 (sz 8)) (sz 32)
           #(usize -> t_Array i32 (sz 8))
           (fun (b: usize{b <. sz 32}) -> (Seq.index re (v b)).f_values)
-"#)]
-#[hax_lib::fstar::before(r#"
+"#
+)]
+#[hax_lib::fstar::before(
+    r#"
     (* Generic 1D ground->symbolic forall lift: forall32 unfolds to a 32-way
        conjunction (the driver's natural WP, exactly like the bounds post);
        pinning b to each literal lifts it to a symbolic forall. *)
@@ -30,7 +33,8 @@ use crate::simd::traits::specs::*;
            | 24 -> () | 25 -> () | 26 -> () | 27 -> () | 28 -> () | 29 -> () | 30 -> () | _ -> ())
         in
         Classical.forall_intro aux
-"#)]
+"#
+)]
 #[hax_lib::fstar::before(r#"
     (* Opaque per-chunk FE atom for layer 2: the 4-pair butterfly relations as a
        GROUND 12-conjunction (matches simd_unit_ntt_at_layer_2's post exactly, so
@@ -79,7 +83,8 @@ use crate::simd::traits::specs::*;
         with (match p with | 0 -> () | 1 -> () | 2 -> () | _ -> ())
     #pop-options
 "#)]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
     (* Clean-context driver composition for layer 2: from the forall32 of
        opaque FE atoms (which the driver establishes lightly, like bounds),
        unfold + feed the Commute.Chunk poly lemma.  All heavy logical work
@@ -123,7 +128,8 @@ use crate::simd::traits::specs::*;
          in Classical.forall_intro aux_z);
         Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_2_step_to_hacspec_poly orig fut t zm
     #pop-options
-"#)]
+"#
+)]
 #[hax_lib::fstar::before(r#"
     (* ---- Layer 1: opaque per-chunk FE atom (2 zetas/chunk, pairs (4h+j,4h+j+2)) ---- *)
     [@@ "opaque_to_smt"]
@@ -295,7 +301,8 @@ use crate::simd::traits::specs::*;
         Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_0_step_to_hacspec_poly orig fut t zm
     #pop-options
 "#)]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
 [@@ "opaque_to_smt"]
 let unit_fe_post_cross (ci_lo ci_hi co_lo co_hi : t_Array i32 (sz 8))
                        (zeta: i32{Spec.Utils.is_i32b 4190208 zeta}) : Type0 =
@@ -331,7 +338,8 @@ let unit_fe_post_cross (ci_lo ci_hi co_lo co_hi : t_Array i32 (sz 8))
    v (Seq.index co_lo 7) == v (Seq.index ci_lo 7) + v t7 /\
    v (Seq.index co_hi 7) == v (Seq.index ci_lo 7) - v t7 /\
    (v t7) % 8380417 == (v (Seq.index ci_hi 7) * v zeta * 8265825) % 8380417)
-"#)]
+"#
+)]
 #[hax_lib::fstar::before(r#"
 (* Round-body discharge: bridge the leaf posts (add_post/sub_post are usize/Int
    foralls; the mmbc post is a nat-indexed forall over mont_mul + mod_q) into the
@@ -385,7 +393,8 @@ let lemma_atom_to_bf_cross (ci_lo ci_hi co_lo co_hi : t_Array i32 (sz 8))
     with (match l with | 0 -> () | 1 -> () | 2 -> () | 3 -> () | 4 -> () | 5 -> () | 6 -> () | _ -> ())
 #pop-options
 "#)]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
 (* Driver compose: takes UNCHUNKED orig_re/re so the requires atoms match the
    outer_3_plus posts EXACTLY (about re.[u].f_values) — the driver discharges it by
    FRAME only (no chunks_of_re / createi at the driver, avoiding the createi_lemma
@@ -451,8 +460,10 @@ let lemma_l3_cross_driver_compose
      in Classical.forall_intro aux_z);
     Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_3_cross_to_hacspec_poly orig fut t zm
 #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
+"#
+)]
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l4_cross_driver_compose
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
@@ -510,8 +521,10 @@ let lemma_l4_cross_driver_compose
      in Classical.forall_intro aux_z);
     Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_4_cross_to_hacspec_poly orig fut t zm
 #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
+"#
+)]
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l5_cross_driver_compose
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
@@ -569,8 +582,10 @@ let lemma_l5_cross_driver_compose
      in Classical.forall_intro aux_z);
     Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_5_cross_to_hacspec_poly orig fut t zm
 #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
+"#
+)]
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l6_cross_driver_compose
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
@@ -628,8 +643,10 @@ let lemma_l6_cross_driver_compose
      in Classical.forall_intro aux_z);
     Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_6_cross_to_hacspec_poly orig fut t zm
 #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
+"#
+)]
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l7_cross_driver_compose
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (sz 32))
@@ -687,7 +704,8 @@ let lemma_l7_cross_driver_compose
      in Classical.forall_intro aux_z);
     Hacspec_ml_dsa.Commute.Chunk.lemma_ntt_layer_7_cross_to_hacspec_poly orig fut t zm
 #pop-options
-"#)]
+"#
+)]
 #[hax_lib::fstar::before(
     r#"
 let simd_layer_factor (step:usize) =
@@ -939,7 +957,8 @@ fn ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, -554416, 3919660, -48306, -1362209);
     round(re, 31, 3937738, 1400424, -846154, 1976782);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 128 == 2091667);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 129 == 3407706);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 130 == 2316500);
@@ -1069,7 +1088,8 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 253 == 1400424);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 254 == (-846154));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 255 == 1976782);
 lemma_l0_driver_compose (chunks_of_re ${orig_re}) (chunks_of_re ${re})
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1154,7 +1174,8 @@ fn ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, -3019102, -3881060);
     round(re, 31, -3628969, 3839961);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 64 == (-3930395));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 65 == (-1528703));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 66 == (-3677745));
@@ -1220,7 +1241,8 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 125 == (-3881060));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 126 == (-3628969));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 127 == 3839961);
 lemma_l1_driver_compose (chunks_of_re ${orig_re}) (chunks_of_re ${re})
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1299,7 +1321,8 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, 2071892);
     round(re, 31, -2797779);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 32 == 2706023);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 33 == 95776);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 34 == 3077325);
@@ -1333,7 +1356,8 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 61 == (-2556880));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 62 == 2071892);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 63 == (-2797779));
 lemma_l2_driver_compose (chunks_of_re ${orig_re}) (chunks_of_re ${re})
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1502,7 +1526,8 @@ fn ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (14 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 4010497>(re);
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 280005>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 16 == 2725464);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 17 == 1024112);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 18 == (-1079900));
@@ -1540,7 +1565,8 @@ assert (unit_fe_post_cross (Seq.index ${orig_re} 26).f_values (Seq.index ${orig_
 assert (unit_fe_post_cross (Seq.index ${orig_re} 28).f_values (Seq.index ${orig_re} 29).f_values (Seq.index ${re} 28).f_values (Seq.index ${re} 29).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (28 / 2 + 16))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 30).f_values (Seq.index ${orig_re} 31).f_values (Seq.index ${re} 30).f_values (Seq.index ${re} 31).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (30 / 2 + 16))));
 lemma_l3_cross_driver_compose ${orig_re} ${re}
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1573,7 +1599,8 @@ fn ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (6 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 3111497>(re);
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2680103>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 8 == 1826347);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 9 == 2353451);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 10 == (-359251));
@@ -1599,7 +1626,8 @@ assert (unit_fe_post_cross (Seq.index ${orig_re} 25).f_values (Seq.index ${orig_
 assert (unit_fe_post_cross (Seq.index ${orig_re} 28).f_values (Seq.index ${orig_re} 30).f_values (Seq.index ${re} 28).f_values (Seq.index ${re} 30).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (28 / 4 + 8))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 29).f_values (Seq.index ${orig_re} 31).f_values (Seq.index ${re} 29).f_values (Seq.index ${re} 31).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (29 / 4 + 8))));
 lemma_l4_cross_driver_compose ${orig_re} ${re}
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1628,7 +1656,8 @@ fn ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (2 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -876248>(re);
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 466468>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 4 == 237124);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 5 == (-777960));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 6 == (-876248));
@@ -1650,7 +1679,8 @@ assert (unit_fe_post_cross (Seq.index ${orig_re} 25).f_values (Seq.index ${orig_
 assert (unit_fe_post_cross (Seq.index ${orig_re} 26).f_values (Seq.index ${orig_re} 30).f_values (Seq.index ${re} 26).f_values (Seq.index ${re} 30).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (26 / 8 + 4))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 27).f_values (Seq.index ${orig_re} 31).f_values (Seq.index ${re} 27).f_values (Seq.index ${re} 31).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (27 / 8 + 4))));
 lemma_l5_cross_driver_compose ${orig_re} ${re}
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1677,7 +1707,8 @@ fn ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -518909>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 2 == (-2608894));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 3 == (-518909));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 0).f_values (Seq.index ${orig_re} 8).f_values (Seq.index ${re} 0).f_values (Seq.index ${re} 8).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (0 / 16 + 2))));
@@ -1697,7 +1728,8 @@ assert (unit_fe_post_cross (Seq.index ${orig_re} 21).f_values (Seq.index ${orig_
 assert (unit_fe_post_cross (Seq.index ${orig_re} 22).f_values (Seq.index ${orig_re} 30).f_values (Seq.index ${re} 22).f_values (Seq.index ${re} 30).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (22 / 16 + 2))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 23).f_values (Seq.index ${orig_re} 31).f_values (Seq.index ${re} 23).f_values (Seq.index ${re} 31).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (23 / 16 + 2))));
 lemma_l6_cross_driver_compose ${orig_re} ${re}
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -1723,7 +1755,8 @@ fn ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 1 == 25847);
 assert (unit_fe_post_cross (Seq.index ${orig_re} 0).f_values (Seq.index ${orig_re} 16).f_values (Seq.index ${re} 0).f_values (Seq.index ${re} 16).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (0 / 32 + 1))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 1).f_values (Seq.index ${orig_re} 17).f_values (Seq.index ${re} 1).f_values (Seq.index ${re} 17).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (1 / 32 + 1))));
@@ -1742,7 +1775,8 @@ assert (unit_fe_post_cross (Seq.index ${orig_re} 13).f_values (Seq.index ${orig_
 assert (unit_fe_post_cross (Seq.index ${orig_re} 14).f_values (Seq.index ${orig_re} 30).f_values (Seq.index ${re} 14).f_values (Seq.index ${re} 30).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (14 / 32 + 1))));
 assert (unit_fe_post_cross (Seq.index ${orig_re} 15).f_values (Seq.index ${orig_re} 31).f_values (Seq.index ${re} 15).f_values (Seq.index ${re} 31).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (15 / 32 + 1))));
 lemma_l7_cross_driver_compose ${orig_re} ${re}
-"#);
+"#
+    );
 }
 
 #[inline(always)]
@@ -2164,7 +2198,8 @@ pub(crate) fn ntt(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[cfg(hax)]
     let s1 = re.clone();
     ntt_at_layer_0(re);
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
 lemma_ntt_compose_8
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${s0}))
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${s7}))
@@ -2175,5 +2210,6 @@ lemma_ntt_compose_8
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${s2}))
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${s1}))
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${re}))
-"#);
+"#
+    );
 }

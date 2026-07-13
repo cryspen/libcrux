@@ -37,8 +37,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
         SIMDUnit::error_serialize(
             eta,
             &re.simd_units[i],
-            &mut serialized
-                [i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
+            &mut serialized[i * output_bytes_per_simd_unit..(i + 1) * output_bytes_per_simd_unit],
         );
     }
 }
@@ -177,7 +176,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
     // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
     // required by the post (machine-checked here in the panic_free body).
-    hax_lib::fstar!(r#"
+    hax_lib::fstar!(
+        r#"
         let aux (k: nat{k < Seq.length ring_elements}) :
           Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
                    (mk_usize 75423744) (Seq.index ring_elements k)) =
@@ -186,7 +186,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         in
         Classical.forall_intro aux;
         Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_intro
-          (mk_usize 75423744) ring_elements"#);
+          (mk_usize 75423744) ring_elements"#
+    );
 }
 
 #[cfg(test)]

@@ -236,7 +236,6 @@ pub(crate) fn absorb<const RATE: usize, const DELIM: u8>(input: &[u8]) -> Keccak
     s
 }
 
-
 #[hax_lib::requires(
     valid_rate(RATE) &&
     output_blocks > 0 &&
@@ -253,7 +252,11 @@ pub(crate) fn absorb<const RATE: usize, const DELIM: u8>(input: &[u8]) -> Keccak
             Seq.index output_future k == Seq.index spec_out k)        
     "#)})]
 #[hax_lib::fstar::options("--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always")]
-fn squeeze_blocks<const RATE: usize>(s: &mut KeccakState<1, u64>, output: &mut [u8], output_blocks: usize) {
+fn squeeze_blocks<const RATE: usize>(
+    s: &mut KeccakState<1, u64>,
+    output: &mut [u8],
+    output_blocks: usize,
+) {
     #[cfg(hax)]
     let output_len = output.len();
     #[cfg(hax)]
@@ -264,7 +267,7 @@ fn squeeze_blocks<const RATE: usize>(s: &mut KeccakState<1, u64>, output: &mut [
     s.squeeze::<RATE>(output, 0, RATE);
 
     hax_lib::fstar!(
-            r#"let spec_out : t_Slice u8 =
+        r#"let spec_out : t_Slice u8 =
                    Hacspec_sha3.Sponge.squeeze $output_len $s_init_st $RATE in
                assert (v $output_blocks >= 1);
                assert (v $RATE <= 200);
@@ -279,8 +282,8 @@ fn squeeze_blocks<const RATE: usize>(s: &mut KeccakState<1, u64>, output: &mut [
                    assert (v i / v $RATE = 0)
                in
                FStar.Classical.forall_intro aux"#
-        );
-        
+    );
+
     for i in 1..output_blocks {
         hax_lib::loop_invariant!(|i: usize| (output.len() == output_len).to_prop() & {
             fstar!(
@@ -315,16 +318,20 @@ fn squeeze_blocks<const RATE: usize>(s: &mut KeccakState<1, u64>, output: &mut [
 
         s.keccakf1600();
 
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             assert (s.f_st == Hacspec_sha3.Sponge.iterate_keccak_f i s_init_st)
-        "#);
+        "#
+        );
 
         s.squeeze::<RATE>(output, i * RATE, RATE);
 
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             assert (v i * v v_RATE + v v_RATE <= v output_len);
             Math.Lemmas.distributivity_add_left (v i) 1 (v v_RATE)
-        "#);
+        "#
+        );
     }
 }
 
@@ -339,7 +346,7 @@ fn squeeze_blocks<const RATE: usize>(s: &mut KeccakState<1, u64>, output: &mut [
 ///     advance the invariant from i to i+1
 ///   - reconcile the trailing partial block (via `squeeze_last`) with
 ///     the byteform's last block.
-/// 
+///
 #[hax_lib::requires(
     valid_rate(RATE) &&
     output.len() < usize::MAX - 200
@@ -389,7 +396,8 @@ pub(crate) fn squeeze<const RATE: usize>(mut s: KeccakState<1, u64>, output: &mu
         #[cfg(hax)]
         let output_after_blocks = output.to_vec();
         s.squeeze_last::<RATE>(output, output_rem);
-        hax_lib::fstar!(r#"
+        hax_lib::fstar!(
+            r#"
             Math.Lemmas.lemma_div_mod (v $output_len) (v $RATE);
             let spec_out : t_Slice u8 =
                 Hacspec_sha3.Sponge.squeeze $output_len $s_init_st $RATE in
@@ -419,7 +427,8 @@ pub(crate) fn squeeze<const RATE: usize>(mut s: KeccakState<1, u64>, output: &mu
             in
             FStar.Classical.forall_intro aux;
             Seq.lemma_eq_intro ($output <: Seq.seq u8) (spec_out <: Seq.seq u8)
-        "#);
+        "#
+        );
     }
 }
 

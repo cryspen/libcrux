@@ -47,7 +47,10 @@ pub trait Repr {}
 // sub-query ("incomplete quantifiers").  `lemma_ntt_func_post_intro` seals the
 // raw forall (proven by the backend bridges, in a clean context that defeats the
 // view-mismatch trigger problem) into the atom; consumers only ever carry the atom.
-#[cfg_attr(hax, hax_lib::fstar::before(r#"
+#[cfg_attr(
+    hax,
+    hax_lib::fstar::before(
+        r#"
 [@@ "opaque_to_smt"]
 let ntt_poly_view
       (#v_SIMDUnit: Type0)
@@ -110,7 +113,9 @@ let lemma_invert_func_post_intro
           (v (Seq.index (Spec.MLDSA.Math.to_mont (Hacspec_ml_dsa.Ntt.intt xpre)) j)) % 8380417))
       (ensures invert_func_post pre post)
   = reveal_opaque (`%invert_func_post) (invert_func_post pre post)
-"#))]
+"#
+    )
+)]
 #[hax_lib::attributes]
 pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::requires(true)]
@@ -423,8 +428,8 @@ pub(crate) trait Operations: Copy + Clone + Repr {
     #[hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Self, out: &mut [u8]); // out len 13
-    // F-10 (2026-04-29): post tightened to half-open `is_i32b_strict_lower_array_opaque (pow2 12)`
-    // for round-trip symmetry with `t0_serialize`.
+                                                       // F-10 (2026-04-29): post tightened to half-open `is_i32b_strict_lower_array_opaque (pow2 12)`
+                                                       // for round-trip symmetry with `t0_serialize`.
     #[hax_lib::requires(serialized.len() == 13)]
     #[hax_lib::ensures(|_| fstar!(r#"
         Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12) (f_repr ${out}_future)"#))]

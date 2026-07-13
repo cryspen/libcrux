@@ -217,8 +217,7 @@ pub fn serialize_secret_key_into<const RANK: usize>(vector: &Vector<RANK>, out: 
     for i in 0..RANK {
         hax_lib::loop_invariant!(|_i: usize| out.len() == RANK * BYTES_PER_RING_ELEMENT);
         let encoded = byte_encode::<{ 32 * 12 }, { 256 * 12 }>(vector[i], 12);
-        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-            .copy_from_slice(&encoded);
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT].copy_from_slice(&encoded);
     }
 }
 
@@ -434,7 +433,6 @@ pub fn serialize_public_key<const RANK: usize, const EK_SIZE: usize>(
         }
     })
 }
-
 
 #[cfg(test)]
 mod tests {

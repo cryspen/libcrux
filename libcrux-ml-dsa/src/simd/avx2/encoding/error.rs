@@ -86,17 +86,21 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_2), *simd_unit);
 
-    hax_lib::fstar!(r#"reveal_opaque_arithmetic_ops #I32;
+    hax_lib::fstar!(
+        r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
                   v (to_i32x8 $simd_unit_shifted j) <= pow2 3 - 1);
-        i32_lt_pow2_n_to_bit_zero_lemma 3 $simd_unit_shifted"#);
+        i32_lt_pow2_n_to_bit_zero_lemma 3 $simd_unit_shifted"#
+    );
 
     let adjacent_6_combined = serialize_when_eta_is_2_aux(simd_unit_shifted);
 
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
     out.copy_from_slice(&serialized[0..3]);
-    hax_lib::fstar!(r#"lemma_error_serialize_post_eta_2 $out $adjacent_6_combined $simd_unit_shifted $simd_unit"#);
+    hax_lib::fstar!(
+        r#"lemma_error_serialize_post_eta_2 $out $adjacent_6_combined $simd_unit_shifted $simd_unit"#
+    );
 }
 
 #[inline(always)]
@@ -170,18 +174,22 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_4), *simd_unit);
 
-    hax_lib::fstar!(r#"reveal_opaque_arithmetic_ops #I32;
+    hax_lib::fstar!(
+        r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
                   v (to_i32x8 $simd_unit_shifted j) <= pow2 4 - 1);
-        i32_lt_pow2_n_to_bit_zero_lemma 4 $simd_unit_shifted"#);
+        i32_lt_pow2_n_to_bit_zero_lemma 4 $simd_unit_shifted"#
+    );
 
     let adjacent_4_combined = serialize_when_eta_is_4_aux(simd_unit_shifted);
 
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
 
     out.copy_from_slice(&serialized[0..4]);
-    hax_lib::fstar!(r#"lemma_error_serialize_post_eta_4 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#);
+    hax_lib::fstar!(
+        r#"lemma_error_serialize_post_eta_4 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
+    );
 }
 
 #[hax_lib::requires(

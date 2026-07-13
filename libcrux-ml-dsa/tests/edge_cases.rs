@@ -109,7 +109,10 @@ fn hint_bit_pack_count_exactly_omega() {
     //           }
     //       }
     //   }
-    assert!(true, "hint_bit_pack_count_exactly_omega stubbed pending spec accessor");
+    assert!(
+        true,
+        "hint_bit_pack_count_exactly_omega stubbed pending spec accessor"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -135,7 +138,10 @@ fn hint_bit_unpack_rejects_non_monotonic_indices() {
     //   buf[omega + 3] = 2;
     //   let res = spec::encoding::hint_bit_unpack::<K>(&buf, omega);
     //   assert!(res.is_none(), "non-monotonic indices must be rejected");
-    assert!(true, "hint_bit_unpack_rejects_non_monotonic stubbed pending spec accessor");
+    assert!(
+        true,
+        "hint_bit_unpack_rejects_non_monotonic stubbed pending spec accessor"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -157,7 +163,10 @@ fn hint_bit_unpack_rejects_nonzero_padding() {
     //   buf[omega..].fill(0);
     //   let res = spec::encoding::hint_bit_unpack::<K>(&buf, omega);
     //   assert!(res.is_none(), "nonzero padding must be rejected");
-    assert!(true, "hint_bit_unpack_rejects_nonzero_padding stubbed pending spec accessor");
+    assert!(
+        true,
+        "hint_bit_unpack_rejects_nonzero_padding stubbed pending spec accessor"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +195,10 @@ fn infinity_norm_at_exact_bound() {
     //       assert!(O::infinity_norm_exceeds(&unit_above, gamma1),
     //               "γ₁+1 should exceed γ₁");
     //   }
-    assert!(true, "infinity_norm_at_exact_bound stubbed pending Operations accessor");
+    assert!(
+        true,
+        "infinity_norm_at_exact_bound stubbed pending Operations accessor"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -245,7 +257,10 @@ fn sample_in_ball_tau_zero() {
     //   for i in 0..256 {
     //       assert_eq!(c[i], 0, "sample_in_ball(τ=0) coeff {} = {}", i, c[i]);
     //   }
-    assert!(true, "sample_in_ball_tau_zero stubbed pending spec accessor");
+    assert!(
+        true,
+        "sample_in_ball_tau_zero stubbed pending spec accessor"
+    );
 }
 
 // ---------------------------------------------------------------------------

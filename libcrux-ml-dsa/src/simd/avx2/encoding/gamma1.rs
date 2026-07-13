@@ -39,7 +39,8 @@ fn serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted: Vec256) -> Vec256 {
 const GAMMA1_2_POW_17: i32 = 1 << 17;
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--ifuel 0 --z3rlimit 400"
 let lemma_gamma1_serialize_post_pow_17
       (out: t_Slice u8)
@@ -87,7 +88,8 @@ let lemma_gamma1_serialize_post_pow_17
     with (i / 18) (i % 18)
   )
 #pop-options
-"#)]
+"#
+)]
 #[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
 #[hax_lib::requires(fstar!(r#"Seq.length $out == 18 /\ (forall i. let x = (v ${GAMMA1_2_POW_17} - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 18)"#))]
 #[hax_lib::ensures(|_result| fstar!(r#"
@@ -101,11 +103,13 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_17), *simd_unit);
 
-    hax_lib::fstar!(r#"reveal_opaque_arithmetic_ops #I32;
+    hax_lib::fstar!(
+        r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
                   v (to_i32x8 $simd_unit_shifted j) <= pow2 18 - 1);
-        i32_lt_pow2_n_to_bit_zero_lemma 18 $simd_unit_shifted"#);
+        i32_lt_pow2_n_to_bit_zero_lemma 18 $simd_unit_shifted"#
+    );
 
     let adjacent_4_combined = serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted);
 
@@ -116,7 +120,9 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized[9..25], upper_4);
 
     out.copy_from_slice(&serialized[0..18]);
-    hax_lib::fstar!(r#"lemma_gamma1_serialize_post_pow_17 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#);
+    hax_lib::fstar!(
+        r#"lemma_gamma1_serialize_post_pow_17 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
+    );
 }
 
 #[inline(always)]
@@ -148,7 +154,8 @@ fn serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted: Vec256) -> Vec256 {
 
 const GAMMA1_2_POW_19: i32 = 1 << 19;
 #[inline(always)]
-#[hax_lib::fstar::before(r#"
+#[hax_lib::fstar::before(
+    r#"
 #push-options "--ifuel 0 --z3rlimit 400"
 let lemma_gamma1_serialize_post_pow_19
       (out: t_Slice u8)
@@ -194,7 +201,8 @@ let lemma_gamma1_serialize_post_pow_19
     with (i / 20) (i % 20)
   )
 #pop-options
-"#)]
+"#
+)]
 #[hax_lib::fstar::options(r#"--ifuel 0 --z3rlimit 140 --split_queries always"#)]
 #[hax_lib::requires(fstar!(r#"Seq.length $out == 20 /\ (forall i. let x = (v ${GAMMA1_2_POW_19} - v (to_i32x8 $simd_unit i)) in x >= 0 && x < pow2 20)"#))]
 #[hax_lib::ensures(|_result| fstar!(r#"
@@ -208,11 +216,13 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_19), *simd_unit);
 
-    hax_lib::fstar!(r#"reveal_opaque_arithmetic_ops #I32;
+    hax_lib::fstar!(
+        r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
                   v (to_i32x8 $simd_unit_shifted j) <= pow2 20 - 1);
-        i32_lt_pow2_n_to_bit_zero_lemma 20 $simd_unit_shifted"#);
+        i32_lt_pow2_n_to_bit_zero_lemma 20 $simd_unit_shifted"#
+    );
 
     let adjacent_4_combined = serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted);
 
@@ -225,7 +235,9 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_4);
 
     out.copy_from_slice(&serialized[0..20]);
-    hax_lib::fstar!(r#"lemma_gamma1_serialize_post_pow_19 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#);
+    hax_lib::fstar!(
+        r#"lemma_gamma1_serialize_post_pow_19 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
+    );
 }
 
 #[inline(always)]

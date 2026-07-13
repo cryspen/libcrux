@@ -346,8 +346,7 @@ fn store_tail_low(
     let old_out1 = out1.to_vec().as_slice();
     _vst1q_bytes_u64(&mut out01, s_2q);
     out0[start + 16 * q..start + 16 * q + remaining].copy_from_slice(&out01[0..remaining]);
-    out1[start + 16 * q..start + 16 * q + remaining]
-        .copy_from_slice(&out01[8..8 + remaining]);
+    out1[start + 16 * q..start + 16 * q + remaining].copy_from_slice(&out01[8..8 + remaining]);
     // Bridge: out01[k] == byte k%8 of get_lane_u64x2 s_2q (k/8) for
     // k<16; the low-half goes to out0 (k in 0..remaining, all
     // satisfy k/8 = 0); the high-half goes to out1 (k in 8..8+remaining,

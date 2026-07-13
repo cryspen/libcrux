@@ -119,8 +119,7 @@ fn load_lane_u64(
     if rate % 16 > 0 {
         rate / 8 == 2 * (rate/16) + 1
     } else {rate / 8 == 2 * (rate/16)})]
-fn lemma_rate_mod(rate: usize) {
-}
+fn lemma_rate_mod(rate: usize) {}
 
 #[inline(always)]
 #[hax_lib::requires(i < 25
@@ -209,18 +208,17 @@ pub(crate) fn load_block<const RATE: usize>(
     let old_state = *state; // ghost variable
 
     for i in 0..RATE / 16 {
-        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize|
-            if j < 25 {
-                if j < 2 * i {
-                    get_lane_u64(state[j], 0) == load_lane_u64(blocks, offset, j, old_state[j], 0)
-                        && get_lane_u64(state[j], 1)
-                            == load_lane_u64(blocks, offset, j, old_state[j], 1)
-                } else {
-                    get_lane_u64(state[j], 0) == get_lane_u64(old_state[j], 0)
-                        && get_lane_u64(state[j], 1) == get_lane_u64(old_state[j], 1)
-                }
+        hax_lib::loop_invariant!(|i: usize| hax_lib::forall(|j: usize| if j < 25 {
+            if j < 2 * i {
+                get_lane_u64(state[j], 0) == load_lane_u64(blocks, offset, j, old_state[j], 0)
+                    && get_lane_u64(state[j], 1)
+                        == load_lane_u64(blocks, offset, j, old_state[j], 1)
             } else {
-                true
+                get_lane_u64(state[j], 0) == get_lane_u64(old_state[j], 0)
+                    && get_lane_u64(state[j], 1) == get_lane_u64(old_state[j], 1)
+            }
+        } else {
+            true
         }));
         let i0 = (2 * i) / 5;
         let j0 = (2 * i) % 5;

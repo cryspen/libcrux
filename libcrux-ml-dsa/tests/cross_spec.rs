@@ -54,11 +54,11 @@
 // Each module is wired below; the per-method tests are mostly TODO until
 // the accessibility gap above is closed.
 mod cross_spec {
-    pub mod helpers;
     pub mod arithmetic;
     pub mod encoding;
-    pub mod sampling;
+    pub mod helpers;
     pub mod ntt;
+    pub mod sampling;
 }
 
 /// Generate a parameterized cross-spec test over a chosen `Operations` impl.
