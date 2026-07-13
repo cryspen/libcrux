@@ -23,8 +23,8 @@ tls_codec = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
-std = ["rand/std"]
-codec = ["dep:tls_codec", "tls_codec/std"]
+std = ["rand/std", "tls_codec?/std"]
+codec = ["dep:tls_codec"]
 
 [dev-dependencies]
 rand = { version = "0.10", features = ["sys_rng"] }

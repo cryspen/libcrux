@@ -63,10 +63,10 @@ mldsa65 = []
 mldsa87 = []
 
 # std support
-std = []
+std = ["tls_codec?/std"]
 
 # Serialization & Deserialization using tls_codec
-codec = ["dep:tls_codec", "tls_codec/std"]
+codec = ["dep:tls_codec"]
 
 [[bench]]
 name = "manual44"
