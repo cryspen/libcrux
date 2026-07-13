@@ -71,7 +71,9 @@ impl<'a> SigningKeyPair<'a> {
         rng: &mut impl CryptoRng,
         tx: &Transcript,
     ) -> Result<Signature, HandshakeError> {
-        let payload = tx.tls_serialize_bytes().map_err(HandshakeError::Serialize)?;
+        let payload = tx
+            .tls_serialize_bytes()
+            .map_err(HandshakeError::Serialize)?;
         match self {
             SigningKeyPair::Ed25519(signing_key, _) => {
                 let sig = libcrux_ed25519::sign(&payload, signing_key.as_ref())?;
