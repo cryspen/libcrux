@@ -149,7 +149,7 @@ libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
 
 # 3rd Party
 rand = { version = "0.10", default-features = false }
-crabgrind = "0.2.6"
+crabgrind = "0.3.0"
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
