@@ -91,7 +91,6 @@ If a new `hax` release is required for your PR to be merged, please [open an iss
 
 ### Policy on LLM-Assisted Submissions
 
-We are supportive of responsible AI use in software development.
 AI can be a helpful tool, and we do not object to contributors using it as part of their workflow for writing code, drafting issues, or conducting security research.
 
 However, submissions to this project must meet a reasonable quality bar and remain suitable for human review.
