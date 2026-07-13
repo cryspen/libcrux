@@ -1,0 +1,4 @@
+# Treat F* hint files as binary for diffing: they are large machine-generated
+# Z3 replay artifacts (position-keyed), so a textual diff is pure noise in PRs.
+# Recovered from 55ac9551e (was lost when `proofs` was rebuilt on a newer main).
+*.hints diff=binary

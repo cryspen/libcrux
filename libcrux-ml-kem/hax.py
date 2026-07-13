@@ -19,7 +19,11 @@ def shell(command, expect=0, cwd=None, env={}):
 
     print("\nDirectory: {}".format(cwd))
 
-    os_env = os.environ
+    # Copy the environment rather than aliasing os.environ: `os_env.update(env)`
+    # would otherwise mutate the real process env in place, so a per-crate flag
+    # like `--cfg pre_core_models` (set for the intrinsics extraction) would leak
+    # into every subsequent extraction in this same process.
+    os_env = dict(os.environ)
     os_env.update(env)
 
     ret = subprocess.run(command, cwd=cwd, env=os_env)

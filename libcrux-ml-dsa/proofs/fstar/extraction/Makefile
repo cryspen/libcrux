@@ -43,6 +43,14 @@ FSTAR_INCLUDE_DIRS_EXTRA += ../spec \
 
 ENABLE_HINTS = --use_hints --record_hints
 
+# Per-algorithm F* cache + hints, isolated from other algorithms. Each
+# algorithm extracts the shared dep crates (core-models/secrets/intrinsics)
+# under its OWN config (e.g. ml-kem uses --cfg pre_core_models), so their
+# .checked and .hints must NOT share one dir in a single working tree or
+# they clobber each other. Relative to this extraction dir => <crate>/proofs/fstar/{cache,hints}.
+CACHE_DIR := ../cache
+HINT_DIR  := ../hints
+
 include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base
 
 # =====================================================================

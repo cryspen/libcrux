@@ -20,3 +20,6 @@ Cargo.lock
 /proofs/fstar/*/.#*
 hax.fst.config.json
 /combined_extraction/generated/build/
+
+# Per-algorithm F* checked-caches (generated). The sibling hints/ dirs ARE tracked.
+**/proofs/fstar/cache/
