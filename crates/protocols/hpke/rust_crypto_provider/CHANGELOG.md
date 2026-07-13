@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update depdency `hpke-rs-crypto`
+
 ## [0.6.1] - 2026-03-20
 
 ### Changed

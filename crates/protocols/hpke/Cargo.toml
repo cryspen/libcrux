@@ -43,7 +43,7 @@ hpke-test-prng = [
 ] # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
-hpke-rs-crypto = { version = "0.6.1", path = "./traits", features = ["std"] }
+hpke-rs-crypto = { workspace = true, path = "./traits", features = ["std"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"

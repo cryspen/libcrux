@@ -124,7 +124,7 @@ libcrux-psq = { version = "=0.0.9", path = "libcrux-psq" }
 
 # HPKE
 hpke-rs = { version = "=0.6.1", path = "crates/protocols/hpke" }
-hpke-rs-crypto = { version = "=0.6.1", path = "crates/protocols/hpke/traits", default-features = false }
+hpke-rs-crypto = { version = "=0.7.0-pre.1", path = "crates/protocols/hpke/traits", default-features = false }
 hpke-rs-rust-crypto = { version = "=0.6.1", path = "crates/protocols/hpke/rust_crypto_provider", default-features = false }
 hpke-rs-libcrux = { version = "=0.6.1", path = "crates/protocols/hpke/libcrux_provider", default-features = false }
 
