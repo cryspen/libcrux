@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-curve25519`, `libcrux-aes`
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-curve25519`, `libcrux-aes`, `libcrux-chacha20poly1305`
 - [#1505](https://github.com/cryspen/libcrux/pull/1505): Update dependency: `hpke-rs`
 - (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2) [#1493](https://github.com/cryspen/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 - (libcrux-secrets) [#1446](https://github.com/cryspen/libcrux/pull/1446): Remove const qualifier of secret types constructors
