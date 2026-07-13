@@ -130,7 +130,7 @@ hpke-rs-libcrux = { version = "=0.6.1", path = "crates/protocols/hpke/libcrux_pr
 
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
-libcrux-kem = { version = "=0.0.8", path = "libcrux-kem", default-features = false }
+libcrux-kem = { version = "=0.0.9-pre.1", path = "libcrux-kem", default-features = false }
 libcrux-traits = { version = "=0.0.8-pre.1", path = "traits" }
 libcrux-ecdh = { version = "=0.0.8-pre.1", path = "libcrux-ecdh", default-features = false }
 libcrux-curve25519 = { version = "=0.0.8-pre.1", path = "crates/algorithms/curve25519", default-features = false }

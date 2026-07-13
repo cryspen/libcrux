@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `libcrux-traits`, `libcrux-aead`, `libcrux-hkdf`
+- [#XYZ](https://github.com/cryspen/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `libcrux-traits`, `libcrux-aead`, `libcrux-hkdf`, `libcrux-kem`
 
 ## [0.6.1] - 2026-02-20
 
