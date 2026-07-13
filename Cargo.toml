@@ -118,7 +118,7 @@ libcrux-digest = { version = "=0.0.8", path = "crates/primitives/digest" }
 libcrux-rsa = { version = "=0.0.7", path = "crates/algorithms/rsa" }
 libcrux-sha2 = { version = "=0.0.8-pre.1", path = "crates/algorithms/sha2" }
 libcrux-sha3 = { version = "=0.0.10-pre.1", path = "crates/algorithms/sha3" }
-libcrux-ml-dsa = { version = "=0.0.9", path = "libcrux-ml-dsa" }
+libcrux-ml-dsa = { version = "=0.0.10-pre.1", path = "libcrux-ml-dsa" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
 libcrux-psq = { version = "=0.0.9", path = "libcrux-psq" }
 
