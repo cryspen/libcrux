@@ -112,7 +112,7 @@ libcrux-hacl-rs = { version = "=0.0.5", path = "crates/utils/hacl-rs" }
 libcrux-hkdf = { version = "=0.0.7", path = "crates/algorithms/hkdf" }
 libcrux-hmac = { version = "=0.0.7", path = "crates/algorithms/hmac" }
 libcrux-hmac-drbg = { version = "=0.0.4", path = "crates/algorithms/hmac-drbg" }
-libcrux-kmac = { version = "=0.0.1", path = "crates/algorithms/kmac" }
+libcrux-kmac = { version = "=0.0.1-pre.1", path = "crates/algorithms/kmac" }
 libcrux-intrinsics = { version = "=0.0.7", path = "crates/utils/intrinsics" }
 libcrux-digest = { version = "=0.0.8", path = "crates/primitives/digest" }
 libcrux-rsa = { version = "=0.0.7", path = "crates/algorithms/rsa" }
