@@ -93,7 +93,7 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    hax_lib::fstar!(
+    proof!(
         r#"assert ($GAMMA1_TIMES_2_BITMASK == (mk_i32 (pow2 18) -! mk_i32 1) /\ v $GAMMA1 == pow2 17) by (FStar.Tactics.norm [primops])"#
     );
 
@@ -127,8 +127,8 @@ fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8], simd_unit: &mut Coeffi
             coefficient3 |= (bytes[8] as i32) << 10;
             coefficient3 &= GAMMA1_TIMES_2_BITMASK;
 
-            hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
-            hax_lib::fstar!(
+            proof!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+            proof!(
                 r#"assert (v $coefficient0 >= 0 /\ v $coefficient0 < pow2 18);
                    assert (v $coefficient1 >= 0 /\ v $coefficient1 < pow2 18);
                    assert (v $coefficient2 >= 0 /\ v $coefficient2 < pow2 18);
@@ -159,7 +159,7 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
-    hax_lib::fstar!(
+    proof!(
         r#"assert ($GAMMA1_TIMES_2_BITMASK == (mk_i32 (pow2 20) -! mk_i32 1) /\ v $GAMMA1 == pow2 19) by (FStar.Tactics.norm [primops])"#
     );
 
@@ -188,8 +188,8 @@ fn deserialize_when_gamma1_is_2_pow_19(serialized: &[u8], simd_unit: &mut Coeffi
             // F*'s SMT cannot bound the OR without more bit-level reasoning.
             coefficient1 &= GAMMA1_TIMES_2_BITMASK;
 
-            hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
-            hax_lib::fstar!(
+            proof!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+            proof!(
                 r#"assert (v $coefficient0 >= 0 /\ v $coefficient0 < pow2 20);
                    assert (v $coefficient1 >= 0 /\ v $coefficient1 < pow2 20)"#
             );

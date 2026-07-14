@@ -55,7 +55,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
     // hax extracts an opaque `f_shake256_pre` that we cannot discharge from
     // here.  Assume it; the only meaningful obligation in any impl is buffer
     // length, which is structurally guaranteed by the array type.
-    hax_lib::fstar!(
+    proof!(
         r#"assume (Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256_pre #v_Shake256
                     #FStar.Tactics.Typeclasses.solve
                     (mk_usize 64)
@@ -91,7 +91,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
                      | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
                     (i0._super_i2.f_repr (Seq.index (Seq.index $s1_2 k).f_simd_units j))))"#
         ));
-        hax_lib::fstar!(
+        proof!(
             r#"assert (v i < v $s1_2_len);
                assert (v i * v $error_ring_element_size <= 14 * 128);
                assert (v i * v $error_ring_element_size + v $error_ring_element_size <=
@@ -115,7 +115,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
                   v $t0_offset_base + Seq.length $t0 * 416 /\
               Libcrux_ml_dsa.Polynomial.Spec.is_strict_lower_poly_slice (mk_usize (pow2 12)) $t0"#
         ));
-        hax_lib::fstar!(
+        proof!(
             r#"assert (v $RING_ELEMENT_OF_T0S_SIZE == 416);
                assert (v i < v $t0_len);
                assert (v i * 416 <= 7 * 416);
@@ -123,7 +123,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
         );
         // Bridge: from the opaque slice atom recover the per-poly atom on t0[i],
         // then unfold to the bare per-j forall that t0::serialize requires.
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_strict_lower_poly_slice_lookup
                  (mk_usize (pow2 12)) $t0 (v $i);
                let aux (j: nat{j < 32})

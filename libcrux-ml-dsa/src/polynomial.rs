@@ -597,7 +597,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let s = Self {
             simd_units: [SIMDUnit::zero(); SIMD_UNITS_IN_RING_ELEMENT],
         };
-        hax_lib::fstar!(
+        proof!(
             r#"
           let lemma_lane (j:nat{j < 32}) :
             Lemma (Spec.Utils.is_i32b_array_opaque 0
@@ -681,7 +681,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
             let exceeds_i = SIMDUnit::infinity_norm_exceeds(&self.simd_units[i], bound);
             // Reveal the trait's iff post and the opaque i32-array bound so Z3 can
             // turn `not exceeds_i` into the per-lane `< bound` fact for unit `i`.
-            hax_lib::fstar!(
+            proof!(
                 r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post) (Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post);
                    reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"#
             );

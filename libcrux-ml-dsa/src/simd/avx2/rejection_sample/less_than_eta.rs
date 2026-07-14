@@ -342,7 +342,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
 
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_dsa.Proof_utils.lemma_movemask_ps_bound (Libcrux_intrinsics.Avx2.mm256_castsi256_ps $compare_with_interval_boundary);
            logand_mask_lemma $good 4;
            assert (v $good_lower_half >= 0 /\ v $good_lower_half < 16);
@@ -394,7 +394,7 @@ pub(crate) fn sample<const ETA: usize>(input: &[u8], output: &mut [i32]) -> usiz
 
     let result = sampled_count + (good_upper_half.count_ones() as usize);
 
-    hax_lib::fstar!(
+    proof!(
         r#"(if v $ETA = 2
             then begin
               assert (interval_boundary == mk_i32 15);

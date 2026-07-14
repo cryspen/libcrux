@@ -43,7 +43,7 @@ fn simd_unit_inv_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize,
     let a_minus_b = simd_unit.values[index + step] - simd_unit.values[index];
     simd_unit.values[index] = simd_unit.values[index] + simd_unit.values[index + step];
     simd_unit.values[index + step] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
+    proof!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
 }
 
 #[inline(always)]
@@ -397,11 +397,11 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         zeta2: i32,
         zeta3: i32,
     ) {
-        hax_lib::fstar!(
+        proof!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_0(&mut re[index], zeta0, zeta1, zeta2, zeta3);
-        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_inv_l0) unit_fe_post_inv_l0");
+        proof!("reveal_opaque (`%unit_fe_post_inv_l0) unit_fe_post_inv_l0");
     }
 
     #[cfg(hax)]
@@ -439,7 +439,7 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 29, 3513181, -1235728, 2434439, 266997);
     round(re, 30, -3562462, -2446433, 2244091, -3342478);
     round(re, 31, 3817976, 2316500, 3407706, 2091667);
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 128 == 2091667);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 129 == 3407706);
@@ -612,11 +612,11 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         zeta_00: i32,
         zeta_01: i32,
     ) {
-        hax_lib::fstar!(
+        proof!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_1(&mut re[index], zeta_00, zeta_01);
-        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_inv_l1) unit_fe_post_inv_l1");
+        proof!("reveal_opaque (`%unit_fe_post_inv_l1) unit_fe_post_inv_l1");
     }
 
     #[cfg(hax)]
@@ -654,7 +654,7 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 29, 3475950, -1452451);
     round(re, 30, -3041255, -3677745);
     round(re, 31, -1528703, -3930395);
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 64 == (-3930395));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 65 == (-1528703));
@@ -757,11 +757,11 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
                         (Seq.index ${re}_future (v $index)).f_values $zeta1
      "#))]
     fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32) {
-        hax_lib::fstar!(
+        proof!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_2(&mut re[index], zeta1);
-        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_inv_l2) unit_fe_post_inv_l2");
+        proof!("reveal_opaque (`%unit_fe_post_inv_l2) unit_fe_post_inv_l2");
     }
 
     #[cfg(hax)]
@@ -799,7 +799,7 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 29, 3077325);
     round(re, 30, 95776);
     round(re, 31, 2706023);
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 32 == 2706023);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 33 == 95776);
@@ -1271,14 +1271,14 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         let tmp = re[j + STEP_BY];
         arithmetic::montgomery_multiply_by_constant(&mut re[j + STEP_BY], ZETA);
 
-        hax_lib::fstar!("Spec.Utils.is_i32b_array_larger
+        proof!("Spec.Utils.is_i32b_array_larger
             (v $FIELD_MAX) (2 * (layer_bound_factor $STEP_BY) * v $FIELD_MAX) (Seq.index re (v j + v v_STEP_BY)).f_values");
         // Discharge the cross-unit inverse FE atom via the clean bridge lemma:
         // ci_lo/ci_hi = orig_re[j]/[j+STEP_BY] (== re[j]/[j+STEP_BY] at iter start, frame);
         // co_lo/co_hi = re[j]/[j+STEP_BY]; tmp = re[j+STEP_BY] after subtract (= ci_hi - ci_lo).
         // add post: co_lo = ci_lo + ci_hi; sub post: tmp = ci_hi - ci_lo;
         // mmbc post: co_hi = mont_mul(tmp, ZETA) and the mod-q relation.
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_round_inv_cross_intro
                  (Seq.index $orig_re (v $j)).f_values
                  (Seq.index $orig_re (v $j + v $STEP_BY)).f_values
@@ -1330,7 +1330,7 @@ fn invert_ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (14 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1024112>(re);
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2725464>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 16 == 2725464);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 17 == 1024112);
@@ -1404,7 +1404,7 @@ fn invert_ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (6 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2353451>(re);
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1826347>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 8 == 1826347);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 9 == 2353451);
@@ -1463,7 +1463,7 @@ fn invert_ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (2 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -777960>(re);
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 237124>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 4 == 237124);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 5 == (-777960));
@@ -1516,7 +1516,7 @@ fn invert_ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -518909>(re);
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 2 == (-2608894));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 3 == (-518909));
@@ -1566,7 +1566,7 @@ fn invert_ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 1 == 25847);
 assert (unit_fe_post_inv_cross (Seq.index ${orig_re} 0).f_values (Seq.index ${orig_re} 16).f_values (Seq.index ${re} 0).f_values (Seq.index ${re} 16).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r 1)));
@@ -1755,7 +1755,7 @@ let lemma_scale_driver
 fn scale_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[cfg(hax)]
     let orig = re.clone();
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (256 * v $FIELD_MAX) ${re})"#
     );
     for i in 0..re.len() {
@@ -1783,20 +1783,20 @@ fn scale_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         // 256*FIELD_MAX (k>=i invariant clause) and montgomery's per-lane post
         // gives re[i] = mont_mul(orig[i], 41978); the tight-bound lemma reduces
         // 256*FIELD_MAX to the centered 4211177.
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_scale_chunk_tight_bound (Seq.index ${orig} (v $i)).f_values (Seq.index $re (v $i)).f_values"#
         );
         // montgomery's per-lane (Spec.MLDSA.Math.mod_q ...) post -> the opaque
         // chunk_scaled atom (input chunk is orig[i] by the k>=i clause).
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_establish_chunk_scaled (Seq.index ${orig} (v $i)).f_values (Seq.index $re (v $i)).f_values"#
         );
     }
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial 4211177 ${re})"#
     );
     // Lift the per-chunk 16382-scaling (loop post) to the flat-poly view.
-    hax_lib::fstar!(r#"lemma_scale_driver ${orig} ${re}"#);
+    proof!(r#"lemma_scale_driver ${orig} ${re}"#);
 }
 
 #[inline(always)]
@@ -2370,7 +2370,7 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
     invert_ntt_at_layer_7(re);
     #[cfg(hax)]
     let s8 = re.clone();
-    hax_lib::fstar!(
+    proof!(
         r#"
 lemma_intt_compose_8
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s0}))
@@ -2387,7 +2387,7 @@ lemma_intt_compose_8
     scale_montgomery(re);
     // out ≡ 16382·s8 (scale_montgomery) and s8 ≡ intt_unscaled(s0) (compose)
     // ⟹ out ≡ to_mont(intt s0) (mod q).
-    hax_lib::fstar!(
+    proof!(
         r#"
 lemma_invert_top
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s0}))

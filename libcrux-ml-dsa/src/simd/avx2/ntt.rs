@@ -1536,7 +1536,7 @@ fn butterfly_2(
     let nre1 = mm256_shuffle_epi32::<SHUFFLE>(b_terms_shuffled);
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
-    hax_lib::fstar!(
+    proof!(
         r#"assert (butterfly_2_spec 
                             $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 
                             $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3 $nre0 $nre1)"#
@@ -1607,7 +1607,7 @@ fn butterfly_4(
     let nre1 = mm256_unpackhi_epi64(add_terms, sub_terms);
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
-    hax_lib::fstar!(
+    proof!(
         r#"assert (butterfly_4_spec 
         $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
     );
@@ -1669,7 +1669,7 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
     let nre1 = mm256_permute2x128_si256::<0b0001_0011>(sub_terms, add_terms);
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
-    hax_lib::fstar!(
+    proof!(
         r#"assert (butterfly_8_spec 
          $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
     );
@@ -1745,7 +1745,7 @@ unsafe fn ntt_at_layer_0(re: &mut AVX2RingElement) {
         re, 30, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154, 1976782,
     );
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (l0_post orig_re ${re});
 lemma_l0post_to_sym orig_re ${re};
@@ -1791,7 +1791,7 @@ unsafe fn ntt_at_layer_1(re: &mut AVX2RingElement) {
     butterfly_4(re, 28, 1285669, -1584928, -812732, -1439742);
     butterfly_4(re, 30, -3019102, -3881060, -3628969, 3839961);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (l1_post orig_re ${re});
 lemma_l1post_to_sym orig_re ${re};
@@ -1837,7 +1837,7 @@ unsafe fn ntt_at_layer_2(re: &mut AVX2RingElement) {
     butterfly_8(re, 28, 3900724, -2556880);
     butterfly_8(re, 30, 2071892, -2797779);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (l2_post orig_re ${re});
 lemma_l2post_to_sym orig_re ${re};
@@ -1903,7 +1903,7 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
         field_modulus: Vec256,
         inverse_of_modulus_mod_montgomery_r: Vec256,
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply)
           (Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply);
@@ -2170,7 +2170,7 @@ let q76_bound
         //   lemma_bf_pair_def gives bf_pair's value with m'=montgomery_multiply orig[index+sb].f_value (mm256_set1_epi32 zeta);
         //   zeta_v == mm256_set1_epi32 zeta -> m == m' -> equal.
         // BOUNDS: ntt_step forall8 (from `mul`'s add/sub form) -> lemma_cross_pair_relations_ws -> intro.
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_bf_pair_def (Seq.index orig (v $index)) (Seq.index orig (v $index + v $step_by)) $zeta;
         let re0 = (Seq.index orig (v $index)).f_value in
@@ -2304,7 +2304,7 @@ let q76_bound
         let zeta61 = mm256_set1_epi32(-518909);
         #[cfg(hax)]
         let orig = re.clone();
-        hax_lib::fstar!(
+        proof!(
             r#"
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 1 == 25847);
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 2 == (-2608894));
@@ -2406,7 +2406,7 @@ let q76_bound
             field_modulus,
             inverse_of_modulus_mod_montgomery_r,
         );
-        hax_lib::fstar!(
+        proof!(
             r#"
         q76_bound orig qa0 qa1 qb0 qb1 qc0 qc1 qd0 ${re};
         Avx2NttTheory.lemma_units_to_poly (8380416 + 2*8380416) ${re};
@@ -2427,7 +2427,7 @@ let q76_bound
     // is NOT called (its logic is replicated over the real muls).
     build_out(re, field_modulus, inverse_of_modulus_mod_montgomery_r);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
     let mid = Avx2NttTheory.build_mid_L7 orig in
     Avx2NttTheory.lemma_poly_to_units (8380416 + 8380416) mid;
@@ -2529,7 +2529,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
             };
             re[index + step_by] = AVX2SIMDUnit { value: tmp };
             // ---- per-pair proof: ntt_step fact -> cross-pair relations + output bounds ----
-            hax_lib::fstar!(
+            proof!(
                 r#"
             let bnd : nat = 8380416 + (Avx2NttTheory.layer_bound_factor_avx2 (v $step_by)) * 8380416 in
             let re0 = (Seq.index re_old (v $index)).f_value in
@@ -2583,7 +2583,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
             ));
             #[cfg(hax)]
             let re_old = re.clone();
-            hax_lib::fstar!(
+            proof!(
                 r#"
             assert (Seq.index re_old (v $j) == Seq.index $orig_re (v $j));
             assert (Seq.index re_old (v $j + v v_STEP_BY) == Seq.index $orig_re (v $j + v v_STEP_BY));
@@ -2597,7 +2597,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
             );
             // ---- per-pair butterfly (factored; proves its cross post in its own VC) ----
             butterfly(re, j, STEP_BY, zeta);
-            hax_lib::fstar!(
+            proof!(
                 r#"
             Avx2NttTheory.lemma_round_ws_maintains $orig_re re_old ${re} $offset $j v_STEP_BY
               (Avx2NttTheory.layer_bound_factor_avx2 (v v_STEP_BY)) $zeta
@@ -2606,7 +2606,7 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
         }
 
         // ---- tail seal: completed transparent invariant -> round_post_avx2 ----
-        hax_lib::fstar!(
+        proof!(
             r#"
         let lbf : nat = Avx2NttTheory.layer_bound_factor_avx2 (v v_STEP_BY) in
         let offset_n : nat = ((v $index) * (v v_STEP) * 2) / 8 in
@@ -2680,7 +2680,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let orig = re.clone();
         // round 0
-        hax_lib::fstar!(
+        proof!(
             r#"
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 4 == 237124);
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 5 == (-777960));
@@ -2694,7 +2694,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s1 = re.clone();
         // round 1
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin orig s1 0 4 (mk_i32 237124);
         Avx2NttTheory.lemma_modwin_union orig orig s1 0 0 8;
@@ -2705,7 +2705,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s2 = re.clone();
         // round 2
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s1 s2 8 4 (mk_i32 (-777960));
         Avx2NttTheory.lemma_modwin_union orig s1 s2 0 8 16;
@@ -2716,7 +2716,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s3 = re.clone();
         // round 3
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s2 s3 16 4 (mk_i32 (-876248));
         Avx2NttTheory.lemma_modwin_union orig s2 s3 0 16 24;
@@ -2724,7 +2724,7 @@ let lemma_window_forall32_from_modwin
     "#
         );
         round::<STEP, STEP_BY>(re, 3, 466468);
-        hax_lib::fstar!(r#"Avx2NttTheory.lemma_l5_assemble_o orig s1 s2 s3 ${re}"#);
+        proof!(r#"Avx2NttTheory.lemma_l5_assemble_o orig s1 s2 s3 ${re}"#);
     }
 
     // Layer 4 block (rounds at offsets 4k, zetas zeta_r(8..15))
@@ -2753,7 +2753,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let orig = re.clone();
         // round 0
-        hax_lib::fstar!(
+        proof!(
             r#"
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 8 == 1826347);
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 9 == 2353451);
@@ -2771,7 +2771,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s1 = re.clone();
         // round 1
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin orig s1 0 2 (mk_i32 1826347);
         Avx2NttTheory.lemma_modwin_union orig orig s1 0 0 4;
@@ -2782,7 +2782,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s2 = re.clone();
         // round 2
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s1 s2 4 2 (mk_i32 2353451);
         Avx2NttTheory.lemma_modwin_union orig s1 s2 0 4 8;
@@ -2793,7 +2793,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s3 = re.clone();
         // round 3
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s2 s3 8 2 (mk_i32 (-359251));
         Avx2NttTheory.lemma_modwin_union orig s2 s3 0 8 12;
@@ -2804,7 +2804,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s4 = re.clone();
         // round 4
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s3 s4 12 2 (mk_i32 (-2091905));
         Avx2NttTheory.lemma_modwin_union orig s3 s4 0 12 16;
@@ -2815,7 +2815,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s5 = re.clone();
         // round 5
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s4 s5 16 2 (mk_i32 3119733);
         Avx2NttTheory.lemma_modwin_union orig s4 s5 0 16 20;
@@ -2826,7 +2826,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s6 = re.clone();
         // round 6
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s5 s6 20 2 (mk_i32 (-2884855));
         Avx2NttTheory.lemma_modwin_union orig s5 s6 0 20 24;
@@ -2837,7 +2837,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s7 = re.clone();
         // round 7
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s6 s7 24 2 (mk_i32 3111497);
         Avx2NttTheory.lemma_modwin_union orig s6 s7 0 24 28;
@@ -2845,7 +2845,7 @@ let lemma_window_forall32_from_modwin
     "#
         );
         round::<STEP, STEP_BY>(re, 7, 2680103);
-        hax_lib::fstar!(r#"Avx2NttTheory.lemma_l4_assemble_o orig s1 s2 s3 s4 s5 s6 s7 ${re}"#);
+        proof!(r#"Avx2NttTheory.lemma_l4_assemble_o orig s1 s2 s3 s4 s5 s6 s7 ${re}"#);
     }
 
     // Layer 3 block (rounds at offsets 2k, zetas zeta_r(16..31))
@@ -2867,7 +2867,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let orig = re.clone();
         // round 0
-        hax_lib::fstar!(
+        proof!(
             r#"
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 16 == 2725464);
         assert_norm (Spec.MLDSA.NttConstants.zeta_r 17 == 1024112);
@@ -2893,7 +2893,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s1 = re.clone();
         // round 1
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin orig s1 0 1 (mk_i32 2725464);
         Avx2NttTheory.lemma_modwin_union orig orig s1 0 0 2;
@@ -2904,7 +2904,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s2 = re.clone();
         // round 2
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s1 s2 2 1 (mk_i32 1024112);
         Avx2NttTheory.lemma_modwin_union orig s1 s2 0 2 4;
@@ -2915,7 +2915,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s3 = re.clone();
         // round 3
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s2 s3 4 1 (mk_i32 (-1079900));
         Avx2NttTheory.lemma_modwin_union orig s2 s3 0 4 6;
@@ -2926,7 +2926,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s4 = re.clone();
         // round 4
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s3 s4 6 1 (mk_i32 3585928);
         Avx2NttTheory.lemma_modwin_union orig s3 s4 0 6 8;
@@ -2937,7 +2937,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s5 = re.clone();
         // round 5
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s4 s5 8 1 (mk_i32 (-549488));
         Avx2NttTheory.lemma_modwin_union orig s4 s5 0 8 10;
@@ -2948,7 +2948,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s6 = re.clone();
         // round 6
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s5 s6 10 1 (mk_i32 (-1119584));
         Avx2NttTheory.lemma_modwin_union orig s5 s6 0 10 12;
@@ -2959,7 +2959,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s7 = re.clone();
         // round 7
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s6 s7 12 1 (mk_i32 2619752);
         Avx2NttTheory.lemma_modwin_union orig s6 s7 0 12 14;
@@ -2970,7 +2970,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s8 = re.clone();
         // round 8
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s7 s8 14 1 (mk_i32 (-2108549));
         Avx2NttTheory.lemma_modwin_union orig s7 s8 0 14 16;
@@ -2981,7 +2981,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s9 = re.clone();
         // round 9
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s8 s9 16 1 (mk_i32 (-2118186));
         Avx2NttTheory.lemma_modwin_union orig s8 s9 0 16 18;
@@ -2992,7 +2992,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s10 = re.clone();
         // round 10
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s9 s10 18 1 (mk_i32 (-3859737));
         Avx2NttTheory.lemma_modwin_union orig s9 s10 0 18 20;
@@ -3003,7 +3003,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s11 = re.clone();
         // round 11
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s10 s11 20 1 (mk_i32 (-1399561));
         Avx2NttTheory.lemma_modwin_union orig s10 s11 0 20 22;
@@ -3014,7 +3014,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s12 = re.clone();
         // round 12
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s11 s12 22 1 (mk_i32 (-3277672));
         Avx2NttTheory.lemma_modwin_union orig s11 s12 0 22 24;
@@ -3025,7 +3025,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s13 = re.clone();
         // round 13
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s12 s13 24 1 (mk_i32 1757237);
         Avx2NttTheory.lemma_modwin_union orig s12 s13 0 24 26;
@@ -3036,7 +3036,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s14 = re.clone();
         // round 14
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s13 s14 26 1 (mk_i32 (-19422));
         Avx2NttTheory.lemma_modwin_union orig s13 s14 0 26 28;
@@ -3047,7 +3047,7 @@ let lemma_window_forall32_from_modwin
         #[cfg(hax)]
         let s15 = re.clone();
         // round 15
-        hax_lib::fstar!(
+        proof!(
             r#"
         Avx2NttTheory.lemma_rp_modwin s14 s15 28 1 (mk_i32 4010497);
         Avx2NttTheory.lemma_modwin_union orig s14 s15 0 28 30;
@@ -3055,7 +3055,7 @@ let lemma_window_forall32_from_modwin
     "#
         );
         round::<STEP, STEP_BY>(re, 15, 280005);
-        hax_lib::fstar!(
+        proof!(
             r#"Avx2NttTheory.lemma_l3_assemble_o orig s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 ${re}"#
         );
     }
@@ -3069,7 +3069,7 @@ let lemma_window_forall32_from_modwin
     #[cfg(hax)]
     let s_l4 = re.clone();
     l3_block(re);
-    hax_lib::fstar!(r#"Avx2NttTheory.lemma_compose_5_3_o orig s_l5 s_l4 ${re}"#);
+    proof!(r#"Avx2NttTheory.lemma_compose_5_3_o orig s_l5 s_l4 ${re}"#);
 }
 
 #[allow(unsafe_code)]
@@ -3131,7 +3131,7 @@ let lemma_chunks_eq (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
            v (Seq.index out_flat i) % 8380417 == v (Seq.index spec i) % 8380417)
     "#))]
     unsafe fn avx2_ntt(re: &mut AVX2RingElement) {
-        hax_lib::fstar!(
+        proof!(
             r#"
         assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND == 8380416);
         assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX == 8380416)
@@ -3146,7 +3146,7 @@ let lemma_chunks_eq (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
         #[cfg(hax)]
         let s53 = re.clone();
         // SEAM bridge: theory is_i32b_poly_avx2 (+5) s53 -> LOCAL is_i32b_poly_avx2 (+5) s53
-        hax_lib::fstar!(
+        proof!(
             r#"
         let seam (u:nat{u<32}) (l:nat{l<8})
             : Lemma (Spec.Utils.is_i32b (8380416 + 5*8380416)
@@ -3168,7 +3168,7 @@ let lemma_chunks_eq (re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (
         // ensures give the congruence over the LOCAL chunks; rewrite both sides to the
         // theory chunks via lemma_chunks_eq, then fire lemma_layer_done_intro.  Then the
         // top compose + reveal, and the FINAL bound bridge (LOCAL -> theory).
-        hax_lib::fstar!(
+        proof!(
             r#"
         lemma_chunks_eq s53; lemma_chunks_eq s2; lemma_chunks_eq s1; lemma_chunks_eq ${re};
         Avx2NttTheory.lemma_layer_done_intro s53 s2 2;

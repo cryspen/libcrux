@@ -118,7 +118,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         deserialize::<SIMDUnit>(bytes, &mut ring_elements[i]);
         // Lift `pow2 12` per-lane → `NTT_BASE_BOUND = FIELD_MAX` per-lane,
         // then to `is_bounded_poly FIELD_MAX` so `ntt`'s pre discharges.
-        hax_lib::fstar!(
+        proof!(
             r#"
             let lemma_lift (j:nat{j < 32}) :
               Lemma (Spec.Utils.is_i32b_array_opaque
@@ -139,7 +139,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
     // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
     // required by the post (machine-checked here in the panic_free body).
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (k: nat{k < Seq.length ring_elements}) :
           Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
