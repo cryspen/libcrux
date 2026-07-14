@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: bc35d2f21221fbea025ce4f6780bea527ee525d6
+ * Libcrux: dirty
  */
 
 
@@ -2545,10 +2545,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_fa_81(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -2781,13 +2785,7 @@ libcrux_sha3_portable_incremental_new_42(void)
 /**
  Squeeze output bytes into `out`.
 
- Supports arbitrary-sized requests across multiple calls. Bytes
- from the most recently squeezed RATE-byte block that exceed the
- caller's request are buffered internally so that the next call
- can resume from that block before permuting again. This avoids
- the previous restriction that all chunks except the last had to
- be a multiple of `RATE` bytes.
- See https://github.com/cryspen/libcrux/issues/1362.
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize, RATE>[TraitClause@0, TraitClause@1]}
@@ -4183,10 +4181,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_fa_810(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -4410,13 +4412,7 @@ libcrux_sha3_portable_incremental_new_26(void)
 /**
  Squeeze output bytes into `out`.
 
- Supports arbitrary-sized requests across multiple calls. Bytes
- from the most recently squeezed RATE-byte block that exceed the
- caller's request are buffered internally so that the next call
- can resume from that block before permuting again. This avoids
- the previous restriction that all chunks except the last had to
- be a multiple of `RATE` bytes.
- See https://github.com/cryspen/libcrux/issues/1362.
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1usize, RATE>[TraitClause@0, TraitClause@1]}
