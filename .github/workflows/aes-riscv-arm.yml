@@ -48,7 +48,7 @@ jobs:
           cargo build --release --target ${{ matrix.target }}
 
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
         fail-fast: false
         matrix:
@@ -68,6 +68,36 @@ jobs:
         with:
             targets: ${{ matrix.target }}
         name: Install target Rust toolchain
+        
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@9f63be77f412a248c9d9a65a4c82cf066cdf8f0c # v35
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+            # restore and save a cache using this key
+            primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+            # if there's no cache hit, restore a cache by this prefix
+            restore-prefixes-first-match: nix-${{ runner.os }}-
+            # collect garbage until the Nix store size (in bytes) is at most this number
+            # before trying to save a new cache
+            # 1G = 1073741824
+            gc-max-store-size-linux: 1G
+            # do purge caches
+            purge: true
+            # purge all versions of the cache
+            purge-prefixes: nix-${{ runner.os }}-
+            # created more than this number of seconds ago
+            purge-created: 0
+            # or last accessed this duration (ISO 8601 duration format)
+            # before the start of the `Post Restore and save Nix store` phase
+            purge-last-accessed: P1DT12H
+            # except any version with the key that is the same as the `primary-key`
+            purge-primary-key: never
 
       - name: Test
         run: |
