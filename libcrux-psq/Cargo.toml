@@ -38,7 +38,7 @@ libcrux-ed25519 = { workspace = true, features = [
     "rand",
     "codec",
 ] }
-tls_codec = { version = "0.4.2", features = ["derive"] }
+tls_codec = { workspace = true }
 libcrux-ml-dsa = { workspace = true, features = ["codec"] }
 libcrux-aes.workspace = true
 

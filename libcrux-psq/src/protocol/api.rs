@@ -110,7 +110,7 @@ fn derive_pk_binder(
     libcrux_hkdf::sha2_256::hkdf(
         &mut pk_binder,
         &[],
-        &SerializeBytes::tls_serialize(&key.key).map_err(serialize_error)?,
+        &key.key.tls_serialize_bytes().map_err(serialize_error)?,
         &info_buf,
     )
     .map_err(|_| Error::CryptoError)?;
