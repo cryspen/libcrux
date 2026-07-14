@@ -36,8 +36,8 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ HAX_LIB_VERSION }}
-          fstar: $FSTAR_REV
+          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
         run: cargo update hax-lib --precise $HAX_LIB_VERSION
@@ -66,8 +66,8 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ HAX_LIB_VERSION }}
-          fstar: $FSTAR_REV
+          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
         run: cargo update hax-lib --precise $HAX_LIB_VERSION
@@ -93,8 +93,8 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ HAX_LIB_VERSION }}
-          fstar: $FSTAR_REV
+          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
         run: cargo update hax-lib --precise $HAX_LIB_VERSION
