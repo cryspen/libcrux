@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- [#1504](https://github.com/cryspen/libcrux/issues/1504): Fix incorrect `cloop!` macro `step_by` variant logic
+
 ### Added
 
 - [#1457](https://github.com/cryspen/libcrux/pull/1457): Add dependency on libcrux-secrets for optional valgrind integration
