@@ -58,9 +58,9 @@ macro_rules! cloop {
         }
     };
     (for $i:ident in ($start:literal..$end:expr).step_by($step:literal) $body:block) => {
-        for $i in ($start..($end / $step + 1)) {
-            let $i = $i * $step;
-            if $i >= $end { break; }
+        for _cloop_i in 0..(($end) / $step + 1) {
+            let $i = $start + _cloop_i * $step;
+            if $i >= ($end) { break; }
             $body
         }
     };
