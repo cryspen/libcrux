@@ -48,7 +48,7 @@ jobs:
           cargo build --release --target ${{ matrix.target }}
 
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
         fail-fast: false
         matrix:
@@ -61,18 +61,21 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
-      - name: Update dependencies
-        run: cargo update
-
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install target Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
+            toolchain: stable
             targets: ${{ matrix.target }}
-        name: Install target Rust toolchain
+
+      - name: Install cross
+        uses: taiki-e/install-action@43aecc8d72668fbcfe75c31400bc4f890f1c5853 # v2.83.2 
+        with:
+          tool: cross@0.2.5
 
       - name: Test
         run: |
-          nix-shell --run "cargo test --verbose --target ${{ matrix.target }}"
+          cross test --verbose --target ${{ matrix.target }}
 
       - name: Test Release
         run: |
-          nix-shell --run "cargo test --verbose --target ${{ matrix.target }} --release"
+          cross test --verbose --target ${{ matrix.target }} --release
