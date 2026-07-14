@@ -24,6 +24,17 @@ pub(crate) mod instantiations;
 #[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
+/// Local proof-annotation marker. Unlike a proc-macro (which Rust forces into a
+/// separate crate), a `macro_rules!` lives in the same file as its uses, so the
+/// proof text is edited right here when the code changes. It forwards its F*
+/// string verbatim to `hax_lib::fstar!`, so extraction is byte-identical
+/// (proof-neutral). Reads as "annotation, not code" at each call site.
+macro_rules! proof {
+    ($s:literal) => {
+        hax_lib::fstar!($s)
+    };
+}
+
 #[libcrux_macros::ml_dsa_parameter_sets(44, 65, 87)]
 pub(crate) mod generic {
     use super::*;
@@ -695,7 +706,7 @@ let hint_count_bounded
     fn ntt_signer_response<SIMDUnit: Operations>(
         signer_response: &mut [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
                  (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${signer_response}"#
         );
@@ -709,7 +720,7 @@ let hint_count_bounded
                           (mk_usize 8380416) (Seq.index ${signer_response} k))"#
             ));
             // The suffix bound at k=i is exactly ntt's FIELD_MAX precondition.
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
                             (mk_usize 8380416) (Seq.index ${signer_response} (v $i)))"#
             );
@@ -718,14 +729,15 @@ let hint_count_bounded
                 signer_response.to_vec().as_slice();
             ntt(&mut signer_response[i]);
             // ntt's post gives is_bounded_poly 75423744 on the updated entry; extend
-            // the processed range from [0,i) to [0,i+1) via the standalone lemma.
-            hax_lib::fstar!(
+            // the processed range from [0,i) to [0,i+1). The F* lemma logic lives
+            // in Polynomial.Spec; the local `proof!` marker keeps the call in-file.
+            proof!(
                 r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                      (mk_usize 75423744) $i iter_start ${signer_response}"#
             );
         }
         // After the loop the processed range covers [0,len); lift range -> slice.
-        hax_lib::fstar!(
+        proof!(
             r#"
             let _:Prims.unit =
               let aux (k:nat{k < Seq.length ${signer_response}}) :
