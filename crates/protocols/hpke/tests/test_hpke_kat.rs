@@ -68,7 +68,7 @@ struct ExportsKAT {
     exported_value: String,
 }
 
-/// Run the known-answer tests for all `tests` supported by the `Crypto` backedn,
+/// Run the known-answer tests for all `tests` supported by the `Crypto` backend,
 /// and return the number of test vectors that were actually executed
 /// (i.e. not skipped because the backend doesn't support the ciphersuite).
 fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) -> usize {
