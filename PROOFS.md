@@ -63,13 +63,17 @@ the crate's `proofs/generate_verification_status.py`.
 | KMAC | `crates/algorithms/kmac/` | none | runtime safety only |
 
 [1] Functional correctness against the Hacspec specification (SHA-3:
-`specs/sha3`; ML-KEM: `specs/ml-kem`). The status document gives the per-function
+`specs/sha3`; ML-KEM: `specs/ml-kem`). For ML-KEM this covers the main one-shot
+API — key generation, encapsulation, and decapsulation — for all three parameter
+sets (512/768/1024) and all supported backends (portable, AVX2, NEON); the
+incremental API is not covered. The status document gives the per-function
 result.
 
-[2] The core arithmetic and serialization code is proven functionally correct
-against the Hacspec specification (`specs/ml-dsa`); the remaining higher-level
-code is verified for runtime safety. The status document gives the per-function
-result.
+[2] The core arithmetic and NTT are proven functionally correct against the
+Hacspec specification (`specs/ml-dsa`), and much of the serialization and support
+code is verified for bounds or runtime safety. The top-level signing,
+verification, and key-generation functions are not yet verified — their proofs
+are currently admitted. The status document gives the per-function result.
 
 ## Tools
 

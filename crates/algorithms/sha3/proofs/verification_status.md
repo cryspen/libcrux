@@ -37,9 +37,9 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | **Generic total** | **8** | **105** | **0** |     | **84** | **9** |  **0** |  **12** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | generic_keccak    |    1 |  10 |   0 |     |   1 |    4 |      0 |       5 |
-|            | portable          |    1 |  27 |   0 |     |   8 |   13 |      0 |       6 |
+|            | portable          |    1 |  50 |   0 |     |  10 |   34 |      0 |       6 |
 |            | simd              |    4 |  20 |   0 |     |  17 |    3 |      0 |       0 |
-|            | **Portable total** | **6** | **57** | **0** |     | **26** | **20** |  **0** |  **11** |
+|            | **Portable total** | **6** | **80** | **0** |     | **28** | **41** |  **0** |  **11** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Avx2_     | generic_keccak    |    1 |  10 |   0 |     |   1 |    5 |      0 |       4 |
 |            | avx2              |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
@@ -54,20 +54,20 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 ## Summary
 
 - **Total modules**: 26
-- **Total functions**: 269
+- **Total functions**: 292
 - **Lax** (admitted): 0 (0.0%)
 - **Unverified** (not extracted): 0 (0.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 269 (100.0%)
-  - Panic-free only (no further proof): 158 (58.7%)
-  - Math (non-trivial ensures, no bounds/spec match): 74 (27.5%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 292 (100.0%)
+  - Panic-free only (no further proof): 160 (54.8%)
+  - Math (non-trivial ensures, no bounds/spec match): 95 (32.5%)
   - Bounds (range/interval ensures): 0 (0.0%)
-  - Hacspec (cites high-level spec): 37 (13.8%)
+  - Hacspec (cites high-level spec): 37 (12.7%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
 | Generic      |       8 |  105 |   0 |   0 |  84 |    9 |      0 |      12 |
-| Portable     |       6 |   57 |   0 |   0 |  26 |   20 |      0 |      11 |
+| Portable     |       6 |   80 |   0 |   0 |  28 |   41 |      0 |      11 |
 | Avx2         |       6 |   55 |   0 |   0 |  28 |   23 |      0 |       4 |
 | Neon         |       6 |   52 |   0 |   0 |  20 |   22 |      0 |      10 |

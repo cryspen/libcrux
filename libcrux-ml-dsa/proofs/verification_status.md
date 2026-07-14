@@ -42,21 +42,21 @@ column gives the actionable zero-lax target.
 |            | helper            |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | lib               |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | specs             |    1 |   6 |   0 |     |   6 |    0 |      0 |       0 |
-|            | polynomial        |    1 |  17 |   0 |     |  11 |    3 |      3 |       0 |
+|            | polynomial        |    1 |  17 |   0 |     |  10 |    3 |      4 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   6 |    0 |      2 |       2 |
-|            | arithmetic        |    1 |   7 |   1 |     |   4 |    0 |      2 |       0 |
+|            | arithmetic        |    1 |   7 |   1 |     |   1 |    1 |      4 |       0 |
 |            | matrix            |    1 |  11 |   0 |     |   0 |    0 |     11 |       0 |
-|            | sample            |    1 |  21 |   4 |     |  12 |    5 |      0 |       0 |
+|            | sample            |    1 |  21 |   3 |     |  11 |    5 |      2 |       0 |
 |            | samplex4          |    1 |   7 |   2 |     |   0 |    0 |      5 |       0 |
 |            | pre_hash          |    1 |   9 |   0 |     |   7 |    2 |      0 |       0 |
 |            | hash_functions    |    1 |  79 |   0 |     |  69 |   10 |      0 |       0 |
-|            | encoding          |    6 |  46 |   1 |     |  35 |    7 |      3 |       0 |
+|            | encoding          |    6 |  46 |   1 |     |  33 |    7 |      5 |       0 |
 |            | ml_dsa_generic    |    4 |  41 |   6 |     |  35 |    0 |      0 |       0 |
 |            | ml_dsa_*          |    3 |  46 |   0 |     |  46 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | simd/traits       |    2 |  33 |   0 |     |   6 |   15 |      4 |       8 |
 |            | simd/tests        |    1 |   6 |   0 |   6 |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **31** | **360** | **14** | **6** | **258** | **42** | **30** |  **10** |
+|            | **Generic total** | **31** | **360** | **13** | **6** | **251** | **43** | **37** |  **10** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | vector_type       |    1 |   3 |   0 |     |   3 |    0 |      0 |       0 |
 |            | arithmetic        |    1 |  21 |   0 |     |   2 |    3 |      1 |      15 |
@@ -80,19 +80,19 @@ column gives the actionable zero-lax target.
 
 - **Total modules**: 58
 - **Total functions**: 618
-- **Lax** (admitted): 14 (2.3%)
+- **Lax** (admitted): 13 (2.1%)
 - **Unverified** (not extracted): 6 (1.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 598 (96.8%)
-  - Panic-free only (no further proof): 277 (44.8%)
-  - Math (non-trivial ensures, no bounds/spec match): 151 (24.4%)
-  - Bounds (range/interval ensures): 79 (12.8%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 599 (96.9%)
+  - Panic-free only (no further proof): 270 (43.7%)
+  - Math (non-trivial ensures, no bounds/spec match): 152 (24.6%)
+  - Bounds (range/interval ensures): 86 (13.9%)
   - Hacspec (cites high-level spec): 91 (14.7%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      31 |  360 |  14 |   6 | 258 |   42 |     30 |      10 |
+| Generic      |      31 |  360 |  13 |   6 | 251 |   43 |     37 |      10 |
 | Portable     |      12 |  121 |   0 |   0 |  10 |   40 |     24 |      47 |
 | Avx2         |      15 |  137 |   0 |   0 |   9 |   69 |     25 |      34 |
 
@@ -110,11 +110,11 @@ Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) in
 
 | Module                    |  Line |
 | ------------------------- | ----- |
-| Generic/arithmetic        |    88 |
-| Generic/encoding          |    69 |
-| Generic/ml_dsa_generic    |    75 |
-| Generic/ml_dsa_generic    |   228 |
-| Generic/ml_dsa_generic    |   701 |
-| Generic/ml_dsa_generic    |   739 |
-| Generic/ml_dsa_generic    |   909 |
-| Generic/ml_dsa_generic    |   961 |
+| Generic/arithmetic        |   110 |
+| Generic/encoding          |    78 |
+| Generic/ml_dsa_generic    |    78 |
+| Generic/ml_dsa_generic    |   262 |
+| Generic/ml_dsa_generic    |   932 |
+| Generic/ml_dsa_generic    |   970 |
+| Generic/ml_dsa_generic    |  1148 |
+| Generic/ml_dsa_generic    |  1200 |
