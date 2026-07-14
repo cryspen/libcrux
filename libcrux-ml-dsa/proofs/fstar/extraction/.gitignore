@@ -1,2 +1,6 @@
 *fst
 *fsti
+# Hand-written companion theory relocated from src/arithmetic.rs fstar::before
+# blocks (annotation-compaction campaign). Track it so CI can resolve the module
+# (blanket *fst above would otherwise swallow it -> Error 72). See sha3 precedent.
+!Libcrux_ml_dsa.Arithmetic_theory.fst
