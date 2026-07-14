@@ -10,6 +10,11 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+// Crate-wide `proof!` annotation marker (see proof_macros.rs). `#[macro_use]`
+// must precede the modules that use it so the macro is in scope for them.
+#[macro_use]
+mod proof_macros;
+
 mod arithmetic;
 mod constants;
 mod encoding;

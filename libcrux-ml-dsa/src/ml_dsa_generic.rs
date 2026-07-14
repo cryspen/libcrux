@@ -24,17 +24,6 @@ pub(crate) mod instantiations;
 #[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
-/// Local proof-annotation marker. Unlike a proc-macro (which Rust forces into a
-/// separate crate), a `macro_rules!` lives in the same file as its uses, so the
-/// proof text is edited right here when the code changes. It forwards its F*
-/// string verbatim to `hax_lib::fstar!`, so extraction is byte-identical
-/// (proof-neutral). Reads as "annotation, not code" at each call site.
-macro_rules! proof {
-    ($s:literal) => {
-        hax_lib::fstar!($s)
-    };
-}
-
 #[libcrux_macros::ml_dsa_parameter_sets(44, 65, 87)]
 pub(crate) mod generic {
     use super::*;
