@@ -36,7 +36,7 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
@@ -66,7 +66,7 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
@@ -93,7 +93,7 @@ jobs:
 
       - uses: hacspec/hax-actions@main
         with:
-          hax_reference: v${{ env.HAX_LIB_VERSION }}
+          hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
 
       - name: Use precise version of hax-lib
