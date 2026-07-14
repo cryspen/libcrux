@@ -12,7 +12,7 @@ repository.workspace = true
 
 [dependencies]
 libcrux-macros = { version = "=0.0.3", path = "../../utils/macros" }
-libcrux-traits = { workspace = true, default-features = true }
+libcrux-traits.workspace = true
 libcrux-hacl-rs.workspace = true
 libcrux-secrets.workspace = true
 libcrux-sha2 = { workspace = true, features = [
@@ -32,7 +32,7 @@ check-secret-independence = [
 [dev-dependencies]
 der = "0.8.0"
 libcrux-p256 = { workspace = true, features = ["expose-hacl"] }
-libcrux-traits = { workspace = true, default-features = true, features = [
+libcrux-traits = { workspace = true, features = [
     "generic-tests",
 ] }
 libcrux-kats = { workspace = true, features = ["ecdh", "ecdsa"] }

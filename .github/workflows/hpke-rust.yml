@@ -1,11 +1,16 @@
 name: HPKE - Build & Test
 
 on:
-  push:
-    branches:
-      - '*'
   pull_request:
-    branches: [ main ]
+    # Run only when something changes in hpke-rs, or its direct workspace dependencies
+    paths:
+      - 'crates/protocols/hpke/**'
+      - 'crates/algorithms/sha3/**/*.rs'
+      - 'libcrux-ecdh/**/*.rs'
+      - 'crates/algorithms/hkdf/**/*.rs'
+      - 'crates/primitives/aead/**/*.rs'
+      - 'libcrux-kem/**/*.rs'
+      - 'traits/**/*.rs'
 
 permissions:
   contents: read
@@ -31,7 +36,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       with:
         persist-credentials: false
     - name: Run tests all features
@@ -87,7 +92,7 @@ jobs:
           - target: aarch64-apple-ios
             rust: stable
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
@@ -107,7 +112,7 @@ jobs:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       - name: Install latest nightly
@@ -122,7 +127,7 @@ jobs:
   no-std-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
       # we use a target that lacks a pre-compiled libstd to check if any dependency is using libstd

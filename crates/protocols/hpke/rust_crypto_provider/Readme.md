@@ -4,6 +4,10 @@
 [![Docs][docs-badge]][docs-link]
 ![Rust Version][rustc-image]
 
+The crate is a community-supported project and is not officially maintained by the core team right now.
+However, we are happy to review and merge pull requests. Contributions, bug fixes,
+and feature additions from the community are welcome and encouraged!
+
 This crate provides an implementation of the [HpkeCrypto] trait using native Rust crypto implementations
 ([hkdf], [sha2], [p256], [k256], [p384], [x25519-dalek], [chacha20poly1305], [aes-gcm]).
 

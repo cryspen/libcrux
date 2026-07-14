@@ -1,5 +1,3 @@
-#![cfg(valgrind_ct_test)]
-
 use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
 use std::hint::black_box;
 

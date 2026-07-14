@@ -104,8 +104,8 @@ impl AEADKeyNonce {
                 libcrux_hkdf::sha2_256::hkdf(
                     &mut key,
                     &[],
-                    &ikm.tls_serialize().map_err(AEADError::Serialize)?,
-                    &info.tls_serialize().map_err(AEADError::Serialize)?,
+                    &ikm.tls_serialize_bytes().map_err(AEADError::Serialize)?,
+                    &info.tls_serialize_bytes().map_err(AEADError::Serialize)?,
                 )
                 .map_err(|_| AEADError::CryptoError)?;
                 Ok(AEADKeyNonce {
@@ -119,8 +119,8 @@ impl AEADKeyNonce {
                 libcrux_hkdf::sha2_256::hkdf(
                     &mut key,
                     &[],
-                    &ikm.tls_serialize().map_err(AEADError::Serialize)?,
-                    &info.tls_serialize().map_err(AEADError::Serialize)?,
+                    &ikm.tls_serialize_bytes().map_err(AEADError::Serialize)?,
+                    &info.tls_serialize_bytes().map_err(AEADError::Serialize)?,
                 )
                 .map_err(|_| AEADError::CryptoError)?;
                 Ok(AEADKeyNonce {

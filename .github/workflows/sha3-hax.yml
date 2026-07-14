@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: v${{ HAX_LIB_VERSION }}
@@ -54,7 +54,7 @@ jobs:
       - extract-portable
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: v${{ HAX_LIB_VERSION }}
@@ -78,7 +78,7 @@ jobs:
       - extract-portable
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: hacspec/hax-actions@main
         with:
           hax_reference: v${{ HAX_LIB_VERSION }}

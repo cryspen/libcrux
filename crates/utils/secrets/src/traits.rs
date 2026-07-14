@@ -51,28 +51,6 @@ impl Scalar for i64 {}
 #[cfg(not(eurydice))]
 impl Scalar for i128 {}
 
-/// A trait for integer operations provided by Rust for machine integers
-pub trait IntOps
-where
-    Self: Sized,
-{
-    fn wrapping_add<T: Into<Self>>(self, rhs: T) -> Self;
-    fn wrapping_sub<T: Into<Self>>(self, rhs: T) -> Self;
-    fn wrapping_mul<T: Into<Self>>(self, rhs: T) -> Self;
-    fn wrapping_neg(self) -> Self;
-    fn rotate_left(self, rhs: u32) -> Self;
-    fn rotate_right(self, rhs: u32) -> Self;
-}
-
-/// A trait for byte conversion operations provided by Rust for machine integers
-pub trait EncodeOps<T, const N: usize> {
-    fn to_le_bytes(&self) -> [T; N];
-    fn to_be_bytes(&self) -> [T; N];
-
-    fn from_le_bytes(x: [T; N]) -> Self;
-    fn from_be_bytes(x: [T; N]) -> Self;
-}
-
 // XXX These impls for SIMD registers need to be adapted should we want to support hax
 //  extraction with check-secret-independence enabled at some point.
 

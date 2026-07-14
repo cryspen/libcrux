@@ -64,5 +64,5 @@ Two backends are provided in this repository
 [hpke (RFC 9180)]: https://www.rfc-editor.org/rfc/rfc9180.html
 [hpkecrypto]: https://docs.rs/hpke-rs-crypto
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg?style=for-the-badge
-[libcrux backend]: https://github.com/celabshq/hpke-rs/tree/main/libcrux_provider
-[rustcrypto backend]: https://github.com/celabshq/hpke-rs/tree/main/rust_crypto_provider
+[libcrux backend]: https://github.com/celabshq/libcrux/tree/main/crates/protocols/hpke/libcrux_provider
+[rustcrypto backend]: https://github.com/celabshq/libcrux/tree/main/crates/protocols/hpke/rust_crypto_provider

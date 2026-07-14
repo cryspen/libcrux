@@ -561,7 +561,8 @@ impl TryRng for HpkeLibcruxPrng {
     }
 
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        Ok(self.rng.fill_bytes(dst))
+        self.rng.fill_bytes(dst);
+        Ok(())
     }
 }
 
