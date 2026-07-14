@@ -16,12 +16,12 @@ use libcrux_intrinsics::avx2::*;
               else to_i32x8 $result i = to_i32x8 $t i)) =
 "#))]
 fn to_unsigned_representatives_ret(t: &Vec256) -> Vec256 {
-    proof!("reveal_opaque_arithmetic_ops #i32_inttype)");
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #i32_inttype)");
 
     let signs = mm256_srai_epi32::<31>(*t);
     let conditional_add_field_modulus = mm256_and_si256(signs, mm256_set1_epi32(FIELD_MODULUS));
 
-    proof!(r"logand_lemma $FIELD_MODULUS (mk_i32 0)");
+    hax_lib::fstar!(r"logand_lemma $FIELD_MODULUS (mk_i32 0)");
 
     mm256_add_epi32(*t, conditional_add_field_modulus)
 }
@@ -71,7 +71,7 @@ pub(super) fn subtract(lhs: &mut Vec256, rhs: &Vec256) {
               Spec.MLDSA.Math.mont_mul (to_i32x8 ${lhs} i) $constant
 "#))]
 pub(super) fn montgomery_multiply_by_constant(lhs: Vec256, constant: i32) -> Vec256 {
-    proof!("reveal_opaque (`%Spec.MLDSA.Math.mont_red) (Spec.MLDSA.Math.mont_red)");
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.mont_red) (Spec.MLDSA.Math.mont_red)");
 
     let rhs = mm256_set1_epi32(constant);
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS);
@@ -116,7 +116,7 @@ pub(super) fn montgomery_multiply_aux(
     lhs: &mut Vec256,
     rhs: &Vec256,
 ) {
-    proof!("reveal_opaque (`%Spec.MLDSA.Math.mont_red) (Spec.MLDSA.Math.mont_red)");
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.mont_red) (Spec.MLDSA.Math.mont_red)");
 
     let prod02 = mm256_mul_epi32(*lhs, *rhs);
     let prod13 = mm256_mul_epi32(
@@ -161,7 +161,7 @@ pub(super) fn montgomery_multiply(lhs: &mut Vec256, rhs: &Vec256) {
     (forall i. to_i32x8 ${simd_unit}_future i ==
         Spec.MLDSA.Math.barrett_red (to_i32x8 ${simd_unit} i))"#))]
 pub(super) fn reduce(simd_unit: &mut Vec256) {
-    proof!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
+    hax_lib::fstar!("reveal_opaque (`%Spec.MLDSA.Math.barrett_red) (Spec.MLDSA.Math.barrett_red)");
 
     let quotient = mm256_add_epi32(*simd_unit, mm256_set1_epi32(1 << 22));
     let quotient = mm256_srai_epi32::<23>(quotient);
@@ -206,7 +206,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
     // If every lane of |result| is 0, all coefficients are <= bound - 1
     let result = mm256_testz_si256(compare_with_bound, compare_with_bound);
 
-    proof!(r"logand_lemma_forall #i32_inttype");
+    hax_lib::fstar!(r"logand_lemma_forall #i32_inttype");
 
     result != 1
 }
@@ -222,7 +222,7 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Vec256, bound: i32) -> bool {
          to_i32x8 ${r1}_future i == mk_i32 t1 /\
          Spec.Utils.is_i32b (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) (to_i32x8 ${r0}_future i))"#))]
 pub(super) fn power2round(r0: &mut Vec256, r1: &mut Vec256) {
-    proof!("reveal_opaque_arithmetic_ops #i32_inttype");
+    hax_lib::fstar!("reveal_opaque_arithmetic_ops #i32_inttype");
 
     to_unsigned_representatives(r0);
 
@@ -411,7 +411,7 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
     *hint = mm256_and_si256(*hint, mm256_set1_epi32(0x1));
 
     let result = hints_mask.count_ones() as usize;
-    proof!(
+    hax_lib::fstar!(
         r#"
         Libcrux_ml_dsa.Proof_utils.lemma_movemask_ps_bound
           (Libcrux_intrinsics.Avx2.mm256_castsi256_ps
@@ -439,7 +439,7 @@ pub(super) fn compute_hint(low: &Vec256, high: &Vec256, gamma2: i32, hint: &mut 
     // of the (binary) hint under the high-nonneg guard.  `movemask_ps` returns
     // `sum_j (raw_j < 0 ? 2^j : 0)`, so `count_ones` == #{negative raw lanes};
     // `lemma_or_sign_and` links each raw sign bit to the returned hint's low bit.
-    proof!(
+    hax_lib::fstar!(
         r#"
         let raw : Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256) =
           Libcrux_intrinsics.Avx2.mm256_or_si256 ${low_within_bound}
@@ -617,7 +617,7 @@ pub(super) fn use_hint(gamma2: Gamma2, r: &Vec256, hint: &mut Vec256) {
         _ => unreachable!(),
     }
 
-    proof!(
+    hax_lib::fstar!(
         r#"
     let aux (i: u64{v i < 8})
         : Lemma

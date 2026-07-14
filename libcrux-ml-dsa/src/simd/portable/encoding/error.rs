@@ -72,8 +72,8 @@ fn deserialize_when_eta_is_2(serialized: &[u8], simd_unit: &mut Coefficients) {
     let byte1 = serialized[1] as i32;
     let byte2 = serialized[2] as i32;
 
-    proof!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
-    proof!(
+    hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+    hax_lib::fstar!(
         r#"assert (mk_i32 7 == (mk_i32 (pow2 3) -! mk_i32 1)) by (FStar.Tactics.norm [primops])"#
     );
 
@@ -100,7 +100,7 @@ fn deserialize_when_eta_is_4(serialized: &[u8], simd_units: &mut Coefficients) {
 
     const ETA: i32 = 4;
 
-    proof!(
+    hax_lib::fstar!(
         r#"assert (mk_u8 15 == (mk_u8 (pow2 4) -! mk_u8 1)) by (FStar.Tactics.norm [primops])"#
     );
 
@@ -112,7 +112,7 @@ fn deserialize_when_eta_is_4(serialized: &[u8], simd_units: &mut Coefficients) {
                   v (Seq.index ${simd_units}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) >= -11 /\
                   v (Seq.index ${simd_units}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) <= 4)"#));
 
-            proof!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+            hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
 
             simd_units.values[2 * i] = ETA - ((byte & 0xF) as i32);
             simd_units.values[2 * i + 1] = ETA - ((byte >> 4) as i32);

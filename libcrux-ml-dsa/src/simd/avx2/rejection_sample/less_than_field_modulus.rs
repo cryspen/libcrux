@@ -257,7 +257,7 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
     let good_lower_half = good & 0x0F;
     let good_upper_half = good >> 4;
 
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Proof_utils.lemma_movemask_ps_bound (Libcrux_intrinsics.Avx2.mm256_castsi256_ps $compare_with_field_modulus);
            logand_mask_lemma $good 4;
            assert (v $good_lower_half >= 0 /\ v $good_lower_half < 16);
@@ -302,7 +302,7 @@ pub(crate) fn sample(input: &[u8], output: &mut [i32]) -> usize {
 
     let result = sampled_count + (good_upper_half.count_ones() as usize);
 
-    proof!(
+    hax_lib::fstar!(
         r#"lemma_leaf_post $input (Alloc.Vec.impl_1__as_slice output_init <: t_Slice i32) $good_lower_half $good_upper_half
              (v (Core_models.Num.impl_i32__count_ones $good_lower_half))
              (v (Core_models.Num.impl_i32__count_ones $good_upper_half));

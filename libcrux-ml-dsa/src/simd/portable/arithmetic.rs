@@ -19,8 +19,8 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
-    proof!("reveal_opaque (`%$add_pre) ($add_pre)");
-    proof!("reveal_opaque (`%$add_post) ($add_post)");
+    hax_lib::fstar!("reveal_opaque (`%$add_pre) ($add_pre)");
+    hax_lib::fstar!("reveal_opaque (`%$add_post) ($add_post)");
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -46,8 +46,8 @@ pub fn add(lhs: &mut Coefficients, rhs: &Coefficients) {
 pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
-    proof!("reveal_opaque (`%$sub_pre) ($sub_pre)");
-    proof!("reveal_opaque (`%$sub_post) ($sub_post)");
+    hax_lib::fstar!("reveal_opaque (`%$sub_pre) ($sub_pre)");
+    hax_lib::fstar!("reveal_opaque (`%$sub_post) ($sub_post)");
 
     for i in 0..lhs.values.len() {
         hax_lib::loop_invariant!(|i: usize| {
@@ -73,7 +73,7 @@ pub fn subtract(lhs: &mut Coefficients, rhs: &Coefficients) {
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
     let res = value & ((1 << n) - 1);
 
-    proof!(
+    hax_lib::fstar!(
         "calc (==) {
             v res;
             (==) { }
@@ -109,7 +109,7 @@ pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgome
     let value_high = (value >> MONTGOMERY_SHIFT) as i32;
     let res = value_high - c;
     // Discharge clause 1 of the post: v res == v (mont_red value).
-    proof!(
+    hax_lib::fstar!(
         r#"Spec.Intrinsics.reveal_opaque_arithmetic_ops #i32_inttype;
            Spec.Intrinsics.reveal_opaque_arithmetic_ops #i64_inttype;
            Spec.Intrinsics.reveal_opaque_cast_ops #i32_inttype #i64_inttype;
@@ -119,13 +119,13 @@ pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgome
     );
     // Discharge clause 2: is_i32b 12570625 res.  Spell the goal first;
     // call the precise specialized lemma; F* substitutes via clause 1.
-    proof!(
+    hax_lib::fstar!(
         r#"Spec.MLDSA.Math.lemma_mont_red_bound_field_max_times_pow2_32 value;
            assert (Spec.Utils.is_i32b 12570625 (Spec.MLDSA.Math.mont_red value));
            assert (Spec.Utils.is_i32b 12570625 res)"#
     );
     // Discharge clause 3: conditional tight bound.
-    proof!(
+    hax_lib::fstar!(
         r#"(if Spec.Utils.is_i64b (8380416 * pow2 31) value then begin
               Spec.MLDSA.Math.lemma_mont_red_bound_field_max_times_pow2_31 value;
               assert (Spec.Utils.is_i32b 8380417 (Spec.MLDSA.Math.mont_red value));
@@ -133,7 +133,7 @@ pub(crate) fn montgomery_reduce_element(value: i64) -> FieldElementTimesMontgome
             end)"#
     );
     // Discharge clause 4: mod-q correctness.
-    proof!(
+    hax_lib::fstar!(
         r#"Spec.MLDSA.Math.lemma_mont_red_mod_q value;
            reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
            assert (Spec.MLDSA.Math.mod_q (v res) == Spec.MLDSA.Math.mod_q (v value * 8265825))"#
@@ -151,7 +151,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
-    proof!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) fe fer"#);
+    hax_lib::fstar!(r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) fe fer"#);
 
     let result = montgomery_reduce_element((fe as i64) * (fer as i64));
 
@@ -159,7 +159,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     // is_i32b 8380416 fer (widened from the pre 4190208).  The reveals
     // unfold `i32_mul fe fer` to `(cast fe) *! (cast fer)` so F* sees
     // `mont_mul fe fer == mont_red ((fe as i64) * (fer as i64)) == result`.
-    proof!(
+    hax_lib::fstar!(
         r#"Hacspec_ml_dsa.Commute.Chunk.lemma_mont_mul_bound_and_mod_q fe fer;
            Spec.Intrinsics.reveal_opaque_arithmetic_ops #i64_inttype;
            Spec.Intrinsics.reveal_opaque_cast_ops #i32_inttype #i64_inttype"#
@@ -183,7 +183,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i32) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -199,7 +199,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
               (forall j. j >= v $i ==> (Seq.index ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j) == (Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values j))"#
             )
         });
-        proof!(
+        hax_lib::fstar!(
             r#"Spec.Utils.lemma_mul_i32b (pow2 31) (4190208) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ] $c"#
         );
 
@@ -209,7 +209,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
         // per-element mont_mul.  Same bridge pattern as montgomery_multiply_fe_by_fer.
         // The reveals unfold `i32_mul lhs c` to `(cast lhs) *! (cast c)` so F* sees
         // `mont_mul lhs c == mont_red ((lhs as i64) * (c as i64)) == result`.
-        proof!(
+        hax_lib::fstar!(
             r#"Hacspec_ml_dsa.Commute.Chunk.lemma_mont_mul_bound_and_mod_q
                  (Seq.index ${_simd_unit0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values (v $i)) $c;
                Spec.Intrinsics.reveal_opaque_arithmetic_ops #i64_inttype;
@@ -236,7 +236,7 @@ pub(crate) fn montgomery_multiply_by_constant(simd_unit: &mut Coefficients, c: i
 pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
     #[cfg(hax)]
     let _lhs0 = lhs.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -255,7 +255,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
         // Widened operand bound: both lhs[i] and rhs[i] are now bounded by
         // 9*FIELD_MAX (NTT_OUTPUT_BOUND), so the product fits in i64 with
         // |product| <= (9*FIELD_MAX)^2 <= 8380416*pow2 32 = montgomery_reduce's pre.
-        proof!(
+        hax_lib::fstar!(
             r#"Spec.Utils.lemma_mul_i32b (9 * 8380416) (9 * 8380416) ${lhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ] ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values.[ $i ];
                assert_norm ((9 * 8380416) * (9 * 8380416) <= 8380416 * pow2 32)"#
         );
@@ -268,7 +268,7 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
         // FIELD_MAX-bounded (=> the widened bound+mod-q lemma applies).
         // The reveals unfold `i32_mul lhs rhs` to `(cast lhs) *! (cast rhs)` so F* sees
         // `mont_mul lhs rhs == mont_red ((lhs as i64) * (rhs as i64)) == result`.
-        proof!(
+        hax_lib::fstar!(
             r#"Spec.MLDSA.Math.lemma_mont_mul_bound_and_mod_q_ntt_output
                  (Seq.index ${_lhs0}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values (v $i))
                  (Seq.index ${rhs}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values (v $i));
@@ -294,14 +294,14 @@ pub(crate) fn montgomery_multiply(lhs: &mut Coefficients, rhs: &Coefficients) {
 #[hax_lib::ensures(|(t0,t1)| fstar!(r#"let (t0_s, t1_s) = Spec.MLDSA.Math.power2round (v $t) in
     v $t0 == t0_s /\ v $t1 == t1_s /\ Spec.Utils.is_intb_bt (pow2 (v $BITS_IN_LOWER_PART_OF_T - 1)) (v $t0)"#))]
 fn power2round_element(t: i32) -> (i32, i32) {
-    proof!("logand_lemma $FIELD_MODULUS (t >>! mk_i32 31)");
+    hax_lib::fstar!("logand_lemma $FIELD_MODULUS (t >>! mk_i32 31)");
     #[cfg(hax)]
     let _t = t;
 
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
 
-    proof!("assert (v $t == v $_t % v $FIELD_MODULUS)");
+    hax_lib::fstar!("assert (v $t == v $_t % v $FIELD_MODULUS)");
 
     // t0 = t - (2^{BITS_IN_LOWER_PART_OF_T} * t1)
     // t1 = ⌊(t - 1)/2^{BITS_IN_LOWER_PART_OF_T} + 1/2⌋
@@ -310,7 +310,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
     // on what these compute.
     let t1 = (t - 1 + (1 << (BITS_IN_LOWER_PART_OF_T - 1))) >> BITS_IN_LOWER_PART_OF_T;
 
-    proof!(
+    hax_lib::fstar!(
         "assert (v $t1 == (v $t - 1 + pow2 12) / pow2 13);
         assert ((v $t - (Spec.Utils.mod_p (v $t) (pow2 13))) / pow2 13 ==
             (v $t / pow2 13 - (Spec.Utils.mod_p (v $t) (pow2 13)) / pow2 13));
@@ -327,7 +327,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
 
     let t0 = t - (t1 << BITS_IN_LOWER_PART_OF_T);
 
-    proof!(
+    hax_lib::fstar!(
         "assert (v $t0 == v $t - ((v $t - (Spec.Utils.mod_p (v $t) (pow2 13))) / pow2 13) * pow2 13);
         assert (v $t0 == v $t - (v $t - (Spec.Utils.mod_p (v $t) (pow2 13))));
         assert (v $t0 == Spec.Utils.mod_p (v $t) (pow2 13))");
@@ -347,7 +347,7 @@ fn power2round_element(t: i32) -> (i32, i32) {
 pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     #[cfg(hax)]
     let _t0: Coefficients = t0.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -381,7 +381,7 @@ pub(super) fn power2round(t0: &mut Coefficients, t1: &mut Coefficients) {
     $result == false <==>
         Spec.Utils.is_i32b_array_opaque (v $bound - 1) ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values"#))]
 pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> bool {
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -405,14 +405,14 @@ pub(super) fn infinity_norm_exceeds(simd_unit: &Coefficients, bound: i32) -> boo
         // representative in (-FIELD_MODULUS / 2, FIELD_MODULUS / 2].
         let sign = coefficient >> 31;
 
-        proof!("logand_lemma (mk_i32 2 *! $coefficient) $sign");
+        hax_lib::fstar!("logand_lemma (mk_i32 2 *! $coefficient) $sign");
 
         let normalized = coefficient - (sign & (2 * coefficient));
 
-        proof!("assert (v $normalized == abs (v $coefficient))");
+        hax_lib::fstar!("assert (v $normalized == abs (v $coefficient))");
 
         let lane_violation: u32 = (normalized >= bound) as u32;
-        proof!("logor_lemma $violations $lane_violation");
+        hax_lib::fstar!("logor_lemma $violations $lane_violation");
         violations = violations | lane_violation;
     }
 
@@ -428,7 +428,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     let quotient = (fe + (1 << 22)) >> 23;
     let result = fe - (quotient * FIELD_MODULUS);
 
-    proof!(
+    hax_lib::fstar!(
         "calc (==) {
         v $result % 8380417;
         (==) { }
@@ -442,7 +442,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
     }"
     );
 
-    proof!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
+    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
     result
 }
 
@@ -459,7 +459,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -493,7 +493,7 @@ pub(super) fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: &mut Coeffi
 pub(super) fn reduce(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _simd_unit0 = simd_unit.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -539,7 +539,7 @@ pub(super) fn compute_hint(
 ) -> usize {
     let mut one_hints_count = 0;
 
-    proof!(
+    hax_lib::fstar!(
         r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.hint_counter ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) (0)"#
     );
 
@@ -561,7 +561,7 @@ pub(super) fn compute_hint(
 
         hint.values[i] = compute_one_hint(low.values[i], high.values[i], gamma2);
 
-        proof!(
+        hax_lib::fstar!(
             r#"Spec.MLDSA.Math.hint_counter_loop ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values $_hint_values (v i);
             Spec.Utils.unfold_repeati ($i +! sz 1) (Spec.MLDSA.Math.hint_counter ${hint}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values) (0) ($i)"#
         );
@@ -604,18 +604,18 @@ pub(super) fn compute_hint(
 fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     #[cfg(hax)]
     let _r = r;
-    proof!(r#"logand_lemma $FIELD_MODULUS ($r >>! mk_i32 31)"#);
+    hax_lib::fstar!(r#"logand_lemma $FIELD_MODULUS ($r >>! mk_i32 31)"#);
 
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
 
-    proof!(r#"assert (v $r == v $_r % v $FIELD_MODULUS)"#);
+    hax_lib::fstar!(r#"assert (v $r == v $_r % v $FIELD_MODULUS)"#);
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
-        proof!(r#"assert (v $ceil_of_r_by_128 == (v $r + 127) / 128)"#);
+        hax_lib::fstar!(r#"assert (v $ceil_of_r_by_128 == (v $r + 127) / 128)"#);
 
         match gamma2 {
             GAMMA2_V95_232 => {
@@ -623,14 +623,14 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
                 let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
 
-                proof!(
+                hax_lib::fstar!(
                     r#"assert (v $result == ((v $ceil_of_r_by_128 * 11275) + pow2 23) / pow2 24);
                     assert (v $result == ((((v $r + 127) / 128) * 11275) + pow2 23) / pow2 24);
                     assert (v $result == (v $r - 1 + 95232) / 190464);
                     assert (v $result == (v $r - (Spec.Utils.mod_p (v $r) 190464)) / 190464);
                     assert (v $result >= 0 /\ v $result <= 44)"#
                 );
-                proof!(
+                hax_lib::fstar!(
                     r#"logxor_lemma $result ((mk_i32 43 -! $result) >>! mk_i32 31);
                     lognot_lemma $result;
                     logand_lemma ($result ^. ((mk_i32 43 -! $result) >>! mk_i32 31)) $result"#
@@ -639,7 +639,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                 // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
                 let result_0 = (result ^ (43 - result) >> 31) & result;
 
-                proof!(
+                hax_lib::fstar!(
                     r#"assert (v $result == 44 ==> v $result_0 == 0);
                     assert (v $result < 44 ==> v $result_0 == v $result)"#
                 );
@@ -651,19 +651,19 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
                 // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
                 let result = (ceil_of_r_by_128 * 1025 + (1 << 21)) >> 22;
 
-                proof!(
+                hax_lib::fstar!(
                     r#"assert (v $result == ((v $ceil_of_r_by_128 * 1025) + pow2 21) / pow2 22);
                     assert (v $result == ((((v $r + 127) / 128) * 1025) + pow2 21) / pow2 22);
                     assert (v $result == (v $r - 1 + 261888) / 523776);
                     assert (v $result == (v $r - (Spec.Utils.mod_p (v $r) 523776)) / 523776);
                     assert (v $result >= 0 /\ v $result <= 16)"#
                 );
-                proof!(r#"logand_mask_lemma $result 4"#);
+                hax_lib::fstar!(r#"logand_mask_lemma $result 4"#);
 
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
                 let result_0 = result & 15;
 
-                proof!(
+                hax_lib::fstar!(
                     r#"assert (v $result == 16 ==> v $result_0 == 0);
                     assert (v $result < 16 ==> v $result_0 == v $result)"#
                 );
@@ -680,7 +680,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     #[cfg(hax)]
     let _r0 = r0;
 
-    proof!(
+    hax_lib::fstar!(
         r#"logand_lemma (((($FIELD_MODULUS -! mk_i32 1) /! mk_i32 2) -! $r0) >>! mk_i32 31)
             $FIELD_MODULUS"#
     );
@@ -690,7 +690,7 @@ fn decompose_element(gamma2: Gamma2, r: i32) -> (i32, i32) {
     // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
     r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
 
-    proof!(
+    hax_lib::fstar!(
         r#"assert (v $_r0 > 4190208 ==> v $r0 == v $_r0 - 8380417);
         assert (v $_r0 <= 4190208 ==> v $r0 == v $_r0);
         if v $r - (Spec.Utils.mod_p (v $r) (v $alpha)) = 8380416 then
@@ -736,7 +736,7 @@ pub(crate) fn use_one_hint(gamma2: Gamma2, r: i32, hint: i32) -> i32 {
         }
 
         GAMMA2_V261_888 => {
-            proof!(
+            hax_lib::fstar!(
                 r#"logand_mask_lemma ($r1 +! $hint) 4;
                 logand_mask_lemma ($r1 -! $hint) 4"#
             );
@@ -773,7 +773,7 @@ pub fn decompose(
     low: &mut Coefficients,
     high: &mut Coefficients,
 ) {
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 
@@ -810,7 +810,7 @@ pub fn decompose(
 pub fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
     #[cfg(hax)]
     let _hint0 = hint.clone();
-    proof!(
+    hax_lib::fstar!(
         "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
     );
 

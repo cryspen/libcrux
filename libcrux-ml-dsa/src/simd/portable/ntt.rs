@@ -748,7 +748,7 @@ fn simd_unit_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize, ste
     let t = montgomery_multiply_fe_by_fer(simd_unit.values[index + step], zeta);
     simd_unit.values[index + step] = simd_unit.values[index] - t;
     simd_unit.values[index] = simd_unit.values[index] + t;
-    proof!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
+    hax_lib::fstar!(r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q)"#);
 }
 
 #[inline(always)]
@@ -913,12 +913,12 @@ fn ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         zeta_2: i32,
         zeta_3: i32,
     ) {
-        proof!(
+        hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
 
         simd_unit_ntt_at_layer_0(&mut re[index], zeta_0, zeta_1, zeta_2, zeta_3);
-        proof!("reveal_opaque (`%unit_fe_post_l0) unit_fe_post_l0");
+        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_l0) unit_fe_post_l0");
     }
 
     #[cfg(hax)]
@@ -957,7 +957,7 @@ fn ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, -554416, 3919660, -48306, -1362209);
     round(re, 31, 3937738, 1400424, -846154, 1976782);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 128 == 2091667);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 129 == 3407706);
@@ -1130,12 +1130,12 @@ fn ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         zeta_0: i32,
         zeta_1: i32,
     ) {
-        proof!(
+        hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
 
         simd_unit_ntt_at_layer_1(&mut re[index], zeta_0, zeta_1);
-        proof!("reveal_opaque (`%unit_fe_post_l1) unit_fe_post_l1");
+        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_l1) unit_fe_post_l1");
     }
 
     #[cfg(hax)]
@@ -1174,7 +1174,7 @@ fn ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, -3019102, -3881060);
     round(re, 31, -3628969, 3839961);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 64 == (-3930395));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 65 == (-1528703));
@@ -1277,12 +1277,12 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
                         (Seq.index ${re}_future (v $index)).f_values $zeta
     "#))]
     fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta: i32) {
-        proof!(
+        hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
 
         simd_unit_ntt_at_layer_2(&mut re[index], zeta);
-        proof!("reveal_opaque (`%unit_fe_post_l2) unit_fe_post_l2");
+        hax_lib::fstar!("reveal_opaque (`%unit_fe_post_l2) unit_fe_post_l2");
     }
 
     #[cfg(hax)]
@@ -1321,7 +1321,7 @@ fn ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     round(re, 30, 2071892);
     round(re, 31, -2797779);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 32 == 2706023);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 33 == 95776);
@@ -1437,7 +1437,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         step_by: usize,
         zeta: i32,
     ) {
-        proof!(
+        hax_lib::fstar!(
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         #[cfg(hax)]
@@ -1452,7 +1452,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         // Discharge the cross-unit FE atom via the clean bridge lemma: ci_lo/ci_hi
         // = re_in[index]/[index+step_by]; co_lo/co_hi = re[index]/[index+step_by];
         // tmp = mmbc(ci_hi, zeta).  add/sub posts + mmbc post satisfy its requires.
-        proof!(
+        hax_lib::fstar!(
             r#"lemma_round_cross_intro
                  (Seq.index $re_in (v $index)).f_values
                  (Seq.index $re_in (v $index + v $step_by)).f_values
@@ -1526,7 +1526,7 @@ fn ntt_at_layer_3(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (14 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 4010497>(re);
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 280005>(re);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 16 == 2725464);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 17 == 1024112);
@@ -1599,7 +1599,7 @@ fn ntt_at_layer_4(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (6 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 3111497>(re);
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2680103>(re);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 8 == 1826347);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 9 == 2353451);
@@ -1656,7 +1656,7 @@ fn ntt_at_layer_5(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (2 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -876248>(re);
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 466468>(re);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 4 == 237124);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 5 == (-777960));
@@ -1707,7 +1707,7 @@ fn ntt_at_layer_6(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -518909>(re);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 2 == (-2608894));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 3 == (-518909));
@@ -1755,7 +1755,7 @@ fn ntt_at_layer_7(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 25847>(re);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 1 == 25847);
 assert (unit_fe_post_cross (Seq.index ${orig_re} 0).f_values (Seq.index ${orig_re} 16).f_values (Seq.index ${re} 0).f_values (Seq.index ${re} 16).f_values (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (0 / 32 + 1))));
@@ -2198,7 +2198,7 @@ pub(crate) fn ntt(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[cfg(hax)]
     let s1 = re.clone();
     ntt_at_layer_0(re);
-    proof!(
+    hax_lib::fstar!(
         r#"
 lemma_ntt_compose_8
   (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (chunks_of_re ${s0}))

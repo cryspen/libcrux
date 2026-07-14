@@ -93,7 +93,7 @@ fn deserialize<SIMDUnit: Operations>(
         // Bridge: the trait post is `forall8 (eta_two ==> -5 <= v <= 2 /\
         // eta_four ==> -11 <= v <= 4)` on `f_repr (result.simd_units[i])`.
         // Both cases satisfy `is_i32b 11`.  Targeted reveal per AP-3.
-        proof!(
+        hax_lib::fstar!(
             r#"
             reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
               (Spec.Utils.is_i32b_array_opaque 11
@@ -155,7 +155,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
         // `deserialize` to `FIELD_MAX = NTT_BASE_BOUND` per-lane, then to
         // `is_bounded_poly FIELD_MAX` so `ntt`'s (newly is_bounded_poly-form)
         // pre discharges.
-        proof!(
+        hax_lib::fstar!(
             r#"
             let lemma_lift (j:nat{j < 32}) :
               Lemma (Spec.Utils.is_i32b_array_opaque
@@ -176,7 +176,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations>(
     // Loop exit: i == n == Seq.length ring_elements, so the invariant's per-lane
     // NTT_OUTPUT_BOUND bound covers EVERY element.  Bridge to the slice form
     // required by the post (machine-checked here in the panic_free body).
-    proof!(
+    hax_lib::fstar!(
         r#"
         let aux (k: nat{k < Seq.length ring_elements}) :
           Lemma (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly

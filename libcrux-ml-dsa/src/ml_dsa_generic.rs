@@ -95,7 +95,7 @@ pub(crate) mod generic {
         // opacification scaffolding (commits c4fe50bd3, bbd27bbea,
         // fe3ea2881, 9b5b75b4b) stays in tree.  Remove this admit after the
         // trait-surface fixes land and q60 profile is clean.
-        proof!("admit ()");
+        hax_lib::fstar!("admit ()");
         // Check key sizes
         #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
@@ -127,7 +127,7 @@ pub(crate) mod generic {
         //     `ntt` pre on `s1_ntt[i]` (after copy_from_slice from s1_s2)
         // The bridge lemma handles both bridging (asymmetric → symmetric)
         // and widening (b1 ≤ b2) in one call.
-        proof!(
+        hax_lib::fstar!(
             r#"
             let eta_val : usize = match ${ETA} with
                                    | Libcrux_ml_dsa.Constants.Eta_Two -> mk_usize 2
@@ -150,7 +150,7 @@ pub(crate) mod generic {
             // an earlier bridge) to `is_bounded_poly_slice 8380416 s1_ntt`
             // via the copy_from_slice frame: s1_ntt[k] == s1_s2[k] for
             // k in [0, COLUMNS_IN_A).
-            proof!(
+            hax_lib::fstar!(
                 r#"
                 let _:Prims.unit =
                   let aux (k: nat{k < Seq.length ${s1_ntt}}) :
@@ -199,7 +199,7 @@ pub(crate) mod generic {
         // sample_s1_and_s2) to the bare `forall k j. is_pos_array_opaque
         // (match eta with...) ...` form that signing_key's `s1_2` pre wants.
         // One-shot via `lemma_lane_range_pos_to_pos_array_slice`.
-        proof!(
+        hax_lib::fstar!(
             r#"
             let eta_val : usize = match ${ETA} with
                                    | Libcrux_ml_dsa.Constants.Eta_Two -> mk_usize 2
@@ -294,7 +294,7 @@ let hint_count_bounded
         // declarations so the five-slice reconciliation runs in a small typing
         // context — for ml-dsa-87 (k=8/l=7) the same assert after the arrays
         // saturates rlimit 800; here it lands at ~73.
-        proof!(
+        hax_lib::fstar!(
             r#"
             assert_norm (v ${SIGNING_KEY_SIZE} ==
                 v ${SEED_FOR_A_SIZE} +
@@ -412,7 +412,7 @@ let hint_count_bounded
                 // bound), the untouched suffix still equals `mask` (which carries the
                 // `is_bounded_poly_slice 8380416` bound sample_mask_vector produced),
                 // giving ntt's `is_bounded_poly 8380416` precond on each element.
-                proof!(
+                hax_lib::fstar!(
                     r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
                          (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${mask_ntt}"#
                 );
@@ -429,13 +429,13 @@ let hint_count_bounded
                     #[cfg(hax)]
                     let iter_start: &[PolynomialRingElement<SIMDUnit>] =
                         mask_ntt.to_vec().as_slice();
-                    proof!(
+                    hax_lib::fstar!(
                         r#"assert (Seq.index ${mask_ntt} (v $i) == Seq.index ${mask} (v $i));
                            Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_lookup
                              (mk_usize 8380416) ${mask} (v $i)"#
                     );
                     ntt(&mut mask_ntt[i]);
-                    proof!(
+                    hax_lib::fstar!(
                         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                              (mk_usize 75423744) $i iter_start ${mask_ntt}"#
                     );
@@ -445,7 +445,7 @@ let hint_count_bounded
                 // mask_ntt (from the NTT loop's exit range), plus the length link
                 // `Seq.length matrix == ROWS_IN_A * COLUMNS_IN_A` — pin the two param
                 // constants to their literals via normalize_term so the product reduces.
-                proof!(
+                hax_lib::fstar!(
                     r#"
                     let _:Prims.unit =
                       let aux (k: nat{k < Seq.length ${matrix}}) :
@@ -474,7 +474,7 @@ let hint_count_bounded
                 // decompose_vector precond: `is_bounded_poly_slice 8380416 a_x_mask`
                 // (from compute_matrix_x_mask's per-row post) and the gamma2 disjunction
                 // (GAMMA2 is a param-set literal; normalize the whole disjunction).
-                proof!(
+                hax_lib::fstar!(
                     r#"
                     let _:Prims.unit =
                       let aux (k: nat{k < Seq.length ${a_x_mask}}) :
@@ -506,14 +506,14 @@ let hint_count_bounded
                 // per-unit `is_pos_array_opaque` precondition, and pin the length
                 // constants so `Seq.length serialized == COMMITMENT_RING_ELEMENT_SIZE *
                 // Seq.length commitment` reduces to the literal COMMITMENT_VECTOR_SIZE.
-                proof!(
+                hax_lib::fstar!(
                     r#"assert_norm (v (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) == pow2 (v ${COMMITMENT_RING_ELEMENT_SIZE} / 32) - 1)"#
                 );
-                proof!(
+                hax_lib::fstar!(
                     r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_pos_array_slice
                          (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) ${commitment}"#
                 );
-                proof!(
+                hax_lib::fstar!(
                     r#"assert_norm (v ${COMMITMENT_RING_ELEMENT_SIZE} == normalize_term (v ${COMMITMENT_RING_ELEMENT_SIZE}));
                        assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}))"#
                 );
@@ -578,7 +578,7 @@ let hint_count_bounded
             // COLUMNS_IN_A / ROWS_IN_A respectively. After these, `mask` and `w0` both
             // carry `is_bounded_poly_slice 16760832` (= 2q), matching the 2q-relaxed
             // precond of the chunk-7 vector_infinity_norm_exceeds wrappers.
-            proof!("admit ()");
+            hax_lib::fstar!("admit ()");
 
             if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
@@ -639,7 +639,7 @@ let hint_count_bounded
         // hint sections.  `norm [delta]` fully reduces `signature_size` to its
         // literal (plain SMT reduction of it is flaky across parameter sets),
         // then SMT closes the array-length link via the type refinement.
-        proof!(
+        hax_lib::fstar!(
             r#"
             assert_norm (v ${GAMMA1_EXPONENT} == 17 \/ v ${GAMMA1_EXPONENT} == 19);
             assert_norm (v ${GAMMA1_RING_ELEMENT_SIZE} == 32 * (1 + v ${GAMMA1_EXPONENT}));
@@ -695,7 +695,7 @@ let hint_count_bounded
     fn ntt_signer_response<SIMDUnit: Operations>(
         signer_response: &mut [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     ) {
-        proof!(
+        hax_lib::fstar!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
                  (mk_usize 75423744) (mk_usize 0) (mk_usize 0) ${signer_response}"#
         );
@@ -709,7 +709,7 @@ let hint_count_bounded
                           (mk_usize 8380416) (Seq.index ${signer_response} k))"#
             ));
             // The suffix bound at k=i is exactly ntt's FIELD_MAX precondition.
-            proof!(
+            hax_lib::fstar!(
                 r#"assert (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly
                             (mk_usize 8380416) (Seq.index ${signer_response} (v $i)))"#
             );
@@ -719,14 +719,14 @@ let hint_count_bounded
             ntt(&mut signer_response[i]);
             // ntt's post gives is_bounded_poly 75423744 on the updated entry; extend
             // the processed range from [0,i) to [0,i+1). The F* lemma logic lives
-            // in Polynomial.Spec; the local `proof!` marker keeps the call in-file.
-            proof!(
+            // in Polynomial.Spec.
+            hax_lib::fstar!(
                 r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                      (mk_usize 75423744) $i iter_start ${signer_response}"#
             );
         }
         // After the loop the processed range covers [0,len); lift range -> slice.
-        proof!(
+        hax_lib::fstar!(
             r#"
             let _:Prims.unit =
               let aux (k:nat{k < Seq.length ${signer_response}}) :
@@ -776,7 +776,7 @@ let hint_count_bounded
         // `ROW_X_COLUMN` is *defined* as `ROWS_IN_A * COLUMNS_IN_A`; assert_norm
         // reduces each per monomorphization, discharging compute_w_approx's
         // `Seq.length matrix == rows * cols` (matrix has fixed length ROW_X_COLUMN).
-        proof!(
+        hax_lib::fstar!(
             r#"assert_norm (v ${ROWS_IN_A} <= 8);
                assert_norm (v ${COLUMNS_IN_A} <= 7);
                assert_norm (v ${ROW_X_COLUMN} == v ${ROWS_IN_A} * v ${COLUMNS_IN_A})"#
@@ -826,7 +826,7 @@ let hint_count_bounded
         // They discharge the concrete-constant preconditions of the callees below
         // (signature::deserialize, compute_w_approx, use_hint, serialize_vector,
         // vector_infinity_norm_exceeds's bound arithmetic).
-        proof!(
+        hax_lib::fstar!(
             r#"
             assert_norm (v ${GAMMA1_EXPONENT} == 17 \/ v ${GAMMA1_EXPONENT} == 19);
             assert_norm (v ${GAMMA1_RING_ELEMENT_SIZE} == 32 * (1 + v ${GAMMA1_EXPONENT}));
@@ -887,7 +887,7 @@ let hint_count_bounded
         // pass its `< 2q`-bounded `w0`/`mask`).  `deserialize` gives the tight
         // `is_bounded_poly_slice 8380416` post; weaken it to the `16760832`
         // pre here (monotone in the bound: `q - 1 <= 2 * (q - 1)`).
-        proof!(
+        hax_lib::fstar!(
             "Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_slice_higher (mk_usize 8380416) (mk_usize 16760832) $deserialized_signer_response"
         );
         // We use if-else branches because early returns will not go through hax.
@@ -928,7 +928,7 @@ let hint_count_bounded
         ntt_signer_response::<SIMDUnit>(&mut deserialized_signer_response);
         // Widen t1's lane range 0..1023 (verification_key::deserialize post) to
         // 0..261631 (compute_w_approx's precondition; [0,1023] subset [0,261631]).
-        proof!(
+        hax_lib::fstar!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_lane_range_poly_slice_widen
                  (mk_usize 0) (mk_usize 1023) (mk_usize 261631) ${t1}"#
         );
@@ -951,7 +951,7 @@ let hint_count_bounded
             // Weaken compute_w_approx's `is_bounded_poly_slice 4211177 t1` to the
             // FIELD_MAX bound (8380416) that use_hint's precondition wants
             // (4211177 <= 8380416), per element then re-introduce the slice atom.
-            proof!(
+            hax_lib::fstar!(
                 r#"
                 let _:Prims.unit =
                   let aux (k:nat{k < Seq.length ${t1}}) :
@@ -969,7 +969,7 @@ let hint_count_bounded
             // serialize_vector requires.  The top-of-body assert_norm established
             // `use_hint_serialize_bound GAMMA2 == pow2 (COMMITMENT_RING_ELEMENT_SIZE/32) - 1`,
             // so the two bounds coincide.
-            proof!(
+            hax_lib::fstar!(
                 r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_lane_range_pos_to_pos_array_slice
                      (Libcrux_ml_dsa.Arithmetic.use_hint_serialize_bound ${GAMMA2}) ${t1}"#
             );
@@ -977,7 +977,7 @@ let hint_count_bounded
             // sees serialized/t1 lengths as resolved literals; pin the constants so
             // COMMITMENT_RING_ELEMENT_SIZE * (len t1 = ROWS_IN_A) reduces to the
             // literal COMMITMENT_VECTOR_SIZE.
-            proof!(
+            hax_lib::fstar!(
                 r#"assert_norm (v ${COMMITMENT_RING_ELEMENT_SIZE} == normalize_term (v ${COMMITMENT_RING_ELEMENT_SIZE}));
                    assert_norm (v ${ROWS_IN_A} == normalize_term (v ${ROWS_IN_A}))"#
             );
@@ -1020,7 +1020,7 @@ let hint_count_bounded
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
-        proof!("admit ()");
+        hax_lib::fstar!("admit ()");
         if context.len() > CONTEXT_MAX_LEN {
             return Err(SigningError::ContextTooLongError);
         }
@@ -1057,7 +1057,7 @@ let hint_count_bounded
         pre_hash_buffer: &mut [u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        proof!("admit ()");
+        hax_lib::fstar!("admit ()");
         let mut signature = MLDSASignature::zero();
 
         // [eurydice] doesn't support ?
@@ -1234,7 +1234,7 @@ let hint_count_bounded
         pre_hash_buffer: &mut [u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        proof!("admit ()");
+        hax_lib::fstar!("admit ()");
         PH::hash::<Shake128>(message, pre_hash_buffer);
         let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
         {
@@ -1277,7 +1277,7 @@ fn derive_message_representative<Shake256Xof: shake256::Xof>(
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    proof!("admit ()");
+    hax_lib::fstar!("admit ()");
     #[cfg(not(eurydice))]
     debug_assert!(verification_key_hash.len() == 64);
 

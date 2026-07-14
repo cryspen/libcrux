@@ -103,7 +103,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_17), *simd_unit);
 
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
@@ -120,7 +120,7 @@ fn serialize_when_gamma1_is_2_pow_17(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized[9..25], upper_4);
 
     out.copy_from_slice(&serialized[0..18]);
-    proof!(
+    hax_lib::fstar!(
         r#"lemma_gamma1_serialize_post_pow_17 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
     );
 }
@@ -216,7 +216,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(GAMMA1_2_POW_19), *simd_unit);
 
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
@@ -235,7 +235,7 @@ fn serialize_when_gamma1_is_2_pow_19(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_4);
 
     out.copy_from_slice(&serialized[0..20]);
-    proof!(
+    hax_lib::fstar!(
         r#"lemma_gamma1_serialize_post_pow_19 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
     );
 }
@@ -320,7 +320,7 @@ fn deserialize_when_gamma1_is_2_pow_17_unsigned(serialized: &[u8], out: &mut Vec
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(6, 4, 2, 0, 6, 4, 2, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_17_TIMES_2_MASK));
-    proof!("i32_to_bv_pow2_min_one_lemma_fa 18");
+    hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 18");
     *out = coefficients
 }
 
@@ -351,7 +351,7 @@ fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8], out: &mut Vec
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(GAMMA1_19_TIMES_2_MASK));
-    proof!("i32_to_bv_pow2_min_one_lemma_fa 20");
+    hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 20");
     *out = coefficients
 }
 
@@ -394,7 +394,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256, gamma1_exponent: 
 
     *out = mm256_sub_epi32(mm256_set1_epi32(gamma1), *out);
 
-    proof!(
+    hax_lib::fstar!(
         r#"
     i32_bit_zero_lemma_to_lt_pow2_n_weak (v $gamma1_exponent + 1) $unsigned;
     reveal_opaque_arithmetic_ops #I32;

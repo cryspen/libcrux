@@ -470,7 +470,7 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     }
     // Lift `deserialize`'s per-unit gamma1 bound to the uniform
     // `is_bounded_poly 8380416` post (proof, not admit — see the doc above).
-    proof!("lemma_gamma1_deser_widen $gamma1_exponent $result");
+    hax_lib::fstar!("lemma_gamma1_deser_widen $gamma1_exponent $result");
 }
 
 #[inline(always)]
@@ -533,7 +533,7 @@ pub(crate) fn sample_mask_vector<
 
     // Seed the (opaque) empty `is_bounded_poly_range [0,0)` so both batch-loop
     // folds have their j=0 invariant established.
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_intro
              (mk_usize 8380416) (mk_usize 0) (mk_usize 0) $mask"#
     );
@@ -570,7 +570,7 @@ pub(crate) fn sample_mask_vector<
                 #[cfg(hax)]
                 let old_mask: &[PolynomialRingElement<SIMDUnit>] = mask.to_vec().as_slice();
                 // Carry the opaque `[0,j)` range from `mask` to `old_mask`.
-                proof!(
+                hax_lib::fstar!(
                     r#"
                     let _:Prims.unit =
                       let aux (k: nat{k < v $j /\ k < Seq.length old_mask}) :
@@ -587,7 +587,7 @@ pub(crate) fn sample_mask_vector<
                 encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &outs[j], &mut mask[j]);
                 // Widen `deserialize`'s gamma1 bound on `mask[j]` to 8380416, then
                 // extend the opaque range from `[0,j)` to `[0,j+1)`.
-                proof!(
+                hax_lib::fstar!(
                     r#"lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                          (mk_usize 8380416) $j old_mask ${mask}"#
@@ -620,7 +620,7 @@ pub(crate) fn sample_mask_vector<
                 #[cfg(hax)]
                 let old_mask: &[PolynomialRingElement<SIMDUnit>] = mask.to_vec().as_slice();
                 // Carry the opaque `[0,j)` range from `mask` to `old_mask`.
-                proof!(
+                hax_lib::fstar!(
                     r#"
                     let _:Prims.unit =
                       let aux (k: nat{k < v $j /\ k < Seq.length old_mask}) :
@@ -637,7 +637,7 @@ pub(crate) fn sample_mask_vector<
                 encoding::gamma1::deserialize::<SIMDUnit>(gamma1_exponent, &outs[j], &mut mask[j]);
                 // Widen `deserialize`'s gamma1 bound on `mask[j]` to 8380416, then
                 // extend the opaque range from `[0,j)` to `[0,j+1)`.
-                proof!(
+                hax_lib::fstar!(
                     r#"lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                          (mk_usize 8380416) $j old_mask ${mask}"#
@@ -662,7 +662,7 @@ pub(crate) fn sample_mask_vector<
         #[cfg(hax)]
         let old_mask: &[PolynomialRingElement<SIMDUnit>] = mask.to_vec().as_slice();
         // Carry the opaque `[0,i)` range from `mask` to `old_mask`.
-        proof!(
+        hax_lib::fstar!(
             r#"
             let _:Prims.unit =
               let aux (k: nat{k < v $i /\ k < Seq.length old_mask}) :
@@ -681,13 +681,13 @@ pub(crate) fn sample_mask_vector<
         sample_mask_ring_element::<SIMDUnit, Shake256>(&seed, &mut mask[i], gamma1_exponent);
         // `sample_mask_ring_element` gives `is_bounded_poly 8380416 mask[i]`;
         // extend the opaque range from `[0,i)` to `[0,i+1)`.
-        proof!(
+        hax_lib::fstar!(
             r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                  (mk_usize 8380416) $i old_mask ${mask}"#
         );
     }
     // Bridge the full `[0,dimension)` opaque range to `is_bounded_poly_slice`.
-    proof!(
+    hax_lib::fstar!(
         r#"
         let _:Prims.unit =
           let aux (k: nat{k < v $dimension /\ k < Seq.length ${mask}}) :

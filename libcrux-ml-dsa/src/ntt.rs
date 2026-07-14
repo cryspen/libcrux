@@ -14,12 +14,12 @@ use crate::simd::traits::specs::*;
 pub(crate) fn ntt<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
     // Bridge `is_bounded_poly` (usize-typed bound) into the per-lane form
     // SIMDUnit::ntt's pre wants (with bound `v_NTT_BASE_BOUND = u32 FIELD_MAX`).
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly)
              (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) $re)"#
     );
     SIMDUnit::ntt(&mut re.simd_units);
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
              (mk_usize 75423744) $re"#
     );
@@ -33,12 +33,12 @@ pub(crate) fn ntt<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>
 pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
     re: &mut PolynomialRingElement<SIMDUnit>,
 ) {
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly)
              (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) $re)"#
     );
     SIMDUnit::invert_ntt_montgomery(&mut re.simd_units);
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
              (mk_usize 4211177) $re"#
     );
@@ -56,12 +56,12 @@ pub(crate) fn invert_ntt_montgomery<SIMDUnit: Operations>(
             (Seq.index (i0._super_i2.f_repr (Seq.index re.f_simd_units i)) l)
             (Seq.index (i0._super_i2.f_repr (Seq.index ${re}_future.f_simd_units i)) l)))"#))]
 pub(crate) fn reduce<SIMDUnit: Operations>(re: &mut PolynomialRingElement<SIMDUnit>) {
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly)
              (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 2143289343) $re)"#
     );
     SIMDUnit::reduce(&mut re.simd_units);
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
              (mk_usize 8380416) $re"#
     );
@@ -85,7 +85,7 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
 ) {
     #[cfg(hax)]
     let orig_lhs = lhs.clone();
-    proof!(
+    hax_lib::fstar!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly)
              (Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 75423744) $rhs);
            reveal_opaque (`%Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly)
@@ -113,7 +113,7 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
         ));
         SIMDUnit::montgomery_multiply(&mut lhs.simd_units[i], &rhs.simd_units[i]);
     }
-    proof!(
+    hax_lib::fstar!(
         r#"Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro
              (mk_usize 8380416) $lhs"#
     );

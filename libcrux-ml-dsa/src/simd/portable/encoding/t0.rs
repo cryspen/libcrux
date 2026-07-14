@@ -109,8 +109,8 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
     coefficient7 |= byte12 << 5;
     coefficient7 &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-    proof!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
-    proof!(
+    hax_lib::fstar!("let (): squash (forall (x: int_t I32). get_bit x (mk_int 31) == 0 ==> v x >= 0) = reveal_opaque (`%get_bit) (get_bit #I32) in ()");
+    hax_lib::fstar!(
         r#"assert (Libcrux_ml_dsa.Simd.Portable.Encoding.T0.deserialize__v_BITS_IN_LOWER_PART_OF_T_MASK == (mk_i32 (pow2 13) -! mk_i32 1))
             by (FStar.Tactics.norm [delta_only [`%Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T;
                                                 `%Libcrux_ml_dsa.Simd.Portable.Encoding.T0.deserialize__v_BITS_IN_LOWER_PART_OF_T_MASK];
