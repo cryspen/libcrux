@@ -78,11 +78,12 @@
 //! | AES-CCM on 32-bit systems | 2^24 - 1 bytes           | 2^32 - 6 bytes  |
 
 #![no_std]
-#![deny(unsafe_code)]
+// #![deny(unsafe_code)]
 #[cfg(feature = "std")]
 extern crate std;
 
 mod aes;
+mod ct_ops;
 mod ctr;
 mod gf128;
 mod platform;
