@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (libcrux-secrets) [#1460](https://github.com/cryspen/libcrux/pull/1461): Fix incorrect cmp in aarch64 select/swap implementation
 - (libcrux-sha3) [#1456](https://github.com/cryspen/libcrux/pull/1456): Fix out of bounds indexing in avx2 SHAKE-256 implementation
 - (libcrux-sha3) [#1389](https://github.com/celabshq/libcrux/pull/1389): Fix partial Block output of incremental XOF API
+- (libcrux-aes) [#1474](https://github.com/cryspen/libcrux/pull/1474): Enforce limits on plaintext and AAD lengths for AES-GCM, according to RFC 5116.
+- (libcrux-aes) [#1528](https://github.com/celabshq/libcrux/pull/1528): Use constant time comparison for AES-GCM and AES-CCM tag check
 
 ### Changed
 

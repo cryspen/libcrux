@@ -83,6 +83,7 @@
 extern crate std;
 
 mod aes;
+mod ct_ops;
 mod ctr;
 mod gf128;
 mod platform;

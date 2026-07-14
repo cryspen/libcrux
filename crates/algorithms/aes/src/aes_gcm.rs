@@ -2,6 +2,7 @@
 
 use crate::{
     aes::AES_BLOCK_LEN,
+    ct_ops::ct_compare,
     ctr::{AesCtrContext, GcmInit, AES_GCM_CTR_LEN, AES_GCM_NONCE_START},
     gf128::GF128State,
     platform::{AESState, GF128FieldElement},
@@ -93,12 +94,9 @@ where
             computed_tag[i] ^= self.tag_mix[i];
         }
 
-        let mut eq_mask = 0u8;
-        for i in 0..16 {
-            eq_mask |= computed_tag[i] ^ tag[i];
-        }
+        let correct_tag = ct_compare(&computed_tag, tag);
 
-        if eq_mask == 0 {
+        if correct_tag {
             self.aes_state.aes_ctr_update(2, ciphertext, plaintext);
             Ok(())
         } else {
