@@ -2,6 +2,7 @@
 name = "libcrux-hmac-drbg"
 readme = "Readme.md"
 version = "0.0.1-pre.1"
+description = "Libcrux HMAC-DRBG implementation"
 
 authors.workspace = true
 edition.workspace = true
