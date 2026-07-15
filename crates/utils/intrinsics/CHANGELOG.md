@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependency: `core-models`
 - [#1506](https://github.com/celabshq/libcrux/pull/1506): Update dependency: `hax-lib`
 
 ## [0.0.7] (2026-05-13)
