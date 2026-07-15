@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.7.0-pre.1] (2026-07-13)
 
-- [#146](https://github.com/celabshq/hpke-rs/pull/146): Add support for ML-KEM768 and ML-KEM1024 gated behind the `draft-connolly-cfrg-hpke-mlkem` feature flag.
+### Changed
+
+- [#154](https://github.com/celabshq/hpke-rs/pull/154): `HpkeCrypto::HpkePrng` now has `rand` v0.10 bound `CryptoRng`, instead of `rand` v0.9 bound `RngCore + CryptoRng`
+
+## [0.6.1] - 2026-03-20
 
 ## [0.4.0] - 2025-12-16
 

@@ -4,9 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0-pre.1] (2026-07-13)
+
+### Added
 
 - [#147](https://github.com/celabshq/hpke-rs/pull/147): Add P384 and P521 DHKEM support for the libcrux provider via RustCrypto crates guarded behind the `libcrux-rustcrypto-p-curves` feature flag.
+- [#146](https://github.com/celabshq/hpke-rs/pull/146): Add support for ML-KEM768 and ML-KEM1024 gated behind the `draft-connolly-cfrg-hpke-mlkem` feature flag.
+
+### Changed
+
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `libcrux-traits`, `libcrux-aead`, `libcrux-hkdf`, `libcrux-kem`
 
 ## [0.6.1] - 2026-02-20
 
@@ -16,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.1] - 2026-02-02
 
-- [#114](https://github.com/cryspen/libcrux/pull/114): Update dependencies `libcrux-ecdh`, `libcrux-aead`, `libcrux-sha3`, `libcrux-kem`, `libcrux-hkdf`, `libcrux-traits`
+- [#114](https://github.com/celabshq/libcrux/pull/114): Update dependencies `libcrux-ecdh`, `libcrux-aead`, `libcrux-sha3`, `libcrux-kem`, `libcrux-hkdf`, `libcrux-traits`
 
 ## [0.5.0] - 2025-12-16
 

@@ -5,59 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.10-pre.1] (2026-07-13)
+
+### Changed
+
+- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-sha2`, `libcrux-aes`, `libcrux-chacha20poly1305`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-hmac`, `libcrux-hkdf`, `libcrux-ecdh`, `libcrux-kem`
+
 ## [0.0.9] (2026-05-13)
 
 ### Changed
 
-- [#1433](https://github.com/cryspen/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-ed25519`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-aesgcm`, `libcrux-chacha20poly1305`, `libcrux-sha2`, `libcrux-hmac`, `libcrux-hkdf`, `libcrux-ecdh`, `libcrux-ml-dsa`
-- [#1412](https://github.com/cryspen/libcrux/pull/1412): Update dependencies: `libcrux-chacha20poly1305`, `libcrux-hmac`, `libcrux-aesgcm`, `libcrux-ecdh`, `libcrux-ml-dsa`
+- [#1433](https://github.com/celabshq/libcrux/pull/1433): Update dependencies: `libcrux-traits`, `libcrux-ed25519`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-aesgcm`, `libcrux-chacha20poly1305`, `libcrux-sha2`, `libcrux-hmac`, `libcrux-hkdf`, `libcrux-ecdh`, `libcrux-ml-dsa`
+- [#1412](https://github.com/celabshq/libcrux/pull/1412): Update dependencies: `libcrux-chacha20poly1305`, `libcrux-hmac`, `libcrux-aesgcm`, `libcrux-ecdh`, `libcrux-ml-dsa`
 
-## Removed
+### Removed
 
-- [#1417](https://github.com/cryspen/libcrux/pull/1417): Remove PSQv1
+- [#1417](https://github.com/celabshq/libcrux/pull/1417): Remove PSQv1
 
 ## [0.0.8] (2026-03-19)
 
 ### Added 
 
-- [#1364](https://github.com/cryspen/libcrux/pull/1364): Add functions for external message encoding to `Channel` trait
-- [#1339](https://github.com/cryspen/libcrux/pull/1339): Expose `Transport` struct and add external nonce-control feature
+- [#1364](https://github.com/celabshq/libcrux/pull/1364): Add functions for external message encoding to `Channel` trait
+- [#1339](https://github.com/celabshq/libcrux/pull/1339): Expose `Transport` struct and add external nonce-control feature
 
 ### Changed
 
-- [#1368](https://github.com/cryspen/libcrux/pull/1368): Update dependencies: `libcrux-sha3`, `libcrux-ed25519`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-chacha20poly1305`
-- [#1364](https://github.com/cryspen/libcrux/pull/1364): 
+- [#1368](https://github.com/celabshq/libcrux/pull/1368): Update dependencies: `libcrux-sha3`, `libcrux-ed25519`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-kem`, `libcrux-chacha20poly1305`
+- [#1364](https://github.com/celabshq/libcrux/pull/1364): 
     - Return `RateLimit` error in handshake responder on receiving a recently seen initiator key
     - Always error on ciphersuite mismatch in handshake responder
     - Remove `tls_codec` types from `HandshakeMessage` and `TransportMessage` types
-- [#1339](https://github.com/cryspen/libcrux/pull/1339): Leave receiver nonce unchanged on decryption failure
+- [#1339](https://github.com/celabshq/libcrux/pull/1339): Leave receiver nonce unchanged on decryption failure
 
 ### Fixed
 
-- [#1364](https://github.com/cryspen/libcrux/pull/1364): Make `Transport::receiver_nonce` return the receiver nonce instead of the sender nonce
+- [#1364](https://github.com/celabshq/libcrux/pull/1364): Make `Transport::receiver_nonce` return the receiver nonce instead of the sender nonce
 
 ## [0.0.7] (2026-02-12)
 
 ### Added
 
-- [#1307](https://github.com/cryspen/libcrux/pull/1307): Expose additional functionalities on the DHKEM (https://github.com/jstuczyn)
-- [#1298](https://github.com/cryspen/libcrux/pull/1298): Propagate import/export functions from CMC crate (https://github.com/georgio)
+- [#1307](https://github.com/celabshq/libcrux/pull/1307): Expose additional functionalities on the DHKEM (https://github.com/jstuczyn)
+- [#1298](https://github.com/celabshq/libcrux/pull/1298): Propagate import/export functions from CMC crate (https://github.com/georgio)
 
 ### Fixed
 
-- [#1319](https://github.com/cryspen/libcrux/pull/1319): Propagate AEADError instead of panicking
-- [#1301](https://github.com/cryspen/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
+- [#1319](https://github.com/celabshq/libcrux/pull/1319): Propagate AEADError instead of panicking
+- [#1301](https://github.com/celabshq/libcrux/pull/1301): Fix broken clamping check for imported X25519 secret keys
 
 ### Changed
 
-- [#1324](https://github.com/cryspen/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-ecdh`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-kem`, `libcrux-chacha20poly1305`, `libcrux-aesgcm`, `libcrux-sha2`, `libcrux-hmac` `libcrux-ml-dsa`, `libcrux-hkdf`
+- [#1324](https://github.com/celabshq/libcrux/pull/1324): Update dependencies: `libcrux-traits`, `libcrux-ecdh`, `libcrux-ml-kem`, `libcrux-ed25519`, `libcrux-kem`, `libcrux-chacha20poly1305`, `libcrux-aesgcm`, `libcrux-sha2`, `libcrux-hmac` `libcrux-ml-dsa`, `libcrux-hkdf`
 
 ## [0.0.6] (2026-01-22)
 
-- [#1294](https://github.com/cryspen/libcrux/pull/1294): Allow import of X25519 private and public keys (https://github.com/georgio)
-- [#1278](https://github.com/cryspen/libcrux/pull/1278): Allow import of secrets into sessions. (Breaking, since session binding to principal public keys is now optional.)
-- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependencies `libcrux-sha3`, `libcrux-ml-kem`, `libcrux-ml-dsa`
-- [#1248](https://github.com/cryspen/libcrux/pull/1248):
+- [#1294](https://github.com/celabshq/libcrux/pull/1294): Allow import of X25519 private and public keys (https://github.com/georgio)
+- [#1278](https://github.com/celabshq/libcrux/pull/1278): Allow import of secrets into sessions. (Breaking, since session binding to principal public keys is now optional.)
+- [#1280](https://github.com/celabshq/libcrux/pull/1280): Update dependencies `libcrux-sha3`, `libcrux-ml-kem`, `libcrux-ml-dsa`
+- [#1248](https://github.com/celabshq/libcrux/pull/1248):
     - Add signature-based authentication (breaking because ciphersuite IDs have changed)
     - Add AES-GCM 128 ciphersuite support
     - Add secret export API to `Session`
@@ -67,8 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.5] (2025-11-05)
 
-- [#1108](https://github.com/cryspen/libcrux/pull/1108): Allow using Classic McEliece for PQ KEM
-- [#1091](https://github.com/cryspen/libcrux/pull/1091): Allow derivation of an Unregistered PSK
-- [#1081](https://github.com/cryspen/libcrux/pull/1081): Session storage
-- [#1079](https://github.com/cryspen/libcrux/pull/1079): Use TLSCodec for Serialization/Deserialization in PSQv1
-- [#1048](https://github.com/cryspen/libcrux/pull/1048): PSQv2
+- [#1108](https://github.com/celabshq/libcrux/pull/1108): Allow using Classic McEliece for PQ KEM
+- [#1091](https://github.com/celabshq/libcrux/pull/1091): Allow derivation of an Unregistered PSK
+- [#1081](https://github.com/celabshq/libcrux/pull/1081): Session storage
+- [#1079](https://github.com/celabshq/libcrux/pull/1079): Use TLSCodec for Serialization/Deserialization in PSQv1
+- [#1048](https://github.com/celabshq/libcrux/pull/1048): PSQv2
