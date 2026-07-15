@@ -760,14 +760,14 @@ pub(crate) fn ntt_with_proof(simd_units: &mut AVX2RingElement) {
 
 // Functional inverse-NTT surfacing (Track B) for AVX2, mirror of the Portable
 // invert_ntt_with_proof.  Reuses lemma_ntt_view_avx2 (same flatten) and
-// Spec.MLDSA.Math.to_mont (defeq with Portable.Invntt.to_mont, which the free
+// Spec.MLDSA.Math.to_mont (defeq with Portable.Invntt_theory.to_mont, which the free
 // AVX2 invert post uses via PI.to_mont; lemma_to_mont_eq_avx2 bridges them).
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(
         r#"
 let lemma_to_mont_eq_avx2 (y: t_Array i32 (mk_usize 256))
-    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt.to_mont y == Spec.MLDSA.Math.to_mont y)
+    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
   = ()
 "#
     )

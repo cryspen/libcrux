@@ -325,14 +325,14 @@ pub(crate) fn ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_
 // (in the ntt_poly_view flat view, wrapped in the opaque `invert_func_post`
 // atom).  Reuses the forward view bridge `lemma_ntt_view_portable` (same
 // 32×8 flatten) and `Spec.MLDSA.Math.to_mont` (byte-identical to — hence defeq
-// with — `Portable.Invntt.to_mont`, which the free fn's post uses;
+// with — `Portable.Invntt_theory.to_mont`, which the free fn's post uses;
 // `lemma_to_mont_eq` makes that bridge explicit for the intro).
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(
         r#"
 let lemma_to_mont_eq (y: t_Array i32 (mk_usize 256))
-    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt.to_mont y == Spec.MLDSA.Math.to_mont y)
+    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
   = ()
 "#
     )

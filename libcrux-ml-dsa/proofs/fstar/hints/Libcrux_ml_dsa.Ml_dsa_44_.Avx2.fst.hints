@@ -78,7 +78,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "de5f5fcd89798095554233729d38c807"
+      "d8b36f08ee80c3a00ff16846858902df"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.generate_key_pair",
@@ -108,7 +108,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cdc42d863a0848ed26b41239f867f8a8"
+      "ade1048637de7daac4d3bc90338cf70a"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign",
@@ -138,7 +138,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b2c69bcaab5cd57c8d91ea80c3729c94"
+      "93f2b9ae04e5a3afe61e06e6167d45a5"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign",
@@ -170,7 +170,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9a6612333502f954001d37d65fc2f9dd"
+      "e76ec1a7a8621fc66d30f6b83b2e3074"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_mut",
@@ -200,7 +200,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "d2304c384f10bbc9d751be1048e9fd55"
+      "53afd8ffca99020f632b7affdea1dff2"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_mut",
@@ -231,7 +231,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ad6e629b3c9e4d3c9466d1f4cd7f446d"
+      "8eca39dc70624c937bc149183493264c"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_pre_hashed_shake128",
@@ -284,7 +284,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f766cc0a3c49737926b347c5d13dfd79"
+      "2bf27b1c4ac3b95356b3f7d87b600df0"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_pre_hashed_shake128",
@@ -316,7 +316,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3598a147dafaa055d5912cc2f4384555"
+      "4767bdee3111ed3a15cf6242ddd7c478"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify",
@@ -324,7 +324,7 @@
       0,
       1,
       [
-        "@MaxIFuel_assumption", "@query",
+        "@MaxIFuel_assumption", "@query", "bool_inversion", "bool_typing",
         "constructor_distinct_Rust_primitives.Integers.USIZE",
         "data_elim_Libcrux_ml_dsa.Types.Mkt_MLDSASignature",
         "data_elim_Rust_primitives.Integers.MkInt",
@@ -338,15 +338,18 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v",
         "fuel_guarded_inversion_Libcrux_ml_dsa.Types.t_MLDSASignature",
-        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "int_typing", "primitive_Prims.op_AmpAmp",
+        "primitive_Prims.op_LessThanOrEqual",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "typing_Rust_primitives.Integers.range",
+        "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b0a604777cb7bcddbf841a544ca784f5"
+      "31411e8710c403daf2aa004ef3f5c1f2"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify",
@@ -377,7 +380,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f6b813bad5827f7e55d92de71b2473d7"
+      "a703f5d88fa1ff9dfee2bc23831556e9"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify_pre_hashed_shake128",
@@ -432,7 +435,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "68f5aaca754758a1f7b7f2f2147d14ee"
+      "5e77438366d9f6602809c25f1700d934"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify_pre_hashed_shake128",
@@ -462,7 +465,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "dc1ce30111b719090003486a895f53ff"
+      "ba98bd26d8bedcca8b5e2a6d2ea5d1d1"
     ]
   ]
 ]

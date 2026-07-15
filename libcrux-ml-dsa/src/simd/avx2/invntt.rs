@@ -3471,10 +3471,10 @@ let lemma_inv_l7_full_avx2
 (* ===== PHASE C: scaling fold + top compose =================================
    AVX2 analogues of the Portable scaling machinery.  The generic
    chunk-level helpers (chunk_scaled / lemma_establish_chunk_scaled /
-   lemma_scale_chunk / lemma_scale_flat) live in Portable.Invntt over plain
+   lemma_scale_chunk / lemma_scale_flat) live in Portable.Invntt_theory over plain
    t_Array i32 8 / t_Array (t_Array i32 8) 32, so they are reusable verbatim;
    only the chunks_of_re-specific driver needs an AVX2 mirror.            ===== *)
-module PI = Libcrux_ml_dsa.Simd.Portable.Invntt
+module PI = Libcrux_ml_dsa.Simd.Portable.Invntt_theory
 
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --z3refresh"
 (* Per-chunk establish: re[i] = mont_mul-by-FACTOR of orig_re[i].  The AVX2
