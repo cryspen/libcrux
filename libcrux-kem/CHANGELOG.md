@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.9-pre.1] (2026-07-13)
+## [0.0.9] (2026-07-15)
 
 ### Changed
 
-- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-traits`, `libcrux-sha3`, `libcrux-curve25519`, `libcrux-ml-kem`, `libcrux-p256`, `libcrux-ecdh`
+- [#1534](https://github.com/celabshq/libcrux/pull/1534): Update dependencies: `libcrux-traits`, `libcrux-sha3`, `libcrux-curve25519`, `libcrux-ml-kem`, `libcrux-p256`, `libcrux-ecdh`
 
 ## [0.0.8] (2026-05-13)
 

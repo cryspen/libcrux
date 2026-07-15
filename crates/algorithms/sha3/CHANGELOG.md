@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.10-pre.1] (2026-07-13)
+## [0.0.10] (2026-07-15)
 
 ### Fixed
 
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependency: `libcrux-traits`, `libcrux-intrinsics`
+- [#1534](https://github.com/celabshq/libcrux/pull/1534): Update dependency: `libcrux-traits`, `libcrux-intrinsics`
 - [#1454](https://github.com/celabshq/libcrux/pull/1454): `debug_assert` that generic `LEN` matches algorithm in `hash` function
 - [#1493](https://github.com/celabshq/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 

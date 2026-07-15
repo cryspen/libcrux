@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.5-pre.1] (2026-07-13)
+## [0.0.5] (2026-07-15)
 
 ### Fixed
 
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-curve25519`, `libcrux-aes`, `libcrux-chacha20poly1305`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-rsa`, `libcrux-ed25519`, `libcrux-digest`, `libcrux-hmac`, `libcrux-p256`, `libcrux-aead`, `libcrux-hkdf`, `libcrux-ecdsa`, `libcrux-ecdh`, `libcrux-kem`, `libcrux-psq`, `hpke-rs`
+- [#1534](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-curve25519`, `libcrux-aes`, `libcrux-chacha20poly1305`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-rsa`, `libcrux-ed25519`, `libcrux-digest`, `libcrux-hmac`, `libcrux-p256`, `libcrux-aead`, `libcrux-hkdf`, `libcrux-ecdsa`, `libcrux-ecdh`, `libcrux-kem`, `libcrux-psq`, `hpke-rs`
 - [#1505](https://github.com/celabshq/libcrux/pull/1505): Update dependency: `hpke-rs`
 - (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2) [#1493](https://github.com/celabshq/libcrux/pull/1493): `finish` methods on digest traits consume the hasher
 - (libcrux-secrets) [#1446](https://github.com/celabshq/libcrux/pull/1446): Remove const qualifier of secret types constructors
