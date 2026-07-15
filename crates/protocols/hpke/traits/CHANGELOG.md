@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- [#154](https://github.com/celabshq/libcrux/pull/154): `HpkeCrypto::HpkePrng` now has `rand` v0.10 bound `CryptoRng`, instead of `rand` v0.9 bound `RngCore + CryptoRng`
+- [#154](https://github.com/celabshq/hpke-rs/pull/154): `HpkeCrypto::HpkePrng` now has `rand` v0.10 bound `CryptoRng`, instead of `rand` v0.9 bound `RngCore + CryptoRng`
 
 ## [0.6.1] - 2026-03-20
 

@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#1386](https://github.com/celabshq/libcrux/pull/1386): Fix potential panic in `libcrux_chacha20poly1305::encrypt` (reported by @fg0x0)
 
-## Changed
+### Changed
 
 - [#1434](https://github.com/celabshq/libcrux/pull/1434): Update dependencies: `libcrux-hacl-rs`, `libcrux-poly1305`
 - [#1433](https://github.com/celabshq/libcrux/pull/1433): Update dependencies: `libcrux-traits`
