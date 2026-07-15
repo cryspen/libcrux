@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (libcrux-secrets) [#1462](https://github.com/celabshq/libcrux/pull/1462): More robust casts instead of transmutes when checking secret independence
 - (libcrux-sha3) [1454](https://github.com/celabshq/libcrux/pull/1454): `debug_assert` that generic `LEN` matches algorithm in `hash` function
 - (libcrux-secrets) [#1484](https://github.com/celabshq/libcrux/pull/1484): seal scalar trait and synchronize De-/Classify trait impls for public/secret types
-- (libcrux-secrets) [#1491](https://github.com/celabshq/libcrux/issues/1491): Replace `IntOps` and `EncodeOps` traits with inherent methods on `Secret`
+- (libcrux-secrets) [#1499](https://github.com/celabshq/libcrux/pull/1499): Replace `IntOps` and `EncodeOps` traits with inherent methods on `Secret` (https://github.com/Arul-Sujith)
 
 ### Added
 
@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (libcrux-secrets) [#1446](https://github.com/celabshq/libcrux/pull/1446): Integrate valgrind requests when cfg `valgrind_ct_test` is set
 - (libcrux-ml-dsa) [#1457](https://github.com/celabshq/libcrux/pull/1457): Add dependency on libcrux-secrets for optional valgrind integration
 - (libcrux-kmac) [#1292](https://github.com/celabshq/libcrux/pull/1292): Add support for KMAC (https://github.com/kraemv)
-- (libcrux-sha3) [#1292](https://github.com/celabshq/libcrux/pull/1292): Add support for incremental CShake
+- (libcrux-sha3) [#1292](https://github.com/celabshq/libcrux/pull/1292): Add support for incremental CShake (https://github.com/kraemv)
 - (libcrux-hmac) [#1382](https://github.com/celabshq/libcrux/pull/1382): Add an incremental API
 
 ## [0.0.4] (2026-05-13)
