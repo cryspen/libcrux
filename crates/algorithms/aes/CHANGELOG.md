@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [#1474](https://github.com/cryspen/libcrux/pull/1474): Enforce limits on plaintext and AAD lengths for AES-GCM, according to RFC 5116.
+- [#1474](https://github.com/celabshq/libcrux/pull/1474): Enforce limits on plaintext and AAD lengths for AES-GCM, according to RFC 5116.
 - [#1528](https://github.com/celabshq/libcrux/pull/1528): Use constant time comparison for AES-GCM and AES-CCM tag check
 
 ### Changed
