@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  nextest: # This does not include doctest, because nextest doesn't support doctests.
+  test: 
     if: ${{ github.event_name != 'merge_group' }}
     runs-on: ubuntu-latest
     defaults:
@@ -27,14 +27,18 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: nextest
-
+          
+      # This does not include doctest, because nextest doesn't support doctests.
       # XXX: We skip one outdated core-models tests here, fixed by https://github.com/celabshq/libcrux/pull/1481
       - name: Run workspace tests
         run: cargo nextest run --workspace --no-fail-fast -- --skip _mm256_bsrli_epi128
-
+        
+      - name: Run workspace doctests
+        run: cargo test --doc --workspace --no-fail-fast
+        
   workspace-test-status:
     if: ${{ always() }}
-    needs: [nextest]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
