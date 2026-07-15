@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.0-pre.1] (2026-07-13)
+## [0.7.0] (2026-07-15)
 
 ### Changed
 
-- [#XYZ](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`, `libcrux-sha3`, `hpke-rs-libcrux`
+- [#1534](https://github.com/celabshq/libcrux/pull/1534): Update dependencies: `hpke-rs-crypto`, `hpke-rs-rust-crypto`, `libcrux-sha3`, `hpke-rs-libcrux`
 - [#147](https://github.com/celabshq/hpke-rs/pull/147): Add P384 and P521 DHKEM support for the libcrux provider via RustCrypto crates guarded behind the `libcrux-rustcrypto-p-curves` feature flag.
 - [#146](https://github.com/celabshq/hpke-rs/pull/146): Add support for ML-KEM768 and ML-KEM1024 gated behind the `draft-connolly-cfrg-hpke-mlkem` feature flag.
 
