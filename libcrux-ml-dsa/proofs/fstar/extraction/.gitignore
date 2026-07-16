@@ -7,3 +7,6 @@
 # Hand-written companion theory relocated from src/simd/portable/invntt.rs
 # fstar::before blocks (annotation-compaction campaign). Track it (Error-72 trap).
 !Libcrux_ml_dsa.Simd.Portable.Invntt_theory.fst
+# Hand-written companion theory relocated from src/simd/portable/ntt.rs
+# fstar::before blocks (annotation-compaction campaign). Track it (Error-72 trap).
+!Libcrux_ml_dsa.Simd.Portable.Ntt_theory.fst

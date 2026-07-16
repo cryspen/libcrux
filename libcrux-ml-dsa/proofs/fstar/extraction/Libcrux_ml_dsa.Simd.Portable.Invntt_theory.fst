@@ -122,16 +122,16 @@ let lemma_inv_l3_cross_driver_compose
                                    (Seq.index re u).f_values (Seq.index re (u+1)).f_values
                                    (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (31 - u / 2)))))
         (ensures
-          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
            let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 3) in
            forall (i: nat). i < 256 ==>
              (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re in
+  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re in
     let zm (u: nat{u < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
         mk_i32 (Spec.MLDSA.NttConstants.zeta_r (31 - u / 2)) in
-    Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun u -> (u % 2 == 0) ==>
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun u -> (u % 2 == 0) ==>
         unit_fe_post_inv_cross (Seq.index orig_re u).f_values (Seq.index orig_re (u+1)).f_values
                                (Seq.index re u).f_values (Seq.index re (u+1)).f_values (zm u));
     (let aux_bf (u: nat{u < 32}) : Lemma
@@ -178,16 +178,16 @@ let lemma_inv_l4_cross_driver_compose
                                    (Seq.index re u).f_values (Seq.index re (u+2)).f_values
                                    (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (15 - u / 4)))))
         (ensures
-          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
            let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 4) in
            forall (i: nat). i < 256 ==>
              (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re in
+  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re in
     let zm (u: nat{u < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
         mk_i32 (Spec.MLDSA.NttConstants.zeta_r (15 - u / 4)) in
-    Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun u -> (u % 4 < 2) ==>
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun u -> (u % 4 < 2) ==>
         unit_fe_post_inv_cross (Seq.index orig_re u).f_values (Seq.index orig_re (u+2)).f_values
                                (Seq.index re u).f_values (Seq.index re (u+2)).f_values (zm u));
     (let aux_bf (u: nat{u < 32}) : Lemma
@@ -234,16 +234,16 @@ let lemma_inv_l5_cross_driver_compose
                                    (Seq.index re u).f_values (Seq.index re (u+4)).f_values
                                    (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (7 - u / 8)))))
         (ensures
-          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
            let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 5) in
            forall (i: nat). i < 256 ==>
              (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re in
+  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re in
     let zm (u: nat{u < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
         mk_i32 (Spec.MLDSA.NttConstants.zeta_r (7 - u / 8)) in
-    Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun u -> (u % 8 < 4) ==>
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun u -> (u % 8 < 4) ==>
         unit_fe_post_inv_cross (Seq.index orig_re u).f_values (Seq.index orig_re (u+4)).f_values
                                (Seq.index re u).f_values (Seq.index re (u+4)).f_values (zm u));
     (let aux_bf (u: nat{u < 32}) : Lemma
@@ -290,16 +290,16 @@ let lemma_inv_l6_cross_driver_compose
                                    (Seq.index re u).f_values (Seq.index re (u+8)).f_values
                                    (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (3 - u / 16)))))
         (ensures
-          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
            let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 6) in
            forall (i: nat). i < 256 ==>
              (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re in
+  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re in
     let zm (u: nat{u < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
         mk_i32 (Spec.MLDSA.NttConstants.zeta_r (3 - u / 16)) in
-    Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun u -> (u % 16 < 8) ==>
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun u -> (u % 16 < 8) ==>
         unit_fe_post_inv_cross (Seq.index orig_re u).f_values (Seq.index orig_re (u+8)).f_values
                                (Seq.index re u).f_values (Seq.index re (u+8)).f_values (zm u));
     (let aux_bf (u: nat{u < 32}) : Lemma
@@ -346,16 +346,16 @@ let lemma_inv_l7_cross_driver_compose
                                    (Seq.index re u).f_values (Seq.index re (u+16)).f_values
                                    (mk_i32 (Spec.MLDSA.NttConstants.zeta_r 1))))
         (ensures
-          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+          (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+           let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
            let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 7) in
            forall (i: nat). i < 256 ==>
              (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re in
+  = let orig = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let fut = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re in
     let zm (u: nat{u < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
         mk_i32 (Spec.MLDSA.NttConstants.zeta_r 1) in
-    Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun u -> (u % 32 < 16) ==>
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun u -> (u % 32 < 16) ==>
         unit_fe_post_inv_cross (Seq.index orig_re u).f_values (Seq.index orig_re (u+16)).f_values
                                (Seq.index re u).f_values (Seq.index re (u+16)).f_values (zm u));
     (let aux_bf (u: nat{u < 32}) : Lemma
@@ -521,12 +521,12 @@ let lemma_scale_driver
   (requires (forall (b:nat). b < 32 ==>
      chunk_scaled (Seq.index orig_re b).f_values (Seq.index fut_re b).f_values))
   (ensures
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re fut_re) in
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re fut_re) in
      forall (j:nat). j < 256 ==>
        (v (Seq.index out_flat j)) % 8380417 == (16382 * v (Seq.index in_flat j)) % 8380417))
-  = let ci = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re orig_re in
-    let co = Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re fut_re in
+  = let ci = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re orig_re in
+    let co = Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re fut_re in
     let aux (b:nat{b<32}) : Lemma
         (forall (l:nat). l < 8 ==>
           (v (Seq.index (Seq.index co b) l)) % 8380417 ==

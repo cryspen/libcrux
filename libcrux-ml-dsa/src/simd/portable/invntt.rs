@@ -93,7 +93,7 @@ fn simd_unit_inv_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize,
                  (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
       = let zm (b: nat{b < 32}) (p: nat{p < 4}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
           mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + p))) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun b -> unit_fe_post_inv_l0 (Seq.index orig b) (Seq.index fut b)
+        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l0 (Seq.index orig b) (Seq.index fut b)
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 0))))
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 1))))
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 2))))
@@ -200,7 +200,7 @@ pub fn simd_unit_invert_ntt_at_layer_0(
                  (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
       = let zm (b: nat{b < 32}) (h: nat{h < 2}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
           mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + h))) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun b -> unit_fe_post_inv_l1 (Seq.index orig b) (Seq.index fut b)
+        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l1 (Seq.index orig b) (Seq.index fut b)
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 0))))
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 1)))));
         (let aux_bf (b: nat{b < 32}) : Lemma
@@ -299,7 +299,7 @@ pub fn simd_unit_invert_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta0: i32,
                  (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
       = let zm (b: nat{b < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
           mk_i32 (Spec.MLDSA.NttConstants.zeta_r (63 - b)) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt.forall32_elim_1d (fun b -> unit_fe_post_inv_l2 (Seq.index orig b) (Seq.index fut b)
+        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l2 (Seq.index orig b) (Seq.index fut b)
                                      (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (63 - b))));
         (let aux_bf (b: nat{b < 32}) : Lemma
            (forall (p: nat{p < 4}).
@@ -349,12 +349,12 @@ pub fn simd_unit_invert_ntt_at_layer_2(simd_unit: &mut Coefficients, zeta: i32) 
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 0) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -560,7 +560,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 252 == 3937738);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 253 == 1400424);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 254 == (-846154));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 255 == 1976782);
-lemma_inv_l0_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re})
+lemma_inv_l0_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
@@ -569,12 +569,12 @@ lemma_inv_l0_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${ori
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (2 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 1) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -711,7 +711,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 124 == (-3019102));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 125 == (-3881060));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 126 == (-3628969));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 127 == 3839961);
-lemma_inv_l1_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re})
+lemma_inv_l1_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
@@ -720,12 +720,12 @@ lemma_inv_l1_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${ori
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (4 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 2) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -824,7 +824,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 60 == 3900724);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 61 == (-2556880));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 62 == 2071892);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 63 == (-2797779));
-lemma_inv_l2_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re})
+lemma_inv_l2_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
@@ -913,12 +913,12 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (8 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 3) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -995,12 +995,12 @@ lemma_inv_l3_cross_driver_compose ${orig_re} ${re}
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (16 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 4) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -1058,12 +1058,12 @@ lemma_inv_l4_cross_driver_compose ${orig_re} ${re}
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (32 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 5) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -1113,12 +1113,12 @@ lemma_inv_l5_cross_driver_compose ${orig_re} ${re}
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (64 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 6) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -1164,12 +1164,12 @@ lemma_inv_l6_cross_driver_compose ${orig_re} ${re}
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (128 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (256 * v $FIELD_MAX) ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (256 * v $FIELD_MAX) ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 7) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417)
@@ -1211,12 +1211,12 @@ lemma_inv_l7_cross_driver_compose ${orig_re} ${re}
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (256 * v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (256 * v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial 4211177 ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      forall (j:nat). j < 256 ==>
        (v (Seq.index out_flat j)) % 8380417 == (16382 * v (Seq.index in_flat j)) % 8380417)
 "#) )]
@@ -1224,7 +1224,7 @@ fn scale_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
     #[cfg(hax)]
     let orig = re.clone();
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (256 * v $FIELD_MAX) ${re})"#
+        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (256 * v $FIELD_MAX) ${re})"#
     );
     for i in 0..re.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(
@@ -1261,7 +1261,7 @@ fn scale_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         );
     }
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial 4211177 ${re})"#
+        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${re})"#
     );
     // Lift the per-chunk 16382-scaling (loop post) to the flat-poly view.
     hax_lib::fstar!(r#"lemma_scale_driver ${orig} ${re}"#);
@@ -1271,12 +1271,12 @@ fn scale_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial (v $FIELD_MAX) ${re}
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial (v $FIELD_MAX) ${re}
 "#))]
 #[hax_lib::ensures(|_| fstar!(r#"
-    Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial 4211177 ${re}_future /\
-    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}) in
-     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}_future) in
+    Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${re}_future /\
+    (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}) in
+     let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}_future) in
      forall (i: nat). i < 256 ==>
        (v (Seq.index out_flat i)) % 8380417 ==
        (v (Seq.index (to_mont (Hacspec_ml_dsa.Ntt.intt in_flat)) i)) % 8380417)
@@ -1311,15 +1311,15 @@ pub(crate) fn invert_ntt_montgomery(re: &mut [Coefficients; SIMD_UNITS_IN_RING_E
     hax_lib::fstar!(
         r#"
 lemma_intt_compose_8
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s0}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s1}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s2}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s3}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s4}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s5}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s6}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s7}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s8}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s0}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s1}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s2}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s3}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s4}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s5}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s6}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s7}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s8}))
 "#
     );
     scale_montgomery(re);
@@ -1328,9 +1328,9 @@ lemma_intt_compose_8
     hax_lib::fstar!(
         r#"
 lemma_invert_top
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s0}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${s8}))
-  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${re}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s0}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${s8}))
+  (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re}))
 "#
     );
 }

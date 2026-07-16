@@ -260,18 +260,18 @@ let lemma_ntt_view_portable
       (re: t_Array Libcrux_ml_dsa.Simd.Portable.Vector_type.t_Coefficients (mk_usize 32))
     : Lemma (Libcrux_ml_dsa.Simd.Traits.ntt_poly_view re ==
              Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-               (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re))
+               (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re))
   = reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.ntt_poly_view)
       (Libcrux_ml_dsa.Simd.Traits.ntt_poly_view re);
     let lhs = Libcrux_ml_dsa.Simd.Traits.ntt_poly_view re in
     let rhs = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) in
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) in
     let aux (j: nat{j < 256}) : Lemma (Seq.index lhs j == Seq.index rhs j) =
       let b: nat = j / 8 in
       let l: nat = j % 8 in
       FStar.Math.Lemmas.euclidean_division_definition j 8;
       Hacspec_ml_dsa.Commute.Chunk.lemma_simd_units_to_array_reveal
-        (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re re) b l;
+        (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re re) b l;
       Hacspec_ml_dsa.createi_lemma #(t_Array i32 (mk_usize 8)) (mk_usize 32)
         #(usize -> t_Array i32 (mk_usize 8))
         (fun (b': usize{b' <. mk_usize 32}) ->
@@ -305,17 +305,17 @@ pub(crate) fn ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_
     let _orig = simd_units.clone();
     ntt::ntt(simd_units);
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial)
-             (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial
+        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial)
+             (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial
                 (v ${specs::NTT_BASE_BOUND} + 8 * v ${specs::FIELD_MAX}) ${simd_units});
            assert_norm (v ${specs::NTT_OUTPUT_BOUND} == v ${specs::NTT_BASE_BOUND} + 8 * v ${specs::FIELD_MAX});
            lemma_ntt_view_portable ${_orig};
            lemma_ntt_view_portable ${simd_units};
            Libcrux_ml_dsa.Simd.Traits.lemma_ntt_func_post_intro ${_orig} ${simd_units}
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${_orig}))
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${_orig}))
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${simd_units}))"#
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${simd_units}))"#
     );
 }
 
@@ -353,18 +353,18 @@ pub(crate) fn invert_ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_I
     let _orig = simd_units.clone();
     invntt::invert_ntt_montgomery(simd_units);
     hax_lib::fstar!(
-        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial)
-             (Libcrux_ml_dsa.Simd.Portable.Ntt.is_i32b_polynomial 4211177 ${simd_units});
+        r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial)
+             (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${simd_units});
            lemma_ntt_view_portable ${_orig};
            lemma_ntt_view_portable ${simd_units};
            lemma_to_mont_eq (Hacspec_ml_dsa.Ntt.intt
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${_orig})));
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${_orig})));
            Libcrux_ml_dsa.Simd.Traits.lemma_invert_func_post_intro ${_orig} ${simd_units}
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${_orig}))
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${_orig}))
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
-                (Libcrux_ml_dsa.Simd.Portable.Ntt.chunks_of_re ${simd_units}))"#
+                (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${simd_units}))"#
     );
 }
 
