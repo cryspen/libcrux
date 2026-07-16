@@ -110,11 +110,11 @@ Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) in
 
 | Module                    |  Line |
 | ------------------------- | ----- |
-| Generic/arithmetic        |   110 |
+| Generic/arithmetic        |   111 |
 | Generic/encoding          |    78 |
 | Generic/ml_dsa_generic    |    78 |
 | Generic/ml_dsa_generic    |   262 |
-| Generic/ml_dsa_generic    |  1005 |
-| Generic/ml_dsa_generic    |  1043 |
-| Generic/ml_dsa_generic    |  1221 |
-| Generic/ml_dsa_generic    |  1273 |
+| Generic/ml_dsa_generic    |  1006 |
+| Generic/ml_dsa_generic    |  1044 |
+| Generic/ml_dsa_generic    |  1222 |
+| Generic/ml_dsa_generic    |  1274 |
