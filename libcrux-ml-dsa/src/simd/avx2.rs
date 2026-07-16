@@ -417,6 +417,13 @@ pub(crate) fn decompose_with_proof(
         v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}) i) < 8380417) ==>
       v $result ==
       Spec.MLDSA.Math.compute_hint (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}_future))"#))]
+// Was inheriting the module default rlimit 80, unlike its siblings here
+// (`use_hint_with_proof` 300, `decompose_with_proof` 400). At 80 the requires'
+// `t_Array i32 8 -> t_Slice i32` subtyping VC saturates cold (used 80.0/80); it had
+// only ever passed by replaying a recorded hint, which goes stale whenever a dep
+// changes. Sibling `decompose_with_proof` already burns 34.8/80, so the default was
+// marginal for this module. Budget bump only -- no proof, spec, or bound weakened.
+#[cfg_attr(hax, hax_lib::fstar::options("--z3rlimit 300"))]
 pub(crate) fn compute_hint_with_proof(
     low: &AVX2SIMDUnit,
     high: &AVX2SIMDUnit,
