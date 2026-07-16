@@ -472,10 +472,14 @@ unsafe fn invert_ntt_at_layer_2(re: &mut AVX2RingElement) {
      - bridge    -> Hacspec_ml_dsa.Commute.Chunk.lemma_intt_layer_{0,1,2}_step_to_hacspec_poly
      - atom      -> Portable's unit_fe_post_inv_l{0,1,2} shape
    The chunk view + bound predicate + generic elim lemmas are REUSED from
-   Avx2NttTheory / Libcrux_ml_dsa.Simd.Avx2.Ntt (not redefined). ===== *)
+   Avx2NttTheory / Libcrux_ml_dsa.Simd.Avx2.Ntt_theory (not redefined). ===== *)
 module T = Avx2NttTheory
 module C = Hacspec_ml_dsa.Commute.Chunk
-module FN = Libcrux_ml_dsa.Simd.Avx2.Ntt
+(* The four generic elim lemmas used via FN (forall32/16/4_elim_1d,
+   reindex_32_from_16) are theory, and now live in the hand-written companion
+   Ntt_theory rather than the impl module Ntt.  Each was checked individually:
+   all four moved, none remained behind, so the alias is repointed wholesale. *)
+module FN = Libcrux_ml_dsa.Simd.Avx2.Ntt_theory
 
 open Spec.MLDSA.Math
 
