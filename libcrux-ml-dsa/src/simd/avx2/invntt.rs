@@ -1464,6 +1464,70 @@ let lemma_inv_l3_avx2_assemble
   = ()
 #pop-options
 "#)]
+#[hax_lib::fstar::before(r#"
+(* Clean-context TRANSPORT for layer 3 (mirrors lemma_inv_l4/l5/l6_transport): from the 16
+   raw outer_3_plus call posts (call w at offset 2w, step_by 1, intermediate states s1..s15)
+   derive the 16 orig->fin per-pair facts.  Calls are disjoint (call w only touches units 2w,2w+1);
+   fuel 1 unfolds the plain-let outer_3_plus_inv to its `forall j`, ifuel 2 evaluates the (∈)
+   if-ladder at parametric u.  layer_3 is the last layer that lacked this lemma and so asserted
+   the 16 pair facts inline -- which saturated under --split_queries always (the hint-poison). *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 800 --z3refresh"
+let lemma_inv_l3_transport
+      (orig s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
+    : Lemma
+      (requires
+        outer_3_plus_inv  0 1 (mk_i32 280005)  1 orig s1 /\
+        outer_3_plus_inv  2 1 (mk_i32 4010497)  3 s1 s2 /\
+        outer_3_plus_inv  4 1 (mk_i32 (-19422))  5 s2 s3 /\
+        outer_3_plus_inv  6 1 (mk_i32 1757237)  7 s3 s4 /\
+        outer_3_plus_inv  8 1 (mk_i32 (-3277672))  9 s4 s5 /\
+        outer_3_plus_inv 10 1 (mk_i32 (-1399561)) 11 s5 s6 /\
+        outer_3_plus_inv 12 1 (mk_i32 (-3859737)) 13 s6 s7 /\
+        outer_3_plus_inv 14 1 (mk_i32 (-2118186)) 15 s7 s8 /\
+        outer_3_plus_inv 16 1 (mk_i32 (-2108549)) 17 s8 s9 /\
+        outer_3_plus_inv 18 1 (mk_i32 2619752) 19 s9 s10 /\
+        outer_3_plus_inv 20 1 (mk_i32 (-1119584)) 21 s10 s11 /\
+        outer_3_plus_inv 22 1 (mk_i32 (-549488)) 23 s11 s12 /\
+        outer_3_plus_inv 24 1 (mk_i32 3585928) 25 s12 s13 /\
+        outer_3_plus_inv 26 1 (mk_i32 (-1079900)) 27 s13 s14 /\
+        outer_3_plus_inv 28 1 (mk_i32 1024112) 29 s14 s15 /\
+        outer_3_plus_inv 30 1 (mk_i32 2725464) 31 s15 fin)
+      (ensures
+        (forall i. (to_i32x8 (Seq.index fin 0).f_value i, to_i32x8 (Seq.index fin 1).f_value i) ==
+           inv_ntt_step (mk_i32 280005) (to_i32x8 (Seq.index orig 0).f_value i, to_i32x8 (Seq.index orig 1).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 2).f_value i, to_i32x8 (Seq.index fin 3).f_value i) ==
+           inv_ntt_step (mk_i32 4010497) (to_i32x8 (Seq.index orig 2).f_value i, to_i32x8 (Seq.index orig 3).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 4).f_value i, to_i32x8 (Seq.index fin 5).f_value i) ==
+           inv_ntt_step (mk_i32 (-19422)) (to_i32x8 (Seq.index orig 4).f_value i, to_i32x8 (Seq.index orig 5).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 6).f_value i, to_i32x8 (Seq.index fin 7).f_value i) ==
+           inv_ntt_step (mk_i32 1757237) (to_i32x8 (Seq.index orig 6).f_value i, to_i32x8 (Seq.index orig 7).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 8).f_value i, to_i32x8 (Seq.index fin 9).f_value i) ==
+           inv_ntt_step (mk_i32 (-3277672)) (to_i32x8 (Seq.index orig 8).f_value i, to_i32x8 (Seq.index orig 9).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 10).f_value i, to_i32x8 (Seq.index fin 11).f_value i) ==
+           inv_ntt_step (mk_i32 (-1399561)) (to_i32x8 (Seq.index orig 10).f_value i, to_i32x8 (Seq.index orig 11).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 12).f_value i, to_i32x8 (Seq.index fin 13).f_value i) ==
+           inv_ntt_step (mk_i32 (-3859737)) (to_i32x8 (Seq.index orig 12).f_value i, to_i32x8 (Seq.index orig 13).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 14).f_value i, to_i32x8 (Seq.index fin 15).f_value i) ==
+           inv_ntt_step (mk_i32 (-2118186)) (to_i32x8 (Seq.index orig 14).f_value i, to_i32x8 (Seq.index orig 15).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 16).f_value i, to_i32x8 (Seq.index fin 17).f_value i) ==
+           inv_ntt_step (mk_i32 (-2108549)) (to_i32x8 (Seq.index orig 16).f_value i, to_i32x8 (Seq.index orig 17).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 18).f_value i, to_i32x8 (Seq.index fin 19).f_value i) ==
+           inv_ntt_step (mk_i32 2619752) (to_i32x8 (Seq.index orig 18).f_value i, to_i32x8 (Seq.index orig 19).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 20).f_value i, to_i32x8 (Seq.index fin 21).f_value i) ==
+           inv_ntt_step (mk_i32 (-1119584)) (to_i32x8 (Seq.index orig 20).f_value i, to_i32x8 (Seq.index orig 21).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 22).f_value i, to_i32x8 (Seq.index fin 23).f_value i) ==
+           inv_ntt_step (mk_i32 (-549488)) (to_i32x8 (Seq.index orig 22).f_value i, to_i32x8 (Seq.index orig 23).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 24).f_value i, to_i32x8 (Seq.index fin 25).f_value i) ==
+           inv_ntt_step (mk_i32 3585928) (to_i32x8 (Seq.index orig 24).f_value i, to_i32x8 (Seq.index orig 25).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 26).f_value i, to_i32x8 (Seq.index fin 27).f_value i) ==
+           inv_ntt_step (mk_i32 (-1079900)) (to_i32x8 (Seq.index orig 26).f_value i, to_i32x8 (Seq.index orig 27).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 28).f_value i, to_i32x8 (Seq.index fin 29).f_value i) ==
+           inv_ntt_step (mk_i32 1024112) (to_i32x8 (Seq.index orig 28).f_value i, to_i32x8 (Seq.index orig 29).f_value i)) /\
+        (forall i. (to_i32x8 (Seq.index fin 30).f_value i, to_i32x8 (Seq.index fin 31).f_value i) ==
+           inv_ntt_step (mk_i32 2725464) (to_i32x8 (Seq.index orig 30).f_value i, to_i32x8 (Seq.index orig 31).f_value i)))
+  = ()
+#pop-options
+"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
 #[hax_lib::ensures(|result| fstar!(r#"
@@ -1477,20 +1541,50 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     let orig_re = re.clone();
 
     outer_3_plus::<{ (0 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 280005>(re);
+    #[cfg(hax)]
+    let s1 = re.clone();
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 4010497>(re);
+    #[cfg(hax)]
+    let s2 = re.clone();
     outer_3_plus::<{ (2 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -19422>(re);
+    #[cfg(hax)]
+    let s3 = re.clone();
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1757237>(re);
+    #[cfg(hax)]
+    let s4 = re.clone();
     outer_3_plus::<{ (4 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -3277672>(re);
+    #[cfg(hax)]
+    let s5 = re.clone();
     outer_3_plus::<{ (5 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -1399561>(re);
+    #[cfg(hax)]
+    let s6 = re.clone();
     outer_3_plus::<{ (6 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -3859737>(re);
+    #[cfg(hax)]
+    let s7 = re.clone();
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2118186>(re);
+    #[cfg(hax)]
+    let s8 = re.clone();
     outer_3_plus::<{ (8 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2108549>(re);
+    #[cfg(hax)]
+    let s9 = re.clone();
     outer_3_plus::<{ (9 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2619752>(re);
+    #[cfg(hax)]
+    let s10 = re.clone();
     outer_3_plus::<{ (10 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -1119584>(re);
+    #[cfg(hax)]
+    let s11 = re.clone();
     outer_3_plus::<{ (11 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -549488>(re);
+    #[cfg(hax)]
+    let s12 = re.clone();
     outer_3_plus::<{ (12 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 3585928>(re);
+    #[cfg(hax)]
+    let s13 = re.clone();
     outer_3_plus::<{ (13 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -1079900>(re);
+    #[cfg(hax)]
+    let s14 = re.clone();
     outer_3_plus::<{ (14 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1024112>(re);
+    #[cfg(hax)]
+    let s15 = re.clone();
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2725464>(re);
 
     hax_lib::fstar!(
@@ -1515,38 +1609,7 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     assert_norm (zeta_r 18 == (-1079900));
     assert_norm (zeta_r 17 == 1024112);
     assert_norm (zeta_r 16 == 2725464);
-    assert (forall i. (to_i32x8 (Seq.index ${re} 0).f_value i, to_i32x8 (Seq.index ${re} 1).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 31)) (to_i32x8 (Seq.index ${orig_re} 0).f_value i, to_i32x8 (Seq.index ${orig_re} 1).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 2).f_value i, to_i32x8 (Seq.index ${re} 3).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 30)) (to_i32x8 (Seq.index ${orig_re} 2).f_value i, to_i32x8 (Seq.index ${orig_re} 3).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 4).f_value i, to_i32x8 (Seq.index ${re} 5).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 29)) (to_i32x8 (Seq.index ${orig_re} 4).f_value i, to_i32x8 (Seq.index ${orig_re} 5).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 6).f_value i, to_i32x8 (Seq.index ${re} 7).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 28)) (to_i32x8 (Seq.index ${orig_re} 6).f_value i, to_i32x8 (Seq.index ${orig_re} 7).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 8).f_value i, to_i32x8 (Seq.index ${re} 9).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 27)) (to_i32x8 (Seq.index ${orig_re} 8).f_value i, to_i32x8 (Seq.index ${orig_re} 9).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 10).f_value i, to_i32x8 (Seq.index ${re} 11).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 26)) (to_i32x8 (Seq.index ${orig_re} 10).f_value i, to_i32x8 (Seq.index ${orig_re} 11).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 12).f_value i, to_i32x8 (Seq.index ${re} 13).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 25)) (to_i32x8 (Seq.index ${orig_re} 12).f_value i, to_i32x8 (Seq.index ${orig_re} 13).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 14).f_value i, to_i32x8 (Seq.index ${re} 15).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 24)) (to_i32x8 (Seq.index ${orig_re} 14).f_value i, to_i32x8 (Seq.index ${orig_re} 15).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 16).f_value i, to_i32x8 (Seq.index ${re} 17).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 23)) (to_i32x8 (Seq.index ${orig_re} 16).f_value i, to_i32x8 (Seq.index ${orig_re} 17).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 18).f_value i, to_i32x8 (Seq.index ${re} 19).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 22)) (to_i32x8 (Seq.index ${orig_re} 18).f_value i, to_i32x8 (Seq.index ${orig_re} 19).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 20).f_value i, to_i32x8 (Seq.index ${re} 21).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 21)) (to_i32x8 (Seq.index ${orig_re} 20).f_value i, to_i32x8 (Seq.index ${orig_re} 21).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 22).f_value i, to_i32x8 (Seq.index ${re} 23).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 20)) (to_i32x8 (Seq.index ${orig_re} 22).f_value i, to_i32x8 (Seq.index ${orig_re} 23).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 24).f_value i, to_i32x8 (Seq.index ${re} 25).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 19)) (to_i32x8 (Seq.index ${orig_re} 24).f_value i, to_i32x8 (Seq.index ${orig_re} 25).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 26).f_value i, to_i32x8 (Seq.index ${re} 27).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 18)) (to_i32x8 (Seq.index ${orig_re} 26).f_value i, to_i32x8 (Seq.index ${orig_re} 27).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 28).f_value i, to_i32x8 (Seq.index ${re} 29).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 17)) (to_i32x8 (Seq.index ${orig_re} 28).f_value i, to_i32x8 (Seq.index ${orig_re} 29).f_value i));
-    assert (forall i. (to_i32x8 (Seq.index ${re} 30).f_value i, to_i32x8 (Seq.index ${re} 31).f_value i) ==
-      inv_ntt_step (mk_i32 (zeta_r 16)) (to_i32x8 (Seq.index ${orig_re} 30).f_value i, to_i32x8 (Seq.index ${orig_re} 31).f_value i));
+    lemma_inv_l3_transport ${orig_re} ${s1} ${s2} ${s3} ${s4} ${s5} ${s6} ${s7} ${s8} ${s9} ${s10} ${s11} ${s12} ${s13} ${s14} ${s15} ${re};
     lemma_inv_l3_avx2_assemble ${orig_re} ${re}
     "#
     );
