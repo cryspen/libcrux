@@ -21,3 +21,7 @@
 # theory. The .rs shell is deleted, so this file is the source of truth rather than
 # a generated artifact; hax no longer emits it (Error-72 trap still applies).
 !Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Proof_helpers.fst
+# Promoted from src/proof_utils.rs, likewise a #[cfg(hax)]-only marker-only module:
+# 4 trusted-base assume-val lemmas (count_ones / movemask, no F* model in-tree).
+# The .rs shell is deleted, so this file is the source of truth (Error-72 trap).
+!Libcrux_ml_dsa.Proof_utils.fst

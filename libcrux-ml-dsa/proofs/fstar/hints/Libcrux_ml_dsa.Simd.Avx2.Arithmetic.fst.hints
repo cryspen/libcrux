@@ -97,7 +97,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b40b1b7ec98c7278e1048695d3ec9ca6"
+      "505f7c86e1e3d02d951c25a238cf7e41"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.to_unsigned_representatives_ret",
@@ -124,7 +124,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "5d25d220f71f28268d9f59efd3f399ad"
+      "9499f2ec05032e07d8ac0a07dc0f7b30"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.to_unsigned_representatives",
@@ -195,7 +195,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7e669c678ba9eaf2e25522ff588b6f71"
+      "58bc19816b1311d66159c64095165b7e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.add",
@@ -259,7 +259,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "5c278d697abb060aa88408cdb51b12c4"
+      "99bedcc8c727b1eccfb0cef5f97e761b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.subtract",
@@ -323,7 +323,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "77f019d23d26cd766ccb01599f67089d"
+      "7b3dc3f3fd1abc7af56107ee3e0d4443"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_by_constant",
@@ -434,7 +434,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8116f75ae562e43f9717c7d2b99b8ce5"
+      "b7a49023ee0c57dddc53cd88b6c082ba"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_by_constant",
@@ -461,7 +461,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "737a9fdd0be518482be34a6d17ebde0b"
+      "aeb5fcde814efa4b41f2f03c1cfa3d66"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux",
@@ -566,7 +566,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "712d457c44e89914e9774fbbc5e13e57"
+      "f6d74c29f2690e0ed45a72f6692c1411"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply_aux",
@@ -593,7 +593,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1f24770b0f6070cea368ec6992ff9ba6"
+      "4861059571f585521a776f3a4819a3c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.montgomery_multiply",
@@ -651,7 +651,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "186a0d473dd36beefa0435845cc1fa46"
+      "a72667db6416dc515df2a3db1dacfc00"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.reduce",
@@ -718,7 +718,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "208b08fd65f42b161e345badf427ba4b"
+      "1656b7bcad8c140ee2b240ef4dcb177a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.reduce",
@@ -745,7 +745,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "82a42951d0f3b01d0c5e6e350cd6474b"
+      "7c63088eaf19a6aa35bdfde6a5fa1341"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.shift_left_then_reduce",
@@ -820,7 +820,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0ff403c37616e522d3b2bb2f0af123c3"
+      "df6039746342d91891a072f7cfdb6c43"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.infinity_norm_exceeds",
@@ -895,7 +895,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fac776c6db799db02f53b1f2045814b4"
+      "aab0179b60e527375784347515b99d83"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.infinity_norm_exceeds",
@@ -922,7 +922,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "400d7a837bbb7f206d7618ea1c1edbf0"
+      "4e8cb25f4a1a157c20b1fc8afaf13f32"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round",
@@ -1043,7 +1043,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e56e37025463937ab94f9acc3313e51e"
+      "271862a4ddf97b03ed3303d02cea782d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.power2round",
@@ -1070,7 +1070,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "079e6608b80e89aa18cf5f701cafff60"
+      "9f681d41de26f351d1f5d1d7da826bb4"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.decompose",
@@ -1172,7 +1172,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7a3b1f516397c7a81222091b6847b768"
+      "761b832f37dcb0303395e9b989936cbd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.decompose",
@@ -1200,7 +1200,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "99b73bfbe2eaf4a25116f983a7b13952"
+      "33a101abe252d0efb139bdf9728b9ebe"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_ones_zero_v",
@@ -1221,7 +1221,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "fc1413cfa4c970f9bdfa598fb3ba07a2"
+      "c31ba3813c962f4ab291bd14542679c2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_and_one_binary",
@@ -1265,7 +1265,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "f6c529a50af52a706f5e398ec6950467"
+      "a6c9e6a7f7530d8f8f58cd793cf2c21d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_or_and_mask_bit",
@@ -1308,7 +1308,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "8023ee0bafcb43431b10a8326673aab3"
+      "e4fabf1416aef1ceef6608b0af0e4665"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_or_sign_and",
@@ -1375,7 +1375,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e09f196f57afe795e9138246cc90f8a6"
+      "a0599f2210e8d9103a0f12f0b4b8b651"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_compute_hint_8",
@@ -1434,7 +1434,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "aaf576daf7f78f1bd813a0e41a42d3fb"
+      "e7c1a8750bce3c2b8281e815073a3273"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_compute_hint_8",
@@ -1465,7 +1465,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "596a53c861a4b0b98d919e473553c0f0"
+      "3a953b7f609455165e27f35272164389"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1585,7 +1585,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3f9516388d57489feee3c5b981dfba4a"
+      "e5f1c9831d11bf01a36727fafbeca948"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1612,7 +1612,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fd86bd55c30dc118f9c6ca1b9b77d6f8"
+      "ab1ecc18dce9030b40cadfdd387e0226"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1639,7 +1639,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "38f586f2a156e927adefbb49affe7b0d"
+      "02290f51cc6edf0466e012406bfb21be"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1658,7 +1658,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "52bee1ed4f2313322a619c2b828ae6a3"
+      "ca39894e1b2a4ec1fdfb194462e42f24"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1685,7 +1685,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9739a5b6036c7f1be58004a7e398d08b"
+      "2034610b34fa9ed4c11cb9faefc398aa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1712,7 +1712,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b4bce695fd693d0da66e15f9002467fd"
+      "04eea09274164fc2c0ce003833f30f93"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1731,7 +1731,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "0031b7b63042e8313e49006b43afc4bf"
+      "174ddd87fe85eaf3f0a21fea1c7c1bc7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1751,7 +1751,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c11fe14d860d89085410eec7998ad089"
+      "61d774aae6cefa9f2a29cf02eabbf253"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1778,7 +1778,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c16acc7a80bfe4ac0481b675c04f6dcb"
+      "a39889e620623a4121b9edfc53ada214"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1805,7 +1805,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "617bccd338007253a8c2be9f85abf828"
+      "06e0822a38ba1bd5a1230f9185801e11"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1824,7 +1824,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "62e00c635b5bcd8adafd0971f6daf6f8"
+      "0eec3df1e76d6fb195995f1c0807f34e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1851,7 +1851,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "1f4153f15426e0461113ed5e261dc4af"
+      "65a022b12894571d0610dc39beebcb69"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1878,7 +1878,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "0ec660855ac1c2125848e22d8ae61832"
+      "41288489104e4c642418b0b66367a7a9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1897,7 +1897,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "64effb49c9f75f67f9d3f5a4c4b2e196"
+      "0f2a052e961b3f4350bde7a3eb4fe1b6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1917,7 +1917,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "80bd1fe0001f2df243060fe67ac9ff0f"
+      "258dde8e7269630e01337aadff574aba"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1944,7 +1944,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b7e752ce3fe80144bfd07d2d738b835f"
+      "3dec6136f31909d0386f2a177b3b702c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1971,7 +1971,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "00ab1b673da638d1464e2b808e5b4957"
+      "074a63f9f2ec3caf1274bb2135e1a826"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -1990,7 +1990,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "40a2451afb88baec30c1aa8339737818"
+      "4b6ff1768ba0487742425b1b6ac44b5a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2017,7 +2017,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "96211076539fcd4946a73f83f83b48eb"
+      "33daae833cd71f7616642df0ac664a5a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2044,7 +2044,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "3f3b2b917c8b9688d5d89a8e011a7cf4"
+      "f7fc9279c76f78e9f50208310020d9cf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2063,7 +2063,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "545a6a87921c112b1a61648fd277b4ae"
+      "fdf702dc70f2018d1e90567e21b7a027"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2083,7 +2083,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "69943a0544f9ed633eec3d76ae7e31ac"
+      "b5508df347d02077d583248ea98104aa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2103,7 +2103,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "0e70d1f9568acf31379f28eeb987d86f"
+      "067185eab6002c46ae87d1e3070d33f4"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2121,7 +2121,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "1efac9650d79265c80d23c0b8b04abcc"
+      "35e7505bee71a2ea0755ccf18738c421"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2139,7 +2139,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "04e2b8c9954cff9f7654bb58e55ef744"
+      "87736145b03eb04bb5a696e8bd49d9fd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2157,7 +2157,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5ebb15a9116b7234871f0bdb6edd705d"
+      "cd96c637a39943f63dabfa31f4511260"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2175,7 +2175,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "a73bdecb1c8793f35731c7effc38b15d"
+      "25e213f952c41f1f7b4abd6857d24056"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2193,7 +2193,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "59b16d4953e06e42fc1415f313c6e5cf"
+      "ded38ca940000d2afbe03037775c5e74"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2211,7 +2211,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "73b25ba69e48b252a72373aa1be9d8c8"
+      "ec49cdb420a0d66087b699b773fc2cff"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2229,7 +2229,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "8a7ea4e6a710818b23018e58c57cb8ed"
+      "85cb7c261e62476acbeabbe7b261afa0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2247,7 +2247,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "65797d560044ed7862ae37781b37df84"
+      "213619c6eba73338499584479c1cc2ef"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2265,7 +2265,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "a5c419ef48a05c93043af9c4f23b362e"
+      "dc09eee2e94ce88a3ffbaecf45081631"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2292,7 +2292,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9cd806dd92210ac1e0ea7b0c64428c9a"
+      "97f76652e197ff12fc298a420b38a975"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2311,7 +2311,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "76f6291e1cbe073f5c83990a631fde94"
+      "3604c65707a0a8f60b8f506ba1f2d677"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2339,7 +2339,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "58f568cbff45ffcd947b7dbc367cce21"
+      "793665aa0ec39ffaf4dbaa41b26b1782"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2358,7 +2358,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "9734a4795900caae8ef41cd8aebfd37a"
+      "bf9a610e964cb6d5af5e3e9a47510c52"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2386,7 +2386,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "be452f0d3f75928bf77d665d845eb527"
+      "d0a6a07b329554965f2feab544934980"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2405,7 +2405,7 @@
         "refinement_interpretation_Tm_refine_a7a18b3d2bbe32ad1d7773e62663094f"
       ],
       0,
-      "ac410beedfbf7f1252f027a0b6c0f1ac"
+      "8a1b11304cad30c9ffd2c5e33c01a612"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2433,7 +2433,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "310e7d1a37dc70183a690ee97476d973"
+      "4452bdf83c53e4574762beb59c9a269f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2452,7 +2452,7 @@
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488"
       ],
       0,
-      "daa396502d50356bf390cf7d7ca47fc9"
+      "d7d6e0fe8915e415b8a1a4b20f395989"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2480,7 +2480,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a4c54c773b855b96dc638b5380a23e80"
+      "71258a22b2c70f28c166b49e72231b82"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2499,7 +2499,7 @@
         "refinement_interpretation_Tm_refine_8e275cfa492c73f52b5f32fd4e8a7155"
       ],
       0,
-      "bb0a3c1cfa4c7c6e37be94d178d61b1b"
+      "50e8424f3f315bbe815d6186264cce6b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2527,7 +2527,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "23d32fb01dc3fb6e8501444ab18ef790"
+      "e04d167d799307bd10683feab47af05d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2546,7 +2546,7 @@
         "refinement_interpretation_Tm_refine_17842b692fc36ec40a803769d235f928"
       ],
       0,
-      "7580985c282c0fa69482494df9786596"
+      "3b2f73f1d371bc9ba0617e4bab7b2a8d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2574,7 +2574,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "97dcb64acab6da30ade8ade2f44abbe4"
+      "86aaacad3322e69e06d99a79bdd6b6b8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2593,7 +2593,7 @@
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1"
       ],
       0,
-      "16bb1a9e7bef5a35b98ab97982b507a9"
+      "e2badf755644d3b541d5eaf446956804"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2621,7 +2621,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "35729d5ea8091748d709fd14d8834fc8"
+      "915b234c050e5eab91559bc702b9ba31"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2640,7 +2640,7 @@
         "refinement_interpretation_Tm_refine_63951cf891d05f4c4ee21aee034efca6"
       ],
       0,
-      "62f697dbcdd673b687be1bc4fc945355"
+      "efba90c98200d790c88ed9b57e5d4329"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2698,7 +2698,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "c373d0a2e5ed123d2e0c5d11801d9fcf"
+      "d0a065b0fc168571d1e953fc74220870"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2924,7 +2924,7 @@
         "refinement_interpretation_Tm_refine_c57df6b8429bb21e7bb600d91c0a072a"
       ],
       0,
-      "29e1f470d7679e5bb38c7c5b2f53505e"
+      "36ade4150f4307ee66a84c06a40d1341"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2936,7 +2936,7 @@
         "refinement_interpretation_Tm_refine_0ce3e5feae70978690b3685c41bddeaf"
       ],
       0,
-      "6a945e26ae75b88fc58114d5de442b8d"
+      "b406e602d543eb3a792169c89f44f1e4"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2948,7 +2948,7 @@
         "refinement_interpretation_Tm_refine_0ce3e5feae70978690b3685c41bddeaf"
       ],
       0,
-      "163a9bcaa6b9b3a8a915d1350a0b4235"
+      "dafe4525f78c001d398e2d5b65c2711e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2966,7 +2966,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "30951dc2d5c0e4aac5e370f2e8761c47"
+      "5aba875ef87b5aad555682ebb39a94c3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -2984,7 +2984,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5bd9a5d1b11151dac27b4bc8f5b709ba"
+      "620436d38c77879c59b1597013c4d7c6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3002,7 +3002,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "76125bcef3ba2b1d5c72ceb5cfc8e4eb"
+      "146a81377f3224d1898e10f2126e93fd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3020,7 +3020,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "eb08995e369db65b20592057084b784f"
+      "a723c8e5eac1e9df775cc9c37ce6f7c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3038,7 +3038,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "8cc6b92b83e7fc4d483f1d582c69fd2d"
+      "9ca7f93a7a80355e887563d2d00a0399"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3056,7 +3056,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "4e9e86d933244d7f2fd570a031d49838"
+      "eea8b2a20a1a6127f6e0a6496b487306"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3074,7 +3074,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "1ff96c5c8b9694011c11dcbad30658d1"
+      "29d9388ff209010a9e255ec871b2978b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3092,7 +3092,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "30951dc2d5c0e4aac5e370f2e8761c47"
+      "5aba875ef87b5aad555682ebb39a94c3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3110,7 +3110,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5bd9a5d1b11151dac27b4bc8f5b709ba"
+      "620436d38c77879c59b1597013c4d7c6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3128,7 +3128,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "76125bcef3ba2b1d5c72ceb5cfc8e4eb"
+      "146a81377f3224d1898e10f2126e93fd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3146,7 +3146,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "eb08995e369db65b20592057084b784f"
+      "a723c8e5eac1e9df775cc9c37ce6f7c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3164,7 +3164,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "8cc6b92b83e7fc4d483f1d582c69fd2d"
+      "9ca7f93a7a80355e887563d2d00a0399"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3182,7 +3182,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "4e9e86d933244d7f2fd570a031d49838"
+      "eea8b2a20a1a6127f6e0a6496b487306"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3200,7 +3200,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "1ff96c5c8b9694011c11dcbad30658d1"
+      "29d9388ff209010a9e255ec871b2978b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3218,7 +3218,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5d849f752ebb91a5a6ea4c17db4ae7a4"
+      "2631d79d2804d41a2594462dd7888b25"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3236,7 +3236,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "d5203781f334d44d7fca0366dc1a86c4"
+      "6dab0cd7e7abc5a2018510f83771c660"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3254,7 +3254,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "7099dbeb7c4a3bd835d462bc5e997480"
+      "25c2a2b854fc0eadb91d1a2a36f337c8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3272,7 +3272,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "e9851c618b2faae2c3d9dadc67b5f515"
+      "342151d097abf84464ccaf32afd4353f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3290,7 +3290,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "1a8cb3bbce3dbe7faa137b79f6cf714c"
+      "fa0547a6def79f7f174d3131f2bd9eba"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3308,7 +3308,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "d9319a0d1e1f18895be7233bda38bf60"
+      "42aafb49449eb1163f7f19b9bd0088cc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3322,7 +3322,7 @@
         "typing_Libcrux_intrinsics.Avx2.mm256_set1_epi32"
       ],
       0,
-      "3d4dc647b44789bdb70a01585cb1b383"
+      "159ed32c0f0cfe2defbf7367c691e330"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3350,7 +3350,7 @@
         "refinement_interpretation_Tm_refine_968d4372f52c8e7d1be8ecd1e81a45ce"
       ],
       0,
-      "2b59c8c5de34b06723f7b42bfc81e8dc"
+      "a9b33058c0db46036bf34df5d18db45a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3453,7 +3453,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok", "unit_inversion"
       ],
       0,
-      "f21193894b85464b4915df80e6876261"
+      "121025dcca79a7731665a30d891e1270"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3493,7 +3493,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok", "unit_inversion"
       ],
       0,
-      "4a97b1ec89f743d601005f89f7b9466c"
+      "63e4fe497aefeb5ff1d5dff85b45150b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3511,7 +3511,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "3afd1c616f7b87a0ff4aab385e68551a"
+      "c273de99021419ae1c81c7e5833287d5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3529,7 +3529,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "f7f1d2adc43ecdcc32ae330344b02dc4"
+      "a299fe6308ba6e1ab1d4877841fbae43"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3547,7 +3547,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "512ea1dd581ead948a9e8edeb77b7180"
+      "a1249125c6f81438ac5db97bfcd8e573"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3565,7 +3565,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "c2254ce95c06474dc1ab8ec396fc3441"
+      "880050b0db578489292bad91c3a5e8a8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3583,7 +3583,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "e21a044d50b8b0862235bca44f265c89"
+      "6e07d3c54332ff39d98cddad370fb2c7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3601,7 +3601,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "8d5d4209bf47a6a798fb01fce3118b77"
+      "165b5698aa6a4d77e2f3d39d1b94d007"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3619,7 +3619,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "62b21920f09c9070073a043e596ffe2f"
+      "2c7b408888fc21e70851d024e2f1a7da"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3691,7 +3691,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "c74365002e7603801fc215bc18c0fb27"
+      "f30cc21805143e1084c95f98a3801360"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3762,7 +3762,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "040fb63742a22476547fd228bc0dcaac"
+      "639a702860b5694f551d45c7720c2799"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3833,7 +3833,7 @@
         "refinement_interpretation_Tm_refine_a7a18b3d2bbe32ad1d7773e62663094f"
       ],
       0,
-      "85e75c1bec6aad85d7313a4bfa6d0dae"
+      "f9f25fdd3c678abbbd0f354d8a6dfd9d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3904,7 +3904,7 @@
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488"
       ],
       0,
-      "ab6f7f3e358600cde068dd8b5bbc9757"
+      "6cd173aaae86d0c8f96ab944a43f5c2b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -3975,7 +3975,7 @@
         "refinement_interpretation_Tm_refine_8e275cfa492c73f52b5f32fd4e8a7155"
       ],
       0,
-      "481af87050155fe900a712ea7525a642"
+      "ade99636c6655419113616b1311eb627"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4046,7 +4046,7 @@
         "refinement_interpretation_Tm_refine_17842b692fc36ec40a803769d235f928"
       ],
       0,
-      "9dac6a134daaea8d4ac8384cdea72427"
+      "ab988f3502cf1f4f47857e9518f92048"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4117,7 +4117,7 @@
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1"
       ],
       0,
-      "91558143cee1f4f9c23570da79c4ca0f"
+      "5993af92375749fabf8b5fbfb03c3699"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4188,7 +4188,7 @@
         "refinement_interpretation_Tm_refine_63951cf891d05f4c4ee21aee034efca6"
       ],
       0,
-      "509657b12118e88f15fbb125bbcb2d0c"
+      "2464be0049a1528ae41f556394a597ad"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4223,7 +4223,7 @@
         "refinement_interpretation_Tm_refine_ef5ac506320d900a9637093664a1266d"
       ],
       0,
-      "8138f31edd656a21cfde9365078528e8"
+      "fc79019506069200b7fcea69e3cfac24"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4241,7 +4241,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "68914944d256825a6cb6caac3cec5480"
+      "51ec9818053016152271f5dfaf843e45"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4259,7 +4259,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "158b6d7b6ee20cb2445d2760fba73e92"
+      "aa4c42ee5aeb5275a7bb9107ce246551"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4277,7 +4277,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "066a46625668483e309f872b00741a64"
+      "160759af64a63184fd5a79c69a1b80df"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4295,7 +4295,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "43f66f976e4cd7eee21be87e970e7bde"
+      "70a5b1a733d3e670a1e081d35e696422"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4313,7 +4313,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "c61014179f1ae14e17e9906c4fef68b9"
+      "2f32c351c617b4556a1822d582b2e001"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4358,7 +4358,7 @@
         "refinement_interpretation_Tm_refine_825cee032d756589e71a200aa163314d"
       ],
       0,
-      "4d4e684dc54ce4010b1e3b08f858535a"
+      "2b23e63fd06f2f97a273eb80d0b1bcb1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4377,7 +4377,7 @@
         "refinement_interpretation_Tm_refine_825cee032d756589e71a200aa163314d"
       ],
       0,
-      "8122cefe4f54746a4e1769662b6bd94c"
+      "c737b0751434e31bd737f03bed021bcf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4395,7 +4395,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "68914944d256825a6cb6caac3cec5480"
+      "51ec9818053016152271f5dfaf843e45"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4413,7 +4413,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "158b6d7b6ee20cb2445d2760fba73e92"
+      "aa4c42ee5aeb5275a7bb9107ce246551"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4431,7 +4431,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "066a46625668483e309f872b00741a64"
+      "160759af64a63184fd5a79c69a1b80df"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4449,7 +4449,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "43f66f976e4cd7eee21be87e970e7bde"
+      "70a5b1a733d3e670a1e081d35e696422"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4467,7 +4467,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "c61014179f1ae14e17e9906c4fef68b9"
+      "2f32c351c617b4556a1822d582b2e001"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4512,7 +4512,7 @@
         "refinement_interpretation_Tm_refine_825cee032d756589e71a200aa163314d"
       ],
       0,
-      "4d4e684dc54ce4010b1e3b08f858535a"
+      "2b23e63fd06f2f97a273eb80d0b1bcb1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4531,7 +4531,7 @@
         "refinement_interpretation_Tm_refine_825cee032d756589e71a200aa163314d"
       ],
       0,
-      "8122cefe4f54746a4e1769662b6bd94c"
+      "c737b0751434e31bd737f03bed021bcf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4549,7 +4549,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "6ea746e9a2e83922cbd7d0cc13da387d"
+      "525e52962a90f89cb297f756e7dea003"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4567,7 +4567,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "9458698cc4e5de1ac6cea0f876c9b159"
+      "6274701fda336eedd1f79108f9e5f186"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4581,7 +4581,7 @@
         "typing_Libcrux_intrinsics.Avx2.mm256_set1_epi32"
       ],
       0,
-      "1ca006f1d8c991e556725e8d84d9d1a7"
+      "ea22addfcf84038790416c74ae694f39"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4613,7 +4613,7 @@
         "refinement_interpretation_Tm_refine_e175e395380a94a517e4c3c1fb28ca8f"
       ],
       0,
-      "1059a09ebd2f40c3563b8ed9740c0187"
+      "7e5a66bc1fd2c5ff2c2c4b6a20394e9b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4638,7 +4638,7 @@
         "unit_inversion"
       ],
       0,
-      "f145277ee5a2793ae997d069e85f75aa"
+      "9cee5a685b47cc3379eef0d9f36d46f2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4656,7 +4656,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "020792e37e0354e12794388df9990e79"
+      "592747e9c9ad512fe183f528f1acc162"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4674,7 +4674,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "8c42ce3b8d378fe4f4253d1cbd662792"
+      "5e3ba9b4d54c7f1bbc3f35af456d1011"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4692,7 +4692,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "fbdfa831cfb0378aae914dd9ce98257a"
+      "fd772b91517f02ad05994457abe8b546"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4710,7 +4710,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "6e849ab717e84711ca09965f84a54bbf"
+      "53cfa0f026292ab48b526f365c421691"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4747,7 +4747,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "613ae553f063c6a62c2d6426f4cba51d"
+      "02af177c1f1d2a21fc2af0f79bb58f4a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4784,7 +4784,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "8dd86313a117bd886de41ed427f872a4"
+      "963fd660a135ec742a843f7353db6d46"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4821,7 +4821,7 @@
         "refinement_interpretation_Tm_refine_eaa7f1aa53c24bc06c8066e92a3bed7a"
       ],
       0,
-      "4aa80cb7be4191f351a0bc9b26fcf744"
+      "a74ba31fef123ef86172187817d55b98"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4858,7 +4858,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "7e9b652cd36f38eee16f63a75a983c70"
+      "0943fdf83c87496127a0aaafcb12fea4"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4895,7 +4895,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "e1ef767b39d938d94113cd09839b7065"
+      "860d0791c0f31466874aa96fb5bb67db"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4932,7 +4932,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "c5dbc7e1525d413279ca01dc4d12fb61"
+      "785ea0cc901d7a00f944188f8012ec15"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -4969,7 +4969,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "7d4bd8191010adbeda25fb7923aeaca9"
+      "53764cc3e01db6b8166c06958b1c2aff"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5006,7 +5006,7 @@
         "refinement_interpretation_Tm_refine_de73c614865eb806ba4a3e273c1f64f8"
       ],
       0,
-      "36d0dbf4104c023ae931de0180321ab0"
+      "1853ed6634dd7104a223d14b8ce8bbe7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5024,7 +5024,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "861e14d2898e3db08e99c5f2f181730f"
+      "b2a2fa34bcc7c6bac513904d00b859e2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5042,7 +5042,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "e1159a412f7e2d5e84d2cce8592bb529"
+      "149c2a6199fb912f5d6fde5827edb4b0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5085,7 +5085,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "5f6a7beb0e258fa503efd97d8f8bf3c5"
+      "25e5c9581279b1576da079e155fc8f9e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5099,7 +5099,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "31a3f7d7e52837eb6d49ff828831ad03"
+      "e9d9ebac8137802e3d6dea39eaf1db73"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5113,7 +5113,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "1a82e644e5f9a16555086dcd6ce93ac4"
+      "711e4cf136b158dd035f50baeebeeb04"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5156,7 +5156,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "3ba9fd964ba6d7d6694ca0b802a972b9"
+      "955e65c6d26cc58c4291265a76491c3b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5170,7 +5170,7 @@
         "refinement_interpretation_Tm_refine_c6d8cad8fa9660ee7f000f778bf81386"
       ],
       0,
-      "bd657ea523026ed5a33b0013ed91f4b3"
+      "6f6dcf23b24bc8509d06bc04da367002"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5184,7 +5184,7 @@
         "refinement_interpretation_Tm_refine_c6d8cad8fa9660ee7f000f778bf81386"
       ],
       0,
-      "91076e27a95f58c35a8691fd6137ba0c"
+      "f48f1108af1de732b2e99ace00e7dc21"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5227,7 +5227,7 @@
         "refinement_interpretation_Tm_refine_a7a18b3d2bbe32ad1d7773e62663094f"
       ],
       0,
-      "d6062391cf28e73f9c479c4012766e5e"
+      "d886ca06fa7b09e40c80528f4e5b9730"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5241,7 +5241,7 @@
         "refinement_interpretation_Tm_refine_eaa7f1aa53c24bc06c8066e92a3bed7a"
       ],
       0,
-      "ff760a9df47bc38b6048a61a541c2ccf"
+      "f0ee908a2ea7585cd975e3d03c2ac825"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5255,7 +5255,7 @@
         "refinement_interpretation_Tm_refine_eaa7f1aa53c24bc06c8066e92a3bed7a"
       ],
       0,
-      "828f10bd05ce829fe8872c396f6544d3"
+      "e827a733081df1a12f7267cb5d7e3cb0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5298,7 +5298,7 @@
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488"
       ],
       0,
-      "6e53d2e400377799d3872a52e61288c3"
+      "a762d1b24f1ae4b495c9e6b1108c0391"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5312,7 +5312,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "85fe29e8b6b6baf69bbb1622b1b0e42b"
+      "2f6aba8643ee93c043d317a0c574fd40"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5326,7 +5326,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "fe37b6e61543305b32603b106e10465a"
+      "fd552eb303298b69dfd88d3c579270c5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5369,7 +5369,7 @@
         "refinement_interpretation_Tm_refine_8e275cfa492c73f52b5f32fd4e8a7155"
       ],
       0,
-      "75363e98e381a524ee38a39bd0378fbd"
+      "b75e6f81517962239cdd07f7b7bd49e3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5383,7 +5383,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "d4827aeee7f0b30172fd729ede36bbd5"
+      "99c42fb5ec5c36d3aa255be1fbbc4b7d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5397,7 +5397,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "51ca5be869903f5420696967b6c77024"
+      "9a31b73b5a080db89b19f9d5b932e240"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5440,7 +5440,7 @@
         "refinement_interpretation_Tm_refine_17842b692fc36ec40a803769d235f928"
       ],
       0,
-      "1f2c8a0e93d17fd436f6a829fe890079"
+      "5712fad6402c363afe9a1845d1764fe5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5454,7 +5454,7 @@
         "refinement_interpretation_Tm_refine_629cf54f11303b6137689f246e8b3757"
       ],
       0,
-      "f6f98467b30a0e5147358bb3c564170e"
+      "f6eaf34f93a17ae4820163c9a5e054ba"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5468,7 +5468,7 @@
         "refinement_interpretation_Tm_refine_629cf54f11303b6137689f246e8b3757"
       ],
       0,
-      "519d45092f1ea7a2a8796d2a5ba2e021"
+      "853376104cde44723819ff2089422477"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5511,7 +5511,7 @@
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1"
       ],
       0,
-      "d7c5945c3a22144e71046657621af36d"
+      "902398382c31cbd269afc69a301ffd06"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5525,7 +5525,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "4c0eb038a9dc1ab829384321dec296b8"
+      "3f83ad404c129077c39a407f1a783b3d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5539,7 +5539,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "662b125cdca9ec78ee3e1951938f1085"
+      "93ec14806a24c86f3b2ee3ae46e8c378"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5582,7 +5582,7 @@
         "refinement_interpretation_Tm_refine_63951cf891d05f4c4ee21aee034efca6"
       ],
       0,
-      "aa93b2cdacf318f4dcd66edd179c125b"
+      "1e7d99fd088445f9b135f15935825d17"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5596,7 +5596,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "a9d57136261846ee1bbe0877be6063d2"
+      "db6635e40265a875e989e178aaec30a8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5610,7 +5610,7 @@
         "refinement_interpretation_Tm_refine_53352b2d1419d01672853d4e99709156"
       ],
       0,
-      "a006ac15f47d1f377be8c2263785f5bf"
+      "61d7173c1dc29906bae564d45edae577"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5737,7 +5737,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "287ea49b555be467d95468cecc280679"
+      "bb6dbe7c47e2ba50d80adca0123b75ed"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5878,7 +5878,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "80cefaced51e10df700edc39d699c916"
+      "fafe352bc0d430d2f0047f2706c03705"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5905,7 +5905,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "c67829339afb64b99f515ddce9bc6f11"
+      "6fd2c0b891b76ba8c813f9718054a59b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.compute_hint",
@@ -5981,7 +5981,7 @@
         "unit_inversion", "unit_typing"
       ],
       0,
-      "6db01a200333d98e8ee1fafab2e2d77c"
+      "5d7bd6c88d245801cc0d1f70e32bc1c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_use_one_hint_via_spec",
@@ -6017,7 +6017,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "c89ebc2d06e0e21d0d2c0676256d42a4"
+      "651c13f03d2adc7b1c909ddc7f6b85f2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6065,7 +6065,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "e98ddeb37334e7851e66dc1d55703d44"
+      "f7ee39a825c8713f542b6a8d49e75903"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6092,7 +6092,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4ac87de33065108985b4b284c79afb71"
+      "9e849ab45c919a99c41449d555152372"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6111,7 +6111,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "986105915b6e8a4d32a20bd19f9a851f"
+      "2fa4e5b6c5a082be9d47d8dbbef3592d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6129,7 +6129,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "3087b178778d3231cd7ff8062634483c"
+      "183ad46c091597a14741905373bd410f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6147,7 +6147,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "d692065a0404bbb08bac6e47614365ba"
+      "8f5f6ab08a05823eb9d8a7e804934826"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6167,7 +6167,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "28a330565e8944feabccb2066ba59136"
+      "aed85b97238393c29fa16d43af62a2aa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6194,7 +6194,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "665692009ce1f61a42c6c3df503ce2cb"
+      "ac6522eff5df990a0ceb920cc4e26ba1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6221,7 +6221,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "73dab95c458e43c221e65951ee69620f"
+      "f802b24a89d7c0c90582dc229ea13ef2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6240,7 +6240,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "afc933efd3ac635852566ab1d0bdd4bf"
+      "501139ada413e9f5fa6eb407a9cb08ac"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6258,7 +6258,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "494b69a961be4a95caa868c24728d878"
+      "68fd5e81f5ccd90c87c1a23dd1dec006"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6276,7 +6276,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "316a0b0e9a4a3683752c0c401972494c"
+      "592fb815be3cc20805def4ae22a85eb6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6296,7 +6296,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a07dae9d0d75ddf92e0d46400af6484f"
+      "4cd2855a6580bbbad5f46b655c6a5c3e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6318,7 +6318,7 @@
         "refinement_interpretation_Tm_refine_ab1639d116264efb52f6b6040c7f19fd"
       ],
       0,
-      "9e2d02277ab123ffb77dca7f35523154"
+      "2db83e20d8c4488f6086879e66d07ef5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6336,7 +6336,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "c7ed07f55a9072f41c2bd5b4007a87a4"
+      "f6f56e67935271719731ac290771af6f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6357,7 +6357,7 @@
         "refinement_interpretation_Tm_refine_ab1639d116264efb52f6b6040c7f19fd"
       ],
       0,
-      "d9a66d2ec8d16b84268171eb6c9160ce"
+      "31ab21cd87f070bccff501a77726ca70"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6375,7 +6375,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5b7a3e69468e4d62916c28da313d5b51"
+      "a03c6f71f23a92fa235f3bbeea0877e9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6393,7 +6393,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "44746871a39d63925edede211ad16e63"
+      "eb7f30cc5aa70d27306e405fd28a797e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6417,7 +6417,7 @@
         "refinement_interpretation_Tm_refine_ab1639d116264efb52f6b6040c7f19fd"
       ],
       0,
-      "4326ba716484b64310a845167155b035"
+      "e000c7576c49de022566b722c1b2bc02"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6441,7 +6441,7 @@
         "refinement_interpretation_Tm_refine_ab1639d116264efb52f6b6040c7f19fd"
       ],
       0,
-      "5c00a97c43996b6130ddccab10a43f3a"
+      "d4189c8635f65bbd26edc7ddd3971234"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6459,7 +6459,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "0661ff0ead54e2661efe4b9ac1347a88"
+      "4dc99f79274555df5dcf2f171091d037"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6477,7 +6477,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "0284cac4f9d8868a3d95da4f797d0e4f"
+      "67cf74e14d4da7036a943347da1153cf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6539,7 +6539,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "057a035ef6d2a7a25575f7d408f71220"
+      "2305020436bd684cf05ef7f2c9254aa5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6580,7 +6580,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "057a035ef6d2a7a25575f7d408f71220"
+      "2305020436bd684cf05ef7f2c9254aa5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6621,7 +6621,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "057a035ef6d2a7a25575f7d408f71220"
+      "2305020436bd684cf05ef7f2c9254aa5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6641,7 +6641,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "19a2098d73ea866a21d5e19931713b30"
+      "537d160deae46187d5047d5afc49a98b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6661,7 +6661,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "19a2098d73ea866a21d5e19931713b30"
+      "537d160deae46187d5047d5afc49a98b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6681,7 +6681,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "19a2098d73ea866a21d5e19931713b30"
+      "537d160deae46187d5047d5afc49a98b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6701,7 +6701,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "852dcd19aafeb916fdd3bb7b01d23786"
+      "5bcfb3b2a95007820aaf155323b7cbfa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6721,7 +6721,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8563e113d85aac210abcd51161000b76"
+      "42dd22f1d7a36479c130e0320e9e7cb5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6741,7 +6741,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "cb7f2e93cc922ac4454ce5c48665432f"
+      "8b72754a1b8738d956da4a1e5ae69430"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6753,7 +6753,7 @@
         "refinement_interpretation_Tm_refine_46f92e8988e11b1ed1ea50a5e8cde3b7"
       ],
       0,
-      "e8a918da4c6b09d1bbb5bba20cb1778c"
+      "cddfa0feaaa4ba46df7b3dc82bccc045"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6765,7 +6765,7 @@
         "refinement_interpretation_Tm_refine_46f92e8988e11b1ed1ea50a5e8cde3b7"
       ],
       0,
-      "2867644d5326a89e56f50c58d5a52429"
+      "b73fa110ca807c526bf6f74d03caba48"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6785,7 +6785,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "46729753108cf602dc0b89f17576418e"
+      "ac833a078b30d3e7b1ba42dfb371d36e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6805,7 +6805,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "46729753108cf602dc0b89f17576418e"
+      "ac833a078b30d3e7b1ba42dfb371d36e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6825,7 +6825,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "46729753108cf602dc0b89f17576418e"
+      "ac833a078b30d3e7b1ba42dfb371d36e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6845,7 +6845,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "95d403524f87d90c1b14c7c6105467df"
+      "298b49acd1632e8aefccee8efe6d5127"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6865,7 +6865,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "6fd91e9500efd809f81eb48f6f28a1cf"
+      "223e964826edc4c4687e28aaa53967e1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6885,7 +6885,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "3ff6d8ec07e4be2016c3f374c511a4d8"
+      "0ab910aba4179f415189c638c439f66e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6905,7 +6905,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8d76566b635fe6ff8f3b53698d4ad088"
+      "82badf711f207b5ffce6b9d9bc0cd6a1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6925,7 +6925,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "68e246a2ea635aa10c9a5e6db941cd1a"
+      "0bd482625e2e8d504b8e3f5da3780372"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6945,7 +6945,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "68e246a2ea635aa10c9a5e6db941cd1a"
+      "0bd482625e2e8d504b8e3f5da3780372"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -6980,7 +6980,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "346d96d835c8c18967d3743551a10288"
+      "55b5102ae368c3103dfdc681a0baeb9f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7000,7 +7000,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "abd611c5ed9de8d26caba032f70654ca"
+      "015c1510b9a6d4b1c1bb445b33434c76"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7020,7 +7020,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c77b31db615d85a4ebb433b07b974173"
+      "4c8fceaeb64978976af5edf3e098541c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7042,7 +7042,7 @@
         "refinement_interpretation_Tm_refine_f02127c44d9b2b6c8814b3f9350a9928"
       ],
       0,
-      "7bd5d906a939e6ce06dfdff4cb010ddb"
+      "7191dfd919b68a973933cf4f715e25cf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7062,7 +7062,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9fc9e590a6f2bff975e746e07fcadafc"
+      "1280c286012869e6ab6ce43ec1b31b33"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7082,7 +7082,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9dc331b799f760272fb166001e94bdd7"
+      "6652dd52e4213cbeccae0a0fa9824b71"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7102,7 +7102,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "7315031b1cad11bbabd953ceaf3141aa"
+      "3ada51ef60a94d225628b3c8458b5263"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7122,7 +7122,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "321aab653898d4134cedfb07a594cd2d"
+      "6f63afcf5bffb6229e625815d905962e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7142,7 +7142,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8e2df6cbcfafb4af9a0464aace0093df"
+      "013537f01452f525d0143aa1f1bec3bc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7162,7 +7162,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "321aab653898d4134cedfb07a594cd2d"
+      "6f63afcf5bffb6229e625815d905962e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7182,7 +7182,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8e2df6cbcfafb4af9a0464aace0093df"
+      "013537f01452f525d0143aa1f1bec3bc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7202,7 +7202,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "e76726ad99907a27d3ea27a7d9a438ad"
+      "ce6c124dc81424af4e4c213dbbea1356"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7231,7 +7231,7 @@
         "refinement_interpretation_Tm_refine_f02127c44d9b2b6c8814b3f9350a9928"
       ],
       0,
-      "13fb464690af5f6880cd69d73128f39c"
+      "4c31a37f873dc44e7b255ac29b6c3f3e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7251,7 +7251,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "e7c15f933db52ddb765af1271b7696e9"
+      "9afabd57de59bd8035f66ecbaad57725"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7271,7 +7271,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4b2c7cfba2e8a37f949573495be9333d"
+      "a8fdcba6b933333f98f06e081e418275"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7291,7 +7291,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c8216d817855aaa6b2d70f113a7fae1a"
+      "85dd28edf34b21a435d30c74eeddad3b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7311,7 +7311,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "447e82f566f3a56e6af059c61e1426e9"
+      "030db4b82d7292f2a13d356236498bc8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7331,7 +7331,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "72797223b540440f5fc6dd8310638f90"
+      "b30d51edda73b4b8e93ffb4730d1fbfa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7351,7 +7351,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "447e82f566f3a56e6af059c61e1426e9"
+      "030db4b82d7292f2a13d356236498bc8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7491,7 +7491,7 @@
         "unit_typing"
       ],
       0,
-      "10bd9deecc8bfbc6dcf2bc39c55012c0"
+      "4d0793a2a35f18c53a031627206e2241"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7626,7 +7626,7 @@
         "unit_typing"
       ],
       0,
-      "02919e95f0da74ec14ff1cf76bcfa7d3"
+      "d2f03ea8a299b384db174490d377c5fc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7646,7 +7646,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8a56e695b2ddba85d5bbddea19a03b4b"
+      "b5feeff6db0f5b9574183061deab0b0a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7666,7 +7666,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8a56e695b2ddba85d5bbddea19a03b4b"
+      "b5feeff6db0f5b9574183061deab0b0a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7698,7 +7698,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "5d636c8eef798a8fc8e67b46d54a75ad"
+      "f776781869af0c95ccd6fa2353792e4b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7718,7 +7718,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b2269c83800d08023ada5682dec27ed7"
+      "04b07b9f6aefa363c0da598a07e0f33c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7738,7 +7738,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "18da8bea622352060d16bff8b949d0cf"
+      "d3b6ec24647d6dc274f75942ac2354b1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7758,7 +7758,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b2269c83800d08023ada5682dec27ed7"
+      "04b07b9f6aefa363c0da598a07e0f33c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -7895,7 +7895,7 @@
         "unit_typing"
       ],
       0,
-      "ea18018873ae4a9d51c2d1b7dbef6e34"
+      "fe64deff94dcf44e8a52aef3adfb642b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8030,7 +8030,7 @@
         "unit_typing"
       ],
       0,
-      "57399eba034c841ed878fe8da3715006"
+      "20a4d92feef7a04bb3e7742728025c62"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8050,7 +8050,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b94b76cf70f8dc38d8b55482475dceb7"
+      "2ee31dc285304c342479928152957301"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8070,7 +8070,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "0a6fbda0222196a13a7e6968971aec80"
+      "996bb0061c51f5671c8893272f17e8e0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8099,7 +8099,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "71d6d9f9886f8e29366b02c0236b0eec"
+      "cbd0ecdea35b3186fb892f0f122092dc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8122,7 +8122,7 @@
         "refinement_interpretation_Tm_refine_765acd8be5f484b2025296b285736332"
       ],
       0,
-      "e56c9f4760c1fa6eb39363469b502b5f"
+      "982c543a3c111d79b09a33e64f645c02"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8145,7 +8145,7 @@
         "refinement_interpretation_Tm_refine_765acd8be5f484b2025296b285736332"
       ],
       0,
-      "8a9d39da9d9536006a34b3352b64089f"
+      "4e79abc76b8aed3ee4800c7475eab40f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",
@@ -8174,7 +8174,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6f92cf551b7eba5bd0c439d679cce2a0"
+      "b844206e2d5ce3ea01fa3718a367bfad"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic.uuse_hint",

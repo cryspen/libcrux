@@ -20,8 +20,6 @@ mod ml_dsa_generic;
 mod ntt;
 mod polynomial;
 mod pre_hash;
-#[cfg(hax)]
-mod proof_utils;
 mod sample;
 mod samplex4;
 mod simd;
