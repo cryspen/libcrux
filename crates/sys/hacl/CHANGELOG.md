@@ -7,6 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependency `libcrux-platform`
+- [#1280](https://github.com/celabshq/libcrux/pull/1280): Update dependency `libcrux-platform`
 
 ## [0.0.2-pre.2] (2023-12-01)

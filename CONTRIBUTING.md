@@ -75,7 +75,7 @@ Other crates (specifically `libcrux-ml-kem` and `libcrux-ml-dsa`) are verified u
 To re-run proofs on these crates, follow the instructions in their Readme files.
 These proofs depend on specific versions of the `hax` binary, the `hax-lib` proof and annotations library, and the `fstar` proof assistant.
 
-The version of `hax` is set globally for the `libcrux` workspace via the `hax-lib` Cargo dependency.
+At the moment, we use `hax` and `hax-lib` at version `0.3.7`, so you may have to run `cargo update hax-lib --precise 0.3.7` to fetch that version, because your local one may be more recent.
 The developer is expected to install the `hax` binary at the same version as `hax-lib` by cloning the [hax repository](https://github.com/hacspec/hax),
 checking out the revision corresponding to the `hax-lib` version release, and running `./setup.sh` as documented in the hax Readme.
 
@@ -83,7 +83,7 @@ We use the same version throughout libcrux, and inconsistencies can lead to veri
 The F\*  proofs use a [Makefile](./fstar-helpers/Makefile.generic), which relies on Cargo and the workspace's version of `hax-lib` to locate F\* libraries.
 Specifically, those under the [`proof-libs` directory in hax-lib](https://github.com/cryspen/hax/tree/main/hax-lib/proof-libs).
 
-If you need to work with a specific version of `hax-lib` or `proof-libs`, update the `hax-lib` dependency in the workspace's `Cargo.toml`.  
+If you need to work with a different version of `hax-lib` or `proof-libs`, update the `hax-lib` dependency in the workspace's `Cargo.toml`.
 You may use a [path dependency](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies), or a [Git dependency](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories) for development purposes.
 If your pull request includes such a non-default dependency (e.g., a Git or path-based reference), **please mention it clearly in the PR description**.
 Using a non-[crates.io](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-cratesio) dependency in a PR is acceptable for development. However, **before merging**, the dependency must be updated to point to a released version of `hax`.

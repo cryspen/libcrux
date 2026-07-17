@@ -6,6 +6,7 @@ use serde::{self, Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::BufReader;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
 use hpke::prelude::*;
@@ -13,6 +14,12 @@ use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
 use hpke_rs_crypto::{types::*, HpkeCrypto};
 use hpke_rs_libcrux::HpkeLibcrux;
 
+/// A single HPKE known-answer test vector.
+///
+/// Some fields are optional to accommodate the different test vector formats we
+/// consume: the newer vectors (e.g. `test_vectors2.json`) omit the ephemeral key
+/// pair (`skEm`/`pkEm`) and the intermediate `key_schedule_context`/`secret`
+/// values, and add a `suite_id`.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
 struct HpkeTestVector {
@@ -26,16 +33,17 @@ struct HpkeTestVector {
     ikmE: String,
     skRm: String,
     skSm: Option<String>,
-    skEm: String,
+    skEm: Option<String>,
     psk: Option<String>,
     psk_id: Option<String>,
     pkRm: String,
     pkSm: Option<String>,
-    pkEm: String,
+    pkEm: Option<String>,
     enc: String,
     shared_secret: String,
-    key_schedule_context: String,
-    secret: String,
+    suite_id: Option<String>,
+    key_schedule_context: Option<String>,
+    secret: Option<String>,
     key: String,
     base_nonce: String,
     exporter_secret: String,
@@ -60,7 +68,11 @@ struct ExportsKAT {
     exported_value: String,
 }
 
-fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
+/// Run the known-answer tests for all `tests` supported by the `Crypto` backend,
+/// and return the number of test vectors that were actually executed
+/// (i.e. not skipped because the backend doesn't support the ciphersuite).
+fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) -> usize {
+    let executed = AtomicUsize::new(0);
     // Replace into_par_iter() with into_iter() to run tests sequentially.
     tests.into_par_iter().for_each(|test| {
         println!(
@@ -107,14 +119,27 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
             aead_id
         );
 
+        // This vector is supported and will run all its assertions below.
+        executed.fetch_add(1, Ordering::Relaxed);
+
         // Init HPKE with the given mode and ciphersuite.
         let mut hpke = Hpke::<Crypto>::new(mode, kem_id, kdf_id, aead_id);
 
         // Set up sender and receiver.
         let pk_rm = HpkePublicKey::new(hex_to_bytes(&test.pkRm));
         let sk_rm = HpkePrivateKey::new(hex_to_bytes(&test.skRm));
-        let pk_em = HpkePublicKey::new(hex_to_bytes(&test.pkEm));
-        let sk_em = HpkePrivateKey::new(hex_to_bytes(&test.skEm));
+        let pk_em = hex_to_bytes_option(test.pkEm);
+        let pk_em = if pk_em.is_empty() {
+            None
+        } else {
+            Some(HpkePublicKey::new(pk_em))
+        };
+        let sk_em = hex_to_bytes_option(test.skEm);
+        let sk_em = if sk_em.is_empty() {
+            None
+        } else {
+            Some(HpkePrivateKey::new(sk_em))
+        };
         let pk_sm = hex_to_bytes_option(test.pkSm);
         let pk_sm = if pk_sm.is_empty() {
             None
@@ -166,8 +191,10 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
         assert_eq!(sk_rm, my_sk_r);
         assert_eq!(pk_rm, my_pk_r);
         let (my_sk_e, my_pk_e) = hpke.derive_key_pair(&ikm_e).unwrap().into_keys();
-        assert_eq!(sk_em, my_sk_e);
-        assert_eq!(pk_em, my_pk_e);
+        if let (Some(sk_em), Some(pk_em)) = (&sk_em, &pk_em) {
+            assert_eq!(sk_em, &my_sk_e);
+            assert_eq!(pk_em, &my_pk_e);
+        }
         if let (Some(sk_sm), Some(pk_sm)) = (sk_sm, pk_sm) {
             let (my_sk_s, my_pk_s) = hpke.derive_key_pair(&ikm_s).unwrap().into_keys();
             assert_eq!(sk_sm, &my_sk_s);
@@ -237,15 +264,6 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
             let ptxt_out = receiver_context.open(&aad, &ctxt_out).unwrap();
             assert_eq!(ptxt_out, ptxt);
 
-            // Test single-shot API self-test
-            let (enc, ct) = hpke
-                .seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm)
-                .unwrap();
-            let ptxt_out = hpke
-                .open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm)
-                .unwrap();
-            assert_eq!(ptxt_out, ptxt);
-
             // Test KAT receiver context open
             let ptxt_out = receiver_context_kat.open(&aad, &ctxt_kat).unwrap();
             assert_eq!(ptxt_out, ptxt);
@@ -253,6 +271,21 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
             // Test KAT seal on direct_ctx
             let ct = direct_ctx.seal(&aad, &ptxt).unwrap();
             assert_eq!(ctxt_kat, ct);
+        }
+
+        // Test single-shot API self-test
+        if let Some(encryption) = test.encryptions.first() {
+            let aad = hex_to_bytes(&encryption.aad);
+            let ptxt = hex_to_bytes(&encryption.pt);
+            // Cloning the Hpke object renews the test PRNG.
+            let mut hpke = hpke.clone();
+            let (enc, ct) = hpke
+                .seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm)
+                .unwrap();
+            let ptxt_out = hpke
+                .open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm)
+                .unwrap();
+            assert_eq!(ptxt_out, ptxt);
         }
 
         // Test KAT on direct_ctx for exporters
@@ -272,25 +305,59 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
             assert_eq!(export_value, exported_secret);
         }
     });
+    executed.into_inner()
 }
 
 #[test]
 fn kats_rust_crypto() {
-    run::<HpkeRustCrypto>();
+    // The KEMs the RustCrypto backend is expected to run KATs for. All AEADs and
+    // KDFs present in the test vectors are supported by both backends, so the
+    // KEM is the only thing that determines whether a vector is exercised.
+    #[allow(unused_mut)]
+    let mut kems = vec![
+        KemAlgorithm::DhKem25519,
+        KemAlgorithm::DhKemP256,
+        KemAlgorithm::DhKemK256,
+        KemAlgorithm::DhKemP384,
+    ];
+    #[cfg(feature = "experimental")]
+    kems.extend([
+        KemAlgorithm::XWingDraft06,
+        KemAlgorithm::MlKem768,
+        KemAlgorithm::MlKem1024,
+    ]);
+    run::<HpkeRustCrypto>(&kems);
 }
 
 #[test]
 fn kats_libcrux() {
-    run::<HpkeLibcrux>();
+    // The KEMs the libcrux backend is expected to run KATs for. See the note in
+    // `kats_rust_crypto` on why only the KEM matters.
+    #[allow(unused_mut)]
+    let mut kems = vec![
+        KemAlgorithm::DhKem25519,
+        KemAlgorithm::DhKemP256,
+        KemAlgorithm::XWingDraft06,
+    ];
+    #[cfg(feature = "libcrux-rustcrypto-p-curves")]
+    kems.extend([KemAlgorithm::DhKemP384, KemAlgorithm::DhKemP521]);
+    #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+    kems.extend([KemAlgorithm::MlKem768, KemAlgorithm::MlKem1024]);
+    run::<HpkeLibcrux>(&kems);
 }
 
-fn run<Crypto: HpkeCrypto + 'static>() {
+fn run<Crypto: HpkeCrypto + 'static>(supported_kems: &[KemAlgorithm]) {
     let _ = pretty_env_logger::try_init();
-    let files = vec!["tests/test_vectors.json", "tests/test_vectors_k256.json"];
-    for file in files {
-        let file = match File::open(file) {
+    let files = vec![
+        "tests/test_vectors.json",
+        "tests/test_vectors2.json",
+        "tests/test_vectors_k256.json",
+    ];
+    let mut total_executed = 0;
+    for path in files {
+        let file = match File::open(path) {
             Ok(f) => f,
-            Err(_) => panic!("Couldn't open file {}.", file),
+            Err(_) => panic!("Couldn't open file {}.", path),
         };
         let reader = BufReader::new(file);
         let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
@@ -298,15 +365,47 @@ fn run<Crypto: HpkeCrypto + 'static>() {
             Err(e) => panic!("Error reading file.\n{:?}", e),
         };
 
+        // We know upfront exactly which vectors this backend should run: those
+        // whose KEM it supports. Anything else is skipped.
+        let expected = tests
+            .iter()
+            .filter(|t| {
+                KemAlgorithm::try_from(t.kem_id)
+                    .map(|kem| supported_kems.contains(&kem))
+                    .unwrap_or(false)
+            })
+            .count();
+
+        // Run the actual KAT.
         let now = Instant::now();
-        kat::<Crypto>(tests.clone());
+        let executed = kat::<Crypto>(tests.clone());
         let time = now.elapsed();
+
+        assert_eq!(
+            executed,
+            expected,
+            "{}: expected {} KAT vectors to run for {}, but {} ran",
+            path,
+            expected,
+            Crypto::name(),
+            executed
+        );
+        total_executed += executed;
+
         log::info!(
             "Test vectors with {} took: {}s",
             Crypto::name(),
             time.as_secs()
         );
     }
+
+    // Guard against all files silently loading nothing / every vector being
+    // skipped, which would make the test pass without checking anything.
+    assert!(
+        total_executed > 0,
+        "No KAT vectors ran at all for {}",
+        Crypto::name()
+    );
 }
 
 #[cfg(feature = "serialization")]
@@ -354,10 +453,4 @@ fn test_serialization() {
             }
         }
     }
-
-    // let mode: Mode = Mode::Base;
-    // let kem_id: kem::Mode = kem::Mode::DhKemP256;
-    // let kdf_id: kdf::Mode = kdf::Mode::HkdfSha256;
-    // let aead_id: aead::Mode = aead::Mode::AesGcm128;
-    // let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
 }

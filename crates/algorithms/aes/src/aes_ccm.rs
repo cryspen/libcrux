@@ -3,6 +3,7 @@ use core::ops::Range;
 
 use crate::{
     aes::{block_cipher, AES_BLOCK_LEN},
+    ct_ops::ct_compare,
     ctr::{AesCtrContext, CcmInit, AES_CCM_CTR_LEN, AES_CCM_NONCE_START},
     platform::AESState,
     DecryptError, CCM_SHORT_TAG_LEN, NONCE_LEN, TAG_LEN,
@@ -90,12 +91,7 @@ where
 
         // Check that recomputed tag in accumulator agrees
         // with provided tag.
-        let mut eq_mask = 0u8;
-        for i in 0..TAG_LEN {
-            eq_mask |= tag_block[i] ^ tag[i];
-        }
-
-        if eq_mask != 0 {
+        if !ct_compare(&tag_block[..TAG_LEN], &tag) {
             return Err(DecryptError::InvalidTag);
         }
 

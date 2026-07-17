@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hax-lib = "=0.3.6"
+hax-lib.workspace = true
 
 [dev-dependencies]
 hex = "0.4.3"

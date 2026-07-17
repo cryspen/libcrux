@@ -8,7 +8,7 @@
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 7b347386330d0e5a331a220535b6f15288903234
- * Libcrux: 143703c95bd07c8bcb35425a04231d9c432dae62
+ * Libcrux: 348c2c1d7e7daad7a7ed49681719a0e206941c1b
  */
 
 #ifndef libcrux_mldsa_core_H
@@ -450,10 +450,10 @@ static KRML_MUSTINLINE bool libcrux_ml_dsa_sample_inside_out_shuffle(
     Eurydice_arr_6c *result) {
   bool done = false;
   for (size_t i = (size_t)0U; i < randomness.meta; i++) {
-    size_t _cloop_j = i;
-    const uint8_t *byte = &randomness.ptr[_cloop_j];
+    size_t i0 = i;
+    uint8_t byte = randomness.ptr[i0];
     if (!done) {
-      size_t sample_at = (size_t)(uint32_t)byte[0U];
+      size_t sample_at = (size_t)(uint32_t)byte;
       if (sample_at <= out_index[0U]) {
         result->data[out_index[0U]] = result->data[sample_at];
         out_index[0U]++;
