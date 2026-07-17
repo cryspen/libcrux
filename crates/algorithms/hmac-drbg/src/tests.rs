@@ -254,5 +254,26 @@ fn reseed_required_error() {
 fn needs_reseed_true_after_exhaustion() {
     let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
     drbg.set_reseed_counter(RESEED_INTERVAL + 1);
+}
+
+#[test]
+fn custom_reseed_interval() {
+    let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
+    drbg.set_reseed_interval(1024);
+    drbg.set_reseed_counter(1025);
+    let mut out = [0u8; 32];
+    let err = drbg.generate(&mut out, &[]).unwrap_err();
+    assert_eq!(err, GenerateError::ReseedRequired);
+    assert!(drbg.needs_reseed());
+}
+
+#[test]
+fn custom_reseed_interval_clamping() {
+    let mut drbg = HmacDrbgSha256::new(&E32, &[0u8; 16], &[]).unwrap();
+    drbg.set_reseed_interval(RESEED_INTERVAL + 100);
+    // It should be clamped to RESEED_INTERVAL
+    drbg.set_reseed_counter(RESEED_INTERVAL);
+    assert!(!drbg.needs_reseed());
+    drbg.set_reseed_counter(RESEED_INTERVAL + 1);
     assert!(drbg.needs_reseed());
 }

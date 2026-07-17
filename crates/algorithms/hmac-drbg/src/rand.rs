@@ -60,7 +60,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
     /// Requests larger than [`MAX_GENERATE_BYTES`] are split into chunks so
     /// that arbitrarily-sized buffers can be filled without error.
     //
-    // #hax: requires self.reseed_counter + (dst.len() / MAX_GENERATE_BYTES) as u64 + 1 <= RESEED_INTERVAL
+    // #hax: requires self.reseed_counter + (dst.len() / MAX_GENERATE_BYTES) as u64 + 1 <= self.reseed_interval
     // #hax: ensures result.is_ok() ==> dst is fully written
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
         let mut written = 0;
@@ -121,6 +121,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> SeedableRng for HmacDrbg<O
             key: [0x00u8; OUTLEN],
             v: [0x01u8; OUTLEN],
             reseed_counter: 1,
+            reseed_interval: crate::RESEED_INTERVAL,
             #[cfg(feature = "health-tests")]
             health: HealthState::new(),
         };
@@ -319,6 +320,13 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
         };
 
         Self { drbg, rng }
+    }
+
+    /// Set the reseed interval for the underlying DRBG.
+    ///
+    /// The interval is clamped to a maximum of [`crate::RESEED_INTERVAL`].
+    pub fn set_reseed_interval(&mut self, interval: u64) {
+        self.drbg.set_reseed_interval(interval);
     }
 
     /// Somewhat safely generates a bit of randomness:

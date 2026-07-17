@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- (libcrux-hmac-drbg) [#1523](https://github.com/cryspen/libcrux/issues/1523): Allow configuring a custom reseed interval
 - [#1474](https://github.com/cryspen/libcrux/pull/1474): Add support for AES-CCM from `libcrux-aes`, rename feature `aes_gcm` to `aes_aead`
 - [#1382](https://github.com/cryspen/libcrux/pull/1382): Add support for HMAC-DRBG
 - (libcrux-secrets) [#1446](https://github.com/cryspen/libcrux/pull/1446): Integrate valgrind requests when cfg `valgrind_ct_test` is set

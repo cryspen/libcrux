@@ -109,6 +109,7 @@ pub struct HmacDrbg<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> {
     key: [u8; OUTLEN],
     v: [u8; OUTLEN],
     reseed_counter: u64,
+    reseed_interval: u64,
 
     /// All continuous health-test state, present only with feature `health-tests`.
     #[cfg(feature = "health-tests")]
@@ -212,6 +213,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             key: [0x00u8; OUTLEN],
             v: [0x01u8; OUTLEN],
             reseed_counter: 1,
+            reseed_interval: RESEED_INTERVAL,
             #[cfg(feature = "health-tests")]
             health: HealthState::new(),
         };
@@ -287,7 +289,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     // #hax: requires output.len() > 0
     // #hax: requires output.len() <= MAX_GENERATE_BYTES
     // #hax: requires true   // additional_input has no length constraint
-    // #hax: requires self.reseed_counter <= RESEED_INTERVAL
+    // #hax: requires self.reseed_counter <= self.reseed_interval
     // #hax: ensures result.is_ok() ==> self.reseed_counter == old(self.reseed_counter) + 1
     pub fn generate(
         &mut self,
@@ -299,7 +301,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
             return Err(GenerateError::HealthCheckFailed);
         }
 
-        if self.reseed_counter > RESEED_INTERVAL {
+        if self.reseed_counter > self.reseed_interval {
             return Err(GenerateError::ReseedRequired);
         }
         if output.is_empty() {
@@ -350,9 +352,18 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     /// Callers can use this to proactively schedule a reseed before the counter
     /// is exhausted rather than discovering it on the next `generate` call.
     //
-    // #hax: ensures result == (self.reseed_counter > RESEED_INTERVAL)
+    // #hax: ensures result == (self.reseed_counter > self.reseed_interval)
     pub fn needs_reseed(&self) -> bool {
-        self.reseed_counter > RESEED_INTERVAL
+        self.reseed_counter > self.reseed_interval
+    }
+
+    /// Set the reseed interval for this DRBG instance.
+    ///
+    /// The interval is clamped to a maximum of [`RESEED_INTERVAL`] to ensure
+    /// compliance with SP 800-90A.
+    pub fn set_reseed_interval(&mut self, interval: u64) {
+        let max = RESEED_INTERVAL;
+        self.reseed_interval = if interval > max { max } else { interval };
     }
 
     /// Returns the current reseed counter.
