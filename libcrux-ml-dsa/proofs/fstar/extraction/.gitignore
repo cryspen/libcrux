@@ -16,3 +16,8 @@
 # Hand-written companion theory relocated from src/simd/avx2/invntt.rs
 # fstar::before blocks (annotation-compaction campaign). Track it (Error-72 trap).
 !Libcrux_ml_dsa.Simd.Avx2.Invntt_theory.fst
+# Promoted from src/simd/avx2/rejection_sample/proof_helpers.rs, a #[cfg(hax)]-only
+# module with no implementation whose 1183 lines were 1170 lines of fstar::before
+# theory. The .rs shell is deleted, so this file is the source of truth rather than
+# a generated artifact; hax no longer emits it (Error-72 trap still applies).
+!Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Proof_helpers.fst

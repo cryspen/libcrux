@@ -1,13 +1,8 @@
-//! Trusted-base + proven proof helpers for the AVX2 rejection_sample functional
-//! proof (F*-only). The generic combinatorial machinery (SHUFFLE_TABLE compaction,
-//! per-lane masks, the `filt8`/`step8` repeati-filter model, the two-half store
-//! assembly, the generic structural leaf result `lemma_leaf_structural_g`, the eta
-//! spec bridges, and the per-element `lemma_filt8_bound`) is emitted as standalone
-//! F* into `Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Proof_helpers`. Model axioms
-//! live in `Spec.Intrinsics`; `lemma_count_ones_nibble_exact` is the one trusted
-//! `assume val` here (count_ones has no F* model in-tree). The marker fn below just
-//! gives hax an item to hang the module on (whole module is `#[cfg(hax)]`).
-#[hax_lib::fstar::before(r#"
+module Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Proof_helpers
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 80"
+open FStar.Mul
+open Core_models
+
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open FStar.Mul
 open Core_models
@@ -1176,7 +1171,3 @@ let lemma_filt8_bound (cand:(j:nat{j<8})->i32) (acc:(j:nat{j<8})->bool) (lo hi: 
   step8_preserves_bound cand acc lo hi (sz 6) t5;
   step8_preserves_bound cand acc lo hi (sz 7) t6
 #pop-options
-"#)]
-pub(crate) fn proof_helpers_module_marker() -> bool {
-    true
-}
