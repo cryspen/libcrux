@@ -152,7 +152,15 @@ class extractAction(argparse.Action):
             "--interfaces",
             interface_include,
         ]
-        hax_env = {}
+        # ml-kem is not yet migrated to the core-models intrinsics: its AVX2
+        # contracts cite `Libcrux_intrinsics.Avx2_extract` (bit_vec views), so
+        # the crate must compile with the intrinsics' `pre_core_models` mapping
+        # (see crates/utils/intrinsics/src/lib.rs and the extraction Makefile's
+        # per-algorithm cache comment). Before the env-leak fix in 171d30642
+        # this flag leaked here from the intrinsics step; now it's explicit.
+        hax_env = {
+            'RUSTFLAGS': "--cfg pre_core_models"
+        }
         shell(
             cargo_hax_into,
             cwd=".",
