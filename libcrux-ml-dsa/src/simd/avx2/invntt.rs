@@ -5,7 +5,8 @@ use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 8380416 $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
 T.is_i32b_poly_avx2 4211177 ${re}_future /\
@@ -18,7 +19,8 @@ T.is_i32b_poly_avx2 4211177 ${re}_future /\
 pub(crate) fn invert_ntt_montgomery(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[allow(unsafe_code)]
-    #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
     #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 8380416 $re"#))]
     #[hax_lib::ensures(|result| fstar!(r#"
 T.is_i32b_poly_avx2 4211177 ${re}_future /\
@@ -507,7 +509,8 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 3 $re ${re}_future)
 "#))]
@@ -596,7 +599,8 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 4 $re ${re}_future)
 "#))]
@@ -649,7 +653,8 @@ unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 5 $re ${re}_future)
 "#))]
@@ -686,7 +691,8 @@ unsafe fn invert_ntt_at_layer_5(re: &mut AVX2RingElement) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 6 $re ${re}_future)
 "#))]
@@ -715,7 +721,8 @@ unsafe fn invert_ntt_at_layer_6(re: &mut AVX2RingElement) {
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 800 --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 800")]
 #[hax_lib::ensures(|result| fstar!(r#"
 norm [primops; iota; delta_namespace [ `%zeta_r; `%Spec.Utils.forall32 ]] (invert_ntt_outer_3_plus_spec 7 $re ${re}_future)
 "#))]
@@ -740,7 +747,8 @@ unsafe fn invert_ntt_at_layer_7(re: &mut AVX2RingElement) {
    on them.  (The Portable mirror has no such constant: its impl passes the
    literal 41_978, so Portable.Invntt_theory states these facts over mk_i32 41978.) *)
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
 (* Per-chunk establish: re[i] = mont_mul-by-FACTOR of orig_re[i].  The AVX2
    mont-by-const post gives lane equality to mont_mul; C.lemma_mont_mul_bound_and_mod_q
    turns each lane into the mod_q form chunk_scaled (via lemma_establish_chunk_scaled)
@@ -776,7 +784,8 @@ let lemma_establish_chunk_scaled_avx2
     PI.lemma_establish_chunk_scaled ci co
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 (* Per-iteration scaling step: re is the post-update array (re[i] = mont_mul-by-FACTOR
    of orig_unit); establishes the new chunk_scaled atom + per-lane FM bound for index i.
    Mirrors the lemma_establish_chunk_scaled call inside Portable scale_montgomery's body. *)
@@ -826,7 +835,8 @@ let lemma_inv_scale_step
 #pop-options
 "#
 )]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 // Input bound 256*FIELD_MAX (the inverse-NTT layers' accumulated bound); the
 // final ·41978 Montgomery multiply reduces it to the tight centered 4211177.
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (256 * 8380416) $re"#))]
@@ -865,7 +875,8 @@ T.is_i32b_poly_avx2 (256 * 8380416) s8 /\
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 8380416 $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (2*8380416) ${re}_future /\ inv_layer_done 0 $re ${re}_future"#))]
 unsafe fn run_inv_layer_0(re: &mut AVX2RingElement) {
@@ -877,7 +888,8 @@ unsafe fn run_inv_layer_0(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (2*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (4*8380416) ${re}_future /\ inv_layer_done 1 $re ${re}_future"#))]
 unsafe fn run_inv_layer_1(re: &mut AVX2RingElement) {
@@ -889,7 +901,8 @@ unsafe fn run_inv_layer_1(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (4*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (8*8380416) ${re}_future /\ inv_layer_done 2 $re ${re}_future"#))]
 unsafe fn run_inv_layer_2(re: &mut AVX2RingElement) {
@@ -901,7 +914,8 @@ unsafe fn run_inv_layer_2(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (8*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (16*8380416) ${re}_future /\ inv_layer_done 3 $re ${re}_future"#))]
 unsafe fn run_inv_layer_3(re: &mut AVX2RingElement) {
@@ -913,7 +927,8 @@ unsafe fn run_inv_layer_3(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (16*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (32*8380416) ${re}_future /\ inv_layer_done 4 $re ${re}_future"#))]
 unsafe fn run_inv_layer_4(re: &mut AVX2RingElement) {
@@ -925,7 +940,8 @@ unsafe fn run_inv_layer_4(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (32*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (64*8380416) ${re}_future /\ inv_layer_done 5 $re ${re}_future"#))]
 unsafe fn run_inv_layer_5(re: &mut AVX2RingElement) {
@@ -937,7 +953,8 @@ unsafe fn run_inv_layer_5(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (64*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (128*8380416) ${re}_future /\ inv_layer_done 6 $re ${re}_future"#))]
 unsafe fn run_inv_layer_6(re: &mut AVX2RingElement) {
@@ -949,7 +966,8 @@ unsafe fn run_inv_layer_6(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 (128*8380416) $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"T.is_i32b_poly_avx2 (256*8380416) ${re}_future /\ inv_layer_done 7 $re ${re}_future"#))]
 unsafe fn run_inv_layer_7(re: &mut AVX2RingElement) {
@@ -961,7 +979,8 @@ unsafe fn run_inv_layer_7(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options("--z3rlimit 100 --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 100")]
 #[hax_lib::requires(fstar!(r#"T.is_i32b_poly_avx2 8380416 $re"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
 T.is_i32b_poly_avx2 (256*8380416) ${re}_future /\
