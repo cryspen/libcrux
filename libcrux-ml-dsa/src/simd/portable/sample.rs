@@ -62,7 +62,8 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 800 --ext context_pruning")]
 #[hax_lib::requires(rejection_sample_less_than_eta_equals_2_pre(randomness, out))]
 #[hax_lib::ensures(|r| fstar!(r#"
     Libcrux_ml_dsa.Specs.Simd.Portable.Sample.rejection_sample_less_than_eta_equals_2_post $randomness ${out}_future $r /\
@@ -142,7 +143,8 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--ext context_pruning")]
 #[hax_lib::requires(rejection_sample_less_than_eta_equals_4_pre(randomness, out))]
 #[hax_lib::ensures(|r| fstar!(r#"
     Libcrux_ml_dsa.Specs.Simd.Portable.Sample.rejection_sample_less_than_eta_equals_4_post $randomness ${out}_future $r /\

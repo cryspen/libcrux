@@ -715,12 +715,13 @@ let layer_bound_factor (step_by:usize) : n:nat{n <= 4} =
    0.879/100 with "unknown" — Z3 bailing EARLY, derailed by the query state
    accumulated over the ~700 preceding lines of theory.  The same decl under
    `--admit_except` verifies at 15.234/100, which pins the cause as accumulated
-   state rather than a logic gap or a budget shortfall.  `--z3refresh` gives each
-   split sub-query a fresh solver, reproducing that clean state.  Options-only:
-   no statement, contract, or proof is weakened.  Inherited by the inner pushes
-   below, which is intended (they all inherit `--split_queries always` too).
-   See `feedback_avx2_ntt_cold_gate_z3refresh`. *)
-#push-options "--z3rlimit 400 --split_queries always --z3refresh"
+   state rather than a logic gap or a budget shortfall.  The `#restart-solver`
+   below gives this region a fresh solver at the decl boundary, reproducing that
+   clean state (it replaced `--z3refresh`, whose per-attempt respawn+re-transmit
+   dominated wall time).  Options-only: no statement, contract, or proof is
+   weakened. *)
+#restart-solver
+#push-options "--z3rlimit 400 --split_queries always"
 let lemma_modq_eq (xa xb : i64) : Lemma
     (requires (v xa) % 8380417 == (v xb) % 8380417)
     (ensures Hacspec_ml_dsa.Arithmetic.mod_q xa == Hacspec_ml_dsa.Arithmetic.mod_q xb)

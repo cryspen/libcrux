@@ -240,7 +240,8 @@ pub(crate) mod generic {
     // default rlimit as one monolithic query; split + z3refresh lands it.
     #[cfg_attr(
         hax,
-        hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh")
+        hax_lib::fstar::before(r#"#restart-solver"#),
+        hax_lib::fstar::options("--z3rlimit 800 --split_queries always")
     )]
     // Helper predicate for the rejection loop's invariant hint clause: once a
     // signature is accepted (`hint = Some h`), its Hamming weight stays within
@@ -764,6 +765,7 @@ let hint_count_bounded
         Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) $signer_response /\
         Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 75423744) $verifier_challenge_as_ntt /\
         Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice (mk_usize 0) (mk_usize 261631) $t1"#)))]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
     #[cfg_attr(hax, hax_lib::ensures(|_| fstar!(r#"
         Seq.length ${t1}_future == Seq.length $t1 /\
         Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 4211177) ${t1}_future"#)))]
@@ -799,13 +801,14 @@ let hint_count_bounded
     #[inline(always)]
     // verify_internal's monolithic VC splits into ~160 sub-queries; the heaviest
     // (compute_w_approx's precondition in the ML-DSA-87 context, k=8/l=7) is
-    // budget-bound.  `--z3refresh` is REQUIRED alongside `--split_queries always`:
+    // budget-bound.  `` is REQUIRED alongside `--split_queries always`:
     // without it, Z3's state accumulates across sub-queries in the full-module build
     // and that one query drifts past 800 (flaky cold); with a fresh solver per
     // sub-query it lands at ~640/800 deterministically.  (44/65 use <45.)
     #[cfg_attr(
         hax,
-        hax_lib::fstar::options("--z3rlimit 800 --split_queries always --z3refresh")
+        hax_lib::fstar::before(r#"#restart-solver"#),
+        hax_lib::fstar::options("--z3rlimit 800 --split_queries always")
     )]
     pub(crate) fn verify_internal<
         SIMDUnit: Operations,

@@ -7093,7 +7093,6 @@
         "data_elim_Rust_primitives.Integers.MkInt",
         "equality_tok_Rust_primitives.Integers.I32@tok",
         "equation_Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS",
-        "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.mk_i32",
         "equation_Rust_primitives.Integers.mk_int",
@@ -7101,20 +7100,24 @@
         "equation_Rust_primitives.Integers.range_t",
         "equation_Rust_primitives.Integers.v",
         "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
-        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
+        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Modulus",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_141bcd49b09c4a72797201ee980b1c53",
+        "refinement_interpretation_Tm_refine_5d09a3de5c5049ff4f6c714f263845ae",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_c582619aed0f25ab42cbef056b615524",
+        "refinement_interpretation_Tm_refine_d8d45eb05a18db95c46fe6ecc70a5104",
+        "refinement_interpretation_Tm_refine_de0632308fd697fc0f32e4cf1c127f63",
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15",
-        "refinement_interpretation_Tm_refine_f02127c44d9b2b6c8814b3f9350a9928",
-        "typing_Libcrux_ml_dsa.Simd.Traits.v_FIELD_MODULUS",
-        "typing_Rust_primitives.Integers.v",
-        "typing_tok_Rust_primitives.Integers.I32@tok"
+        "refinement_interpretation_Tm_refine_ecd8cae129a250b8b89477488731f9b2",
+        "refinement_interpretation_Tm_refine_f02127c44d9b2b6c8814b3f9350a9928"
       ],
       0,
-      "e7dae461904eca7103737f38260b3ad8"
+      "0903f2a3237f418e2382d66e0e2b0a6a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Portable.Arithmetic.decompose_element",

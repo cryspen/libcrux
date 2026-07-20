@@ -1,5 +1,5 @@
 [
-  "740815c2f8a4a60cb118c793941d8f40",
+  "b3f7aa2f6d25e1f41e710fb93b837a0c",
   [
     [
       "Spec.MLDSA.Math.v_FIELD_MODULUS",
@@ -1521,7 +1521,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b5d68a222f14b493ac62f03a8b30180b"
+      "cf42d750960d11e8107cb6101bf3bc5e"
     ],
     [
       "Spec.MLDSA.Math.rejection_sample_coefficient_lemma",
@@ -1607,7 +1607,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "df265a602ce46962ab777097f4e19730"
+      "4a7cbfaeba13e8a0929c5c9e6f7689f1"
     ],
     [
       "Spec.MLDSA.Math.to_mont",
@@ -1687,7 +1687,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "30ebc438ee9e624e1a06af5a9942a358"
+      "537a7c399506da73b059bc7587a375cc"
     ],
     [
       "Spec.MLDSA.Math.to_mont",
@@ -1717,7 +1717,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6df9a5d0d7e59824d5dd20e7ebfb5811"
+      "b53ba55b88d44ba4a68e2be1c5048efa"
     ]
   ]
 ]

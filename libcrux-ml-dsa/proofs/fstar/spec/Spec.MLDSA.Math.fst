@@ -383,7 +383,8 @@ let rec hint_counter_loop hint_1 hint_2 n =
 
 
 
-#push-options "--z3rlimit 1500 --fuel 3 --ifuel 3 --ext context_pruning --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 1500 --fuel 3 --ifuel 3 --ext context_pruning"
 
 let rejection_sample_coefficient_lemma (randomness:Seq.seq u8) (i:usize{v i < (Seq.length randomness) / 3}) =
   let b0 = cast (Seq.index randomness (v i * 3)) <: i32 in

@@ -387,7 +387,8 @@ let unit_post_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
    (v t3) % 8380417 == (v (Seq.index ci 7) * v zeta3 * 8265825) % 8380417)
 
 (* Standalone: unfold one L0 opaque atom to the bridge's per-pair forall. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let lemma_atom_to_bf_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zf: (p: nat{p < 4}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
     : Lemma (requires unit_post_l0_avx2 ci co (zf 0) (zf 1) (zf 2) (zf 3))
@@ -410,7 +411,8 @@ let lemma_atom_to_bf_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
    facts, build the opaque atom for chunk b AND the per-lane output bound.
    The genuinely-new AVX2 logic lives in lemma_l0_pair_relations (already
    validated); this just packages 4 pairs into the atom + bound. ===== *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l0_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})
@@ -449,7 +451,8 @@ let forall32_elim_1d (r: (b: nat{b < 32}) -> Type0)
 (* ===== Clean-context driver composition for L0 (chunk arrays): from the
    forall32 of opaque atoms, feed the Commute.Chunk poly lemma.  Mirror of
    Portable lemma_l0_driver_compose with mont_mul + the AVX2 atom. ===== *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l0_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -491,7 +494,8 @@ let lemma_l0_driver_compose_avx2
    complete layer-fn post (output bound + functional congruence).  This is what
    the ntt.rs body tail calls (after establishing l0_post_sym from the butterfly
    facts via assert_norm zeta literals). ===== *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l0_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})
@@ -868,7 +872,8 @@ let unit_post_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
    (v t3) % 8380417 == (v (Seq.index ci 7) * v zeta * 8265825) % 8380417)
 
 (* Standalone: unfold one L2 opaque atom to the bridge's per-pair forall. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let lemma_atom_to_bf_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zeta: i32{Spec.Utils.is_i32b 4190208 zeta})
     : Lemma (requires unit_post_l2_avx2 ci co zeta)
@@ -889,7 +894,8 @@ let lemma_atom_to_bf_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
 
 (* Per-chunk establishment: from input bound + 4 chunk ntt_step facts, build the
    opaque atom for chunk b AND the per-lane output bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l2_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})
@@ -918,7 +924,8 @@ let lemma_l2_chunk_avx2
 
 (* Clean-context driver composition for L2: from the forall32 of opaque atoms,
    feed the Commute.Chunk poly lemma (ntt_layer mk_usize 2). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l2_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -959,7 +966,8 @@ let lemma_l2_driver_compose_avx2
 
 (* FULL L2 body glue: from input bound + symbolic L2 post, derive output bound +
    functional congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l2_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})
@@ -1275,7 +1283,8 @@ let unit_post_l1_avx2 (ci co: t_Array i32 (mk_usize 8))
    (v t11) % 8380417 == (v (Seq.index ci 7) * v zeta1 * 8265825) % 8380417)
 
 (* Standalone: unfold one L1 opaque atom to the bridge's per-(h,j) forall. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let lemma_atom_to_bf_l1_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zf: (h: nat{h < 2}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
     : Lemma (requires unit_post_l1_avx2 ci co (zf 0) (zf 1))
@@ -1308,7 +1317,8 @@ let forall4_inst (q: (p:nat{p<4}) -> Type0)
 (* Per-chunk establishment: from input bound + 4 chunk ntt_step facts, build the
    L1 opaque atom for chunk b AND the per-lane output bound.  Maps the (b,p)
    chunkfacts (p in 0..3) to the atom's (h,j') lane pairs. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l1_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})
@@ -1335,7 +1345,8 @@ let lemma_l1_chunk_avx2
 (* Clean-context driver composition for L1: from forall32 of opaque atoms, feed
    the Commute.Chunk L1 poly lemma.  Mirror of Portable lemma_l1_driver_compose
    with mont_mul + the AVX2 atom + the SEPARATE zeta-cong forall. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l1_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -1376,7 +1387,8 @@ let lemma_l1_driver_compose_avx2
 
 (* FULL L1 body glue: from input bound + symbolic L1 post, derive the complete
    layer-fn post (output bound + functional congruence to ntt_layer .. (mk_usize 1)). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_l1_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{bnd + 8380416 < pow2 31})

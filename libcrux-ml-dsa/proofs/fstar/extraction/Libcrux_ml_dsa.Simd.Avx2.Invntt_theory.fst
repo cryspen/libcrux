@@ -262,7 +262,8 @@ let unit_post_inv_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
 
 (* Per-chunk establishment: input bound + the 4 inv_chunkfacts -> the opaque
    atom + per-lane output bound (2*bnd). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l0_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -290,7 +291,8 @@ let inv_lemma_l0_chunk_avx2
 #pop-options
 
 (* Unfold one L0 opaque atom to the bridge's per-pair forall. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let inv_lemma_atom_to_bf_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zf: (p: nat{p < 4}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
     : Lemma (requires unit_post_inv_l0_avx2 ci co (zf 0) (zf 1) (zf 2) (zf 3))
@@ -308,7 +310,8 @@ let inv_lemma_atom_to_bf_l0_avx2 (ci co: t_Array i32 (mk_usize 8))
 #pop-options
 
 (* Clean-context driver composition: forall32 opaque atoms -> intt_layer 0 congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l0_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -345,7 +348,8 @@ let inv_lemma_l0_driver_compose_avx2
 #pop-options
 
 (* FULL L0 glue: input bound + symbolic L0 post -> output bound (2*bnd) + intt_layer 0 congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l0_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -561,7 +565,8 @@ let unit_post_inv_l1_avx2 (ci co: t_Array i32 (mk_usize 8))
    v (Seq.index co 5) == v (Seq.index ci 5) + v (Seq.index ci 7) /\
    (v (Seq.index co 7)) % 8380417 == ((v (Seq.index ci 7) - v (Seq.index ci 5)) * v zeta1 * 8265825) % 8380417)
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l1_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -587,7 +592,8 @@ let inv_lemma_l1_chunk_avx2
     with (T.lemma_chunks_of_re_avx2_index re_fut b l)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let inv_lemma_atom_to_bf_l1_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zf: (h: nat{h < 2}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
     : Lemma (requires unit_post_inv_l1_avx2 ci co (zf 0) (zf 1))
@@ -604,7 +610,8 @@ let inv_lemma_atom_to_bf_l1_avx2 (ci co: t_Array i32 (mk_usize 8))
     with (match h with | 0 -> (match j with | 0 -> () | _ -> ()) | _ -> (match j with | 0 -> () | _ -> ()))
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l1_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -641,7 +648,8 @@ let inv_lemma_l1_driver_compose_avx2
     C.lemma_intt_layer_1_step_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l1_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -838,7 +846,8 @@ let unit_post_inv_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
    v (Seq.index co 3) == v (Seq.index ci 3) + v (Seq.index ci 7) /\
    (v (Seq.index co 7)) % 8380417 == ((v (Seq.index ci 7) - v (Seq.index ci 3)) * v zeta * 8265825) % 8380417)
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l2_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -864,7 +873,8 @@ let inv_lemma_l2_chunk_avx2
     with (T.lemma_chunks_of_re_avx2_index re_fut b l)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let inv_lemma_atom_to_bf_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
       (zeta: i32{Spec.Utils.is_i32b 4190208 zeta})
     : Lemma (requires unit_post_inv_l2_avx2 ci co zeta)
@@ -881,7 +891,8 @@ let inv_lemma_atom_to_bf_l2_avx2 (ci co: t_Array i32 (mk_usize 8))
     with (match p with | 0 -> () | 1 -> () | 2 -> () | _ -> ())
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l2_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -918,7 +929,8 @@ let inv_lemma_l2_driver_compose_avx2
     C.lemma_intt_layer_2_step_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l2_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -985,7 +997,8 @@ let invert_ntt_outer_3_plus_spec
 (* Clean-context assembly: the 16 per-pair ground facts (proven in the function
    body) imply the layer-3 spec.  Hoisted out of the function so the assembly never
    runs inside the 16-let-shadowed heavy WP (which saturates rlimit 400). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 800"
 let lemma_inv_l3_avx2_assemble
       (orig fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1034,7 +1047,8 @@ let lemma_inv_l3_avx2_assemble
    fuel 1 unfolds the plain-let outer_3_plus_inv to its `forall j`, ifuel 2 evaluates the (∈)
    if-ladder at parametric u.  layer_3 is the last layer that lacked this lemma and so asserted
    the 16 pair facts inline -- which saturated under --split_queries always (the hint-poison). *)
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 800"
 let lemma_inv_l3_transport
       (orig s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1093,7 +1107,8 @@ let lemma_inv_l3_transport
 
 (* Clean-context assembly: the 16 per-pair ground facts (proven in the function
    body) imply the layer-4 spec (gap 4, step_by 2: windows (4j, 4j+2)). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 800"
 let lemma_inv_l4_avx2_assemble
       (orig fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1146,7 +1161,8 @@ let lemma_inv_l4_avx2_assemble
    decide the (∈)-ladder symbolically and saturates); each materialises both of its
    call's pairs.  fuel 1 unfolds outer_3_plus_inv to its `forall j`; ifuel 2 evaluates
    the (∈) if-ladder.  Monolithic 800 (mirror the assemble/L5/L6-transport lemmas). *)
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 800"
 let lemma_inv_l4_transport
       (orig s1 s2 s3 s4 s5 s6 s7 fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1322,7 +1338,8 @@ let lemma_inv_l4_transport
 
 (* Clean-context assembly: the 16 per-pair ground facts (proven in the function
    body) imply the layer-5 spec (gap 8, step_by 4: pairs (8w+l, 8w+l+4)). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 800"
 let lemma_inv_l5_avx2_assemble
       (orig fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1373,7 +1390,8 @@ let lemma_inv_l5_avx2_assemble
    fin[..]==s_{w+1}[..] via later posts' else-branch frame).  fuel 1 unfolds the
    plain-let outer_3_plus_inv to its `forall j`; ifuel 2 evaluates the (∈) if-ladder
    at parametric u.  Monolithic 800 (mirror the assemble/L6-transport lemmas). *)
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 800"
 let lemma_inv_l5_transport
       (orig s1 s2 s3 fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1475,7 +1493,8 @@ let lemma_inv_l5_transport
 
 (* Clean-context assembly: the 16 per-pair ground facts (proven in the function
    body) imply the layer-6 spec (gap 16, step_by 8: pairs (16w+l, 16w+l+8)). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 800"
 let lemma_inv_l6_avx2_assemble
       (orig fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1523,7 +1542,8 @@ let lemma_inv_l6_avx2_assemble
    interval foralls in each call post cannot be ground-extracted inside the
    function's heavy WP (saturates rlimit 400); in this clean 2-hypothesis context
    they discharge.  Monolithic 800 (mirror the assemble lemmas). *)
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 800 --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 800"
 let lemma_inv_l6_transport
       (orig s1 fin: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1614,7 +1634,8 @@ let unit_post_inv_cross_avx2 (ci_lo ci_hi co_lo co_hi : t_Array i32 (mk_usize 8)
    v (Seq.index co_lo 7) == v (Seq.index ci_lo 7) + v (Seq.index ci_hi 7) /\
    (v (Seq.index co_hi 7)) % 8380417 == ((v (Seq.index ci_hi 7) - v (Seq.index ci_lo 7)) * v zeta * 8265825) % 8380417)
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let inv_lemma_atom_to_bf_inv_cross_avx2 (ci_lo ci_hi co_lo co_hi : t_Array i32 (mk_usize 8))
                                         (zeta: i32{Spec.Utils.is_i32b 4190208 zeta})
     : Lemma (requires unit_post_inv_cross_avx2 ci_lo ci_hi co_lo co_hi zeta)
@@ -1661,7 +1682,8 @@ unfold let inv_l3_post_body
 
 (* Lift the layer post (forall32 j<16) into per-(u,l) chunkfacts.  For each
    even u, instantiate the post at j=u/2 (w=j, ll=0, uu=u). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l3_cross_chunkfacts_from_post
     (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1732,7 +1754,8 @@ let inv_l3_cross_pair_relations
 #pop-options
 
 (* Pack the 8 lanes of a lo-unit pair into the opaque cross atom + bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l3_cross_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -1773,7 +1796,8 @@ let inv_lemma_l3_cross_chunk_avx2
 (* Driver compose: plain refined-forall of cross atom -> intt_layer flat congruence.
    (A plain `forall (u:nat{u<32})` requires avoids the 32-way forall32 ground unroll
    that the opaque cross atom makes Z3 choke on.) *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l3_cross_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -1818,7 +1842,8 @@ let inv_lemma_l3_cross_driver_compose_avx2
    chunkfacts.  The atom forall is dispatched per even lo-unit u via the chunk
    lemma; the bound forall is dispatched even/odd via the same chunk lemma at
    the even lo-unit u - u%2. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l3_cross_atoms_and_bounds
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -1853,7 +1878,8 @@ let inv_l3_cross_atoms_and_bounds
           end)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l3_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -1902,7 +1928,8 @@ unfold let inv_l4_cross_chunkfact
 
 (* Lift the layer post (forall32 j<16) into per-(u,l) chunkfacts.  For each lo-unit u,
    instantiate the post at j = (u/4)*2 + u%4 (so w=j/2=u/4, ll=j%2=u%4, uu=u). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l4_cross_chunkfacts_from_post
     (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -1978,7 +2005,8 @@ let inv_l4_cross_pair_relations
 #pop-options
 
 (* Pack the 8 lanes of a lo-unit pair into the opaque cross atom + bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l4_cross_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2017,7 +2045,8 @@ let inv_lemma_l4_cross_chunk_avx2
 #pop-options
 
 (* Establish the (plain refined-forall) cross atom + per-unit bound from chunkfacts. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l4_cross_atoms_and_bounds
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2061,7 +2090,8 @@ let inv_l4_cross_atoms_and_bounds
 #pop-options
 
 (* Driver compose: plain refined-forall of cross atom -> intt_layer flat congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l4_cross_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -2102,7 +2132,8 @@ let inv_lemma_l4_cross_driver_compose_avx2
     C.lemma_intt_layer_4_cross_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l4_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2150,7 +2181,8 @@ unfold let inv_l5_cross_chunkfact
 
 (* Lift the layer post (forall32 j<16) into per-(u,l) chunkfacts.  For each lo-unit u,
    instantiate the post at j = (u/8)*4 + u%8 (so w=j/4=u/8, ll=j%4=u%8, uu=u). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l5_cross_chunkfacts_from_post
     (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -2226,7 +2258,8 @@ let inv_l5_cross_pair_relations
 #pop-options
 
 (* Pack the 8 lanes of a lo-unit pair into the opaque cross atom + bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l5_cross_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2265,7 +2298,8 @@ let inv_lemma_l5_cross_chunk_avx2
 #pop-options
 
 (* Establish the (plain refined-forall) cross atom + per-unit bound from chunkfacts. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l5_cross_atoms_and_bounds
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2309,7 +2343,8 @@ let inv_l5_cross_atoms_and_bounds
 #pop-options
 
 (* Driver compose: plain refined-forall of cross atom -> intt_layer flat congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l5_cross_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -2350,7 +2385,8 @@ let inv_lemma_l5_cross_driver_compose_avx2
     C.lemma_intt_layer_5_cross_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l5_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2398,7 +2434,8 @@ unfold let inv_l6_cross_chunkfact
 
 (* Lift the layer post (forall32 j<16) into per-(u,l) chunkfacts.  For each lo-unit u,
    instantiate the post at j = (u/16)*8 + u%16 (so w=j/8=u/16, ll=j%8=u%16, uu=u). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l6_cross_chunkfacts_from_post
     (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -2474,7 +2511,8 @@ let inv_l6_cross_pair_relations
 #pop-options
 
 (* Pack the 8 lanes of a lo-unit pair into the opaque cross atom + bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l6_cross_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2513,7 +2551,8 @@ let inv_lemma_l6_cross_chunk_avx2
 #pop-options
 
 (* Establish the (plain refined-forall) cross atom + per-unit bound from chunkfacts. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l6_cross_atoms_and_bounds
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2557,7 +2596,8 @@ let inv_l6_cross_atoms_and_bounds
 #pop-options
 
 (* Driver compose: plain refined-forall of cross atom -> intt_layer flat congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l6_cross_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -2598,7 +2638,8 @@ let inv_lemma_l6_cross_driver_compose_avx2
     C.lemma_intt_layer_6_cross_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l6_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2646,7 +2687,8 @@ unfold let inv_l7_cross_chunkfact
 
 (* Lift the layer post (forall32 j<16) into per-(u,l) chunkfacts.  For each lo-unit u,
    instantiate the post at j = (u/32)*16 + u%32 (so w=j/16=u/32, ll=j%16=u%32, uu=u). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l7_cross_chunkfacts_from_post
     (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -2722,7 +2764,8 @@ let inv_l7_cross_pair_relations
 #pop-options
 
 (* Pack the 8 lanes of a lo-unit pair into the opaque cross atom + bound. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l7_cross_chunk_avx2
       (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2761,7 +2804,8 @@ let inv_lemma_l7_cross_chunk_avx2
 #pop-options
 
 (* Establish the (plain refined-forall) cross atom + per-unit bound from chunkfacts. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_l7_cross_atoms_and_bounds
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2805,7 +2849,8 @@ let inv_l7_cross_atoms_and_bounds
 #pop-options
 
 (* Driver compose: plain refined-forall of cross atom -> intt_layer flat congruence. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let inv_lemma_l7_cross_driver_compose_avx2
       (orig fut: t_Array (t_Array i32 (mk_usize 8)) (mk_usize 32))
     : Lemma
@@ -2846,7 +2891,8 @@ let inv_lemma_l7_cross_driver_compose_avx2
     C.lemma_intt_layer_7_cross_to_hacspec_poly orig fut zm
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_inv_l7_full_avx2
       (orig_re re: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2 * bnd < pow2 31 /\ bnd >= 8380416})
@@ -2875,7 +2921,8 @@ module PI = Libcrux_ml_dsa.Simd.Portable.Invntt_theory
 
 
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 (* AVX2 mirror of Portable lemma_scale_driver: 32 per-chunk chunk_scaled atoms
    (loop-invariant output) -> flat 16382-scaling congruence.  Reuses the generic
    PI.lemma_scale_flat (chunks_of_re-agnostic) after revealing each chunk atom. *)
@@ -2915,7 +2962,8 @@ let inv_layer_done (n:nat{n<8})
     (v (Seq.index out_flat i)) % 8380417 ==
     (v (Seq.index (Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize n)) i)) % 8380417
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 50 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
 let lemma_inv_layer_done_intro (n:nat{n<8})
       (fin fout: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma
@@ -2929,7 +2977,8 @@ let lemma_inv_layer_done_intro (n:nat{n<8})
   = reveal_opaque (`%inv_layer_done) (inv_layer_done n fin fout)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 (* Compose the 8 sealed inv_layer_done atoms into flat(s8) ≡ intt_unscaled(flat(s0)).
    Reveals each atom internally, then chains via the Portable compose lemma. *)
 let lemma_inv_compose_8_sealed
@@ -2967,7 +3016,8 @@ let lemma_inv_compose_8_sealed
    congruence into the inv_layer_done atom.  The ensures exposes ONLY the opaque bound +
    the opaque atom (NOT the transparent 256-forall), so inv_inner's WP carries 8 cheap
    atoms instead of 8 soup-forming foralls. ---- *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let lemma_inv_l0_sealed (fin fout: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
       (bnd:nat{2*bnd<pow2 31 /\ bnd>=8380416}) : Lemma
   (requires T.is_i32b_poly_avx2 bnd fin /\ inv_l0_post_sym fin fout)
@@ -3017,7 +3067,8 @@ let lemma_inv_l7_sealed (fin fout: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.
   = lemma_inv_l7_full_avx2 fin fout bnd; lemma_inv_layer_done_intro 7 fin fout
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 (* TIGHT per-lane bound for the final scale-back multiply.  The inverse-NTT
    layers leave each lane bounded by 256*FIELD_MAX; the `montgomery_multiply_by_constant(_, 41978)`
    then reduces it to the centered bound 4211177 = q/2 + ceil(256*FIELD_MAX*41978/2^32)
@@ -3047,7 +3098,8 @@ let lemma_mont_mul_tight_bound_256 (x c: i32)
 
 
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 (* After the scaling fold: lift the 32 per-chunk chunk_scaled atoms + per-lane bounds
    to the flat 16382-scaling congruence and the FM poly bound. *)
 let lemma_inv_scale_finalize
@@ -3069,7 +3121,8 @@ let lemma_inv_scale_finalize
     lemma_scale_driver_avx2 s8 re
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 (* Frame: if re_new[k] == re_old[k] then their chunk views agree at k.  Proves the
    createi sub-array equality by extensionality + the lane index lemma — in CLEAN
    context, so the scaling fold's invariant maintenance never pays the createi cascade. *)
@@ -3087,7 +3140,8 @@ let lemma_cre_frame
     Seq.lemma_eq_intro cn co
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 (* Standalone clean-context carryover: extend the scaling-fold invariant from index i
    to i+1 after the per-unit update at i.  Mirrors the Portable
    lemma_is_bounded_poly_range_extend_after_update pattern; isolates the frame so the
@@ -3193,7 +3247,8 @@ unfold let inv_l2_post_lit (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_t
                 inv_ntt_step (mk_int zeta1)
                   (to_i32x8 re1.f_value (mk_u64 j0), to_i32x8 re1.f_value (mk_u64 j1)))))
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
 let lemma_inv_l0_post_to_sym (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256 (mk_usize 32))
     : Lemma (requires inv_l0_post_lit re re_fut) (ensures inv_l0_post_sym re re_fut)
   =

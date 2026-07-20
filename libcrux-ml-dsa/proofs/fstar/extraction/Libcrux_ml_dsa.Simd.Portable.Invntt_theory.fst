@@ -455,7 +455,8 @@ let chunk_scaled (orig_chunk cur_chunk : t_Array i32 (mk_usize 8)) : Type0 =
   forall (l:nat). l < 8 ==>
     (v (Seq.index cur_chunk l)) % 8380417 == (16382 * v (Seq.index orig_chunk l)) % 8380417
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 (* TIGHT per-lane bound for the final scale-back multiply.  The inverse-NTT
    layers leave each lane bounded by 256*FIELD_MAX; the
    `montgomery_multiply_by_constant(_, 41978)` then reduces it to the centered
@@ -485,7 +486,8 @@ let lemma_mont_mul_tight_bound_256 (x c: i32)
     Spec.MLDSA.Math.lemma_mont_red_bound_256_field_max_times_41978 value
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 (* Lift the per-lane tight bound to a whole chunk: from the 256*FIELD_MAX input
    bound and the per-lane mont_mul-by-41978 equality (montgomery_multiply_by_constant's
    post), each output lane is bounded by 4211177. *)
@@ -1009,7 +1011,8 @@ let to_mont (p: t_Array i32 (mk_usize 256)) : t_Array i32 (mk_usize 256) =
   Hacspec_ml_dsa.createi #i32 (mk_usize 256) #(usize -> i32)
     (fun i -> Hacspec_ml_dsa.Arithmetic.mod_q (mk_i64 4193792 *! (cast (p.[i] <: i32) <: i64)))
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
 (* STANDALONE clean-context arithmetic: a == mod_q(8347681*b) ==> mod_q(R*a) ≡ 16382*b (mod q).
    --z3refresh: cold-gate stability (full-build query-state accumulation causes "incomplete
    quantifiers" that admit_except doesn't see). *)
@@ -1027,7 +1030,8 @@ let lemma_scale_arith (a b : i32) : Lemma
     FStar.Math.Lemmas.lemma_mod_mul_distr_r 16382 (v b) 8380417
 #pop-options
 
-#push-options "--z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 300 --split_queries always"
 (* to_mont(intt p)[i] ≡ 16382 * intt_unscaled(p)[i]  (intt = reduce_polynomial o intt_unscaled) *)
 let lemma_to_mont_intt (p: t_Array i32 (mk_usize 256)) (i: nat{i < 256}) : Lemma
   (ensures
@@ -1055,7 +1059,8 @@ let lemma_cong_mul16382 (a b : int) : Lemma
     FStar.Math.Lemmas.lemma_mod_mul_distr_r 16382 b 8380417
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 (* top chain: scale post (out ≡ 16382·s8) + compose post (s8 ≡ intt_unscaled s0)
    -> out ≡ to_mont(intt s0) (mod q) *)
 let lemma_invert_top (s0flat s8flat refut : t_Array i32 (mk_usize 256)) : Lemma

@@ -427,7 +427,8 @@ lemma_l2_full_avx2 orig_re ${re}
 // the opaque comp_7_6_done atom directly.
 #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
 #[allow(unsafe_code)]
-#[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 600 --z3refresh"#)]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 600"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     Avx2NttTheory.is_i32b_poly_avx2 8380416 $re
@@ -534,7 +535,8 @@ unfold let q76_quadpost (re re_f: Avx2NttTheory.av32)
 (* an L7-quad output array `a` at lo-unit q in [base,base+4) carries fst(bf_pair src[q] src[q+16] z1);
    if src agrees with orig at q,q+16 and mid==bf_pair-of-orig there, then a==mid there.  Pure
    bf_pair determinism (congruence), abstract bf_pair OK. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let q76_l7out_eq_mid (orig mid src a: Avx2NttTheory.av32) (q:nat)
     : Lemma
       (requires
@@ -567,7 +569,8 @@ let q76_l6_pair_subst_mid (inp mid out_q: Avx2NttTheory.av32) (q:nat{q+8 < 32}) 
    q76_quadpost abstract foralls, in IMPL order) + the L7 (`mid`) bf_pair-of-orig relation.
    Discharges out's bf_pair-of-MID per-L6-lo-unit post.  Copied from
    Avx2NttTheory.lemma_build_out_l6_value. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 400 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
 let q76_l6_value
       (orig mid qa0 qa1 qb0 qb1 qc0 qc1 qd0 out: Avx2NttTheory.av32)
     : Lemma
@@ -640,7 +643,8 @@ let q76_l6_value
 
 (* STANDALONE 32-unit bound driver (clean context).  Each unit's LAST touch is its L6 quad
    (qb0/qb1/qd0/out), bounding it to NTT_BASE+2; later quads frame it.  From the 8 quad posts. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 400 --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
 let q76_bound
       (orig qa0 qa1 qb0 qb1 qc0 qc1 qd0 out: Avx2NttTheory.av32)
     : Lemma
@@ -690,9 +694,8 @@ let q76_bound
 #pop-options
 "#
     )]
-    #[hax_lib::fstar::options(
-        r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#
-    )]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"#)]
     #[hax_lib::requires(fstar!(r#"
         v $bnd + 8380416 < pow2 31 /\
         v $step_by > 0 /\
@@ -768,9 +771,8 @@ let q76_bound
     // 4-pair REAL quad (= Avx2NttTheory.quad's contract; body = 4 real mul_bf).
     // lo-units base..base+3 paired with +sb.
     #[inline(always)]
-    #[hax_lib::fstar::options(
-        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
-    )]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"#)]
     #[hax_lib::requires(fstar!(r#"
         v $bnd + 8380416 < pow2 31 /\
         v $sb > 0 /\ v $base + 3 + v $sb < 32 /\ v $base + 4 <= v $base + v $sb /\
@@ -845,9 +847,8 @@ let q76_bound
     // standalone bound + L6-value drivers.  Kept SEPARATE so the 7_6 fn's VC stays
     // lean (just the layer-atom composition).
     #[inline(always)]
-    #[hax_lib::fstar::options(
-        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
-    )]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"#)]
     #[hax_lib::requires(fstar!(r#"
         Avx2NttTheory.is_i32b_poly_avx2 8380416 $re /\
         $field_modulus ==
@@ -1026,9 +1027,8 @@ let q76_bound
 "#))]
 unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     #[inline(always)]
-    #[hax_lib::fstar::options(
-        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
-    )]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"#)]
     #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
     #[hax_lib::requires(fstar!(r#"
         (v v_STEP == 8 \/ v v_STEP == 16 \/ v v_STEP == 32) /\
@@ -1058,9 +1058,8 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
         // (mont-mul on unit index+step_by, then sub/add cross) + the
         // unit_post_cross_avx2 producer proof.
         #[inline(always)]
-        #[hax_lib::fstar::options(
-            r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"#
-        )]
+        #[hax_lib::fstar::before(r#"#restart-solver"#)]
+        #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"#)]
         #[hax_lib::requires(fstar!(r#"
             v $step_by > 0 /\
             v $index + v $step_by < 32 /\
@@ -1659,9 +1658,8 @@ let lemma_window_forall32_from_modwin
 "#))]
 pub(crate) fn ntt(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
-    #[hax_lib::fstar::options(
-        r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"#
-    )]
+    #[hax_lib::fstar::before(r#"#restart-solver"#)]
+    #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"#)]
     #[hax_lib::fstar::before(
         r#"
 (* CHUNKS-EQ bridge helper: the LOCAL `chunks_of_re_avx2` (Ntt.fst) and the
