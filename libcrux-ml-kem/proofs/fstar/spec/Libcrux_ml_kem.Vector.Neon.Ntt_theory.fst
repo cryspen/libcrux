@@ -854,7 +854,8 @@ let lemma_nttmul_in
    round-trip form so lemma_nttmul_redcong applies.  Honest: the vmull/vmlal
    widening MAC + reinterpret/trn lane layout is recomputed from the
    a0/b0/a1b1/zeta construction (mirrors lemma_nttmul_in's trn threading). *)
-#push-options "--z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 300 --split_queries always"
 let lemma_nttmul_montval_fst
     (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     (a0 b0 a1b1 zeta: NI.t_e_int16x8_t)
@@ -976,7 +977,8 @@ let lemma_nttmul_montval_fst
 
 (* ODD-output montgomery-reduce input.  Ps_k = lhs[2p]*rhs[2p+1] + lhs[2p+1]*rhs[2p];
    honest mirror of lemma_nttmul_montval_fst (a0b1 widening MAC + mlal with a1,b0). *)
-#push-options "--z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 300 --split_queries always"
 let lemma_nttmul_montval_snd
     (lhs rhs: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     (a0 a1 b0 b1: NI.t_e_int16x8_t)
@@ -1141,7 +1143,8 @@ let lemma_u8x2_i16_byte (x: i16) : Lemma
    bit-reasoning stays here, off the main lemma's WP).  res = s16<-u8 reinterpret of
    the table-lookup of the u8<-s16 reinterpret of src; if index pair (2i,2i+1) selects
    bytes (2p,2p+1) then res lane i == src lane p (byte round-trip). *)
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 100 --split_queries always"
 let lemma_out_u8lane
     (src res: NI.t_e_int16x8_t) (index: NI.t_e_uint8x16_t) (i: nat{i < 8}) (p: nat{p < 8}) : Lemma
   (requires
@@ -1169,7 +1172,8 @@ let lemma_out_u8lane
 (* OUTPUT ASSEMBLY (trn(fst,snd) -> trn_s32 -> vqtbl1q_u8 permute).
    res.f_low (low2) / res.f_high (high2) lanes in terms of fst/snd lanes,
    composed from the proven trn-s32 lemmas + lemma_out_u8lane. *)
-#push-options "--z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 300 --split_queries always"
 let lemma_nttmul_out
     (fst snd low1 high1 low2 high2: NI.t_e_int16x8_t)
     (low0 high0: NI.t_e_int32x4_t)
@@ -1230,7 +1234,8 @@ let lemma_nttmul_out
 (* The honest per-pair core, proven in clean context.  Threads in the two
    montgomery_reduce posts and the a1b1 congruence as `requires`, and concludes the
    8 even + 8 odd per-lane congruences on fst/snd (indexed by pair p[k]). *)
-#push-options "--z3rlimit 400 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 400 --split_queries always"
 let lemma_nttmul_fstsnd
     (iv_l iv_r: t_Array i16 (mk_usize 16))
     (a1 b1 a1b1 zeta flo fhi slo shi fst snd: NI.t_e_int16x8_t) (z1 z2 z3 z4: i16) : Lemma
@@ -1545,7 +1550,8 @@ let lemma_zeta_bound8 (zeta: NI.t_e_int16x8_t) (z1 z2 z3 z4: i16) : Lemma
    WP ceiling that ntt_multiply's ~28-let spine otherwise imposes).  ntt_multiply computes
    the locals, supplies the index byte facts (assert_norm + lemma_nttmul_index), and calls
    this once with reflexive construction `requires`. *)
-#push-options "--z3rlimit 400 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 400 --split_queries always"
 (* AVX2 lemma_nttmul_main pattern: take ONLY the source words (lhs rhs) + the two
    already-loaded const vectors (zeta index, with their per-lane value facts) and RECOMPUTE
    the entire ~27-let SIMD spine INTERNALLY, both in the `ensures` `let ... in` and in the

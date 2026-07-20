@@ -483,7 +483,8 @@ let cmp_deint_bounds (hv: NA.t_e_int16x8_t) : Lemma
 
 (* per-output-lane: deint -> compress_int32x4_t -> reinterpret+vtrn1q computes the
    Barrett (unmasked) compression value of input lane j, bounded < 2^15. *)
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
 let cmp_out_lane (hv: NA.t_e_int16x8_t) (cb: i32) (j: nat{j < 8}) : Lemma
   (requires (v cb == 4 \/ v cb == 5 \/ v cb == 10 \/ v cb == 11) /\
             (forall (m: nat). m < 8 ==>
@@ -514,7 +515,8 @@ let cmp_out_lane (hv: NA.t_e_int16x8_t) (cb: i32) (j: nat{j < 8}) : Lemma
 #pop-options
 
 (* trivial dispatcher: per-lane lemma keeps the 8-lane forall light. *)
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 100 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100 --split_queries always"
 let cmp_half_out (hv: NA.t_e_int16x8_t) (cb: i32) : Lemma
   (requires (v cb == 4 \/ v cb == 5 \/ v cb == 10 \/ v cb == 11) /\
             (forall (m: nat). m < 8 ==>
@@ -612,7 +614,8 @@ let cmp_compress_unfold (cb: i32)
 
 (* full Barrett-form functional post for `compress`.
    op_compress (Vector.Neon) calls this, then bridges to the spec compress_post. *)
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always"
 let cmp_compress_post (cb: i32) (vin: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) : Lemma
   (requires (v cb == 4 \/ v cb == 5 \/ v cb == 10 \/ v cb == 11) /\
             (forall (i: nat). i < 16 ==>

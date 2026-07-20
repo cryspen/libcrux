@@ -202,7 +202,8 @@ lemma_repr_of_two_loads ${array}
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (repr ${v})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10 (repr ${v}) ${result}"#))]
 pub(crate) fn serialize_10(v: SIMD128Vector) -> [u8; 20] {
@@ -325,7 +326,8 @@ lemma_repr_of_two_loads ${array}
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (repr ${v})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12 (repr ${v}) ${result}"#))]
 pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
@@ -387,7 +389,8 @@ pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(v.len() == 24)]
 #[hax_lib::ensures(|result| fstar!(r#"${spec::deserialize_12_post} ${v} (repr ${result})"#))]
 pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {

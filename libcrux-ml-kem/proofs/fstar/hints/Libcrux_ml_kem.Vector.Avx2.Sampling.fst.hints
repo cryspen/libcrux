@@ -1,5 +1,5 @@
 [
-  "5371fde095ef067e2ae385f9457f4087",
+  "e5a7d824f2cd3a80699b51ad775862d1",
   [
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -63,7 +63,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0eca8a4978cee513a735ae6abed55be1"
+      "c22555c9006de51c2efb41c09e1061b8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -183,7 +183,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b372778a750f9992d2f13dcc9667eee5"
+      "2568df9df89ffa9442c7b55730e0d2c7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -196,7 +196,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "77538bdad709b72042f43eb4915fc423"
+      "1c52f59ffe55b479c980cbb1340a24e1"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -226,7 +226,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "9e0b23b90d15b7d061cf89ce7903b2a9"
+      "2e3a3c799a3df00d8038547599393db9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -239,7 +239,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f31a36409dbc08883f31433c44d7f43a"
+      "7fa0b982495e7f256167843598d5766f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -268,7 +268,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "113ae4f6d0e6aaa1ac423829dbe787de"
+      "29248801027d7b01b29ecf3c35b189b9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -281,7 +281,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "19d1e76766f70c2845402fbe90bef1c1"
+      "725da9c6350b9f92f0412ee0aa54aa2c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -311,7 +311,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "3c939fbb228b8790ad4022b55624783a"
+      "f447425cf4a8118ea82d8707693efca4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -324,7 +324,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d3acbeb23b077abcdbc48eddc45fe63e"
+      "0a2fc3d158971be42307fc1889791141"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -355,7 +355,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "a2b46933dc6f56b348e35db1e2c6e588"
+      "6dc83934bdee69af72a03d53d5e80ad2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -368,7 +368,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "284102d42eaf178e4e3279f010266b8d"
+      "87ac525c2d01ec33dc9943df00c60ab8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -392,7 +392,7 @@
         "typing_Core_models.Slice.impl__len"
       ],
       0,
-      "974dfd26fcf8f421a9225be69f0c4a2e"
+      "5d007f043969d181225cd2c8f6f333ce"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -405,7 +405,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bf4d7241142f303d4b05557b34dd6d75"
+      "88d47a83109f6e7aca3c6a01bbe2a516"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -429,7 +429,7 @@
         "typing_Core_models.Slice.impl__len"
       ],
       0,
-      "f417fe6670c92149b0ce29077cd15e70"
+      "855b728b2ef495c990314837925fe26e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -452,7 +452,7 @@
         "typing_Core_models.Slice.impl__len"
       ],
       0,
-      "c83794d8e7a25290bc743e50b3a159d0"
+      "171342afe4c73252643e1e2ab00d475b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -482,7 +482,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "64dae4dba3a47a86439f176545c89a82"
+      "28bfaec47db361ea60adbdb671610bc0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -514,7 +514,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "7e569918550fd1278ad64c0816604982"
+      "1b26bcb3f69c554f922069e9339c730d"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -544,7 +544,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "ed3d662a27e854b4508689f48464acd1"
+      "cde526821576ed0d0a46eb304328e5bb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -594,7 +594,7 @@
         "typing_tok_Rust_primitives.Integers.I16@tok"
       ],
       0,
-      "1e458f2e05b7d5116a173a7d30c728d6"
+      "d0c10229fc4c265bf1a2e84d4c8bd181"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -615,7 +615,7 @@
         "refinement_interpretation_Tm_refine_54146d1e0dab939d77d7c1f088d42489"
       ],
       0,
-      "8aa2cea545bacd8ee64d0705baae170e"
+      "33060cd4a15e59f00530d0372bee48f0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -646,7 +646,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "8861cf13370ea855c0ddaeb93af93ae2"
+      "b62c8a82d3d834c31d52404dfc304f41"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -677,7 +677,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "4c43c942f169b3d37b53481eed0912cb"
+      "6bb6dcf4b6283daa2eceab6acc7ee3fa"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -708,7 +708,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "4c43c942f169b3d37b53481eed0912cb"
+      "6bb6dcf4b6283daa2eceab6acc7ee3fa"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -754,7 +754,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "55b234e65f9ef4902c42553a322165b8"
+      "ec64d5591cadde7d7919fab1ae9aeeb7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -776,7 +776,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "154cfcbc571c14c1993705d8ed7ec650"
+      "eb6a7ce318e207fba8fddbb447b61631"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -798,7 +798,7 @@
         "refinement_interpretation_Tm_refine_c3e0f5afbbd71c0708c63594b3916904"
       ],
       0,
-      "ad9a89d3e22cb19f1e148a83ffcb305a"
+      "62e36cea5fd96d540c368b25424771cc"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -829,7 +829,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "6751a157509cbbc7fa03fec043b00638"
+      "bcb22be2e47141d1ea4c0cd96015ce40"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -854,7 +854,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "380b07af7eda48e9edb5ab73022046c2"
+      "7933e0503501940af385572690114efc"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -879,7 +879,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "3f09697339fbd7a5011e31d09d5be6d6"
+      "4eba69ba092c6ca6061a9e8c454f09de"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -915,7 +915,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "b387c1cacf4c0a1f2a05da0ac5a88fe9"
+      "b90e1f643eefd939b08fc384b90bb975"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1001,7 +1001,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5a19f7f2da2e6c28305b1a1779df6ee4"
+      "c1dfd479b6ca72e00fe81b75b5e998eb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1031,7 +1031,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "bfd005a8eb6cecd01985a5a27969b527"
+      "0ce50fe11f056beb50597f9ef12daa2a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1048,7 +1048,7 @@
         "refinement_interpretation_Tm_refine_688c60b43a3f8c89a3e9fc8181034f8f"
       ],
       0,
-      "fc79c293093b149d54eda71b4be5a5b7"
+      "3da2e1de59611dc89587d57d7f63d0d0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1074,7 +1074,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "df7820ae8e2aabe6ebf044ba342b28a8"
+      "a1db6d7c498d78881f8a33a570d951c0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1099,7 +1099,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4723d4a8b8df26a6bf9ebb926b9df65a"
+      "2dc92905adb0dd9650fab7538e875db9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1124,7 +1124,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bc2978041455ac27bc20837abb92a0cc"
+      "546ec0b4540a95be89447fa39ab3f66a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1146,7 +1146,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "0716f98a855d8f7f6ea25506789640a8"
+      "b34179c84960c6d591e9d1bdb83da9c9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1159,7 +1159,7 @@
         "refinement_interpretation_Tm_refine_4aa45f74d74849646814afac90969b16"
       ],
       0,
-      "8b57aaa0760df7c145850edae44f666d"
+      "353e85b6d60530768524290a576c6416"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1180,7 +1180,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "9682965afa1cecaeccf98c27d7d0cd35"
+      "75671d68cf7fec1d41030c605afb752f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1195,7 +1195,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "df62e88f8b04a7ed0aa071561b682577"
+      "dd3045f009c091c4511e744f51417484"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1222,7 +1222,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16"
       ],
       0,
-      "857a2468fbafbc16c4f23d38b543c9a1"
+      "7ef71fe64bd732df2e2deb2f39b50b05"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1268,7 +1268,7 @@
         "typing_Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS"
       ],
       0,
-      "99aa405e8e8012de2197c2c6fecdc375"
+      "50bffbb196c029967bcba1b824006579"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1293,7 +1293,7 @@
         "refinement_interpretation_Tm_refine_f4ec0a04344e7130939ebe4f31f6bd8f"
       ],
       0,
-      "11b4f7291f50898b03316dd501b8be62"
+      "a41c9492a81cc872c4a9f54cba540135"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1305,7 +1305,7 @@
         "refinement_interpretation_Tm_refine_5e146d208ded1331fda600bbf8ecaee2"
       ],
       0,
-      "5546f6d5a4b8bdaf383bc8c8722615b2"
+      "b0694b68ed3f03badf56d48225798837"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1321,7 +1321,7 @@
         "token_correspondence_Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_"
       ],
       0,
-      "0a5974f8ccf1acad7fd4760650ae6b06"
+      "a5f21282842b16f0e5ecda8787d9f316"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1346,7 +1346,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ff9d3bda8ebc66c6792a1e35c557762d"
+      "4e7076d2050d1c1ddda2062e5e69e844"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1371,7 +1371,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5f5082e74f5cd605cae373340d3afce0"
+      "9f72cc822195d4d636cfc982418bd527"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1422,7 +1422,7 @@
         "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
       ],
       0,
-      "729788c4c7b0bc83e3cffa4caca463c4"
+      "bbdfffa1cebed24ee6c12d05bbf6ea8d"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1518,7 +1518,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0ff00c8da909382ad48177d3f45dcbfb"
+      "0d898b2584809992519fa5e850d6864b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1527,7 +1527,7 @@
       1,
       [ "@query", "equation_BitVec.Intrinsics.mm_shuffle_epi8" ],
       0,
-      "7288c78136d88930a352790a42eae2fa"
+      "d8e12c37e7b592c2e9114ca0c2f30e78"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1574,7 +1574,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "699d2f09197a2805899062b5b0178468"
+      "6c870f6ca063ccaca2154b5daf154cc6"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1583,7 +1583,7 @@
       1,
       [ "@query", "equation_BitVec.Intrinsics.mm_shuffle_epi8" ],
       0,
-      "b644a5f73fda25114c32aa788090d562"
+      "b3e7327f911186ac64a1802d73f75a1c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1595,7 +1595,7 @@
         "refinement_interpretation_Tm_refine_e86d499396a9e705b940c7392548d645"
       ],
       0,
-      "d8d909ffeb236ac1be3fdf86f6f12529"
+      "87ebeef5a1394539089d87f4a9749f9f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1604,7 +1604,7 @@
       1,
       [ "@query" ],
       0,
-      "e365197b9e777f12793f37da31449ff6"
+      "547aff5df53820ff8c35fad748846c94"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1635,7 +1635,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index"
       ],
       0,
-      "664adbee9b24c637451929a70504c948"
+      "e454058a1c0e4119d47ca728afa5556e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1662,7 +1662,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "fdf4b6e4056c45b874a4830204f2e891"
+      "455221ce21f8a5bd77e706d7b918d2d4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1690,7 +1690,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "2a99ccfb791581d95fdb0875cbbe9028"
+      "ffecf92b79a5f22f974ed96fb53132d2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1717,7 +1717,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "274aa03fb50c2e31df07764fdf74638d"
+      "97033ff7abd9a4d54db257a9292f6a38"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1745,7 +1745,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "7b688fee86ac3cfbe99eab9895109574"
+      "bf1405734fbf7ce1bcd570471f503bb4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1771,7 +1771,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "6efdd28d58e16537c2c20d28ab56a4ef"
+      "531ba2dd3bf846cb6f7f94d691442750"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1790,7 +1790,7 @@
         "refinement_interpretation_Tm_refine_8f6a59384d15f976495d1c1fb1e1d383"
       ],
       0,
-      "8c75363fc63507c729f9157e0afa328a"
+      "7bf6486eed00d838fbd7c9abb17ee96f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1817,7 +1817,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "61f75f6277027ea51b9bf6561cbaf9e7"
+      "580b99af025004ae41baf572bcc4bc76"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1844,7 +1844,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "4d0afcac33578c977727134035a74c28"
+      "7af5c6ebc1928d94a07eb9ce1a4401cd"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1858,7 +1858,7 @@
         "refinement_interpretation_Tm_refine_fa2057bfb9d43bd377a327f1e1c70598"
       ],
       0,
-      "26b51511a805e82f9e9b30eb3874cad8"
+      "1c22e0be025967500f94c3f9018fb8da"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1872,7 +1872,7 @@
         "refinement_interpretation_Tm_refine_fa2057bfb9d43bd377a327f1e1c70598"
       ],
       0,
-      "f373aaac6921186551fc9dbd2a21360d"
+      "fefdb932081dde6736bb3dcfdc2fde3f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1897,7 +1897,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "be7426a5a0618a8509090214eb73a634"
+      "36cea42ac92d0f7bb7013ec957baad49"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1922,7 +1922,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8eca56aad237957a3156db9eb7798fa1"
+      "14cd0529e41fd83e8ade3a50973fd9c8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1944,7 +1944,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "f7c27f56267aafbcf16d98c394b1186d"
+      "bd3b19dcdf06e459213eb407346fbee3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1957,7 +1957,7 @@
         "refinement_interpretation_Tm_refine_4aa45f74d74849646814afac90969b16"
       ],
       0,
-      "8e37e551f95610af57f9c324cccc02fe"
+      "e8e1498194c065f4630ffe85383856fb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -1982,7 +1982,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "69d7af2acf13730c72b503bdf5eb24cd"
+      "0d7cd6cbe5b4d1b16183fa807b7fa8c2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2007,7 +2007,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "69d7af2acf13730c72b503bdf5eb24cd"
+      "7594fa45c29334be69652dcaabc63ee0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2028,7 +2028,7 @@
         "refinement_interpretation_Tm_refine_c3e0f5afbbd71c0708c63594b3916904"
       ],
       0,
-      "5da9191a4676843e48113b26b5f94cfb"
+      "b2ab65142c7ea8b1e053758c859e51ae"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2053,7 +2053,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3bc62e6e2609042b914355a0b9c8e832"
+      "1672866331dc6cd970900be863a88289"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2074,7 +2074,7 @@
         "refinement_interpretation_Tm_refine_c3e0f5afbbd71c0708c63594b3916904"
       ],
       0,
-      "b1fc304e61c7eb9064010229d51dca7e"
+      "82597bae101f3c62c79c5f6683e9bd1f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2099,7 +2099,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6697678df8516845210407d825aee45b"
+      "e3c4cb96fb50367ded581a3e718ebae9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2124,7 +2124,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e78b5ab1f3af1c4449b7286c7f879ab5"
+      "4885a59a350140c8e5b8f186dd448dec"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2160,7 +2160,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "9db9a7d4177d49c15882c23966d53b27"
+      "178dfb276eb71bfed8036a49b62ccaf0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2209,7 +2209,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "7378ef1c97e037f6491d0e712fc2c9a8"
+      "0d54ee67b9e0a9bd0b5a2bcc8b6574c5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2307,7 +2307,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c00897ab9334b26307f5568d3fecff4e"
+      "4e925ddd03f675b1f7c3dad630e06f09"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2336,7 +2336,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "ab8d2cf64f8b372e863120ce86786f41"
+      "07eecff101a277d2db4b0cdc098a7fc0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2353,7 +2353,7 @@
         "refinement_interpretation_Tm_refine_d3d715e96b874ce6eab8b00e9f5521f0"
       ],
       0,
-      "3e77f3449a82c6fee6428ffa58e11096"
+      "94b974f7872fb8232473e9d593f6e552"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2396,7 +2396,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "8eb3824e8d5662408cfd5ed828a43de5"
+      "4e43468d2596624a8116814b24f33bc5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2432,7 +2432,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "0373b61e78ec37306e64d18c3145df69"
+      "22b7aeafdf4f159333833616be3ae2a4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2527,7 +2527,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cf8ec1c0fba63d4e6d98927914ae5235"
+      "51ba57c3489a627df4595a18af0b2d0b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2551,7 +2551,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "815ec30dd257cc022923c219a7be3d6c"
+      "1fbc049ad7fde3b4a390529d0de0f1d0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2564,7 +2564,7 @@
         "refinement_interpretation_Tm_refine_e491bba81c250e5a385b80f15a764db0"
       ],
       0,
-      "9a752e7a6f9187b0e0e7e2a24b8fd806"
+      "5b4fc4106555254e80199fd1d12893ec"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2676,7 +2676,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bbc7a8579cfb11d7158c30e6557c75f8"
+      "b65a68af5480b181bff5014f4e098a57"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2760,7 +2760,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "02b7dab267b4cf14ab9153d5f04371c5"
+      "4b98cdec5aff954872e2cf232c588ca4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2790,7 +2790,7 @@
         "refinement_interpretation_Tm_refine_e0a84c160215f5f63aa15bf065dc9d97"
       ],
       0,
-      "f5043e17d415ff75433d375dba4af1fa"
+      "58b648c279249be8c23c2d6c6d16b105"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2833,7 +2833,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "027016368f226194c2354d79c6e9087c"
+      "9229acee5785446a3e9f0e7b2c0770f0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2877,7 +2877,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "cdc6ca6b2cb1d09274b4152233c846eb"
+      "128b071d8b363eb6e16506c04b4f2719"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2959,7 +2959,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "944ffd3eebe85ec055895b1f92cd840d"
+      "4cf9f398a653b5bf2daef076ff750c01"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -2983,7 +2983,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "c14d2d878a22628bd6c38ff8823d8f3d"
+      "dccbcfc195eb493ecaa23e78b371ace0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3008,7 +3008,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c3fff61c5d858e85afd379a06e35bb6f"
+      "3b735a4131f37ae338dafc9078066925"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3033,7 +3033,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d59c9b0b7a4356589e378904483a98dd"
+      "a8e626fcc43c168c18cfe967d455bb92"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3055,7 +3055,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "661f47b4cea6207225ce9e0033f62ec8"
+      "71ce360d3da920c183072d086ff656fe"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3068,7 +3068,7 @@
         "refinement_interpretation_Tm_refine_7309b15858a131ed891360e2d8b532ec"
       ],
       0,
-      "d2645568833e0070a86cb70a69effd31"
+      "9f39db92c04a252a000a0c8686570ef2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3185,7 +3185,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2eed2e082ee07c8dc352f49bd595d9d2"
+      "df2a520e631a71662e036f40404c80b8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3210,7 +3210,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "51d300699168a2f0fe97c8985bade9a6"
+      "61fccef6f9cf1d9ebe3a3c118b94178c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3235,7 +3235,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "eb4ddae2d50fccba4e0e8bffddf989ca"
+      "9ec0e4fbe06dc708578c79d38fee4adb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3255,7 +3255,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c67bc5e3cb94b8395e20dd2558a56793"
+      "31d424361b60229077f599a556403ee0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3268,7 +3268,7 @@
         "refinement_interpretation_Tm_refine_4aa45f74d74849646814afac90969b16"
       ],
       0,
-      "51869a8ce9bf492edb6c49735ba83dd4"
+      "556573bc8b3343190d7f9aa0623e7ea5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3281,7 +3281,7 @@
         "refinement_interpretation_Tm_refine_d79e71e154ae6de546481da5869e1733"
       ],
       0,
-      "cfafe6333cd4ec52eb3ff4ecc5dcdd9b"
+      "cdf67f0857158422ca28b19e1a720c42"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3306,7 +3306,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a460a35c7f7a3fec7ff525a2d355ef8d"
+      "1fbda75e284160fce8a49ae5d97a9f25"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3331,7 +3331,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "dde7d0ceeefd077564be3b1c0a331f3f"
+      "58416e1cfdc9638798be025fd44250ac"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3353,7 +3353,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "dc1b74a18e5492489c30e8be3424ae5b"
+      "401d7cd145810cba571f997e2e2bd8c9"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3366,7 +3366,7 @@
         "refinement_interpretation_Tm_refine_7309b15858a131ed891360e2d8b532ec"
       ],
       0,
-      "93ac7fb1377e1b58aaf9253d2e2314c8"
+      "a4cb604a0a7265faf482a8b41dc18d0b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3387,7 +3387,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "dad8d56e43e07c4adf23ebaf8bd356f5"
+      "7e1681cff2ca1f88a37ee9ae27e3f7c8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3412,7 +3412,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7957af47a3fcd63ad831135cd553f452"
+      "58b285ee6d307312e61c420832e7b2ed"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3437,7 +3437,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f235cdb844ecd75d72186fb1f3bd65d6"
+      "4eb2d1c12646d294be032d238af4523e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3457,7 +3457,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "58c37af98d987f1605eb6e37149af4ce"
+      "75b3d3a6c40c5af26561b31a447223b3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3470,7 +3470,7 @@
         "refinement_interpretation_Tm_refine_4aa45f74d74849646814afac90969b16"
       ],
       0,
-      "86af5d2e509d1bfe247e41e7f9933171"
+      "80c60690aa26d080f46684ae0c76de11"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3495,7 +3495,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4a59b3c130e3abf73caafc020112aaa2"
+      "3fa101bcc7b9bbce02ce3f04493d9a48"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3520,7 +3520,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3586f1eadd985b180a2aa653d0437575"
+      "f456d37f5f974186b78a3b795c3fbbe7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3542,7 +3542,7 @@
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15"
       ],
       0,
-      "7cb78d4f9acfbc49c9ebb4504b0c5743"
+      "32fc869b36b7d39756d793f6b8529684"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3555,7 +3555,7 @@
         "refinement_interpretation_Tm_refine_7309b15858a131ed891360e2d8b532ec"
       ],
       0,
-      "0933a2107932fb05e06d2dd23fb9bb73"
+      "ce5da7f302c9e6b59ed77812c9fe6900"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3606,7 +3606,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "5a22467a8d4afeea93a35508e20cee05"
+      "976971ae1e5531fc0787939723fb3f56"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3657,7 +3657,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "223f89a8b8476e95821081c699acf9ea"
+      "646f5cb5341cf32bd6a90fb1d9a1efa7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3666,7 +3666,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "24f31980485435435e5918ca54b98151"
+      "295cde8c5a0046123809cedc2aea4fc1"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3678,7 +3678,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "86f0d75122a13ab709ef61352d465689"
+      "7ddea506ebbbf5f78d59413733cfe794"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3792,7 +3792,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6fa0c3136c34f2a8d5f2bf5101b4d032"
+      "7f3f16518bb92e259f3f80e4409a0708"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3916,7 +3916,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a4a4092d1b66408cb1db33b993749c6e"
+      "7bd27b6464255cc7d3f280b29e9640cf"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3931,7 +3931,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "da571a975f72caeed5c1e4f557ca21d2"
+      "6af20a61a8953f77d85c99752066d57d"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3958,7 +3958,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16"
       ],
       0,
-      "0cbd71be05a2c2e80d7fd1e859323624"
+      "f03566e4d8c7f1b16ec564de3af9671c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3970,7 +3970,7 @@
         "refinement_interpretation_Tm_refine_5e146d208ded1331fda600bbf8ecaee2"
       ],
       0,
-      "aa6a5058a1d71b72e13729f55cc71d84"
+      "362af1cc9fc9b61d2aa30a040cb90401"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -3998,7 +3998,7 @@
         "refinement_interpretation_Tm_refine_f4ec0a04344e7130939ebe4f31f6bd8f"
       ],
       0,
-      "e6d35d574fcc1b3b864911b710c5df74"
+      "b41a39996809fb99f6dc5bc978935190"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4010,7 +4010,7 @@
         "refinement_interpretation_Tm_refine_5e146d208ded1331fda600bbf8ecaee2"
       ],
       0,
-      "cc4b3989568184d4eb2af566c27f2ebb"
+      "1a42e626a23e290fd487a5a323806ec0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4026,7 +4026,7 @@
         "token_correspondence_Libcrux_ml_kem.Vector.Avx2.Serialize.deserialize_12_"
       ],
       0,
-      "58f05307970b5565dac42378927097e5"
+      "7a3eea32c6b2aceb98070bd7695a8f93"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4051,7 +4051,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8cc3f500740133772fe7cc0ea2c85d8d"
+      "dcac4e07e1d22bbc33be3e0d043d4c88"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4076,7 +4076,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8b47ef2e09552034965fd6cb7eafed17"
+      "53c1bf76096ce8597140198e60552cfe"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4131,7 +4131,7 @@
         "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
       ],
       0,
-      "4ade8904da8a8860cd6254d0900e0370"
+      "f9ebb9817ccb90382266161b9a51b99b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4240,7 +4240,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "213b2cd5e06555f74165f6d5809ac368"
+      "ba06cf6b2ab7550b1be39d4719de3466"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4249,7 +4249,7 @@
       1,
       [ "@query", "equation_BitVec.Intrinsics.mm_shuffle_epi8" ],
       0,
-      "98ab9b009b3376c82b662ecd3ac8beec"
+      "56a280504bfdec182e265cfaaa8cc76f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4300,7 +4300,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "6e187a468b3a58536ec6266b131cf78c"
+      "7775816b7fca2e02a9e872b87b715cd4"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4309,7 +4309,7 @@
       1,
       [ "@query", "equation_BitVec.Intrinsics.mm_shuffle_epi8" ],
       0,
-      "646344177493ad11e510a39aa0aa533c"
+      "a64659886cd8a59f04b5e9f36d8a2d9d"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4321,7 +4321,7 @@
         "refinement_interpretation_Tm_refine_709823584a4310a716ff43a05a51f861"
       ],
       0,
-      "20f878d7751bae1b77c12dfab86cd0f0"
+      "3363dcf3f4a503cae6f114b7e1b90418"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4330,7 +4330,7 @@
       1,
       [ "@query" ],
       0,
-      "fabe439d79b8152edaf77fe912c44fa9"
+      "a69d71c3bd5518dc797dc5eb33412665"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4361,7 +4361,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index"
       ],
       0,
-      "3d1f204815c09dbaf3edd1c1f688eb92"
+      "7bad8527ea1ce569a9b2a60b2e86d7f3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4386,7 +4386,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "dd25b97701f96f66c83be0bcdb5f6186"
+      "2d73bc79a79fabfbdfdd8efe64f85800"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4399,7 +4399,7 @@
         "refinement_interpretation_Tm_refine_e491bba81c250e5a385b80f15a764db0"
       ],
       0,
-      "4ba0b87e876300dbcf27b663217f283c"
+      "313e17aa02d29eb3b8afe528b3003488"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4413,7 +4413,7 @@
         "refinement_interpretation_Tm_refine_282ac89e7fa303f409e8ed75c61291f6"
       ],
       0,
-      "326780cee2676bb73dee14fad6bf568a"
+      "7dfe127da8601627350117ecaecd9960"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4485,7 +4485,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "2b0d30bbef0a3fb3dbfbbd6746917008"
+      "9fa2e5e8abf26b93cd7b93ba3f87a4d7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4497,7 +4497,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "4a2153b5b0109000e7b138a13015013c"
+      "1a80e51f014574f4f31adab905fef076"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4506,7 +4506,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "68f8859f4e7743fca756317a223888bc"
+      "aaad59899c6ea5ab8929f497aa6b6fe7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4518,7 +4518,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "d67e009da871f932250f94ecf1f6e568"
+      "d428cad6a4fab1e714af47f8ac549e0f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4534,7 +4534,7 @@
         "refinement_interpretation_Tm_refine_cb11e8b54baa623cbdc40d69018323b7"
       ],
       0,
-      "c85d34ce204fe94ca3da979db5ed0953"
+      "5df8e4a70557330e4c2b059e0839fefe"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4571,7 +4571,7 @@
         "refinement_interpretation_Tm_refine_ddd220fa15998507fa2c44c4a1f271f8"
       ],
       0,
-      "e511eb84885dc2d19a00f4943dff577b"
+      "64c3310003d6c3e590b34558d0a53229"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4612,7 +4612,7 @@
         "refinement_interpretation_Tm_refine_ddd220fa15998507fa2c44c4a1f271f8"
       ],
       0,
-      "e2a866e84d49db27695c9583b9cf14e5"
+      "b1a799ccedb980fb98feb130872a02f5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4667,7 +4667,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "0a2a3306fba34b6d44e9ed5d71caa39b"
+      "33ae6e3e0bf2279a38ff9225f82b5f89"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4679,7 +4679,7 @@
         "refinement_interpretation_Tm_refine_e6b721e30634a156b83581ac7d5ea4ba"
       ],
       0,
-      "b7d8bab82115eadfc91b8c377a599944"
+      "4a74c54311341ba08e8ca3f9cab2e0b2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4688,7 +4688,7 @@
       1,
       [ "@query", "equation_Rust_primitives.Integers.usize" ],
       0,
-      "bb271c98c397bd47039b9bf9971c412f"
+      "89561adc08b87c98e1cdbf3807a645ad"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4719,7 +4719,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "7e0c4199c8e18520c3eb1c62a4630a91"
+      "86337452c75cbd5d31b84c7457436b57"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4739,7 +4739,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "1d8b97a6514e9f318707d51aae5b2142"
+      "5ff244325025e7f1a872c2c63a08abe2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4759,7 +4759,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "c0d1858449d038c3e099ee43224ee940"
+      "8c27eb69fa5d71f41ecbaff2e255a141"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4779,7 +4779,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "e97aca84870ebf59269b472c70ef3cfe"
+      "65e5801c31ba3d5c2d5879a42e10836a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4799,7 +4799,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "bcb9d1575ef212ca6c58c0f3aa38ddcd"
+      "03a9fec822d4935d200ab7a78559f53a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4812,7 +4812,7 @@
         "refinement_interpretation_Tm_refine_cb11e8b54baa623cbdc40d69018323b7"
       ],
       0,
-      "0724428826e0539d48c5fca2c55dfcc6"
+      "f9df93368fab814ff92fc9b68376065e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4828,7 +4828,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "f8c8f83dc13704c6549140aaffee057a"
+      "2614e3fd884e6c7f96898901ba9d0efe"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4846,7 +4846,7 @@
         "refinement_interpretation_Tm_refine_bf28c08943126cb2161436ca39351a76"
       ],
       0,
-      "947194407c9bf96b0a722dbfb39759f7"
+      "f48cd5eed0eb17b1a2f999c6a383386a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4859,7 +4859,7 @@
         "refinement_interpretation_Tm_refine_cb11e8b54baa623cbdc40d69018323b7"
       ],
       0,
-      "4db84e62a50179e6e232704766f54d51"
+      "19b23b11470a0bcdca0f3fd385b67642"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4887,7 +4887,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "1ce17a1c21488eb3c08814e4116720ea"
+      "a29e35f96ab70cf4a1f64b3f77468bb3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4906,7 +4906,7 @@
         "refinement_interpretation_Tm_refine_bf28c08943126cb2161436ca39351a76"
       ],
       0,
-      "ab645189d56b7ad935fcd129818634d6"
+      "597f4c0a7d5de0f2c0299e6f20dbaf14"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4939,7 +4939,7 @@
         "refinement_interpretation_Tm_refine_f580fd6970519d5267c7cbb826068ac3"
       ],
       0,
-      "672c51816c7820b03af67b6728b7a9d0"
+      "e3c1fe0ec16df53c41193cd869a275d5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4972,7 +4972,7 @@
         "refinement_interpretation_Tm_refine_f580fd6970519d5267c7cbb826068ac3"
       ],
       0,
-      "c4a33dcf89012afb1aeb987001f0eefd"
+      "961f930f2a2f2eb380a333bfc697ca5c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4986,7 +4986,7 @@
         "refinement_interpretation_Tm_refine_cb11e8b54baa623cbdc40d69018323b7"
       ],
       0,
-      "9e7d363a439dd1d9f7dab807b5267262"
+      "0688dea1975f313f8f80f24d5b553535"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -4998,7 +4998,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "77394d557ddc87fd85b02298ecff74fe"
+      "f0cd260cf1b7c0ed1529a78864a6bda2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5014,7 +5014,7 @@
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1"
       ],
       0,
-      "3b08f41d417ae77c32edeec9bc2ed309"
+      "d2af6691c8f9bd712424b73427a3e818"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5029,7 +5029,7 @@
         "refinement_interpretation_Tm_refine_744735e8ff7df6f066d8237059dab440"
       ],
       0,
-      "20b07f2385d67d310a2ab528c3ab529d"
+      "d31e246da349082f4fcd0b836e965f52"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5048,7 +5048,7 @@
         "refinement_interpretation_Tm_refine_5b735d8480a2ddd053d771477ad6b7e1"
       ],
       0,
-      "9a66599d562dc2a8e0a02a56318ac33c"
+      "4c5a5f90b7cdb7798390a9b9e40aaa99"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5117,7 +5117,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e761d8226b53a2cfe7fe0ce57c7e0033"
+      "cc69c7db78d71fdc47db5b7da60e1b85"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5132,7 +5132,7 @@
         "refinement_interpretation_Tm_refine_b64d5df34cbafc5ac5690cb10ed8c668"
       ],
       0,
-      "63327277aed383b228a014f87558d1ed"
+      "627714abe66a96ae3e6e25a02e2aef86"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5151,7 +5151,7 @@
         "refinement_interpretation_Tm_refine_5b735d8480a2ddd053d771477ad6b7e1"
       ],
       0,
-      "c1957f83089586973b3c18df20097021"
+      "2fb996902911205b04d4a5ad95f8129d"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5195,7 +5195,7 @@
         "refinement_interpretation_Tm_refine_e17da1cf7654f30d95fcef17864b23b1"
       ],
       0,
-      "1896ba725b3f95ae63cf65f3ed81b188"
+      "ea11fb9bd104084c8b6bf593f5470873"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5239,7 +5239,7 @@
         "refinement_interpretation_Tm_refine_e17da1cf7654f30d95fcef17864b23b1"
       ],
       0,
-      "85866561224420a385661e2d5d58ed75"
+      "286e55782c67de59834d34e22308f432"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling.rejection_sample",
@@ -5315,7 +5315,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6e202feb8798d53b59201c863cfc7e9d"
+      "bfbddab16b576288d4b14e18f35cbf60"
     ]
   ]
 ]

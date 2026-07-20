@@ -1,5 +1,5 @@
 [
-  "4e1864f4dd243ad5b4d07fa5f9466494",
+  "15736336fc5214926e1a43665805e6b0",
   [
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.mm_shuffle_epi8_no_semantics_lemma",
@@ -17,7 +17,7 @@
         "refinement_interpretation_Tm_refine_e9d2acd716e976eddb0f03391caae2b5"
       ],
       0,
-      "fc92fdc7700e8b7127c3e53e8caf92a1"
+      "3b6fa27a7ed09c45f16efabf0af0dcc3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.count_ones_u8_popcount8",
@@ -35,7 +35,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "7567d60325d1c4263b02c8a2fd246655"
+      "f23c6a8a8dc7382c2951cf4f904d03d3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_shuffle_semantics_of_axiom",
@@ -52,7 +52,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "887fed3f1b40fd1ca064b22d888788b3"
+      "49d851626c3def1ad53afa593bcab2cb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -91,7 +91,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f7bfb6404a8fe32fc790be0b5ef5f46e"
+      "27ba59905d823acf62e3547ae91149a5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -116,7 +116,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b8bc534c227f6f4d1cc103a9539ef244"
+      "8948645221d8e37e45662ee1b3ac4273"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -139,7 +139,7 @@
         "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
       ],
       0,
-      "796dfc9317950f26880d21c9a237c7f2"
+      "cfe7e0f3aa378701f163c0a336d1f516"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -169,7 +169,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "d8fbdaf583bc8c5b96a470844cf1db8c"
+      "0aa2540c1b15c4f511202a76aaad6e36"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -210,7 +210,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "61577cbff34bc5f2719f8bb69700439c"
+      "4afc55106a9abf4192cb92192001258c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -235,7 +235,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8f039e619ba37c0d839c86ccecf2a833"
+      "5949f8fe95e7a8ebb01444b333d1c86c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -258,7 +258,7 @@
         "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
       ],
       0,
-      "2d5dac1e7a9000f1afbdf4c012c44fd5"
+      "4403b308aeb034c5390f300ddf00d454"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -288,7 +288,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "ce758ac89c3ec5e2cff95fdd53baa244"
+      "018a57c265d7c78f6ed3e4de61f1bd47"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -311,7 +311,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "7c4de79d7745f53e3710d8568e8e1635"
+      "efff67d456098648b61f3d046ffbaa7c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -334,7 +334,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "9fbbfc8aead97b9036f112a41639319b"
+      "f5813898002ba7116d56e44e5a12a597"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -346,7 +346,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "a20b0ca4b1736b1bd6bdbd06b61442c6"
+      "1e62d7bc5f9cb8fb3ee623cbf8b2a437"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -358,7 +358,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "66e828bde4ebc72997f975508e58cb2f"
+      "8477daa4b2c6a22b9b530d8859dbd565"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -370,7 +370,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "182ce4db944e365213b6cc6107ca70f4"
+      "524659ffb358b26cc70b68179da92a11"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -383,7 +383,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "7f2ab76dcb1fed9b1b9ec5d5f5c0dc45"
+      "73ad7ff2dd0365853db3b77180647e52"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -396,7 +396,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "15c7975346dcb936a8ff3530a50dce00"
+      "ffc6eb8ce2551e6ce299da2094b01b8a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -419,7 +419,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "e1ffa60e09c0c3da2c1a7226e61c5995"
+      "847a3f592c19b37fc2b6afb1b2380384"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -442,7 +442,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "c9a1df72bb5ef1bf67273063287a7336"
+      "fb33cb937d2a0ec19e8631934ab97ac0"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -465,7 +465,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "8b20b0705e46b4268dd30a5a7c087b24"
+      "8d7184b44b2bbda566400d265760328a"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -488,7 +488,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "9ddda93fef5e7d067a67b1e692796b71"
+      "9d4309090246aeda5a44ba7e816e300e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -511,7 +511,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "c16740455f4a74b206fde6aeed039803"
+      "b52145647f7a14d0ffa1d409f435be73"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -534,7 +534,7 @@
         "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
       ],
       0,
-      "ca16f7624676ff0da0e45606b17c94ca"
+      "55dd671b34868ea1f7e9ebdfcf260416"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -546,7 +546,7 @@
         "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "798a76b26eabde928724fa4c29e545e0"
+      "1ed0edbde0111327a0c2725374178ba7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -559,7 +559,7 @@
         "refinement_interpretation_Tm_refine_2de20c066034c13bf76e9c0b94f4806c"
       ],
       0,
-      "02dc19bf874fbf07a6021e1bfca7f052"
+      "ed26de6c0fe00e643220ae309c41c49e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -568,7 +568,7 @@
       1,
       [ "@query" ],
       0,
-      "ae4a465f351eb1de4960ea4519b1663e"
+      "1b748c4e2ae50864749fc682b8925a6e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -577,7 +577,7 @@
       1,
       [ "@query" ],
       0,
-      "62696fb0e2974db33b92517a5e37e5c5"
+      "58c6b770ad115b80f3ceb123e3a78ba5"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -586,7 +586,7 @@
       1,
       [ "@query" ],
       0,
-      "06971de425d295670644f2847c7246a6"
+      "a31234b1cbd551ef8b106d22aa241494"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -595,7 +595,7 @@
       1,
       [ "@query" ],
       0,
-      "90feb4ade4f243d61286702e98c3c018"
+      "8a0a66f115d78f79416c40bcf5a69264"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -607,7 +607,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "72560408574e7a536437310cd982e4eb"
+      "cf0053ff1a3c307fcb41f74dbdcc6bae"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -619,7 +619,7 @@
         "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
       ],
       0,
-      "699c235d8bca82c919f182bf18996595"
+      "c5d2fc3fbba2424f8f6c5e7c3f6c5172"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -634,7 +634,7 @@
         "unit_inversion"
       ],
       0,
-      "1f57ad56f4730aed52990b97796579e9"
+      "feed28a91307579601ad6e8c9183e74b"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -663,7 +663,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ee56485a7d134daf94ece9f789490421"
+      "03902cec29e17d2c4b1be4ea71dd5360"
     ]
   ]
 ]

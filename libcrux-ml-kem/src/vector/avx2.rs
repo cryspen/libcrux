@@ -368,7 +368,8 @@ fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::compress_pre} (impl.f_repr ${vector}) $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_post} (impl.f_repr ${vector}) $COEFFICIENT_BITS (impl.f_repr ${out})"#))]
 fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector {
@@ -413,7 +414,8 @@ fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vec
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} (impl.f_repr ${a})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} (impl.f_repr ${a}) (impl.f_repr ${out})"#))]
 fn op_decompress_1(a: SIMD256Vector) -> SIMD256Vector {
@@ -454,7 +456,8 @@ fn op_decompress_1(a: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --z3refresh")]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"${spec::decompress_ciphertext_coefficient_pre} (impl.f_repr ${vector}) $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_ciphertext_coefficient_post} (impl.f_repr ${vector}) $COEFFICIENT_BITS (impl.f_repr ${out})"#))]
 fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(

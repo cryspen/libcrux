@@ -204,8 +204,9 @@ pub(crate) fn serialize_vector<const K: usize, Vector: Operations>(
 // OWN exit hypothesis (same representation as the return goal), producing the vector post
 // conjuncts directly — no explicit-call representation divergence.
 #[inline(always)]
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
 #[hax_lib::fstar::options(
-    "--z3rlimit 300 --ext context_pruning --split_queries always --z3refresh --using_facts_from '* -Hacspec_ml_kem.Parameters.createi_lemma -Libcrux_ml_kem.Polynomial.Spec'"
+    "--z3rlimit 300 --ext context_pruning --split_queries always --using_facts_from '* -Hacspec_ml_kem.Parameters.createi_lemma -Libcrux_ml_kem.Polynomial.Spec'"
 )]
 #[hax_lib::requires(
     (hacspec_ml_kem::parameters::is_rank(K)

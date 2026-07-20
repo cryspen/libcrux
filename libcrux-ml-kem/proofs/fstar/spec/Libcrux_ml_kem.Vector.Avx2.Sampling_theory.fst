@@ -65,7 +65,8 @@ let lemma_shuffle_semantics_of_axiom (a mask res: bit_vec 128)
    Hacspec_ml_kem.Commute.Rej_table (shuffle_semantics via the axiom
    above, mask/row/half links from the term equalities) and composes the
    clean-context per-lane lemma lemma_half_lane_bounded. *)
-#push-options "--z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--z3rlimit 300 --split_queries always"
 let lemma_half_done
     (potential: bit_vec 256) (a mask res: bit_vec 128)
     (row: t_Array u8 (mk_usize 16)) (half: nat{half <= 1}) (g: nat{g < 256})

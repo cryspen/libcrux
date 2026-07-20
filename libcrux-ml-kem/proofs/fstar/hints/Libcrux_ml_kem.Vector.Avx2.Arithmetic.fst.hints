@@ -88,7 +88,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "54ddf1b03e2a1022411127609ec91c85"
+      "5e74edd89bfaee3ca86dbde1dab31607"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Arithmetic.sub",
@@ -177,7 +177,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "829e2989f4cbabc03996daec94e21a9d"
+      "49eadea65f3fdc85ce1e1dcf4ced38bc"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Arithmetic.multiply_by_constant",
@@ -280,7 +280,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "96f213ac8e6748721195d9ab4242d599"
+      "5e42465a0f45bb9c2728c06b9b309d27"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Arithmetic.bitwise_and_with_constant",

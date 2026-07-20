@@ -751,7 +751,8 @@ let lemma_ser4_result_bit
 (* Per-group chainer with MINIMAL context: takes the already-collapsed
    result-byte fact (get_bit result == get_bit sg) as a hypothesis, so no
    OR/to_le_bytes/if-ladder machinery enters; just chains group_bit. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_ser4_bit_grp
       (vec: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (sg: u64)
@@ -914,7 +915,8 @@ let lemma_ser4_sumval_hi
 #pop-options
 
 (* Top-level post for the leaf, from the structural definitions. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 let lemma_serialize_4_post
       (vec: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (shift: Libcrux_intrinsics.Arm64_extract.t_e_int16x8_t)
@@ -1417,7 +1419,8 @@ let lemma_deser12_lane_bit (w: u16) (shift_lane: i16) (s: nat) (b: nat{b < 12})
 (* One output lane c of a 12-bit deserialize half: the vqtbl byte-gather selects
    bytes (idxA,idxB) from input_vec, vreinterpret reads the LE window, vshl/vand
    shift-mask; bit b of the result lane == bit (s+b) of the window u8x2(vA,vB). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 250 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 250 --split_queries always"
 let lemma_deser12_out_lane
       (input_vec index_vec: NI.t_e_uint8x16_t)
       (shift_vec: NI.t_e_int16x8_t) (mask12: NI.t_e_uint16x8_t)
@@ -1464,7 +1467,8 @@ let lemma_deser12_out_lane
 (* Coefficient cc (<16) of the packed byte stream: ties the output lane's bit b to
    the global byte-stream bit (12*cc+b), given the window invariant 8*byteA+s==12*cc
    and vA=inp[byteA], vB=inp[byteA+1]. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 250 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 250 --split_queries always"
 let lemma_deser12_coeff_bit
       (inp: t_Slice u8)
       (input_vec index_vec: NI.t_e_uint8x16_t)
@@ -1646,7 +1650,8 @@ let lemma_deser12_shift_lanes (shift_vec: NI.t_e_int16x8_t) (shifts: t_Array i16
 (* Clean-context per-coefficient dispatcher: given the loaded vectors with their
    concrete per-lane facts (index table, shifts, mask, input bytes), coefficient
    cc of repr(result) is 12-bit bounded and its bits track the packed byte stream. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 let lemma_deser12_dispatch
       (inp: t_Slice u8) (result: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (index_vec input_vec0 input_vec1: NI.t_e_uint8x16_t)
@@ -1734,7 +1739,8 @@ let lemma_deser12_dispatch
 
 (* Assemble deserialize_post_N from the per-coefficient dispatcher + BitVec stitch,
    in clean context (off the leaf's heavy construction WP). *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always --z3refresh"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300 --split_queries always"
 let lemma_deser12_post
       (inp: t_Slice u8) (result: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (index_vec input_vec0 input_vec1: NI.t_e_uint8x16_t)

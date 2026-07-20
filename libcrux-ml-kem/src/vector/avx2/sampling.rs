@@ -17,7 +17,8 @@ open Libcrux_ml_kem.Vector.Avx2.Sampling_theory
                     future(output)[j] >= 0 && future(output)[j] <= 3328))))]
 #[cfg_attr(
     hax,
-    hax_lib::fstar::options("--z3rlimit 300 --split_queries always --z3refresh")
+    hax_lib::fstar::before(r#"#restart-solver"#),
+    hax_lib::fstar::options("--z3rlimit 300 --split_queries always")
 )]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
