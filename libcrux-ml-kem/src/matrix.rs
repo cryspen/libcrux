@@ -35,7 +35,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
 ) {
     // The functional postcondition is tracked through an opaque (i,j)-prefix atom `sma_done_ij`
     // (Sample_matrix_bridge), so the createi-heavy hacspec spec terms never enter the loop-body VCs.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Sample_matrix_bridge.lemma_sma_base ${A_transpose}
         (${seed}.[ { Core_models.Ops.Range.f_end = mk_usize 32 } <: Core_models.Ops.Range.t_RangeTo usize ] <: t_Slice u8)
         $transpose"#
@@ -91,7 +91,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
             ));
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
-            hax_lib::fstar!(
+            proof!(
                 r#"Hacspec_ml_kem.Commute.Sample_matrix_bridge.lemma_sma_seeds_step ${seed} $i $j"#
             );
         }
@@ -142,20 +142,20 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
             } else {
                 A_transpose[i][j] = sampled[j];
             }
-            hax_lib::fstar!(
+            proof!(
                 r#"Hacspec_ml_kem.Commute.Sample_matrix_bridge.lemma_sma_inner_step
                 ${a_old} ${A_transpose} ${sampled} (${seeds}.[ $j ])
                 (${seed}.[ { Core_models.Ops.Range.f_end = mk_usize 32 } <: Core_models.Ops.Range.t_RangeTo usize ] <: t_Slice u8)
                 $transpose $i $j"#
             );
         }
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Sample_matrix_bridge.lemma_sma_outer_row ${A_transpose}
             (${seed}.[ { Core_models.Ops.Range.f_end = mk_usize 32 } <: Core_models.Ops.Range.t_RangeTo usize ] <: t_Slice u8)
             $transpose $i"#
         );
     }
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Sample_matrix_bridge.lemma_sma_finalize ${A_transpose}
         (${seed}.[ { Core_models.Ops.Range.f_end = mk_usize 32 } <: Core_models.Ops.Range.t_RangeTo usize ] <: t_Slice u8)
         $transpose"#
@@ -199,7 +199,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     let mut result = PolynomialRingElement::<Vector>::ZERO();
 
     hax_lib::assert_prop!(spec::is_bounded_poly(0, &result));
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_vdot_base
         ${secret_as_ntt} ${u_as_ntt} ${result}"#
     );
@@ -211,7 +211,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
                 ${result} ${secret_as_ntt} ${u_as_ntt} (Rust_primitives.Integers.v $i)"#
             ));
 
-        hax_lib::fstar!(
+        proof!(
             r#"assert (Rust_primitives.Integers.v $i < Rust_primitives.Integers.v v_K);
             assert (Rust_primitives.Integers.v v_K <= 4)"#
         );
@@ -219,7 +219,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
         let acc_old = result;
         let product = secret_as_ntt[i].ntt_multiply(&u_as_ntt[i]);
         result.add_to_ring_element(&product, i * 3328);
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_vdot_step_full
             ${secret_as_ntt} ${u_as_ntt} $i ${acc_old} ${product} ${result} ($i *! mk_usize 3328)"#
         );
@@ -231,7 +231,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
     #[cfg(hax)]
     let re_future = result;
     result = v.subtract_reduce(result);
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_message_done_finalize
         ${v} ${secret_as_ntt} ${u_as_ntt} ${t_pre} ${re_future} ${result}"#
     );
@@ -276,7 +276,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     let mut result = PolynomialRingElement::<Vector>::ZERO();
 
     hax_lib::assert_prop!(spec::is_bounded_poly(0, &result));
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_vdot_base
         ${t_as_ntt} ${r_as_ntt} ${result}"#
     );
@@ -288,12 +288,12 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
                 ${result} ${t_as_ntt} ${r_as_ntt} (v $i)"#
             ));
 
-        hax_lib::fstar!(r#"assert (v $i < v v_K); assert (v v_K <= 4)"#);
+        proof!(r#"assert (v $i < v v_K); assert (v v_K <= 4)"#);
         #[cfg(hax)]
         let acc_old = result;
         let product = t_as_ntt[i].ntt_multiply(&r_as_ntt[i]);
         result.add_to_ring_element(&product, i * 3328);
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_vdot_step_full
             ${t_as_ntt} ${r_as_ntt} $i ${acc_old} ${product} ${result} ($i *! mk_usize 3328)"#
         );
@@ -305,7 +305,7 @@ pub(crate) fn compute_ring_element_v<const K: usize, Vector: Operations>(
     #[cfg(hax)]
     let re_future = result;
     result = error_2.add_message_error_reduce(message, result);
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Compute_dot_bridge.lemma_v_done_finalize
         ${t_as_ntt} ${r_as_ntt} ${error_2} ${message} ${t_pre} ${re_future} ${result}"#
     );
@@ -370,7 +370,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
         #[cfg(hax)]
         let _result = result;
 
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_inner_done_base
             ${a_as_ntt} ${r_as_ntt} $i (${result}.[ $i ])"#
         );
@@ -393,7 +393,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
                     (${result}.[ $i ]) ${a_as_ntt} ${r_as_ntt} $i (v $j)"#
                 ));
 
-            hax_lib::fstar!(r#"assert (v $j < v v_K); assert (v v_K <= 4)"#);
+            proof!(r#"assert (v $j < v v_K); assert (v v_K <= 4)"#);
             #[cfg(hax)]
             let tt_old = result;
             // ntt_multiply's `self` pre is now is_bounded_poly 4096 (to accept the
@@ -404,7 +404,7 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
             spec::is_bounded_poly_higher(&a_as_ntt[i][j], 3328, 4096);
             let product = a_as_ntt[i][j].ntt_multiply(&r_as_ntt[j]);
             result[i].add_to_ring_element(&product, j * 3328);
-            hax_lib::fstar!(
+            proof!(
                 r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_inner_step_full
                 ${a_as_ntt} ${r_as_ntt} $i $j ${tt_old} ${target}"#
             );
@@ -416,21 +416,19 @@ pub(crate) fn compute_vector_u<const K: usize, Vector: Operations>(
         #[cfg(hax)]
         let re_future = result[i];
         result[i].add_error_reduce(&error_1[i]);
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Compute_u_bridge.lemma_u_row_done_finalize
             ${a_as_ntt} ${r_as_ntt} ${error_1} ${t_pre} ${re_future} (${result}.[ $i ]) $i ${target}"#
         );
         // Frame for the outer-invariant maintenance: invert_ntt + add_error_reduce only touch
         // result[i], so all other rows equal the iteration-start snapshot; this lets the bound
         // (for the from_fn-ZERO future rows) and row_done carry without a full re-derivation.
-        hax_lib::fstar!(
+        proof!(
             r#"assert (forall (k: nat). k < v v_K /\ k <> v $i ==>
             Seq.index ${result} k == Seq.index ${_result} k)"#
         );
     }
-    hax_lib::fstar!(
-        r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_rows_assemble ${result} ${target}"#
-    );
+    proof!(r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_rows_assemble ${result} ${target}"#);
     result
 }
 
@@ -483,7 +481,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
         ));
 
         t_as_ntt[i] = PolynomialRingElement::<Vector>::ZERO();
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_inner_done_base
             ${matrix_A} ${s_as_ntt} $i (${t_as_ntt}.[ $i ])"#
         );
@@ -503,7 +501,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
                     (${t_as_ntt}.[ $i ]) ${matrix_A} ${s_as_ntt} $i (v $j)"#
                 ));
 
-            hax_lib::fstar!(r#"assert (v $j < v v_K); assert (v v_K <= 4)"#);
+            proof!(r#"assert (v $j < v v_K); assert (v v_K <= 4)"#);
             #[cfg(hax)]
             let tt_old = *t_as_ntt;
             // ntt_multiply's `self` pre is now is_bounded_poly 4096 (unreduced keys);
@@ -512,7 +510,7 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
             spec::is_bounded_poly_higher(&matrix_A[i][j], 3328, 4096);
             let product = matrix_A[i][j].ntt_multiply(&s_as_ntt[j]);
             t_as_ntt[i].add_to_ring_element(&product, j * 3328);
-            hax_lib::fstar!(
+            proof!(
                 r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_inner_step_full
                 ${matrix_A} ${s_as_ntt} $i $j ${tt_old} ${target}"#
             );
@@ -521,12 +519,10 @@ pub(crate) fn compute_As_plus_e<const K: usize, Vector: Operations>(
         #[cfg(hax)]
         let t_pre = t_as_ntt[i];
         t_as_ntt[i].add_standard_error_reduce(&error_as_ntt[i]);
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_row_done_finalize
             ${matrix_A} ${s_as_ntt} ${error_as_ntt} ${t_pre} (${t_as_ntt}.[ $i ]) $i ${target}"#
         );
     }
-    hax_lib::fstar!(
-        r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_rows_assemble ${t_as_ntt} ${target}"#
-    );
+    proof!(r#"Hacspec_ml_kem.Commute.Matrix_bridge.lemma_rows_assemble ${t_as_ntt} ${target}"#);
 }

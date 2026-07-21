@@ -113,7 +113,7 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     //      (`lemma_count_total_ones_split`, plus a row-monotonicity
     //      lemma) which would have to be discharged without `admit ()`
     //      to satisfy the no-new-axioms rule.  Estimated 2-3 hr.
-    hax_lib::fstar!("admit ()");
+    proof!("admit ()");
     let mut offset = 0;
 
     signature[offset..offset + commitment_hash_size].copy_from_slice(commitment_hash);
@@ -227,7 +227,7 @@ pub(crate) fn deserialize<SIMDUnit: Operations>(
     // Anchor the post-split lengths so the loop invariants below can
     // refer to `Seq.length signer_response_serialized` and
     // `Seq.length hint_serialized` directly.
-    hax_lib::fstar!(
+    proof!(
         r#"
         assert (Seq.length $rest_of_serialized ==
                   v $signature_size - v $commitment_hash_size);

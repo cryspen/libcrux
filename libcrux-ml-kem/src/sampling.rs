@@ -198,7 +198,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         "assert (v (sz 2 *! sz 64) == 128);
         assert (Seq.length $randomness == 128)"
     );
@@ -223,7 +223,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 
             let even_bits = random_bits_as_u32 & 0x55555555;
             let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
-            hax_lib::fstar!(r#"logand_lemma $random_bits_as_u32 (mk_u32 1431655765);
+            proof!(r#"logand_lemma $random_bits_as_u32 (mk_u32 1431655765);
                 logand_lemma ($random_bits_as_u32 >>! (mk_i32 1)) (mk_u32 1431655765)"#);
             let coin_toss_outcomes = even_bits + odd_bits;
 
@@ -240,7 +240,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
                     });
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
-                    hax_lib::fstar!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 3);
+                    proof!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 3);
                         logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! (mk_u32 2) <: u32) <: u32) (mk_u32 3);
                         assert (v $outcome_1 >= 0 /\ v $outcome_1 <= 3);
                         assert (v $outcome_2 >= 0 /\ v $outcome_2 <= 3);
@@ -254,7 +254,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
                     sampled_i16s[8 * chunk_number + offset] = outcome_1 - outcome_2;
                     // Establish the atom for the freshly written coefficient and
                     // extend the loop invariant (standalone commute lemmas).
-                    hax_lib::fstar!(
+                    proof!(
                         r#"assert (Seq.length $byte_chunk == 4);
                         assert (Seq.slice $randomness (4 * v $chunk_number) (4 * v $chunk_number + 4) == ${byte_chunk});
                         Seq.lemma_index_slice $randomness (4 * v $chunk_number) (4 * v $chunk_number + 4) 0;
@@ -278,7 +278,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
                     );
                 }
             }
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (forall (j: nat). j < 8 * (v $chunk_number + 1) ==>
                   Hacspec_ml_kem.Commute.Sampling_cbd.cbd_coeff_2 $randomness
                     (Seq.index ${sampled_i16s} j) j)"#
@@ -286,7 +286,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
         }
     }
     let result = PolynomialRingElement::from_i16_array(&sampled_i16s);
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Sampling_cbd.lemma_cbd2_finalize #$:Vector $randomness
           ${sampled_i16s} ${result}"#
     );
@@ -302,7 +302,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         "assert (v (sz 3 *! sz 64) == 192);
         assert (Seq.length $randomness == 192)"
     );
@@ -326,7 +326,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
             let first_bits = random_bits_as_u24 & 0x00249249;
             let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
             let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
-            hax_lib::fstar!(r#"logand_lemma $random_bits_as_u24 (mk_u32 2396745);
+            proof!(r#"logand_lemma $random_bits_as_u24 (mk_u32 2396745);
                 logand_lemma ($random_bits_as_u24 >>! (mk_i32 1) <: u32) (mk_u32 2396745);
                 logand_lemma ($random_bits_as_u24 >>! (mk_i32 2) <: u32) (mk_u32 2396745)"#);
 
@@ -345,7 +345,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                     });
                     let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as i16;
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i16;
-                    hax_lib::fstar!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 7);
+                    proof!(r#"logand_lemma ($coin_toss_outcomes >>! $outcome_set <: u32) (mk_u32 7);
                         logand_lemma ($coin_toss_outcomes >>! ($outcome_set +! (mk_i32 3) <: i32) <: u32) (mk_u32 7);
                         assert (v $outcome_1 >= 0 /\ v $outcome_1 <= 7);
                         assert (v $outcome_2 >= 0 /\ v $outcome_2 <= 7);
@@ -359,7 +359,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                     sampled_i16s[4 * chunk_number + offset] = outcome_1 - outcome_2;
                     // Establish the atom for the freshly written coefficient and
                     // extend the loop invariant (standalone commute lemmas).
-                    hax_lib::fstar!(
+                    proof!(
                         r#"assert (Seq.length $byte_chunk == 3);
                         assert (Seq.slice $randomness (3 * v $chunk_number) (3 * v $chunk_number + 3) == ${byte_chunk});
                         Seq.lemma_index_slice $randomness (3 * v $chunk_number) (3 * v $chunk_number + 3) 0;
@@ -382,7 +382,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
                     );
                 }
             }
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (forall (j: nat). j < 4 * (v $chunk_number + 1) ==>
                   Hacspec_ml_kem.Commute.Sampling_cbd.cbd_coeff_3 $randomness
                     (Seq.index ${sampled_i16s} j) j)"#
@@ -390,7 +390,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
         }
     }
     let result = PolynomialRingElement::from_i16_array(&sampled_i16s);
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Sampling_cbd.lemma_cbd3_finalize #$:Vector $randomness
           ${sampled_i16s} ${result}"#
     );
@@ -411,7 +411,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (
         (v (cast $ETA <: u32) == 2) \/
         (v (cast $ETA <: u32) == 3))"#

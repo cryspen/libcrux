@@ -7,7 +7,7 @@ pub(crate) use crate::vector::{
 use hax_lib::{int::ToInt, prop::ToProp};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
-    hax_lib::fstar!(r#"assert_norm (pow2 16 == 65536)"#);
+    proof!(r#"assert_norm (pow2 16 == 65536)"#);
     [
         -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474,
         1468, 573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411,
@@ -80,7 +80,7 @@ let zeta_bound (i: usize{v i < 128})
 #[hax_lib::ensures(|result| result >= -1664 && result <= 1664)]
 pub fn zeta(i: usize) -> i16 {
     let result = ZETAS_TIMES_MONTGOMERY_R[i];
-    hax_lib::fstar!(r#"zeta_bound ${i}"#);
+    proof!(r#"zeta_bound ${i}"#);
     result
 }
 
@@ -140,7 +140,7 @@ pub(crate) mod spec {
         arr: &[PolynomialRingElement<Vector>; RANK],
         b: usize,
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%is_bounded_polynomial_vector)
                               (is_bounded_polynomial_vector v_RANK #v_Vector $b $arr)"#
         );
@@ -161,7 +161,7 @@ pub(crate) mod spec {
         m: &[[PolynomialRingElement<Vector>; RANK]; RANK],
         b: usize,
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%is_bounded_polynomial_matrix)
                               (is_bounded_polynomial_matrix v_RANK #v_Vector $b $m)"#
         );
@@ -170,7 +170,7 @@ pub(crate) mod spec {
     #[hax_lib::requires(is_bounded_vector(b1, vec) & (b1 <= b2))]
     #[hax_lib::ensures(|_| is_bounded_vector(b2, vec))]
     pub(crate) fn is_bounded_vector_higher<Vector: Operations>(vec: &Vector, b1: usize, b2: usize) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
     }
@@ -182,7 +182,7 @@ pub(crate) mod spec {
         b1: usize,
         b2: usize,
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
         );
     }
@@ -349,7 +349,7 @@ let lemma_is_bounded_polynomial_vector_3328_to_4096
         vec: &Vector,
         b: usize,
     ) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                               (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque);
                // Trigger the typeclass post for f_to_i16_array on `vec` so
@@ -369,7 +369,7 @@ pub(crate) fn add_bounded<Vector: Operations>(
     vec2: &Vector,
     _b2: usize,
 ) -> Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     Vector::add(vec1, vec2)
@@ -384,7 +384,7 @@ pub(crate) fn sub_bounded<Vector: Operations>(
     vec2: &Vector,
     _b2: usize,
 ) -> Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     Vector::sub(vec1, vec2)
@@ -406,21 +406,21 @@ pub(crate) fn multiply_by_constant_bounded<Vector: Operations>(
     _b: usize,
     c: i16,
 ) -> Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     // `i16::abs` (Rust_primitives.Arithmetic.abs_i16) is left uninterpreted by the
     // pinned hax-lib, so its spec is the single trusted primitive axiom
     // `Proof_utils.lemma_abs_i16` (a MIN-guarded i16-abs spec, to be upstreamed to
     // hax-lib; once abs_i16 carries it there this call and the axiom can be dropped).
-    hax_lib::fstar!(r#"Proof_utils.lemma_abs_i16 c"#);
+    proof!(r#"Proof_utils.lemma_abs_i16 c"#);
     Vector::multiply_by_constant(vec, c)
 }
 
 #[allow(non_snake_case)]
 #[hax_lib::ensures(|result| spec::is_bounded_poly(0, &result))]
 fn ZERO<Vector: Operations>() -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 0)"#
     );
     PolynomialRingElement {
@@ -578,7 +578,7 @@ fn vector_within_field_bound<Vector: Operations>(vec: &Vector) -> bool {
         && arr[15] < FIELD_MODULUS;
     // Fold the 16 ground lane bounds into the opaque
     // `is_i16b_array_opaque` atom behind `spec::is_bounded_vector`.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
             (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
@@ -728,7 +728,7 @@ fn add_to_ring_element<Vector: Operations>(
     // Phase 7a (E2): cite Hacspec_ml_kem.Polynomial.add_to_ring_element.
     // The strengthened loop invariant carries per-vector add_pre + add_post
     // for already-processed chunks; the Tier-1 lemma lifts to poly-level.
-    hax_lib::fstar!(
+    proof!(
         r#"
           Hacspec_ml_kem.Commute.Chunk.lemma_add_to_ring_element_commute
             #$:Vector
@@ -783,7 +783,7 @@ pub(crate) fn poly_barrett_reduce<Vector: Operations>(myself: &mut PolynomialRin
     // the per-vector `barrett_reduce_post (orig.[k]) (curr.[k])`.  The
     // Tier-1 lemma `lemma_poly_barrett_reduce_commute` lifts this to the
     // poly-level hacspec equation.
-    hax_lib::fstar!(
+    proof!(
         r#"
           Hacspec_ml_kem.Commute.Chunk.lemma_poly_barrett_reduce_commute
             #$:Vector
@@ -869,7 +869,7 @@ fn subtract_reduce<Vector: Operations>(
     // The post-loop bridge then chains via `lemma_subtract_reduce_scaled_eq`
     // on the parameter `b` and the constructed `b_input` (sharing
     // `f_coefficients == e_b`).
-    hax_lib::fstar!(
+    proof!(
         r#"
         Hacspec_ml_kem.Commute.Chunk.lemma_to_spec_poly_mont_unfold #v_Vector $b
       "#
@@ -907,7 +907,7 @@ fn subtract_reduce<Vector: Operations>(
             }
         }));
 
-        hax_lib::fstar!(
+        proof!(
             r#"
           assert (v $i < 16);
           assert_norm (1441 < pow2 15);
@@ -933,7 +933,7 @@ fn subtract_reduce<Vector: Operations>(
         // mont_mul, sub, barrett at chunk i and produces the opaque
         // chunk-level finalize predicate.  Single-call interface keeps
         // the loop body's Z3 context small.
-        hax_lib::fstar!(
+        proof!(
             r#"
             Hacspec_ml_kem.Commute.Chunk.lemma_subtract_reduce_iter
               (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector
@@ -962,7 +962,7 @@ fn subtract_reduce<Vector: Operations>(
     // bridge from the lemma's conclusion (uses `b_input`) to the post
     // (uses `b`) without resorting to record extensionality or
     // per-index Seq.lemma_eq_intro inside the body.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let b_input : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
           { Libcrux_ml_kem.Vector.f_coefficients = ${_b} } in
@@ -1036,7 +1036,7 @@ fn add_message_error_reduce<Vector: Operations>(
     // The post-loop bridge then chains via `lemma_add_message_error_reduce_scaled_eq`
     // on the parameter `result` and the constructed `result_input` (sharing
     // `f_coefficients == _result`).
-    hax_lib::fstar!(
+    proof!(
         r#"
         Hacspec_ml_kem.Commute.Chunk.lemma_to_spec_poly_mont_unfold #v_Vector $result
       "#
@@ -1078,7 +1078,7 @@ fn add_message_error_reduce<Vector: Operations>(
             }
         }));
 
-        hax_lib::fstar!(
+        proof!(
             r#"
           assert (v $i < 16);
           Spec.Utils.pow2_more_values 15;
@@ -1107,7 +1107,7 @@ fn add_message_error_reduce<Vector: Operations>(
         // Encapsulated per-iteration helper: takes the trait posts of
         // mont_mul, add (×2), barrett at chunk i and produces the opaque
         // chunk-level finalize predicate.
-        hax_lib::fstar!(
+        proof!(
             r#"
             Hacspec_ml_kem.Commute.Chunk.lemma_add_message_error_reduce_iter
               (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector
@@ -1133,7 +1133,7 @@ fn add_message_error_reduce<Vector: Operations>(
     // The scaled-eq lemma bridges the lemma's `result_input` (sharing
     // `f_coefficients == _result`) to the parameter `result` referenced by the
     // post.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let result_input : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
           { Libcrux_ml_kem.Vector.f_coefficients = ${_result} } in
@@ -1210,7 +1210,7 @@ fn add_error_reduce<Vector: Operations>(
     // The post-loop bridge chains via `lemma_add_error_reduce_scaled_eq` on
     // the original `myself_orig` and the constructed `myself_input` (both share
     // `f_coefficients == _myself`).  Mirror of subtract_reduce's seed.
-    hax_lib::fstar!(
+    proof!(
         r#"
         Hacspec_ml_kem.Commute.Chunk.lemma_to_spec_poly_mont_unfold #v_Vector ${myself}
       "#
@@ -1249,7 +1249,7 @@ fn add_error_reduce<Vector: Operations>(
             }
         }));
 
-        hax_lib::fstar!(
+        proof!(
             r#"
           assert (v $j < 16);
           assert_norm (1441 < pow2 15);
@@ -1274,7 +1274,7 @@ fn add_error_reduce<Vector: Operations>(
         // Encapsulated per-iteration helper: takes the trait posts of
         // mont_mul, add, barrett at chunk j and produces the opaque
         // chunk-level finalize predicate (mirror of lemma_subtract_reduce_iter).
-        hax_lib::fstar!(
+        proof!(
             r#"
             Hacspec_ml_kem.Commute.Chunk.lemma_add_error_reduce_iter
               (Libcrux_ml_kem.Vector.Traits.f_repr #v_Vector
@@ -1297,7 +1297,7 @@ fn add_error_reduce<Vector: Operations>(
     // HP.add_error_reduce.  The scaled-eq lemma bridges the lemma's
     // `myself_input` (sharing `f_coefficients == _myself`) to the original
     // `myself` referenced by the post.  Mirror of subtract_reduce's bridge.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let myself_input : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
           { Libcrux_ml_kem.Vector.f_coefficients = ${_myself} } in
@@ -1615,7 +1615,7 @@ fn add_standard_error_reduce<Vector: Operations>(
 
         // Establish the per-lane plain FE-add equation for this chunk as the
         // OPAQUE atom keyed on the ORIGINAL `_myself` chunk.
-        hax_lib::fstar!(
+        proof!(
             r#"
             lemma_add_std_err_iter #v_Vector
               (Libcrux_ml_kem.Vector.Traits.f_repr (Seq.index ${_myself} (v $j)))
@@ -1633,7 +1633,7 @@ fn add_standard_error_reduce<Vector: Operations>(
     // Post-loop bridge: from the 16 per-chunk opaque atoms (loop invariant at
     // i = 16) assemble the `_commute` precondition for every (k,l), then call
     // the proven Chunk commute lemma against `myself_orig` (= original).
-    hax_lib::fstar!(
+    proof!(
         r#"
         let myself_orig : Libcrux_ml_kem.Vector.t_PolynomialRingElement v_Vector =
           { Libcrux_ml_kem.Vector.f_coefficients = ${_myself} } in
@@ -2114,7 +2114,7 @@ fn ntt_multiply<Vector: Operations>(
         );
 
         // Establish ntt_multiply_chunk_done for the just-written chunk i.
-        hax_lib::fstar!(
+        proof!(
             r#"
             lemma_is_i16b_repr_of_bounded #v_Vector
               (Seq.index ${myself}.f_coefficients (v $i)) (mk_usize 4096);
@@ -2124,7 +2124,7 @@ fn ntt_multiply<Vector: Operations>(
         );
     }
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         lemma_ntt_multiply_to_hacspec #v_Vector $myself $rhs out
       "#

@@ -30,25 +30,25 @@ pub(crate) fn ntt_layer_1_step(
         -zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2, -zeta1, -zeta1, zeta1, zeta1,
         -zeta0, -zeta0, zeta0, zeta0,
     );
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}))"#
     );
 
     let rhs0 = mm256_shuffle_epi32::<0b11_11_01_01>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"fwd_shuffle_245 ${vector};
            fwd_shuffle_preserves_bound (mk_i32 245) ${vector} (7*3328)"#
     );
     let rhs = arithmetic::montgomery_multiply_by_constants(rhs0, zetas);
 
     let lhs = mm256_shuffle_epi32::<0b10_10_00_00>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"fwd_shuffle_160 ${vector};
            fwd_shuffle_preserves_bound (mk_i32 160) ${vector} (7*3328)"#
     );
 
     let result = mm256_add_epi16(lhs, rhs);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_fwd_l1_resultv ${vector} ${lhs} ${rhs} ${result};
            assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 0) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 1) == v zeta0 /\
@@ -94,25 +94,25 @@ pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256
         -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0, -zeta0,
         zeta0, zeta0, zeta0, zeta0,
     );
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}))"#
     );
 
     let rhs0 = mm256_shuffle_epi32::<0b11_10_11_10>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"fwd2_shuffle_238 ${vector};
            fwd2_shuffle_preserves_bound (mk_i32 238) ${vector} (6*3328)"#
     );
     let rhs = arithmetic::montgomery_multiply_by_constants(rhs0, zetas);
 
     let lhs = mm256_shuffle_epi32::<0b01_00_01_00>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"fwd2_shuffle_68 ${vector};
            fwd2_shuffle_preserves_bound (mk_i32 68) ${vector} (6*3328)"#
     );
 
     let result = mm256_add_epi16(lhs, rhs);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_fwd_l2_resultv ${vector} ${lhs} ${rhs} ${result};
            assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 0) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 1) == v zeta0 /\
@@ -157,13 +157,13 @@ pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256
 "#))]
 pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let rhs = mm256_extracti128_si256::<1>(vector);
-    hax_lib::fstar!(r#"lemma_mm256_extracti128_si256_1 ${vector}"#);
+    proof!(r#"lemma_mm256_extracti128_si256_1 ${vector}"#);
     // Now: forall i<8. get_lane128 rhs i = get_lane vector (i+8)
 
     let zetas_v128 = mm_set1_epi16(zeta);
     // Post: vec128_as_i16x8 zetas_v128 == Spec.Utils.create (sz 8) zeta
     // Pre for mont_mul: is_i16b_array 1664 zetas_v128 (since |zeta| <= 1664)
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${zetas_v128} i) == v zeta);
            assert (Spec.Utils.is_i16b_array 1664
@@ -174,7 +174,7 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     // Post: is_i16b_array 3328 rhs /\
     //   forall i<8. v(get_lane128 rhs i) % 3329 ==
     //                  (v(get_lane vector (i+8)) * v zeta * 169) % 3329
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i) % 3329 ==
                 (v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8))
@@ -182,13 +182,13 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let lhs = mm256_castsi256_si128(vector);
-    hax_lib::fstar!(r#"lemma_mm256_castsi256_si128 ${vector}"#);
+    proof!(r#"lemma_mm256_castsi256_si128 ${vector}"#);
     // Now: forall i<8. get_lane128 lhs i = get_lane vector i
 
     let lower_coefficients = mm_add_epi16(lhs, rhs);
     // Post: vec128_as_i16x8 lower == map2 (+.) ...
     // Use lemma_add_i_128 (SMTPat) to lift +. to +.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lhs} i) +
@@ -200,7 +200,7 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let upper_coefficients = mm_sub_epi16(lhs, rhs);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lhs} i) -
@@ -212,12 +212,12 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let combined_lo = mm256_castsi128_si256(lower_coefficients);
-    hax_lib::fstar!(r#"lemma_mm256_castsi128_si256_lo ${lower_coefficients}"#);
+    proof!(r#"lemma_mm256_castsi128_si256_lo ${lower_coefficients}"#);
 
     let combined = mm256_inserti128_si256::<1>(combined_lo, upper_coefficients);
-    hax_lib::fstar!(r#"lemma_mm256_inserti128_si256_1 ${combined_lo} ${upper_coefficients}"#);
+    proof!(r#"lemma_mm256_inserti128_si256_1 ${combined_lo} ${upper_coefficients}"#);
     // Final: forall i<8. combined[i] = lower[i], combined[i+8] = upper[i]
-    hax_lib::fstar!(
+    proof!(
         r#"
         assert (forall (i:nat). i < 8 ==>
                 Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) i ==
@@ -255,13 +255,13 @@ pub(crate) fn inv_ntt_layer_1_step(
     zeta3: i16,
 ) -> Vec256 {
     let lhs = mm256_shuffle_epi32::<0b11_11_01_01>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_shuffle_245 ${vector};
            lemma_shuffle_preserves_bound (mk_i32 245) ${vector} (4*3328)"#
     );
 
     let rhs0 = mm256_shuffle_epi32::<0b10_10_00_00>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_shuffle_160 ${vector};
            lemma_shuffle_preserves_bound (mk_i32 160) ${vector} (4*3328)"#
     );
@@ -270,7 +270,7 @@ pub(crate) fn inv_ntt_layer_1_step(
     let rhs = mm256_mullo_epi16(rhs0, mult);
 
     let sum = mm256_add_epi16(lhs, rhs);
-    hax_lib::fstar!(r#"lemma_inv_l1_sums_v ${vector} ${lhs} ${rhs0} ${mult} ${rhs} ${sum}"#);
+    proof!(r#"lemma_inv_l1_sums_v ${vector} ${lhs} ${rhs0} ${mult} ${rhs} ${sum}"#);
 
     let zetas = mm256_set_epi16(
         zeta3, zeta3, 0, 0, zeta2, zeta2, 0, 0, zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0,
@@ -280,7 +280,7 @@ pub(crate) fn inv_ntt_layer_1_step(
     let sum_reduced = arithmetic::barrett_reduce(sum);
 
     let result = mm256_blend_epi16::<0b1_1_0_0_1_1_0_0>(sum_reduced, sum_times_zetas);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}));
            assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 2) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 3) == v zeta0 /\
@@ -315,13 +315,13 @@ pub(crate) fn inv_ntt_layer_1_step(
       (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) zeta0 zeta1"#))]
 pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let lhs = mm256_permute4x64_epi64::<0b11_11_01_01>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_permute_245 ${vector};
            lemma_permute_preserves_bound (mk_i32 245) ${vector} 3328"#
     );
 
     let rhs0 = mm256_permute4x64_epi64::<0b10_10_00_00>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_permute_160 ${vector};
            lemma_permute_preserves_bound (mk_i32 160) ${vector} 3328"#
     );
@@ -330,7 +330,7 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
     let rhs = mm256_mullo_epi16(rhs0, mult);
 
     let sum = mm256_add_epi16(lhs, rhs);
-    hax_lib::fstar!(r#"lemma_inv_l2_sums_v ${vector} ${lhs} ${rhs0} ${mult} ${rhs} ${sum}"#);
+    proof!(r#"lemma_inv_l2_sums_v ${vector} ${lhs} ${rhs0} ${mult} ${rhs} ${sum}"#);
 
     let zetas = mm256_set_epi16(
         zeta1, zeta1, zeta1, zeta1, 0, 0, 0, 0, zeta0, zeta0, zeta0, zeta0, 0, 0, 0, 0,
@@ -338,7 +338,7 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
     let sum_times_zetas = arithmetic::montgomery_multiply_by_constants(sum, zetas);
 
     let result = mm256_blend_epi16::<0b1_1_1_1_0_0_0_0>(sum, sum_times_zetas);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}));
            assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 4) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 5) == v zeta0 /\
@@ -377,16 +377,16 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
 "#))]
 pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let lhs = mm256_extracti128_si256::<1>(vector);
-    hax_lib::fstar!(r#"lemma_mm256_extracti128_si256_1 ${vector}"#);
+    proof!(r#"lemma_mm256_extracti128_si256_1 ${vector}"#);
     // forall i<8. get_lane128 lhs i = get_lane vector (i+8)
 
     let rhs = mm256_castsi256_si128(vector);
-    hax_lib::fstar!(r#"lemma_mm256_castsi256_si128 ${vector}"#);
+    proof!(r#"lemma_mm256_castsi256_si128 ${vector}"#);
     // forall i<8. get_lane128 rhs i = get_lane vector i
 
     let lower_coefficients = mm_add_epi16(lhs, rhs);
     // mm_add_epi16 post + lemma_add_i_128 (SMTPat) lift +. → +
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
                 v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) +
@@ -394,7 +394,7 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let upper_coefficients = mm_sub_epi16(lhs, rhs);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
                 v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
@@ -402,7 +402,7 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let zetas_v128 = mm_set1_epi16(zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${zetas_v128} i) == v zeta);
            assert (Spec.Utils.is_i16b_array 1664
@@ -414,7 +414,7 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     // Post: is_i16b_array 3328 upper_coefficients /\
     //   forall i<8. v(upper[i]) % 3329 ==
     //               (v(vec[i+8]) - v(vec[i])) * v zeta * 169 % 3329
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i:nat). i < 8 ==>
                 v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) % 3329 ==
                 ((v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
@@ -423,13 +423,13 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     );
 
     let combined_lo = mm256_castsi128_si256(lower_coefficients);
-    hax_lib::fstar!(r#"lemma_mm256_castsi128_si256_lo ${lower_coefficients}"#);
+    proof!(r#"lemma_mm256_castsi128_si256_lo ${lower_coefficients}"#);
 
     let combined = mm256_inserti128_si256::<1>(combined_lo, upper_coefficients);
-    hax_lib::fstar!(r#"lemma_mm256_inserti128_si256_1 ${combined_lo} ${upper_coefficients}"#);
+    proof!(r#"lemma_mm256_inserti128_si256_1 ${combined_lo} ${upper_coefficients}"#);
     // forall i<8. combined[i]   = lower[i]
     //             combined[i+8] = upper[i]
-    hax_lib::fstar!(
+    proof!(
         r#"
         assert (forall (i:nat). i < 8 ==>
                 Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) i ==
@@ -554,7 +554,7 @@ pub(crate) fn ntt_multiply(
 
     // Combine them into one vector
     let result = mm256_blend_epi16::<0b1_0_1_0_1_0_1_0>(products_left, products_right);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_nttmul_zv zeta0 zeta1 zeta2 zeta3 ${zeta_multipliers};
         lemma_nttmul_main ${shuffle_with} ${swap_with} ${lhs} ${rhs} ${zeta_multipliers} zeta0 zeta1 zeta2 zeta3;
         assert (ZS.is_i16b_array 3328 (ZI.vec256_as_i16x16 ${result}));

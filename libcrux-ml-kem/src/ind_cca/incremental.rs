@@ -163,7 +163,7 @@ pub(crate) fn generate_keypair_compressed<
     // by congruence and discharges `to_bytes_compressed`'s precondition.  This
     // replaces the previous whole-body `admit ()` on `to_bytes_compressed` with
     // this single, precise structural fact.
-    hax_lib::fstar!(r#"assume (${kp_packed}.f_sk == ${kp}.f_private_key)"#);
+    proof!(r#"assume (${kp_packed}.f_sk == ${kp}.f_private_key)"#);
     kp_packed.to_bytes_compressed::<KEYPAIR_LEN, CPA_PRIVATE_KEY_SIZE>(key_pair);
 }
 
@@ -257,7 +257,7 @@ pub(crate) fn encapsulate1<
     // Fold sample_matrix_A's nested per-element forall ensures into the
     // opaque `is_bounded_polynomial_matrix 3328 matrix` atom required by
     // encrypt_c1 (same producer-site folding as in ind_cpa.rs).
-    hax_lib::fstar!(
+    proof!(
         r#"let folded (i: usize{ v i < v $K }) : Lemma
             (Libcrux_ml_kem.Polynomial.Spec.is_bounded_polynomial_vector $K #$:Vector (sz 3328)
                 (${matrix}.[ i ] <: t_Array (Libcrux_ml_kem.Vector.t_PolynomialRingElement $:Vector) $K)) =

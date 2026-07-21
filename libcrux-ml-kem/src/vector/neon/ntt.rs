@@ -45,7 +45,7 @@ pub(crate) fn ntt_layer_1_step(
         _vreinterpretq_s32_s16(vec.low),
         _vreinterpretq_s32_s16(vec.high),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"assert (NI.get_lane_i16x8 ${zeta} 0 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 1 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 2 == ${zeta3} /\ NI.get_lane_i16x8 ${zeta} 3 == ${zeta3} /\
                 NI.get_lane_i16x8 ${zeta} 4 == ${zeta2} /\ NI.get_lane_i16x8 ${zeta} 5 == ${zeta2} /\
@@ -67,7 +67,7 @@ pub(crate) fn ntt_layer_1_step(
         _vreinterpretq_s32_s16(a),
         _vreinterpretq_s32_s16(b),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_trn1_s32_reinterpret ${a} ${b};
            lemma_trn2_s32_reinterpret ${a} ${b};
            lemma_neon_fwd_l1_post (repr ${vec}) (repr ${res}) ${t} ${zeta1} ${zeta2} ${zeta3} ${zeta4}"#
@@ -98,7 +98,7 @@ pub(crate) fn ntt_layer_2_step(vec: SIMD128Vector, zeta1: i16, zeta2: i16) -> SI
         _vreinterpretq_s64_s16(vec.low),
         _vreinterpretq_s64_s16(vec.high),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"assert (NI.get_lane_i16x8 ${zeta} 0 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 1 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 2 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 3 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 4 == ${zeta2} /\ NI.get_lane_i16x8 ${zeta} 5 == ${zeta2} /\
@@ -120,7 +120,7 @@ pub(crate) fn ntt_layer_2_step(vec: SIMD128Vector, zeta1: i16, zeta2: i16) -> SI
         _vreinterpretq_s64_s16(a),
         _vreinterpretq_s64_s16(b),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_fwd_l2_resultv ${vec} ${res} ${dup_a} ${t} ${a} ${b};
            lemma_neon_fwd_l2_post (repr ${vec}) (repr ${res}) ${t} ${zeta1} ${zeta2}"#
     );
@@ -141,15 +141,13 @@ pub(crate) fn ntt_layer_3_step(vec: SIMD128Vector, zeta_c: i16) -> SIMD128Vector
     // a = simd::Vector::add(a, &t);
 
     let zeta = _vdupq_n_s16(zeta_c);
-    hax_lib::fstar!(r#"assert (forall (i: nat{i < 8}). NI.get_lane_i16x8 ${zeta} i == ${zeta_c})"#);
+    proof!(r#"assert (forall (i: nat{i < 8}). NI.get_lane_i16x8 ${zeta} i == ${zeta_c})"#);
     let t = montgomery_multiply_int16x8_t(vec.high, zeta);
-    hax_lib::fstar!(
-        r#"assert (forall (i: nat{i < 8}). NS.is_i16b 1664 (NI.get_lane_i16x8 ${zeta} i))"#
-    );
+    proof!(r#"assert (forall (i: nat{i < 8}). NS.is_i16b 1664 (NI.get_lane_i16x8 ${zeta} i))"#);
     let mut res = vec;
     res.high = _vsubq_s16(vec.low, t);
     res.low = _vaddq_s16(res.low, t);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.ntt_layer_3_butterfly_post) (Spec.Utils.ntt_layer_3_butterfly_post (repr ${vec}));
            lemma_modadd (v (Seq.index (repr ${vec}) 0)) (v (NI.get_lane_i16x8 ${t} 0)) (v (Seq.index (repr ${vec}) 8) * v ${zeta_c} * 169);
            lemma_modsub (v (Seq.index (repr ${vec}) 0)) (v (NI.get_lane_i16x8 ${t} 0)) (v (Seq.index (repr ${vec}) 8) * v ${zeta_c} * 169);
@@ -205,7 +203,7 @@ pub(crate) fn inv_ntt_layer_1_step(
         _vreinterpretq_s32_s16(vec.low),
         _vreinterpretq_s32_s16(vec.high),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"assert (NI.get_lane_i16x8 ${zeta} 0 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 1 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 2 == ${zeta3} /\ NI.get_lane_i16x8 ${zeta} 3 == ${zeta3} /\
                 NI.get_lane_i16x8 ${zeta} 4 == ${zeta2} /\ NI.get_lane_i16x8 ${zeta} 5 == ${zeta2} /\
@@ -217,7 +215,7 @@ pub(crate) fn inv_ntt_layer_1_step(
 
     let b_minus_a = _vsubq_s16(bb, aa);
     let asum_pre = _vaddq_s16(aa, bb);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i: nat{i < 8}). NS.is_i16b 28296 (NI.get_lane_i16x8 ${asum_pre} i))"#
     );
     let asum = barrett_reduce_int16x8_t(asum_pre);
@@ -232,7 +230,7 @@ pub(crate) fn inv_ntt_layer_1_step(
         _vreinterpretq_s32_s16(asum),
         _vreinterpretq_s32_s16(bres),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_trn1_s32_reinterpret ${asum} ${bres};
            lemma_trn2_s32_reinterpret ${asum} ${bres};
            lemma_neon_inv_l1_post (repr ${vec}) (repr ${res}) ${asum} ${bres}
@@ -266,7 +264,7 @@ pub(crate) fn inv_ntt_layer_2_step(vec: SIMD128Vector, zeta1: i16, zeta2: i16) -
         _vreinterpretq_s64_s16(vec.low),
         _vreinterpretq_s64_s16(vec.high),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"assert (NI.get_lane_i16x8 ${zeta} 0 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 1 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 2 == ${zeta1} /\ NI.get_lane_i16x8 ${zeta} 3 == ${zeta1} /\
                 NI.get_lane_i16x8 ${zeta} 4 == ${zeta2} /\ NI.get_lane_i16x8 ${zeta} 5 == ${zeta2} /\
@@ -289,7 +287,7 @@ pub(crate) fn inv_ntt_layer_2_step(vec: SIMD128Vector, zeta1: i16, zeta2: i16) -
         _vreinterpretq_s64_s16(asum),
         _vreinterpretq_s64_s16(bres),
     ));
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_trn_s64_bound ${vec} ${aa} ${bb} 3328;
            lemma_vadd_bound ${aa} ${bb} ${asum} 3328;
            lemma_inv_l2_bdiff ${vec} ${aa} ${bb} ${b_minus_a};
@@ -315,7 +313,7 @@ pub(crate) fn inv_ntt_layer_3_step(vec: SIMD128Vector, zeta_c: i16) -> SIMD128Ve
     //(a, b)
 
     let zeta = _vdupq_n_s16(zeta_c);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i: nat{i < 8}). NI.get_lane_i16x8 ${zeta} i == ${zeta_c});
            assert (forall (i: nat{i < 8}). NS.is_i16b 1664 (NI.get_lane_i16x8 ${zeta} i))"#
     );
@@ -323,7 +321,7 @@ pub(crate) fn inv_ntt_layer_3_step(vec: SIMD128Vector, zeta_c: i16) -> SIMD128Ve
     let mut res = vec;
     res.low = _vaddq_s16(vec.low, vec.high);
     res.high = montgomery_multiply_int16x8_t(b_minus_a, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.inv_ntt_layer_3_butterfly_post) (Spec.Utils.inv_ntt_layer_3_butterfly_post (repr ${vec}));
            assert (v (NI.get_lane_i16x8 ${b_minus_a} 0) == v (Seq.index (repr ${vec}) 8) - v (Seq.index (repr ${vec}) 0));
            assert (v (NI.get_lane_i16x8 ${b_minus_a} 1) == v (Seq.index (repr ${vec}) 9) - v (Seq.index (repr ${vec}) 1));
@@ -411,7 +409,7 @@ pub(crate) fn ntt_multiply(
         low: low2,
         high: high2,
     };
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_indexes_vals ${indexes};
     lemma_nttmul_index ${index} ${indexes};
     lemma_zetas_vals ${zetas} zeta1 zeta2 zeta3 zeta4;

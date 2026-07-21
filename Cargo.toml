@@ -91,7 +91,11 @@ readme = "Readme.md"
 allow-branch = ["main"]
 
 [workspace.dependencies]
-hax-lib = { git = "https://github.com/cryspen/hax", tag = "cargo-hax-v0.3.7" }
+# TEMPORARY: cargo-hax-v0.3.7 + the fstar!-antiquote span-hygiene backport
+# (branch fstar-quote-callsite-spans-037 = tag + 3b003bc5b), required by the
+# crate-wide `proof!` markers. Return to the plain tag once the fix lands in a
+# hax release (main PR branch: fstar-quote-callsite-spans).
+hax-lib = { git = "https://github.com/cryspen/hax", branch = "fstar-quote-callsite-spans-037" }
 libcrux-aead = { version = "=0.0.8", path = "crates/primitives/aead" }
 libcrux-aes = { version = "=0.0.8", path = "crates/algorithms/aes" }
 libcrux-blake2 = { version = "=0.0.7", path = "crates/algorithms/blake2" }
@@ -276,3 +280,4 @@ unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(simd256)',
     'cfg(aes_ni)',
 ] }
+

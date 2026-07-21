@@ -18,6 +18,11 @@ extern crate alloc;
 #[macro_use]
 mod cfg;
 
+// Crate-wide `proof!` annotation marker (see proof_macros.rs). `#[macro_use]`
+// makes it visible in every module below without per-module imports.
+#[macro_use]
+mod proof_macros;
+
 pub(crate) mod hax_utils;
 
 // This module is declared here since otherwise, hax reports the following error:

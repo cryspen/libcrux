@@ -27,7 +27,7 @@ pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector
     // Expose the value relation (`i16_to_spec_fe result[i] == i16_to_spec_fe a[i]`)
     // that the encode composers need; the trait post carries it as `mod_q_eq`,
     // which the wrapper would otherwise drop behind a bounds-only ensures.
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (i:nat{i<16}) : Lemma
              (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr $result) i)
               == Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe (Seq.index (Libcrux_ml_kem.Vector.Traits.f_repr $a) i)) =
@@ -49,7 +49,7 @@ pub(super) fn to_unsigned_field_modulus<Vector: Operations>(a: Vector) -> Vector
 pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    hax_lib::fstar!(r#"assert_norm (pow2 1 == 2)"#);
+    proof!(r#"assert_norm (pow2 1 == 2)"#);
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..16 {
         // Loop invariant: each completed 2-byte chunk carries the opaque per-chunk
@@ -64,7 +64,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
                 (Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 1)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
+        proof!(r#"assert (2 * v $i + 2 <= 32)"#);
         // Pre-iteration snapshot (ghost); `[u8; 32]` is Copy.
         #[cfg(hax)]
         let serialized_old = serialized;
@@ -77,7 +77,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         // reveal (Rule SD4) — unfolds the opaque only for THIS instance,
         // not universally; previously the global form polluted Z3 every
         // loop iteration with the unbound forall.
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 1)
                          (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}));
@@ -93,7 +93,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         // Establish chunk `i`'s atom from the compress_1 + serialize_1 posts (the
         // compress_1 value-match + bit-vector eq are sealed inside the commute
         // lemma), then extend the invariant to i+1 (clean standalone lemma).
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed} in
                let inp = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let ii = v $i in
@@ -112,7 +112,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     // Finalize: unpack each chunk atom into its 2 per-byte equalities, conclude
     // array equality with `byte_encode (compress ...)`, then fold the thin spec
     // wrapper `compress_then_serialize_message` (a transparent non-recursive let).
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 1) in
            let be = Hacspec_ml_kem.Serialize.byte_encode (mk_usize 32) (mk_usize 256) p (sz 1) in
            let aux_final (k:nat) : Lemma (k < 32 ==> Seq.index $serialized k == Seq.index be k) =
@@ -154,14 +154,14 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
                       (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients j)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (2 * v $i + 2 <= 32)"#);
+        proof!(r#"assert (2 * v $i + 2 <= 32)"#);
         let bytes = &serialized[2 * i..2 * i + 2];
         let coefficient_compressed = Vector::deserialize_1(bytes);
         // Bridge: deserialize_1's post `forall j. bounded r[j] 1` (=
         // `forall j. 0 <= v r[j] < 2`) to decompress_1's pre
         // `bounded_pos_i16_array 1 r` (= `bounded_i16_array 0 1 r`).
         // Targeted reveal (Rule SD4) — only the specific instance.
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                        (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 1)
                          (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed}));
@@ -171,7 +171,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
         // Establish chunk `i`'s decompressed atom from the deserialize_1 +
         // decompress_1 posts (byte-bridge + decompress value-match are sealed
         // inside the commute lemma).
-        hax_lib::fstar!(
+        proof!(
             r#"let grp = Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient_compressed} in
                let g = Libcrux_ml_kem.Vector.Traits.f_to_i16_array
                          (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i)) in
@@ -187,7 +187,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     // Finalize: poly_to_spec re == decompress (byte_decode 32 256 serialized 1) 1
     // and is_bounded_poly 3328 re from the per-chunk atoms; then fold the thin
     // spec wrapper `deserialize_then_decompress_message` (transparent let).
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_poly_to_spec_eq_decompress (sz 1) $serialized $re;
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_is_bounded_poly_of_chunks (sz 1) $serialized $re;
            assert (Hacspec_ml_kem.Serialize.deserialize_then_decompress_message $serialized ==
@@ -208,7 +208,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
-    hax_lib::fstar!(r#"assert_norm (pow2 12 == 4096)"#);
+    proof!(r#"assert_norm (pow2 12 == 4096)"#);
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // Loop invariant: each completed chunk carries the opaque per-chunk encode
@@ -223,7 +223,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
                     (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (24 * v $i + 24 <= 384)"#);
+        proof!(r#"assert (24 * v $i + 24 <= 384)"#);
         #[cfg(hax)]
         let serialized_old = serialized;
         let coefficient = to_unsigned_field_modulus(re.coefficients[i]);
@@ -233,7 +233,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
         // Establish chunk `i`'s atom (intro_re seals poly_to_spec_index's createi
         // cascade in a clean lemma), then extend the invariant to i+1 (a clean
         // standalone lemma — the opaque-atom forall must not run in this VC).
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let ii = v $i in
                assert (Seq.slice $serialized (24 * ii) (24 * ii + 24) == $bytes);
@@ -247,7 +247,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     }
     // Finalize: unpack each chunk atom into its 24 per-byte equalities, then
     // conclude array equality with `byte_encode`.
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Libcrux_ml_kem.Vector.Spec.poly_to_spec $re in
            let be = Hacspec_ml_kem.Serialize.byte_encode (sz 384) (sz 3072) p (sz 12) in
            let aux_final (k:nat) : Lemma (k < 384 ==> Seq.index $serialized k == Seq.index be k) =
@@ -276,7 +276,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
 pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)"#);
+    proof!(r#"assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)"#);
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -295,7 +295,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
             });
             re.coefficients[i] = Vector::deserialize_12(bytes);
             // Establish the opaque atom for chunk `i` from deserialize_12's post.
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i) ==
                         Libcrux_ml_kem.Vector.Traits.f_deserialize_12_ #v_Vector ${bytes});
                    assert (Seq.slice $serialized (24 * v $i) (24 * v $i + 24) == ${bytes});
@@ -309,10 +309,10 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
     // Expose the honest [0,4095] = is_i16b 4096 lane bound on the unreduced
     // ByteDecode_12 output, assembled from the per-chunk `chunk_decoded_12`
     // atoms the loop established.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_bits.lemma_is_bounded_poly_of_chunks_12 #v_Vector $serialized re"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"let result = re in
            assert (Seq.length (Libcrux_ml_kem.Vector.Spec.poly_to_spec result) == 256);
            assert (Seq.length (Hacspec_ml_kem.Serialize.byte_decode (sz 384) (sz 3072) $serialized (sz 12)) == 256);
@@ -352,7 +352,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
 fn deserialize_to_reduced_ring_element<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(r#"assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)"#);
+    proof!(r#"assert (v $BYTES_PER_RING_ELEMENT / 24 == 16)"#);
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
@@ -373,13 +373,13 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
             let coefficient = Vector::deserialize_12(bytes);
             // deserialize_12's post bounds each lane by 2^12 - 1, discharging
             // cond_subtract_3329's opaque precondition.
-            hax_lib::fstar!(
+            proof!(
                 r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 4095)"#
         )   ;
             re.coefficients[i] = Vector::cond_subtract_3329(coefficient);
             // Establish the opaque atom for chunk `i` from deserialize_12's
             // byte-bridge facts (over the raw chunk) + cond_subtract's post.
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i) ==
                         Libcrux_ml_kem.Vector.Traits.f_cond_subtract_3329_ #v_Vector ${coefficient});
                    assert (Seq.slice $serialized (24 * v $i) (24 * v $i + 24) == ${bytes});
@@ -391,7 +391,7 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
         }
     }
 
-    hax_lib::fstar!(
+    proof!(
         r#"let result = re in
            assert (Seq.length (Libcrux_ml_kem.Vector.Spec.poly_to_spec result) == 256);
            assert (Seq.length (Hacspec_ml_kem.Serialize.byte_decode (sz 384) (sz 3072) $serialized (sz 12)) == 256);
@@ -440,7 +440,7 @@ pub(super) fn deserialize_ring_elements_reduced_out<const K: usize, Vector: Oper
     deserialize_ring_elements_reduced::<K, Vector>(public_key, &mut deserialized_pk);
     // Fold the per-element bound forall into the opaque
     // is_bounded_polynomial_vector atom required by the ensures.
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Polynomial.Spec.lemma_is_bounded_polynomial_vector_intro
             $K #$:Vector $deserialized_pk (sz 3328)"#
     );
@@ -464,7 +464,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
     public_key: &[u8],
     deserialized_pk: &mut [PolynomialRingElement<Vector>; K],
 ) {
-    hax_lib::fstar!(r#"assert (Seq.length $public_key == v $K * 384)"#);
+    proof!(r#"assert (Seq.length $public_key == v $K * 384)"#);
     cloop! {
         for (i, ring_element) in public_key
             .chunks_exact(BYTES_PER_RING_ELEMENT)
@@ -489,7 +489,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
             deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
             // Invariant extension i -> i+1 is a standalone clean-context lemma
             // (inline maintenance saturates the fold-body VC).
-            hax_lib::fstar!(
+            proof!(
                 r#"assert (Seq.index deserialized_pk (v $i) ==
                        deserialize_to_reduced_ring_element #v_Vector ${ring_element});
                    assert (Seq.slice $public_key (v $i * 384) (v $i * 384 + 384) == ${ring_element});
@@ -500,7 +500,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
     };
     // Finalize: standalone clean-context lemma (the inline lemma_post shape
     // fails its own statement WF under the saturated composer VC).
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_vector_to_spec_decode_12_finalize
             $K $public_key deserialized_pk"#
     );
@@ -517,7 +517,7 @@ pub(super) fn deserialize_ring_elements_reduced<const K: usize, Vector: Operatio
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
-    hax_lib::fstar!(r#"assert_norm (pow2 10 == 1024)"#);
+    proof!(r#"assert_norm (pow2 10 == 1024)"#);
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // Loop invariant: each completed 20-byte chunk carries the opaque per-chunk
@@ -532,14 +532,14 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
                 (Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 10)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (20 * v $i + 20 <= 320)"#);
+        proof!(r#"assert (20 * v $i + 20 <= 320)"#);
         #[cfg(hax)]
         let serialized_old = serialized;
         let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
         // Intro direction: prove `bounded_i16_array (mk_i16 0) (mk_i16 3328)`
         // from `to_unsigned_field_modulus`'s post (forall j. 0 <= v r[j] <= 3328)
         // for `compress::<10>`'s pre.  Use the named lemma (no global SMTPat).
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                   (mk_i16 0) (mk_i16 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
@@ -551,7 +551,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
         // Establish chunk `i`'s atom from the compress + serialize_10 posts (the
         // compress value-match + bit-vector eq are sealed inside the commute lemma),
         // then extend the invariant to i+1 (clean standalone lemma).
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let inp = Libcrux_ml_kem.Vector.Traits.f_repr $unreduced in
                let ii = v $i in
@@ -569,7 +569,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     }
     // Finalize: unpack each chunk atom into its 20 per-byte equalities, then
     // conclude array equality with `byte_encode (compress ...)`.
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 10) in
            let be = Hacspec_ml_kem.Serialize.byte_encode (mk_usize 320) (mk_usize 2560) p (sz 10) in
            assert ($OUT_LEN == mk_usize 320);
@@ -597,7 +597,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
 fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
-    hax_lib::fstar!(r#"assert_norm (pow2 11 == 2048)"#);
+    proof!(r#"assert_norm (pow2 11 == 2048)"#);
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         hax_lib::loop_invariant!(|i: usize| {
@@ -609,12 +609,12 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
                 (Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 11)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (22 * v $i + 22 <= 352)"#);
+        proof!(r#"assert (22 * v $i + 22 <= 352)"#);
         #[cfg(hax)]
         let serialized_old = serialized;
         let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
         // Intro direction for compress::<11>'s pre.
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                   (mk_i16 0) (mk_i16 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
@@ -625,7 +625,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
         serialized[22 * i..22 * i + 22].copy_from_slice(&bytes);
         // Establish chunk `i`'s atom (compress + serialize_11 posts sealed in the
         // commute lemma), then extend the invariant to i+1.
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let inp = Libcrux_ml_kem.Vector.Traits.f_repr $unreduced in
                let ii = v $i in
@@ -643,7 +643,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     }
     // Finalize: unpack each chunk atom into its 22 per-byte equalities, then
     // conclude array equality with `byte_encode (compress ...)`.
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 11) in
            let be = Hacspec_ml_kem.Serialize.byte_encode (mk_usize 352) (mk_usize 2816) p (sz 11) in
            assert ($OUT_LEN == mk_usize 352);
@@ -677,7 +677,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
         (v (cast $COMPRESSION_FACTOR <: u32) == 11))"#
@@ -705,7 +705,7 @@ fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
-    hax_lib::fstar!(r#"assert_norm (pow2 4 == 16)"#);
+    proof!(r#"assert_norm (pow2 4 == 16)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // NOTE: Using `$serialized` in loop_invariant doesn't work here (mut param).
         // `Seq.length serialized == 128` is an UNCONDITIONAL conjunct (left of the
@@ -720,7 +720,7 @@ fn compress_then_serialize_4<Vector: Operations>(
                 (Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 4)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (8 * v $i + 8 <= 128)"#);
+        proof!(r#"assert (8 * v $i + 8 <= 128)"#);
         // Pre-iteration snapshot (ghost). `&mut [u8]` is not Copy, so use the proven
         // sha3 store_block idiom; `to_vec`/`as_slice` are transparent identities, so
         // `serialized_old == serialized` definitionally.
@@ -728,7 +728,7 @@ fn compress_then_serialize_4<Vector: Operations>(
         let serialized_old = serialized.to_vec().as_slice();
         let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
         // Intro direction for compress::<4>'s pre.
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                   (mk_i16 0) (mk_i16 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
@@ -740,7 +740,7 @@ fn compress_then_serialize_4<Vector: Operations>(
         // Establish chunk `i`'s atom from the compress + serialize_4 posts (the
         // compress value-match + bit-vector eq are sealed inside the commute lemma),
         // then extend the invariant to i+1 (clean standalone lemma).
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let inp = Libcrux_ml_kem.Vector.Traits.f_repr $unreduced in
                let ii = v $i in
@@ -758,7 +758,7 @@ fn compress_then_serialize_4<Vector: Operations>(
     }
     // Finalize: unpack each chunk atom into its 8 per-byte equalities, then
     // conclude array equality with `byte_encode (compress ...)`.
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 4) in
            let be = Hacspec_ml_kem.Serialize.byte_encode (mk_usize 128) (mk_usize 1024) p (sz 4) in
            let aux_final (k:nat) : Lemma (k < 128 ==> Seq.index serialized k == Seq.index be k) =
@@ -787,7 +787,7 @@ fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
-    hax_lib::fstar!(r#"assert_norm (pow2 5 == 32)"#);
+    proof!(r#"assert_norm (pow2 5 == 32)"#);
     for i in 0..VECTORS_IN_RING_ELEMENT {
         // See `compress_then_serialize_4` for the mut-slice loop-invariant notes.
         hax_lib::loop_invariant!(|i: usize| {
@@ -799,11 +799,11 @@ fn compress_then_serialize_5<Vector: Operations>(
                 (Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 5)) j)"#
             )
         });
-        hax_lib::fstar!(r#"assert (10 * v $i + 10 <= 160)"#);
+        proof!(r#"assert (10 * v $i + 10 <= 160)"#);
         #[cfg(hax)]
         let serialized_old = serialized.to_vec().as_slice();
         let unreduced = to_unsigned_field_modulus(re.coefficients[i]);
-        hax_lib::fstar!(
+        proof!(
             r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                   (mk_i16 0) (mk_i16 3328)
                   (Libcrux_ml_kem.Vector.Traits.f_repr ${unreduced})"#
@@ -813,7 +813,7 @@ fn compress_then_serialize_5<Vector: Operations>(
         let bytes = Vector::serialize_5(coefficient);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
         // Establish chunk `i`'s atom, then extend the invariant to i+1.
-        hax_lib::fstar!(
+        proof!(
             r#"let g = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                let inp = Libcrux_ml_kem.Vector.Traits.f_repr $unreduced in
                let ii = v $i in
@@ -831,7 +831,7 @@ fn compress_then_serialize_5<Vector: Operations>(
     }
     // Finalize: unpack each chunk atom into its 10 per-byte equalities, then
     // conclude array equality with `byte_encode (compress ...)`.
-    hax_lib::fstar!(
+    proof!(
         r#"let p = Hacspec_ml_kem.Compress.compress (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re) (sz 5) in
            let be = Hacspec_ml_kem.Serialize.byte_encode (mk_usize 160) (mk_usize 1280) p (sz 5) in
            let aux_final (k:nat) : Lemma (k < 160 ==> Seq.index serialized k == Seq.index be k) =
@@ -889,7 +889,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 ) {
     // `vector_v_compression_factor K in {4,5}` (since `is_rank K`), hence the
     // match below is exhaustive over the live values.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Hacspec_ml_kem.Parameters.is_rank v_K);
            assert (v $COMPRESSION_FACTOR == 4 \/ v $COMPRESSION_FACTOR == 5);
            assert (
@@ -905,7 +905,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
         _ => unreachable!(),
     };
     // Bridge the branch posts to the dispatcher's wrapper-shaped ensures.
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_compress_then_serialize_v_eq $OUT_LEN $COMPRESSION_FACTOR
              (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re)"#
     );
@@ -925,7 +925,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 fn deserialize_then_decompress_10<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 10) /! sz 8) == 320)"#
     );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
@@ -946,7 +946,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
             let coefficient = Vector::deserialize_10(bytes);
             // Intro: deserialize_10 post `forall j. bounded c[j] 10` -> trait pre
             // `bounded_pos_i16_array 10` (= `bounded_i16_array 0 1023`).
-            hax_lib::fstar!(
+            proof!(
                 r#"assert_norm (pow2 10 - 1 == 1023);
                    Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                      (mk_i16 0) (mk_i16 1023)
@@ -956,7 +956,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
             // Establish chunk `i`'s decompressed atom from the deserialize_10 +
             // decompress_ciphertext_coefficient posts (byte-bridge + decompress
             // value-match are sealed inside the commute lemma).
-            hax_lib::fstar!(
+            proof!(
                 r#"let grp = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                    let g = Libcrux_ml_kem.Vector.Traits.f_to_i16_array
                              (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i)) in
@@ -973,7 +973,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     }
     // Finalize: poly_to_spec re == decompress (byte_decode_dyn serialized 10) 10
     // and is_bounded_poly 3328 re, from the per-chunk atoms.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_byte_decode_dyn_eq $serialized (sz 10);
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_poly_to_spec_eq_decompress (sz 10) $serialized $re;
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_is_bounded_poly_of_chunks (sz 10) $serialized $re"#
@@ -995,7 +995,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 fn deserialize_then_decompress_11<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 11) /! sz 8) == 352)"#
     );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
@@ -1014,14 +1014,14 @@ fn deserialize_then_decompress_11<Vector: Operations>(
             let coefficient = Vector::deserialize_11(bytes);
             // Intro: deserialize_11 post `forall j. bounded c[j] 11` -> trait pre
             // `bounded_pos_i16_array 11` (= `bounded_i16_array 0 2047`).
-            hax_lib::fstar!(
+            proof!(
                 r#"assert_norm (pow2 11 - 1 == 2047);
                    Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                      (mk_i16 0) (mk_i16 2047)
                      (Libcrux_ml_kem.Vector.Traits.f_repr ${coefficient})"#
             );
             re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<11>(coefficient);
-            hax_lib::fstar!(
+            proof!(
                 r#"let grp = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                    let g = Libcrux_ml_kem.Vector.Traits.f_to_i16_array
                              (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i)) in
@@ -1036,7 +1036,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
             );
         }
     }
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_byte_decode_dyn_eq $serialized (sz 11);
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_poly_to_spec_eq_decompress (sz 11) $serialized $re;
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_is_bounded_poly_of_chunks (sz 11) $serialized $re"#
@@ -1067,7 +1067,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 >(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (
         (v (cast $COMPRESSION_FACTOR <: u32) == 10) \/
         (v (cast $COMPRESSION_FACTOR <: u32) == 11))"#
@@ -1093,7 +1093,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 fn deserialize_then_decompress_4<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 4) /! sz 8) == 128)"#
     );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
@@ -1114,7 +1114,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
             let coefficient = Vector::deserialize_4(bytes);
             // Intro: deserialize_4 post `forall j. bounded c[j] 4` -> trait pre
             // `bounded_pos_i16_array 4` (= `bounded_i16_array 0 15`).
-            hax_lib::fstar!(
+            proof!(
                 r#"assert_norm (pow2 4 - 1 == 15);
                    Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                      (mk_i16 0) (mk_i16 15)
@@ -1124,7 +1124,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
             // Establish chunk `i`'s decompressed atom from the deserialize_4 +
             // decompress_ciphertext_coefficient posts (byte-bridge + decompress
             // value-match are sealed inside the commute lemma).
-            hax_lib::fstar!(
+            proof!(
                 r#"let grp = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                    let g = Libcrux_ml_kem.Vector.Traits.f_to_i16_array
                              (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i)) in
@@ -1141,7 +1141,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
     }
     // Finalize: poly_to_spec re == decompress (byte_decode_dyn serialized 4) 4
     // and is_bounded_poly 3328 re, from the per-chunk atoms.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_byte_decode_dyn_eq $serialized (sz 4);
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_poly_to_spec_eq_decompress (sz 4) $serialized $re;
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_is_bounded_poly_of_chunks (sz 4) $serialized $re"#
@@ -1163,7 +1163,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
 fn deserialize_then_decompress_5<Vector: Operations>(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (v ((${crate::constants::COEFFICIENTS_IN_RING_ELEMENT} *! sz 5) /! sz 8) == 160)"#
     );
     let mut re = PolynomialRingElement::<Vector>::ZERO();
@@ -1184,7 +1184,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
             let coefficient = Vector::deserialize_5(bytes);
             // Intro: deserialize_5 post `forall j. bounded c[j] 5` -> trait pre
             // `bounded_pos_i16_array 5` (= `bounded_i16_array 0 31`).
-            hax_lib::fstar!(
+            proof!(
                 r#"assert_norm (pow2 5 - 1 == 31);
                    Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
                      (mk_i16 0) (mk_i16 31)
@@ -1194,7 +1194,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
             // Establish chunk `i`'s decompressed atom from the deserialize_5 +
             // decompress_ciphertext_coefficient posts (byte-bridge + decompress
             // value-match are sealed inside the commute lemma).
-            hax_lib::fstar!(
+            proof!(
                 r#"let grp = Libcrux_ml_kem.Vector.Traits.f_repr $coefficient in
                    let g = Libcrux_ml_kem.Vector.Traits.f_to_i16_array
                              (Seq.index ${re}.Libcrux_ml_kem.Vector.f_coefficients (v $i)) in
@@ -1211,7 +1211,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
     }
     // Finalize: poly_to_spec re == decompress (byte_decode_dyn serialized 5) 5
     // and is_bounded_poly 3328 re, from the per-chunk atoms.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Serialize_compress.lemma_byte_decode_dyn_eq $serialized (sz 5);
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_poly_to_spec_eq_decompress (sz 5) $serialized $re;
            Hacspec_ml_kem.Commute.Serialize_compress.lemma_is_bounded_poly_of_chunks (sz 5) $serialized $re"#
@@ -1243,7 +1243,7 @@ pub(super) fn deserialize_then_decompress_ring_element_v<
 ) -> PolynomialRingElement<Vector> {
     // `vector_v_compression_factor K in {4,5}` (since `is_rank K`), hence the
     // match below is exhaustive over the live values.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Hacspec_ml_kem.Parameters.is_rank $K);
            assert (v $COMPRESSION_FACTOR == 4 \/ v $COMPRESSION_FACTOR == 5);
            assert (
@@ -1260,7 +1260,7 @@ pub(super) fn deserialize_then_decompress_ring_element_v<
     // `decompress (byte_decode_dyn ...)` form the branch posts establish.
     #[cfg(hax)]
     spec::is_bounded_poly_higher(&result, 3328, 4095);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Hacspec_ml_kem.Serialize.deserialize_then_decompress_v $serialized $COMPRESSION_FACTOR ==
              Hacspec_ml_kem.Compress.decompress
                (Hacspec_ml_kem.Serialize.byte_decode_dyn $serialized $COMPRESSION_FACTOR)

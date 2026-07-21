@@ -35,90 +35,86 @@ impl crate::vector::traits::Repr for PortableVector {}
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (impl.f_repr $a) ==>
                                  Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 1 (impl.f_repr $a) $out"#))]
 fn serialize_1(a: PortableVector) -> [u8; 2] {
-    hax_lib::fstar!(
-        r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#
-    );
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a"#);
+    proof!(r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 1)"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_1_lemma $a"#);
     serialize::serialize_1(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 2)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 2 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 1 $a (impl.f_repr $out)"#))]
 fn deserialize_1(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_1_lemma $a"#);
     serialize::deserialize_1(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 4 (impl.f_repr $a) $out"#))]
 fn serialize_4(a: PortableVector) -> [u8; 8] {
-    hax_lib::fstar!(
-        r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#
-    );
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a"#);
+    proof!(r#"assert (forall i. Rust_primitives.bounded (Seq.index ${a}.f_elements i) 4)"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_4_lemma $a"#);
     serialize::serialize_4(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 8)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 8 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 4 $a (impl.f_repr $out)"#))]
 fn deserialize_4(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_4_lemma $a"#);
     serialize::deserialize_4(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 5 (impl.f_repr $a) $out"#))]
 fn serialize_5(a: PortableVector) -> [u8; 10] {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_5_lemma $a"#);
     serialize::serialize_5(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 10)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 10 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 5 $a (impl.f_repr $out)"#))]
 fn deserialize_5(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_5_lemma $a"#);
     serialize::deserialize_5(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10 (impl.f_repr $a) $out"#))]
 fn serialize_10(a: PortableVector) -> [u8; 20] {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_10_lemma $a"#);
     serialize::serialize_10(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 20)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 20 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 10 $a (impl.f_repr $out)"#))]
 fn deserialize_10(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_10_lemma $a"#);
     serialize::deserialize_10(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11 (impl.f_repr $a) $out"#))]
 fn serialize_11(a: PortableVector) -> [u8; 22] {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_11_lemma $a"#);
     serialize::serialize_11(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 22)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 22 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 11 $a (impl.f_repr $out)"#))]
 fn deserialize_11(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_11_lemma $a"#);
     serialize::deserialize_11(a.classify_ref())
 }
 
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr $a) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12 (impl.f_repr $a) $out"#))]
 fn serialize_12(a: PortableVector) -> [u8; 24] {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.serialize_12_lemma $a"#);
     serialize::serialize_12(a).declassify()
 }
 
 #[hax_lib::requires(a.len() == 24)]
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $a) =. sz 24 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 12 $a (impl.f_repr $out)"#))]
 fn deserialize_12(a: &[u8]) -> PortableVector {
-    hax_lib::fstar!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a"#);
+    proof!(r#"Libcrux_ml_kem.Vector.Portable.Serialize.deserialize_12_lemma $a"#);
     serialize::deserialize_12(a.classify_ref())
 }
 
@@ -146,13 +142,13 @@ fn deserialize_12(a: &[u8]) -> PortableVector {
 #[hax_lib::requires(spec::cond_subtract_3329_pre(&vec.repr()))]
 #[hax_lib::ensures(|out| spec::cond_subtract_3329_post(&vec.repr(), &out.repr()))]
 fn op_cond_subtract_3329(vec: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = cond_subtract_3329(vec);
     // Underlying primitive provides `v y % 3329 == v x % 3329`; fold to
     // the opaque `mod_q_eq` form expected by the trait post.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -172,16 +168,16 @@ fn op_cond_subtract_3329(vec: PortableVector) -> PortableVector {
 #[hax_lib::requires(spec::barrett_reduce_pre(&vector.repr()))]
 #[hax_lib::ensures(|result| spec::barrett_reduce_post(&vector.repr(), &result.repr()))]
 fn op_barrett_reduce(vector: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296)"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let result = barrett_reduce(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -197,7 +193,7 @@ fn op_barrett_reduce(vector: PortableVector) -> PortableVector {
     );
     // Fold per-lane mod_q_eq facts into the opaque `barrett_reduce_lane_post`
     // form expected by the `forall16` post.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_lane_post)
                     (Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_lane_post)"#
     );
@@ -207,12 +203,12 @@ fn op_barrett_reduce(vector: PortableVector) -> PortableVector {
 #[hax_lib::requires(spec::montgomery_multiply_by_constant_pre(&vector.repr(), constant))]
 #[hax_lib::ensures(|result| spec::montgomery_multiply_by_constant_post(&vector.repr(), constant, &result.repr()))]
 fn op_montgomery_multiply_by_constant(vector: PortableVector, constant: i16) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let result = montgomery_multiply_by_constant(vector, constant.classify());
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -228,7 +224,7 @@ fn op_montgomery_multiply_by_constant(vector: PortableVector, constant: i16) -> 
     );
     // Fold per-lane mod_q_eq facts into the opaque
     // `montgomery_multiply_lane_post` form expected by the `forall16` post.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.montgomery_multiply_lane_post)
                     (Libcrux_ml_kem.Vector.Traits.Spec.montgomery_multiply_lane_post)"#
     );
@@ -241,12 +237,12 @@ fn op_montgomery_multiply_by_constant(vector: PortableVector, constant: i16) -> 
                              let y = Seq.index (impl.f_repr ${result}) i in
                              (v y >= 0 /\ v y <= 3328 /\ Hacspec_ml_kem.ModQ.mod_q_eq (v y) (v x)))"#))]
 fn op_to_unsigned_representative(a: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let result = to_unsigned_representative(a);
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -270,7 +266,7 @@ fn op_to_unsigned_representative(a: PortableVector) -> PortableVector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_1_pre} ${a}.f_elements"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_1_post} ${a}.f_elements ${out}.f_elements"#))]
 fn op_compress_1(a: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post)
@@ -281,7 +277,7 @@ fn op_compress_1(a: PortableVector) -> PortableVector {
     // full forall16 in one shot — replaces the 16 manual `aux 0; ...; aux 15`
     // invocations.  Z3 sees one universally-quantified obligation rather
     // than 16 sequential lemma instantiations.
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post
                        (Seq.index ${a}.f_elements j)
@@ -299,14 +295,14 @@ fn op_compress_1(a: PortableVector) -> PortableVector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_pre} ${a}.f_elements $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_post} ${a}.f_elements $COEFFICIENT_BITS ${out}.f_elements"#))]
 fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post"#
     );
     let result = compress::<COEFFICIENT_BITS>(a);
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.compress_d_lane_post
                        (mk_usize (v $COEFFICIENT_BITS))
@@ -342,7 +338,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} ${a}.f_elements"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} ${a}.f_elements ${out}.f_elements"#))]
 fn op_decompress_1(a: PortableVector) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0)
                         (mk_i16 (pow2 1 - 1))
@@ -365,7 +361,7 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
     // per-lane lemma with a TARGETED reveal (Rule SD4) + `Classical.forall_intro`
     // (the previous universal `decompress_1_lane_post` reveal + 16 manual `aux j`
     // calls saturated once the bound conjunct joined the post).
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_decompress_1_bound ${result}.f_elements;
            let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.decompress_1_lane_post
@@ -390,7 +386,7 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
 fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     a: PortableVector,
 ) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post)
@@ -402,11 +398,11 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     let result = decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(a);
     // Bridge: primitive's post uses `pow2 (D+1)` denominator; lemma's precondition
     // uses `pow2 D * 2`.  Same value, but Z3 doesn't auto-unfold `pow2 (n+1)`.
-    hax_lib::fstar!(
+    proof!(
         r#"FStar.Math.Lemmas.pow2_plus (v $COEFFICIENT_BITS) 1;
            assert (pow2 (v $COEFFICIENT_BITS + 1) == pow2 (v $COEFFICIENT_BITS) * 2)"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post
                        (mk_usize (v $COEFFICIENT_BITS))
@@ -424,7 +420,7 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // (= [0, FIELD_MODULUS - 1]).  The inner `decompress_ciphertext_coefficient`'s
     // ensures already gives `forall i. 0 <= v result.f_elements[i] < FIELD_MODULUS`;
     // we just intro that into the opaque `bounded_i16_array` form.
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro
              (mk_i16 0) (mk_i16 3328)
              ${result}.f_elements"#
@@ -456,16 +452,16 @@ fn op_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
     );
     let out = ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (8*3328))"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.ntt_layer_1_butterfly_post)
                       (Spec.Utils.ntt_layer_1_butterfly_post ${a}.f_elements);
@@ -486,18 +482,18 @@ fn op_ntt_layer_1_step(
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_2_step_pre} ${a}.f_elements zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_2_step_post} ${a}.f_elements zeta0 zeta1 ${out}.f_elements"#))]
 fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post"#
     );
     let out = ntt_layer_2_step(a, zeta0, zeta1);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.ntt_layer_2_butterfly_post)
                       (Spec.Utils.ntt_layer_2_butterfly_post ${a}.f_elements);
@@ -564,18 +560,18 @@ fn op_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVec
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_3_step_pre} ${a}.f_elements zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_3_step_post} ${a}.f_elements zeta ${out}.f_elements"#))]
 fn op_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post"#
     );
     let out = ntt_layer_3_step(a, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328))"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.ntt_layer_3_butterfly_post)
                       (Spec.Utils.ntt_layer_3_butterfly_post ${a}.f_elements);
@@ -650,16 +646,16 @@ fn op_inv_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
     );
     let out = inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.inv_ntt_layer_1_butterfly_post)
                       (Spec.Utils.inv_ntt_layer_1_butterfly_post ${a}.f_elements);
@@ -680,7 +676,7 @@ fn op_inv_ntt_layer_1_step(
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_2_step_pre} ${a}.f_elements zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_2_step_post} ${a}.f_elements zeta0 zeta1 ${out}.f_elements"#))]
 fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_2_step_branch_post)
@@ -690,11 +686,11 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
     // Output bound from primitive is `3328` (Barrett still in portable);
     // widen to the trait's loosened `2*3328` post.  Once portable also
     // drops Barrett, this widen is a no-op.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.inv_ntt_layer_2_butterfly_post)
                       (Spec.Utils.inv_ntt_layer_2_butterfly_post ${a}.f_elements);
@@ -761,7 +757,7 @@ fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     // see comment on `inv_ntt_layer_3_step_post` in `src/vector/traits.rs`.
     // Reveal at the new bound so the underlying primitive's pre
     // (which we also loosen to `is_i16b_array (2*3328)`) discharges.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post)
@@ -771,11 +767,11 @@ fn op_inv_ntt_layer_3_step(a: PortableVector, zeta: i16) -> PortableVector {
     // Output bound from primitive is `3328` (Barrett still in portable);
     // widen to the trait's `4*3328` post.  Once portable also drops Barrett,
     // this widen is a no-op.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
     );
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.Utils.inv_ntt_layer_3_butterfly_post)
                       (Spec.Utils.inv_ntt_layer_3_butterfly_post ${a}.f_elements);
@@ -847,14 +843,14 @@ fn op_ntt_multiply(
     zeta2: i16,
     zeta3: i16,
 ) -> PortableVector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 4096);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let out = ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.ntt_multiply_butterfly_post)
                          (Spec.Utils.ntt_multiply_butterfly_post
                            ${lhs}.f_elements ${rhs}.f_elements ${out}.f_elements

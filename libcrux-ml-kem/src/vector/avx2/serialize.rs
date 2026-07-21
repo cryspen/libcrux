@@ -57,7 +57,7 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // 0xFF 0x00 0x00 0x00 | 0xFF 0x00 0x00 0x00 | 0x00 0x00 0x00 0x00 | 0x00 0x00 0x00 0xFF
     let msbs = mm_packs_epi16(low_msbs, high_msbs);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
   introduce forall (i: nat{i < 16}). bits_packed' i = $vector (i * 16)
@@ -89,7 +89,7 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
 
     let result = [bits_packed as u8, (bits_packed >> 8) as u8];
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
 "#
@@ -244,7 +244,7 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     // ... so that we can read them out in one go.
     mm_storeu_bytes_si128(&mut serialized, combined);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialized 8 i);
   introduce forall (i: nat {i < 64}). $combined i = vector ((i / 4) * 16 + i % 4)
@@ -435,7 +435,7 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
         // ... and the second 40 bits at position 0 in the upper 128-bit lane
         let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
 
-        hax_lib::fstar!(
+        proof!(
             r#"
     introduce forall (i:nat{i < 40}). lower_8_ i = vector ((i / 5) * 16 + i % 5)
     with assert_norm (BitVec.Utils.forall_n 40 (fun i -> lower_8_ i = vector ((i / 5) * 16 + i % 5)));
@@ -530,7 +530,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
             ),
         );
         let result = mm256_srli_epi16::<11>(coefficients);
-        hax_lib::fstar!(
+        proof!(
             r#"
 assert_norm (BitVec.Utils.forall256 (fun i ->
       $result i =
@@ -570,7 +570,7 @@ assert_norm (BitVec.Utils.forall256 (fun i ->
     // 16 per-k bridges from coefficients (post mm_set_epi8) to bit_vec_of_int_t_array bytes.
     // Each is a forall over b∈[0,8) at concrete k; mm_set_epi8 reduces match-arm `i/8 = k`
     // and the byte_map[k] = (0,1,1,2,2,3,3,4,5,6,6,7,7,8,8,9) substitutes concretely.
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (forall (b: nat{b < 8}). $coefficients (8*0  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (0*8 + b));
 assert (forall (b: nat{b < 8}). $coefficients (8*1  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (1*8 + b));
@@ -665,7 +665,7 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
         let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
         // and 64 bits starting at position 0 in the upper 128-bit lane.
         let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
-        hax_lib::fstar!(
+        proof!(
             r#"
     introduce forall (i:nat{i < 80}). lower_8_ i = vector ((i / 10) * 16 + i % 10)
     with assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
@@ -737,7 +737,7 @@ forall (i: nat {i < 256}).
         let coefficients = mm256_srli_epi16::<6>(coefficients);
         // Here I can prove this `and` is not useful
         let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 10) - 1));
-        hax_lib::fstar!(
+        proof!(
             r#"
 assert_norm(BitVec.Utils.forall256 (fun i -> 
       $coefficients i
@@ -792,7 +792,7 @@ let lemma_vec256_lane_bounded_local
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
     let mut array = [0i16; 16];
     mm256_storeu_si256_i16(&mut array, vector);
-    hax_lib::fstar!(
+    proof!(
         r#"
 introduce forall (j: nat). j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
@@ -803,7 +803,7 @@ with _. lemma_vec256_lane_bounded_local ${vector} 11 j
     );
     let input = PortableVector::from_i16_array(&array);
     let result = PortableVector::serialize_11(input);
-    hax_lib::fstar!(
+    proof!(
         r#"
 introduce forall (i: nat{i < 176}).
     bit_vec_of_int_t_array result 8 i == ${vector} ((i / 11) * 16 + i % 11)
@@ -827,7 +827,7 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let output = PortableVector::deserialize_11(bytes);
     let array = PortableVector::to_i16_array(output);
     let result = mm256_loadu_si256_i16(&array);
-    hax_lib::fstar!(
+    proof!(
         r#"
 introduce forall (i: nat{i < 256}).
     result i =
@@ -880,7 +880,7 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
 
         let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
         let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
-        hax_lib::fstar!(
+        proof!(
             r#"
     introduce forall (i:nat{i < 96}). lower_8_ i = vector ((i / 12) * 16 + i % 12)
     with assert_norm (BitVec.Utils.forall_n 96 (fun i -> lower_8_ i = vector ((i / 12) * 16 + i % 12)));
@@ -950,7 +950,7 @@ forall (i: nat {i < 256}).
         );
         let coefficients = mm256_srli_epi16::<4>(coefficients);
         let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 12) - 1));
-        hax_lib::fstar!(
+        proof!(
             r#"
 assert_norm(BitVec.Utils.forall256 (fun i -> 
       $coefficients i

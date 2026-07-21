@@ -15,17 +15,15 @@ type PaddedArray<const N: usize> = [u8; N];
 pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> PaddedArray<LEN> {
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);
-    hax_lib::fstar!(r#"assert (Seq.slice out 0 (Seq.length slice) == slice)"#);
-    hax_lib::fstar!(
+    proof!(r#"assert (Seq.slice out 0 (Seq.length slice) == slice)"#);
+    proof!(
         r#"assert (Seq.slice out (Seq.length slice) (v v_LEN) == Seq.slice (Seq.create (v v_LEN) (mk_u8 0)) (Seq.length slice) (v v_LEN))"#
     );
-    hax_lib::fstar!(
-        "assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)"
-    );
-    hax_lib::fstar!(
+    proof!("assert (forall i. i < Seq.length slice ==> Seq.index out i == Seq.index slice i)");
+    proof!(
         r#"assert (forall i. (i >= Seq.length slice && i < v v_LEN) ==> Seq.index out i == Seq.index (Seq.slice out (Seq.length slice) (v v_LEN)) (i - Seq.length slice))"#
     );
-    hax_lib::fstar!(
+    proof!(
         "Seq.lemma_eq_intro out (Seq.append slice (Seq.create (v v_LEN - Seq.length slice) (mk_u8 0)))"
     );
     out

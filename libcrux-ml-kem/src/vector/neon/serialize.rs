@@ -31,7 +31,7 @@ pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8; 2] {
     let low = _vaddvq_s16(low);
     let high = _vaddvq_s16(high);
     let result = [low as u8, high as u8];
-    hax_lib::fstar!(
+    proof!(
         r#"(* shift-amount facts from the concrete shifter (lane j shifts by j) *)
 assert (forall (j: nat{j < 8}).
       Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${shift} j == Seq.index ${shifter} j);
@@ -62,7 +62,7 @@ pub(crate) fn deserialize_1(a: &[u8]) -> SIMD128Vector {
         low: _vandq_s16(low, one),
         high: _vandq_s16(high, one),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
 let rr : t_Array i16 (mk_usize 16) = Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result} in
 let pre0 : i16 = cast (${a}.[ mk_usize 0 ] <: u8) <: i16 in
@@ -127,7 +127,7 @@ pub(crate) fn serialize_4(v: SIMD128Vector) -> [u8; 8] {
     let sum3 = _vaddv_u16(_vget_high_u16(hight)) as u64;
     let sum = sum0 | (sum1 << 16) | (sum2 << 32) | (sum3 << 48);
     let result = sum.to_le_bytes();
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (j: nat{j < 8}).
       Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${shift} j == Seq.index ${shifter} j);
 assert (Seq.index ${shifter} 0 == mk_i16 0 /\ Seq.index ${shifter} 1 == mk_i16 4 /\
@@ -150,7 +150,7 @@ pub(crate) fn deserialize_4(v: &[u8]) -> SIMD128Vector {
         low: _vld1q_s16(&input_i16s[0..8]),
         high: _vld1q_s16(&input_i16s[8..16]),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (${input_i16s}.[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
                            Core_models.Ops.Range.f_end = mk_usize 8 }
@@ -185,7 +185,7 @@ pub(crate) fn deserialize_5(v: &[u8]) -> SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (${array}.[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
                       Core_models.Ops.Range.f_end = mk_usize 8 }
@@ -231,7 +231,7 @@ pub(crate) fn serialize_10(v: SIMD128Vector) -> [u8; 20] {
     result[5..10].copy_from_slice(&result32[8..13]);
     result[10..15].copy_from_slice(&result32[16..21]);
     result[15..20].copy_from_slice(&result32[24..29]);
-    hax_lib::fstar!(
+    proof!(
         r#"
     let _:squash (forall (k: nat{k < 16}).
           Seq.index (Seq.slice ${result32} 0 16) k == NI.get_lane_u8x16 (NI.e_vreinterpretq_u8_s64 ${low_mix}) k) =
@@ -274,7 +274,7 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (${array}.[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
                       Core_models.Ops.Range.f_end = mk_usize 8 }
@@ -309,7 +309,7 @@ pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
 assert (${array}.[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
                       Core_models.Ops.Range.f_end = mk_usize 8 }
@@ -355,7 +355,7 @@ pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
     result[6..12].copy_from_slice(&result32[8..14]);
     result[12..18].copy_from_slice(&result32[16..22]);
     result[18..24].copy_from_slice(&result32[24..30]);
-    hax_lib::fstar!(
+    proof!(
         r#"
     let _:squash (forall (k: nat{k < 16}).
           Seq.index (Seq.slice ${result32} 0 16) k == NI.get_lane_u8x16 (NI.e_vreinterpretq_u8_s64 ${low_mix}) k) =
@@ -417,7 +417,7 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let high = _vreinterpretq_s16_u16(_vandq_u16(shifted1, mask12));
 
     let result = SIMD128Vector { low, high };
-    hax_lib::fstar!(
+    proof!(
         r#"(* mask lanes *)
 assert (forall (i: nat{i < 8}). NI.get_lane_u16x8 ${mask12} i == mk_u16 4095);
 (* ${index_vec} lanes + concrete index values *)

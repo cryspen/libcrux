@@ -40,7 +40,7 @@ impl Repr for AVX2SIMDUnit {}
     Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
         (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result"#))]
 pub(crate) fn infinity_norm_exceeds_with_proof(simd_unit: &AVX2SIMDUnit, bound: i32) -> bool {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
             (Spec.Utils.is_i32b_array_opaque (2 * v ${specs::FIELD_MAX})
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}));
@@ -51,7 +51,7 @@ pub(crate) fn infinity_norm_exceeds_with_proof(simd_unit: &AVX2SIMDUnit, bound: 
                     ${simd_unit}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i))"#
     );
     let result = arithmetic::infinity_norm_exceeds(&simd_unit.value, bound);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post)
             (Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result)"#
@@ -73,7 +73,7 @@ pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(simd_unit: 
     #[cfg(hax)]
     let _orig = *simd_unit;
     shift_left_then_reduce::<SHIFT_BY>(&mut simd_unit.value);
-    hax_lib::fstar!(
+    proof!(
         r#"let pf (k: nat{k < 8}) : Lemma
             (ensures Libcrux_ml_dsa.Simd.Traits.Specs.shift_left_then_reduce_lane_post
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${_orig}) k)
@@ -102,7 +102,7 @@ pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(simd_unit: 
 pub(crate) fn power2round_with_proof(t0: &mut AVX2SIMDUnit, t1: &mut AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig_t0 = *t0;
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
             (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${t0}));
@@ -113,7 +113,7 @@ pub(crate) fn power2round_with_proof(t0: &mut AVX2SIMDUnit, t1: &mut AVX2SIMDUni
                     ${t0}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value i))"#
     );
     arithmetic::power2round(&mut t0.value, &mut t1.value);
-    hax_lib::fstar!(
+    proof!(
         r#"
         let pf (k: nat{k < 8}) : Lemma
             (ensures Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
@@ -163,7 +163,7 @@ pub(crate) fn add_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig = *lhs;
     arithmetic::add(&mut lhs.value, &rhs.value);
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.add_pre)
             (Libcrux_ml_dsa.Simd.Traits.Specs.add_pre
@@ -204,7 +204,7 @@ pub(crate) fn subtract_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig = *lhs;
     arithmetic::subtract(&mut lhs.value, &rhs.value);
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre)
             (Libcrux_ml_dsa.Simd.Traits.Specs.sub_pre
@@ -248,7 +248,7 @@ pub(crate) fn subtract_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
 pub(crate) fn montgomery_multiply_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2SIMDUnit) {
     #[cfg(hax)]
     let _orig_lhs = *lhs;
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
             (Spec.Utils.is_i32b_array_opaque (v ${specs::NTT_OUTPUT_BOUND})
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${rhs}));
@@ -257,7 +257,7 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut AVX2SIMDUnit, rhs: &AVX2S
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${lhs}))"#
     );
     arithmetic::montgomery_multiply(&mut lhs.value, &rhs.value);
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
         let pf (k: nat{k < 8}) : Lemma
@@ -322,13 +322,13 @@ pub(crate) fn decompose_with_proof(
 ) {
     #[cfg(hax)]
     let _orig = *simd_unit;
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
             (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
                 (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
     );
     arithmetic::decompose(gamma2, &simd_unit.value, &mut low.value, &mut high.value);
-    hax_lib::fstar!(
+    proof!(
         r#"
         // Per-lane bridge: AVX2 free fn post (decompose_spec shape) →
         // trait post (combined gamma2-conditional bound + lane post).
@@ -431,7 +431,7 @@ pub(crate) fn compute_hint_with_proof(
     hint: &mut AVX2SIMDUnit,
 ) -> usize {
     // Derive the leaf precondition (per-lane FIELD_MAX bound) from the trait precondition.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let _:t_Array i32 (mk_usize 8) = Libcrux_ml_dsa.Simd.Traits.f_repr ${low} in
         let _:t_Array i32 (mk_usize 8) = Libcrux_ml_dsa.Simd.Traits.f_repr ${high} in
@@ -444,7 +444,7 @@ pub(crate) fn compute_hint_with_proof(
     );
     let result = arithmetic::compute_hint(&low.value, &high.value, gamma2, &mut hint.value);
     // Lift the leaf's (to_i32x8) per-lane functional post to the trait's f_repr lane posts.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let bridge (u: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (kk: nat{kk < 8})
             : Lemma (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr u) kk ==
@@ -518,7 +518,7 @@ pub(crate) fn use_hint_with_proof(
     let hint_orig = *hint;
     // Derive the leaf preconditions (per-lane FIELD_MAX bound; binary hint) from
     // the trait precondition.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let _:t_Array i32 (mk_usize 8) = Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit} in
         let _:t_Array i32 (mk_usize 8) = Libcrux_ml_dsa.Simd.Traits.f_repr ${hint} in
@@ -533,7 +533,7 @@ pub(crate) fn use_hint_with_proof(
     // Lift the leaf's (to_i32x8) per-lane functional post (== use_one_hint's
     // formula over decompose_spec) to the trait's use_hint_lane_post, via the
     // use_one_hint bridge + the commute lemma.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let bridge (u: Libcrux_ml_dsa.Simd.Avx2.Vector_type.t_Vec256) (kk: nat{kk < 8})
             : Lemma (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr u) kk ==
@@ -604,7 +604,7 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [AVX2SIMDUnit; SIMD_UNITS_IN_RI
         arithmetic::reduce(&mut simd_units[i].value);
     }
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         let pf (j: nat{j < 32}) : Lemma
             (ensures
@@ -749,12 +749,12 @@ let lemma_ntt_view_avx2
 pub(crate) fn ntt_with_proof(simd_units: &mut AVX2RingElement) {
     #[cfg(hax)]
     let _orig = simd_units.clone();
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND == 8380416);
         lemma_freprs_to_poly_avx2 (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_BASE_BOUND) ${simd_units}"#
     );
     ntt::ntt(simd_units);
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_OUTPUT_BOUND == 8380416 + 8 * 8380416);
         lemma_poly_avx2_to_freprs (v Libcrux_ml_dsa.Simd.Traits.Specs.v_NTT_OUTPUT_BOUND) ${simd_units};
         lemma_ntt_view_avx2 ${_orig};
@@ -794,12 +794,12 @@ let lemma_to_mont_eq_avx2 (y: t_Array i32 (mk_usize 256))
 pub(crate) fn invert_ntt_with_proof(simd_units: &mut AVX2RingElement) {
     #[cfg(hax)]
     let _orig = simd_units.clone();
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_freprs_to_poly_avx2 (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX) ${simd_units};
         assert_norm (v Libcrux_ml_dsa.Simd.Traits.Specs.v_FIELD_MAX == 8380416)"#
     );
     invntt::invert_ntt_montgomery(simd_units);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_poly_avx2_to_freprs 4211177 ${simd_units};
         lemma_ntt_view_avx2 ${_orig};
         lemma_ntt_view_avx2 ${simd_units};
@@ -825,7 +825,7 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|result| result.repr() == [0i32; COEFFICIENTS_IN_SIMD_UNIT])]
     fn zero() -> Self {
         let result = vector_type::zero();
-        hax_lib::fstar!(
+        proof!(
             r#"
             // f_repr result == [0;8]: the SIMD setzero intrinsic gives all-zero
             // lanes per `Spec.Intrinsics.mm256_setzero_si256_lemma`, and
@@ -845,7 +845,7 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| future(out).repr() == coefficient_array)]
     fn from_coefficient_array(coefficient_array: &[i32], out: &mut Self) {
         vector_type::from_coefficient_array(coefficient_array, out);
-        hax_lib::fstar!(
+        proof!(
             r#"
             // f_repr out_future == coefficient_array: the SIMD loadu intrinsic
             // preserves per-lane content per `Spec.Intrinsics.mm256_loadu_si256_i32_lemma`,
@@ -863,7 +863,7 @@ impl Operations for AVX2SIMDUnit {
     #[ensures(|_| future(out) == value.repr())]
     fn to_coefficient_array(value: &Self, out: &mut [i32]) {
         vector_type::to_coefficient_array(value, out);
-        hax_lib::fstar!(
+        proof!(
             r#"
             // out_future == f_repr value: per-lane content from
             // `Spec.Intrinsics.mm256_storeu_si256_i32_lemma` matches the
@@ -1084,7 +1084,7 @@ impl Operations for AVX2SIMDUnit {
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Self, gamma1_exponent: usize) {
         encoding::gamma1::deserialize(serialized, &mut out.value, gamma1_exponent);
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}));
@@ -1136,7 +1136,7 @@ impl Operations for AVX2SIMDUnit {
               v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) <= 4))"#))]
     fn error_deserialize(eta: Eta, serialized: &[u8], out: &mut Self) {
         encoding::error::deserialize(eta, serialized, &mut out.value);
-        hax_lib::fstar!(
+        proof!(
             r#"assert (forall (i: nat). i < 8 ==>
                 v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}) i) ==
                 v (Spec.Intrinsics.to_i32x8 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 i)));
@@ -1156,7 +1156,7 @@ impl Operations for AVX2SIMDUnit {
         // (-pow2 12, pow2 12] bound in `to_i32x8`-shape so the AVX2
         // free fn pre `forall i. POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE
         // - to_i32x8 simd_unit i ∈ [0, pow2 13)` discharges.
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
                 (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}));
@@ -1179,7 +1179,7 @@ impl Operations for AVX2SIMDUnit {
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Self) {
         encoding::t0::deserialize(serialized, &mut out.value);
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
                 (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}));
@@ -1209,7 +1209,7 @@ impl Operations for AVX2SIMDUnit {
           v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future) i) < pow2 10)"#))]
     fn t1_deserialize(serialized: &[u8], out: &mut Self) {
         encoding::t1::deserialize(serialized, &mut out.value);
-        hax_lib::fstar!(
+        proof!(
             r#"Spec.Intrinsics.i32_bit_zero_lemma_to_lt_pow2_n_weak 10
                 ${out}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value;
             assert (forall (i: nat). i < 8 ==>

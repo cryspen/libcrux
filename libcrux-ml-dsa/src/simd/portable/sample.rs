@@ -16,7 +16,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
 
     #[cfg(hax)]
     let _out_len = out.len();
-    hax_lib::fstar!(
+    proof!(
         r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty"#
     );
 
@@ -40,7 +40,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
         let b2 = randomness[i * 3 + 2] as i32;
         let coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
 
-        hax_lib::fstar!(
+        proof!(
             r#"Spec.MLDSA.Math.rejection_sample_coefficient_lemma $randomness ($i);
             Spec.Utils.unfold_repeati ($i +! sz 1) 
                 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty ($i)"#
@@ -51,7 +51,7 @@ pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i3
             sampled += 1;
         }
 
-        hax_lib::fstar!(
+        proof!(
             r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_field_modulus_inner $randomness) Seq.empty in
             eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#
@@ -76,7 +76,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
 
     #[cfg(hax)]
     let _out_len = out.len();
-    hax_lib::fstar!(
+    proof!(
         r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty"#
     );
 
@@ -100,7 +100,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
         let try_0 = byte & 0xF;
         let try_1 = byte >> 4;
 
-        hax_lib::fstar!(
+        proof!(
             r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
                 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty ($i)"#
         );
@@ -110,7 +110,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
             // (try_0 * 26) >> 7 computes ⌊try_0 / 5⌋
             let try_0_mod_5 = try_0 - ((try_0 * 26) >> 7) * 5;
 
-            hax_lib::fstar!(
+            proof!(
                 r#"assert ($try_0_mod_5 == ($try_0 %! mk_i32 5));
                 assert ((mk_i32 2 -. $try_0_mod_5) == (mk_i32 2 -! $try_0_mod_5))"#
             );
@@ -123,7 +123,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
             let try_1 = try_1 as i32;
             let try_1_mod_5 = try_1 - ((try_1 * 26) >> 7) * 5;
 
-            hax_lib::fstar!(
+            proof!(
                 r#"assert ($try_1_mod_5 == ($try_1 %! mk_i32 5));
                 assert ((mk_i32 2 -. $try_1_mod_5) == (mk_i32 2 -! $try_1_mod_5))"#
             );
@@ -132,7 +132,7 @@ pub fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32
             sampled += 1;
         }
 
-        hax_lib::fstar!(
+        proof!(
             r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_2_inner $randomness) Seq.empty in
             eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#
@@ -157,7 +157,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
 
     #[cfg(hax)]
     let _out_len = out.len();
-    hax_lib::fstar!(
+    proof!(
         r#"Spec.Utils.eq_repeati0 (sz 0) (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty"#
     );
 
@@ -181,7 +181,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
         let try_0 = byte & 0xF;
         let try_1 = byte >> 4;
 
-        hax_lib::fstar!(
+        proof!(
             r#"Spec.Utils.unfold_repeati ($i +! sz 1) 
                 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty ($i)"#
         );
@@ -195,7 +195,7 @@ pub fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32
             sampled += 1;
         }
 
-        hax_lib::fstar!(
+        proof!(
             r#"let samples = Spec.Utils.repeati ($i +! sz 1)
                 (Spec.MLDSA.Math.rejection_sample_eta_4_inner $randomness) Seq.empty in
             eq_intro (Seq.slice $out 0 (Seq.length samples)) samples"#

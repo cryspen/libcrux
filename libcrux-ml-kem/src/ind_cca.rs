@@ -81,7 +81,7 @@ fn serialize_kem_secret_key_mut<
     serialized[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
 
-    hax_lib::fstar!(
+    proof!(
    "let open Spec.Utils in
     assert (Seq.slice serialized 0 (v #usize_inttype (Hacspec_ml_kem.Parameters.Sizes.v_CPA_PRIVATE_KEY_SIZE $K)) `Seq.equal` $private_key);
     assert (Seq.slice serialized (v #usize_inttype (Hacspec_ml_kem.Parameters.Sizes.v_CPA_PRIVATE_KEY_SIZE $K))
@@ -262,7 +262,7 @@ pub(crate) fn generate_keypair<
         MlKemPrivateKey::from(secret_key_serialized);
 
     let keypair = MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key));
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_generate_keypair_post $K $PUBLIC_KEY_SIZE $PRIVATE_KEY_SIZE $CPA_PRIVATE_KEY_SIZE $randomness $ind_cpa_private_key $public_key $secret_key_serialized"#
     );
     keypair
@@ -319,10 +319,10 @@ pub(crate) fn encapsulate<
     let randomness = Scheme::entropy_preprocess::<K, Hasher>(randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
 
-    hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $randomness"#);
+    proof!(r#"eq_intro (Seq.slice $to_hash 0 32) $randomness"#);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
-    hax_lib::fstar!(
+    proof!(
         "assert (Seq.slice to_hash 0 (v $H_DIGEST_SIZE) == $randomness);
         lemma_slice_append $to_hash $randomness (Spec.Utils.v_H ${public_key}.f_value);
         assert ($to_hash == concat $randomness (Spec.Utils.v_H ${public_key}.f_value))"
@@ -351,7 +351,7 @@ pub(crate) fn encapsulate<
         MlKemCiphertext::from(ciphertext),
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext),
     );
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_encapsulate_post $K $PUBLIC_KEY_SIZE $C1_SIZE $C2_SIZE $CIPHERTEXT_SIZE ${public_key}.f_value $randomness $to_hash $shared_secret $pseudorandomness $ciphertext $result"#
     );
     result
@@ -412,13 +412,13 @@ pub(crate) fn decapsulate<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    hax_lib::fstar!(
+    proof!(
         r#"assert (v $CIPHERTEXT_SIZE == v $IMPLICIT_REJECTION_HASH_INPUT_SIZE - v $SHARED_SECRET_SIZE)"#
     );
     let (ind_cpa_secret_key, ind_cpa_public_key, ind_cpa_public_key_hash, implicit_rejection_value) =
         unpack_private_key::<CPA_SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(&private_key.value);
 
-    hax_lib::fstar!(
+    proof!(
         r#"assert ($ind_cpa_secret_key == slice ${private_key}.f_value (sz 0) $CPA_SECRET_KEY_SIZE);
         assert ($ind_cpa_public_key == slice ${private_key}.f_value $CPA_SECRET_KEY_SIZE ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE));
         assert ($ind_cpa_public_key_hash == slice ${private_key}.f_value ($CPA_SECRET_KEY_SIZE +! $PUBLIC_KEY_SIZE)
@@ -436,17 +436,17 @@ pub(crate) fn decapsulate<
     >(ind_cpa_secret_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
-    hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $decrypted"#);
+    proof!(r#"eq_intro (Seq.slice $to_hash 0 32) $decrypted"#);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_slice_append to_hash $decrypted $ind_cpa_public_key_hash;
         assert ($to_hash == concat $decrypted $ind_cpa_public_key_hash)"#
     );
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    hax_lib::fstar!(
+    proof!(
         r#"assert (($shared_secret , $pseudorandomness) == split $hashed $SHARED_SECRET_SIZE);
         assert (length $implicit_rejection_value = $SECRET_KEY_SIZE -! $CPA_SECRET_KEY_SIZE -! $PUBLIC_KEY_SIZE -! $H_DIGEST_SIZE);
         assert (length $implicit_rejection_value = Hacspec_ml_kem.Parameters.v_SHARED_SECRET_SIZE);
@@ -454,9 +454,9 @@ pub(crate) fn decapsulate<
     );
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
         into_padded_array(implicit_rejection_value);
-    hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $implicit_rejection_value"#);
+    proof!(r#"eq_intro (Seq.slice $to_hash 0 32) $implicit_rejection_value"#);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-    hax_lib::fstar!(
+    proof!(
         "assert_norm (pow2 32 == 0x100000000);
         assert (v (sz 32) < pow2 32);
         assert (i1.f_PRF_pre (sz 32) $to_hash);
@@ -464,7 +464,7 @@ pub(crate) fn decapsulate<
     );
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
-    hax_lib::fstar!(
+    proof!(
         "assert ($implicit_rejection_shared_secret == Spec.Utils.v_PRF (sz 32) $to_hash);
         assert (Seq.length $ind_cpa_public_key == v $PUBLIC_KEY_SIZE)"
     );
@@ -498,7 +498,7 @@ pub(crate) fn decapsulate<
         &shared_secret,
         &implicit_rejection_shared_secret,
     );
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_rank_encrypt_facts $K;
         Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_rank_decaps_facts $K;
         Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_decapsulate_post $K $PUBLIC_KEY_SIZE $SECRET_KEY_SIZE $CPA_SECRET_KEY_SIZE $C1_SIZE $C2_SIZE $CIPHERTEXT_SIZE $IMPLICIT_REJECTION_HASH_INPUT_SIZE ${private_key}.f_value ${ciphertext}.f_value $ind_cpa_secret_key $ind_cpa_public_key $ind_cpa_public_key_hash $implicit_rejection_value $decrypted $hashed $shared_secret $pseudorandomness $expected_ciphertext $implicit_rejection_shared_secret $result"#
@@ -573,7 +573,7 @@ pub(crate) mod unpacked {
             &public_key.value[..T_AS_NTT_ENCODED_SIZE],
             &mut unpacked_public_key.ind_cpa_public_key.t_as_ntt,
         );
-        hax_lib::fstar!(
+        proof!(
             r#"let (_, seed) = split ${public_key}.f_value (Hacspec_ml_kem.Parameters.tt_as_ntt_encoded_size $K) in
             eq_intro (Libcrux_ml_kem.Utils.into_padded_array (sz 32) seed) seed;
             eq_intro (Seq.slice (Libcrux_ml_kem.Utils.into_padded_array (sz 34) seed) 0 32) seed"#
@@ -979,7 +979,7 @@ let lemma_matrix_to_spec_transpose_a
         // matrix_to_spec(transpose_a pre_A) == transpose(matrix_to_spec pre_A); applied to
         // the post-keygen f_A BEFORE the update below so it shares the term the
         // Ind_cpa.generate_keypair_unpacked post speaks about.
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_matrix_to_spec_transpose_a $K #v_Vector ${out}.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A"#
         );
         out.public_key.ind_cpa_public_key.A = A;
@@ -990,7 +990,7 @@ let lemma_matrix_to_spec_transpose_a
         );
         out.public_key.public_key_hash = Hasher::H(&pk_serialized);
         out.private_key.implicit_rejection_value = implicit_rejection_value.try_into().unwrap();
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_rank_encrypt_facts $K;
 assert (${ind_cpa_keypair_randomness} == Seq.slice $randomness 0 32);
 assert ((${implicit_rejection_value} <: t_Slice u8) == Seq.slice $randomness 32 64);
@@ -1080,7 +1080,7 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
         let result = (MlKemCiphertext::from(ciphertext), shared_secret_array);
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_encapsulate_post $K $C1_SIZE $C2_SIZE $CIPHERTEXT_SIZE ${public_key}.f_public_key_hash (Libcrux_ml_kem.Vector.Spec.vector_to_spec $K #v_Vector ${public_key}.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt) (Libcrux_ml_kem.Vector.Spec.matrix_to_spec $K #v_Vector ${public_key}.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A) $randomness $shared_secret $pseudorandomness $ciphertext $result"#
         );
         result
@@ -1092,13 +1092,13 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
         randomness: &[u8],
         pk_hash: &[u8],
     ) -> [u8; 64] {
-        hax_lib::fstar!(
+        proof!(
             "eq_intro (Seq.slice (
             Libcrux_ml_kem.Utils.into_padded_array (sz 64) $randomness) 0 32) $randomness"
         );
         let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(randomness);
         to_hash[H_DIGEST_SIZE..].copy_from_slice(pk_hash);
-        hax_lib::fstar!(
+        proof!(
             "eq_intro $to_hash (
             concat $randomness $pk_hash)"
         );
@@ -1167,7 +1167,7 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
         key_pair: &MlKemKeyPairUnpacked<K, Vector>,
         ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> MlKemSharedSecret {
-        hax_lib::fstar!(
+        proof!(
             r#"assert (v $IMPLICIT_REJECTION_HASH_INPUT_SIZE == 32 + v (Hacspec_ml_kem.Parameters.cpa_ciphertext_size $K));
         assert (v (Hacspec_ml_kem.Parameters.c1_size $K +! Hacspec_ml_kem.Parameters.c2_size $K) == v (Hacspec_ml_kem.Parameters.c1_size $K) + v (Hacspec_ml_kem.Parameters.c2_size $K));
         assert (v (Hacspec_ml_kem.Parameters.c1_size $K) == v (Hacspec_ml_kem.Parameters.c1_block_size $K) * v $K);
@@ -1184,9 +1184,9 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
         >(&key_pair.private_key.ind_cpa_private_key, &ciphertext.value);
 
         let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
-        hax_lib::fstar!(r#"eq_intro (Seq.slice $to_hash 0 32) $decrypted"#);
+        proof!(r#"eq_intro (Seq.slice $to_hash 0 32) $decrypted"#);
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key.public_key_hash);
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_slice_append $to_hash $decrypted ${key_pair}.f_public_key.f_public_key_hash"#
         );
 
@@ -1195,12 +1195,12 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
 
         let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
             into_padded_array(&key_pair.private_key.implicit_rejection_value);
-        hax_lib::fstar!(
+        proof!(
             "eq_intro
             (Seq.slice $to_hash 0 32) ${key_pair}.f_private_key.f_implicit_rejection_value"
         );
         to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-        hax_lib::fstar!(
+        proof!(
             "lemma_slice_append $to_hash ${key_pair}.f_private_key.f_implicit_rejection_value ${ciphertext}.f_value"
         );
         let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
@@ -1234,7 +1234,7 @@ Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_generate_keypair_post $K $PUB
             &implicit_rejection_shared_secret,
             selector,
         );
-        hax_lib::fstar!(
+        proof!(
             r#"Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_rank_encrypt_facts $K;
 Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_rank_decaps_facts $K;
 Hacspec_ml_kem.Commute.Ind_cca_bridge.lemma_unpack_decapsulate_post $K $C1_SIZE $C2_SIZE $CIPHERTEXT_SIZE $IMPLICIT_REJECTION_HASH_INPUT_SIZE ${key_pair}.f_public_key.f_public_key_hash ${key_pair}.f_private_key.f_implicit_rejection_value ${ciphertext}.f_value (Libcrux_ml_kem.Vector.Spec.vector_to_spec $K #v_Vector ${key_pair}.f_private_key.f_ind_cpa_private_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_secret_as_ntt) (Libcrux_ml_kem.Vector.Spec.vector_to_spec $K #v_Vector ${key_pair}.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_tt_as_ntt) (Libcrux_ml_kem.Vector.Spec.matrix_to_spec $K #v_Vector ${key_pair}.f_public_key.f_ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A) $decrypted $hashed $shared_secret $pseudorandomness $expected_ciphertext $implicit_rejection_shared_secret $result"#

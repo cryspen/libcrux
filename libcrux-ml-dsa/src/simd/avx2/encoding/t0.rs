@@ -113,7 +113,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     let mut serialized = [0u8; 16];
 
     let simd_unit_changed = change_interval(simd_unit);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_changed j) >= 0 /\
@@ -124,9 +124,7 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized, bits_sequential);
 
     out.copy_from_slice(&serialized[0..13]);
-    hax_lib::fstar!(
-        r#"lemma_t0_serialize_post $out $bits_sequential $simd_unit_changed $simd_unit"#
-    );
+    proof!(r#"lemma_t0_serialize_post $out $bits_sequential $simd_unit_changed $simd_unit"#);
 }
 
 #[inline(always)]
@@ -166,7 +164,7 @@ fn deserialize_unsigned(serialized: &[u8], out: &mut Vec256) {
 
     let coefficients = mm256_srlv_epi32(coefficients, mm256_set_epi32(3, 6, 1, 4, 7, 2, 5, 0));
     let coefficients = mm256_and_si256(coefficients, mm256_set1_epi32(COEFFICIENT_MASK));
-    hax_lib::fstar!("i32_to_bv_pow2_min_one_lemma_fa 13");
+    proof!("i32_to_bv_pow2_min_one_lemma_fa 13");
     *out = coefficients
 }
 
@@ -194,7 +192,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     #[cfg(hax)]
     let unsigned = out.clone();
     *out = change_interval(out);
-    hax_lib::fstar!(
+    proof!(
         r"
     i32_bit_zero_lemma_to_lt_pow2_n_weak 13 $unsigned;
     reveal_opaque_arithmetic_ops #I32;

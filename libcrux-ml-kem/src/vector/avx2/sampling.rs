@@ -63,7 +63,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     // ... then write them out ...
     mm_storeu_si128(output, lower_shuffled);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         let g0: nat = v (${good}.[ mk_usize 0 ] <: u8) in
         assert (forall (i: nat{i < 256}).
@@ -106,7 +106,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
 
     let result = sampled_count + (good[1].count_ones() as usize);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         let g0: nat = v (${good}.[ mk_usize 0 ] <: u8) in
         let g1: nat = v (${good}.[ mk_usize 1 ] <: u8) in

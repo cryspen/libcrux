@@ -77,7 +77,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         });
 
         *zeta_i -= 1;
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                         (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328)
                         (Libcrux_ml_kem.Vector.Traits.f_to_i16_array (re.f_coefficients.[ round ])))"#
@@ -85,7 +85,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
         // Hand-holding for the impl-level loop invariant: link local
         // `zeta_i` to the parametric form `127 - 4*round` so the
         // assignment's call substitutes into the j=round branch cleanly.
-        hax_lib::fstar!(
+        proof!(
             r#"
             assert (zeta_i == mk_usize 127 -! mk_usize 4 *! round);
             assert (zeta_i -! mk_usize 1 == mk_usize 126 -! mk_usize 4 *! round);
@@ -108,7 +108,7 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     // its `is_i16b_array_opaque (4*3328)` (from the original
     // `is_bounded_poly` precondition on _re_init), then invoke the bridge
     // to lift the impl equation to the spec function-form equation.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (j: nat) : Lemma (j < 16 ==>
             Hacspec_ml_kem.Commute.Invert_ntt_bridge.pv_post #v_Vector
@@ -232,13 +232,13 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
         *zeta_i -= 1;
         // Hand-holding: link local `zeta_i` to the parametric form so the
         // assignment's call substitutes the j=round zetas cleanly.
-        hax_lib::fstar!(r#"assert (zeta_i == mk_usize 63 -! mk_usize 2 *! round)"#);
+        proof!(r#"assert (zeta_i == mk_usize 63 -! mk_usize 2 *! round)"#);
         re.coefficients[round] =
             Vector::inv_ntt_layer_2_step(re.coefficients[round], zeta(*zeta_i), zeta(*zeta_i - 1));
         // Per Rule SD4: targeted asserts of the two facts the iter-end
         // loop invariant subtyping needs (bound + spec-function equation
         // for the just-updated chunk), instead of a global reveal.
-        hax_lib::fstar!(
+        proof!(
             r#"assert (Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector
                          (mk_usize 2 *! mk_usize 3328)
                          (re.Libcrux_ml_kem.Vector.f_coefficients.[round] <: v_Vector));
@@ -254,7 +254,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     // applications) to the function-form citation in the ensures via a
     // post-loop forall_intro over `lemma_inv_ntt_layer_2_step_to_hacspec`
     // (already proven in Bridges.fst, commit b7b49c358).
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (j: nat) : Lemma (j < 16 ==>
             Hacspec_ml_kem.Commute.Invert_ntt_bridge.pv_post #v_Vector
@@ -346,14 +346,14 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
         // Hand-holding for the impl-level loop invariant: link local
         // `zeta_i` to the parametric form `31 - round` so the assignment's
         // call substitutes into the j=round branch cleanly.
-        hax_lib::fstar!(r#"assert (zeta_i == mk_usize 31 -! round)"#);
+        proof!(r#"assert (zeta_i == mk_usize 31 -! round)"#);
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], zeta(*zeta_i));
         // Per Rule SD4: targeted asserts of the two facts the iter-end
         // loop invariant subtyping needs (bound + spec-function equation
         // for the just-updated chunk), instead of a global reveal that
         // would unfold every prior chunk's bound atom universally.
-        hax_lib::fstar!(
+        proof!(
             r#"assert (Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector
                          (mk_usize 4 *! mk_usize 3328)
                          (re.Libcrux_ml_kem.Vector.f_coefficients.[round] <: v_Vector));
@@ -369,7 +369,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     // its `is_i16b_array_opaque (2*3328)` (from the original
     // `is_bounded_poly` precondition on _re_init), then invoke the bridge
     // to lift the impl equation to the spec function-form equation.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (j: nat) : Lemma (j < 16 ==>
             Hacspec_ml_kem.Commute.Invert_ntt_bridge.pv_post #v_Vector
@@ -477,7 +477,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     // the trait posts' `mod_q_eq` predicate before invoking the FE
     // commute lemmas.  Without this, Z3 reports "incomplete quantifiers"
     // on aux1's residue substitution at any rlimit.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let a_arr_in = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${_a_in} in
         let b_arr_in = Libcrux_ml_kem.Vector.Traits.f_to_i16_array ${_b_in} in
@@ -530,7 +530,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     );
     // USER-14 Step B opacity fix: fold the two per-lane foralls (established
     // above) into the opaque `inv_ntt_step_post` the strengthened ensures cites.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%inv_ntt_step_post)
              (inv_ntt_step_post #$:Vector ${_a_in} ${_b_in} ${r0} ${r1} ${zeta_r})"#
     );
@@ -1163,8 +1163,8 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     let step_vec_n = step / FIELD_ELEMENTS_IN_VECTOR;
 
     // USER-14 Step B: per-layer numeric facts + outer-fold invariant init.
-    hax_lib::fstar!(r#"lemma_layer_numeric_facts ${layer} ${_zeta_i_init}"#);
-    hax_lib::fstar!(
+    proof!(r#"lemma_layer_numeric_facts ${layer} ${_zeta_i_init}"#);
+    proof!(
         r#"lemma_outer_inv_init #$:Vector ${_re_init} ${re}.f_coefficients
              (v ${step_vec_n}) (zs_of ${groups} ${_zeta_i_init}) ${step}"#
     );
@@ -1185,7 +1185,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
         let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         // inner-fold invariant init (outer_inv at round -> inner_inv at offset_vec).
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_inner_inv_init #$:Vector ${_re_init} ${re}.f_coefficients
                  (v ${step_vec_n}) (zs_of ${groups} ${_zeta_i_init}) ${round} ${step}
                  ${offset_vec} ${step_vec}"#
@@ -1203,7 +1203,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             #[cfg(hax)]
             let _re_body_in = *re;
             // expose the 4*3328 PENDING bounds on j and j+step_vec for the step precondition.
-            hax_lib::fstar!(
+            proof!(
                 r#"lemma_inner_inv_lookup #$:Vector ${_re_init} ${re}.f_coefficients (v ${step_vec_n})
                      (zs_of ${groups} ${_zeta_i_init}) ${offset_vec} ${step_vec} ${j} ${j};
                    lemma_inner_inv_lookup #$:Vector ${_re_init} ${re}.f_coefficients (v ${step_vec_n})
@@ -1220,7 +1220,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             re.coefficients[j + step_vec] = y;
 
             // inner maintenance: inner_inv at (cb,j) -> inner_inv at (cf,j+1).
-            hax_lib::fstar!(
+            proof!(
                 r#"lemma_offset_vec (v ${round}) (v ${step}) (v ${offset}) (v ${offset_vec}) (v ${step_vec_n});
                    FStar.Seq.Base.init_index_ (v ${groups})
                      (fun (r: nat{r < v ${groups}}) ->
@@ -1236,7 +1236,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
         }
 
         // outer maintenance: inner_inv at offset_vec+step_vec -> outer_inv at round+1.
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_offset_vec (v ${round}) (v ${step}) (v ${offset}) (v ${offset_vec}) (v ${step_vec_n});
                lemma_inner_to_outer #$:Vector ${_re_init} ${re}.f_coefficients (v ${step_vec_n})
                  (zs_of ${groups} ${_zeta_i_init}) ${round} ${step} ${offset_vec} ${step_vec}
@@ -1245,7 +1245,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     }
 
     // zeta-table forall: zs_of[round] == v_ZETAS[2*groups-1-round].
-    hax_lib::fstar!(
+    proof!(
         r#"(let aux (round: nat)
               : Lemma (round < v ${groups} ==>
                   Seq.index (zs_of ${groups} ${_zeta_i_init}) round ==
@@ -1264,7 +1264,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     );
     // (a) is_bounded_poly 3328 (every vector DONE) + (b) the cross_vec_hyp forall;
     // then the outlet discharges the functional post.
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_offset_vec (v ${groups}) (v ${step}) (v ${groups} * v ${step} * 2)
              ((v ${groups} * v ${step} * 2) / 16) (v ${step_vec_n});
            (let auxb (i: nat)
@@ -1366,21 +1366,21 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     #[cfg(hax)]
     let re1 = *re;
     // layer 1 raw 16-vector post ==> poly_step #1 (createi bridge, job B).
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_layer1_to_poly_step #$:Vector ${re0} ${re1}"#
     );
 
     invert_ntt_at_layer_2(&mut zeta_i, re);
     #[cfg(hax)]
     let re2 = *re;
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_layer2_to_poly_step #$:Vector ${re1} ${re2}"#
     );
 
     invert_ntt_at_layer_3(&mut zeta_i, re);
     #[cfg(hax)]
     let re3 = *re;
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_layer3_to_poly_step #$:Vector ${re2} ${re3}"#
     );
 
@@ -1390,7 +1390,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     let re4 = *re;
     // layers 4-7: the function post ALREADY cites the poly-level
     // ntt_inverse_layer, so poly_step intro is the trivial reveal.
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_poly_step_intro #$:Vector ${re3} ${re4} (mk_usize 4)"#
     );
     // Layer 4_plus's ensures is the tight 3328; widen to 4*3328 for the
@@ -1401,7 +1401,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 5);
     #[cfg(hax)]
     let re5 = *re;
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_poly_step_intro #$:Vector ${re4} ${re5} (mk_usize 5)"#
     );
     #[cfg(hax)]
@@ -1410,7 +1410,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 6);
     #[cfg(hax)]
     let re6 = *re;
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_poly_step_intro #$:Vector ${re5} ${re6} (mk_usize 6)"#
     );
     #[cfg(hax)]
@@ -1419,12 +1419,12 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     invert_ntt_at_layer_4_plus(&mut zeta_i, re, 7);
     #[cfg(hax)]
     let re7 = *re;
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_poly_step_intro #$:Vector ${re6} ${re7} (mk_usize 7)"#
     );
 
     // compose the 7 poly_step atoms into the butterflies equality (driver post).
-    hax_lib::fstar!(
+    proof!(
         r#"Hacspec_ml_kem.Commute.Invert_ntt_bridge.lemma_compose_7 #$:Vector ${re0} ${re1} ${re2} ${re3} ${re4} ${re5} ${re6} ${re7}"#
     );
 }

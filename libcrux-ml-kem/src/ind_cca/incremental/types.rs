@@ -308,7 +308,7 @@ impl<const K: usize, const LEN: usize, Vector: Operations> From<&MlKemPublicKeyU
         // but `serialize_vector` requires `is_rank(K)`,
         // `LEN == ranked_bytes_per_ring_element(K)` and
         // `is_bounded_polynomial_vector(3328, t_as_ntt)`.
-        hax_lib::fstar!("admit ()");
+        proof!("admit ()");
         let mut out = Self {
             t_as_ntt: [0u8; LEN],
         };
@@ -378,7 +378,7 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, P
         // `PK2_LEN == cpa_private_key_size(K)`, coefficient bounds) cannot
         // be discharged here.  Annotated callers should use
         // `KeyPair::into_unpacked` directly.
-        hax_lib::fstar!("admit ()");
+        proof!("admit ()");
         value.into_unpacked()
     }
 }

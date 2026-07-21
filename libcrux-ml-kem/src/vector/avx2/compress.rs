@@ -51,14 +51,14 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
     let field_modulus_quartered = mm256_set1_epi16((FIELD_MODULUS - 1) / 4);
 
     let shifted = mm256_sub_epi16(field_modulus_halved, vector);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i: nat). i < 16 ==>
             v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${shifted}) i) ==
             1664 - v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i))"#
     );
 
     let mask = mm256_srai_epi16::<15>(shifted);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (i: nat). i < 16 ==>
             v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${mask}) i) ==
             (if v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${shifted}) i) < 0
@@ -66,7 +66,7 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
     );
 
     let shifted_to_positive = mm256_xor_si256(mask, shifted);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_mm256_xor_si256_lane ${mask} ${shifted};
            introduce forall (i: nat). i < 16 ==>
              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${shifted_to_positive}) i) ==
@@ -81,7 +81,7 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
 
     let shifted_to_positive_in_range =
         mm256_sub_epi16(shifted_to_positive, field_modulus_quartered);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce forall (i: nat). i < 16 ==>
              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${shifted_to_positive_in_range}) i) ==
              (let vec_i = v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i) in
@@ -99,7 +99,7 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
     );
 
     let result = mm256_srli_epi16::<15>(shifted_to_positive_in_range);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_mm256_srli_epi16_15 ${shifted_to_positive_in_range};
            assert (forall (i: nat). i < 16 ==>
              v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) i) ==
@@ -319,7 +319,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // position 1 and the |high|s in position 1 to position 2, and leave the
     // rest unchanged.
     let result = mm256_permute4x64_epi64::<0b11_01_10_00>(compressed);
-    hax_lib::fstar!(
+    proof!(
         r#"
   let dd = v v_COEFFICIENT_BITS in
   assert_norm (pow2 11 == 2048);
@@ -388,7 +388,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 pub fn decompress_1(a: Vec256) -> Vec256 {
     let z = mm256_setzero_si256();
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         assert(Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z == Seq.create 16 (mk_i16 0));
         assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $z) i == mk_i16 0);
@@ -402,14 +402,14 @@ pub fn decompress_1(a: Vec256) -> Vec256 {
 
     let s = arithmetic::sub(z, a);
 
-    hax_lib::fstar!(
+    proof!(
         r#"assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 0 \/ 
                             Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $s) i == mk_i16 (-1))"#
     );
 
     let result = arithmetic::bitwise_and_with_constant(s, 1665);
 
-    hax_lib::fstar!(
+    proof!(
         r#"Rust_primitives.Integers.logand_lemma (mk_i16 1665) (mk_i16 1665);
            introduce forall (i: nat). i < 16 ==>
              (let res_i = v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 $result) i) in
@@ -485,7 +485,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     // position 1 and the |high|s in position 1 to position 2, and leave the
     // rest unchanged.
     let result = mm256_permute4x64_epi64::<0b11_01_10_00>(compressed);
-    hax_lib::fstar!(
+    proof!(
         r#"
   let dd = v v_COEFFICIENT_BITS in
   assert_norm (pow2 11 == 2048);

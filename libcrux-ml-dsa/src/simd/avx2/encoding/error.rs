@@ -86,7 +86,7 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_2), *simd_unit);
 
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
@@ -98,7 +98,7 @@ fn serialize_when_eta_is_2(simd_unit: &Vec256, out: &mut [u8]) {
 
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_6_combined);
     out.copy_from_slice(&serialized[0..3]);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_error_serialize_post_eta_2 $out $adjacent_6_combined $simd_unit_shifted $simd_unit"#
     );
 }
@@ -174,7 +174,7 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
 
     let simd_unit_shifted = mm256_sub_epi32(mm256_set1_epi32(ETA_4), *simd_unit);
 
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque_arithmetic_ops #I32;
         assert (forall (j: u64{v j < 8}).
                   v (to_i32x8 $simd_unit_shifted j) >= 0 /\
@@ -187,7 +187,7 @@ fn serialize_when_eta_is_4(simd_unit: &Vec256, out: &mut [u8]) {
     mm_storeu_bytes_si128(&mut serialized[0..16], adjacent_4_combined);
 
     out.copy_from_slice(&serialized[0..4]);
-    hax_lib::fstar!(
+    proof!(
         r#"lemma_error_serialize_post_eta_4 $out $adjacent_4_combined $simd_unit_shifted $simd_unit"#
     );
 }
@@ -335,7 +335,7 @@ pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
         Eta::Four => 4,
     };
     *out = mm256_sub_epi32(mm256_set1_epi32(eta_v), unsigned);
-    hax_lib::fstar!(
+    proof!(
         r"
     i32_bit_zero_lemma_to_lt_pow2_n_weak 4 $unsigned;
     reveal_opaque_arithmetic_ops #I32;

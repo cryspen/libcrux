@@ -61,11 +61,11 @@ impl crate::vector::traits::Repr for SIMD128Vector {}
 #[hax_lib::requires(spec::cond_subtract_3329_pre(&vector.repr()))]
 #[hax_lib::ensures(|out| spec::cond_subtract_3329_post(&vector.repr(), &out.repr()))]
 fn op_cond_subtract_3329(vector: SIMD128Vector) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = cond_subtract_3329(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
               (v (Seq.index (impl.f_repr ${result}) i))
@@ -85,11 +85,11 @@ fn op_cond_subtract_3329(vector: SIMD128Vector) -> SIMD128Vector {
 #[hax_lib::requires(spec::to_unsigned_representative_pre(&a.repr()))]
 #[hax_lib::ensures(|out| spec::to_unsigned_representative_post(&a.repr(), &out.repr()))]
 fn op_to_unsigned_representative(a: SIMD128Vector) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = to_unsigned_representative(a);
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
               (v (Seq.index (impl.f_repr ${result}) i))
@@ -110,11 +110,11 @@ fn op_to_unsigned_representative(a: SIMD128Vector) -> SIMD128Vector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_1_pre} (impl.f_repr $vector)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_1_post} (impl.f_repr $vector) (impl.f_repr $out)"#))]
 fn op_compress_1(vector: SIMD128Vector) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post) Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post"#
     );
     let result = compress_1(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0) (mk_i16 1) (impl.f_repr ${result});
            let aux (j: nat{j < 16}) : Lemma
              (Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post
@@ -136,7 +136,7 @@ fn op_compress_1(vector: SIMD128Vector) -> SIMD128Vector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_pre} (impl.f_repr $vector) $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_post} (impl.f_repr $vector) $COEFFICIENT_BITS (impl.f_repr $out)"#))]
 fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD128Vector) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
              (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0)
                  (mk_i16 3328)
@@ -148,7 +148,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD128Vector) -> SIMD128Vec
                  v (Seq.index (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector}) i) < 3329)"#
     );
     let result = compress::<COEFFICIENT_BITS>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Neon.Compress.cmp_compress_post $COEFFICIENT_BITS ${vector};
            Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0)
              (mk_i16 (pow2 (v $COEFFICIENT_BITS) - 1))
@@ -181,7 +181,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD128Vector) -> SIMD128Vec
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} (impl.f_repr $a)"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} (impl.f_repr $a) (impl.f_repr $out)"#))]
 fn op_decompress_1(a: SIMD128Vector) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (pow2 1 - 1 == 1);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
              (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 1) (impl.f_repr ${a}));
@@ -192,7 +192,7 @@ fn op_decompress_1(a: SIMD128Vector) -> SIMD128Vector {
                          x == mk_i16 0 \/ x == mk_i16 1))"#
     );
     let result = decompress_1(a);
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0) (mk_i16 3328) (impl.f_repr ${result});
            let aux (j: nat{j < 16}) : Lemma
              (Libcrux_ml_kem.Vector.Traits.Spec.decompress_1_lane_post
@@ -216,7 +216,7 @@ fn op_decompress_1(a: SIMD128Vector) -> SIMD128Vector {
 fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     vector: SIMD128Vector,
 ) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (pow2 11 == 2048);
            FStar.Math.Lemmas.pow2_le_compat 11 (v v_COEFFICIENT_BITS);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
@@ -230,7 +230,7 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
              pow2 (v v_COEFFICIENT_BITS))"#
     );
     let result = decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector);
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0) (mk_i16 3328) (impl.f_repr ${result});
            let aux (j: nat{j < 16}) : Lemma
              (Libcrux_ml_kem.Vector.Traits.Spec.decompress_d_lane_post (mk_usize (v v_COEFFICIENT_BITS))
@@ -258,11 +258,11 @@ fn op_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
     );
     let result = ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (8*3328));
            let vec = Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector} in
            let out = Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result} in
@@ -513,11 +513,11 @@ let lemma_neon_inv_ntt_layer_3_post (vec out: t_Array i16 (mk_usize 16)) (zeta: 
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_2_step_pre} (impl.f_repr ${vector}) zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_2_step_post} (impl.f_repr ${vector}) zeta0 zeta1 (impl.f_repr ${out})"#))]
 fn op_ntt_layer_2_step(vector: SIMD128Vector, zeta0: i16, zeta1: i16) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328))"#
     );
     let result = ntt_layer_2_step(vector, zeta0, zeta1);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328));
            lemma_neon_ntt_layer_2_post (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result}) zeta0 zeta1"#
     );
@@ -529,11 +529,11 @@ fn op_ntt_layer_2_step(vector: SIMD128Vector, zeta0: i16, zeta1: i16) -> SIMD128
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_ntt_layer_3_step(vector: SIMD128Vector, zeta: i16) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328))"#
     );
     let result = ntt_layer_3_step(vector, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328));
            lemma_neon_ntt_layer_3_post (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result}) zeta"#
     );
@@ -551,11 +551,11 @@ fn op_inv_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
     );
     let result = inv_ntt_layer_1_step(vector, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
            let vec = Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector} in
            let out = Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result} in
@@ -573,11 +573,11 @@ fn op_inv_ntt_layer_1_step(
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_2_step_pre} (impl.f_repr ${vector}) zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_2_step_post} (impl.f_repr ${vector}) zeta0 zeta1 (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_2_step(vector: SIMD128Vector, zeta0: i16, zeta1: i16) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (3328))"#
     );
     let result = inv_ntt_layer_2_step(vector, zeta0, zeta1);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
            lemma_neon_inv_ntt_layer_2_post (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result}) zeta0 zeta1"#
     );
@@ -589,11 +589,11 @@ fn op_inv_ntt_layer_2_step(vector: SIMD128Vector, zeta0: i16, zeta1: i16) -> SIM
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_3_step(vector: SIMD128Vector, zeta: i16) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
     );
     let result = inv_ntt_layer_3_step(vector, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328));
            lemma_neon_inv_ntt_layer_3_post (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${vector}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${result}) zeta"#
     );
@@ -612,11 +612,11 @@ fn op_ntt_multiply(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD128Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let out = ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.ntt_multiply_butterfly_post)
              (Spec.Utils.ntt_multiply_butterfly_post (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${lhs}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${rhs}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${out}) zeta0 zeta1 zeta2 zeta3);
            Hacspec_ml_kem.Commute.Chunk.lemma_ntt_multiply_branch_0 (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${lhs}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${rhs}) (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${out}) zeta0 zeta1 zeta2 zeta3;

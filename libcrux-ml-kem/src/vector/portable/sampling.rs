@@ -27,9 +27,9 @@ pub(crate) fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
         let d1 = ((b2 & 0xF) << 8) | b1;
         let d2 = (b3 << 4) | (b2 >> 4);
 
-        hax_lib::fstar!(r#"logand_lemma $b2 (mk_i16 15)"#);
-        hax_lib::fstar!(r#"logor_lemma (($b2 &. mk_i16 15) <<! mk_i32 8) $b1"#);
-        hax_lib::fstar!(r#"logor_lemma ($b3 <<! mk_i32 4) ($b2 >>! mk_i32 4)"#);
+        proof!(r#"logand_lemma $b2 (mk_i16 15)"#);
+        proof!(r#"logor_lemma (($b2 &. mk_i16 15) <<! mk_i32 8) $b1"#);
+        proof!(r#"logor_lemma ($b3 <<! mk_i32 4) ($b2 >>! mk_i32 4)"#);
 
         if d1 < FIELD_MODULUS && sampled < 16 {
             result[sampled] = d1;

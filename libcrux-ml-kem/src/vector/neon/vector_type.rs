@@ -34,7 +34,7 @@ pub(crate) fn to_i16_array(v: SIMD128Vector) -> [i16; 16] {
     _vst1q_s16(&mut out[8..16], v.high);
     // The two `update_at_range` posts are slice-equations; seed the
     // per-index slice/append lemmas so `lemma_eq_intro` can fire.
-    hax_lib::fstar!(
+    proof!(
         r#"let lo = Libcrux_intrinsics.Arm64_extract.vec128_as_i16x8 ${v}.f_low in
 let hi = Libcrux_intrinsics.Arm64_extract.vec128_as_i16x8 ${v}.f_high in
 introduce forall (j: nat{j < 16}). Seq.index (${out} <: Seq.seq i16) j == Seq.index (repr ${v}) j
@@ -61,7 +61,7 @@ pub(crate) fn from_i16_array(array: &[i16]) -> SIMD128Vector {
         high: _vld1q_s16(&array[8..16]),
     };
     // Seed the per-index append/slice lemmas for `lemma_eq_intro`.
-    hax_lib::fstar!(
+    proof!(
         r#"let lo = Libcrux_intrinsics.Arm64_extract.vec128_as_i16x8 ${result}.f_low in
 let hi = Libcrux_intrinsics.Arm64_extract.vec128_as_i16x8 ${result}.f_high in
 introduce forall (j: nat{j < 16}). Seq.index (repr ${result}) j == Seq.index ${array} j
@@ -95,7 +95,7 @@ pub(crate) fn to_bytes(v: SIMD128Vector, bytes: &mut [u8]) {
     // `update_at_range` posts thread the two stored 16-byte halves into
     // `bytes`; each store's strengthened bit_vec ensures + the i16x8 lane-bit
     // decomposition discharge `to_le_bytes_post_N`.
-    hax_lib::fstar!(
+    proof!(
         r#"
 let head : t_Array u8 (sz 32) = Seq.slice ${bytes} 0 32 in
 introduce forall (i: nat{i < 256}).
@@ -136,7 +136,7 @@ pub(crate) fn from_bytes(array: &[u8]) -> SIMD128Vector {
     };
     // Bridge the strengthened `_vld1q_bytes` bit_vec ensures (per 16-byte
     // half) through the i16x8 lane-bit decomposition to `from_le_bytes_post_N`.
-    hax_lib::fstar!(
+    proof!(
         r#"
 let head : t_Array u8 (sz 32) = Seq.slice ${array} 0 32 in
 introduce forall (i: nat{i < 256}).
@@ -171,6 +171,6 @@ pub(crate) fn ZERO() -> SIMD128Vector {
         low: _vdupq_n_s16(0),
         high: _vdupq_n_s16(0),
     };
-    hax_lib::fstar!(r#"Seq.lemma_eq_intro (repr ${result}) (Seq.create 16 (mk_i16 0))"#);
+    proof!(r#"Seq.lemma_eq_intro (repr ${result}) (Seq.create 16 (mk_i16 0))"#);
     result
 }

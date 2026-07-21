@@ -26,7 +26,7 @@ pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
     // Per-half functional characterization, established on the inputs before mutation.
     // The two asserts bridge the repr-level precondition to per-lane get_lane bounds
     // (`lemma_repr_index` SMTPat), which discharge `lemma_compress_1_half`'s requires.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (k: nat{k < 8}).
               Seq.index (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${v}) k ==
                 Libcrux_intrinsics.Arm64_extract.get_lane_i16x8
@@ -65,7 +65,7 @@ pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
 
     // Bridge `repr v` indices (lanes 0..7 from f_low, 8..15 from f_high) to the
     // per-half chain outputs characterized above, via `lemma_repr_index`.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall (k: nat{k < 8}).
               Seq.index (Libcrux_ml_kem.Vector.Neon.Vector_type.repr ${v}) k ==
                 Libcrux_intrinsics.Arm64_extract.get_lane_i16x8
@@ -84,26 +84,26 @@ pub(crate) fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
 fn mask_n_least_significant_bits(coefficient_bits: i16) -> i16 {
     match coefficient_bits {
         4 => {
-            hax_lib::fstar!(r#"assert_norm (pow2 4 - 1 == 15)"#);
+            proof!(r#"assert_norm (pow2 4 - 1 == 15)"#);
             0x0f
         }
         5 => {
-            hax_lib::fstar!(r#"assert_norm (pow2 5 - 1 == 31)"#);
+            proof!(r#"assert_norm (pow2 5 - 1 == 31)"#);
             0x1f
         }
         10 => {
-            hax_lib::fstar!(r#"assert_norm (pow2 10 - 1 == 1023)"#);
+            proof!(r#"assert_norm (pow2 10 - 1 == 1023)"#);
             0x3ff
         }
         11 => {
-            hax_lib::fstar!(r#"assert_norm (pow2 11 - 1 == 2047)"#);
+            proof!(r#"assert_norm (pow2 11 - 1 == 2047)"#);
             0x7ff
         }
         x => {
             // catch-all is only reachable for coefficient_bits in [0, 15);
             // pow2 (v x) <= pow2 14 = 16384 < 2^15, so (1 << x) fits i16 and
             // (1 << x) - 1 >= 0 cannot underflow.
-            hax_lib::fstar!(
+            proof!(
                 r#"FStar.Math.Lemmas.pow2_le_compat 14 (v $x);
                    assert_norm (pow2 14 == 16384)"#
             );
@@ -209,7 +209,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
     // The `i32 -> i16` cast preserves the value for COEFFICIENT_BITS in {4,5,10,11},
     // which discharges `mask_n_least_significant_bits`'s `< 15` precondition.
     // `v` is qualified because the vector parameter is named `v`.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (Rust_primitives.Integers.v (cast ($COEFFICIENT_BITS <: i32) <: i16) ==
             Rust_primitives.Integers.v $COEFFICIENT_BITS)"#
     );
@@ -258,7 +258,7 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32
     let decompressed = _vmulq_n_u32(v, FIELD_MODULUS as u32);
     let decompressed = _vaddq_u32(decompressed, coeff);
     let result = _vshrq_n_u32::<COEFFICIENT_BITS>(decompressed);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce (forall (k: nat). k < 4 ==>
                 Rust_primitives.Integers.v (NA.get_lane_u32x4 v k) <
                 pow2 (Rust_primitives.Integers.v v_COEFFICIENT_BITS)) ==>
@@ -297,7 +297,7 @@ pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
     let z = ZERO();
     // z is all-zero, and every lane of `a` is in {0, 1}, so 0 - a_i in {0, -1}
     // satisfies `sub`'s precondition (no signed overflow).
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall i. Seq.index (repr ${z}) i == mk_i16 0);
            assert (forall i. Spec.Utils.is_intb (pow2 15 - 1)
              (Rust_primitives.Integers.v (Seq.index (repr ${z}) i) -
@@ -305,7 +305,7 @@ pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
     );
     let s = super::arithmetic::sub(z, &a);
     // sub gives s_i == 0 - a_i, so s_i in {0,-1}: 0 when a_i==0, -1 when a_i==1.
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall i.
               Seq.index (repr ${s}) i == mk_i16 0 \/ Seq.index (repr ${s}) i == mk_i16 (- 1));
            assert (forall (i: nat).
@@ -317,7 +317,7 @@ pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
     let res = super::arithmetic::bitwise_and_with_constant(s, 1665);
     // s_i &. 1665: 0 &. 1665 == 0, (-1) &. 1665 == 1665.  Then match to the
     // decompress_d closed form (2*a_i*3329+2)/4 (== 0 for a_i==0, 1665 for a_i==1).
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall i.
               Seq.index (repr ${res}) i == mk_i16 0 \/ Seq.index (repr ${res}) i == mk_i16 1665);
            assert (forall (i: nat).
@@ -709,7 +709,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     v.low = _vtrn1q_s16(_vreinterpretq_s16_u32(low0), _vreinterpretq_s16_u32(low1));
     v.high = _vtrn1q_s16(_vreinterpretq_s16_u32(high0), _vreinterpretq_s16_u32(high1));
     let result = v;
-    hax_lib::fstar!(
+    proof!(
         r#"(* repr append-index bridge for the input snapshot *)
     assert (forall (m: nat). m < 8 ==>
       Seq.index (repr ${v_orig}) m ==

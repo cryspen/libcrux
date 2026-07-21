@@ -47,7 +47,7 @@ impl Repr for Coefficients {}
         (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}) $bound $result"#))]
 pub(crate) fn infinity_norm_exceeds_with_proof(simd_unit: &Coefficients, bound: i32) -> bool {
     let result = arithmetic::infinity_norm_exceeds(simd_unit, bound);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post)
             (Libcrux_ml_dsa.Simd.Traits.Specs.infinity_norm_exceeds_post);
         reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"#
@@ -72,7 +72,7 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut Coefficients, rhs: &Coeff
     #[cfg(hax)]
     let _orig_lhs = lhs.clone();
     arithmetic::montgomery_multiply(lhs, rhs);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
         let pf (k: nat{k < 8}) : Lemma
             (ensures Libcrux_ml_dsa.Simd.Traits.Specs.montgomery_multiply_lane_post
@@ -100,12 +100,12 @@ pub(crate) fn montgomery_multiply_with_proof(lhs: &mut Coefficients, rhs: &Coeff
 pub(crate) fn shift_left_then_reduce_with_proof<const SHIFT_BY: i32>(simd_unit: &mut Coefficients) {
     #[cfg(hax)]
     let _orig = simd_unit.clone();
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}
             == ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values)"#
     );
     shift_left_then_reduce::<SHIFT_BY>(simd_unit);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
             (Spec.Utils.is_i32b_array_opaque 8380416
                 ${simd_unit}.Libcrux_ml_dsa.Simd.Portable.Vector_type.f_values);
@@ -137,7 +137,7 @@ pub(crate) fn power2round_with_proof(t0: &mut Coefficients, t1: &mut Coefficient
     #[cfg(hax)]
     let _orig_t0 = t0.clone();
     arithmetic::power2round(t0, t1);
-    hax_lib::fstar!(
+    proof!(
         r#"
         let pf (k: nat{k < 8}) : Lemma
             (ensures Libcrux_ml_dsa.Simd.Traits.Specs.power2round_lane_post
@@ -213,7 +213,7 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
         arithmetic::reduce(&mut simd_units[i]);
     }
 
-    hax_lib::fstar!(
+    proof!(
         r#"
         reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
         let pf (j: nat{j < 32}) : Lemma
@@ -304,7 +304,7 @@ pub(crate) fn ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_
     #[cfg(hax)]
     let _orig = simd_units.clone();
     ntt::ntt(simd_units);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial)
              (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial
                 (v ${specs::NTT_BASE_BOUND} + 8 * v ${specs::FIELD_MAX}) ${simd_units});
@@ -352,7 +352,7 @@ pub(crate) fn invert_ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_I
     #[cfg(hax)]
     let _orig = simd_units.clone();
     invntt::invert_ntt_montgomery(simd_units);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial)
              (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${simd_units});
            lemma_ntt_view_portable ${_orig};
@@ -444,13 +444,13 @@ impl Operations for Coefficients {
           (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} ==>
             v (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}_future) i) < 16))"#))]
     fn decompose(gamma2: Gamma2, simd_unit: &Self, low: &mut Self, high: &mut Self) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
         );
         arithmetic::decompose(gamma2, simd_unit, low, high);
-        hax_lib::fstar!(
+        proof!(
             r#"
             // F-1 verdict (above-trait commit 7a4dc28df, option d):
             // discharge per-lane decompose_lane_post via paired commute lemma.
@@ -528,13 +528,13 @@ impl Operations for Coefficients {
         gamma2: i32,
         hint: &mut Coefficients,
     ) -> usize {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${high}))"#
         );
         let result = arithmetic::compute_hint(low, high, gamma2, hint);
-        hax_lib::fstar!(
+        proof!(
             r#"
             // F-1 verdict (above-trait commit 7a4dc28df, option d):
             // discharge bound + conditional equation via paired commute lemmas.
@@ -598,7 +598,7 @@ impl Operations for Coefficients {
     fn use_hint(gamma2: Gamma2, simd_unit: &Coefficients, hint: &mut Coefficients) {
         #[cfg(hax)]
         let _orig_hint = hint.clone();
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque)
                 (Libcrux_ml_dsa.Simd.Traits.Specs.is_binary_array_8_opaque
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}));
@@ -607,7 +607,7 @@ impl Operations for Coefficients {
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
         );
         arithmetic::use_hint(gamma2, simd_unit, hint);
-        hax_lib::fstar!(
+        proof!(
             r#"
             // F-1 verdict (above-trait commit 7a4dc28df, option d):
             // discharge bound + conditional equation via paired commute lemmas.
@@ -750,7 +750,7 @@ impl Operations for Coefficients {
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn gamma1_deserialize(serialized: &[u8], out: &mut Coefficients, gamma1_exponent: usize) {
         encoding::gamma1::deserialize(serialized, out, gamma1_exponent);
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_array_opaque)
                 (Spec.Utils.is_i32b_array_opaque (pow2 (v $gamma1_exponent))
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}))"#
@@ -805,7 +805,7 @@ impl Operations for Coefficients {
     #[ensures(|_| fstar!(r#"
         Seq.length ${out}_future == Seq.length ${out}"#))]
     fn t0_serialize(simd_unit: &Coefficients, out: &mut [u8]) {
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
                 (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${simd_unit}))"#
@@ -819,7 +819,7 @@ impl Operations for Coefficients {
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}_future)"#))]
     fn t0_deserialize(serialized: &[u8], out: &mut Coefficients) {
         encoding::t0::deserialize(serialized, out);
-        hax_lib::fstar!(
+        proof!(
             r#"reveal_opaque (`%Spec.Utils.is_i32b_strict_lower_array_opaque)
                 (Spec.Utils.is_i32b_strict_lower_array_opaque (pow2 12)
                     (Libcrux_ml_dsa.Simd.Traits.f_repr ${out}))"#

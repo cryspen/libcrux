@@ -37,7 +37,7 @@ T.is_i32b_poly_avx2 4211177 ${re}_future /\
         #[cfg(hax)]
         let s8 = re.clone();
         scale_montgomery_avx2(re);
-        hax_lib::fstar!(
+        proof!(
             r#"PI.lemma_invert_top (C.simd_units_to_array (T.chunks_of_re_avx2 s0)) (C.simd_units_to_array (T.chunks_of_re_avx2 s8)) (C.simd_units_to_array (T.chunks_of_re_avx2 re))"#
         );
     }
@@ -501,7 +501,7 @@ fn outer_3_plus<const OFFSET: usize, const STEP_BY: usize, const ZETA: i32>(
         re[j + STEP_BY] = AVX2SIMDUnit {
             value: arithmetic::montgomery_multiply_by_constant(a_minus_b, ZETA),
         };
-        hax_lib::fstar!("assert (outer_3_plus_inv_pointwise (v $OFFSET) (v $STEP_BY) $ZETA (v $OFFSET + v $STEP_BY) ${_re0} ${re} (v j + v $STEP_BY))");
+        proof!("assert (outer_3_plus_inv_pointwise (v $OFFSET) (v $STEP_BY) $ZETA (v $OFFSET + v $STEP_BY) ${_re0} ${re} (v j + v $STEP_BY))");
         ()
     }
 }
@@ -568,7 +568,7 @@ unsafe fn invert_ntt_at_layer_3(re: &mut AVX2RingElement) {
     let s15 = re.clone();
     outer_3_plus::<{ (15 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 2725464>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
     assert_norm (pow2 0 == 1);
     assert_norm (pow2 1 == 2);
@@ -634,7 +634,7 @@ unsafe fn invert_ntt_at_layer_4(re: &mut AVX2RingElement) {
     let s7 = re.clone();
     outer_3_plus::<{ (7 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 1826347>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
     assert_norm (zeta_r 15 == 2680103);
     assert_norm (zeta_r 14 == 3111497);
@@ -676,7 +676,7 @@ unsafe fn invert_ntt_at_layer_5(re: &mut AVX2RingElement) {
     let s3 = re.clone();
     outer_3_plus::<{ (3 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, 237124>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
     assert_norm (zeta_r 7 == 466468);
     assert_norm (zeta_r 6 == (-876248));
@@ -708,7 +708,7 @@ unsafe fn invert_ntt_at_layer_6(re: &mut AVX2RingElement) {
     let s1 = re.clone();
     outer_3_plus::<{ (1 * STEP * 2) / COEFFICIENTS_IN_SIMD_UNIT }, STEP_BY, -2608894>(re);
 
-    hax_lib::fstar!(
+    proof!(
         r#"
     assert_norm (zeta_r 3 == (-518909));
     assert_norm (zeta_r 2 == (-2608894));
@@ -866,11 +866,11 @@ T.is_i32b_poly_avx2 (256 * 8380416) s8 /\
         #[cfg(hax)]
         let orig_unit = re[i];
         re[i].value = arithmetic::montgomery_multiply_by_constant(re[i].value, FACTOR);
-        hax_lib::fstar!(
+        proof!(
             r#"lemma_inv_scale_step s8 re i orig_unit; lemma_inv_scale_carryover s8 re_old re i"#
         );
     }
-    hax_lib::fstar!(r#"lemma_inv_scale_finalize s8 re"#);
+    proof!(r#"lemma_inv_scale_finalize s8 re"#);
 }
 
 #[inline(always)]
@@ -883,7 +883,7 @@ unsafe fn run_inv_layer_0(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_0(re);
-    hax_lib::fstar!(r#"lemma_inv_l0_post_to_sym orig re; lemma_inv_l0_sealed orig re 8380416"#);
+    proof!(r#"lemma_inv_l0_post_to_sym orig re; lemma_inv_l0_sealed orig re 8380416"#);
 }
 
 #[inline(always)]
@@ -896,7 +896,7 @@ unsafe fn run_inv_layer_1(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_1(re);
-    hax_lib::fstar!(r#"lemma_inv_l1_post_to_sym orig re; lemma_inv_l1_sealed orig re (2*8380416)"#);
+    proof!(r#"lemma_inv_l1_post_to_sym orig re; lemma_inv_l1_sealed orig re (2*8380416)"#);
 }
 
 #[inline(always)]
@@ -909,7 +909,7 @@ unsafe fn run_inv_layer_2(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_2(re);
-    hax_lib::fstar!(r#"lemma_inv_l2_post_to_sym orig re; lemma_inv_l2_sealed orig re (4*8380416)"#);
+    proof!(r#"lemma_inv_l2_post_to_sym orig re; lemma_inv_l2_sealed orig re (4*8380416)"#);
 }
 
 #[inline(always)]
@@ -922,7 +922,7 @@ unsafe fn run_inv_layer_3(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_3(re);
-    hax_lib::fstar!(r#"lemma_inv_l3_sealed orig re (8*8380416)"#);
+    proof!(r#"lemma_inv_l3_sealed orig re (8*8380416)"#);
 }
 
 #[inline(always)]
@@ -935,7 +935,7 @@ unsafe fn run_inv_layer_4(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_4(re);
-    hax_lib::fstar!(r#"lemma_inv_l4_sealed orig re (16*8380416)"#);
+    proof!(r#"lemma_inv_l4_sealed orig re (16*8380416)"#);
 }
 
 #[inline(always)]
@@ -948,7 +948,7 @@ unsafe fn run_inv_layer_5(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_5(re);
-    hax_lib::fstar!(r#"lemma_inv_l5_sealed orig re (32*8380416)"#);
+    proof!(r#"lemma_inv_l5_sealed orig re (32*8380416)"#);
 }
 
 #[inline(always)]
@@ -961,7 +961,7 @@ unsafe fn run_inv_layer_6(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_6(re);
-    hax_lib::fstar!(r#"lemma_inv_l6_sealed orig re (64*8380416)"#);
+    proof!(r#"lemma_inv_l6_sealed orig re (64*8380416)"#);
 }
 
 #[inline(always)]
@@ -974,7 +974,7 @@ unsafe fn run_inv_layer_7(re: &mut AVX2RingElement) {
     #[cfg(hax)]
     let orig = re.clone();
     invert_ntt_at_layer_7(re);
-    hax_lib::fstar!(r#"lemma_inv_l7_sealed orig re (128*8380416)"#);
+    proof!(r#"lemma_inv_l7_sealed orig re (128*8380416)"#);
 }
 
 #[inline(always)]
@@ -1016,5 +1016,5 @@ unsafe fn inv_run_layers_avx2(re: &mut AVX2RingElement) {
     run_inv_layer_7(re);
     #[cfg(hax)]
     let s8 = re.clone();
-    hax_lib::fstar!(r#"lemma_inv_compose_8_sealed s0 s1 s2 s3 s4 s5 s6 s7 s8"#);
+    proof!(r#"lemma_inv_compose_8_sealed s0 s1 s2 s3 s4 s5 s6 s7 s8"#);
 }

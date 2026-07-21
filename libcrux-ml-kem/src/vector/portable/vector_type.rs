@@ -147,7 +147,7 @@ pub(super) fn from_bytes(array: &[U8]) -> PortableVector {
         elements[i] = (array[2 * i + 1].as_i16()) << 8 | array[2 * i].as_i16();
     }
     let result = PortableVector { elements };
-    hax_lib::fstar!(r#"from_bytes_bit_bridge ${array} ${result}.f_elements"#);
+    proof!(r#"from_bytes_bit_bridge ${array} ${result}.f_elements"#);
     result
 }
 
@@ -181,5 +181,5 @@ pub(super) fn to_bytes(x: PortableVector, bytes: &mut [U8]) {
         bytes[2 * i + 1] = (x.elements[i] >> 8).as_u8();
         bytes[2 * i] = x.elements[i].as_u8();
     }
-    hax_lib::fstar!(r#"to_bytes_bit_bridge ${x} ${bytes}"#);
+    proof!(r#"to_bytes_bit_bridge ${x} ${bytes}"#);
 }

@@ -32,7 +32,7 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
               Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
                   (mk_usize 0) (mk_usize 1023) $t1"#
         ));
-        hax_lib::fstar!(
+        proof!(
             r#"assert_norm (v $RING_ELEMENT_OF_T1S_SIZE == 320);
                assert (v i < v $t1_len);
                assert (v i * 320 <= 7 * 320);

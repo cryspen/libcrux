@@ -37,7 +37,7 @@ pub fn deserialize(serialized: &[u8], simd_unit: &mut Coefficients) {
     debug_assert!(serialized.len() == 10);
 
     let mask = (1 << BITS_IN_UPPER_PART_OF_T) - 1;
-    hax_lib::fstar!(
+    proof!(
         r#"assert ($mask == (mk_i32 (pow2 10) -! mk_i32 1)) by (FStar.Tactics.norm [delta_only [`%Libcrux_ml_dsa.Constants.v_BITS_IN_UPPER_PART_OF_T;
                                                                                                   `%Libcrux_ml_dsa.Constants.v_FIELD_MODULUS_MINUS_ONE_BIT_LENGTH;
                                                                                                   `%Libcrux_ml_dsa.Constants.v_BITS_IN_LOWER_PART_OF_T];

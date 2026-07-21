@@ -37,7 +37,7 @@ fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     let mut output = [0i16; 16];
     // `output` has length 16; surface that fact so the intrinsic's
     // length-guarded `ensures` discharges `result == repr v`.
-    hax_lib::fstar!(r#"assert (Core_models.Slice.impl__len #i16 output == mk_usize 16)"#);
+    proof!(r#"assert (Core_models.Slice.impl__len #i16 output == mk_usize 16)"#);
     mm256_storeu_si256_i16(&mut output, v.elements);
 
     output
@@ -69,7 +69,7 @@ pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
     // `from_le_bytes_post_N` (i16x16 byte-view) post: the i16x16 view of the
     // loaded vector is bit-for-bit the loaded vector, so the byte-array and
     // i16-array views share the same bit vector.
-    hax_lib::fstar!(
+    proof!(
         r#"
 introduce forall (i: nat{i < 256}).
     Rust_primitives.BitVectors.bit_vec_of_int_t_array
@@ -107,7 +107,7 @@ pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
     // preservation; the intrinsic gives `head`'s bit-vec == x.elements; and
     // the i16x16 view of x.elements is bit-for-bit x.elements — so the i16
     // and byte views share a bit vector (`to_le_bytes_post_N`).
-    hax_lib::fstar!(
+    proof!(
         r#"
 introduce forall (i: nat{i < 256}).
     Rust_primitives.BitVectors.bit_vec_of_int_t_array
@@ -202,14 +202,14 @@ fn op_multiply_by_constant(vec: SIMD256Vector, c: i16) -> SIMD256Vector {
 #[hax_lib::requires(spec::cond_subtract_3329_pre(&vector.repr()))]
 #[hax_lib::ensures(|out| spec::cond_subtract_3329_post(&vector.repr(), &out.repr()))]
 fn op_cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = SIMD256Vector {
         elements: arithmetic::cond_subtract_3329(vector.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"Seq.lemma_eq_intro (repr ${result})
                   (Spec.Utils.map_array
                      (fun (x:i16) -> if x >=. (mk_i16 3329) then x -! (mk_i16 3329) else x)
@@ -217,7 +217,7 @@ fn op_cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
     );
     // Fold `v y % 3329 == v x % 3329` (provided by the underlying primitive)
     // into the opaque `mod_q_eq` form expected by the trait post.
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -238,14 +238,14 @@ fn op_cond_subtract_3329(vector: SIMD256Vector) -> SIMD256Vector {
 #[hax_lib::requires(spec::barrett_reduce_pre(&vector.repr()))]
 #[hax_lib::ensures(|out| spec::barrett_reduce_post(&vector.repr(), &out.repr()))]
 fn op_barrett_reduce(vector: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = SIMD256Vector {
         elements: arithmetic::barrett_reduce(vector.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -261,7 +261,7 @@ fn op_barrett_reduce(vector: SIMD256Vector) -> SIMD256Vector {
     );
     // Fold per-lane mod_q_eq facts into the opaque `barrett_reduce_lane_post`
     // form expected by the `forall16` post.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_lane_post)
                     (Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_lane_post)"#
     );
@@ -272,14 +272,14 @@ fn op_barrett_reduce(vector: SIMD256Vector) -> SIMD256Vector {
 #[hax_lib::requires(spec::montgomery_multiply_by_constant_pre(&vector.repr(), constant))]
 #[hax_lib::ensures(|out| spec::montgomery_multiply_by_constant_post(&vector.repr(), constant, &out.repr()))]
 fn op_montgomery_multiply_by_constant(vector: SIMD256Vector, constant: i16) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = SIMD256Vector {
         elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -295,7 +295,7 @@ fn op_montgomery_multiply_by_constant(vector: SIMD256Vector, constant: i16) -> S
     );
     // Fold per-lane mod_q_eq facts into the opaque
     // `montgomery_multiply_lane_post` form expected by the `forall16` post.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.montgomery_multiply_lane_post)
                     (Libcrux_ml_kem.Vector.Traits.Spec.montgomery_multiply_lane_post)"#
     );
@@ -306,14 +306,14 @@ fn op_montgomery_multiply_by_constant(vector: SIMD256Vector, constant: i16) -> S
 #[hax_lib::requires(spec::to_unsigned_representative_pre(&a.repr()))]
 #[hax_lib::ensures(|out| spec::to_unsigned_representative_post(&a.repr(), &out.repr()))]
 fn op_to_unsigned_representative(a: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)"#
     );
     let result = SIMD256Vector {
         elements: arithmetic::to_unsigned_representative(a.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"
         let aux (i: nat) : Lemma (i < 16 ==>
             Hacspec_ml_kem.ModQ.mod_q_eq
@@ -335,7 +335,7 @@ fn op_to_unsigned_representative(a: SIMD256Vector) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_1_pre} (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_1_post} (impl.f_repr ${vector}) (impl.f_repr ${out})"#))]
 fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
                     (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.compress_1_lane_post)
@@ -345,7 +345,7 @@ fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
     let result = SIMD256Vector {
         elements: result_elements,
     };
-    hax_lib::fstar!(
+    proof!(
         r#"let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe
                        (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16
@@ -373,7 +373,7 @@ fn op_compress_1(vector: SIMD256Vector) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"${spec::compress_pre} (impl.f_repr ${vector}) $COEFFICIENT_BITS"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::compress_post} (impl.f_repr ${vector}) $COEFFICIENT_BITS (impl.f_repr ${out})"#))]
 fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
              (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0)
                  (mk_i16 3328)
@@ -387,7 +387,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vec
     let result = SIMD256Vector {
         elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0)
              (mk_i16 (pow2 (v $COEFFICIENT_BITS) - 1))
              (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}.f_elements);
@@ -419,7 +419,7 @@ fn op_compress<const COEFFICIENT_BITS: i32>(vector: SIMD256Vector) -> SIMD256Vec
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} (impl.f_repr ${a})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} (impl.f_repr ${a}) (impl.f_repr ${out})"#))]
 fn op_decompress_1(a: SIMD256Vector) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (pow2 1 - 1 == 1);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
              (Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0)
@@ -434,7 +434,7 @@ fn op_decompress_1(a: SIMD256Vector) -> SIMD256Vector {
     let result = SIMD256Vector {
         elements: compress::decompress_1(a.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0) (mk_i16 3328)
              (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}.f_elements);
            let aux (j: nat{j < 16})
@@ -463,7 +463,7 @@ fn op_decompress_1(a: SIMD256Vector) -> SIMD256Vector {
 fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     vector: SIMD256Vector,
 ) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"assert_norm (pow2 11 == 2048);
            FStar.Math.Lemmas.pow2_le_compat 11 (v $COEFFICIENT_BITS);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array)
@@ -476,7 +476,7 @@ fn op_decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     let result = SIMD256Vector {
         elements: compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(vector.elements),
     };
-    hax_lib::fstar!(
+    proof!(
         r#"Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0) (mk_i16 3328)
              (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}.f_elements);
            let aux (j: nat{j < 16})
@@ -559,12 +559,12 @@ fn op_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328))"#
     );
     let elements = ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (8*3328));
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -584,14 +584,14 @@ fn op_ntt_layer_1_step(
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_2_step_pre} (impl.f_repr ${vector}) zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_2_step_post} (impl.f_repr ${vector}) zeta0 zeta1 (impl.f_repr ${out})"#))]
 fn op_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_2_step_branch_post"#
     );
     let elements = ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (7*3328));
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -653,14 +653,14 @@ fn op_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256
 #[hax_lib::requires(fstar!(r#"${spec::ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (5*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.ntt_layer_3_step_branch_post"#
     );
     let elements = ntt::ntt_layer_3_step(vector.elements, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (6*3328));
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -723,12 +723,12 @@ fn op_inv_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328))"#
     );
     let elements = ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -748,14 +748,14 @@ fn op_inv_ntt_layer_1_step(
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_2_step_pre} (impl.f_repr ${vector}) zeta0 zeta1"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_2_step_post} (impl.f_repr ${vector}) zeta0 zeta1 (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_2_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_2_step_branch_post"#
     );
     let elements = ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -813,14 +813,14 @@ fn op_inv_ntt_layer_2_step(vector: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIM
 #[hax_lib::requires(fstar!(r#"${spec::inv_ntt_layer_3_step_pre} (impl.f_repr ${vector}) zeta"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::inv_ntt_layer_3_step_post} (impl.f_repr ${vector}) zeta (impl.f_repr ${out})"#))]
 fn op_inv_ntt_layer_3_step(vector: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328));
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post)
                     Libcrux_ml_kem.Vector.Traits.Spec.inv_ntt_layer_3_step_branch_post"#
     );
     let elements = ntt::inv_ntt_layer_3_step(vector.elements, zeta);
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (4*3328));
            let vec = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}.f_elements in
@@ -885,14 +885,14 @@ fn op_ntt_multiply(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 4096);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque)
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     let elements = ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3);
-    hax_lib::fstar!(
+    proof!(
         r#"let l = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${lhs}.f_elements in
            let r = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${rhs}.f_elements in
            let out = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${elements} in
@@ -1349,9 +1349,9 @@ let op_deserialize_5_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 1 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_1(vector: SIMD256Vector) -> [u8; 2] {
-    hax_lib::fstar!(r#"op_serialize_1_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_1_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_1(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_1_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_1_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1360,7 +1360,7 @@ fn op_serialize_1(vector: SIMD256Vector) -> [u8; 2] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 2 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 1 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_1(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_1(bytes);
-    hax_lib::fstar!(r#"op_deserialize_1_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_1_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1368,9 +1368,9 @@ fn op_deserialize_1(bytes: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 4 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_4(vector: SIMD256Vector) -> [u8; 8] {
-    hax_lib::fstar!(r#"op_serialize_4_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_4_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_4(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_4_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_4_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1379,7 +1379,7 @@ fn op_serialize_4(vector: SIMD256Vector) -> [u8; 8] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 8 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 4 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_4(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_4(bytes);
-    hax_lib::fstar!(r#"op_deserialize_4_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_4_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1387,9 +1387,9 @@ fn op_deserialize_4(bytes: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_10(vector: SIMD256Vector) -> [u8; 20] {
-    hax_lib::fstar!(r#"op_serialize_10_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_10_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_10(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_10_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_10_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1398,7 +1398,7 @@ fn op_serialize_10(vector: SIMD256Vector) -> [u8; 20] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 20 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 10 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_10(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_10(bytes);
-    hax_lib::fstar!(r#"op_deserialize_10_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_10_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1406,9 +1406,9 @@ fn op_deserialize_10(bytes: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_12(vector: SIMD256Vector) -> [u8; 24] {
-    hax_lib::fstar!(r#"op_serialize_12_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_12_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_12(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_12_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_12_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1417,7 +1417,7 @@ fn op_serialize_12(vector: SIMD256Vector) -> [u8; 24] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 24 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 12 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_12(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_12(bytes);
-    hax_lib::fstar!(r#"op_deserialize_12_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_12_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1425,9 +1425,9 @@ fn op_deserialize_12(bytes: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_11(vector: SIMD256Vector) -> [u8; 22] {
-    hax_lib::fstar!(r#"op_serialize_11_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_11_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_11(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_11_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_11_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1436,7 +1436,7 @@ fn op_serialize_11(vector: SIMD256Vector) -> [u8; 22] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 22 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 11 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_11(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_11(bytes);
-    hax_lib::fstar!(r#"op_deserialize_11_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_11_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 
@@ -1444,9 +1444,9 @@ fn op_deserialize_11(bytes: &[u8]) -> SIMD256Vector {
 #[hax_lib::requires(fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr ${vector})"#))]
 #[hax_lib::ensures(|out| fstar!(r#"Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5 (impl.f_repr ${vector}) ==> Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 5 (impl.f_repr ${vector}) ${out}"#))]
 fn op_serialize_5(vector: SIMD256Vector) -> [u8; 10] {
-    hax_lib::fstar!(r#"op_serialize_5_pre_bridge ${vector}.f_elements"#);
+    proof!(r#"op_serialize_5_pre_bridge ${vector}.f_elements"#);
     let result = serialize::serialize_5(vector.elements);
-    hax_lib::fstar!(r#"op_serialize_5_post_bridge ${vector}.f_elements ${result}"#);
+    proof!(r#"op_serialize_5_post_bridge ${vector}.f_elements ${result}"#);
     result
 }
 
@@ -1455,7 +1455,7 @@ fn op_serialize_5(vector: SIMD256Vector) -> [u8; 10] {
 #[hax_lib::ensures(|out| fstar!(r#"sz (Seq.length $bytes) =. sz 10 ==> Libcrux_ml_kem.Vector.Traits.Spec.deserialize_post_N 5 $bytes (impl.f_repr ${out})"#))]
 fn op_deserialize_5(bytes: &[u8]) -> SIMD256Vector {
     let elements = serialize::deserialize_5(bytes);
-    hax_lib::fstar!(r#"op_deserialize_5_post_bridge ${bytes} ${elements}"#);
+    proof!(r#"op_deserialize_5_post_bridge ${bytes} ${elements}"#);
     SIMD256Vector { elements }
 }
 

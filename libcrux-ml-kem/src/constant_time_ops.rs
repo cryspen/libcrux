@@ -21,7 +21,7 @@ fn inz(value: u8) -> u8 {
     let result = ((!value).wrapping_add(1) >> 8) as u8;
     let res = result & 1;
 
-    hax_lib::fstar!(
+    proof!(
         r#"lognot_lemma $value;
            logand_lemma (mk_u8 1) $result"#
     );
@@ -57,7 +57,7 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
 
         let nr = r | (lhs[i] ^ rhs[i]);
 
-        hax_lib::fstar!(
+        proof!(
             r#"if $r =. (mk_u8 0) then (
             if (Seq.index $lhs (v $i) = Seq.index $rhs (v $i)) then (
                logxor_lemma (Seq.index $lhs (v $i)) (Seq.index $rhs (v $i));
@@ -116,7 +116,7 @@ pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8
 #[hax_lib::ensures(|result| if selector == 0 {result == lhs} else {result == rhs})]
 fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
     let mask = is_non_zero(selector).wrapping_sub(1);
-    hax_lib::fstar!(
+    proof!(
         "assert (if $selector = (mk_u8 0) then $mask = ones else $mask = zero);
         lognot_lemma $mask;
         assert (if $selector = (mk_u8 0) then ~.$mask = zero else ~.$mask = ones)"
@@ -131,9 +131,9 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
             (forall j. j >= v $i ==> Seq.index $out j == (mk_u8 0))"#
             )
         });
-        hax_lib::fstar!(r#"assert ((${out}.[ $i ] <: u8) = (mk_u8 0))"#);
+        proof!(r#"assert ((${out}.[ $i ] <: u8) = (mk_u8 0))"#);
         let outi = (lhs[i] & mask) | (rhs[i] & !mask);
-        hax_lib::fstar!(
+        proof!(
             r#"if ($selector = (mk_u8 0)) then (
             logand_lemma (${lhs}.[ $i ] <: u8) $mask;
             assert (((${lhs}.[ $i ] <: u8) &. $mask <: u8) == (${lhs}.[ $i ] <: u8));
@@ -161,7 +161,7 @@ fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
         out[i] = outi;
     }
 
-    hax_lib::fstar!(
+    proof!(
         "if ($selector =. (mk_u8 0)) then (
             eq_intro $out $lhs
         )

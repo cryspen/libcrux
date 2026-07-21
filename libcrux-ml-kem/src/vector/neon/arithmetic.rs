@@ -58,7 +58,7 @@ pub(crate) fn bitwise_and_with_constant(mut vec: SIMD128Vector, c: i16) -> SIMD1
     let c_vec = _vdupq_n_s16(c);
     vec.low = _vandq_s16(vec.low, c_vec);
     vec.high = _vandq_s16(vec.high, c_vec);
-    hax_lib::fstar!(
+    proof!(
         r#"Seq.lemma_eq_intro (repr ${vec}) (Spec.Utils.map_array (fun x -> x &. c) (repr ${_vec0}))"#
     );
     vec
@@ -77,7 +77,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(mut vec: SIMD128Vector) -> SIMD12
 
     vec.low = _vshrq_n_s16::<SHIFT_BY>(vec.low);
     vec.high = _vshrq_n_s16::<SHIFT_BY>(vec.high);
-    hax_lib::fstar!(
+    proof!(
         r#"Seq.lemma_eq_intro (repr ${vec}) (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (repr ${_vec0}))"#
     );
     vec
@@ -115,7 +115,7 @@ pub(crate) fn cond_subtract_3329(mut vec: SIMD128Vector) -> SIMD128Vector {
     // Per lane: the u16 compare mask reinterprets to -1/0 in the i16 view
     // (cast_mod post on _vreinterpretq_s16_u16); 3329 &. (-1|0) collapses via
     // logand_lemma; the subtraction is then exact under the 2^12 input bound.
-    hax_lib::fstar!(
+    proof!(
         r#"introduce forall (j: nat{j < 16}).
     (let x = Seq.index (repr ${_vec0}) j in
      let y = Seq.index (repr ${vec}) j in
@@ -172,7 +172,7 @@ pub(crate) fn barrett_reduce_int16x8_t(a: _int16x8_t) -> _int16x8_t {
     let quotient = _vshrq_n_s16::<11>(summed);
     let sub = _vmulq_n_s16(quotient, FIELD_MODULUS);
     let result = _vsubq_s16(a, sub);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   (forall (i: nat{i < 8}). Spec.Utils.is_i16b 28296 (Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${a} i)) ==>
   (forall (i: nat{i < 8}).
@@ -209,7 +209,7 @@ pub(crate) fn barrett_reduce(mut vec: SIMD128Vector) -> SIMD128Vector {
     // input bounds (`lemma_repr_index` SMTPat bridges `repr` lanes to the
     // `get_lane_i16x8` of `.f_low`/`.f_high`) so each per-half call's guarded
     // post fires; the output bound folds back into the array post.
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 28296);
            reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328);
            assert (forall (i: nat{i < 8}). Seq.index (repr ${vec}) i == Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${vec}.f_low i);
@@ -220,7 +220,7 @@ pub(crate) fn barrett_reduce(mut vec: SIMD128Vector) -> SIMD128Vector {
     vec.low = barrett_reduce_int16x8_t(vec.low);
     vec.high = barrett_reduce_int16x8_t(vec.high);
     // Compose the per-half facts into the per-lane opaque atom (pow2-free).
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   forall (j: nat{j < 16}).
       Libcrux_ml_kem.Vector.Traits.Spec.barrett_reduce_lane_post (Seq.index (repr ${_vec0}) j) (Seq.index (repr ${vec}) j)
@@ -250,7 +250,7 @@ pub(crate) fn montgomery_reduce_int16x8_t(low: _int16x8_t, high: _int16x8_t) -> 
     ));
     let c = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(k, FIELD_MODULUS as i16));
     let result = _vsubq_s16(high, c);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   forall (i: nat{i < 8}).
       Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${result} i ==
@@ -283,7 +283,7 @@ pub(crate) fn montgomery_multiply_by_constant_int16x8_t(a: _int16x8_t, c: i16) -
     let v_low = _vmulq_n_s16(a, c);
     let v_high = _vshrq_n_s16::<1>(_vqdmulhq_n_s16(a, c));
     let result = montgomery_reduce_int16x8_t(v_low, v_high);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   forall (i: nat{i < 8}).
       Spec.Utils.is_i16b 3328 (Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${result} i) /\
@@ -327,7 +327,7 @@ pub(crate) fn montgomery_multiply_int16x8_t(a: _int16x8_t, c: _int16x8_t) -> _in
     let v_low = _vmulq_s16(a, c);
     let v_high = _vshrq_n_s16::<1>(_vqdmulhq_s16(a, c));
     let result = montgomery_reduce_int16x8_t(v_low, v_high);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   (forall (i: nat{i < 8}).
       Spec.Utils.is_i16b 1664 (Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 ${c} i) \/
@@ -365,12 +365,12 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: SIMD128Vector, c: i16) ->
     #[cfg(hax)]
     let _vec0 = vec;
 
-    hax_lib::fstar!(
+    proof!(
         r#"reveal_opaque (`%Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque) (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque 3328)"#
     );
     vec.low = montgomery_multiply_by_constant_int16x8_t(vec.low, c);
     vec.high = montgomery_multiply_by_constant_int16x8_t(vec.high, c);
-    hax_lib::fstar!(
+    proof!(
         r#"introduce
   forall (j: nat{j < 16}).
       Libcrux_ml_kem.Vector.Traits.Spec.montgomery_multiply_lane_post (Seq.index (repr ${_vec0}) j) ${c} (Seq.index (repr ${vec}) j)
@@ -389,13 +389,13 @@ pub(crate) fn montgomery_multiply_by_constant(mut vec: SIMD128Vector, c: i16) ->
      (v y >= 0 /\ v y <= 3328 /\ (v y % 3329 == v x % 3329)))"#))]
 pub(crate) fn to_unsigned_representative(a: SIMD128Vector) -> SIMD128Vector {
     let t = shift_right::<15>(a);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall i. Seq.index (repr ${t}) i == ((Seq.index (repr ${a}) i) >>! (mk_i32 15)));
 assert (forall i. Seq.index (repr ${a}) i >=. mk_i16 0 ==> Seq.index (repr ${t}) i == mk_i16 0);
 assert (forall i. Seq.index (repr ${a}) i <. mk_i16 0 ==> Seq.index (repr ${t}) i == mk_i16 (-1))"#
     );
     let fm = bitwise_and_with_constant(t, FIELD_MODULUS);
-    hax_lib::fstar!(
+    proof!(
         r#"assert (forall i. Seq.index (repr ${fm}) i == (Seq.index (repr ${t}) i &. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS));
 assert (forall i. Seq.index (repr ${a}) i >=. mk_i16 0 ==> Seq.index (repr ${fm}) i == mk_i16 0);
 assert (forall i. Seq.index (repr ${a}) i <. mk_i16 0 ==> Seq.index (repr ${fm}) i == mk_i16 3329)"#
