@@ -16,6 +16,7 @@ libcrux-hkdf.workspace = true
 libcrux-kem.workspace = true
 libcrux-aead.workspace = true
 libcrux-traits.workspace = true
+libcrux-hmac-drbg = { workspace = true, features = ["rand"] }
 # RustCrypto curves not available in libcrux
 # TODO: These should be replaced with libcrux implementations as soon as they
 # are available.

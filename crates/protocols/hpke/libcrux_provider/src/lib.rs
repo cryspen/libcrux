@@ -34,7 +34,7 @@ pub struct HpkeLibcrux {}
 pub struct HpkeLibcruxPrng {
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
-    rng: rand_chacha::ChaCha20Rng,
+    rng: libcrux_hmac_drbg::HmacSha256DrbgRng<UnwrapErr<SysRng>>,
 }
 
 impl Zeroize for HpkeLibcruxPrng {
@@ -358,15 +358,19 @@ impl HpkeCrypto for HpkeLibcrux {
         {
             let mut fake_rng = alloc::vec![0u8; 256];
             rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)).fill_bytes(&mut fake_rng);
+            let rng = UnwrapErr(SysRng);
             HpkeLibcruxPrng {
                 fake_rng,
-                rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)),
+                rng: libcrux_hmac_drbg::HmacSha256DrbgRng::new(rng, &[0u8; 32]),
             }
         }
 
         #[cfg(not(feature = "deterministic-prng"))]
-        HpkeLibcruxPrng {
-            rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(SysRng)),
+        {
+            let rng = UnwrapErr(SysRng);
+            HpkeLibcruxPrng {
+                rng: libcrux_hmac_drbg::HmacSha256DrbgRng::new(rng, &[0u8; 32]),
+            }
         }
     }
 
