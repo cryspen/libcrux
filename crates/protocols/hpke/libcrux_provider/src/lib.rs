@@ -2,13 +2,26 @@
 #![cfg_attr(not(test), no_std)]
 extern crate alloc;
 
+// The deprecated `draft-connolly-cfrg-hpke-mlkem` feature is superseded by
+// `draft-ietf-hpke-pq`; the two use incompatible `DeriveKeyPair` / KDF semantics
+// for the same ML-KEM code points and must not be enabled together.
+#[cfg(all(
+    feature = "draft-connolly-cfrg-hpke-mlkem",
+    feature = "draft-ietf-hpke-pq"
+))]
+compile_error!(
+    "enable only one of `draft-connolly-cfrg-hpke-mlkem` (deprecated) or `draft-ietf-hpke-pq`"
+);
+
 use alloc::{format, string::String, vec::Vec};
 use core::fmt::Display;
 use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
     error::Error,
-    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
+    types::{
+        AeadAlgorithm, KdfAlgorithm, KemAlgorithm, SingleStageKdfAlgorithm, TwoStageKdfAlgorithm,
+    },
     HpkeCrypto, HpkeTestRng,
 };
 
@@ -48,7 +61,7 @@ impl HpkeCrypto for HpkeLibcrux {
         "Libcrux".into()
     }
 
-    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
+    fn kdf_extract(alg: TwoStageKdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
         let alg = kdf_algorithm_to_libcrux_hkdf_algorithm(alg);
         let mut prk = alloc::vec![0u8; alg.hash_len()];
         libcrux_hkdf::extract(alg, &mut prk, salt, ikm)
@@ -57,7 +70,7 @@ impl HpkeCrypto for HpkeLibcrux {
     }
 
     fn kdf_expand(
-        alg: KdfAlgorithm,
+        alg: TwoStageKdfAlgorithm,
         prk: &[u8],
         info: &[u8],
         output_size: usize,
@@ -67,6 +80,12 @@ impl HpkeCrypto for HpkeLibcrux {
         libcrux_hkdf::expand(alg, &mut okm, prk, info)
             .map_err(|e| Error::CryptoLibraryError(format!("KDF expand error: {:?}", e)))?;
         Ok(okm)
+    }
+
+    fn kdf_derive(alg: SingleStageKdfAlgorithm, ikm: &[u8], l: usize) -> Result<Vec<u8>, Error> {
+        // Single-stage (XOF) KDF: `Derive(ikm, L) = SHAKE(ikm, 8*L)`.
+        // See draft-ietf-hpke-pq Section 5.
+        Ok(shake_derive(alg, &[ikm], l))
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
@@ -132,13 +151,18 @@ impl HpkeCrypto for HpkeLibcrux {
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         match alg {
-            #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+            #[cfg(any(
+                feature = "draft-connolly-cfrg-hpke-mlkem",
+                feature = "draft-ietf-hpke-pq"
+            ))]
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
                 let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
                 libcrux_kem::key_gen(kem_alg, prng)
                     .map(|(sk, pk)| (pk.encode(), sk.encode()))
                     .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
             }
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => hybrid::key_gen(alg, prng),
             KemAlgorithm::XWingDraft06 => {
                 let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
                 libcrux_kem::key_gen(kem_alg, prng)
@@ -175,30 +199,26 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
         match alg {
-            #[cfg(feature = "rustcrypto-p-curves")]
-            KemAlgorithm::DhKemP384 => {
-                let chacha_seed = p_curve_key_gen_seed(alg, seed)?;
-                let mut rng = rand_chacha::ChaCha20Rng::from_seed(chacha_seed);
-                let sk = P384SecretKey::generate_from_rng(&mut rng);
-                let sk_bytes: Vec<u8> = sk.to_bytes().as_slice().into();
-                if sk_bytes.iter().all(|&b| b == 0) {
-                    return Err(Error::KemInvalidSecretKey);
-                }
-                let pk = sk.public_key().to_sec1_point(false).as_bytes().into();
-                Ok((pk, sk_bytes))
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => {
+                hybrid::key_gen_derand(alg, seed)
+            }
+            // hpke-pq: the ML-KEM decapsulation key is the 64-byte `(d, z)` seed;
+            // the public key is expanded from it and `kem_decaps` re-expands the
+            // seed to recover the full decapsulation key.
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+                let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
+                let (_sk, pk) = libcrux_kem::key_gen_derand(kem_alg, seed).map_err(|e| {
+                    Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))
+                })?;
+                Ok((pk.encode(), seed.to_vec()))
             }
             #[cfg(feature = "rustcrypto-p-curves")]
-            KemAlgorithm::DhKemP521 => {
-                let chacha_seed = p_curve_key_gen_seed(alg, seed)?;
-                let mut rng = rand_chacha::ChaCha20Rng::from_seed(chacha_seed);
-                let sk = P521SecretKey::generate_from_rng(&mut rng);
-                let sk_bytes: Vec<u8> = sk.to_bytes().as_slice().into();
-                if sk_bytes.iter().all(|&b| b == 0) {
-                    return Err(Error::KemInvalidSecretKey);
-                }
-                let pk = sk.public_key().to_sec1_point(false).as_bytes().into();
-                Ok((pk, sk_bytes))
-            }
+            KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => Err(Error::CryptoLibraryError(
+                format!("This API should not be called with this algorithm."),
+            )),
+
             _ => {
                 let alg = kem_key_type_to_libcrux_alg(alg)?;
                 libcrux_kem::key_gen_derand(alg, seed)
@@ -213,15 +233,26 @@ impl HpkeCrypto for HpkeLibcrux {
         pk_r: &[u8],
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        // For known-answer tests the encapsulation randomness is injected via the
+        // test seed; run the PQ KEMs derandomized with it rather than drawing
+        // from the RNG. We pull exactly the KEM's randomness length —
+        // which, when the test seed is the vector's `ikmE`, is `ikmE` in order.
+        #[cfg(feature = "deterministic-prng")]
+        if let Some(n) = pq_encaps_randomness_len(alg) {
+            let mut randomness = alloc::vec![0u8; n];
+            prng.try_fill_test_bytes(&mut randomness)
+                .map_err(|_| Error::InsufficientRandomness)?;
+            return kem_encaps_derand(alg, pk_r, &randomness);
+        }
         match alg {
-            #[cfg(feature = "rustcrypto-p-curves")]
-            KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => {
-                let (enc, sk_e) = <HpkeLibcrux as HpkeCrypto>::kem_key_gen(alg, prng)?;
-                let dh = <HpkeLibcrux as HpkeCrypto>::dh(alg, pk_r, &sk_e)?;
-                let kem_context = concat(&[&enc, pk_r]);
-                let ss = dh_kem_extract_and_expand(alg, &dh, &kem_context)?;
-                Ok((ss, enc))
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => {
+                hybrid::encaps(alg, pk_r, prng)
             }
+            #[cfg(feature = "rustcrypto-p-curves")]
+            KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => Err(Error::CryptoLibraryError(
+                format!("This API should not be called with this algorithm."),
+            )),
             _ => {
                 let alg = kem_key_type_to_libcrux_alg(alg)?;
 
@@ -236,13 +267,28 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn kem_decaps(alg: KemAlgorithm, ct: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            #[cfg(feature = "rustcrypto-p-curves")]
-            KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => {
-                let dh = <HpkeLibcrux as HpkeCrypto>::dh(alg, ct, sk_r)?;
-                let pk_r = <HpkeLibcrux as HpkeCrypto>::secret_to_public(alg, sk_r)?;
-                let kem_context = concat(&[ct, &pk_r]);
-                dh_kem_extract_and_expand(alg, &dh, &kem_context)
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => {
+                hybrid::decaps(alg, ct, sk_r)
             }
+            // hpke-pq: `sk_r` is the 64-byte ML-KEM seed; re-derive the full
+            // decapsulation key before decapsulating.
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+                let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
+                let (sk, _pk) = libcrux_kem::key_gen_derand(kem_alg, sk_r).map_err(|e| {
+                    Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e))
+                })?;
+                let ct = libcrux_kem::Ct::decode(kem_alg, ct)
+                    .map_err(|_| Error::KemInvalidCiphertext)?;
+                ct.decapsulate(&sk)
+                    .map_err(|e| Error::CryptoLibraryError(format!("Decaps error {:?}", e)))
+                    .map(|ss| ss.encode())
+            }
+            #[cfg(feature = "rustcrypto-p-curves")]
+            KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => Err(Error::CryptoLibraryError(
+                format!("This API should not be called with this algorithm."),
+            )),
             _ => {
                 let alg = kem_key_type_to_libcrux_alg(alg)?;
 
@@ -371,8 +417,22 @@ impl HpkeCrypto for HpkeLibcrux {
     }
 
     /// Returns an error if the KDF algorithm is not supported by this crypto provider.
-    fn supports_kdf(_: KdfAlgorithm) -> Result<(), Error> {
-        Ok(())
+    fn supports_kdf(alg: KdfAlgorithm) -> Result<(), Error> {
+        match alg {
+            KdfAlgorithm::HkdfSha256 | KdfAlgorithm::HkdfSha384 | KdfAlgorithm::HkdfSha512 => {
+                Ok(())
+            }
+
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KdfAlgorithm::Shake128 | KdfAlgorithm::Shake256 => Ok(()),
+
+            #[cfg(not(feature = "draft-ietf-hpke-pq"))]
+            KdfAlgorithm::Shake128 | KdfAlgorithm::Shake256 => Err(Error::UnknownKdfAlgorithm),
+
+            KdfAlgorithm::TurboShake128 | KdfAlgorithm::TurboShake256 => {
+                Err(Error::UnknownKdfAlgorithm)
+            }
+        }
     }
 
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
@@ -381,21 +441,28 @@ impl HpkeCrypto for HpkeLibcrux {
             KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::XWingDraft06 => {
                 Ok(())
             }
+
             #[cfg(feature = "rustcrypto-p-curves")]
             KemAlgorithm::DhKemP384 | KemAlgorithm::DhKemP521 => Ok(()),
-            #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => Ok(()),
+
+            #[cfg(any(
+                feature = "draft-connolly-cfrg-hpke-mlkem",
+                feature = "draft-ietf-hpke-pq"
+            ))]
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => Ok(()),
+
+            #[cfg(feature = "draft-ietf-hpke-pq")]
+            KemAlgorithm::MlKem768P256 => Ok(()),
+
+            #[cfg(all(feature = "draft-ietf-hpke-pq", feature = "rustcrypto-p-curves"))]
+            KemAlgorithm::MlKem1024P384 => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
 
     /// Returns an error if the AEAD algorithm is not supported by this crypto provider.
-    fn supports_aead(alg: AeadAlgorithm) -> Result<(), Error> {
-        match alg {
-            AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => Ok(()),
-            AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
-            AeadAlgorithm::HpkeExport => Ok(()),
-        }
+    fn supports_aead(_alg: AeadAlgorithm) -> Result<(), Error> {
+        Ok(())
     }
 }
 
@@ -412,83 +479,6 @@ fn kem_ecdh_secret_to_public(alg: libcrux_ecdh::Algorithm, sk: &[u8]) -> Result<
         })
 }
 
-#[cfg(feature = "rustcrypto-p-curves")]
-#[inline(always)]
-fn dh_kem_extract_and_expand(
-    alg: KemAlgorithm,
-    dh: &[u8],
-    kem_context: &[u8],
-) -> Result<Vec<u8>, Error> {
-    let kdf_alg: KdfAlgorithm = alg.into();
-    let suite_id = kem_suite_id(alg);
-    let eae_prk = labeled_extract(kdf_alg, &[], &suite_id, "eae_prk", dh)?;
-    labeled_expand(
-        kdf_alg,
-        &eae_prk,
-        &suite_id,
-        "shared_secret",
-        kem_context,
-        alg.shared_secret_len(),
-    )
-}
-
-#[cfg(feature = "rustcrypto-p-curves")]
-#[inline(always)]
-fn kem_suite_id(alg: KemAlgorithm) -> [u8; 5] {
-    let kem_id = (alg as u16).to_be_bytes();
-    [b'K', b'E', b'M', kem_id[0], kem_id[1]]
-}
-
-#[cfg(feature = "rustcrypto-p-curves")]
-#[inline(always)]
-fn labeled_extract(
-    alg: KdfAlgorithm,
-    salt: &[u8],
-    suite_id: &[u8],
-    label: &str,
-    ikm: &[u8],
-) -> Result<Vec<u8>, Error> {
-    const HPKE_VERSION: &[u8] = b"HPKE-v1";
-
-    let labeled_ikm = concat(&[HPKE_VERSION, suite_id, label.as_bytes(), ikm]);
-    <HpkeLibcrux as HpkeCrypto>::kdf_extract(alg, salt, &labeled_ikm)
-}
-
-#[cfg(feature = "rustcrypto-p-curves")]
-#[inline(always)]
-fn labeled_expand(
-    alg: KdfAlgorithm,
-    prk: &[u8],
-    suite_id: &[u8],
-    label: &str,
-    info: &[u8],
-    len: usize,
-) -> Result<Vec<u8>, Error> {
-    const HPKE_VERSION: &[u8] = b"HPKE-v1";
-
-    if len > u16::MAX.into() {
-        return Err(Error::HpkeInvalidOutputLength);
-    }
-
-    let len_bytes = (len as u16).to_be_bytes();
-    let labeled_info = concat(&[&len_bytes, HPKE_VERSION, suite_id, label.as_bytes(), info]);
-    <HpkeLibcrux as HpkeCrypto>::kdf_expand(alg, prk, &labeled_info, len)
-}
-
-#[cfg(feature = "rustcrypto-p-curves")]
-#[inline(always)]
-fn p_curve_key_gen_seed(alg: KemAlgorithm, seed: &[u8]) -> Result<[u8; 32], Error> {
-    if seed.len() != alg.private_key_len() {
-        return Err(Error::InsufficientRandomness);
-    }
-
-    let kdf_alg: KdfAlgorithm = alg.into();
-    let extracted = <HpkeLibcrux as HpkeCrypto>::kdf_extract(kdf_alg, &[], seed)?;
-    extracted[..32]
-        .try_into()
-        .map_err(|_| Error::InsufficientRandomness)
-}
-
 /// Prepend 0x04 for uncompressed NIST curve points.
 #[inline(always)]
 fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
@@ -499,12 +489,29 @@ fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
 }
 
 #[inline(always)]
-fn kdf_algorithm_to_libcrux_hkdf_algorithm(alg: KdfAlgorithm) -> libcrux_hkdf::Algorithm {
+fn kdf_algorithm_to_libcrux_hkdf_algorithm(alg: TwoStageKdfAlgorithm) -> libcrux_hkdf::Algorithm {
     match alg {
-        KdfAlgorithm::HkdfSha256 => libcrux_hkdf::Algorithm::Sha256,
-        KdfAlgorithm::HkdfSha384 => libcrux_hkdf::Algorithm::Sha384,
-        KdfAlgorithm::HkdfSha512 => libcrux_hkdf::Algorithm::Sha512,
+        TwoStageKdfAlgorithm::HkdfSha256 => libcrux_hkdf::Algorithm::Sha256,
+        TwoStageKdfAlgorithm::HkdfSha384 => libcrux_hkdf::Algorithm::Sha384,
+        TwoStageKdfAlgorithm::HkdfSha512 => libcrux_hkdf::Algorithm::Sha512,
     }
+}
+
+/// `SHAKE<size>.Derive(concat(inputs), L) = SHAKE<size>(concat(inputs), d = 8*L)`.
+///
+/// See draft-ietf-hpke-pq Section 5.
+fn shake_derive(alg: SingleStageKdfAlgorithm, inputs: &[&[u8]], len: usize) -> Vec<u8> {
+    let ikm = concat(inputs);
+    let mut out = alloc::vec![0u8; len];
+    match alg {
+        SingleStageKdfAlgorithm::Shake128 => libcrux_sha3::shake128_ema(&mut out, &ikm),
+        SingleStageKdfAlgorithm::Shake256 => libcrux_sha3::shake256_ema(&mut out, &ikm),
+        SingleStageKdfAlgorithm::TurboShake128 | SingleStageKdfAlgorithm::TurboShake256 => {
+            // Not supported yet
+            unreachable!()
+        }
+    }
+    out
 }
 
 #[inline(always)]
@@ -512,12 +519,66 @@ fn kem_key_type_to_libcrux_alg(alg: KemAlgorithm) -> Result<libcrux_kem::Algorit
     match alg {
         KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
         KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
-        #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+        #[cfg(any(
+            feature = "draft-connolly-cfrg-hpke-mlkem",
+            feature = "draft-ietf-hpke-pq"
+        ))]
+        KemAlgorithm::MlKem512 => Ok(libcrux_kem::Algorithm::MlKem512),
+        #[cfg(any(
+            feature = "draft-connolly-cfrg-hpke-mlkem",
+            feature = "draft-ietf-hpke-pq"
+        ))]
         KemAlgorithm::MlKem768 => Ok(libcrux_kem::Algorithm::MlKem768),
-        #[cfg(feature = "draft-connolly-cfrg-hpke-mlkem")]
+        #[cfg(any(
+            feature = "draft-connolly-cfrg-hpke-mlkem",
+            feature = "draft-ietf-hpke-pq"
+        ))]
         KemAlgorithm::MlKem1024 => Ok(libcrux_kem::Algorithm::MlKem1024),
         KemAlgorithm::XWingDraft06 => Ok(libcrux_kem::Algorithm::XWingKemDraft06),
         _ => Err(Error::UnknownKemAlgorithm),
+    }
+}
+
+/// The encapsulation-randomness length for the post-quantum KEMs (`N_random`),
+/// or `None` for the DH-based KEMs (which inject via `Hpke::random`). Used only
+/// by the deterministic test path.
+#[cfg(feature = "deterministic-prng")]
+#[inline]
+fn pq_encaps_randomness_len(alg: KemAlgorithm) -> Option<usize> {
+    match alg {
+        KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => Some(32),
+        KemAlgorithm::XWingDraft06 => Some(64),
+        #[cfg(feature = "draft-ietf-hpke-pq")]
+        KemAlgorithm::MlKem768P256 => Some(32 + 128),
+        #[cfg(feature = "draft-ietf-hpke-pq")]
+        KemAlgorithm::MlKem1024P384 => Some(32 + 48),
+        _ => None,
+    }
+}
+
+/// Derandomized encapsulation (test-only), using the supplied `randomness` as
+/// the KEM's encapsulation randomness. Used by the known-answer tests so that
+/// the sender-side `enc` matches the vectors.
+#[cfg(feature = "deterministic-prng")]
+#[inline]
+fn kem_encaps_derand(
+    alg: KemAlgorithm,
+    pk_r: &[u8],
+    randomness: &[u8],
+) -> Result<(Vec<u8>, Vec<u8>), Error> {
+    match alg {
+        #[cfg(feature = "draft-ietf-hpke-pq")]
+        KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => {
+            hybrid::encaps_derand(alg, pk_r, randomness)
+        }
+        _ => {
+            let kem_alg = kem_key_type_to_libcrux_alg(alg)?;
+            let pk = libcrux_kem::PublicKey::decode(kem_alg, pk_r)
+                .map_err(|_| Error::KemInvalidPublicKey)?;
+            pk.encapsulate_derand(randomness)
+                .map_err(|e| Error::CryptoLibraryError(format!("Encaps error {:?}", e)))
+                .map(|(ss, ct)| (ss.encode(), ct.encode()))
+        }
     }
 }
 
@@ -540,10 +601,289 @@ fn aead_alg(alg_type: AeadAlgorithm) -> Result<libcrux_aead::Aead, Error> {
     }
 }
 
-#[cfg(feature = "rustcrypto-p-curves")]
 #[inline(always)]
 fn concat(values: &[&[u8]]) -> Vec<u8> {
     values.join(&[][..])
+}
+
+/// ML-KEM/ECDH hybrid KEMs (`MLKEM768-P256`, `MLKEM1024-P384`).
+///
+/// The authoritative reference is `draft-ietf-hpke-pq` (it defines the HPKE
+/// integration, the code points, and the test vectors). These are the
+/// `MLKEM768-P256` / `MLKEM1024-P384` instances of
+/// `draft-irtf-cfrg-concrete-hybrid-kems`, built with the `CG` framework
+/// (C2PRI Combiner with a nominal Group `T`) from `draft-irtf-cfrg-hybrid-kems`:
+/// the combiner is `SHA3-256(ss_PQ || ss_T || ct_T || ek_T || label)`. See
+/// * https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05 (authoritative)
+/// * https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-concrete-hybrid-kems-03
+/// * https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hybrid-kems-09
+///
+/// * The decapsulation key is the 32-byte seed; key generation and
+///   decapsulation expand it with SHAKE256 into `seed_pq (64) || seed_t` and
+///   re-derive the components.
+/// * Rejection-sampled scalars and uncompressed SEC1 point encodings for NIST;
+///   `ss_T` is the x-coordinate of the DH result.
+/// * Wire formats: `ek = ek_PQ || ek_T`, `ct = ct_PQ || ct_T`.
+#[cfg(feature = "draft-ietf-hpke-pq")]
+mod hybrid {
+    use super::*;
+
+    /// The nominal group (traditional component) of a hybrid KEM.
+    #[derive(Clone, Copy)]
+    enum NominalGroup {
+        P256,
+        P384,
+    }
+
+    /// Per-instance hybrid KEM parameters.
+    struct Params {
+        /// The ML-KEM variant.
+        ml_alg: libcrux_kem::Algorithm,
+
+        /// The nominal group.
+        curve: NominalGroup,
+
+        /// Domain-separation label for the combiner.
+        label: &'static [u8],
+
+        /// Encoded ML-KEM encapsulation-key length.
+        ml_ek_len: usize,
+
+        /// Encoded ML-KEM ciphertext length.
+        ml_ct_len: usize,
+
+        /// The group's seed length (`T::SEED_SIZE`). The seed expanded by
+        /// [`expand`] is `64` (ML-KEM `seed_pq`) plus this.
+        group_seed_len: usize,
+    }
+
+    #[inline]
+    const fn params(alg: KemAlgorithm) -> Result<Params, Error> {
+        match alg {
+            // P-256: ML-KEM seed (64) + group seed (128 = 4 rejection windows),
+            // matching the P-256 nominal-group `Nseed` of 128 in
+            // `draft-irtf-cfrg-concrete-hybrid-kems` §3.1. The encap randomness
+            // is `32 + 128 = 160`, as in the `draft-ietf-hpke-pq` vectors
+            // (resolving https://github.com/hpkewg/hpke-pq/issues/59).
+            KemAlgorithm::MlKem768P256 => Ok(Params {
+                ml_alg: libcrux_kem::Algorithm::MlKem768,
+                curve: NominalGroup::P256,
+                label: b"MLKEM768-P256",
+                ml_ek_len: 1184,
+                ml_ct_len: 1088,
+                group_seed_len: 128,
+            }),
+            // P-384: ML-KEM seed (64) + group seed (48).
+            KemAlgorithm::MlKem1024P384 => Ok(Params {
+                ml_alg: libcrux_kem::Algorithm::MlKem1024,
+                curve: NominalGroup::P384,
+                label: b"MLKEM1024-P384",
+                ml_ek_len: 1568,
+                ml_ct_len: 1568,
+                group_seed_len: 48,
+            }),
+            _ => Err(Error::UnknownKemAlgorithm),
+        }
+    }
+
+    /// `ss = SHA3-256(ss_PQ || ss_T || ct_T || ek_T || label)`.
+    #[inline]
+    fn combine(p: &Params, ss_pq: &[u8], ss_t: &[u8], ct_t: &[u8], ek_t: &[u8]) -> Vec<u8> {
+        let input = concat(&[ss_pq, ss_t, ct_t, ek_t, p.label]);
+        libcrux_sha3::sha256(&input).to_vec()
+    }
+
+    #[inline]
+    fn split_at_or(data: &[u8], n: usize, err: Error) -> Result<(&[u8], &[u8]), Error> {
+        data.split_at_checked(n).ok_or(err)
+    }
+
+    // --- Nominal group operations, matching concrete-hybrid-kems. ---
+    //
+    // The traditional component of each hybrid is just the corresponding
+    // `DhKem*` group, so these delegate to the provider's own ECDH / key
+    // derivation paths (`dh_validate_sk`, `secret_to_public`, `dh`) rather than
+    // re-implementing scalar validation, point derivation, and ECDH.
+
+    #[inline]
+    fn scalar_size(curve: NominalGroup) -> usize {
+        match curve {
+            NominalGroup::P256 => 32,
+            NominalGroup::P384 => 48,
+        }
+    }
+
+    /// The `DhKem*` code point for `curve`'s nominal group.
+    #[inline]
+    fn curve_kem_alg(curve: NominalGroup) -> KemAlgorithm {
+        match curve {
+            NominalGroup::P256 => KemAlgorithm::DhKemP256,
+            NominalGroup::P384 => KemAlgorithm::DhKemP384,
+        }
+    }
+
+    /// Return the canonical scalar bytes if `bytes` is a valid non-zero scalar.
+    #[inline]
+    fn validate_scalar(curve: NominalGroup, bytes: &[u8]) -> Option<Vec<u8>> {
+        <HpkeLibcrux as HpkeCrypto>::dh_validate_sk(curve_kem_alg(curve), bytes).ok()
+    }
+
+    /// `random_scalar`: rejection-sample successive `SCALAR_SIZE` windows,
+    /// returning the first valid scalar. Bounded by `seed.len() / SCALAR_SIZE`
+    /// windows; the trailing partial window (if any) is ignored, matching
+    /// concrete-hybrid-kems.
+    #[inline]
+    fn random_scalar(curve: NominalGroup, seed: &[u8]) -> Result<Vec<u8>, Error> {
+        seed.chunks_exact(scalar_size(curve))
+            .find_map(|window| validate_scalar(curve, window))
+            .ok_or(Error::KemInvalidSecretKey)
+    }
+
+    /// `exp(generator, scalar)` — the public key, uncompressed SEC1.
+    #[inline]
+    fn base_pub(curve: NominalGroup, scalar: &[u8]) -> Result<Vec<u8>, Error> {
+        <HpkeLibcrux as HpkeCrypto>::secret_to_public(curve_kem_alg(curve), scalar)
+    }
+
+    /// `element_to_shared_secret(exp(peer, scalar))` — the DH x-coordinate.
+    #[inline]
+    fn ecdh(curve: NominalGroup, scalar: &[u8], peer: &[u8]) -> Result<Vec<u8>, Error> {
+        <HpkeLibcrux as HpkeCrypto>::dh(curve_kem_alg(curve), peer, scalar)
+    }
+
+    /// The component key material expanded from a hybrid seed.
+    struct Expanded {
+        ek_pq: Vec<u8>,
+        seed_pq: [u8; 64],
+        dk_t: Vec<u8>,
+        ek_t: Vec<u8>,
+    }
+
+    /// Expand the seed into the component encapsulation key (`ek_PQ || ek_T`),
+    /// the ML-KEM `seed_pq`, and the group scalar `dk_T`.
+    #[inline]
+    fn expand(p: &Params, seed: &[u8]) -> Result<Expanded, Error> {
+        let material = shake_derive(
+            SingleStageKdfAlgorithm::Shake256,
+            &[seed],
+            64 + p.group_seed_len,
+        );
+        let mut seed_pq = [0u8; 64];
+        seed_pq.copy_from_slice(&material[..64]);
+        let seed_t = &material[64..];
+
+        let (_dk_pq, ek_pq) = libcrux_kem::key_gen_derand(p.ml_alg, &seed_pq)
+            .map(|(sk, pk)| (sk, pk.encode()))
+            .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))?;
+
+        let dk_t = random_scalar(p.curve, seed_t)?;
+        let ek_t = base_pub(p.curve, &dk_t)?;
+        Ok(Expanded {
+            ek_pq,
+            seed_pq,
+            dk_t,
+            ek_t,
+        })
+    }
+
+    #[inline]
+    pub(super) fn key_gen(
+        alg: KemAlgorithm,
+        prng: &mut HpkeLibcruxPrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let mut seed = alloc::vec![0u8; 32];
+        prng.try_fill_bytes(&mut seed)
+            .map_err(|_| Error::InsufficientRandomness)?;
+        key_gen_derand(alg, &seed)
+    }
+
+    #[inline]
+    /// Deterministic key generation: the 32-byte seed is the decapsulation key.
+    pub(super) fn key_gen_derand(
+        alg: KemAlgorithm,
+        seed: &[u8],
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let p = params(alg)?;
+        let e = expand(&p, seed)?;
+        Ok((concat(&[&e.ek_pq, &e.ek_t]), seed.to_vec()))
+    }
+
+    #[inline]
+    pub(super) fn encaps(
+        alg: KemAlgorithm,
+        pk_r: &[u8],
+        prng: &mut HpkeLibcruxPrng,
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let p = params(alg)?;
+        let (ek_pq, ek_t) = split_at_or(pk_r, p.ml_ek_len, Error::KemInvalidPublicKey)?;
+
+        // Post-quantum encapsulation (draws ML-KEM randomness first).
+        let ml_pk = libcrux_kem::PublicKey::decode(p.ml_alg, ek_pq)
+            .map_err(|_| Error::KemInvalidPublicKey)?;
+        let (ss_pq, ct_pq) = ml_pk
+            .encapsulate(prng)
+            .map(|(ss, ct)| (ss.encode(), ct.encode()))
+            .map_err(|e| Error::CryptoLibraryError(format!("Encaps error {:?}", e)))?;
+
+        // Traditional encapsulation: ephemeral scalar from `T::SEED_SIZE` bytes.
+        let mut seed_e = alloc::vec![0u8; p.group_seed_len];
+        prng.try_fill_bytes(&mut seed_e)
+            .map_err(|_| Error::InsufficientRandomness)?;
+        let sk_e = random_scalar(p.curve, &seed_e)?;
+        let ct_t = base_pub(p.curve, &sk_e)?;
+        let ss_t = ecdh(p.curve, &sk_e, ek_t)?;
+
+        let ss = combine(&p, &ss_pq, &ss_t, &ct_t, ek_t);
+        Ok((ss, concat(&[&ct_pq, &ct_t])))
+    }
+
+    /// Derandomized encapsulation: `randomness = randomness_PQ (32) || seed_T`.
+    #[cfg(feature = "deterministic-prng")]
+    #[inline]
+    pub(super) fn encaps_derand(
+        alg: KemAlgorithm,
+        pk_r: &[u8],
+        randomness: &[u8],
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let p = params(alg)?;
+        let (ek_pq, ek_t) = split_at_or(pk_r, p.ml_ek_len, Error::KemInvalidPublicKey)?;
+        let (rand_pq, seed_e) = split_at_or(randomness, 32, Error::InsufficientRandomness)?;
+
+        let ml_pk = libcrux_kem::PublicKey::decode(p.ml_alg, ek_pq)
+            .map_err(|_| Error::KemInvalidPublicKey)?;
+        let (ss_pq, ct_pq) = ml_pk
+            .encapsulate_derand(rand_pq)
+            .map(|(ss, ct)| (ss.encode(), ct.encode()))
+            .map_err(|e| Error::CryptoLibraryError(format!("Encaps error {:?}", e)))?;
+
+        let sk_e = random_scalar(p.curve, seed_e)?;
+        let ct_t = base_pub(p.curve, &sk_e)?;
+        let ss_t = ecdh(p.curve, &sk_e, ek_t)?;
+
+        let ss = combine(&p, &ss_pq, &ss_t, &ct_t, ek_t);
+        Ok((ss, concat(&[&ct_pq, &ct_t])))
+    }
+
+    #[inline]
+    pub(super) fn decaps(alg: KemAlgorithm, ct: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
+        let p = params(alg)?;
+        let (ct_pq, ct_t) = split_at_or(ct, p.ml_ct_len, Error::KemInvalidCiphertext)?;
+
+        // Re-expand the seed (`sk_r`) into the component keys.
+        let e = expand(&p, sk_r)?;
+
+        let (dk_pq, _ek_pq) = libcrux_kem::key_gen_derand(p.ml_alg, &e.seed_pq)
+            .map_err(|err| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", err)))?;
+        let ct_pq =
+            libcrux_kem::Ct::decode(p.ml_alg, ct_pq).map_err(|_| Error::KemInvalidCiphertext)?;
+        let ss_pq = ct_pq
+            .decapsulate(&dk_pq)
+            .map(|ss| ss.encode())
+            .map_err(|err| Error::CryptoLibraryError(format!("Decaps error {:?}", err)))?;
+
+        let ss_t = ecdh(p.curve, &e.dk_t, ct_t)?;
+        Ok(combine(&p, &ss_pq, &ss_t, ct_t, &e.ek_t))
+    }
 }
 
 impl TryCryptoRng for HpkeLibcruxPrng {}

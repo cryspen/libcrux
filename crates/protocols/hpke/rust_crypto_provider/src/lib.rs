@@ -11,7 +11,9 @@ use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
     error::Error,
-    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
+    types::{
+        AeadAlgorithm, KdfAlgorithm, KemAlgorithm, SingleStageKdfAlgorithm, TwoStageKdfAlgorithm,
+    },
     HpkeCrypto, HpkeTestRng,
 };
 use p256::{
@@ -62,25 +64,31 @@ impl HpkeCrypto for HpkeRustCrypto {
         "RustCrypto".into()
     }
 
-    fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
+    fn kdf_extract(alg: TwoStageKdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Result<Vec<u8>, Error> {
         Ok(match alg {
-            KdfAlgorithm::HkdfSha256 => sha256_extract(salt, ikm),
-            KdfAlgorithm::HkdfSha384 => sha384_extract(salt, ikm),
-            KdfAlgorithm::HkdfSha512 => sha512_extract(salt, ikm),
+            TwoStageKdfAlgorithm::HkdfSha256 => sha256_extract(salt, ikm),
+            TwoStageKdfAlgorithm::HkdfSha384 => sha384_extract(salt, ikm),
+            TwoStageKdfAlgorithm::HkdfSha512 => sha512_extract(salt, ikm),
         })
     }
 
     fn kdf_expand(
-        alg: KdfAlgorithm,
+        alg: TwoStageKdfAlgorithm,
         prk: &[u8],
         info: &[u8],
         output_size: usize,
     ) -> Result<Vec<u8>, Error> {
         match alg {
-            KdfAlgorithm::HkdfSha256 => sha256_expand(prk, info, output_size),
-            KdfAlgorithm::HkdfSha384 => sha384_expand(prk, info, output_size),
-            KdfAlgorithm::HkdfSha512 => sha512_expand(prk, info, output_size),
+            TwoStageKdfAlgorithm::HkdfSha256 => sha256_expand(prk, info, output_size),
+            TwoStageKdfAlgorithm::HkdfSha384 => sha384_expand(prk, info, output_size),
+            TwoStageKdfAlgorithm::HkdfSha512 => sha512_expand(prk, info, output_size),
         }
+    }
+
+    fn kdf_derive(_alg: SingleStageKdfAlgorithm, _ikm: &[u8], _l: usize) -> Result<Vec<u8>, Error> {
+        // The RustCrypto provider does not implement the single-stage (SHAKE)
+        // KDFs of draft-ietf-hpke-pq.
+        Err(Error::UnknownKdfAlgorithm)
     }
 
     fn dh(alg: KemAlgorithm, pk: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
@@ -307,8 +315,17 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 
     /// Returns an error if the KDF algorithm is not supported by this crypto provider.
-    fn supports_kdf(_: KdfAlgorithm) -> Result<(), Error> {
-        Ok(())
+    fn supports_kdf(alg: KdfAlgorithm) -> Result<(), Error> {
+        match alg {
+            KdfAlgorithm::HkdfSha256 | KdfAlgorithm::HkdfSha384 | KdfAlgorithm::HkdfSha512 => {
+                Ok(())
+            }
+            // The SHAKE KDFs (draft-ietf-hpke-pq) are not supported here yet.
+            KdfAlgorithm::TurboShake128
+            | KdfAlgorithm::TurboShake256
+            | KdfAlgorithm::Shake128
+            | KdfAlgorithm::Shake256 => Err(Error::UnknownKdfAlgorithm),
+        }
     }
 
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.

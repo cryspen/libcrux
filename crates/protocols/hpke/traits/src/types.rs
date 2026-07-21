@@ -42,18 +42,48 @@ pub enum KemAlgorithm {
 
     /// X-WING
     ///
+    /// This is the X-Wing construction (ML-KEM-768 + X25519). The authoritative
+    /// reference, `draft-ietf-hpke-pq`, registers this code point under the name
+    /// `MLKEM768-X25519` (see its §8.2).
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05>
     /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-xwing-kem-06>
     XWingDraft06 = 0x647a,
 
+    /// ML-KEM-512
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04>
+    MlKem512 = 0x0040,
+
     /// ML-KEM-768
     ///
-    /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-hpke-mlkem>
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04>
     MlKem768 = 0x0041,
 
     /// ML-KEM-1024
     ///
-    /// <https://datatracker.ietf.org/doc/html/draft-connolly-cfrg-hpke-mlkem>
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04>
     MlKem1024 = 0x0042,
+
+    /// ML-KEM-768 + P-256 hybrid KEM
+    ///
+    /// Defined by `draft-ietf-hpke-pq` (authoritative for the HPKE integration
+    /// and code point) on top of the `MLKEM768-P256` instance of
+    /// `draft-irtf-cfrg-concrete-hybrid-kems`.
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04>
+    /// <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-concrete-hybrid-kems-03>
+    MlKem768P256 = 0x0050,
+
+    /// ML-KEM-1024 + P-384 hybrid KEM
+    ///
+    /// Defined by `draft-ietf-hpke-pq` (authoritative for the HPKE integration
+    /// and code point) on top of the `MLKEM1024-P384` instance of
+    /// `draft-irtf-cfrg-concrete-hybrid-kems`.
+    ///
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04>
+    /// <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-concrete-hybrid-kems-03>
+    MlKem1024P384 = 0x0051,
 }
 
 impl Zeroize for KemAlgorithm {
@@ -81,8 +111,11 @@ impl core::convert::TryFrom<u16> for KemAlgorithm {
             #[allow(deprecated)]
             0x004D => Ok(KemAlgorithm::XWingDraft06Obsolete),
             0x647a => Ok(KemAlgorithm::XWingDraft06),
+            0x0040 => Ok(KemAlgorithm::MlKem512),
             0x0041 => Ok(KemAlgorithm::MlKem768),
             0x0042 => Ok(KemAlgorithm::MlKem1024),
+            0x0050 => Ok(KemAlgorithm::MlKem768P256),
+            0x0051 => Ok(KemAlgorithm::MlKem1024P384),
             _ => Err(Self::Error::UnknownKemAlgorithm),
         }
     }
@@ -100,7 +133,10 @@ impl KemAlgorithm {
             KemAlgorithm::DhKem448 => 56,
             #[allow(deprecated)]
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => 32,
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 64,
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 64,
+            // Hybrid KEMs derive a key pair from a 32-byte seed
+            // (`SHAKE256.LabeledDerive(ikm, "DeriveKeyPair", "", 32)`).
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => 32,
         }
     }
 
@@ -115,7 +151,9 @@ impl KemAlgorithm {
             KemAlgorithm::DhKem448 => 64,
             #[allow(deprecated)]
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => 32,
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 32,
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => 32,
+            // SHA3-256 combiner output
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => 32,
         }
     }
 }
@@ -211,9 +249,8 @@ impl AeadAlgorithm {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u16)]
 /// KDF types
-/// Value are taken from the HPKE RFC (not published yet)
-/// TODO: update when HPKE has been published and values have been registered with
-///       IANA.
+///
+/// Note that Shake types are not standardized yet and may change in future.
 pub enum KdfAlgorithm {
     /// HKDF SHA 256
     HkdfSha256 = 0x0001,
@@ -223,6 +260,100 @@ pub enum KdfAlgorithm {
 
     /// HKDF SHA 512
     HkdfSha512 = 0x0003,
+
+    /// SHAKE128 single-stage KDF
+    ///
+    /// Used by the post-quantum HPKE ciphersuites.
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05>
+    Shake128 = 0x0010,
+
+    /// SHAKE256 single-stage KDF
+    ///
+    /// Used by the post-quantum HPKE ciphersuites.
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05>
+    Shake256 = 0x0011,
+
+    /// SHAKE128 single-stage KDF
+    /// Not supported by any official provider yet.
+    ///
+    /// Used by the post-quantum HPKE ciphersuites.
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05>
+    TurboShake128 = 0x0012,
+
+    /// SHAKE256 single-stage KDF
+    /// Not supported by any official provider yet.
+    ///
+    /// Used by the post-quantum HPKE ciphersuites.
+    /// <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-05>
+    TurboShake256 = 0x0013,
+}
+
+/// A single-stage (XOF) KDF, per `draft-ietf-hpke-pq`.
+///
+/// Single-stage KDFs offer a single `Derive(ikm, L)` operation (via
+/// [`HpkeCrypto::kdf_derive`](crate::HpkeCrypto::kdf_derive)) and a different
+/// key-schedule shape than the two-stage HKDF KDFs.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum SingleStageKdfAlgorithm {
+    /// SHAKE128 single-stage KDF (`KdfAlgorithm::Shake128`).
+    Shake128,
+
+    /// SHAKE256 single-stage KDF (`KdfAlgorithm::Shake256`).
+    Shake256,
+
+    /// TurboSHAKE128 single-stage KDF (`KdfAlgorithm::TurboShake128`).
+    TurboShake128,
+
+    /// TurboSHAKE256 single-stage KDF (`KdfAlgorithm::TurboShake256`).
+    TurboShake256,
+}
+
+/// A two-stage (extract-then-expand) HKDF-based KDF.
+///
+/// Two-stage KDFs offer separate `Extract` and `Expand` operations (via
+/// [`HpkeCrypto::kdf_extract`](crate::HpkeCrypto::kdf_extract) /
+/// [`HpkeCrypto::kdf_expand`](crate::HpkeCrypto::kdf_expand)).
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum TwoStageKdfAlgorithm {
+    /// HKDF SHA-256 (`KdfAlgorithm::HkdfSha256`).
+    HkdfSha256,
+
+    /// HKDF SHA-384 (`KdfAlgorithm::HkdfSha384`).
+    HkdfSha384,
+
+    /// HKDF SHA-512 (`KdfAlgorithm::HkdfSha512`).
+    HkdfSha512,
+}
+
+/// The two-stage view of a [`KdfAlgorithm`]. Errors on the single-stage
+/// (SHAKE) and TurboSHAKE identifiers.
+impl core::convert::TryFrom<KdfAlgorithm> for TwoStageKdfAlgorithm {
+    type Error = error::Error;
+    fn try_from(alg: KdfAlgorithm) -> Result<Self, Self::Error> {
+        match alg {
+            KdfAlgorithm::HkdfSha256 => Ok(Self::HkdfSha256),
+            KdfAlgorithm::HkdfSha384 => Ok(Self::HkdfSha384),
+            KdfAlgorithm::HkdfSha512 => Ok(Self::HkdfSha512),
+            _ => Err(error::Error::UnknownKdfAlgorithm),
+        }
+    }
+}
+
+/// The single-stage view of a [`KdfAlgorithm`]. Errors on the two-stage (HKDF)
+/// identifiers and on the TurboSHAKE variants, which no provider derives yet.
+impl core::convert::TryFrom<KdfAlgorithm> for SingleStageKdfAlgorithm {
+    type Error = error::Error;
+    fn try_from(alg: KdfAlgorithm) -> Result<Self, Self::Error> {
+        match alg {
+            KdfAlgorithm::Shake128 => Ok(Self::Shake128),
+            KdfAlgorithm::Shake256 => Ok(Self::Shake256),
+            KdfAlgorithm::TurboShake128 => Ok(Self::TurboShake128),
+            KdfAlgorithm::TurboShake256 => Ok(Self::TurboShake256),
+            _ => Err(error::Error::UnknownKdfAlgorithm),
+        }
+    }
 }
 
 impl Zeroize for KdfAlgorithm {
@@ -244,6 +375,8 @@ impl core::convert::TryFrom<u16> for KdfAlgorithm {
             0x0001 => Ok(KdfAlgorithm::HkdfSha256),
             0x0002 => Ok(KdfAlgorithm::HkdfSha384),
             0x0003 => Ok(KdfAlgorithm::HkdfSha512),
+            0x0010 => Ok(KdfAlgorithm::Shake128),
+            0x0011 => Ok(KdfAlgorithm::Shake256),
             _ => Err(Self::Error::UnknownKdfAlgorithm),
         }
     }
@@ -262,7 +395,13 @@ impl From<KemAlgorithm> for KdfAlgorithm {
             KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
                 KdfAlgorithm::HkdfSha512
             }
-            KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => KdfAlgorithm::HkdfSha256,
+            KemAlgorithm::MlKem512 | KemAlgorithm::MlKem768 | KemAlgorithm::MlKem1024 => {
+                KdfAlgorithm::HkdfSha256
+            }
+            // Post-quantum hybrid KEMs default to the SHAKE256 KDF, per
+            // draft-ietf-hpke-pq. Note that callers construct HPKE with an
+            // explicit `kdf_id`, so this mapping is only a default.
+            KemAlgorithm::MlKem768P256 | KemAlgorithm::MlKem1024P384 => KdfAlgorithm::Shake256,
         }
     }
 }
