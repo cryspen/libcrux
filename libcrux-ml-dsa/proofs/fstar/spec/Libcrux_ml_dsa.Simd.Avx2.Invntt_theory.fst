@@ -3485,3 +3485,12 @@ let lemma_inv_l2_post_to_sym (re re_fut: t_Array Libcrux_ml_dsa.Simd.Avx2.Vector
     assert_norm (zeta_r 62 == 2071892);
     assert_norm (zeta_r 63 == (- 2797779))
 #pop-options
+
+(* --- Relocated from `src/simd/avx2.rs` (`invert_ntt_with_proof`
+   fstar::before; annotation-uniformity sweep Batch 1).
+   `Portable.Invntt_theory.to_mont` is defeq with `Spec.MLDSA.Math.to_mont`;
+   this bridge makes it explicit for the AVX2 `invert_func_post` intro.
+   Consumer: Simd.Avx2.fst (invert_ntt_with_proof proof! block). --- *)
+let lemma_to_mont_eq_avx2 (y: t_Array i32 (mk_usize 256))
+    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
+  = ()

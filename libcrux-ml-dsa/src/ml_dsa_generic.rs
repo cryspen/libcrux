@@ -243,23 +243,9 @@ pub(crate) mod generic {
         hax_lib::fstar::before(r#"#restart-solver"#),
         hax_lib::fstar::options("--z3rlimit 800 --split_queries always")
     )]
-    // Helper predicate for the rejection loop's invariant hint clause: once a
-    // signature is accepted (`hint = Some h`), its Hamming weight stays within
-    // MAX_ONES_IN_HINT.  Phrased as a top-level `match` (clean context) so the
-    // loop invariant references only this atom: an inline `Option_Some?._0`
-    // projector in the while_loop refinement corrupts the post-loop `match hint`
-    // pattern typing (the Bundle-encoded `Core_models.Option`, F* error 114).
-    #[cfg_attr(hax, hax_lib::fstar::before(r#"
-let hint_count_bounded
-      (#rows: usize)
-      (hint: Core_models.Option.t_Option (t_Array (t_Array i32 (mk_usize 256)) rows))
-      (m: usize)
-    : Type0 =
-  match hint with
-  | Core_models.Option.Option_Some h ->
-    Libcrux_ml_dsa.Encoding.Signature.count_total_ones (h <: t_Slice (t_Array i32 (mk_usize 256))) <= v m
-  | Core_models.Option.Option_None  -> Prims.l_True
-"#))]
+    // The rejection loop's invariant hint clause uses the companion predicate
+    // `Ml_dsa_generic_theory.hint_count_bounded` (see that module for why it
+    // must be a top-level `match` atom — F* error 114 otherwise).
     pub(crate) fn sign_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -378,7 +364,7 @@ let hint_count_bounded
                 r#"
                 v ${attempt} <= v ${REJECTION_SAMPLE_BOUND_SIGN} /\
                 v ${domain_separator_for_mask} <= v ${attempt} * v ${COLUMNS_IN_A} /\
-                hint_count_bounded ${hint} ${MAX_ONES_IN_HINT} /\
+                Libcrux_ml_dsa.Ml_dsa_generic_theory.hint_count_bounded ${hint} ${MAX_ONES_IN_HINT} /\
                 Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${s1_as_ntt} /\
                 Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${s2_as_ntt} /\
                 Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice (mk_usize 75423744) ${t0_as_ntt} /\

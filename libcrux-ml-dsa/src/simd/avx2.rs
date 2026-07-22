@@ -660,6 +660,12 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [AVX2SIMDUnit; SIMD_UNITS_IN_RI
 // `lemma_ntt_view_avx2` bridges `ntt_poly_view re` (createi over `f_repr`) to
 // `simd_units_to_array (chunks_of_re_avx2 re)`; both reduce per-lane to
 // `to_i32x8 (re[j/8]).f_value (j%8)`.
+// proof-residence: locked(tc-instance) — the `f_repr` uses need this module's
+//                                        extracted `t_Repr t_Vec256` tcinstance
+//                                        (impl, Simd.Avx2.fst:13); a companion
+//                                        copy cannot solve the constraint
+//                                        without a module cycle (host cites
+//                                        these lemmas from its proof! blocks).
 #[cfg_attr(hax, hax_lib::fstar::before(r#"
 let lemma_forall32_elim_avx2 (p:(x:nat{x<32}->Type0))
   : Lemma (requires Spec.Utils.forall32 p) (ensures forall (u:nat{u<32}). p u) = ()
@@ -768,17 +774,8 @@ pub(crate) fn ntt_with_proof(simd_units: &mut AVX2RingElement) {
 // Functional inverse-NTT surfacing (Track B) for AVX2, mirror of the Portable
 // invert_ntt_with_proof.  Reuses lemma_ntt_view_avx2 (same flatten) and
 // Spec.MLDSA.Math.to_mont (defeq with Portable.Invntt_theory.to_mont, which the free
-// AVX2 invert post uses via PI.to_mont; lemma_to_mont_eq_avx2 bridges them).
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::before(
-        r#"
-let lemma_to_mont_eq_avx2 (y: t_Array i32 (mk_usize 256))
-    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
-  = ()
-"#
-    )
-)]
+// AVX2 invert post uses via PI.to_mont; `Avx2.Invntt_theory.lemma_to_mont_eq_avx2`
+// — companion — bridges them).
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.forall32 (fun (i: nat{i < 32}) ->
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
@@ -803,7 +800,7 @@ pub(crate) fn invert_ntt_with_proof(simd_units: &mut AVX2RingElement) {
         r#"lemma_poly_avx2_to_freprs 4211177 ${simd_units};
         lemma_ntt_view_avx2 ${_orig};
         lemma_ntt_view_avx2 ${simd_units};
-        lemma_to_mont_eq_avx2 (Hacspec_ml_dsa.Ntt.intt
+        Libcrux_ml_dsa.Simd.Avx2.Invntt_theory.lemma_to_mont_eq_avx2 (Hacspec_ml_dsa.Ntt.intt
           (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Avx2NttTheory.chunks_of_re_avx2 ${_orig})));
         Libcrux_ml_dsa.Simd.Traits.lemma_invert_func_post_intro ${_orig} ${simd_units}
           (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array (Avx2NttTheory.chunks_of_re_avx2 ${_orig}))

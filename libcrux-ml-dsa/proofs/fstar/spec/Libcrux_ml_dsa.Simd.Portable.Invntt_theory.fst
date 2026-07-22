@@ -1081,3 +1081,12 @@ let lemma_invert_top (s0flat s8flat refut : t_Array i32 (mk_usize 256)) : Lemma
     in Classical.forall_intro aux
 #pop-options
 #pop-options
+
+(* --- Relocated from `src/simd/portable.rs` (`invert_ntt_with_proof`
+   fstar::before; annotation-uniformity sweep Batch 1).  `to_mont` here is
+   byte-identical to -- hence defeq with -- `Spec.MLDSA.Math.to_mont`; this
+   bridge makes that explicit for the `invert_func_post` intro.  Consumer:
+   Simd.Portable.fst (invert_ntt_with_proof proof! block). --- *)
+let lemma_to_mont_eq (y: t_Array i32 (mk_usize 256))
+    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
+  = ()

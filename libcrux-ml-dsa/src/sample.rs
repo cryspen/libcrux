@@ -413,40 +413,10 @@ pub(crate) fn sample_four_error_ring_elements<SIMDUnit: Operations, Shake256: sh
 //
 // The `is_bounded_poly 8380416` post is derived (not admitted) from
 // `gamma1::deserialize`'s per-simd-unit `is_i32b_array_opaque (pow2
-// gamma1_exponent)` post via `lemma_gamma1_deser_widen`: `pow2 17 = 131072`
-// and `pow2 19 = 524288` are both `<= 8380416` (FIELD_MODULUS - 1), the
-// uniform bound `ntt` / `compute_matrix_x_mask` expect on the mask.
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::before(
-        r#"
-let lemma_gamma1_deser_widen
-      (#v_SIMDUnit: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i0:
-          Libcrux_ml_dsa.Simd.Traits.t_Operations v_SIMDUnit)
-      (gamma1_exponent: usize)
-      (result: Libcrux_ml_dsa.Polynomial.t_PolynomialRingElement v_SIMDUnit)
-    : Lemma
-      (requires
-        (v gamma1_exponent == 17 \/ v gamma1_exponent == 19) /\
-        (forall (j: nat). j < 32 ==>
-           Spec.Utils.is_i32b_array_opaque (pow2 (v gamma1_exponent))
-             (i0._super_i2.f_repr (Seq.index result.Libcrux_ml_dsa.Polynomial.f_simd_units j))))
-      (ensures Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) result)
-  = let aux (j: nat{j < 32}) :
-      Lemma (Spec.Utils.is_i32b_array_opaque 8380416
-               (i0._super_i2.f_repr (Seq.index result.Libcrux_ml_dsa.Polynomial.f_simd_units j))) =
-      assert_norm (pow2 17 <= 8380416);
-      assert_norm (pow2 19 <= 8380416);
-      Spec.Utils.is_i32b_array_larger (pow2 (v gamma1_exponent)) 8380416
-        (i0._super_i2.f_repr (Seq.index result.Libcrux_ml_dsa.Polynomial.f_simd_units j))
-    in
-    Classical.forall_intro aux;
-    Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_intro (mk_usize 8380416) result
-"#
-    )
-)]
+// gamma1_exponent)` post via `Sample_theory.lemma_gamma1_deser_widen`
+// (companion): `pow2 17 = 131072` and `pow2 19 = 524288` are both
+// `<= 8380416` (FIELD_MODULUS - 1), the uniform bound `ntt` /
+// `compute_matrix_x_mask` expect on the mask.
 #[hax_lib::requires(gamma1_exponent == 17 || gamma1_exponent == 19)]
 #[hax_lib::ensures(|_| fstar!(r#"
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly (mk_usize 8380416) ${result}_future"#))]
@@ -470,7 +440,7 @@ fn sample_mask_ring_element<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     }
     // Lift `deserialize`'s per-unit gamma1 bound to the uniform
     // `is_bounded_poly 8380416` post (proof, not admit — see the doc above).
-    proof!("lemma_gamma1_deser_widen $gamma1_exponent $result");
+    proof!("Libcrux_ml_dsa.Sample_theory.lemma_gamma1_deser_widen $gamma1_exponent $result");
 }
 
 #[inline(always)]
@@ -588,7 +558,7 @@ pub(crate) fn sample_mask_vector<
                 // Widen `deserialize`'s gamma1 bound on `mask[j]` to 8380416, then
                 // extend the opaque range from `[0,j)` to `[0,j+1)`.
                 proof!(
-                    r#"lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
+                    r#"Libcrux_ml_dsa.Sample_theory.lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                          (mk_usize 8380416) $j old_mask ${mask}"#
                 );
@@ -638,7 +608,7 @@ pub(crate) fn sample_mask_vector<
                 // Widen `deserialize`'s gamma1 bound on `mask[j]` to 8380416, then
                 // extend the opaque range from `[0,j)` to `[0,j+1)`.
                 proof!(
-                    r#"lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
+                    r#"Libcrux_ml_dsa.Sample_theory.lemma_gamma1_deser_widen $gamma1_exponent (Seq.index ${mask} (v $j));
                        Libcrux_ml_dsa.Polynomial.Spec.lemma_is_bounded_poly_range_extend_after_update
                          (mk_usize 8380416) $j old_mask ${mask}"#
                 );

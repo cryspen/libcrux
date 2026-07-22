@@ -252,6 +252,12 @@ pub(crate) fn reduce_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RI
 // (createi over `f_repr`) equals `simd_units_to_array (chunks_of_re re)` (the
 // view the free fn proves against).  For Portable `f_repr c == c.f_values`
 // (defeq), so both reduce element-wise to `(re[j/8]).f_values[j%8]`.
+// proof-residence: locked(tc-instance) — `f_repr` needs this module's extracted
+//                                        `t_Repr t_Coefficients` tcinstance (impl,
+//                                        Simd.Portable.fst:13); a companion copy
+//                                        cannot solve the constraint without a
+//                                        module cycle, and the proof needs the
+//                                        concrete `f_repr == f_values` defeq.
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(
@@ -326,17 +332,8 @@ pub(crate) fn ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_IN_RING_
 // atom).  Reuses the forward view bridge `lemma_ntt_view_portable` (same
 // 32×8 flatten) and `Spec.MLDSA.Math.to_mont` (byte-identical to — hence defeq
 // with — `Portable.Invntt_theory.to_mont`, which the free fn's post uses;
-// `lemma_to_mont_eq` makes that bridge explicit for the intro).
-#[cfg_attr(
-    hax,
-    hax_lib::fstar::before(
-        r#"
-let lemma_to_mont_eq (y: t_Array i32 (mk_usize 256))
-    : Lemma (Libcrux_ml_dsa.Simd.Portable.Invntt_theory.to_mont y == Spec.MLDSA.Math.to_mont y)
-  = ()
-"#
-    )
-)]
+// `Invntt_theory.lemma_to_mont_eq` (companion) makes that bridge explicit for
+// the intro).
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.forall32 (fun (i: nat{i < 32}) ->
         Spec.Utils.is_i32b_array_opaque (v ${specs::FIELD_MAX})
@@ -357,7 +354,7 @@ pub(crate) fn invert_ntt_with_proof(simd_units: &mut [Coefficients; SIMD_UNITS_I
              (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.is_i32b_polynomial 4211177 ${simd_units});
            lemma_ntt_view_portable ${_orig};
            lemma_ntt_view_portable ${simd_units};
-           lemma_to_mont_eq (Hacspec_ml_dsa.Ntt.intt
+           Libcrux_ml_dsa.Simd.Portable.Invntt_theory.lemma_to_mont_eq (Hacspec_ml_dsa.Ntt.intt
              (Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array
                 (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${_orig})));
            Libcrux_ml_dsa.Simd.Traits.lemma_invert_func_post_intro ${_orig} ${simd_units}

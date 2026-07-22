@@ -44,7 +44,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f38e11b8e98c24d02487311826e3901d"
+      "21ce88c1393455c0a2d4355d8704ca28"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.generate_key_pair",
@@ -73,7 +73,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b02a83fa8771fc7574f890115744f5d5"
+      "97cbb36a59c81bf15312811294ba40d7"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign",
@@ -132,7 +132,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7970a16591773018224d1f7feb2e3e83"
+      "3dcaa95fc96bcf15afcb7f1db212087c"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign_mut",
@@ -162,7 +162,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "711d88cb2ac155fd217ec8ff7fd93a23"
+      "5605f3900a709156c3d9a6a870dd1eb7"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign_mut",
@@ -192,7 +192,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3ed36ff66bcbb40b1741c266d0274645"
+      "5e8c90989a892ea3859c57c4f27b3a96"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign_pre_hashed_shake128",
@@ -274,7 +274,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0ad99a8ef9cf444fa5c644bcf48c7ce9"
+      "de020687bba766a69fdbb1c5077c368f"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify",
@@ -336,7 +336,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "182bff1d7247c0b6e1734d00667204eb"
+      "b6efcf1deea01d523acd140f01364108"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify_pre_hashed_shake128",
@@ -391,7 +391,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "809b070fe62c26efc188368d39d964f8"
+      "18b80b1aac38de672c5e50aeae510433"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify_pre_hashed_shake128",
@@ -420,7 +420,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ea2ccdd393a02a53b138f20eeb5505a8"
+      "ae6457c67e0c81e23482e7d471d77570"
     ]
   ]
 ]
