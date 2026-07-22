@@ -28,7 +28,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "eca6ac72a27b060120297f0df3d3c8c9"
+      "56cefd6372b9b4c22e65cf2e39f81d26"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.generate_key_pair",
@@ -57,7 +57,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f98ad5b751f105cd580fa4539240b8ce"
+      "d70967715a4ca38a8ff1c91fbce033f4"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign__e_inner",
@@ -121,7 +121,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3af4beb0f070f5220f9d4766a2e313bf"
+      "2d576d888e97dd2d7729da89918473d4"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign__e_inner",
@@ -150,7 +150,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b35ebb47eb6f3ddf8e995cf0fa670f24"
+      "c5cb7f3bade7b1bde4ac4e3138ba8a30"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign",
@@ -191,7 +191,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "90e278ad17236963543a7c83c053a6d1"
+      "c2fb7c4167d44ad55606642e5886bc50"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign",
@@ -220,7 +220,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "77cca3cbf0072d054eac2538ccf11e37"
+      "805a84e7340ff8ac8eff545bfc4bf5aa"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut__e_inner",
@@ -282,7 +282,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "de6baddd9b154b3ae4f2b8e265103a3f"
+      "4a2cd4d7d3b23d837951be54178a03fc"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut__e_inner",
@@ -313,7 +313,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "989bbd22a75c9b43e31670876d592a70"
+      "5fc02a765e3cb92a9f02f1353ed946ce"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut",
@@ -358,7 +358,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "63e189acdc7c5fca11b6548f1bf6563d"
+      "2f1a73b812ceaca57fe4d7682d7f0f65"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_mut",
@@ -389,7 +389,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "42dfb709c87726327bbe2732bcbe188d"
+      "c9a5447646c57925ef925808ea5ef28b"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_pre_hashed_shake128__e_inner",
@@ -436,7 +436,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "db1743ed18602bc3c1a1ba6fa64d75a7"
+      "a8d73aa329fd861b2158076d1eed50bd"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_pre_hashed_shake128__e_inner",
@@ -466,7 +466,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1650beb4f13d01607043bcd05ea41668"
+      "f45b5f1020889ad057a0eb51c1e2b0f1"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_pre_hashed_shake128",
@@ -511,7 +511,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7e9a923c158e96dae56d3da44cee02dd"
+      "5dabd9db3328342a3b29929028e675cf"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.sign_pre_hashed_shake128",
@@ -541,7 +541,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0dbdd19d092908c8104bae8d1aae6b6c"
+      "b48f70ec92a85b5bd725d0b9cc1a5435"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify__e_inner",
@@ -571,7 +571,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bd0aa5689e68d86219ba4612b79b0f5c"
+      "fb5189820ab5cba0613fd6ce56dca3c1"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify",
@@ -601,7 +601,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2384cde96a5eca064d523e588c34c255"
+      "8a50a2a73fd44cc320c11c8c41654109"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify_pre_hashed_shake128__e_inner",
@@ -618,7 +618,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1ed74212afcc43a8b4eb7748ff874097"
+      "ab84a8838710e02b651b0f765de052bf"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify_pre_hashed_shake128__e_inner",
@@ -648,7 +648,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "dfbf2b7122edbbce52fdd33ba2828f67"
+      "1fc35571638f34cc6ff96e2c3b0b8a71"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify_pre_hashed_shake128",
@@ -665,7 +665,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6767f17972365c4f7336dc33988281b3"
+      "c783175f71fa7b7838b00ffa02f174a3"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic.Instantiations.Avx2.Ml_dsa_87_.verify_pre_hashed_shake128",
@@ -695,7 +695,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0683956160f6b508a83b930a5a71da60"
+      "16a7f63d30d29a933dc28bba8a2a1a38"
     ]
   ]
 ]
