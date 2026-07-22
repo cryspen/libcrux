@@ -735,6 +735,7 @@ unsafe fn invert_ntt_at_layer_7(re: &mut AVX2RingElement) {
 
 #[inline(always)]
 #[allow(unsafe_code)]
+// proof-residence: locked(own-const): scale_montgomery_avx2__v_FACTOR (hax-mangled per-fn const)
 #[hax_lib::fstar::before(
     r#"
 (* These two lemmas mention `scale_montgomery_avx2__v_FACTOR` -- hax's hoisting of

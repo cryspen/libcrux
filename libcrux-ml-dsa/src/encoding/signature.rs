@@ -20,6 +20,7 @@ use crate::{
 // function via `fstar::before`, mirroring the
 // `_keccak_state_impl_opts` pattern in
 // `crates/algorithms/sha3/src/generic_keccak/portable.rs`.
+// proof-residence: spec-host: count_total_ones pinned here by cross-module qualified cites
 #[hax_lib::fstar::before(
     r#"
 let rec count_row_ones (row: t_Array i32 (mk_usize 256)) (j: nat{j <= 256})

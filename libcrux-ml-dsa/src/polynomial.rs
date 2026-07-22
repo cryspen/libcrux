@@ -27,6 +27,7 @@ pub(crate) mod spec {
     }
 
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_bounded_poly
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -101,6 +102,7 @@ let lemma_is_bounded_poly_higher
     /// with `k < v hi` so `Seq.index arr k` is well-typed without a
     /// `requires` (avoiding `Pure` overhead at every use site).
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_bounded_poly_range
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -191,6 +193,7 @@ let lemma_is_bounded_poly_range_extend_after_update
     /// predicate appears in many hypotheses (e.g. function preconditions
     /// like `compute_as1_plus_s2`).
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_bounded_poly_slice
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -265,6 +268,7 @@ let lemma_is_bounded_poly_slice_higher
     /// `opaque_to_smt` so it appears as a single atom in pre/inv, dropping
     /// the 2-deep `forall k j.` from quantifier search context.
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_strict_lower_poly
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -317,6 +321,7 @@ let lemma_is_strict_lower_poly_intro
     /// cascades when this predicate appears in many hypotheses (e.g.
     /// `generate_serialized`'s t0 precondition / loop invariant).
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_strict_lower_poly_slice
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -368,6 +373,7 @@ let lemma_is_strict_lower_poly_slice_intro
     /// `opaque_to_smt` so it appears as a single atom in pre/inv,
     /// dropping the 2-deep `forall j m.` from quantifier search context.
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_lane_range_poly
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(
@@ -422,6 +428,7 @@ let lemma_is_lane_range_poly_intro
     /// Slice version of `is_lane_range_poly`: every entry of `arr` has all
     /// lane coefficients in `[lo, hi]`.  Made `opaque_to_smt`.
     #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
+    // proof-residence: spec-host: lemma API for this module's is_lane_range_poly_slice
     #[cfg_attr(
         hax,
         hax_lib::fstar::after(

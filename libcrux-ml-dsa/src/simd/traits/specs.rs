@@ -40,6 +40,7 @@ pub(crate) fn int_is_i32(i: Int) -> bool {
 // `libcrux-ml-kem/src/vector/traits.rs::spec`. The dual-trigger lookup
 // lemmas + named-intro lemmas (style guide §3.2-3.3) live alongside each
 // opaque atom for use by Phase 2/3 impl proofs.
+// proof-residence: spec-host: this module's opaque spec-atom vocabulary + lemma API
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(
@@ -416,6 +417,7 @@ let bit_unpack_chunk_post (a b: int) (w: nat{w > 0 /\ w <= 20})
     )
 )]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// proof-residence: spec-host: SMTPat bridge revealing this module's add_pre
 #[hax_lib::fstar::after(r#"
     let bounded_add_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
         Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 2147483647))
@@ -436,6 +438,7 @@ pub(crate) fn add_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
 }
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// proof-residence: spec-host: SMTPat bridge revealing this module's add_post
 #[hax_lib::fstar::after(r#"
 #push-options "--z3rlimit 200 --fuel 1 --ifuel 1"
     let bounded_add_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):
@@ -466,6 +469,7 @@ pub(crate) fn add_post(lhs: &SIMDContent, rhs: &SIMDContent, future_lhs: &SIMDCo
 }
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// proof-residence: spec-host: SMTPat bridge revealing this module's sub_pre
 #[hax_lib::fstar::after(r#"
     let bounded_sub_pre (a b: t_Array i32 (sz 8)) (b1:nat) (b2:nat):
         Lemma (requires (Spec.Utils.is_i32b_array_opaque b1 a /\ Spec.Utils.is_i32b_array_opaque b2 b /\ b1 + b2 <= 2147483647))
@@ -486,6 +490,7 @@ pub(crate) fn sub_pre(lhs: &SIMDContent, rhs: &SIMDContent) -> Prop {
 }
 
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+// proof-residence: spec-host: SMTPat bridge revealing this module's sub_post
 #[hax_lib::fstar::after(r#"
 #push-options "--z3rlimit 200 --fuel 1 --ifuel 1"
     let bounded_sub_post (a b a_future: t_Array i32 (sz 8)) (b1 b2 b3:nat):

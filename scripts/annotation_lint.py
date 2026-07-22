@@ -21,7 +21,9 @@ BA_RX = re.compile(
     r"#\[\s*(?:cfg_attr\s*\(\s*hax\s*,\s*)?hax_lib::fstar::(before|after)\s*\("
 )
 DEF_RX = re.compile(r"\blet\b|\bval\b|\bLemma\b")
-TAG_RX = re.compile(r"proof-residence:\s*(locked|hint-keystone|cold-gate|pilot)")
+TAG_RX = re.compile(
+    r"proof-residence:\s*(locked|hint-keystone|cold-gate|spec-host|clean-context)"
+)
 
 
 def raw_string_body(text, start, cap=30000):

@@ -36,8 +36,12 @@ Some theory blocks cannot move out of the Rust source for hard technical
 reasons. Each such block carries an in-code tag on the line above it:
 
 ```rust
-// proof-residence: locked(own-const)   — cites this module's extracted constants/types
-//                                        (moving it would create a module cycle)
+// proof-residence: locked(own-const)   — cites this module's extracted constants/types/
+//                                        functions (moving it would create a module cycle)
+// proof-residence: spec-host           — this module's own spec-predicate vocabulary and
+//                                        its lemma API, cited by same-file contracts
+// proof-residence: clean-context       — proof saturates in a companion's clean context;
+//                                        kept where the host function's ambient facts hold
 // proof-residence: hint-keystone       — proof is cold-fragile; relocation shifts
 //                                        recorded solver hints (needs restructure first)
 // proof-residence: cold-gate           — file keeps --z3refresh for cold-start stability

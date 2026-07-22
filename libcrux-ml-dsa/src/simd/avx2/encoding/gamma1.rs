@@ -39,6 +39,7 @@ fn serialize_when_gamma1_is_2_pow_17_aux(simd_unit_shifted: Vec256) -> Vec256 {
 const GAMMA1_2_POW_17: i32 = 1 << 17;
 
 #[inline(always)]
+// proof-residence: locked(own-const): v_GAMMA1_2_POW_17_ + proof! back-edge
 #[hax_lib::fstar::before(
     r#"
 #push-options "--ifuel 0 --z3rlimit 400"
@@ -154,6 +155,7 @@ fn serialize_when_gamma1_is_2_pow_19_aux(simd_unit_shifted: Vec256) -> Vec256 {
 
 const GAMMA1_2_POW_19: i32 = 1 << 19;
 #[inline(always)]
+// proof-residence: locked(own-const): v_GAMMA1_2_POW_19_ + proof! back-edge
 #[hax_lib::fstar::before(
     r#"
 #push-options "--ifuel 0 --z3rlimit 400"
@@ -279,6 +281,7 @@ const GAMMA1_19: i32 = 1 << 19;
 const GAMMA1_19_TIMES_2_MASK: i32 = (GAMMA1_19 << 1) - 1;
 
 #[inline(always)]
+// proof-residence: locked(own-const): v_GAMMA1_17_/v_GAMMA1_19_; defs cited by same-file contracts
 #[hax_lib::fstar::before(
     r#"
 type gamma1_exp = g:usize {v g == 17 \/ v g == 19}
@@ -356,6 +359,7 @@ fn deserialize_when_gamma1_is_2_pow_19_unsigned(serialized: &[u8], out: &mut Vec
 }
 
 #[inline(always)]
+// proof-residence: locked(own-const): depends on gamma1_of_exp family (locked above)
 #[hax_lib::fstar::before(
     r#"
 let deserialize_post (gamma1_exponent: gamma1_exp)

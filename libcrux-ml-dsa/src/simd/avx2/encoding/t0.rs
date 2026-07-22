@@ -58,6 +58,7 @@ pub(crate) fn serialize_aux(simd_unit: Vec256) -> Vec128 {
 // obligations (i/13 < 8 for to_i32x8, i/8 < 13 for the output) discharge
 // cheaply.  Stating this forall inside `serialize` re-checks its well-formedness
 // in the SMTPat-polluted body context, where the trivial div facts saturate.
+// proof-residence: locked(own-const): v_POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE + proof! back-edge
 #[hax_lib::fstar::before(
     r#"
 #push-options "--ifuel 0 --z3rlimit 400"
@@ -169,6 +170,7 @@ fn deserialize_unsigned(serialized: &[u8], out: &mut Vec256) {
 }
 
 #[inline(always)]
+// proof-residence: locked(own-const): v_POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE via deserialize_post
 #[hax_lib::fstar::before(
     r#"
 let deserialize_post

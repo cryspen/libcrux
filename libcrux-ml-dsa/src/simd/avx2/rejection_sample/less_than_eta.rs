@@ -26,6 +26,7 @@ fn shift_interval<const ETA: usize>(coefficients: Vec256) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --fuel 1 --ifuel 2")]
+// proof-residence: locked(own-fn): cites shift_interval (this module)
 #[hax_lib::fstar::before(
     r#"
 #set-options "--fuel 1 --ifuel 2 --z3rlimit 400"

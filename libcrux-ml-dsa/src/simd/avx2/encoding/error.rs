@@ -47,6 +47,7 @@ fn serialize_when_eta_is_2_aux(simd_unit_shifted: Vec256) -> Vec128 {
 const ETA_2: i32 = 2;
 
 #[inline(always)]
+// proof-residence: locked(own-const): v_ETA_2_ + proof! back-edge
 #[hax_lib::fstar::before(r#"
 #push-options "--ifuel 0 --z3rlimit 400"
 let lemma_error_serialize_post_eta_2
@@ -135,6 +136,7 @@ fn serialize_when_eta_is_4_aux(simd_unit_shifted: Vec256) -> Vec128 {
 const ETA_4: i32 = 4;
 
 #[inline(always)]
+// proof-residence: locked(own-const): v_ETA_4_ + proof! back-edge
 #[hax_lib::fstar::before(r#"
 #push-options "--ifuel 0 --z3rlimit 400"
 let lemma_error_serialize_post_eta_4

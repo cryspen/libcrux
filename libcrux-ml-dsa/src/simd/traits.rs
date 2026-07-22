@@ -47,6 +47,7 @@ pub trait Repr {}
 // sub-query ("incomplete quantifiers").  `lemma_ntt_func_post_intro` seals the
 // raw forall (proven by the backend bridges, in a clean context that defeats the
 // view-mismatch trigger problem) into the atom; consumers only ever carry the atom.
+// proof-residence: locked(own-type): t_Repr/f_repr; posts cited by same-file trait contracts
 #[cfg_attr(
     hax,
     hax_lib::fstar::before(

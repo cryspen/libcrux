@@ -32,6 +32,7 @@ fn bytestream_to_potential_coefficients(serialized: &[u8]) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --fuel 1 --ifuel 2")]
+// proof-residence: locked(own-fn): cites bytestream_to_potential_coefficients (this module)
 #[hax_lib::fstar::before(r#"
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open FStar.Mul
