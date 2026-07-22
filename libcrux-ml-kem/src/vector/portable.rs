@@ -635,60 +635,8 @@ fn op_inv_ntt_layer_2_step(a: PortableVector, zeta0: i16, zeta1: i16) -> Portabl
                     (Libcrux_ml_kem.Vector.Traits.Spec.is_i16b_array_opaque (2*3328))"#
     );
     proof!(
-        r#"
-        reveal_opaque (`%Spec.Utils.inv_ntt_layer_2_butterfly_post)
-                      (Spec.Utils.inv_ntt_layer_2_butterfly_post ${a}.f_elements);
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta0 0 4;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta0 1 5;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta0 2 6;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta0 3 7;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta1 8 12;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta1 9 13;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta1 10 14;
-        Hacspec_ml_kem.Commute.Chunk.lemma_inv_butterfly_pair_commute
-          ${a}.f_elements ${out}.f_elements zeta1 11 15;
-        let p_inv_2 : (b: nat{b < 4}) -> Type0 =
-          fun (b: nat{b < 4}) ->
-            (let z = (if b < 2 then zeta0 else zeta1) in
-             let base : nat = if b < 2 then 0 else 8 in
-             let off  : nat = if b = 0 || b = 2 then 0 else 2 in
-             let i1 : nat = base + off in
-             let j1 : nat = i1 + 4 in
-             let i2 : nat = i1 + 1 in
-             let j2 : nat = j1 + 1 in
-             Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${out}.f_elements i1) ==
-               Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements i1))
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements j1)) /\
-             Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${out}.f_elements j1) ==
-               Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe z)
-                 (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                   (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements j1))
-                   (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements i1))) /\
-             Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${out}.f_elements i2) ==
-               Hacspec_ml_kem.Parameters.impl_FieldElement__add
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements i2))
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements j2)) /\
-             Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${out}.f_elements j2) ==
-               Hacspec_ml_kem.Parameters.impl_FieldElement__mul
-                 (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe z)
-                 (Hacspec_ml_kem.Parameters.impl_FieldElement__sub
-                   (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements j2))
-                   (Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe (Seq.index ${a}.f_elements i2)))) in
-        assert (p_inv_2 0);
-        assert (p_inv_2 1);
-        assert (p_inv_2 2);
-        assert (p_inv_2 3);
-        assert (Spec.Utils.forall4 p_inv_2)
-        "#
+        r#"Libcrux_ml_kem.Vector.Portable_theory.lemma_inv_ntt_layer_2_step_commute
+             ${a}.f_elements ${out}.f_elements zeta0 zeta1"#
     );
     out
 }

@@ -55,3 +55,42 @@ let lemma_ntt_layer_2_step_commute
     lemma_ntt_layer_2_branch a out zeta0 zeta1 2;
     lemma_ntt_layer_2_branch a out zeta0 zeta1 3
 #pop-options
+
+(* op_inv_ntt_layer_2_step, closing block — inverse butterfly (add of pair,
+   zeta * difference), layer-2 index derivation. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300 --split_queries always"
+#restart-solver
+let lemma_inv_ntt_layer_2_branch
+    (a out: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16)
+    (b: nat{b < 4})
+  : Lemma
+    (requires Spec.Utils.inv_ntt_layer_2_butterfly_post a out zeta0 zeta1)
+    (ensures TS.inv_ntt_layer_2_step_branch_post b a zeta0 zeta1 out)
+  = reveal_opaque (`%Spec.Utils.inv_ntt_layer_2_butterfly_post)
+                  (Spec.Utils.inv_ntt_layer_2_butterfly_post a);
+    reveal_opaque (`%TS.inv_ntt_layer_2_step_branch_post)
+                  TS.inv_ntt_layer_2_step_branch_post;
+    let z = if b < 2 then zeta0 else zeta1 in
+    let base : nat = if b < 2 then 0 else 8 in
+    let off  : nat = if b = 0 || b = 2 then 0 else 2 in
+    let i1 : nat = base + off in
+    CC.lemma_inv_butterfly_pair_commute a out z i1 (i1 + 4);
+    CC.lemma_inv_butterfly_pair_commute a out z (i1 + 1) (i1 + 5)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 100 --split_queries always"
+#restart-solver
+let lemma_inv_ntt_layer_2_step_commute
+    (a out: t_Array i16 (mk_usize 16))
+    (zeta0 zeta1: i16)
+  : Lemma
+    (requires Spec.Utils.inv_ntt_layer_2_butterfly_post a out zeta0 zeta1)
+    (ensures
+      Spec.Utils.forall4 (fun (b: nat{b < 4}) ->
+        TS.inv_ntt_layer_2_step_branch_post b a zeta0 zeta1 out))
+  = lemma_inv_ntt_layer_2_branch a out zeta0 zeta1 0;
+    lemma_inv_ntt_layer_2_branch a out zeta0 zeta1 1;
+    lemma_inv_ntt_layer_2_branch a out zeta0 zeta1 2;
+    lemma_inv_ntt_layer_2_branch a out zeta0 zeta1 3
+#pop-options
