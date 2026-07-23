@@ -222,6 +222,9 @@ def main():
                     help="Restrict to one crate (repeatable). Default: all.")
     ap.add_argument("--check", action="store_true",
                     help="Compare observed vs baseline; exit 1 on regression (default action).")
+    ap.add_argument("--warn-only", action="store_true",
+                    help="Report regressions but always exit 0 (soft CI gate until parity is "
+                         "confirmed against the CI hax version; flip off to make it blocking).")
     ap.add_argument("--update-baseline", action="store_true",
                     help="Rewrite baselines from the current observed surface.")
     ap.add_argument("--json", action="store_true",
@@ -266,6 +269,10 @@ def main():
     if exit_code:
         print("\ntrust-ledger: REGRESSION — the trust surface grew. "
               "Prove the new obligation away, or justify + rebaseline deliberately.")
+        if args.warn_only:
+            print("(--warn-only: not failing the build. Run on a freshly-extracted tree; "
+                  "stale local artifacts read as regressions.)")
+            return 0
     else:
         print("\ntrust-ledger: clean (observed surface within baseline).")
     return exit_code
