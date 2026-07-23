@@ -1,16 +1,15 @@
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"
+// `lemma_mm256_add_epi64_lemma_weaker` (companion Gamma1_theory) fires here
+// via its SMTPat; the `open` below creates the module dependency that loads
+// it (nothing in this file cites the companion by name).
+#[hax_lib::fstar::before(
+    r#"
 open Spec.Intrinsics
-let lemma_mm256_add_epi64_lemma_weaker lhs rhs (i: u64 {v i < 256})
-  : Lemma
-    (requires forall i. Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(i) \/ Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(i))
-    (ensures (Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
-           /\ (Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
-    [SMTPat (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i)]
-    = Spec.Intrinsics.mm256_add_epi64_lemma lhs rhs i
-"#)]
+open Libcrux_ml_dsa.Simd.Avx2.Encoding.Gamma1_theory
+"#
+)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 18 ==> simd_unit_shifted.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero"#))]
 #[hax_lib::ensures(|result| fstar!(r#"

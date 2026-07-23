@@ -278,24 +278,14 @@ fn deserialize_to_unsigned_when_eta_is_4(bytes: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"
-let deserialize_to_unsigned_post
-  (eta: Libcrux_ml_dsa.Constants.t_Eta)
-  (serialized: t_Slice u8{Seq.length serialized == (match eta with | Libcrux_ml_dsa.Constants.Eta_Two  -> 3 | Libcrux_ml_dsa.Constants.Eta_Four -> 4)})
-  (result: bv256)
-  = let bytes = Seq.length serialized in
-    (forall (i: nat{i < bytes * 8}).
-       u8_to_bv serialized.[ mk_usize (i / 8) ] (mk_int (i % 8)) ==
-       result.(mk_int ((i / bytes) * 32 + i % bytes))) /\
-    (forall (i: nat{i < 256}).
-       i % 32 >= bytes ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
-"#)]
+// Spec predicate `deserialize_to_unsigned_post` lives in the
+// `Simd.Avx2.Encoding.Error_theory` companion.
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == match eta {
     Eta::Two => 3,
     Eta::Four => 4,
 })]
-#[hax_lib::ensures(|result| fstar!("deserialize_to_unsigned_post $eta $serialized $result"))]
+#[hax_lib::ensures(|result| fstar!("Libcrux_ml_dsa.Simd.Avx2.Encoding.Error_theory.deserialize_to_unsigned_post $eta $serialized $result"))]
 pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
     match eta {
         Eta::Two => deserialize_to_unsigned_when_eta_is_2(serialized),
@@ -304,23 +294,14 @@ pub(crate) fn deserialize_to_unsigned(eta: Eta, serialized: &[u8]) -> Vec256 {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(r#"
-module C = Libcrux_ml_dsa.Constants
-let deserialize_post (eta: C.t_Eta)
-         (serialized: t_Slice u8 {Seq.length serialized == (match eta with | C.Eta_Two  -> 3 | C.Eta_Four -> 4)})
-         (result: bv256)
-    = let eta_i32:i32 = match eta <: C.t_Eta with | C.Eta_Two  -> mk_i32 2 | C.Eta_Four -> mk_i32 4 in
-      let bytes = Seq.length serialized in
-      (forall i. v (to_i32x8 result i) > minint I32)
-    /\ ( let out_reverted = mk_i32x8 (fun i -> neg (to_i32x8 result i) `add_mod` eta_i32) in
-        deserialize_to_unsigned_post eta serialized out_reverted)
-"#)]
+// Spec predicate `deserialize_post` lives in the
+// `Simd.Avx2.Encoding.Error_theory` companion.
 #[hax_lib::requires(serialized.len() == match eta {
     Eta::Two => 3,
     Eta::Four => 4,
 })]
 #[hax_lib::ensures(|result| fstar!(r#"
-    deserialize_post $eta $serialized ${out}_future /\
+    Libcrux_ml_dsa.Simd.Avx2.Encoding.Error_theory.deserialize_post $eta $serialized ${out}_future /\
     (forall (i: u64). v i < 8 ==>
       ($eta == Libcrux_ml_dsa.Constants.Eta_Two ==>
           v (to_i32x8 ${out}_future i) >= -5 /\
@@ -345,7 +326,7 @@ pub(crate) fn deserialize(eta: Eta, serialized: &[u8], out: &mut Vec256) {
     introduce forall i. neg (to_i32x8 out i) `add_mod` $eta_v == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) $eta_v (to_i32x8 $unsigned i);
     to_i32x8_eq_to_bv_eq $unsigned out_reverted;
-    assert_norm (deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_to_unsigned_post $eta $serialized out_reverted));
+    assert_norm (Libcrux_ml_dsa.Simd.Avx2.Encoding.Error_theory.deserialize_post $eta $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ Libcrux_ml_dsa.Simd.Avx2.Encoding.Error_theory.deserialize_to_unsigned_post $eta $serialized out_reverted));
     (match $eta with
      | Libcrux_ml_dsa.Constants.Eta_Two -> i32_bit_zero_lemma_to_lt_pow2_n_weak 3 $unsigned
      | Libcrux_ml_dsa.Constants.Eta_Four -> ())

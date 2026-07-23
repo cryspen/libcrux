@@ -78,7 +78,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "fbfa6b27eaf4cffede47b09a778c9e23"
+      "d4c84fdd68787e6998205d8e2284775e"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.generate_key_pair",
@@ -108,7 +108,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9664fbd0283a1e2cda278d1a957dafaa"
+      "898e2d6db1182a3da27e2f1dc0e7dc99"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign",
@@ -170,7 +170,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ce70f0b236d53af52f4502841de25797"
+      "e27e9cf2fe4f0ea4139a696ee276c737"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_mut",
@@ -200,7 +200,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "d8c3322adf5e222a76166ff00f9f345d"
+      "38a4cc82655bc466b373500a6764e0b4"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_mut",
@@ -231,7 +231,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5bb7bb933aa173dff797c78da1f0d9ae"
+      "308560b4771d60721978d49320a22fa5"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.sign_pre_hashed_shake128",
@@ -316,7 +316,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7b58b5f415530db093eb789fb7039800"
+      "89ba91166f552a7272e05e615ed0a42e"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify",
@@ -377,7 +377,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7ae1af43406d374aa23c1464734189ca"
+      "eee0b2b859f0ed70129748a7a9da497a"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify_pre_hashed_shake128",
@@ -432,7 +432,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d9a2f3fa59c0aee11db0e80ffd2a2b9a"
+      "c8c617935a5f17ef5a9975aa29944b40"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_44_.Avx2.verify_pre_hashed_shake128",
@@ -462,7 +462,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "044217c6ee3289fdf6a11aea2f1b6ce3"
+      "8c275104ea2218baa57d8a97848efb57"
     ]
   ]
 ]

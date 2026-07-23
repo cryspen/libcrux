@@ -485,7 +485,7 @@ pub(crate) fn compute_hint_with_proof(
               Spec.Intrinsics.to_i32x8 ${hint}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 j)) =
           bridge ${hint} j in
         Classical.forall_intro hh;
-        Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_compute_hint_8
+        Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_compute_hint_8
           (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint})"#
     );
     result
@@ -545,7 +545,7 @@ pub(crate) fn use_hint_with_proof(
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint_orig}) k)
                 (Seq.index (Libcrux_ml_dsa.Simd.Traits.f_repr ${hint}) k)) =
           bridge ${simd_unit} k; bridge ${hint_orig} k; bridge ${hint} k;
-          Libcrux_ml_dsa.Simd.Avx2.Arithmetic.lemma_use_one_hint_via_spec $gamma2
+          Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_use_one_hint_via_spec $gamma2
             (Spec.Intrinsics.to_i32x8 ${simd_unit}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 k))
             (Spec.Intrinsics.to_i32x8 ${hint_orig}.Libcrux_ml_dsa.Simd.Avx2.Vector_type.f_value (mk_u64 k));
           Hacspec_ml_dsa.Commute.Chunk.lemma_use_hint_lane_commute_conditional $gamma2

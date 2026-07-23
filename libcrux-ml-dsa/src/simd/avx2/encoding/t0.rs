@@ -13,20 +13,9 @@ fn change_interval(simd_unit: &Vec256) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::before("open Spec.Intrinsics")]
-#[hax_lib::fstar::before(r#"
-let mm256_add_epi64_lemma_smtpat lhs rhs (i: u64 {v i < 256})
-  : Lemma
-    (requires
-      forall (j:nat{j < v i % 64}). Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(mk_int ((v i / 64) * 64 + j))
-                         \/ Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(mk_int ((v i / 64) * 64 + j))
-    )
-    (ensures
-      (Libcrux_core_models.Abstractions.Bit.Bit_Zero? lhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == rhs.(i)) /\
-      (Libcrux_core_models.Abstractions.Bit.Bit_Zero? rhs.(i) ==> (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i) == lhs.(i))
-    )
-    [SMTPat (Libcrux_intrinsics.Avx2.mm256_add_epi64 lhs rhs).(i)]
-    = mm256_add_epi64_lemma lhs rhs i
-"#)]
+// `mm256_add_epi64_lemma_smtpat` (companion Simd.Avx2.Encoding.T0_theory)
+// fires here via its SMTPat; the dependency comes from the companion's
+// qualified uses in the deserialize contracts below.
 #[hax_lib::fstar::options("--fuel 0 --ifuel 0 --z3rlimit 500")]
 #[hax_lib::requires(fstar!(r#"forall i. v i % 32 >= 13 ==> ${simd_unit}.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero"#))]
 #[hax_lib::ensures(|out|fstar!(r#"
@@ -129,22 +118,11 @@ pub(crate) fn serialize(simd_unit: &Vec256, out: &mut [u8]) {
 }
 
 #[inline(always)]
-#[hax_lib::fstar::before(
-    r#"
-let deserialize_unsigned_post
-  (serialized: t_Slice u8{Seq.length serialized == 13})
-  (result: bv256)
-  = let bytes = 13 in
-    (forall (i: nat{i < bytes * 8}).
-       u8_to_bv serialized.[ mk_usize (i / 8) ] (mk_int (i % 8)) ==
-       result.(mk_int ((i / bytes) * 32 + i % bytes))) /\
-    (forall (i: nat{i < 256}).
-       i % 32 >= bytes ==> Libcrux_core_models.Abstractions.Bit.Bit_Zero? result.(mk_int i))
-"#
-)]
+// Spec predicate `deserialize_unsigned_post` lives in the
+// `Simd.Avx2.Encoding.T0_theory` companion.
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(serialized.len() == 13)]
-#[hax_lib::ensures(|_result| fstar!("deserialize_unsigned_post $serialized ${out}_future"))]
+#[hax_lib::ensures(|_result| fstar!("Libcrux_ml_dsa.Simd.Avx2.Encoding.T0_theory.deserialize_unsigned_post $serialized ${out}_future"))]
 fn deserialize_unsigned(serialized: &[u8], out: &mut Vec256) {
     const COEFFICIENT_MASK: i32 = (1 << 13) - 1;
 
@@ -178,7 +156,7 @@ let deserialize_post
          (result: bv256)
     = (forall i. v (to_i32x8 result i) > minint I32)
     /\ ( let out_reverted = mk_i32x8 (fun i -> neg (to_i32x8 result i) `add_mod` $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE) in
-        deserialize_unsigned_post serialized out_reverted)
+        Libcrux_ml_dsa.Simd.Avx2.Encoding.T0_theory.deserialize_unsigned_post serialized out_reverted)
 "#
 )]
 #[hax_lib::requires(serialized.len() == 13)]
@@ -202,7 +180,7 @@ pub(crate) fn deserialize(serialized: &[u8], out: &mut Vec256) {
     introduce forall i. neg (to_i32x8 out i) `add_mod` $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE == to_i32x8 $unsigned i
     with rewrite_eq_sub_mod (to_i32x8 out i) $POW_2_BITS_IN_LOWER_PART_OF_T_MINUS_ONE (to_i32x8 $unsigned i);
     to_i32x8_eq_to_bv_eq $unsigned out_reverted;
-    assert_norm (deserialize_post $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ deserialize_unsigned_post $serialized out_reverted))
+    assert_norm (deserialize_post $serialized $out == ((forall i. v (to_i32x8 out i) > minint I32) /\ Libcrux_ml_dsa.Simd.Avx2.Encoding.T0_theory.deserialize_unsigned_post $serialized out_reverted))
     "
     );
 }
