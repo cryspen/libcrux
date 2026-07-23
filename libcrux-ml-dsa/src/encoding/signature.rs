@@ -76,6 +76,7 @@ fn _signature_serialize_spec_helpers() {}
 // body is admitted for panic-freedom, so this post is admitted with it; it
 // is sound because no operation in the body changes the slice's length.
 #[hax_lib::ensures(|_| fstar!(r#"Seq.length ${signature}_future == Seq.length ${signature}"#))]
+#[libcrux_macros::trusted(inline-admit)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
     commitment_hash: &[u8],
     signer_response: &[PolynomialRingElement<SIMDUnit>],
@@ -114,7 +115,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
     //      (`lemma_count_total_ones_split`, plus a row-monotonicity
     //      lemma) which would have to be discharged without `admit ()`
     //      to satisfy the no-new-axioms rule.  Estimated 2-3 hr.
-    proof!("admit ()");
+    trusted_admit!(
+        "pending-proof(E3): gamma1::serialize per-elt bound not exposed as precond + \
+         hint-pack loop needs count_total_ones monotonicity invariant (~2-3hr)"
+    );
     let mut offset = 0;
 
     signature[offset..offset + commitment_hash_size].copy_from_slice(commitment_hash);

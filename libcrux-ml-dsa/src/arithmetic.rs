@@ -108,6 +108,7 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
     Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
         (mk_usize 0) (mk_usize 1023) ${t1}_future"#))]
 #[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(inline-admit)]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t0: &mut [PolynomialRingElement<SIMDUnit>],
     t1: &mut [PolynomialRingElement<SIMDUnit>],
@@ -115,7 +116,10 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     // ADMIT: hax cannot extract simultaneous &mut t0[i] / &mut t1[i] borrows in a
     // loop body in a way that supports a loop invariant. Body proof deferred until
     // hax upstream supports this pattern.
-    proof!("admit ()");
+    trusted_admit!(
+        "hax-limitation: hax cannot extract simultaneous &mut t0[i]/&mut t1[i] \
+         borrows in a loop body with a loop invariant"
+    );
     for i in 0..t0.len() {
         power2round_one_ring_element::<SIMDUnit>(&mut t0[i], &mut t1[i]);
     }

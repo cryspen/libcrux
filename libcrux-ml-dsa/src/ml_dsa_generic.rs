@@ -75,6 +75,7 @@ pub(crate) mod generic {
             && future(signing_key) == &sk_spec[..]
             && future(verification_key) == &pk_spec[..]
     }))]
+    #[libcrux_macros::trusted(inline-admit)]
     pub(crate) fn generate_key_pair<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -95,7 +96,10 @@ pub(crate) mod generic {
         // opacification scaffolding (commits c4fe50bd3, bbd27bbea,
         // fe3ea2881, 9b5b75b4b) stays in tree.  Remove this admit after the
         // trait-surface fixes land and q60 profile is clean.
-        proof!("admit ()");
+        trusted_admit!(
+            "pending-proof(campaign): keygen q60 cliffs at rlimit 400 (k!63 ~624K \
+             instances); re-admitted 2026-05-08 pending trait-surface opacity fixes"
+        );
         // Check key sizes
         #[cfg(not(eurydice))]
         debug_assert!(signing_key.len() == SIGNING_KEY_SIZE);
@@ -246,6 +250,7 @@ pub(crate) mod generic {
     // The rejection loop's invariant hint clause uses the companion predicate
     // `Ml_dsa_generic_theory.hint_count_bounded` (see that module for why it
     // must be a top-level `match` atom — F* error 114 otherwise).
+    #[libcrux_macros::trusted(inline-admit)]
     pub(crate) fn sign_internal<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -565,7 +570,10 @@ pub(crate) mod generic {
             // COLUMNS_IN_A / ROWS_IN_A respectively. After these, `mask` and `w0` both
             // carry `is_bounded_poly_slice 16760832` (= 2q), matching the 2q-relaxed
             // precond of the chunk-7 vector_infinity_norm_exceeds wrappers.
-            proof!("admit ()");
+            trusted_admit!(
+                "pending-proof(campaign): sign_internal rejection-loop chunk-7 body \
+                 (vector_infinity_norm_exceeds region) proof pending; chunks 1-6 verified"
+            );
 
             if vector_infinity_norm_exceeds::<SIMDUnit>(&mask, (1 << GAMMA1_EXPONENT) - BETA) {
                 // XXX: https://github.com/hacspec/hax/issues/1171
@@ -992,6 +1000,7 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
+    #[libcrux_macros::trusted(inline-admit)]
     pub(crate) fn sign_pre_hashed_mut<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -1009,7 +1018,10 @@ pub(crate) mod generic {
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
         signature: &mut [u8; SIGNATURE_SIZE],
     ) -> Result<(), SigningError> {
-        proof!("admit ()");
+        trusted_admit!(
+            "pending-proof(campaign): body wraps admitted sign_internal; \
+             discharge after sign frontier lands"
+        );
         if context.len() > CONTEXT_MAX_LEN {
             return Err(SigningError::ContextTooLongError);
         }
@@ -1030,6 +1042,7 @@ pub(crate) mod generic {
 
     #[inline(always)]
     #[cfg_attr(hax, hax_lib::ensures(|_| future(pre_hash_buffer).len() == pre_hash_buffer.len()))]
+    #[libcrux_macros::trusted(inline-admit)]
     pub(crate) fn sign_pre_hashed<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -1046,7 +1059,10 @@ pub(crate) mod generic {
         pre_hash_buffer: &mut [u8],
         randomness: [u8; SIGNING_RANDOMNESS_SIZE],
     ) -> Result<MLDSASignature<SIGNATURE_SIZE>, SigningError> {
-        proof!("admit ()");
+        trusted_admit!(
+            "pending-proof(campaign): body wraps admitted sign_pre_hashed_mut; \
+             discharge after sign frontier lands"
+        );
         let mut signature = MLDSASignature::zero();
 
         // [eurydice] doesn't support ?
@@ -1208,6 +1224,7 @@ pub(crate) mod generic {
 
     #[inline(always)]
     #[cfg_attr(hax, hax_lib::ensures(|_| future(pre_hash_buffer).len() == pre_hash_buffer.len()))]
+    #[libcrux_macros::trusted(inline-admit)]
     pub(crate) fn verify_pre_hashed<
         SIMDUnit: Operations,
         Sampler: X4Sampler,
@@ -1223,7 +1240,10 @@ pub(crate) mod generic {
         pre_hash_buffer: &mut [u8],
         signature_serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<(), VerificationError> {
-        proof!("admit ()");
+        trusted_admit!(
+            "pending-proof(campaign): PH::hash + DomainSeparationContext body proof \
+             pending; verify_internal itself verified"
+        );
         PH::hash::<Shake128>(message, pre_hash_buffer);
         let domain_separation_context = match DomainSeparationContext::new(context, Some(PH::oid()))
         {
@@ -1260,13 +1280,17 @@ pub(crate) mod generic {
 /// 23 of Algorithm 4 (and line 18 of Algorithm 5,resp.) describe domain separation for the HashMl-DSA
 /// variant.
 #[inline(always)]
+#[libcrux_macros::trusted(inline-admit)]
 fn derive_message_representative<Shake256Xof: shake256::Xof>(
     verification_key_hash: &[u8],
     domain_separation_context: &Option<DomainSeparationContext>,
     message: &[u8],
     message_representative: &mut [u8; 64],
 ) {
-    proof!("admit ()");
+    trusted_admit!(
+        "pending-proof(campaign): shake256 absorb/squeeze body (message representative) \
+         proof pending"
+    );
     #[cfg(not(eurydice))]
     debug_assert!(verification_key_hash.len() == 64);
 

@@ -32,6 +32,7 @@ use crate::{
            | Libcrux_ml_dsa.Constants.Eta_Four -> 4)
           (i0._super_i2.f_repr (Seq.index (Seq.index $s1_2 k).f_simd_units j)))) /\
     Libcrux_ml_dsa.Polynomial.Spec.is_strict_lower_poly_slice (mk_usize (pow2 12)) $t0"#))]
+#[libcrux_macros::trusted(inline-assume)]
 pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaXof>(
     eta: Eta,
     error_ring_element_size: usize,
@@ -55,7 +56,9 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations, Shake256: shake256::DsaX
     // hax extracts an opaque `f_shake256_pre` that we cannot discharge from
     // here.  Assume it; the only meaningful obligation in any impl is buffer
     // length, which is structurally guaranteed by the array type.
-    proof!(
+    trusted_assume!(
+        "pending-proof(E3): DsaXof trait declares no requires on shake256; f_shake256_pre \
+         opaque — eliminable by tightening the trait (only obligation is buffer length, structural)",
         r#"assume (Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256_pre #v_Shake256
                     #FStar.Tactics.Typeclasses.solve
                     (mk_usize 64)

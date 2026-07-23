@@ -16,3 +16,37 @@ macro_rules! proof {
         hax_lib::fstar!($($t)*)
     };
 }
+
+/// Trusted **inline admit** — a body-position `admit ()` whose trust is
+/// *declared* (strategy-A trusted-annotation campaign, G1).
+///
+/// `trusted_admit!("<category>: <reason>")` is the trust-tagged sibling of
+/// `proof!("admit ()")`. The `$reason` is a category-prefixed **Rust-only**
+/// annotation (checked by `scripts/annotation_lint.py`), dropped from
+/// extraction; the emitted F* is byte-identical to `hax_lib::fstar!("admit ()")`
+/// — a single `macro_rules!` layer, exactly like `proof!`, so it inherits the
+/// same (span-fix-validated) extraction behaviour.
+///
+/// The enclosing fn MUST also carry `#[libcrux_macros::trusted(inline-admit)]`.
+macro_rules! trusted_admit {
+    ($reason:literal) => {
+        hax_lib::fstar!("admit ()")
+    };
+}
+
+/// Trusted **inline assume** — a body-position `assume (…)` whose trust is
+/// *declared* (strategy-A trusted-annotation campaign, G1).
+///
+/// `trusted_assume!("<category>: <reason>", r#"assume (…)"#)` is the
+/// trust-tagged sibling of `proof!(r#"assume (…)"#)`. `$reason` is a
+/// category-prefixed **Rust-only** annotation; `$body` is the F* payload
+/// (may contain `${…}` antiquotes) forwarded verbatim to `hax_lib::fstar!`
+/// through a single `macro_rules!` layer — byte-identical to writing the
+/// `hax_lib::fstar!` directly.
+///
+/// The enclosing fn MUST also carry `#[libcrux_macros::trusted(inline-assume)]`.
+macro_rules! trusted_assume {
+    ($reason:literal, $body:literal) => {
+        hax_lib::fstar!($body)
+    };
+}

@@ -117,6 +117,45 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
     expanded.into()
 }
 
+/// Item-level trust marker for the strategy-A trusted-annotation campaign.
+///
+/// `#[libcrux_macros::trusted(<kind>[, "<reason>"])]` records, in one uniform
+/// place that a reviewer and the `trust_ledger` reconciler can find, that an
+/// item's verification is (partly) *trusted* rather than proven.
+///
+/// **G1 kinds (`inline-admit` / `inline-assume`) are pure markers.** They flag
+/// that the function *body* carries a `trusted_admit!` / `trusted_assume!`
+/// obligation whose category+reason live at that body site. They expand to the
+/// annotated item **unchanged**, so extraction is byte-identical: proc-macro
+/// attributes are expanded before hax reaches THIR, so hax never sees the
+/// attribute. (`inline-admit` tokenises as `inline - admit`; the leading
+/// hyphenated kind is normalised by stripping whitespace.)
+///
+/// Later gates (G2) will add the `lax` / `panic_free` / `opaque` / `exclude`
+/// kinds here, each mapping to the corresponding `hax_lib` mechanism; those are
+/// intentionally rejected for now so a mistyped kind fails loudly instead of
+/// silently becoming a no-op.
+#[proc_macro_attribute]
+pub fn trusted(args: TokenStream, item: TokenStream) -> TokenStream {
+    let args = args.to_string();
+    let kind: String = args
+        .split(',')
+        .next()
+        .unwrap_or("")
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+    match kind.as_str() {
+        // Pure summary markers — the real obligation is on the body macro.
+        // Return the item verbatim (extraction-neutral).
+        "inline-admit" | "inline-assume" => item,
+        other => panic!(
+            "#[libcrux_macros::trusted]: unsupported kind `{other}` \
+             (G1 supports `inline-admit`, `inline-assume`)"
+        ),
+    }
+}
+
 /// Emits span events (of types `EventType::SpanOpen` and `EventType::SpanClose`) with the
 /// provided label into the provided trace. Requires that the caller depends on the
 /// libcrux-test-utils crate.

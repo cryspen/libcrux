@@ -302,13 +302,17 @@ impl<const K: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>
 impl<const K: usize, const LEN: usize, Vector: Operations> From<&MlKemPublicKeyUnpacked<K, Vector>>
     for PublicKey2<LEN>
 {
+    #[libcrux_macros::trusted(inline-admit)]
     fn from(pk: &MlKemPublicKeyUnpacked<K, Vector>) -> Self {
         // PROOF GAP (admitted): `Core_models.Convert.t_From` forces every
         // instance precondition to be trivial (`pred: Type0{true ==> pred}`),
         // but `serialize_vector` requires `is_rank(K)`,
         // `LEN == ranked_bytes_per_ring_element(K)` and
         // `is_bounded_polynomial_vector(3328, t_as_ntt)`.
-        proof!("admit ()");
+        trusted_admit!(
+            "hax-limitation: Core_models.Convert.t_From forces trivial instance \
+             precondition; serialize_vector needs is_rank(K)/LEN==ranked_bytes/bounded(3328)"
+        );
         let mut out = Self {
             t_as_ntt: [0u8; LEN],
         };
@@ -371,6 +375,7 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<MlKemKeyPair
 impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, PK2_LEN, Vector>>
     for MlKemKeyPairUnpacked<K, Vector>
 {
+    #[libcrux_macros::trusted(inline-admit)]
     fn from(value: KeyPair<K, PK2_LEN, Vector>) -> Self {
         // PROOF GAP (admitted): `Core_models.Convert.t_From` forces every
         // instance precondition to be trivial (`pred: Type0{true ==> pred}`),
@@ -378,7 +383,10 @@ impl<const K: usize, const PK2_LEN: usize, Vector: Operations> From<KeyPair<K, P
         // `PK2_LEN == cpa_private_key_size(K)`, coefficient bounds) cannot
         // be discharged here.  Annotated callers should use
         // `KeyPair::into_unpacked` directly.
-        proof!("admit ()");
+        trusted_admit!(
+            "hax-limitation: Core_models.Convert.t_From forces trivial instance \
+             precondition; into_unpacked needs is_rank(K)/PK2_LEN==cpa_private_key_size/bounds"
+        );
         value.into_unpacked()
     }
 }

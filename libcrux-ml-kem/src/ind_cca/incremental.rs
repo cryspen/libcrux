@@ -113,6 +113,7 @@ pub(crate) fn generate_keypair<
 /// it into the `key_pair` output bytes.
 ///
 /// The public keys can be extracted from the bytes.
+#[libcrux_macros::trusted(inline-assume)]
 #[inline(always)]
 #[hax_lib::requires(
     (hacspec_ml_kem::parameters::is_rank(K)
@@ -163,7 +164,11 @@ pub(crate) fn generate_keypair_compressed<
     // by congruence and discharges `to_bytes_compressed`'s precondition.  This
     // replaces the previous whole-body `admit ()` on `to_bytes_compressed` with
     // this single, precise structural fact.
-    proof!(r#"assume (${kp_packed}.f_sk == ${kp}.f_private_key)"#);
+    trusted_assume!(
+        "pending-proof(E5): From<Unpacked> post f_sk==f_private_key reaches caller \
+         as un-normalized parameterized projector; eliminable via Types roundtrip lemma",
+        r#"assume (${kp_packed}.f_sk == ${kp}.f_private_key)"#
+    );
     kp_packed.to_bytes_compressed::<KEYPAIR_LEN, CPA_PRIVATE_KEY_SIZE>(key_pair);
 }
 
