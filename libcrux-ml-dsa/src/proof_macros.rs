@@ -28,6 +28,9 @@ macro_rules! proof {
 /// same (span-fix-validated) extraction behaviour.
 ///
 /// The enclosing fn MUST also carry `#[libcrux_macros::trusted(inline-admit)]`.
+// Body sites can be feature-gated (e.g. ml-kem's are behind `incremental`), so the
+// wrapper may be unused in some configs. Extraction-neutral: it is a macro_rules!.
+#[allow(unused_macros)]
 macro_rules! trusted_admit {
     ($reason:literal) => {
         hax_lib::fstar!("admit ()")
@@ -45,6 +48,7 @@ macro_rules! trusted_admit {
 /// `hax_lib::fstar!` directly.
 ///
 /// The enclosing fn MUST also carry `#[libcrux_macros::trusted(inline-assume)]`.
+#[allow(unused_macros)]
 macro_rules! trusted_assume {
     ($reason:literal, $body:literal) => {
         hax_lib::fstar!($body)
