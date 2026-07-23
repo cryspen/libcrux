@@ -213,3 +213,259 @@ def list_fstar_patches(crate_root):
                     "sha256": digest,
                 })
     return sorted(out, key=lambda d: d["path"])
+
+
+# ===========================================================================
+# CLAIMS side — Rust trust markers (G1+)
+#
+# The observed side above is ground truth; the markers below are CLAIMS about
+# WHY an obligation is trusted. This scanner is the shared source of truth for
+# the trust-marker lints (V2/V2b/V3 in annotation_lint.py) and the ledger's
+# marker-direction reconciliation (reconcile_markers in trust_ledger.py).
+# ===========================================================================
+
+# Category prefixes for a trust reason (plan's unified vocabulary). `pending-proof`
+# carries a `(<ref>)` before the colon. Reason format: "<category>: <one-line>".
+TRUST_CATEGORIES = (
+    "unprovable-termination",
+    "hax-limitation",
+    "trusted-extern",
+    "validated-axiom",
+    "slow-proof",
+    "pending-proof",  # requires a (<ref>) suffix — see _REASON_RE
+)
+_REASON_RE = re.compile(
+    r"^(?:unprovable-termination|hax-limitation|trusted-extern|validated-axiom"
+    r"|slow-proof|pending-proof\([^)]+\)):\s"
+)
+
+# The G1 body wrappers and the fn-level summary label.
+_TRUSTED_ADMIT_RE = re.compile(r"\btrusted_admit!\s*\(")
+_TRUSTED_ASSUME_RE = re.compile(r"\btrusted_assume!\s*\(")
+_TRUSTED_LABEL_RE = re.compile(
+    r"#\[\s*libcrux_macros::trusted\s*\(\s*(inline-admit|inline-assume)\s*\)\s*\]"
+)
+# Raw obligation-producing mechanisms that MUST now be wrapped (V3 ban).
+_RAW_ADMIT_RE = re.compile(r'\bproof!\s*\(\s*"admit \(\)"\s*\)')
+_RAW_ASSUME_RE = re.compile(r'\bproof!\s*\(\s*r?#*"?\s*assume\b')
+# Rust fn definition (captures the name). Covers pub/pub(crate)/const/unsafe/async.
+_RUST_FN_RE = re.compile(
+    r"^\s*(?:pub\s*(?:\([^)]*\)\s*)?)?(?:default\s+)?(?:const\s+)?(?:async\s+)?"
+    r"(?:unsafe\s+)?(?:extern\s+\"[^\"]*\"\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)"
+)
+
+# proof_macros.rs is the DEFINITION site of the wrappers (macro_rules! + doc
+# comments), never a call site — exclude it so the macro defs / doc examples
+# don't read as usages.
+_MARKER_SKIP_FILES = {"proof_macros.rs"}
+
+
+def mask_rust_comments(text):
+    """Blank Rust comments (`//`-to-EOL and NESTED `/* ... */`) with spaces,
+    preserving newlines and string literals. String literals (`"..."`, byte and
+    raw `r#"..."#`) are skipped over so a `//` or `/*` inside a string — or inside
+    a trust reason — is NOT treated as a comment."""
+    out = []
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        two = text[i:i + 2]
+        # raw string: r"...", r#"..."#, br##"..."## etc.
+        mraw = re.match(r'b?r(#*)"', text[i:i + 8])
+        if mraw:
+            hashes = mraw.group(1)
+            close = '"' + hashes
+            j = text.find(close, i + mraw.end())
+            end = (j + len(close)) if j != -1 else n
+            out.append(text[i:end])
+            i = end
+            continue
+        if c == '"':  # normal / byte string with \-escapes
+            out.append(c)
+            i += 1
+            while i < n:
+                if text[i] == "\\" and i + 1 < n:
+                    out.append(text[i:i + 2])
+                    i += 2
+                    continue
+                out.append(text[i])
+                if text[i] == '"':
+                    i += 1
+                    break
+                i += 1
+            continue
+        if two == "//":
+            while i < n and text[i] != "\n":
+                out.append(" ")
+                i += 1
+            continue
+        if two == "/*":
+            depth = 1
+            out.append("  ")
+            i += 2
+            while i < n and depth > 0:
+                t2 = text[i:i + 2]
+                if t2 == "/*":
+                    depth += 1
+                    out.append("  ")
+                    i += 2
+                elif t2 == "*/":
+                    depth -= 1
+                    out.append("  ")
+                    i += 2
+                else:
+                    out.append("\n" if text[i] == "\n" else " ")
+                    i += 1
+            continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def _first_string_arg(text, open_paren_pos):
+    """Read the first string-literal argument after a macro's `(`, returning its
+    content (used for the reason). Handles normal `"..."` (with `\\`-escapes and
+    `\\`-newline continuations) and raw `r#"..."#` strings."""
+    i, n = open_paren_pos + 1, len(text)
+    while i < n and text[i] in " \t\r\n":
+        i += 1
+    mraw = re.match(r'r(#*)"', text[i:i + 8])
+    if mraw:
+        hashes = mraw.group(1)
+        start = i + mraw.end()
+        close = '"' + hashes
+        j = text.find(close, start)
+        return text[start:j] if j != -1 else text[start:]
+    if i < n and text[i] == '"':
+        i += 1
+        buf = []
+        while i < n:
+            if text[i] == "\\" and i + 1 < n:
+                # \-newline continuation: drop it (Rust eats newline + leading ws)
+                if text[i + 1] == "\n":
+                    i += 2
+                    while i < n and text[i] in " \t":
+                        i += 1
+                    continue
+                buf.append(text[i + 1])
+                i += 2
+                continue
+            if text[i] == '"':
+                break
+            buf.append(text[i])
+            i += 1
+        return "".join(buf)
+    return ""
+
+
+def _fn_index(masked_lines):
+    """[(line_index, fn_name)] for each fn definition (comment-masked lines)."""
+    out = []
+    for idx, line in enumerate(masked_lines):
+        m = _RUST_FN_RE.match(line)
+        if m:
+            out.append((idx, m.group(1)))
+    return out
+
+
+def _enclosing_fn(fn_defs, line_index):
+    """Name of the fn whose definition most closely precedes `line_index`."""
+    name = None
+    for idx, fn in fn_defs:
+        if idx <= line_index:
+            name = fn
+        else:
+            break
+    return name
+
+
+def _following_fn(fn_defs, line_index):
+    """Name of the first fn defined at or after `line_index` (the labeled fn)."""
+    for idx, fn in fn_defs:
+        if idx >= line_index:
+            return fn
+    return None
+
+
+def scan_file_trust_markers(path, repo_root):
+    """Scan one .rs file for trust markers. Returns dict with lists:
+    `body` (trusted_admit!/trusted_assume! calls), `labels` (#[trusted(inline-*)]),
+    `raw_admit`/`raw_assume` (banned bare proof! mechanisms)."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    masked = mask_rust_comments(text)
+    masked_lines = masked.split("\n")
+    fn_defs = _fn_index(masked_lines)
+    rel = os.path.relpath(path, repo_root)
+    line_of = lambda pos: masked.count("\n", 0, pos)  # 0-based line index
+
+    body, labels, raw_admit, raw_assume = [], [], [], []
+
+    for kind, rx in (("inline-admit", _TRUSTED_ADMIT_RE),
+                     ("inline-assume", _TRUSTED_ASSUME_RE)):
+        for m in rx.finditer(masked):
+            li = line_of(m.start())
+            reason = _first_string_arg(masked, m.end() - 1)
+            body.append({
+                "file": rel, "line": li + 1, "kind": kind,
+                "reason": reason, "fn": _enclosing_fn(fn_defs, li),
+            })
+    for m in _TRUSTED_LABEL_RE.finditer(masked):
+        li = line_of(m.start())
+        labels.append({
+            "file": rel, "line": li + 1, "kind": m.group(1),
+            "fn": _following_fn(fn_defs, li),
+        })
+    for rx, bucket in ((_RAW_ADMIT_RE, raw_admit), (_RAW_ASSUME_RE, raw_assume)):
+        for m in rx.finditer(masked):
+            bucket.append({"file": rel, "line": line_of(m.start()) + 1})
+
+    return {"body": body, "labels": labels,
+            "raw_admit": raw_admit, "raw_assume": raw_assume}
+
+
+def scan_rust_trust_markers(src_root, repo_root):
+    """Walk `src_root` (a crate's src/) for .rs files and aggregate trust markers.
+    Excludes the wrapper-definition file (proof_macros.rs)."""
+    agg = {"body": [], "labels": [], "raw_admit": [], "raw_assume": []}
+    for dirpath, dirnames, filenames in os.walk(src_root):
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        for fn in sorted(filenames):
+            if not fn.endswith(".rs") or fn in _MARKER_SKIP_FILES:
+                continue
+            got = scan_file_trust_markers(os.path.join(dirpath, fn), repo_root)
+            for k in agg:
+                agg[k].extend(got[k])
+    return agg
+
+
+def reason_ok(reason):
+    """True iff a trust reason starts with a valid category prefix (V2)."""
+    return bool(_REASON_RE.match(reason.strip()))
+
+
+def marker_soundness(markers):
+    """Cross-check the CLAIMS side for internal soundness (shared by the V2b/V3
+    lint and the ledger's marker reconciliation). Returns (missing, stale, raw):
+
+      missing  [(file, fn, kind)]  a body trusted_admit!/trusted_assume! whose fn
+                                   lacks the matching-kind #[trusted(inline-*)] label
+      stale    [(file, fn, kind)]  a fn-level label with no matching body macro
+      raw      [(file, line, kind)] a bare proof!("admit ()")/proof!(assume …) that
+                                   bypasses the wrappers (kind in {admit, assume})
+    """
+    body_kinds, label_kinds = {}, {}
+    for b in markers["body"]:
+        body_kinds.setdefault((b["file"], b["fn"]), set()).add(b["kind"])
+    for lab in markers["labels"]:
+        label_kinds.setdefault((lab["file"], lab["fn"]), set()).add(lab["kind"])
+    missing, stale = [], []
+    for key in sorted(set(body_kinds) | set(label_kinds)):
+        bk, lk = body_kinds.get(key, set()), label_kinds.get(key, set())
+        for k in sorted(bk - lk):
+            missing.append((key[0], key[1], k))
+        for k in sorted(lk - bk):
+            stale.append((key[0], key[1], k))
+    raw = ([(r["file"], r["line"], "admit") for r in markers["raw_admit"]]
+           + [(r["file"], r["line"], "assume") for r in markers["raw_assume"]])
+    return missing, stale, raw

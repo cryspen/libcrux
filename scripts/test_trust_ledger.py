@@ -115,12 +115,96 @@ def test_reconcile():
     check(not r and any("content changed" in x for x in n), "plane4: patch digest churn is a NOTE")
 
 
+# --------------------------------------------------------------------------
+# Trust markers — Rust-source scanner + soundness (G1)
+# --------------------------------------------------------------------------
+_MARKER_SRC = r'''// masked: trusted_admit!("should not count") in a line comment
+/// masked doc: proof!("admit ()") mention
+mod m {
+    #[libcrux_macros::trusted(inline-admit)]
+    pub(crate) fn g<T>() {
+        trusted_admit!("hax-limitation: simultaneous borrows");
+    }
+    fn h() {
+        trusted_assume!(
+            "pending-proof(E5): bridge \
+             continued",
+            r#"assume (${x}.f == ${y}.g)"#
+        );
+    }
+    fn raw() {
+        proof!("admit ()");
+        proof!(r#"assume (true)"#);
+    }
+    fn badreason() {
+        trusted_admit!("nocategory here");
+    }
+}
+'''
+
+
+def test_marker_scan(tmp):
+    d = os.path.join(tmp, "scan")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "m.rs"), "w").write(_MARKER_SRC)
+    mk = ts.scan_rust_trust_markers(d, d)
+    check(len(mk["body"]) == 3, f"3 body markers (comment mentions masked): got {len(mk['body'])}")
+    check(len(mk["labels"]) == 1, f"1 fn-level label: got {len(mk['labels'])}")
+    check(len(mk["raw_admit"]) == 1, f"1 raw proof!(admit): got {len(mk['raw_admit'])}")
+    check(len(mk["raw_assume"]) == 1, f"1 raw proof!(assume): got {len(mk['raw_assume'])}")
+    by_fn = {b["fn"]: b for b in mk["body"]}
+    check(by_fn.get("g", {}).get("kind") == "inline-admit", "g is inline-admit body")
+    check(by_fn.get("h", {}).get("kind") == "inline-assume", "h is inline-assume body")
+    check(by_fn.get("h", {}).get("reason", "").startswith("pending-proof(E5): bridge continued"),
+          f"h reason collapses \\-continuation: {by_fn.get('h', {}).get('reason')!r}")
+    check(mk["labels"][0]["fn"] == "g", "label attaches to following fn g")
+
+
+def test_reason_format():
+    for good in ["hax-limitation: x", "pending-proof(E5): y", "validated-axiom: z",
+                 "  slow-proof: trimmed", "unprovable-termination: t", "trusted-extern: e"]:
+        check(ts.reason_ok(good), f"reason_ok True: {good!r}")
+    for bad in ["pending-proof: missing ref", "random: z", "hax-limitation no colon",
+                "", "hax-limitation:no-space"]:
+        check(not ts.reason_ok(bad), f"reason_ok False: {bad!r}")
+
+
+def test_marker_soundness(tmp):
+    d = os.path.join(tmp, "sound")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "m2.rs"), "w").write(_MARKER_SRC)
+    mk = ts.scan_rust_trust_markers(d, d)
+    missing, stale, raw = ts.marker_soundness(mk)
+    miss_fns = {(fn, k) for _, fn, k in missing}
+    check(("h", "inline-assume") in miss_fns, "h body without label -> missing")
+    check(("badreason", "inline-admit") in miss_fns, "badreason body without label -> missing")
+    check(("g", "inline-admit") not in miss_fns, "g has matching label -> not missing")
+    check(not stale, f"no stale labels in this fixture: got {stale}")
+    check(len(raw) == 2, f"2 raw bans (admit+assume): got {len(raw)}")
+
+
+def test_rust_comment_masking():
+    m = ts.mask_rust_comments('let s = "a // b /* c */ d"; // real\nlet t = 1;')
+    check("a // b /* c */ d" in m, "string literal content preserved through masking")
+    check("real" not in m, "line comment masked")
+    check(m.count("\n") == 1, "newline count preserved")
+    m2 = ts.mask_rust_comments('let r = r#"x /* y */ z"#;')
+    check("x /* y */ z" in m2, "raw string content preserved")
+
+
 def main():
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
         print("[tokenizer]")
         test_tokenizer(tmp)
         test_masking_preserves_lines(tmp)
+        print("[markers]")
+        test_marker_scan(tmp)
+        test_marker_soundness(tmp)
+    print("[reason-format]")
+    test_reason_format()
+    print("[rust-comment-masking]")
+    test_rust_comment_masking()
     print("[reconcile]")
     test_reconcile()
     print()

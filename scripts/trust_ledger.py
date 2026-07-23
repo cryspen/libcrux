@@ -21,11 +21,16 @@ Usage:
   trust_ledger.py --check           # default: compare observed vs baseline, exit 1 on regression
   trust_ledger.py --update-baseline # rewrite baselines from the current observed surface
 
-MARKER RECONCILIATION (G1+): once the `#[trusted(kind, "reason")]` attribute + body
-macros land, `reconcile_markers()` gains a second direction — every observed obligation
-must map to a matching-kind marker / F* `[@@ "trusted: ..."]` tag / trusted-base
-allowlist entry, and every marker must map forward to an observed obligation. At G0
-there are no such markers, so only the observed-side baseline + regression gate run.
+MARKER RECONCILIATION (G1+): the observed baseline above is ground truth; the Rust
+trust markers are CLAIMS about WHY each obligation is trusted. `reconcile_markers()`
+(G1 first cut) checks the CLAIMS side for internal soundness — every fn body carrying
+a `trusted_admit!` / `trusted_assume!` must also carry the matching-kind
+`#[libcrux_macros::trusted(inline-*)]` label and vice-versa, and no raw
+`proof!("admit ()")` / `proof!(assume …)` may bypass the wrappers. The full
+obligation↔marker NAME mapping (resolving each extracted F* `admit`/`assume` back to
+its Rust body marker via hax's deterministic decl-name mangling, so an *unmarked* body
+obligation hard-fails) remains a scoped follow-up; module-level coverage + kind
+matching in the observed baseline covers the near-term risk. See the plan's V7 section.
 """
 
 import argparse
@@ -197,6 +202,49 @@ def reconcile(observed, baseline):
     return regressions, notes
 
 
+def reconcile_markers(repo_root, crate_name):
+    """Marker DIRECTION of the V7 reconciler (G1 first cut).
+
+    Scans the crate's Rust source for trust markers and checks the CLAIMS side
+    for internal soundness (independent of the observed-side numbers, which stay
+    baseline-locked). Returns (regressions, notes):
+      * missing/stale fn-level label vs body macro  -> regression (soundness)
+      * raw proof!("admit ()")/proof!(assume …) outside the wrappers -> regression
+      * reason without a category prefix            -> note (annotation_lint --strict enforces)
+      * inventory of inline-admit/-assume sites + labels -> note
+
+    NOT YET IMPLEMENTED (scoped follow-up, see module docstring): resolving each
+    extracted F* obligation back to a Rust body marker via hax decl-name mangling.
+    """
+    src_root = _abs(repo_root, CRATES[crate_name]["root"], "src")
+    if not os.path.isdir(src_root):
+        return [], []
+    markers = ts.scan_rust_trust_markers(src_root, repo_root)
+    regressions, notes = [], []
+
+    missing, stale, raw = ts.marker_soundness(markers)
+    for f, fn, k in missing:
+        regressions.append(f"[markers] {f} fn {fn or '<unknown fn>'}: body {k} without fn-level label")
+    for f, fn, k in stale:
+        regressions.append(f"[markers] {f} fn {fn or '<unknown fn>'}: stale fn-level {k} label")
+    for f, line, k in raw:
+        regressions.append(f"[markers] {f}:{line} raw proof!({k} …) obligation not wrapped")
+
+    for b in markers["body"]:
+        if not ts.reason_ok(b["reason"]):
+            notes.append(f"[markers] {b['file']}:{b['line']} reason lacks category prefix")
+
+    n_admit = sum(1 for b in markers["body"] if b["kind"] == "inline-admit")
+    n_assume = sum(1 for b in markers["body"] if b["kind"] == "inline-assume")
+    if markers["body"] or markers["labels"]:
+        notes.append(
+            f"[markers] {n_admit} inline-admit + {n_assume} inline-assume body site(s), "
+            f"{len(markers['labels'])} fn label(s); obligation↔marker name mapping is a "
+            "scoped follow-up"
+        )
+    return regressions, notes
+
+
 # ===========================================================================
 # Reporting
 # ===========================================================================
@@ -260,6 +308,9 @@ def main():
             continue
         baseline = _load_json_with_comment(bpath)
         regressions, notes = reconcile(observed, baseline)
+        mreg, mnotes = reconcile_markers(repo_root, c)
+        regressions += mreg
+        notes += mnotes
         for n in notes:
             print(f"  note: {n}")
         for r in regressions:

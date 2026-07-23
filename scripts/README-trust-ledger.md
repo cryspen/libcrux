@@ -65,16 +65,34 @@ module names) show up as spurious regressions — that is a "dirty tree", not a 
 surface change. Re-extract, then check. The three baselines above were captured from
 one consistent re-extraction of all three crates.
 
-## Extension point — marker reconciliation (campaign G1+)
+## Marker reconciliation — the CLAIMS side (campaign G1)
 
-Today the gate is observed-side only (there are no `#[trusted(kind, "reason")]` markers
-yet). When those land, `trust_ledger.reconcile()` gains a second direction, keyed on
-hax's deterministic decl-name mangling:
-1. **soundness** — every observed obligation must map to a matching-*kind* marker /
-   F\* `[@@ "trusted: ..."]` tag / trusted-base allowlist entry; anything else is a
-   hard fail (an unlabelled trusted assumption).
-2. **no stale claims** — every marker must map forward to an observed obligation;
-   orphans fail in strict mode.
+The observed planes above are ground truth; the Rust **trust markers** are *claims*
+about **why** each obligation is trusted. G1 landed the body-level markers and a
+fn-level summary label, plus their reconciliation (`trust_ledger.reconcile_markers`,
+run in `--check`) and the V2/V2b/V3 source lints (`annotation_lint.py`):
 
-Until then, markers only *annotate* the observed entries with categories/reasons —
-they can never shrink the reported surface.
+| Marker | Kind | Wraps |
+|---|---|---|
+| `trusted_admit!("<cat>: reason")` | in-crate `macro_rules!` (body) | `proof!("admit ()")` |
+| `trusted_assume!("<cat>: reason", r#"assume (…)"#)` | in-crate `macro_rules!` (body) | `proof!(assume …)` |
+| `#[libcrux_macros::trusted(inline-admit\|inline-assume)]` | proc-macro attr (fn-level) | mandatory summary label per body site |
+
+Category prefixes (the plan's vocabulary): `unprovable-termination:`,
+`hax-limitation:`, `trusted-extern:`, `validated-axiom:`, `pending-proof(<ref>):`,
+`slow-proof:`. The reason is a **Rust-only** one-line summary (dropped from
+extraction — every wrapper is byte-identical to the raw mechanism); long prose stays
+as an ordinary source comment.
+
+`reconcile_markers()` (G1 first cut) checks the claims side for **internal soundness**:
+- a fn body carrying `trusted_admit!`/`trusted_assume!` **must** also carry the
+  matching-kind `#[…trusted(inline-*)]` label, and vice-versa (missing/stale = regression);
+- no raw `proof!("admit ()")`/`proof!(assume …)` may bypass the wrappers (V3).
+
+**Scoped follow-up (not yet implemented):** the full obligation↔marker *name* mapping —
+resolving each extracted F\* `admit`/`assume` back to its Rust body marker via hax's
+deterministic decl-name mangling, so an *unmarked* body obligation hard-fails. Module-
+level coverage + kind matching in the observed baseline covers the near-term risk.
+
+Markers only *annotate* observed entries with categories/reasons — consistent with the
+whole design, they can never shrink the reported surface.

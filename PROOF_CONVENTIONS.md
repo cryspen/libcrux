@@ -65,6 +65,29 @@ whenever the surface grows. A postcondition on a function whose proof is admitte
 a *trusted assumption* and must carry a source comment justifying it against the code.
 See each crate's `proofs/…verification_status.md` for the per-function tier.
 
+### Declaring an inline trust obligation (G1)
+
+A body-level `admit ()` / `assume (…)` must be *declared*, not written raw. Use the
+in-crate wrappers instead of `proof!(…)`, and label the enclosing fn:
+
+```rust
+#[libcrux_macros::trusted(inline-admit)]      // fn-level summary label (mandatory)
+fn f() {
+    trusted_admit!("hax-limitation: <one-line why this is trusted>");
+    // ...
+}
+```
+
+- `trusted_admit!("<cat>: reason")` / `trusted_assume!("<cat>: reason", r#"assume (…)"#)`
+  are byte-identical to the raw `proof!` mechanism (the reason is Rust-only) — they add
+  a category+reason a reviewer and the reconciler can read, nothing more.
+- Category prefix ∈ { `unprovable-termination:`, `hax-limitation:`, `trusted-extern:`,
+  `validated-axiom:`, `pending-proof(<ref>):`, `slow-proof:` }; long prose stays a comment.
+- Every fn with a body wrapper **must** carry the matching-kind
+  `#[libcrux_macros::trusted(inline-admit|inline-assume)]` label and vice-versa.
+- Enforced by `scripts/annotation_lint.py` (V2 reason-format, V2b label↔body sync,
+  V3 ban raw `proof!("admit ()")`/`proof!(assume …)`) and `trust_ledger.py --check`.
+
 ## Reading a verified function (reviewer quick answers)
 
 - *"Why is this F\* fragment in the code?"* — Every F\* fragment in a `.rs`
