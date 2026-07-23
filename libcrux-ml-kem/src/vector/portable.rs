@@ -319,22 +319,9 @@ fn op_compress<const COEFFICIENT_BITS: i32>(a: PortableVector) -> PortableVector
 }
 
 #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
-// Clean-context bridge: the inner `decompress_1`'s per-lane `{0, 1665}` disjunction
-// to the opaque `[0, 3328]` bound atom that the (2026-06-09 strengthened)
-// `decompress_1_post` carries.  Standalone top-level lemma so the literal range
-// checks + the opaque-atom intro stay out of `op_decompress_1`'s heavy VC context
-// (inline, even the trivial `mk_i16 3328` range sub-query saturates at rlimit 200
-// under `--split_queries always`).
-#[hax_lib::fstar::before(
-    r#"let lemma_decompress_1_bound (x: t_Array i16 (mk_usize 16))
-    : Lemma
-      (requires
-        forall (i: nat). i < 16 ==> (v (Seq.index x i) == 0 \/ v (Seq.index x i) == 1665))
-      (ensures Libcrux_ml_kem.Vector.Traits.Spec.bounded_i16_array (mk_i16 0) (mk_i16 3328) x) =
-  Libcrux_ml_kem.Vector.Traits.Spec.lemma_bounded_i16_array_intro (mk_i16 0)
-    (mk_i16 3328)
-    x"#
-)]
+// `lemma_decompress_1_bound` (the clean-context {0,1665}->[0,3328] bound bridge)
+// now lives in the hand-written companion Libcrux_ml_kem.Vector.Portable_theory.
+#[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Vector.Portable_theory"#)]
 #[hax_lib::requires(fstar!(r#"${spec::decompress_1_pre} ${a}.f_elements"#))]
 #[hax_lib::ensures(|out| fstar!(r#"${spec::decompress_1_post} ${a}.f_elements ${out}.f_elements"#))]
 fn op_decompress_1(a: PortableVector) -> PortableVector {
@@ -362,7 +349,7 @@ fn op_decompress_1(a: PortableVector) -> PortableVector {
     // (the previous universal `decompress_1_lane_post` reveal + 16 manual `aux j`
     // calls saturated once the bound conjunct joined the post).
     proof!(
-        r#"lemma_decompress_1_bound ${result}.f_elements;
+        r#"Libcrux_ml_kem.Vector.Portable_theory.lemma_decompress_1_bound ${result}.f_elements;
            let aux (j: nat{j < 16}) :
               Lemma (Libcrux_ml_kem.Vector.Traits.Spec.decompress_1_lane_post
                        (Seq.index ${a}.f_elements j)

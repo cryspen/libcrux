@@ -849,26 +849,10 @@ fn compress_then_serialize_5<Vector: Operations>(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--fuel 1 --ifuel 2 --z3rlimit 300")]
-// Reconciliation: at a concrete `dv in {4,5}`, the thin spec wrapper
-// `compress_then_serialize_v` unfolds (via `byte_encode_into` + the
-// `copy_from_slice s src == src` identity) to exactly the `byte_encode` the
-// callees `_4`/`_5` establish.
-#[hax_lib::fstar::before(
-    r#"
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 100"
-let lemma_compress_then_serialize_v_eq
-      (out_len: usize)
-      (dv: usize{v dv == 4 \/ v dv == 5})
-      (p: t_Array Hacspec_ml_kem.Parameters.t_FieldElement (mk_usize 256))
-    : Lemma (requires v out_len == 32 * v dv)
-      (ensures
-        Hacspec_ml_kem.Serialize.compress_then_serialize_v out_len p dv ==
-        Hacspec_ml_kem.Serialize.byte_encode (mk_usize (32 * v dv)) (mk_usize (256 * v dv))
-          (Hacspec_ml_kem.Compress.compress p dv) dv) =
-  ()
-#pop-options
-"#
-)]
+// `lemma_compress_then_serialize_v_eq` (the dv in {4,5} wrapper<->byte_encode
+// reconciliation) now lives in the hand-written companion
+// Libcrux_ml_kem.Serialize_theory.
+#[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Serialize_theory"#)]
 #[hax_lib::requires(fstar!(r#"Hacspec_ml_kem.Parameters.is_rank v_K /\
     $COMPRESSION_FACTOR == Hacspec_ml_kem.Parameters.vector_v_compression_factor v_K /\
     Seq.length $out == v $OUT_LEN /\ v $OUT_LEN == 32 * v $COMPRESSION_FACTOR /\
@@ -906,7 +890,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
     };
     // Bridge the branch posts to the dispatcher's wrapper-shaped ensures.
     proof!(
-        r#"lemma_compress_then_serialize_v_eq $OUT_LEN $COMPRESSION_FACTOR
+        r#"Libcrux_ml_kem.Serialize_theory.lemma_compress_then_serialize_v_eq $OUT_LEN $COMPRESSION_FACTOR
              (Libcrux_ml_kem.Vector.Spec.poly_to_spec $re)"#
     );
 }
