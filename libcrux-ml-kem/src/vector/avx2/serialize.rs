@@ -760,33 +760,11 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --z3rlimit 200")]
-#[hax_lib::fstar::before(
-    r#"
-(* Lane-bound bridge.  Same proof as `vector/avx2.rs`'s before-block helper;
-   redefined locally because `Vector.Avx2.Serialize` is checked before
-   `Vector.Avx2` and so cannot import it. *)
-let lemma_vec256_lane_bounded_local
-      (vec: Libcrux_intrinsics.Avx2_extract.t_Vec256) (n: nat{n > 0 /\ n <= 16}) (i: nat{i < 16})
-    : Lemma
-      (requires forall (b: nat{b < 16}). b >= n ==> vec (i * 16 + b) == 0)
-      (ensures
-        Rust_primitives.BitVectors.bounded
-          (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vec) i) n)
-  = let arr = Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 vec in
-    let lane = Seq.index arr i in
-    let aux (b: usize{v b < 16}) : Lemma (v b > n ==> get_bit lane b == 0)
-      = if v b > n then begin
-          Libcrux_intrinsics.Avx2_extract.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
-            vec 16 (i * 16 + v b);
-          Math.Lemmas.lemma_mod_plus (v b) i 16;
-          Math.Lemmas.lemma_div_plus (v b) i 16
-        end
-        else ()
-    in
-    Classical.forall_intro aux;
-    Rust_primitives.BitVectors.lemma_get_bit_bounded' lane n
-"#
-)]
+// `lemma_vec256_lane_bounded_local` (the lane-bound bridge) now lives in the
+// hand-written companion Libcrux_ml_kem.Vector.Avx2.Serialize_theory (a companion
+// is checked before both Serialize and Vector.Avx2, so the local copy is housed
+// there as named theory rather than inline).
+#[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Vector.Avx2.Serialize_theory"#)]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 11 || vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 176}). bit_vec_of_int_t_array r 8 i == vector ((i/11) * 16 + i%11)"#))]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
@@ -798,7 +776,7 @@ introduce forall (j: nat). j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
 with introduce j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
-with _. lemma_vec256_lane_bounded_local ${vector} 11 j
+with _. Libcrux_ml_kem.Vector.Avx2.Serialize_theory.lemma_vec256_lane_bounded_local ${vector} 11 j
 "#
     );
     let input = PortableVector::from_i16_array(&array);
