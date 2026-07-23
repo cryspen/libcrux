@@ -45,17 +45,25 @@ failures. So the ledger is monotonically non-increasing by construction — prov
 an obligation away and rebaselining is the only way the numbers move down, and
 nothing can move them up without a red CI.
 
-## Run it AFTER extraction
+## The gate runs AFTER extraction (CI-only)
 
-The plan wires this after `hax extract`: the F\*-scan and extraction-coverage planes
-read the extracted tree, so a stale/partial tree under-reports. For **ml-kem** and
-**ml-dsa** the `.fst` bodies are git-tracked, so a plain checkout already reflects the
-post-extract state. For **sha3** the generated keccak `.fst` bodies are *not* tracked
-(only `.hints` + the hand-written `equivalence/` proofs are), so its committed baseline
-covers the tracked subset; because sha3's real surface is 0 obligations, that baseline
-is *conservative* — any obligation appearing in a generated module correctly trips the
-gate. Regenerate the sha3 baseline post-extract to also lock its full extraction-coverage
-set.
+Most obligations live in the *generated* F\* tree — the extracted `.fst`/`.fsti` are
+gitignored (`*.fst` + `!`-exceptions for the hand-written companions), so ~94% of the
+ml-dsa surface and most of ml-kem's are not present in a plain checkout. The plan's
+V7 model therefore runs this **in CI, immediately after `hax extract`**, against a
+clean generated tree. The committed baselines are that canonical post-extract surface:
+
+| Crate | Baseline obligations | Note |
+|---|---|---|
+| ml-dsa | 103 | matches `fstar_admits`; `.fst` gitignored, 6 in tracked `spec/` companions |
+| ml-kem | 63 | matches `fstar_admits` |
+| sha3 | 6 | all `assume_val` — hax derive/trait stubs (trusted base); 0 actionable admits |
+
+Consequence: **do not read a `--check` diff on a worktree that hasn't been freshly
+re-extracted.** Stale leftover `.fst` from an older extraction (e.g. pre-relocation
+module names) show up as spurious regressions — that is a "dirty tree", not a real
+surface change. Re-extract, then check. The three baselines above were captured from
+one consistent re-extraction of all three crates.
 
 ## Extension point — marker reconciliation (campaign G1+)
 
