@@ -15,6 +15,12 @@ pub struct PortableVector {
 // of the `<<8 | ` combine (resp. the `>>8`/truncate split) via get_bit_shl/shr
 // + the secret-int cast transparency (f_as_i16/f_as_u8), assembled into the
 // `bit_vec_of_int_t_array` byte/i16 view equality (from/to_le_bytes_post_N).
+// from_bytes_bit_bridge / to_bytes_bit_bridge prove fresh here at rlimit ~1-2
+// (host ambient opens/SMTPats), but in a fresh spec/ companion's clean context
+// they SATURATE at rlimit 300 (verified: relocation attempt canceled q60 at
+// 300.000). (to_bytes_bit_bridge additionally cites this module's own
+// t_PortableVector.) Kept inline where the host's ambient facts hold.
+// proof-residence: clean-context — bridge lemmas saturate in a companion
 #[hax_lib::fstar::before(
     r#"
 let le_byte_bit (b_lo b_hi: u8) (j: nat{j < 16})
