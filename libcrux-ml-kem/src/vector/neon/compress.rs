@@ -135,6 +135,9 @@ fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_
 // the proof (deint/assemble/mask + the Barrett post `cmp_compress_post`) is in a
 // `fstar::after` block on `decompress_ciphertext_coefficient` (it reuses the
 // generic deinterleave/reinterpret lemmas defined in that fn's `before` block).
+// cmp_compress_u32_lane cites this module's own compress_int32x4_t; a companion
+// would create an F* module cycle (Error 308, per the Neon.Compress_theory header).
+// proof-residence: locked(module-cycle) — cites own compress_int32x4_t
 #[hax_lib::fstar::before(
     r#"
 module NC = Libcrux_intrinsics.Arm64_extract
@@ -344,6 +347,9 @@ pub fn decompress_1(a: SIMD128Vector) -> SIMD128Vector {
 // reinterpret, decompress each u32 lane, then `vtrn1q` re-interleave.  Reuses the
 // scalar bridge `lemma_decompress_ciphertext_coefficient_fe_commute` in the
 // dispatcher; no trusted-base extension.
+// lemma_neon_out_lane cites this module's own decompress_uint32x4_t; a companion
+// would create an F* module cycle (Error 308, per the Neon.Compress_theory header).
+// proof-residence: locked(module-cycle) — cites own decompress_uint32x4_t
 #[hax_lib::fstar::before(
     r#"
 (* per-OUTPUT-lane (standalone, clean context — the SIMD-leaf recipe): for one
@@ -446,6 +452,10 @@ val cmp_compress_post (cb: i32) (vin: Libcrux_ml_kem.Vector.Neon.Vector_type.t_S
                     pow2 (Rust_primitives.Integers.v cb))))
 "#
 )]
+// The cmp_deint_bounds / cmp_out_lane / cmp_compress_post cluster cites this module's
+// own compress_int32x4_t and t_SIMD128Vector fields; a companion would create an F*
+// module cycle (Error 308, per the Neon.Compress_theory header).
+// proof-residence: locked(module-cycle) — cites own compress_int32x4_t / SIMD128 fields
 #[hax_lib::fstar::after(
     r#"
 (* ===================== A3 compress functional post ===================== *)

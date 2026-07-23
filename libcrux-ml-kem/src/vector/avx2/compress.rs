@@ -119,6 +119,10 @@ pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
 }
 
 #[inline(always)]
+// The mulhi_l_* / lemma_mulhi_mm256_epi32 / lemma_compress_half cluster cites this
+// module's own mulhi_mm256_epi32 fn; a companion would create an F* module cycle
+// (Error 308, documented in the Vector.Avx2.Compress_theory companion header).
+// proof-residence: locked(module-cycle) — cites own mulhi_mm256_epi32 fn
 #[hax_lib::fstar::before(
     r#"
 (* One single-lane lemma per result lane (no in-body match — the 4/8-way match

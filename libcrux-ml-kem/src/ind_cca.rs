@@ -893,6 +893,9 @@ pub(crate) mod unpacked {
     // referencing it from the spec commute tree would be circular). Double
     // extensionality: matrix_to_spec_index / vector_to_spec_index per (i,j),
     // transpose_a's per-lane ensures, and createi_lemma for HM.transpose.
+    // A companion citing Libcrux_ml_kem.Ind_cca.transpose_a (this module's local fn)
+    // would create an F* module cycle (Error 308).
+    // proof-residence: locked(module-cycle) — cites local transpose_a
     #[hax_lib::fstar::before(
         r#"#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
 let lemma_matrix_to_spec_transpose_a

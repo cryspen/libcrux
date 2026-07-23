@@ -348,6 +348,10 @@ unfold let mont_red_i32_lane
   v r16 % 3329 == ((lane32 vec j) * 169) % 3329
 "#
 )]
+// mont_reduce_lane cites the interface-level lane32 / mont_red_i32_lane of this
+// module; moving it would create an F* module cycle (Error 308, documented in the
+// Libcrux_ml_kem.Vector.Avx2.Arithmetic_theory companion header).
+// proof-residence: locked(module-cycle) — cites own-interface lane32/mont_red_i32_lane
 #[hax_lib::fstar::before(
     r#"
 (* Per-32-bit-lane Montgomery reduction: the body's even i16 sub-lane of

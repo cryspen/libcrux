@@ -26,6 +26,9 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = {
 // table: reproduce the literal list (Seq is abstract, so assert_norm cannot
 // index the table directly), prove the bound on the list by a closed
 // computation, and bridge Seq.index -> List.index via lemma_seq_of_list_index.
+// zeta_bound cites v_ZETAS_TIMES_MONTGOMERY_R (this module's extracted const); a
+// companion citing it would create an F* module cycle (Error 308).
+// proof-residence: locked(own-const) — cites v_ZETAS_TIMES_MONTGOMERY_R
 #[hax_lib::fstar::before(
     r#"
 let zeta_lits: list i16 =
@@ -1442,6 +1445,9 @@ let to_spec_poly_standard
 "#
     )
 )]
+// add_std_chunk_done cites this module's interface-level std_i16_to_spec_fe;
+// relocating it would create an F* module cycle (Error 308).
+// proof-residence: locked(module-cycle) — cites own-interface std_i16_to_spec_fe
 #[hax_lib::fstar::before(
     r#"
 (* Opaque per-chunk "done" atom: the lane-wise plain FE-add equation for a
@@ -1720,6 +1726,10 @@ fn add_standard_error_reduce<Vector: Operations>(
 // ))))]
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always")]
+// User-approved local assume-val zeta axiom (2026-06-06): zeta lives in this module
+// so the Hacspec_ml_kem.Commute.Bridges copy can't be imported (F* module cycle,
+// Error 308); relocating an assume-val also trips the new-module-with-obligation gate.
+// proof-residence: locked(module-cycle) — local assume-val zeta axiom
 #[hax_lib::fstar::before(r#"(* ════════════════════════════════════════════════════════════════════
    Phase B — `ntt_multiply` poly-level Montgomery commute (re-homed from
    Hacspec_ml_kem.Commute.Bridges).  See subtract_reduce for the wiring

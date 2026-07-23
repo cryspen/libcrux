@@ -15,6 +15,9 @@ val lemma_repr_index (x: t_SIMD128Vector) (j: nat{j < 16})
          else Libcrux_intrinsics.Arm64_extract.get_lane_i16x8 x.f_high (j - 8)))
       [SMTPat (Seq.index (repr x) j)]"#
 )]
+// This module's own repr / lemma_repr_index spec API: the val is in this module's
+// interface (above), this is its body — a val's body cannot live in another module.
+// proof-residence: spec-host — own repr / lemma_repr_index spec API
 #[hax_lib::fstar::after(
     r#"let lemma_repr_index (x: t_SIMD128Vector) (j: nat{j < 16}) =
   let lo = Libcrux_intrinsics.Arm64_extract.vec128_as_i16x8 x.f_low in

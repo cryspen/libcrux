@@ -275,6 +275,10 @@ fn op_ntt_layer_1_step(
     result
 }
 
+// Cold-fragile NTT layer-2 keystone (z3rlimit 600 + split_queries): relocating it
+// shifts its recorded solver hints and it saturates cold, exactly the reverted poly
+// ntt/invert pair class. Needs a fast-stable (transport-lemma) restructure first.
+// proof-residence: hint-keystone — cold-fragile, relocation shifts hints
 #[hax_lib::fstar::before(r#"#push-options "--z3rlimit 600 --fuel 1 --ifuel 1 --split_queries always"
 
 let lemma_neon_ntt_layer_2_post (vec out: t_Array i16 (mk_usize 16)) (zeta0 zeta1: i16)
