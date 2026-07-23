@@ -7,28 +7,6 @@ use libcrux_intrinsics::avx2::*;
 #[inline(always)]
 #[hax_lib::fstar::before(r"open Spec.MLDSA.NttConstants")]
 #[hax_lib::fstar::before(r"open Spec.Intrinsics")]
-#[hax_lib::fstar::before(
-    r#"
-let butterfly_2_spec re0 re1 zeta_a0 zeta_a1 zeta_a2 zeta_a3 
-                     zeta_b0 zeta_b1 zeta_b2 zeta_b3 nre0 nre1 =
-    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 1)) ==
-     ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 1)) /\
-    (to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 3)) ==
-     ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 3)) /\
-    (to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 5)) ==
-     ntt_step zeta_a2 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 5)) /\
-    (to_i32x8 nre0 (mk_u64 6), to_i32x8 nre0 (mk_u64 7)) ==
-     ntt_step zeta_a3 (to_i32x8 re0 (mk_u64 6), to_i32x8 re0 (mk_u64 7)) /\
-    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 1)) ==
-     ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 1)) /\
-    (to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 3)) ==
-     ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 3)) /\
-    (to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 5)) ==
-     ntt_step zeta_b2 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 5)) /\
-    (to_i32x8 nre1 (mk_u64 6), to_i32x8 nre1 (mk_u64 7)) ==
-     ntt_step zeta_b3 (to_i32x8 re1 (mk_u64 6), to_i32x8 re1 (mk_u64 7))
-"#
-)]
 // The theory formerly inlined here now lives in the hand-written companion
 // `Libcrux_ml_dsa.Simd.Avx2.Ntt_theory`.  The opens/alias below are NOT
 // decoration: they restore exactly the scope that block established for the
@@ -47,7 +25,7 @@ open Libcrux_ml_dsa.Simd.Avx2.Ntt_theory
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(index < 31)]
 #[hax_lib::ensures(|_result| fstar!(r"
-        butterfly_2_spec (Seq.index ${re} (v $index)).f_value
+        Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_2_spec (Seq.index ${re} (v $index)).f_value
                          (Seq.index ${re} (v $index + 1)).f_value
                          $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3
                          (Seq.index ${re}_future (v $index)).f_value
@@ -107,7 +85,7 @@ fn butterfly_2(
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     proof!(
-        r#"assert (butterfly_2_spec 
+        r#"assert (Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_2_spec 
                             $re0 $re1 $zeta_a0 $zeta_a1 $zeta_a2 $zeta_a3 
                             $zeta_b0 $zeta_b1 $zeta_b2 $zeta_b3 $nre0 $nre1)"#
     );
@@ -118,31 +96,10 @@ fn butterfly_2(
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 1 for 2 SIMD Units in one go.
 #[inline(always)]
-#[hax_lib::fstar::before(
-    r#"
-let butterfly_4_spec re0 re1 zeta_a0 zeta_a1 zeta_b0 zeta_b1 nre0 nre1 =
-    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 2)) ==
-    ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 2)) /\
-    (to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 3)) ==
-    ntt_step zeta_a0 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 3)) /\
-    (to_i32x8 nre0 (mk_u64 4), to_i32x8 nre0 (mk_u64 6)) ==
-    ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 4), to_i32x8 re0 (mk_u64 6)) /\
-    (to_i32x8 nre0 (mk_u64 5), to_i32x8 nre0 (mk_u64 7)) ==
-    ntt_step zeta_a1 (to_i32x8 re0 (mk_u64 5), to_i32x8 re0 (mk_u64 7)) /\
-    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 2)) ==
-    ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 2)) /\
-    (to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 3)) ==
-    ntt_step zeta_b0 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 3)) /\
-    (to_i32x8 nre1 (mk_u64 4), to_i32x8 nre1 (mk_u64 6)) ==
-    ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 4), to_i32x8 re1 (mk_u64 6)) /\
-    (to_i32x8 nre1 (mk_u64 5), to_i32x8 nre1 (mk_u64 7)) ==
-    ntt_step zeta_b1 (to_i32x8 re1 (mk_u64 5), to_i32x8 re1 (mk_u64 7))
-"#
-)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(index < 31)]
 #[hax_lib::ensures(|_result| fstar!(r"
-        butterfly_4_spec    (Seq.index ${re} (v $index)).f_value
+        Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_4_spec    (Seq.index ${re} (v $index)).f_value
                             (Seq.index ${re} (v $index + 1)).f_value
                             $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1
                             (Seq.index ${re}_future (v $index)).f_value
@@ -178,7 +135,7 @@ fn butterfly_4(
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     proof!(
-        r#"assert (butterfly_4_spec 
+        r#"assert (Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_4_spec 
         $re0 $re1 $zeta_a0 $zeta_a1 $zeta_b0 $zeta_b1 $nre0 $nre1)"#
     );
 
@@ -188,31 +145,10 @@ fn butterfly_4(
 
 // Compute (a,b) ↦ (a + ζb, a - ζb) at layer 2 for 2 SIMD Units in one go.
 #[inline(always)]
-#[hax_lib::fstar::before(
-    r#"
-let butterfly_8_spec re0 re1 zeta0 zeta1 nre0 nre1 =
-    (to_i32x8 nre0 (mk_u64 0), to_i32x8 nre0 (mk_u64 4)) ==
-     ntt_step zeta0 (to_i32x8 re0 (mk_u64 0), to_i32x8 re0 (mk_u64 4)) /\
-    (to_i32x8 nre0 (mk_u64 1), to_i32x8 nre0 (mk_u64 5)) ==
-     ntt_step zeta0 (to_i32x8 re0 (mk_u64 1), to_i32x8 re0 (mk_u64 5)) /\
-    (to_i32x8 nre0 (mk_u64 2), to_i32x8 nre0 (mk_u64 6)) ==
-     ntt_step zeta0 (to_i32x8 re0 (mk_u64 2), to_i32x8 re0 (mk_u64 6)) /\
-    (to_i32x8 nre0 (mk_u64 3), to_i32x8 nre0 (mk_u64 7)) ==
-     ntt_step zeta0 (to_i32x8 re0 (mk_u64 3), to_i32x8 re0 (mk_u64 7)) /\
-    (to_i32x8 nre1 (mk_u64 0), to_i32x8 nre1 (mk_u64 4)) ==
-     ntt_step zeta1 (to_i32x8 re1 (mk_u64 0), to_i32x8 re1 (mk_u64 4)) /\
-    (to_i32x8 nre1 (mk_u64 1), to_i32x8 nre1 (mk_u64 5)) ==
-     ntt_step zeta1 (to_i32x8 re1 (mk_u64 1), to_i32x8 re1 (mk_u64 5)) /\
-    (to_i32x8 nre1 (mk_u64 2), to_i32x8 nre1 (mk_u64 6)) ==
-     ntt_step zeta1 (to_i32x8 re1 (mk_u64 2), to_i32x8 re1 (mk_u64 6)) /\
-    (to_i32x8 nre1 (mk_u64 3), to_i32x8 nre1 (mk_u64 7)) ==
-     ntt_step zeta1 (to_i32x8 re1 (mk_u64 3), to_i32x8 re1 (mk_u64 7))
-"#
-)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(index < 31)]
 #[hax_lib::ensures(|_result| fstar!(r"
-        butterfly_8_spec    (Seq.index ${re} (v $index)).f_value
+        Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_8_spec    (Seq.index ${re} (v $index)).f_value
                             (Seq.index ${re} (v $index + 1)).f_value
                             $zeta0 $zeta1
                             (Seq.index ${re}_future (v $index)).f_value
@@ -240,7 +176,7 @@ fn butterfly_8(re: &mut AVX2RingElement, index: usize, zeta0: i32, zeta1: i32) {
 
     // This assert allows all the SMT Patterns to kick in and prove correctness
     proof!(
-        r#"assert (butterfly_8_spec 
+        r#"assert (Libcrux_ml_dsa.Simd.Avx2.Ntt_theory.butterfly_8_spec 
          $re0 $re1 $zeta0 $zeta1 $nre0 $nre1)"#
     );
 
@@ -504,6 +440,10 @@ unsafe fn ntt_at_layer_7_and_6(re: &mut AVX2RingElement) {
     // output bounds + the bf_pair VALUE (via Avx2NttTheory.lemma_bf_pair_def).
     // Runtime-identical (#[inline(always)]).
     #[inline(always)]
+    // The q76 standalone drivers here are deliberately host-side copies
+    // ("Copied from Avx2NttTheory…") with #restart-solver; relocation shifts
+    // the solver-state placement the L7/6 composer needs (Plan-C class).
+    // proof-residence: clean-context
     #[hax_lib::fstar::before(
         r#"
 (* ============================================================================
@@ -1201,6 +1141,8 @@ unsafe fn ntt_at_layer_5_to_3(re: &mut AVX2RingElement) {
     // Layer 5 block (window-scoped; rounds at offsets 0/8/16/24, zetas zeta_r(4..7))
     #[inline(always)]
     #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 800"#)]
+    // proof-residence: clean-context — local block helper kept next to the
+    // rlimit-800 layer-5 window fn whose ambient facts it needs.
     #[hax_lib::fstar::before(
         r#"
 (* Local block helper: derive the real round's raw forall32 input bound over a
@@ -1660,6 +1602,9 @@ pub(crate) fn ntt(re: &mut AVX2RingElement) {
     #[cfg_attr(not(hax), target_feature(enable = "avx2"))]
     #[hax_lib::fstar::before(r#"#restart-solver"#)]
     #[hax_lib::fstar::options(r#"--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"#)]
+    // proof-residence: clean-context — CHUNKS-EQ bridge between the LOCAL
+    // chunks_of_re_avx2 and the theory's, tuned to the top-level ntt
+    // composer's #restart-solver/split-queries context it sits in.
     #[hax_lib::fstar::before(
         r#"
 (* CHUNKS-EQ bridge helper: the LOCAL `chunks_of_re_avx2` (Ntt.fst) and the

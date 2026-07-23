@@ -27,8 +27,15 @@ TAG_RX = re.compile(
 
 
 def raw_string_body(text, start, cap=30000):
-    m = re.search(r'r(#+)"(.*?)"\1', text[start : start + cap], re.S)
-    return m.group(2) if m else ""
+    seg = text[start : start + cap]
+    # Only accept a string that is the attribute's own argument (directly after
+    # its opening paren) — a plain-string attr like before("open Foo") must not
+    # match the NEXT raw string in the file (bogus-block false positive).
+    m = re.match(r'[^(]*\(\s*r(#+)"(.*?)"\1', seg, re.S)
+    if m:
+        return m.group(2)
+    m = re.match(r'[^(]*\(\s*"((?:[^"\\]|\\.)*)"', seg, re.S)
+    return m.group(1) if m else ""
 
 
 def check_file(path, repo_root):

@@ -39,81 +39,6 @@ fn simd_unit_inv_ntt_step(simd_unit: &mut Coefficients, zeta: i32, index: usize,
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::before(r#"
-    (* ---- INVERSE Layer 0: opaque per-chunk GS-FE atom (4 zetas/chunk, pairs (2p,2p+1)).
-       GS butterfly: co[2p] = ci[2p] + ci[2p+1] (plain add); the odd lane co[2p+1] is a
-       direct mod-q relation (= mont_mul(ci[2p+1]-ci[2p], zeta), NO separate `t` witness). *)
-    [@@ "opaque_to_smt"]
-    let unit_fe_post_inv_l0 (ci co: t_Array i32 (sz 8))
-                        (zeta0 zeta1 zeta2 zeta3: i32{Spec.Utils.is_i32b 4190208 zeta0 /\ Spec.Utils.is_i32b 4190208 zeta1 /\ Spec.Utils.is_i32b 4190208 zeta2 /\ Spec.Utils.is_i32b 4190208 zeta3}) : Type0 =
-      (v (Seq.index co 0) == v (Seq.index ci 0) + v (Seq.index ci 1) /\
-       (v (Seq.index co 1)) % 8380417 == ((v (Seq.index ci 1) - v (Seq.index ci 0)) * v zeta0 * 8265825) % 8380417 /\
-       v (Seq.index co 2) == v (Seq.index ci 2) + v (Seq.index ci 3) /\
-       (v (Seq.index co 3)) % 8380417 == ((v (Seq.index ci 3) - v (Seq.index ci 2)) * v zeta1 * 8265825) % 8380417 /\
-       v (Seq.index co 4) == v (Seq.index ci 4) + v (Seq.index ci 5) /\
-       (v (Seq.index co 5)) % 8380417 == ((v (Seq.index ci 5) - v (Seq.index ci 4)) * v zeta2 * 8265825) % 8380417 /\
-       v (Seq.index co 6) == v (Seq.index ci 6) + v (Seq.index ci 7) /\
-       (v (Seq.index co 7)) % 8380417 == ((v (Seq.index ci 7) - v (Seq.index ci 6)) * v zeta3 * 8265825) % 8380417)
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
-    let lemma_atom_to_bf_inv_l0 (ci co: t_Array i32 (sz 8))
-                            (zf: (p: nat{p < 4}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
-        : Lemma (requires unit_fe_post_inv_l0 ci co (zf 0) (zf 1) (zf 2) (zf 3))
-                (ensures
-                  (forall (p: nat{p < 4}).
-                     v (Seq.index co (2*p))   == v (Seq.index ci (2*p)) + v (Seq.index ci (2*p+1)) /\
-                     (v (Seq.index co (2*p+1))) % 8380417 ==
-                       ((v (Seq.index ci (2*p+1)) - v (Seq.index ci (2*p))) * v (zf p) * 8265825) % 8380417))
-      = reveal_opaque (`%unit_fe_post_inv_l0) unit_fe_post_inv_l0;
-        introduce forall (p: nat{p < 4}).
-            (v (Seq.index co (2*p))   == v (Seq.index ci (2*p)) + v (Seq.index ci (2*p+1)) /\
-             (v (Seq.index co (2*p+1))) % 8380417 ==
-               ((v (Seq.index ci (2*p+1)) - v (Seq.index ci (2*p))) * v (zf p) * 8265825) % 8380417)
-        with (match p with | 0 -> () | 1 -> () | 2 -> () | _ -> ())
-    #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
-    let lemma_inv_l0_driver_compose
-          (orig fut: t_Array (t_Array i32 (sz 8)) (sz 32))
-        : Lemma
-            (requires
-              Spec.Utils.forall32 (fun b ->
-                unit_fe_post_inv_l0 (Seq.index orig b) (Seq.index fut b)
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 0))))
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 1))))
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 2))))
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 3))))))
-            (ensures
-              (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array orig in
-               let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array fut in
-               let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 0) in
-               forall (i: nat). i < 256 ==>
-                 (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-      = let zm (b: nat{b < 32}) (p: nat{p < 4}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
-          mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + p))) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l0 (Seq.index orig b) (Seq.index fut b)
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 0))))
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 1))))
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 2))))
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + 3)))));
-        (let aux (b: nat{b < 32}) (p: nat{p < 4}) : Lemma
-           (let ci = Seq.index orig b in
-            let co = Seq.index fut b in
-            v (Seq.index co (2*p)) == v (Seq.index ci (2*p)) + v (Seq.index ci (2*p+1)) /\
-            (v (Seq.index co (2*p+1))) % 8380417 ==
-              ((v (Seq.index ci (2*p+1)) - v (Seq.index ci (2*p))) * v (zm b p) * 8265825) % 8380417 /\
-            (v (zm b p)) % 8380417 ==
-              (v (Hacspec_ml_dsa.Ntt.v_ZETAS.[ mk_usize (255 - (4*b + p)) ] <: i32) * pow2 32) % 8380417)
-          = lemma_atom_to_bf_inv_l0 (Seq.index orig b) (Seq.index fut b) (fun p -> zm b p);
-            reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
-            let _ = Spec.MLDSA.NttConstants.zeta_r (255 - (4*b + p)) in
-            Hacspec_ml_dsa.Commute.Chunk.lemma_v_zetas_eq_zeta (255 - (4*b + p))
-         in Classical.forall_intro_2 aux);
-        Hacspec_ml_dsa.Commute.Chunk.lemma_intt_layer_0_step_to_hacspec_poly orig fut zm
-    #pop-options
-"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.is_i32b_array (v $FIELD_MAX) ${simd_unit}.f_values /\
@@ -150,78 +75,6 @@ pub fn simd_unit_invert_ntt_at_layer_0(
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::before(r#"
-    (* ---- INVERSE Layer 1: opaque per-chunk GS-FE atom (2 zetas/chunk, pairs (4h+j,4h+j+2)). *)
-    [@@ "opaque_to_smt"]
-    let unit_fe_post_inv_l1 (ci co: t_Array i32 (sz 8))
-                        (zeta0 zeta1: i32{Spec.Utils.is_i32b 4190208 zeta0 /\ Spec.Utils.is_i32b 4190208 zeta1}) : Type0 =
-      (v (Seq.index co 0) == v (Seq.index ci 0) + v (Seq.index ci 2) /\
-       (v (Seq.index co 2)) % 8380417 == ((v (Seq.index ci 2) - v (Seq.index ci 0)) * v zeta0 * 8265825) % 8380417 /\
-       v (Seq.index co 1) == v (Seq.index ci 1) + v (Seq.index ci 3) /\
-       (v (Seq.index co 3)) % 8380417 == ((v (Seq.index ci 3) - v (Seq.index ci 1)) * v zeta0 * 8265825) % 8380417 /\
-       v (Seq.index co 4) == v (Seq.index ci 4) + v (Seq.index ci 6) /\
-       (v (Seq.index co 6)) % 8380417 == ((v (Seq.index ci 6) - v (Seq.index ci 4)) * v zeta1 * 8265825) % 8380417 /\
-       v (Seq.index co 5) == v (Seq.index ci 5) + v (Seq.index ci 7) /\
-       (v (Seq.index co 7)) % 8380417 == ((v (Seq.index ci 7) - v (Seq.index ci 5)) * v zeta1 * 8265825) % 8380417)
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
-    let lemma_atom_to_bf_inv_l1 (ci co: t_Array i32 (sz 8))
-                            (zf: (h: nat{h < 2}) -> (z: i32{Spec.Utils.is_i32b 4190208 z}))
-        : Lemma (requires unit_fe_post_inv_l1 ci co (zf 0) (zf 1))
-                (ensures
-                  (forall (h: nat{h < 2}) (j: nat{j < 2}).
-                     v (Seq.index co (4*h+j))   == v (Seq.index ci (4*h+j)) + v (Seq.index ci (4*h+j+2)) /\
-                     (v (Seq.index co (4*h+j+2))) % 8380417 ==
-                       ((v (Seq.index ci (4*h+j+2)) - v (Seq.index ci (4*h+j))) * v (zf h) * 8265825) % 8380417))
-      = reveal_opaque (`%unit_fe_post_inv_l1) unit_fe_post_inv_l1;
-        introduce forall (h: nat{h < 2}) (j: nat{j < 2}).
-            (v (Seq.index co (4*h+j))   == v (Seq.index ci (4*h+j)) + v (Seq.index ci (4*h+j+2)) /\
-             (v (Seq.index co (4*h+j+2))) % 8380417 ==
-               ((v (Seq.index ci (4*h+j+2)) - v (Seq.index ci (4*h+j))) * v (zf h) * 8265825) % 8380417)
-        with (match h with | 0 -> (match j with | 0 -> () | _ -> ()) | _ -> (match j with | 0 -> () | _ -> ()))
-    #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
-    let lemma_inv_l1_driver_compose
-          (orig fut: t_Array (t_Array i32 (sz 8)) (sz 32))
-        : Lemma
-            (requires
-              Spec.Utils.forall32 (fun b ->
-                unit_fe_post_inv_l1 (Seq.index orig b) (Seq.index fut b)
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 0))))
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 1))))))
-            (ensures
-              (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array orig in
-               let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array fut in
-               let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 1) in
-               forall (i: nat). i < 256 ==>
-                 (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-      = let zm (b: nat{b < 32}) (h: nat{h < 2}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
-          mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + h))) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l1 (Seq.index orig b) (Seq.index fut b)
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 0))))
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + 1)))));
-        (let aux_bf (b: nat{b < 32}) : Lemma
-           (forall (h: nat{h < 2}) (j: nat{j < 2}).
-             (let ci = Seq.index orig b in
-              let co = Seq.index fut b in
-              v (Seq.index co (4*h+j))   == v (Seq.index ci (4*h+j)) + v (Seq.index ci (4*h+j+2)) /\
-              (v (Seq.index co (4*h+j+2))) % 8380417 ==
-                ((v (Seq.index ci (4*h+j+2)) - v (Seq.index ci (4*h+j))) * v (zm b h) * 8265825) % 8380417))
-          = lemma_atom_to_bf_inv_l1 (Seq.index orig b) (Seq.index fut b) (fun h -> zm b h)
-         in Classical.forall_intro aux_bf);
-        (let aux_z (b: nat{b < 32}) (h: nat{h < 2}) : Lemma
-           ((v (zm b h)) % 8380417 ==
-            (v (Hacspec_ml_dsa.Ntt.v_ZETAS.[ mk_usize (127 - (2*b + h)) ] <: i32) * pow2 32) % 8380417)
-          = reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
-            let _ = Spec.MLDSA.NttConstants.zeta_r (127 - (2*b + h)) in
-            Hacspec_ml_dsa.Commute.Chunk.lemma_v_zetas_eq_zeta (127 - (2*b + h))
-         in Classical.forall_intro_2 aux_z);
-        Hacspec_ml_dsa.Commute.Chunk.lemma_intt_layer_1_step_to_hacspec_poly orig fut zm
-    #pop-options
-"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.is_i32b_array (2 * v $FIELD_MAX) ${simd_unit}.f_values /\
@@ -250,76 +103,6 @@ pub fn simd_unit_invert_ntt_at_layer_1(simd_unit: &mut Coefficients, zeta0: i32,
 
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::before(r#"
-    (* ---- INVERSE Layer 2: opaque per-chunk GS-FE atom (1 zeta/chunk, pairs (p,p+4)). *)
-    [@@ "opaque_to_smt"]
-    let unit_fe_post_inv_l2 (ci co: t_Array i32 (sz 8))
-                        (zeta: i32{Spec.Utils.is_i32b 4190208 zeta}) : Type0 =
-      (v (Seq.index co 0) == v (Seq.index ci 0) + v (Seq.index ci 4) /\
-       (v (Seq.index co 4)) % 8380417 == ((v (Seq.index ci 4) - v (Seq.index ci 0)) * v zeta * 8265825) % 8380417 /\
-       v (Seq.index co 1) == v (Seq.index ci 1) + v (Seq.index ci 5) /\
-       (v (Seq.index co 5)) % 8380417 == ((v (Seq.index ci 5) - v (Seq.index ci 1)) * v zeta * 8265825) % 8380417 /\
-       v (Seq.index co 2) == v (Seq.index ci 2) + v (Seq.index ci 6) /\
-       (v (Seq.index co 6)) % 8380417 == ((v (Seq.index ci 6) - v (Seq.index ci 2)) * v zeta * 8265825) % 8380417 /\
-       v (Seq.index co 3) == v (Seq.index ci 3) + v (Seq.index ci 7) /\
-       (v (Seq.index co 7)) % 8380417 == ((v (Seq.index ci 7) - v (Seq.index ci 3)) * v zeta * 8265825) % 8380417)
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
-    let lemma_atom_to_bf_inv_l2 (ci co: t_Array i32 (sz 8))
-                            (zeta: i32{Spec.Utils.is_i32b 4190208 zeta})
-        : Lemma (requires unit_fe_post_inv_l2 ci co zeta)
-                (ensures
-                  (forall (p: nat{p < 4}).
-                     v (Seq.index co p)     == v (Seq.index ci p) + v (Seq.index ci (p+4)) /\
-                     (v (Seq.index co (p+4))) % 8380417 ==
-                       ((v (Seq.index ci (p+4)) - v (Seq.index ci p)) * v zeta * 8265825) % 8380417))
-      = reveal_opaque (`%unit_fe_post_inv_l2) unit_fe_post_inv_l2;
-        introduce forall (p: nat{p < 4}).
-            (v (Seq.index co p)     == v (Seq.index ci p) + v (Seq.index ci (p+4)) /\
-             (v (Seq.index co (p+4))) % 8380417 ==
-               ((v (Seq.index ci (p+4)) - v (Seq.index ci p)) * v zeta * 8265825) % 8380417)
-        with (match p with | 0 -> () | 1 -> () | 2 -> () | _ -> ())
-    #pop-options
-"#)]
-#[hax_lib::fstar::before(r#"
-    #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
-    let lemma_inv_l2_driver_compose
-          (orig fut: t_Array (t_Array i32 (sz 8)) (sz 32))
-        : Lemma
-            (requires
-              Spec.Utils.forall32 (fun b ->
-                unit_fe_post_inv_l2 (Seq.index orig b) (Seq.index fut b)
-                                (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (63 - b)))))
-            (ensures
-              (let in_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array orig in
-               let out_flat = Hacspec_ml_dsa.Commute.Chunk.simd_units_to_array fut in
-               let spec = Hacspec_ml_dsa.Ntt.intt_layer in_flat (mk_usize 2) in
-               forall (i: nat). i < 256 ==>
-                 (v (Seq.index out_flat i)) % 8380417 == (v (Seq.index spec i)) % 8380417))
-      = let zm (b: nat{b < 32}) : (z: i32{Spec.Utils.is_i32b 4190208 z}) =
-          mk_i32 (Spec.MLDSA.NttConstants.zeta_r (63 - b)) in
-        Libcrux_ml_dsa.Simd.Portable.Ntt_theory.forall32_elim_1d (fun b -> unit_fe_post_inv_l2 (Seq.index orig b) (Seq.index fut b)
-                                     (mk_i32 (Spec.MLDSA.NttConstants.zeta_r (63 - b))));
-        (let aux_bf (b: nat{b < 32}) : Lemma
-           (forall (p: nat{p < 4}).
-             (let ci = Seq.index orig b in
-              let co = Seq.index fut b in
-              v (Seq.index co p)     == v (Seq.index ci p) + v (Seq.index ci (p+4)) /\
-              (v (Seq.index co (p+4))) % 8380417 ==
-                ((v (Seq.index ci (p+4)) - v (Seq.index ci p)) * v (zm b) * 8265825) % 8380417))
-          = lemma_atom_to_bf_inv_l2 (Seq.index orig b) (Seq.index fut b) (zm b)
-         in Classical.forall_intro aux_bf);
-        (let aux_z (b: nat{b < 32}) : Lemma
-           ((v (zm b)) % 8380417 ==
-            (v (Hacspec_ml_dsa.Ntt.v_ZETAS.[ mk_usize (63 - b) ] <: i32) * pow2 32) % 8380417)
-          = reveal_opaque (`%Spec.MLDSA.Math.mod_q) (Spec.MLDSA.Math.mod_q);
-            let _ = Spec.MLDSA.NttConstants.zeta_r (63 - b) in
-            Hacspec_ml_dsa.Commute.Chunk.lemma_v_zetas_eq_zeta (63 - b)
-         in Classical.forall_intro aux_z);
-        Hacspec_ml_dsa.Commute.Chunk.lemma_intt_layer_2_step_to_hacspec_poly orig fut zm
-    #pop-options
-"#)]
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::requires(fstar!(r#"
     Spec.Utils.is_i32b_array (4 * v $FIELD_MAX) ${simd_unit}.f_values /\
@@ -376,7 +159,7 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
         Spec.Utils.is_i32b_array_opaque (2* v $FIELD_MAX)
             (Seq.index ${re}_future (v index)).f_values /\
-        unit_fe_post_inv_l0 (Seq.index ${re} (v $index)).f_values
+        Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l0 (Seq.index ${re} (v $index)).f_values
                         (Seq.index ${re}_future (v $index)).f_values
                         $zeta0 $zeta1 $zeta2 $zeta3
      "#))]
@@ -392,7 +175,7 @@ fn invert_ntt_at_layer_0(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_0(&mut re[index], zeta0, zeta1, zeta2, zeta3);
-        proof!("reveal_opaque (`%unit_fe_post_inv_l0) unit_fe_post_inv_l0");
+        proof!("reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l0) Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l0");
     }
 
     #[cfg(hax)]
@@ -560,7 +343,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 252 == 3937738);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 253 == 1400424);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 254 == (-846154));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 255 == 1976782);
-lemma_inv_l0_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
+Libcrux_ml_dsa.Simd.Portable.Invntt_theory.lemma_inv_l0_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
@@ -594,7 +377,7 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
         Spec.Utils.is_i32b_array_opaque (4 * v $FIELD_MAX)
             (Seq.index ${re}_future (v $index)).f_values /\
-        unit_fe_post_inv_l1 (Seq.index ${re} (v $index)).f_values
+        Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l1 (Seq.index ${re} (v $index)).f_values
                         (Seq.index ${re}_future (v $index)).f_values $zeta_00 $zeta_01
      "#))]
     fn round(
@@ -607,7 +390,7 @@ fn invert_ntt_at_layer_1(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_1(&mut re[index], zeta_00, zeta_01);
-        proof!("reveal_opaque (`%unit_fe_post_inv_l1) unit_fe_post_inv_l1");
+        proof!("reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l1) Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l1");
     }
 
     #[cfg(hax)]
@@ -711,7 +494,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 124 == (-3019102));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 125 == (-3881060));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 126 == (-3628969));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 127 == 3839961);
-lemma_inv_l1_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
+Libcrux_ml_dsa.Simd.Portable.Invntt_theory.lemma_inv_l1_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
@@ -744,7 +527,7 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
         Spec.Utils.modifies1_32 ${re} ${re}_future $index /\
         Spec.Utils.is_i32b_array_opaque (8 * v $FIELD_MAX)
             (Seq.index ${re}_future (v $index)).f_values /\
-        unit_fe_post_inv_l2 (Seq.index ${re} (v $index)).f_values
+        Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l2 (Seq.index ${re} (v $index)).f_values
                         (Seq.index ${re}_future (v $index)).f_values $zeta1
      "#))]
     fn round(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT], index: usize, zeta1: i32) {
@@ -752,7 +535,7 @@ fn invert_ntt_at_layer_2(re: &mut [Coefficients; SIMD_UNITS_IN_RING_ELEMENT]) {
             "reveal_opaque (`%Spec.Utils.is_i32b_array_opaque) (Spec.Utils.is_i32b_array_opaque)"
         );
         simd_unit_invert_ntt_at_layer_2(&mut re[index], zeta1);
-        proof!("reveal_opaque (`%unit_fe_post_inv_l2) unit_fe_post_inv_l2");
+        proof!("reveal_opaque (`%Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l2) Libcrux_ml_dsa.Simd.Portable.Invntt_theory.unit_fe_post_inv_l2");
     }
 
     #[cfg(hax)]
@@ -824,7 +607,7 @@ assert_norm (Spec.MLDSA.NttConstants.zeta_r 60 == 3900724);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 61 == (-2556880));
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 62 == 2071892);
 assert_norm (Spec.MLDSA.NttConstants.zeta_r 63 == (-2797779));
-lemma_inv_l2_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
+Libcrux_ml_dsa.Simd.Portable.Invntt_theory.lemma_inv_l2_driver_compose (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${orig_re}) (Libcrux_ml_dsa.Simd.Portable.Ntt_theory.chunks_of_re ${re})
 "#
     );
 }
