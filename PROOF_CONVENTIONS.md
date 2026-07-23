@@ -53,12 +53,17 @@ mode during the migration; CI-enforcing once the sweep is complete.)
 
 ## The trust surface
 
-Unproven obligations (`admit`, `assume`, lax-checked modules) are enumerable
-mechanically (e.g. `grep`, or the `fstar_admits` tooling) and are tracked as a
-monotonically non-increasing ledger. A postcondition on a function whose proof
-is admitted is a *trusted assumption* and must carry a source comment
-justifying it against the code. See each crate's
-`proofs/…verification_status.md` for the per-function result.
+Unproven obligations (`admit`, `assume`, `assume val`, `magic`,
+`--admit_smt_queries true`, lax-checked modules) are enumerable mechanically and
+tracked as a **monotonically non-increasing ledger**. The ledger is computed
+*only* from build artifacts by [`scripts/trust_ledger.py`](scripts/trust_ledger.py)
+(four planes: F\* obligations, extraction coverage, Makefile `SLOW`/`ADMIT`,
+post-extraction patches — see [scripts/README-trust-ledger.md](scripts/README-trust-ledger.md)),
+so no source marker can shrink the reported surface. A committed baseline lives at
+each crate's `proofs/trust-ledger.baseline.json`; `trust_ledger.py --check` fails CI
+whenever the surface grows. A postcondition on a function whose proof is admitted is
+a *trusted assumption* and must carry a source comment justifying it against the code.
+See each crate's `proofs/…verification_status.md` for the per-function tier.
 
 ## Reading a verified function (reviewer quick answers)
 

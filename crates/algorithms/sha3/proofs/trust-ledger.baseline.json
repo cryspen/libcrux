@@ -1,0 +1,25 @@
+// AUTO-GENERATED observed-side trust ledger baseline (scripts/trust_ledger.py). Do not edit by hand.
+{
+  "crate": "sha3",
+  "planes": {
+    "extraction": {
+      "modules": [
+        "Libcrux_sha3.Proof_utils",
+        "Libcrux_sha3.Proof_utils.Lemmas",
+        "Libcrux_sha3.Simd.Arm64.StoreBlockHelpers",
+        "Libcrux_sha3.Simd.Avx2.StoreBlockHelpers"
+      ]
+    },
+    "fstar": {
+      "by_kind": {},
+      "by_module": {},
+      "scanned_files": 31,
+      "total": 0
+    },
+    "makefile": {
+      "admit_modules": [],
+      "slow_modules": []
+    },
+    "patches": []
+  }
+}
