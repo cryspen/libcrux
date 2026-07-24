@@ -58,6 +58,7 @@ members = [
     "crates/protocols/hpke/libcrux_provider",
     "crates/protocols/hpke/rust_crypto_provider",
     "crates/protocols/hpke/traits",
+    "crates/protocols/hpke/wasm",
     "crates/sys/platform",
     "crates/testing/kats",
     "crates/utils/core-models",

@@ -1,0 +1,30 @@
+[package]
+edition = "2024"
+name = "hpke-rs-wasm"
+version = "0.1.0"
+description = "HPKE WASM API"
+repository = "https://github.com/celabshq/libcrux"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# The generated wasm uses bulk-memory ops (e.g. `memory.fill`), which `wasm-opt`
+# does not accept unless the feature is enabled explicitly.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['--enable-bulk-memory', '-O']
+
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = ['--enable-bulk-memory']
+
+[dependencies]
+hpke-rs = { workspace = true, features = ["draft-ietf-hpke-pq", "hazmat"] }
+wasm-bindgen = "0.2.126"
+
+# Randomness. On wasm the `wasm_js` backend is used, which also requires
+# building with `RUSTFLAGS='--cfg getrandom_backend="wasm_js"'`.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+getrandom = "0.4"
