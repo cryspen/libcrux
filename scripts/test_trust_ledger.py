@@ -66,6 +66,59 @@ def test_masking_preserves_lines(tmp):
 
 
 # --------------------------------------------------------------------------
+# G3 pollution-trap defense — obligation-looking tokens inside a `[@@ "trusted:
+# …"]` tag reason must NOT be counted as real F* obligations.
+# --------------------------------------------------------------------------
+def test_trusted_tag_pollution_masking(tmp):
+    src = r'''module Poison
+[@@ "trusted: validated-axiom: this reason mentions assume and admit () and magic () but is inert"]
+assume val real_stub : int -> int
+[@@ "trusted: trusted-extern: also names assume val / admit_smt_queries true"]
+let g x = admit ()
+[@@ "opaque_to_smt"; "trusted: hax-limitation: combined attr set, second position"]
+let h x = magic ()
+(* [@@ "trusted: pending-proof(E1): commented-out tag, ignored"] *)
+let commented = 1
+'''
+    p = os.path.join(tmp, "Poison.fst")
+    open(p, "w").write(src)
+    r = ts.scan_file_obligations(p)
+    kinds = {}
+    for rec in r:
+        kinds[rec["kind"]] = kinds.get(rec["kind"], 0) + 1
+    # Real obligations: the `assume val real_stub`, the `admit ()` in g, the `magic ()`
+    # in h. The tokens inside the three tag reasons must contribute NOTHING.
+    check(kinds.get("assume_val") == 1, f"one real assume val (tag reasons masked): got {kinds.get('assume_val')}")
+    check(kinds.get("admit") == 1, f"one real admit (tag reasons masked): got {kinds.get('admit')}")
+    check(kinds.get("magic") == 1, f"one real magic (tag reasons masked): got {kinds.get('magic')}")
+    check("assume" not in kinds, f"NO bare-assume counted from the word 'assume' in a reason: got {kinds.get('assume')}")
+    check("admit_smt_queries" not in kinds, "NO admit_smt_queries counted from a reason")
+    check(len(r) == 3, f"exactly 3 real obligations (3 tag reasons fully masked): got {len(r)}")
+
+
+def test_trusted_tag_scanner(tmp):
+    src = r'''module Tags
+[@@ "trusted: validated-axiom: first"]
+assume val a : int
+[@@ "opaque_to_smt"; "trusted: pending-proof(E1): combined set"]
+let b x = admit ()
+(* [@@ "trusted: hax-limitation: commented out, must NOT be scanned"] *)
+let c = 1
+[@@ "trusted: bad-category no prefix"]
+let d x = admit ()
+'''
+    p = os.path.join(tmp, "Tags.fst")
+    open(p, "w").write(src)
+    tags = ts.scan_fstar_trusted_tags(p)
+    check(len(tags) == 3, f"3 live tags (commented one ignored): got {len(tags)}")
+    reasons = [t["reason"] for t in tags]
+    check("validated-axiom: first" in reasons, "first reason captured after 'trusted:'")
+    check(any(r.startswith("pending-proof(E1):") for r in reasons), "reason in a combined attr set captured")
+    check(sum(1 for r in reasons if ts.reason_ok(r)) == 2, "2 of 3 reasons pass reason_ok (bad-category fails)")
+    check(any(not ts.reason_ok(r) for r in reasons), "the invalid-category tag reason is flagged by reason_ok")
+
+
+# --------------------------------------------------------------------------
 # Reconcile — regression vs note across all four planes
 # --------------------------------------------------------------------------
 def _surface(total=10, by_module=None, by_kind=None, extraction=None,
@@ -237,16 +290,76 @@ def test_rust_comment_masking():
     check("x /* y */ z" in m2, "raw string content preserved")
 
 
+# --------------------------------------------------------------------------
+# G3 module/config mirrors — annotation scanner, hax exclusion tokens,
+# Makefile comment-stripping (V5/V6 primitives).
+# --------------------------------------------------------------------------
+def test_module_annotation_scanner():
+    text = (
+        "# trusted-module: Libcrux_ml_kem.Matrix.fst : slow-proof: heavy VCs\n"
+        "# trusted-module: -libcrux_ml_kem::kem::** : hax-limitation: glue layer\n"
+        "SLOW_MODULES += Libcrux_ml_kem.Matrix.fst\n"
+        "# a normal comment, not an annotation\n"
+    )
+    anns = ts.scan_trusted_module_annotations(text)
+    check(len(anns) == 2, f"2 trusted-module annotations: got {len(anns)}")
+    by_name = {a["name"]: a for a in anns}
+    check(by_name.get("Libcrux_ml_kem.Matrix.fst", {}).get("reason") == "slow-proof: heavy VCs",
+          "module-name annotation reason captured")
+    # a token name with `::` must not be split on its own colons — only on ' : '
+    check(by_name.get("-libcrux_ml_kem::kem::**", {}).get("reason") == "hax-limitation: glue layer",
+          f"token annotation reason captured (not split on '::'): {by_name.get('-libcrux_ml_kem::kem::**')}")
+    check(all(ts.reason_ok(a["reason"]) for a in anns), "both reasons pass reason_ok")
+
+
+def test_hax_exclusion_tokens():
+    src = (
+        '        includes = [\n'
+        '            "+**",\n'
+        '            "-libcrux_ml_kem::kem::**",\n'
+        '            "-libcrux_ml_kem::hash_functions::portable::*",\n'
+        '            "+:libcrux_ml_kem::hash_functions::*::*",\n'
+        '        ]\n'
+        '        interface_include = "+** -libcrux_ml_kem::vector::traits"\n'
+        '        # trusted-module: -libcrux_ml_kem::kem::** : hax-limitation: glue\n'
+        '        cargo = ["cargo", "hax", "-C", "--features", "simd128", "-i", s]\n'
+    )
+    toks = ts.scan_hax_exclusion_tokens(src, "libcrux_ml_kem")
+    check(toks == ["-libcrux_ml_kem::hash_functions::portable::*", "-libcrux_ml_kem::kem::**"],
+          f"only the two real `-libcrux_ml_kem::…` exclusions: got {toks}")
+    check("-libcrux_ml_kem::vector::traits" not in toks, "interface_include exclusion skipped")
+    # `+:…` re-includes, `-C` / `--features` / `-i` flags, and the annotation-comment
+    # line must all be ignored (no `::`-less token, no double-count from the comment).
+
+
+def test_makefile_comment_stripping(tmp):
+    src = ("SLOW_MODULES += Foo.Bar.fst  # trusted-module: slow-proof: see e.g. notes\n"
+           "# trusted-module: Foo.Bar.fst : slow-proof: heavy\n"
+           "ADMIT_MODULES =\n")
+    p = os.path.join(tmp, "Makefile")
+    open(p, "w").write(src)
+    slow = ts.parse_makefile_module_list(p, "SLOW_MODULES")
+    check(slow == ["Foo.Bar"], f"trailing/standalone `#` comments inject no phantom module: got {slow}")
+    admit = ts.parse_makefile_module_list(p, "ADMIT_MODULES")
+    check(admit == [], f"empty ADMIT list: got {admit}")
+
+
 def main():
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
         print("[tokenizer]")
         test_tokenizer(tmp)
         test_masking_preserves_lines(tmp)
+        test_trusted_tag_pollution_masking(tmp)
+        test_trusted_tag_scanner(tmp)
         print("[markers]")
         test_marker_scan(tmp)
         test_marker_soundness(tmp)
         test_attr_markers(tmp)
+        print("[module-mirrors]")
+        test_module_annotation_scanner()
+        test_hax_exclusion_tokens()
+        test_makefile_comment_stripping(tmp)
     print("[reason-format]")
     test_reason_format()
     print("[rust-comment-masking]")

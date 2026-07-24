@@ -74,6 +74,30 @@ def mask_fstar_comments(text):
     return "".join(out)
 
 
+# ---------------------------------------------------------------------------
+# G3 pollution-trap defense: mask the interior of `[@@ "trusted: <reason>"]` tags.
+#
+# The G3 companion-axiom tags are F* string-literal attributes, and the obligation
+# tokenizer above does NOT mask string literals (that is deliberate — it mirrors
+# fstar_admits, where a marker inside a string can still be reported). Without this
+# pass, a trust REASON that happened to contain the word `assume`, or the text
+# `admit ()` / `magic ()` / `assume val` / `admit_smt_queries true`, would be
+# miscounted as a real F* obligation and REGRESS the ledger. Reasons are kept
+# token-safe by convention (so fstar_admits and this scanner stay in agreement),
+# and this pass is the belt-and-suspenders guarantee that a future non-token-safe
+# reason can never silently grow the surface. Only strings whose content begins
+# with `trusted:` are touched; every other string literal is left intact.
+_TRUSTED_STR_RE = re.compile(r'"trusted:[^"\n]*"')
+
+
+def mask_trusted_reason_strings(text):
+    """Blank the interior of every `[@@ "trusted: <reason>"]` tag string, preserving
+    the surrounding quotes and the exact length (so obligation line numbers still
+    hold). See the comment above for why this is needed. Non-`trusted:` strings are
+    left untouched, keeping plane 1 faithful to fstar_admits for real obligations."""
+    return _TRUSTED_STR_RE.sub(lambda m: '"' + " " * (len(m.group(0)) - 2) + '"', text)
+
+
 # One record kind per pattern. `assume val` is matched before bare `assume`
 # (the bare pattern uses a negative lookahead so the two never double-count).
 _ASSUME_VAL_RE = re.compile(r"\bassume\s+val\b")
@@ -106,7 +130,7 @@ def scan_file_obligations(path):
     .fst/.fsti file, matching the fstar_admits tokenizer (comment-masked)."""
     with open(path, encoding="utf-8", errors="replace") as f:
         text = f.read()
-    masked = mask_fstar_comments(text)
+    masked = mask_trusted_reason_strings(mask_fstar_comments(text))
     module = module_name_of(path)
     records = []
     for kind, rx in _KIND_PATTERNS:
@@ -143,6 +167,33 @@ def scan_obligations(root):
         "by_file": by_file,
         "records": records,
     }
+
+
+# G3 companion-axiom tags (the CLAIMS side of the F* plane). A hand-written
+# companion axiom carries a `[@@ "trusted: <category>: <reason>"]` tag above the
+# decl; `<reason>` (everything after `trusted:`) is validated with reason_ok, the
+# same category vocabulary as the Rust G1/G2 markers. Matched anywhere in an
+# attribute set (`[@@ "opaque_to_smt"; "trusted: …"]` works too).
+_TRUSTED_TAG_RE = re.compile(r'"trusted:\s*([^"\n]*)"')
+
+
+def scan_fstar_trusted_tags(path):
+    """Return [{file, module, line, reason}] for every `[@@ "trusted: <reason>"]`
+    tag in an .fst/.fsti file (comment-masked, so a commented-out tag is ignored).
+    `reason` is the text after `trusted:` — validate it with reason_ok (lint V4)."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    masked = mask_fstar_comments(text)
+    module = module_name_of(path)
+    out = []
+    for m in _TRUSTED_TAG_RE.finditer(masked):
+        out.append({
+            "file": path,
+            "module": module,
+            "line": _line_of(masked, m.start()),
+            "reason": m.group(1).strip(),
+        })
+    return out
 
 
 # ===========================================================================
@@ -183,13 +234,74 @@ def parse_makefile_module_list(makefile_path, var_name):
                 in_var = True
                 line = line.split("=", 1)[1] if "=" in line else ""
             if in_var:
-                for token in line.split():
+                # Ignore a trailing `#`-comment so a `# trusted-module:` reason (V5)
+                # or any prose can never inject a phantom module token (e.g. a dotted
+                # word like `e.g.` reading as a module name).
+                code = line.split("#", 1)[0]
+                for token in code.split():
                     tok = token.removesuffix(".fst").removesuffix(".fsti")
                     if re.fullmatch(r"[A-Za-z0-9_.]+", tok) and "." in tok:
                         mods.add(tok)
-                if not line.rstrip().endswith("\\"):
+                if not code.rstrip().endswith("\\"):
                     in_var = False
     return sorted(mods)
+
+
+# ===========================================================================
+# G3 module/config mirrors — the CLAIMS side of planes 2 & 3
+#
+# `# trusted-module: <name> : <category>: <reason>` comments mirror the module-level
+# trust surfaces the same way the Rust G1/G2 markers and the F* G3 tags mirror the
+# obligation surface: <name> is a Makefile SLOW/ADMIT module (V5) or a hax `-i`
+# extraction-exclusion token (V6), and <reason> carries a category prefix (reason_ok).
+# ===========================================================================
+
+# `# trusted-module: <name> : <reason>` — split name/reason on the FIRST ` : `
+# (spaced colon) so a module path's own bare `::` is never the separator.
+_TRUSTED_MODULE_RE = re.compile(r"#\s*trusted-module:\s*(.+?)\s*$", re.M)
+
+
+def scan_trusted_module_annotations(text):
+    """Parse `# trusted-module: <name> : <reason>` comment lines from a Makefile or a
+    hax extraction script. Returns [{name, reason, line}] (both stripped). Reasons are
+    validated with reason_ok by the V5/V6 lints."""
+    out = []
+    for m in _TRUSTED_MODULE_RE.finditer(text):
+        payload = m.group(1).strip()
+        name, sep, reason = payload.partition(" : ")
+        out.append({
+            "name": name.strip(),
+            "reason": reason.strip() if sep else "",
+            "line": text.count("\n", 0, m.start()) + 1,
+        })
+    return out
+
+
+# A hax `-i` MODULE-EXCLUSION token: `-<path>` with >= 1 `::` segment (wildcards ok).
+# Requiring a `::` avoids matching bare flags (`-i`, `-C`, `--features`, `--z3rlimit`).
+_HAX_EXCL_TOKEN_RE = re.compile(
+    r"-(?:\*\*|[A-Za-z_][A-Za-z0-9_]*)(?:::(?:\*\*?|[A-Za-z_][A-Za-z0-9_]*))+"
+)
+
+
+def scan_hax_exclusion_tokens(text, crate_snake):
+    """Return the sorted set of `-<crate_snake>::…` module-exclusion tokens in a hax
+    extraction script — the parts of THIS crate dropped from F* extraction (a trust
+    surface: an absent module is worse than an admitted one). Skips `--interfaces` /
+    `interface_include` lines (those suppress only the `.fsti`, not the proof) and the
+    `# trusted-module:` annotation lines (so an annotation naming a token is not itself
+    counted as a usage)."""
+    prefix = "-" + crate_snake + "::"
+    toks = set()
+    for line in text.split("\n"):
+        if line.lstrip().startswith("#"):
+            continue
+        if "interface" in line:
+            continue
+        for m in _HAX_EXCL_TOKEN_RE.finditer(line):
+            if m.group(0).startswith(prefix):
+                toks.add(m.group(0))
+    return sorted(toks)
 
 
 # ===========================================================================

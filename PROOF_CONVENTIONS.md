@@ -117,6 +117,58 @@ fn f() { … }
   documents the *existing* justification for that trusted post — it is not a new
   assumption (see "The trust surface"). Long prose stays as an adjacent comment.
 
+### Declaring a companion-axiom trust obligation (G3)
+
+A hand-written companion module in `proofs/fstar/spec/` may contain a genuine
+**axiom** — an `assume val`, an `assume (…)`, or a `let … = admit ()` that models
+a primitive/intrinsic F\* cannot verify (a movemask bound, a PSHUFB semantics, a
+hash oracle, a `to_le_bytes` byte formula). Each such axiom carries a machine-
+readable tag on the line directly above the declaration:
+
+```fstar
+[@@ "trusted: <category>: <one-line reason>"]
+assume val lemma_movemask_ps_bound (a: …) : Lemma (…)
+```
+
+- The `<category>` is the same vocabulary as the G1/G2 markers
+  (`validated-axiom:`, `trusted-extern:`, `pending-proof(<ref>):`, …). `annotation_lint.py`
+  V4 strips the `trusted:` prefix and validates the remainder with `reason_ok`.
+- **One tag per axiom**: V4 checks the per-file bijection `#tags == #obligations`
+  for every git-tracked `spec/` module (ml-dsa 6, ml-kem 21).
+- Keep reasons **token-safe**: never write the bare word `assume`, or the text
+  `admit ()` / `magic ()` / `assume val` / `admit_smt_queries true`, inside a
+  reason. The plane-1 obligation scanner intentionally does not mask string
+  literals (it mirrors `fstar_admits`), so a stray token would read as a real
+  obligation. `trust_scan.mask_trusted_reason_strings` blanks `"trusted: …"`
+  interiors as a belt-and-suspenders backstop, but token-safe reasons keep the
+  scanner in agreement with `fstar_admits`.
+- `[@@ "trusted: …"]` is an inert string attribute; it changes no VC. But editing
+  a hint-carrying companion `.fst` invalidates its `.checked` and re-proves its
+  dependents cold in CI — batch tag edits and let CI do the closure build.
+
+### Declaring a module-level trust obligation — module/config mirrors (G3)
+
+Two module-level trust surfaces are mirrored the same way, in the git-tracked
+**authority** file (the `.fst`/`.fsti` are gitignored/extracted, so a per-source
+header would be clobbered on re-extraction):
+
+- **Verified-on-cadence (`SLOW_MODULES`) / admitted (`ADMIT_MODULES`)** — a
+  `# trusted-module: <module> : <category>: <reason>` comment in the F\* extraction
+  `Makefile` next to the module lists. `annotation_lint.py` V5 checks the
+  bijection `{SLOW ∪ ADMIT} == {annotated modules}`, that ADMIT_MODULES is empty
+  (the ratchet target — `trust_ledger` `reconcile()` blocks *growth*, V5 asserts
+  the absolute 0), and `reason_ok` on each.
+- **Dropped from extraction (`-i` filters)** — a `# trusted-module: <token> :
+  <category>: <reason>` comment in `hax.py` / `hax.sh` for every `-<crate>::…`
+  module-exclusion filter (an *absent* module is worse than an admitted one, see
+  [`…verification_status.md`]). V6 checks the bijection
+  `{exclusion tokens} == {annotations}` + `reason_ok`. (In `hax.sh` the reasons
+  sit above the `\`-continued command, since a trailing comment would break the
+  line continuation.)
+
+V4/V5/V6 run on the committed tree (no extraction needed) and are wired into both
+`annotation_lint.py` and `trust_ledger.py --check`.
+
 ## Reading a verified function (reviewer quick answers)
 
 - *"Why is this F\* fragment in the code?"* — Every F\* fragment in a `.rs`

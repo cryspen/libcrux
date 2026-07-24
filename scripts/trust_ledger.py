@@ -48,14 +48,17 @@ CRATES = {
     "ml-dsa": {
         "root": "libcrux-ml-dsa",
         "prefix": "Libcrux_ml_dsa.",
+        "snake": "libcrux_ml_dsa",  # hax `-i` exclusion prefix (V6)
     },
     "ml-kem": {
         "root": "libcrux-ml-kem",
         "prefix": "Libcrux_ml_kem.",
+        "snake": "libcrux_ml_kem",
     },
     "sha3": {
         "root": "crates/algorithms/sha3",
         "prefix": "Libcrux_sha3.",
+        # no `snake`: G3 module/config mirrors are scoped to ml-kem + ml-dsa.
     },
 }
 
@@ -254,6 +257,111 @@ def reconcile_markers(repo_root, crate_name):
     return regressions, notes
 
 
+def check_companion_tags(repo_root, crate_name):
+    """V4 — companion-axiom tags. Every hand-written companion AXIOM (an F* obligation
+    in a git-tracked `proofs/fstar/spec/` module) must carry exactly one
+    `[@@ "trusted: <category>: <reason>"]` tag whose reason passes reason_ok. Per file
+    the bijection is #tags == #obligations. These are the CLAIMS side of the F* plane
+    for the git-tracked companions; they run on the committed tree (no extraction
+    needed). Returns (regressions, notes)."""
+    spec_dir = _abs(repo_root, CRATES[crate_name]["root"], "proofs", "fstar", "spec")
+    if not os.path.isdir(spec_dir):
+        return [], []
+    regressions, notes = [], []
+    n_ax = n_tag = 0
+    for fn in sorted(os.listdir(spec_dir)):
+        if not (fn.endswith(".fst") or fn.endswith(".fsti")):
+            continue
+        p = os.path.join(spec_dir, fn)
+        obl = ts.scan_file_obligations(p)
+        tags = ts.scan_fstar_trusted_tags(p)
+        n_ax += len(obl)
+        n_tag += len(tags)
+        if len(obl) != len(tags):
+            regressions.append(
+                f"[companion-tags V4] {crate_name}/{fn}: {len(obl)} companion axiom(s) "
+                f'but {len(tags)} `[@@ "trusted:…"]` tag(s) (need exactly one per axiom)')
+        for t in tags:
+            if not ts.reason_ok(t["reason"]):
+                regressions.append(
+                    f"[companion-tags V4] {crate_name}/{fn}:{t['line']} tag reason lacks a "
+                    f"valid category prefix: {t['reason'][:60]!r}")
+    if n_ax:
+        notes.append(f"[companion-tags V4] {crate_name}: {n_tag}/{n_ax} companion axioms tagged")
+    return regressions, notes
+
+
+def check_module_mirrors(repo_root, crate_name):
+    """V5 + V6 — module/config trust mirrors.
+
+    V5: every Makefile `SLOW_MODULES` / `ADMIT_MODULES` entry carries a
+        `# trusted-module: <module> : <reason>` annotation (reason_ok), the bijection
+        {SLOW∪ADMIT} == {annotated modules} holds, and ADMIT_MODULES is empty (the
+        ratchet target — reconcile() blocks GROWTH; V5 asserts the absolute 0).
+    V6: every `-<crate_snake>::…` hax extraction-exclusion token carries a
+        `# trusted-module: <token> : <reason>` annotation (bijection + reason_ok).
+
+    Both mirrors live in git-tracked files (Makefile, hax.py/hax.sh), so they run on
+    the committed tree without extraction. Returns (regressions, notes)."""
+    spec = CRATES[crate_name]
+    crate_root = _abs(repo_root, spec["root"])
+    regressions, notes = [], []
+
+    # ---- V5: Makefile SLOW/ADMIT ↔ annotation bijection + ADMIT empty-ratchet ----
+    makefile = os.path.join(crate_root, "proofs", "fstar", "extraction", "Makefile")
+    if os.path.isfile(makefile):
+        with open(makefile) as f:
+            mtext = f.read()
+        slow = ts.parse_makefile_module_list(makefile, "SLOW_MODULES")
+        admit = ts.parse_makefile_module_list(makefile, "ADMIT_MODULES")
+        anns = ts.scan_trusted_module_annotations(mtext)
+        ann = {a["name"].removesuffix(".fst").removesuffix(".fsti"): a for a in anns}
+        want = set(slow) | set(admit)
+        for mod in sorted(want):
+            if mod not in ann:
+                regressions.append(f"[module-mirror V5] {crate_name}: SLOW/ADMIT module "
+                                   f"{mod} has no `# trusted-module:` reason")
+            elif not ts.reason_ok(ann[mod]["reason"]):
+                regressions.append(f"[module-mirror V5] {crate_name}: {mod} reason lacks a "
+                                   f"category prefix: {ann[mod]['reason'][:50]!r}")
+        for name, a in sorted(ann.items()):
+            if name not in want:
+                regressions.append(f"[module-mirror V5] {crate_name}: stray `# trusted-module: "
+                                   f"{a['name']}` names no SLOW/ADMIT module")
+        if admit:
+            regressions.append(f"[module-mirror V5] {crate_name}: ADMIT_MODULES is non-empty "
+                               f"(ratchet target is empty): {sorted(admit)}")
+        if want:
+            notes.append(f"[module-mirror V5] {crate_name}: {len(want)} SLOW/ADMIT module(s) mirrored")
+
+    # ---- V6: hax `-i` extraction-exclusion tokens ↔ annotation bijection ----
+    snake = spec.get("snake")
+    if snake:
+        hax_script = next((os.path.join(crate_root, c)
+                           for c in ("hax.py", "hax.sh")
+                           if os.path.isfile(os.path.join(crate_root, c))), None)
+        if hax_script:
+            with open(hax_script) as f:
+                htext = f.read()
+            tokens = set(ts.scan_hax_exclusion_tokens(htext, snake))
+            ann = {a["name"]: a for a in ts.scan_trusted_module_annotations(htext)}
+            for tok in sorted(tokens):
+                if tok not in ann:
+                    regressions.append(f"[module-mirror V6] {crate_name}: extraction-exclusion "
+                                       f"{tok} has no `# trusted-module:` reason")
+                elif not ts.reason_ok(ann[tok]["reason"]):
+                    regressions.append(f"[module-mirror V6] {crate_name}: {tok} reason lacks a "
+                                       f"category prefix: {ann[tok]['reason'][:50]!r}")
+            for name in sorted(ann):
+                if name.startswith("-" + snake + "::") and name not in tokens:
+                    regressions.append(f"[module-mirror V6] {crate_name}: stray `# trusted-module: "
+                                       f"{name}` names no active `-i` exclusion filter")
+            if tokens:
+                notes.append(f"[module-mirror V6] {crate_name}: {len(tokens)} extraction-exclusion(s) mirrored")
+
+    return regressions, notes
+
+
 # ===========================================================================
 # Reporting
 # ===========================================================================
@@ -320,6 +428,13 @@ def main():
         mreg, mnotes = reconcile_markers(repo_root, c)
         regressions += mreg
         notes += mnotes
+        # G3 CLAIMS-side lints (V4 companion-axiom tags, V5/V6 module/config mirrors).
+        # These run on git-tracked files, so they are correct even on a non-freshly-
+        # extracted tree (unlike the observed planes above).
+        creg, cnotes = check_companion_tags(repo_root, c)
+        vreg, vnotes = check_module_mirrors(repo_root, c)
+        regressions += creg + vreg
+        notes += cnotes + vnotes
         for n in notes:
             print(f"  note: {n}")
         for r in regressions:

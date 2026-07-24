@@ -22,6 +22,19 @@ Checks the hax-verified crates for convention violations:
       `proof!("admit ()")` / `proof!(assume …)` must be `trusted_admit!` /
       `trusted_assume!` so the trust surface is declared, not laundered.
 
+  V4  A hand-written companion AXIOM (an F* obligation in a git-tracked
+      `proofs/fstar/spec/` module) without exactly one `[@@ "trusted: <cat>:
+      <reason>"]` tag, or a tag whose reason lacks a valid category prefix.
+
+  V5  A Makefile `SLOW_MODULES` / `ADMIT_MODULES` entry without a
+      `# trusted-module: <module> : <reason>` mirror, or a non-empty ADMIT ratchet.
+
+  V6  A `-<crate>::…` hax extraction-exclusion (`-i` filter) without a
+      `# trusted-module: <token> : <reason>` mirror in hax.py / hax.sh.
+
+V4/V5/V6 share their implementation with `trust_ledger.py --check` (they are its
+CLAIMS-side lints) and run on the committed tree — no extraction needed.
+
 Modes:
   report (default)  print violations, always exit 0 — for the migration period.
   --strict          exit 1 on any violation — for CI, once the sweep completes.
@@ -32,6 +45,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import trust_scan as ts
+import trust_ledger as tl
 
 CRATES = ["libcrux-ml-kem/src", "libcrux-ml-dsa/src"]
 BA_RX = re.compile(
@@ -127,6 +141,15 @@ def main():
                     )
     v2, v2b, v3 = marker_violations(repo_root)
 
+    # V4/V5/V6 — companion-axiom tags + module/config mirrors. Shared with
+    # trust_ledger --check; scoped to the two hax-verified crates with companions.
+    v4, v5v6 = [], []
+    for cn in ("ml-dsa", "ml-kem"):
+        creg, _ = tl.check_companion_tags(repo_root, cn)
+        vreg, _ = tl.check_module_mirrors(repo_root, cn)
+        v4 += creg
+        v5v6 += vreg
+
     if all_violations:
         print(
             f"V1: {len(all_violations)} untagged multi-line definition block(s) "
@@ -146,8 +169,17 @@ def main():
         print(f"V3: {len(v3)} raw trust mechanism(s) outside the wrappers:")
         for path, line, msg in sorted(v3):
             print(f"  {path}:{line}  {msg}")
+    if v4:
+        print(f"V4: {len(v4)} companion-axiom tag issue(s):")
+        for msg in sorted(v4):
+            print(f"  {msg}")
+    if v5v6:
+        print(f"V5/V6: {len(v5v6)} module/config trust-mirror issue(s):")
+        for msg in sorted(v5v6):
+            print(f"  {msg}")
 
-    total = len(all_violations) + len(v2) + len(v2b) + len(v3)
+    total = (len(all_violations) + len(v2) + len(v2b) + len(v3)
+             + len(v4) + len(v5v6))
     if total == 0:
         print("annotation lint: clean")
     sys.exit(1 if strict and total else 0)

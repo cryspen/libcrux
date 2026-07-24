@@ -96,3 +96,27 @@ level coverage + kind matching in the observed baseline covers the near-term ris
 
 Markers only *annotate* observed entries with categories/reasons — consistent with the
 whole design, they can never shrink the reported surface.
+
+## Companion-axiom tags + module/config mirrors (campaign G3)
+
+G3 extends the CLAIMS side from Rust body/function markers to the two remaining trust
+surfaces, with three more lints wired into both `annotation_lint.py` and
+`trust_ledger.py --check`. Unlike the observed planes, these run on the **git-tracked**
+tree (companion `spec/` modules, the Makefile, the hax scripts), so they are correct
+even without a fresh re-extraction:
+
+| Lint | Surface | Marker | Check |
+|---|---|---|---|
+| V4 | hand-written companion **axioms** (`assume val` / `admit ()` in `proofs/fstar/spec/`) | `[@@ "trusted: <cat>: <reason>"]` above the decl | per-file bijection `#tags == #obligations` + `reason_ok` |
+| V5 | `SLOW_MODULES` / `ADMIT_MODULES` (verified-on-cadence / admitted) | `# trusted-module: <module> : <reason>` in the F\* `Makefile` | bijection + `reason_ok` + ADMIT empty-ratchet |
+| V6 | `-<crate>::…` hax `-i` extraction exclusions (dropped modules) | `# trusted-module: <token> : <reason>` in `hax.py` / `hax.sh` | bijection + `reason_ok` |
+
+Counts on the current tree: V4 = 27 tagged axioms (ml-dsa 6, ml-kem 21); V5 = 3 ml-kem
+SLOW modules (0 ADMIT in both crates); V6 = 14 exclusions (ml-kem 11, ml-dsa 3).
+
+**Pollution-trap note.** The companion tags are F\* string-literal attributes, and the
+plane-1 scanner deliberately does not mask string literals (it mirrors `fstar_admits`).
+Reasons are therefore kept token-safe (no bare `assume` / `admit ()` / `magic ()` /
+`assume val` / `admit_smt_queries true`), and `trust_scan.mask_trusted_reason_strings`
+blanks `"trusted: …"` interiors as a backstop so a future non-token-safe reason can
+never grow the surface.
