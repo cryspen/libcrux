@@ -267,6 +267,7 @@ let rec repeati #acc l f acc0 =
 
 let eq_repeati0 #a n f acc0 = ()
 
+[@@ "trusted: pending-proof(E1): repeati unfold step at index i (proof pending)"]
 let unfold_repeati #a n f acc0 i = admit ()
 
 let lemma_createL_index #a len l i = ()
@@ -299,11 +300,17 @@ let lemma_bitand_properties #t (x:int_t t) =
     logand_lemma #t x x
 
 (** Hash Function: assumed definitions *)
+[@@ "trusted: trusted-extern: SHA3 G hash oracle (unextractable reference spec)"]
 let v_G input = admit()
+[@@ "trusted: trusted-extern: SHA3 H hash oracle (unextractable reference spec)"]
 let v_H input = admit()
+[@@ "trusted: trusted-extern: SHA3 PRF oracle (unextractable reference spec)"]
 let v_PRF v_LEN input = admit()
+[@@ "trusted: trusted-extern: SHA3 PRFxN oracle (unextractable reference spec)"]
 let v_PRFxN r v_LEN input = admit()
+[@@ "trusted: trusted-extern: SHA3 J oracle (unextractable reference spec)"]
 let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = admit()
+[@@ "trusted: trusted-extern: SHAKE XOF oracle (unextractable reference spec)"]
 let v_XOF v_LEN input = admit()
 
 let update_at_range_lemma #n
@@ -317,14 +324,18 @@ let update_at_range_lemma #n
                  /\ Seq.index (Seq.slice s' 0 len) i == Seq.index s' i ))  
 
 
+[@@ "trusted: trusted-extern: RNG fill_bytes precondition holds (external Rng trait contract)"]
 let fill_bytes_pre_true #v_Self #i0 self bytes = assume (i0.f_fill_bytes_pre self bytes)
 
+[@@ "trusted: trusted-extern: RNG fill_bytes postcondition + fills exactly bytes-length (external Rng trait contract)"]
 let fill_bytes_post_true #v_Self #i0 self bytes result =
   assume (i0.f_fill_bytes_post self bytes result /\
           Seq.length (snd result) == Seq.length bytes)
 
+[@@ "trusted: trusted-extern: i16 abs semantics (core-models impl_i16__abs primitive)"]
 let impl_i16__abs_value (x: i16) = assume (v (Core_models.Num.impl_i16__abs x) == Prims.abs (v x))
 
+[@@ "trusted: hax-limitation: length-16 slice try_into [_;16] then unwrap is identity (opaque core conversion)"]
 let slice_to_array_id (array: t_Slice 'a) =
   assume (Core_models.Result.impl__unwrap
     #(t_Array 'a (mk_usize 16))

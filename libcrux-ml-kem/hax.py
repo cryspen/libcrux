@@ -134,6 +134,22 @@ class extractAction(argparse.Action):
             "-libcrux_ml_kem::mlkem768::incremental::alloc::**",
             "-libcrux_ml_kem::mlkem1024::incremental::alloc::**",
         ]
+        # G3 module-trust mirror (annotation_lint V6 / trust_ledger --check): every
+        # `-libcrux_ml_kem::…` module dropped from F* extraction above carries a
+        # machine-readable reason here (an absent module is worse than an admitted
+        # one). Reasons use the shared category vocabulary (reason_ok); the bijection
+        # {exclusion tokens} == {annotations} is enforced by the V6 lint.
+        # trusted-module: -libcrux_ml_kem::kem::** : hax-limitation: top-level kem API/dispatch glue, not extracted (verified via the generic + incremental paths)
+        # trusted-module: -libcrux_ml_kem::hash_functions::portable::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
+        # trusted-module: -libcrux_ml_kem::hash_functions::avx2::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
+        # trusted-module: -libcrux_ml_kem::hash_functions::neon::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
+        # trusted-module: -libcrux_ml_kem::ind_cca::incremental::**::as_keypair : hax-limitation: runtime-dispatch helper (Box<dyn Keys> / &dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::ind_cca::incremental::**::as_state : hax-limitation: runtime-dispatch helper (Box<dyn Keys> / &dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::ind_cca::incremental::multiplexing::alloc::** : hax-limitation: alloc/runtime-dispatch submodule (Box<dyn> / dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::ind_cca::incremental::types::alloc::** : hax-limitation: alloc/runtime-dispatch submodule (Box<dyn> / dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::mlkem512::incremental::alloc::** : hax-limitation: alloc/runtime-dispatch submodule (Box<dyn> / dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::mlkem768::incremental::alloc::** : hax-limitation: alloc/runtime-dispatch submodule (Box<dyn> / dyn Any) has no F* model
+        # trusted-module: -libcrux_ml_kem::mlkem1024::incremental::alloc::** : hax-limitation: alloc/runtime-dispatch submodule (Box<dyn> / dyn Any) has no F* model
         include_str = " ".join(includes)
         interface_include = "+** -libcrux_ml_kem::vector::traits -libcrux_ml_kem::types -libcrux_ml_kem::constants -libcrux_ml_kem::traits::spec -libcrux_ml_kem::polynomial::spec"
         cargo_hax_into = [

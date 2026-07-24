@@ -11,6 +11,7 @@ let logand_lemma_forall #t:
               logand a a == a) =
   FStar.Classical.forall_intro (fun a -> logand_lemma #t a a)
 
+[@@ "trusted: validated-axiom: logand with a low-bit mask (2^m - 1) equals value mod 2^m"]
 let logand_mask_lemma_forall #t:
   Lemma (forall a m.
               m < bits t ==>

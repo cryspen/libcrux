@@ -2,6 +2,14 @@ SLOW_MODULES += Libcrux_ml_kem.Vector.Rej_sample_table.fsti
 SLOW_MODULES += Libcrux_ml_kem.Matrix.fst
 SLOW_MODULES += Libcrux_ml_kem.Vector.Portable.Serialize.fst
 
+# G3 module-trust mirror (annotation_lint V5 / trust_ledger --check): every module
+# verified-on-cadence (SLOW) carries a machine-readable reason here. The .fst/.fsti
+# themselves are gitignored/extracted, so the Makefile is the git-tracked authority
+# for this trust surface. Reasons use the shared category vocabulary (reason_ok).
+# trusted-module: Libcrux_ml_kem.Vector.Rej_sample_table.fsti : slow-proof: large rejection-sample shuffle-table VCs, verified on cadence
+# trusted-module: Libcrux_ml_kem.Matrix.fst : slow-proof: heavy matrix compute VCs, verified on cadence
+# trusted-module: Libcrux_ml_kem.Vector.Portable.Serialize.fst : slow-proof: portable serialize bit-manipulation VCs, verified on cadence
+
 ADMIT_MODULES =
 # NOTE: ALL incremental modules are now VERIFIED (removed from ADMIT_MODULES):
 # Ind_cca.Incremental{,.Types,.Avx2,.Portable,.Multiplexing} and

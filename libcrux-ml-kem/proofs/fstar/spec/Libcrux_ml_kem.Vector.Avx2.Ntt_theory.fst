@@ -941,6 +941,7 @@ let lemma_inv_l2_post
 // model by `shuffle256_epi8_dynamic_mask_formula` in interpretations.rs.
 // Kept ml-kem-local (not in shared BitVec.Intrinsics.fsti) to avoid a
 // stale-cascade into the sha3 / ml-dsa proof trees.
+[@@ "trusted: trusted-extern: PSHUFB (256-bit) semantics for the uninterpreted mm256_shuffle_epi8_no_semantics (core-models validated)"]
 assume val mm256_shuffle_epi8_no_semantics_lemma (a b: bit_vec 256) (i: nat{i < 256})
   : Lemma
     (BitVec.Intrinsics.mm256_shuffle_epi8_no_semantics a b i ==

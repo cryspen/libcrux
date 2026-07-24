@@ -24,6 +24,15 @@ function extract_all() {
     # hacspec_ml_dsa`) before re-running.
     extract specs/ml-dsa into -i "+**" fstar
 
+    # G3 module-trust mirror (annotation_lint V6 / trust_ledger --check): every
+    # `-libcrux_ml_dsa::…` module dropped from F* extraction below carries a
+    # machine-readable reason here (an absent module is worse than an admitted one).
+    # Reasons use the shared category vocabulary (reason_ok); the V6 lint enforces
+    # the bijection {exclusion tokens} == {annotations}. (Reasons live here, above the
+    # `\`-continued command, because a trailing comment would break the continuation.)
+    # trusted-module: -libcrux_ml_dsa::hash_functions::portable::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
+    # trusted-module: -libcrux_ml_dsa::hash_functions::simd256::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
+    # trusted-module: -libcrux_ml_dsa::hash_functions::neon::* : trusted-extern: SHA3 hash backend verified in the sha3 crate (only the trait signature is re-extracted)
     extract libcrux-ml-dsa \
         -C --features simd128,simd256 ";" \
         into -i "+**" \

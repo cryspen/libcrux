@@ -808,6 +808,7 @@ let lemma_filt8_eq_spec
 #pop-options
 
 (* ===== from ScratchRej6 (count_ones_exact + store_two_halves) ===== *)
+[@@ "trusted: validated-axiom: exact popcount4 of an i32 nibble"]
 assume val lemma_count_ones_nibble_exact (x: i32)
   : Lemma (requires v x >= 0 /\ v x < 16)
           (ensures v (Core_models.Num.impl_i32__count_ones x) == popcount4 (v x))

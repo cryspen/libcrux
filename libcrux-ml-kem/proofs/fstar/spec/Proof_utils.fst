@@ -13,6 +13,7 @@ open Core_models
 /// `i16::MIN` (where `.abs()` overflows / is out of range).  Upstream target:
 /// `Rust_primitives.Arithmetic`.  Consumer: ml-kem
 /// `Polynomial.multiply_by_constant_bounded`.
+[@@ "trusted: trusted-extern: i16 abs_i16 semantics guarded against i16::MIN (hax-lib primitive, pending upstream)"]
 assume
 val lemma_abs_i16 (c: i16)
     : Lemma (requires v c > -32768)

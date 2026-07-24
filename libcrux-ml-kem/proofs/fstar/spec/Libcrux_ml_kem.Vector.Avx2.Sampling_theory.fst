@@ -26,6 +26,7 @@ open Core_models
    `crates/utils/core-models/src/core_arch/x86/interpretations.rs`. Kept
    ml-kem-local (not in the shared BitVec.Intrinsics.fsti) to avoid a
    stale-cascade into the sha3 / ml-dsa proof trees. *)
+[@@ "trusted: trusted-extern: PSHUFB (128-bit) semantics for the uninterpreted mm_shuffle_epi8_no_semantics (core-models validated)"]
 assume val mm_shuffle_epi8_no_semantics_lemma (a b: bit_vec 128) (i: nat{i < 128})
   : Lemma
     (BitVec.Intrinsics.mm_shuffle_epi8_no_semantics a b i ==
@@ -46,6 +47,7 @@ assume val mm_shuffle_epi8_no_semantics_lemma (a b: bit_vec 128) (i: nat{i < 128
    `u8::count_ones` by the core-models test
    `track_i_axiom_transcription_tests::count_ones_popcount8_formula` in
    `crates/utils/core-models/src/core_arch/x86/interpretations.rs`. *)
+[@@ "trusted: validated-axiom: u8 count_ones equals popcount8 (exhaustively tested 0..=255)"]
 assume val count_ones_u8_popcount8 (x: u8)
   : Lemma (v (Rust_primitives.Arithmetic.count_ones_u8 x) ==
            Hacspec_ml_kem.Commute.Rej_table.popcount8 (v x))

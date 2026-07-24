@@ -397,6 +397,7 @@ let lemma_ser1_shift_amounts (shift: Libcrux_intrinsics.Arm64_extract.t_e_int16x
    vs Rust std u64::to_le_bytes (24,000,072 checks, 0 fails):
    ~/hax-fstar-mcp/libcrux-notes/agent-status/u64_to_le_bytes_validate-2026-06-23.rs *)
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
+[@@ "trusted: trusted-extern: little-endian byte b of u64 is (x >> 8b) mod 256 (hax-lib to_le_bytes primitive, bit-exact validated)"]
 assume
 val lemma_u64_to_le_bytes_index (x: u64) (b: nat{b < 8})
     : Lemma

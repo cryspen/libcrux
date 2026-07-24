@@ -25,6 +25,7 @@ open Libcrux_intrinsics.Avx2_extract
    and it is on ml-kem's include path but not sha3's. See ~/hax-fstar-mcp/
    libcrux-notes/agent-status/sha3-avx2-regression-rootcause-2026-06-30.md. *)
 
+[@@ "trusted: validated-axiom: bit-vec view of mm256_storeu_si256_u8 (core-models differential-tested)"]
 let lemma_mm256_storeu_si256_u8_bit_vec (output: t_Slice u8) (vector: t_Vec256)
   : Lemma (requires Core_models.Slice.impl__len #u8 output == mk_usize 32)
           (ensures
@@ -37,6 +38,7 @@ let lemma_mm256_storeu_si256_u8_bit_vec (output: t_Slice u8) (vector: t_Vec256)
     [SMTPat (mm256_storeu_si256_u8 output vector)]
   = admit ()
 
+[@@ "trusted: validated-axiom: bit-vec view of mm256_loadu_si256_u8 (core-models differential-tested)"]
 let lemma_mm256_loadu_si256_u8_bit_vec (input: t_Slice u8)
     : Lemma (requires Core_models.Slice.impl__len #u8 input == mk_usize 32)
             (ensures (let input_arr: t_Array u8 (sz 32) = input in
@@ -49,6 +51,7 @@ let lemma_mm256_loadu_si256_u8_bit_vec (input: t_Slice u8)
    Libcrux_ml_kem.Vector.Avx2.Compress; also SMTPat). Coexists with the
    `lemma_mm256_xor_si256_u64x4` kept in Avx2_extract: the two describe
    disjoint lane views (i16 vs u64) of the same value. *)
+[@@ "trusted: validated-axiom: i16x16 view of mm256_xor_si256 (core-models differential-tested)"]
 let lemma_mm256_xor_si256 (lhs rhs: t_Vec256)
   : Lemma (   vec256_as_i16x16 (mm256_xor_si256 lhs rhs)
            == Spec.Utils.map2 (^.) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs)
@@ -59,6 +62,7 @@ let lemma_mm256_xor_si256 (lhs rhs: t_Vec256)
 (* ml-kem i16-view characterization (called explicitly by
    Libcrux_ml_kem.Vector.Avx2.Compress, e.g. lemma_mm256_srli_epi16_15; also
    SMTPat). *)
+[@@ "trusted: validated-axiom: i16x16 view of mm256_srli_epi16 (core-models differential-tested)"]
 let lemma_mm256_srli_epi16 (v_SHIFT_BY: i32 {v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 16}) (vector: t_Vec256)
   : Lemma (   vec256_as_i16x16 (mm256_srli_epi16 v_SHIFT_BY vector)
            == Spec.Utils.map_array (fun (x:i16) ->
@@ -72,6 +76,7 @@ let lemma_mm256_srli_epi16 (v_SHIFT_BY: i32 {v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY <
    Libcrux_ml_kem.Vector.Avx2.Compress's mulhi composite lemma (SMTPat). The
    `lemma_mm256_unpackhi_epi64_u64x4` u64x4-view stays in Avx2_extract for
    sha3; this lane32-view is ml-kem-only. *)
+[@@ "trusted: validated-axiom: lane32 view of mm256_unpackhi_epi64 (core-models differential-tested)"]
 let lemma_mm256_unpackhi_epi64_lane32 (lhs rhs: t_Vec256)
   : Lemma (ensures forall (j: nat). j < 8 ==>
             lane32 (mm256_unpackhi_epi64 lhs rhs) j ==

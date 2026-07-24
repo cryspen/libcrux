@@ -3,6 +3,7 @@ module Libcrux_ml_dsa.Proof_utils
 open FStar.Mul
 open Core_models
 
+[@@ "trusted: trusted-extern: mm256_movemask_ps output range (AVX2 intrinsic model)"]
 assume
 val lemma_movemask_ps_bound (a: Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 256))
     : Lemma
@@ -10,16 +11,19 @@ val lemma_movemask_ps_bound (a: Libcrux_core_models.Abstractions.Bitvec.t_BitVec
         v (Libcrux_intrinsics.Avx2.mm256_movemask_ps a) >= 0 /\
         v (Libcrux_intrinsics.Avx2.mm256_movemask_ps a) < 256)
 
+[@@ "trusted: validated-axiom: popcount bound (count_ones <= 4) for an i32 nibble"]
 assume
 val lemma_count_ones_nibble (x: i32)
     : Lemma (requires v x >= 0 /\ v x < 16)
       (ensures v (Core_models.Num.impl_i32__count_ones x) <= 4)
 
+[@@ "trusted: validated-axiom: popcount bound (count_ones <= 8) for an i32 byte"]
 assume
 val lemma_count_ones_byte (x: i32)
     : Lemma (requires v x >= 0 /\ v x < 256)
       (ensures v (Core_models.Num.impl_i32__count_ones x) <= 8)
 
+[@@ "trusted: validated-axiom: exact popcount of an i32 byte bitmask"]
 assume
 val lemma_count_ones_byte_exact (m: i32) (b0 b1 b2 b3 b4 b5 b6 b7: bool)
     : Lemma
