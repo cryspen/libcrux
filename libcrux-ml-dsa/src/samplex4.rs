@@ -44,7 +44,10 @@ pub(crate) trait X4Sampler {
 // trait-method panic-freedom on the underlying X4 Xof hash functions,
 // which is not yet proven.  The declared `ensures` is exported to
 // callers exactly as before.
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "pending-proof(E4): body depends on X4 Xof trait panic-freedom (not yet proven); ensures exported to callers unchanged"
+)]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${matrix}_future == Seq.length $matrix /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
@@ -197,7 +200,10 @@ pub(crate) mod avx2 {
 // Admitted (relocated from Makefile ADMIT_MODULES): same X4 Xof
 // panic-freedom dependency as `matrix_flat`.  Declared `ensures`
 // exported to callers unchanged.
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "pending-proof(E4): same X4 Xof trait panic-freedom dependency as matrix_flat; ensures exported unchanged"
+)]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${s1_s2}_future == Seq.length $s1_s2 /\
     (let eta_val : usize = match ${eta} with

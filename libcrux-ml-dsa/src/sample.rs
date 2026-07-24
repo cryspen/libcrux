@@ -79,7 +79,10 @@ pub(crate) fn add_domain_separator(slice: &[u8], indices: (u8, u8)) -> [u8; 34] 
 // (FIPS 204 Algorithm 30), hence `0 <= c < FIELD_MAX + 1` per coefficient,
 // which `is_i32b FIELD_MAX` (centered |c| <= FIELD_MAX) covers.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "unprovable-termination: rejection-sampling body; postulated is_bounded ensures sound under FIPS-204 Alg-30 [0,Q) sampling"
+)]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${matrix}_future == Seq.length $matrix /\
     Libcrux_ml_dsa.Polynomial.Spec.is_bounded_poly_slice
@@ -295,7 +298,10 @@ pub(crate) fn add_error_domain_separator(slice: &[u8], domain_separator: u16) ->
 // Exposed as the opaque `is_lane_range_poly_slice` atom so callers see one
 // premise instead of triple-forall + match expansion.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "unprovable-termination: rejection-sampling body; postulated is_lane_range ensures consumed by signing-key serialization pre"
+)]
 #[hax_lib::ensures(|_| fstar!(r#"
     Seq.length ${re}_future == Seq.length $re /\
     (let eta_val : usize = match $eta with
@@ -708,7 +714,10 @@ fn inside_out_shuffle(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "unprovable-termination: inside_out_shuffle rejection body; postulated is_bounded ensures sound (result init 0, entries in {-1,0,1})"
+)]
 // JUSTIFICATION for the admitted (lax) post `is_bounded_poly 8380416 re`:
 // `result: [i32; 256]` is initialised to all zeros and `inside_out_shuffle`
 // only ever writes `1`/`-1` (line ~516) or copies an already-present entry

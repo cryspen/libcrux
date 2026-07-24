@@ -101,7 +101,10 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 // per-element functional spec (`sample_ntt ∘ XOF`, conditional on the spec's
 // fixed 840-byte buffer sufficing) that `sample_matrix_A`'s post needs.
 #[inline(always)]
-#[hax_lib::fstar::verification_status(lax)]
+#[libcrux_macros::trusted(
+    lax,
+    "unprovable-termination: unbounded rejection resqueeze loop (no decreasing measure); postulated per-element sample_ntt.XOF ensures"
+)]
 #[hax_lib::ensures(|result| hax_lib::forall(|i:usize| hax_lib::implies(i < K,
     spec::is_bounded_poly(3328, &result[i]).and(
         (match hacspec_ml_kem::sampling::sample_ntt::<70, 560, 840, 6720>(
