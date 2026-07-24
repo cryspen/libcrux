@@ -121,7 +121,10 @@ cfg_kyber! {
 
 macro_rules! impl_kem_trait {
     ($variant:ty, $pk:ty, $sk:ty, $ct:ty) => {
-        #[hax_lib::exclude]
+        #[libcrux_macros::trusted(
+            exclude,
+            "hax-limitation: arrayref Kem trait adapter over already-verified free functions; not a hax extraction target"
+        )]
         impl
             libcrux_traits::kem::arrayref::Kem<
                 CPA_PKE_PUBLIC_KEY_SIZE,

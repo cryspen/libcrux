@@ -12,12 +12,18 @@
 // lets the extracted module carry only the `SHUFFLE_TABLE` constant,
 // which verifies without any admit (this removes the former
 // Makefile ADMIT_MODULES entry rather than relocating it).
-#[cfg_attr(hax, hax_lib::exclude)]
+#[libcrux_macros::trusted(
+    exclude,
+    "hax-limitation: compile-time table generator; opaque shift precondition unprovable, dead at runtime"
+)]
 #[allow(dead_code)]
 fn is_bit_set(number: usize, bit_position: u8) -> bool {
     ((number & (1 << bit_position)) >> bit_position) == 1
 }
-#[cfg_attr(hax, hax_lib::exclude)]
+#[libcrux_macros::trusted(
+    exclude,
+    "hax-limitation: compile-time shuffle-table generator (calls is_bit_set); dead at runtime, excluded to keep the module admit-free"
+)]
 #[allow(dead_code)]
 fn generate_shuffle_table() -> [[u8; 16]; 16] {
     let mut byte_shuffles = [[255u8; 16]; 16];
