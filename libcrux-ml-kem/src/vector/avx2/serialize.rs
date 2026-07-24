@@ -760,11 +760,10 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --z3rlimit 200")]
-// `lemma_vec256_lane_bounded_local` (the lane-bound bridge) now lives in the
-// hand-written companion Libcrux_ml_kem.Vector.Avx2.Serialize_theory (a companion
-// is checked before both Serialize and Vector.Avx2, so the local copy is housed
-// there as named theory rather than inline).
-#[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Vector.Avx2.Serialize_theory"#)]
+// serialize_11's lane-bound bridge is the canonical `lemma_vec256_lane_bounded`
+// in the companion Libcrux_ml_kem.Vector.Avx2_theory (a companion is checked
+// before both Serialize and Vector.Avx2, so no local copy is needed).
+#[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Vector.Avx2_theory"#)]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 11 || vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 176}). bit_vec_of_int_t_array r 8 i == vector ((i/11) * 16 + i%11)"#))]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
@@ -776,7 +775,7 @@ introduce forall (j: nat). j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
 with introduce j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
-with _. Libcrux_ml_kem.Vector.Avx2.Serialize_theory.lemma_vec256_lane_bounded_local ${vector} 11 j
+with _. Libcrux_ml_kem.Vector.Avx2_theory.lemma_vec256_lane_bounded ${vector} 11 j
 "#
     );
     let input = PortableVector::from_i16_array(&array);
