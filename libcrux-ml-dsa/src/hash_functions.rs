@@ -186,7 +186,10 @@ pub(crate) mod portable {
     /// Portable SHAKE 128 x4 state.
     ///
     /// We're using a portable implementation so this is actually sequential.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: SHAKE Keccak state is an opaque handle to the trusted-extern hash primitive"
+    )]
     pub(crate) struct Shake128X4 {
         state0: KeccakState,
         state1: KeccakState,
@@ -282,7 +285,10 @@ pub(crate) mod portable {
     }
 
     /// Portable SHAKE 128 state
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake128 {}
 
     #[inline(always)]
@@ -298,7 +304,10 @@ pub(crate) mod portable {
     }
 
     /// Portable SHAKE 256 state
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256 {
         state: KeccakState,
     }
@@ -354,7 +363,10 @@ pub(crate) mod portable {
     /// Portable SHAKE 256 x4 state.
     ///
     /// We're using a portable implementation so this is actually sequential.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256X4 {
         state0: KeccakState,
         state1: KeccakState,
@@ -474,7 +486,10 @@ pub(crate) mod portable {
         }
     }
 
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256Xof {
         state: incremental::Shake256Xof,
     }
@@ -511,7 +526,10 @@ pub(crate) mod simd256 {
     ///
     /// This only implements the XofX4 API. For the single Xof, the portable
     /// version is used.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake128x4 {
         state: x4::incremental::KeccakState,
     }
@@ -597,7 +615,10 @@ pub(crate) mod simd256 {
     }
 
     /// AVX2 SHAKE 256 state
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256 {
         state: libcrux_sha3::portable::KeccakState,
     }
@@ -658,7 +679,10 @@ pub(crate) mod simd256 {
     }
 
     /// AVX2 SHAKE 256 x4 state.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256x4 {
         state: x4::incremental::KeccakState,
     }
@@ -784,10 +808,16 @@ pub(crate) mod neon {
 
     use super::{shake128, shake256};
     use libcrux_sha3::neon::x2;
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) type KeccakState = x2::incremental::KeccakState;
 
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake128x4 {
         state: [KeccakState; 2],
     }
@@ -858,7 +888,10 @@ pub(crate) mod neon {
     }
 
     /// Neon SHAKE 256 x4 state
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Shake256x4 {
         state: [KeccakState; 2],
     }

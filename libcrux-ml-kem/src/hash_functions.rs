@@ -78,7 +78,10 @@ pub(crate) mod portable {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct PortableHash<const K: usize> {
         shake128_state: [KeccakState; K],
     }
@@ -240,7 +243,10 @@ pub(crate) mod avx2 {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Simd256Hash {
         shake128_state: KeccakState,
     }
@@ -502,7 +508,10 @@ pub(crate) mod neon {
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
-    #[cfg_attr(hax, hax_lib::opaque)]
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: opaque Keccak/SHAKE state; underlying hash is a trusted-extern primitive (signature-only extraction)"
+    )]
     pub(crate) struct Simd128Hash {
         shake128_state: [KeccakState; 2],
     }
