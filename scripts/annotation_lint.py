@@ -8,8 +8,10 @@ Checks the hax-verified crates for convention violations:
       `proof-residence:` exception tag on a comment line directly above the
       attribute. Named theory belongs in `proofs/fstar/spec/` companions.
 
-  V2  A `trusted_admit!` / `trusted_assume!` reason that does not start with a
-      valid category prefix (`hax-limitation:`, `pending-proof(<ref>):`, …).
+  V2  A trust reason that does not start with a valid category prefix
+      (`hax-limitation:`, `pending-proof(<ref>):`, …). Covers both the G1 body
+      wrappers (`trusted_admit!` / `trusted_assume!`) and the G2 whole-function
+      attribute wrappers (`#[trusted(lax|panic_free|opaque|exclude, "reason")]`).
 
   V2b Fn-level inline-trust label sync (both directions): a fn whose body
       carries a `trusted_admit!` / `trusted_assume!` MUST also carry the
@@ -88,8 +90,11 @@ def marker_violations(repo_root):
     for crate in CRATES:
         markers = ts.scan_rust_trust_markers(os.path.join(repo_root, crate), repo_root)
 
-        # V2 — reason must carry a valid category prefix.
-        for b in markers["body"]:
+        # V2 — reason must carry a valid category prefix. Covers BOTH the G1 body
+        # wrappers (trusted_admit!/trusted_assume!) and the G2 whole-function
+        # attribute wrappers (#[trusted(lax|panic_free|opaque|exclude, "reason")]);
+        # a reason-less G2 wrapper scans as reason "" and is flagged here.
+        for b in markers["body"] + markers["attr"]:
             if not ts.reason_ok(b["reason"]):
                 v2.append((b["file"], b["line"], b["kind"],
                            (b["reason"].strip()[:60] or "<empty>")))

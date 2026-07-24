@@ -230,17 +230,26 @@ def reconcile_markers(repo_root, crate_name):
     for f, line, k in raw:
         regressions.append(f"[markers] {f}:{line} raw proof!({k} …) obligation not wrapped")
 
-    for b in markers["body"]:
+    for b in markers["body"] + markers["attr"]:
         if not ts.reason_ok(b["reason"]):
             notes.append(f"[markers] {b['file']}:{b['line']} reason lacks category prefix")
 
     n_admit = sum(1 for b in markers["body"] if b["kind"] == "inline-admit")
     n_assume = sum(1 for b in markers["body"] if b["kind"] == "inline-assume")
+    attr_by_kind = {}
+    for a in markers["attr"]:
+        attr_by_kind[a["kind"]] = attr_by_kind.get(a["kind"], 0) + 1
     if markers["body"] or markers["labels"]:
         notes.append(
             f"[markers] {n_admit} inline-admit + {n_assume} inline-assume body site(s), "
             f"{len(markers['labels'])} fn label(s); obligation↔marker name mapping is a "
             "scoped follow-up"
+        )
+    if markers["attr"]:
+        breakdown = ", ".join(f"{k}={attr_by_kind[k]}" for k in sorted(attr_by_kind))
+        notes.append(
+            f"[markers] {len(markers['attr'])} whole-function trust wrapper(s) ({breakdown}); "
+            "each emits its hax mechanism (byte-identical extraction) + a category+reason"
         )
     return regressions, notes
 

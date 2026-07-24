@@ -160,6 +160,51 @@ def test_marker_scan(tmp):
     check(mk["labels"][0]["fn"] == "g", "label attaches to following fn g")
 
 
+_ATTR_SRC = r'''mod m {
+    #[libcrux_macros::trusted(panic_free, "pending-proof(campaign): ensures admitted")]
+    pub(crate) fn a() {}
+
+    #[libcrux_macros::trusted(
+        opaque,
+        "trusted-extern: keccak state handle"
+    )]
+    pub(crate) struct S { x: u8 }
+
+    #[cfg_attr(hax, hax_lib::trusted(lax, "bad reason no category"))]
+    fn ignore_me_not_our_macro() {}
+
+    #[libcrux_macros::trusted(exclude, "random: not a category")]
+    fn b() {}
+
+    #[libcrux_macros::trusted(opaque)]
+    struct Missing {}
+}
+'''
+
+
+def test_attr_markers(tmp):
+    d = os.path.join(tmp, "attr")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "a.rs"), "w").write(_ATTR_SRC)
+    mk = ts.scan_rust_trust_markers(d, d)
+    kinds = sorted(a["kind"] for a in mk["attr"])
+    check(kinds == ["exclude", "opaque", "opaque", "panic_free"],
+          f"4 attr wrappers scanned (panic_free/opaque x2/exclude): got {kinds}")
+    by_kind = {}
+    for a in mk["attr"]:
+        by_kind.setdefault(a["kind"], []).append(a)
+    check(any(a["reason"].startswith("pending-proof(campaign)") for a in by_kind["panic_free"]),
+          "panic_free reason captured")
+    check(any(a["reason"].startswith("trusted-extern:") for a in by_kind["opaque"]),
+          "multi-line opaque reason captured")
+    # exclude wrapper has an invalid-category reason -> V2 should flag it.
+    check(any(not ts.reason_ok(a["reason"]) for a in by_kind["exclude"]),
+          "exclude bad-category reason flagged by reason_ok")
+    # reason-less opaque wrapper -> reason "" -> flagged.
+    check(any(a["reason"] == "" for a in by_kind["opaque"]),
+          "reason-less opaque wrapper scans as empty reason")
+
+
 def test_reason_format():
     for good in ["hax-limitation: x", "pending-proof(E5): y", "validated-axiom: z",
                  "  slow-proof: trimmed", "unprovable-termination: t", "trusted-extern: e"]:
@@ -201,6 +246,7 @@ def main():
         print("[markers]")
         test_marker_scan(tmp)
         test_marker_soundness(tmp)
+        test_attr_markers(tmp)
     print("[reason-format]")
     test_reason_format()
     print("[rust-comment-masking]")

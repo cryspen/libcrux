@@ -245,6 +245,14 @@ _TRUSTED_ASSUME_RE = re.compile(r"\btrusted_assume!\s*\(")
 _TRUSTED_LABEL_RE = re.compile(
     r"#\[\s*libcrux_macros::trusted\s*\(\s*(inline-admit|inline-assume)\s*\)\s*\]"
 )
+# The G2 whole-function attribute wrappers: `#[libcrux_macros::trusted(<kind>, "<reason>")]`
+# where <kind> emits the corresponding hax mechanism (see crates/utils/macros). The
+# `\b` (not a required comma) lets the scanner also catch a reason-less `#[trusted(opaque)]`
+# so V2 can flag the missing reason instead of silently ignoring it.
+_TRUSTED_ATTR_KINDS = ("lax", "panic_free", "opaque", "exclude")
+_TRUSTED_ATTR_RE = re.compile(
+    r"#\[\s*libcrux_macros::trusted\s*\(\s*(lax|panic_free|opaque|exclude)\b"
+)
 # Raw obligation-producing mechanisms that MUST now be wrapped (V3 ban).
 _RAW_ADMIT_RE = re.compile(r'\bproof!\s*\(\s*"admit \(\)"\s*\)')
 _RAW_ASSUME_RE = re.compile(r'\bproof!\s*\(\s*r?#*"?\s*assume\b')
@@ -390,6 +398,7 @@ def _following_fn(fn_defs, line_index):
 def scan_file_trust_markers(path, repo_root):
     """Scan one .rs file for trust markers. Returns dict with lists:
     `body` (trusted_admit!/trusted_assume! calls), `labels` (#[trusted(inline-*)]),
+    `attr` (#[trusted(lax|panic_free|opaque|exclude, "reason")] whole-function wrappers),
     `raw_admit`/`raw_assume` (banned bare proof! mechanisms)."""
     with open(path, encoding="utf-8", errors="replace") as f:
         text = f.read()
@@ -399,7 +408,7 @@ def scan_file_trust_markers(path, repo_root):
     rel = os.path.relpath(path, repo_root)
     line_of = lambda pos: masked.count("\n", 0, pos)  # 0-based line index
 
-    body, labels, raw_admit, raw_assume = [], [], [], []
+    body, labels, attr, raw_admit, raw_assume = [], [], [], [], []
 
     for kind, rx in (("inline-admit", _TRUSTED_ADMIT_RE),
                      ("inline-assume", _TRUSTED_ASSUME_RE)):
@@ -416,18 +425,30 @@ def scan_file_trust_markers(path, repo_root):
             "file": rel, "line": li + 1, "kind": m.group(1),
             "fn": _following_fn(fn_defs, li),
         })
+    # G2 whole-function attribute wrappers. The reason is the 2nd macro arg (after
+    # the kind ident); a reason-less wrapper yields "" so V2 flags it.
+    for m in _TRUSTED_ATTR_RE.finditer(masked):
+        li = line_of(m.start())
+        j = m.end()
+        while j < len(masked) and masked[j] in " \t\r\n":
+            j += 1
+        reason = _first_string_arg(masked, j) if j < len(masked) and masked[j] == "," else ""
+        attr.append({
+            "file": rel, "line": li + 1, "kind": m.group(1),
+            "reason": reason, "item": _following_fn(fn_defs, li),
+        })
     for rx, bucket in ((_RAW_ADMIT_RE, raw_admit), (_RAW_ASSUME_RE, raw_assume)):
         for m in rx.finditer(masked):
             bucket.append({"file": rel, "line": line_of(m.start()) + 1})
 
-    return {"body": body, "labels": labels,
+    return {"body": body, "labels": labels, "attr": attr,
             "raw_admit": raw_admit, "raw_assume": raw_assume}
 
 
 def scan_rust_trust_markers(src_root, repo_root):
     """Walk `src_root` (a crate's src/) for .rs files and aggregate trust markers.
     Excludes the wrapper-definition file (proof_macros.rs)."""
-    agg = {"body": [], "labels": [], "raw_admit": [], "raw_assume": []}
+    agg = {"body": [], "labels": [], "attr": [], "raw_admit": [], "raw_assume": []}
     for dirpath, dirnames, filenames in os.walk(src_root):
         dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
         for fn in sorted(filenames):

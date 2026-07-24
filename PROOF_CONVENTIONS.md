@@ -88,6 +88,35 @@ fn f() {
 - Enforced by `scripts/annotation_lint.py` (V2 reason-format, V2b label↔body sync,
   V3 ban raw `proof!("admit ()")`/`proof!(assume …)`) and `trust_ledger.py --check`.
 
+### Declaring a whole-function trust obligation (G2)
+
+Whole-function trust — a `lax` / `panic_free` body, an `opaque` type, or an
+`exclude`d item — is declared with the same `#[libcrux_macros::trusted(…)]`
+attribute, parameterized by kind + reason. The wrapper EMITS the `hax_lib`
+mechanism the site used before (byte-identical extraction) and adds the
+machine-readable category+reason a reviewer and the reconciler can read:
+
+```rust
+#[libcrux_macros::trusted(panic_free, "pending-proof(campaign): <one-line why>")]
+fn f() { … }
+```
+
+| kind         | emitted hax mechanism (under `cfg(hax)`)          |
+|--------------|---------------------------------------------------|
+| `lax`        | `hax_lib::fstar::verification_status(lax)`         |
+| `panic_free` | `hax_lib::fstar::verification_status(panic_free)`  |
+| `opaque`     | `hax_lib::opaque`                                  |
+| `exclude`    | `hax_lib::exclude`                                 |
+
+- The mechanism is emitted under `cfg_attr(hax, …)`, so a normal build is
+  unaffected and under hax it reduces to exactly the prior attribute.
+- The `"<category>: <reason>"` argument is mandatory (unlike the inline-*
+  summaries); the category prefix is checked by `annotation_lint.py` (V2), and a
+  reason-less wrapper is flagged, not silently ignored.
+- A `panic_free` / `lax` body admits its `ensures` unchecked, so the reason
+  documents the *existing* justification for that trusted post — it is not a new
+  assumption (see "The trust surface"). Long prose stays as an adjacent comment.
+
 ## Reading a verified function (reviewer quick answers)
 
 - *"Why is this F\* fragment in the code?"* — Every F\* fragment in a `.rs`

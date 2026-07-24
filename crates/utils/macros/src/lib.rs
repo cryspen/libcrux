@@ -131,10 +131,31 @@ pub fn ml_dsa_parameter_sets(args: TokenStream, item: TokenStream) -> TokenStrea
 /// attribute. (`inline-admit` tokenises as `inline - admit`; the leading
 /// hyphenated kind is normalised by stripping whitespace.)
 ///
-/// Later gates (G2) will add the `lax` / `panic_free` / `opaque` / `exclude`
-/// kinds here, each mapping to the corresponding `hax_lib` mechanism; those are
-/// intentionally rejected for now so a mistyped kind fails loudly instead of
-/// silently becoming a no-op.
+/// **G2 whole-function kinds (`lax` / `panic_free` / `opaque` / `exclude`)** are
+/// *attribute-as-mechanism*: the wrapper EMITS the same underlying `hax_lib`
+/// attribute the site used before the wrapper, so extraction stays byte-identical,
+/// PLUS carries the machine-readable `#[trusted(kind,"reason")]` label the
+/// reconciler and reviewers read. The emitted mechanism is gated behind
+/// `cfg_attr(hax, …)` so a normal (non-hax) build is unaffected, and under hax it
+/// reduces to exactly the attribute the site had:
+///
+/// | kind         | emits (under `cfg(hax)`)                          |
+/// |--------------|---------------------------------------------------|
+/// | `lax`        | `hax_lib::fstar::verification_status(lax)`         |
+/// | `panic_free` | `hax_lib::fstar::verification_status(panic_free)`  |
+/// | `opaque`     | `hax_lib::opaque`                                  |
+/// | `exclude`    | `hax_lib::exclude`                                 |
+///
+/// The `"<category>: <reason>"` argument is Rust-only metadata (dropped from
+/// extraction); its format is checked by `scripts/annotation_lint.py` (V2), not here.
+///
+/// NOTE (open-question #5): `opaque` sites live inside `#[hax_lib::attributes]`
+/// impl blocks. Whether the wrapper survives that outer macro's expansion
+/// byte-identically is prototype-gated; if it does not, the fallback is a raw
+/// `#[cfg_attr(hax, hax_lib::opaque)]` + adjacent `// trusted: opaque: reason`
+/// comment (lint-recognized), not this wrapper.
+///
+/// A mistyped/unknown kind panics loudly rather than silently becoming a no-op.
 #[proc_macro_attribute]
 pub fn trusted(args: TokenStream, item: TokenStream) -> TokenStream {
     let args = args.to_string();
@@ -145,13 +166,33 @@ pub fn trusted(args: TokenStream, item: TokenStream) -> TokenStream {
         .chars()
         .filter(|c| !c.is_whitespace())
         .collect();
+    // The `hax_lib` mechanism each G2 whole-function kind maps to.
+    let mechanism: Option<&str> = match kind.as_str() {
+        "lax" => Some("hax_lib::fstar::verification_status(lax)"),
+        "panic_free" => Some("hax_lib::fstar::verification_status(panic_free)"),
+        "opaque" => Some("hax_lib::opaque"),
+        "exclude" => Some("hax_lib::exclude"),
+        _ => None,
+    };
     match kind.as_str() {
         // Pure summary markers — the real obligation is on the body macro.
         // Return the item verbatim (extraction-neutral).
         "inline-admit" | "inline-assume" => item,
+        // Attribute-as-mechanism: prepend the cfg(hax)-gated hax_lib attribute,
+        // then return the item unchanged. Under hax this is byte-identical to the
+        // site's prior attribute; under a normal build it expands to nothing.
+        "lax" | "panic_free" | "opaque" | "exclude" => {
+            let mech = mechanism.expect("mechanism table covers these kinds");
+            let attr: TokenStream = format!("#[cfg_attr(hax, {mech})]")
+                .parse()
+                .expect("#[libcrux_macros::trusted]: internal attribute parse failed");
+            let mut out = attr;
+            out.extend(item);
+            out
+        }
         other => panic!(
             "#[libcrux_macros::trusted]: unsupported kind `{other}` \
-             (G1 supports `inline-admit`, `inline-assume`)"
+             (supported: inline-admit, inline-assume, lax, panic_free, opaque, exclude)"
         ),
     }
 }
