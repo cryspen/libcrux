@@ -10,7 +10,10 @@ use crate::{
 };
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): signing-key serialization verified panic-free; functional post admitted"
+)]
 #[hax_lib::fstar::options("--z3rlimit 600 --split_queries always --fuel 0 --ifuel 1")]
 #[hax_lib::requires(fstar!(r#"
     Seq.length $seed_matrix == 32 /\

@@ -41,7 +41,10 @@ let rec count_total_ones (hint: t_Slice (t_Array i32 (mk_usize 256)))
 fn _signature_serialize_spec_helpers() {}
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): signature serialization verified panic-free; functional post admitted"
+)]
 #[hax_lib::fstar::before(
     r#"#push-options "--z3rlimit 400 --fuel 1 --ifuel 1 --split_queries always""#
 )]
@@ -163,7 +166,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): hint serialization verified panic-free; functional post admitted"
+)]
 #[hax_lib::fstar::before(
     r#"#push-options "--z3rlimit 1500 --fuel 2 --ifuel 4 --split_queries always""#
 )]
@@ -340,7 +346,10 @@ fn set_hint(out_hint: &mut [[i32; 256]], i: usize, j: usize) {
 /// inner index loop run past the slice bound.  F* refuses
 /// panic-freedom for the buggy variant on the inner
 /// `hint_serialized[j]` access.
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): hint-row validation verified panic-free; functional post admitted"
+)]
 #[hax_lib::fstar::before(r#"#push-options "--z3rlimit 200 --ifuel 2""#)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::requires(fstar!(r#"
@@ -396,7 +405,10 @@ fn validate_hint_rows(
 /// cumulative-count and ordering invariants from `validate_hint_rows`
 /// have already been checked.  Loop accumulator is just `out_hint`,
 /// so the fold_range init-state refinement check closes cleanly.
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): hint-index writing verified panic-free; functional post admitted"
+)]
 #[hax_lib::fstar::before(r#"#push-options "--z3rlimit 200 --ifuel 2""#)]
 #[hax_lib::fstar::after(r#"#pop-options"#)]
 #[hax_lib::requires(fstar!(r#"

@@ -107,7 +107,10 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations, const SHIFT_BY: i32>(
         (mk_usize 4096) ${t0}_future /\
     Libcrux_ml_dsa.Polynomial.Spec.is_lane_range_poly_slice
         (mk_usize 0) (mk_usize 1023) ${t1}_future"#))]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "hax-limitation: body admits the simultaneous &mut t0/t1 borrow loop; panic-free + ensures both blocked on hax"
+)]
 #[libcrux_macros::trusted(inline-admit)]
 pub(crate) fn power2round_vector<SIMDUnit: Operations>(
     t0: &mut [PolynomialRingElement<SIMDUnit>],
@@ -526,7 +529,10 @@ pub(crate) fn make_hint<SIMDUnit: Operations>(
 // (earlier in this file), so it is in scope here without a duplicate `let`.
 #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): body verified panic-free; commitment-width functional post admitted"
+)]
 #[hax_lib::requires(fstar!(r#"
         (v $gamma2 == v ${crate::constants::GAMMA2_V261_888} \/
          v $gamma2 == v ${crate::constants::GAMMA2_V95_232}) /\

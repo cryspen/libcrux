@@ -51,7 +51,10 @@ pub(crate) mod generic {
     );
 
     #[inline(always)]
-    #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+    #[libcrux_macros::trusted(
+        panic_free,
+        "pending-proof(campaign): top-level signing body verified panic-free; functional post admitted"
+    )]
     #[cfg_attr(
         hax,
         hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always")
@@ -1121,7 +1124,10 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
-    #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+    #[libcrux_macros::trusted(
+        panic_free,
+        "pending-proof(campaign): signing wrapper verified panic-free; result-ok ensures admitted"
+    )]
     #[cfg_attr(hax, hax_lib::ensures(|result| {
         hax_lib::implies(
             context.len() <= 255
@@ -1178,7 +1184,10 @@ pub(crate) mod generic {
     }
 
     #[inline(always)]
-    #[cfg_attr(hax, hax_lib::fstar::verification_status(panic_free))]
+    #[libcrux_macros::trusted(
+        panic_free,
+        "pending-proof(campaign): signing wrapper verified panic-free; result-ok ensures admitted"
+    )]
     #[cfg_attr(hax, hax_lib::ensures(|result| {
         hax_lib::implies(
             context.len() <= 255 && message.len() <= 8192,

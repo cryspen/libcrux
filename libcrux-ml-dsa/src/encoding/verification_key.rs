@@ -6,7 +6,10 @@ use crate::{
 };
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): body verified panic-free; length-preservation ensures admitted"
+)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --fuel 0 --ifuel 1")]
 #[hax_lib::requires(fstar!(r#"
     Seq.length seed == 32 /\
@@ -47,7 +50,10 @@ pub(crate) fn generate_serialized<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::verification_status(panic_free)]
+#[libcrux_macros::trusted(
+    panic_free,
+    "pending-proof(campaign): body verified panic-free; per-lane bound ensures admitted"
+)]
 #[hax_lib::fstar::options("--z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"
     v $rows_in_a <= 8 /\
