@@ -1,7 +1,7 @@
 /// SHA-3 and SHAKE functions — FIPS 202, Section 6.
 use crate::sponge::keccak;
 
-// Rate constants in bytes: rate = (1600 - 2*capacity) / 8
+// Rate constants in bytes: rate = (1600 - capacity) / 8
 const SHA3_224_RATE: usize = 144; // capacity = 448
 const SHA3_256_RATE: usize = 136; // capacity = 512
 const SHA3_384_RATE: usize = 104; // capacity = 768
@@ -17,29 +17,21 @@ const SHAKE_DELIM: u8 = 0x1F;
 /// SHA3-224 — FIPS 202, Section 6.1.
 pub fn sha3_224(message: &[u8]) -> [u8; 28] {
     keccak::<28>(SHA3_224_RATE, SHA3_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 /// SHA3-256 — FIPS 202, Section 6.1.
 pub fn sha3_256(message: &[u8]) -> [u8; 32] {
     keccak::<32>(SHA3_256_RATE, SHA3_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 /// SHA3-384 — FIPS 202, Section 6.1.
 pub fn sha3_384(message: &[u8]) -> [u8; 48] {
     keccak::<48>(SHA3_384_RATE, SHA3_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 /// SHA3-512 — FIPS 202, Section 6.1.
 pub fn sha3_512(message: &[u8]) -> [u8; 64] {
     keccak::<64>(SHA3_512_RATE, SHA3_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 /// SHAKE128 — FIPS 202, Section 6.2.
@@ -50,8 +42,6 @@ pub fn sha3_512(message: &[u8]) -> [u8; 64] {
 #[hax_lib::requires(N < usize::MAX - 200)]
 pub fn shake128<const N: usize>(message: &[u8]) -> [u8; N] {
     keccak::<N>(SHAKE128_RATE, SHAKE_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 /// SHAKE256 — FIPS 202, Section 6.2.
@@ -62,8 +52,6 @@ pub fn shake128<const N: usize>(message: &[u8]) -> [u8; N] {
 #[hax_lib::requires(N < usize::MAX - 200)]
 pub fn shake256<const N: usize>(message: &[u8]) -> [u8; N] {
     keccak::<N>(SHAKE256_RATE, SHAKE_DELIM, message)
-        .try_into()
-        .unwrap()
 }
 
 #[cfg(test)]

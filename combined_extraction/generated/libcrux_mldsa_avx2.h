@@ -7,8 +7,8 @@
  * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
  * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
- * F*: unset
- * Libcrux: ae092f4921933e45dec31610a1465191171e5b3f
+ * F*: 7b347386330d0e5a331a220535b6f15288903234
+ * Libcrux: dirty
  */
 
 
@@ -1239,7 +1239,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_19(
       (core_ops_range_Range_87{ (size_t)10U, (size_t)26U })),
     upper_4);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d4(&serialized,
+    Eurydice_array_to_subslice_shared_d41(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)20U })),
     uint8_t);
 }
@@ -1305,7 +1305,7 @@ libcrux_ml_dsa_simd_avx2_encoding_gamma1_serialize_when_gamma1_is_2_pow_17(
       (core_ops_range_Range_87{ (size_t)9U, (size_t)25U })),
     upper_4);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d4(&serialized,
+    Eurydice_array_to_subslice_shared_d41(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)18U })),
     uint8_t);
 }
@@ -1681,7 +1681,7 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(
             (core_ops_range_Range_87{ (size_t)0U, (size_t)16U })),
           libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize_4(simd_unit));
         Eurydice_slice_copy(out,
-          Eurydice_array_to_subslice_shared_d41(&serialized,
+          Eurydice_array_to_subslice_shared_d42(&serialized,
             (core_ops_range_Range_87{ (size_t)0U, (size_t)4U })),
           uint8_t);
         break;
@@ -1700,7 +1700,7 @@ libcrux_ml_dsa_simd_avx2_encoding_commitment_serialize(
             (core_ops_range_Range_87{ (size_t)3U, (size_t)19U })),
           upper_3);
         Eurydice_slice_copy(out,
-          Eurydice_array_to_subslice_shared_d41(&serialized,
+          Eurydice_array_to_subslice_shared_d42(&serialized,
             (core_ops_range_Range_87{ (size_t)0U, (size_t)6U })),
           uint8_t);
         break;
@@ -1786,7 +1786,7 @@ libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_4(
       (core_ops_range_Range_87{ (size_t)0U, (size_t)16U })),
     adjacent_4_combined);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d42(&serialized,
+    Eurydice_array_to_subslice_shared_d43(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)4U })),
     uint8_t);
 }
@@ -1892,7 +1892,7 @@ libcrux_ml_dsa_simd_avx2_encoding_error_serialize_when_eta_is_2(
       (core_ops_range_Range_87{ (size_t)0U, (size_t)16U })),
     adjacent_6_combined);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d42(&serialized,
+    Eurydice_array_to_subslice_shared_d43(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)3U })),
     uint8_t);
 }
@@ -2060,7 +2060,7 @@ libcrux_ml_dsa_simd_avx2_encoding_t0_serialize(
   libcrux_intrinsics_avx2_mm_storeu_bytes_si128(Eurydice_array_to_slice_mut_29(&serialized),
     bits_sequential);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d42(&serialized,
+    Eurydice_array_to_subslice_shared_d43(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)13U })),
     uint8_t);
 }
@@ -2203,7 +2203,7 @@ libcrux_ml_dsa_simd_avx2_encoding_t1_serialize(
       (core_ops_range_Range_87{ (size_t)5U, (size_t)21U })),
     upper_4);
   Eurydice_slice_copy(out,
-    Eurydice_array_to_subslice_shared_d43(&serialized,
+    Eurydice_array_to_subslice_shared_d44(&serialized,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)10U })),
     uint8_t);
 }
@@ -6611,7 +6611,7 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_18(
   randomness0 = libcrux_ml_dsa_hash_functions_simd256_squeeze_first_block_8c(&state);
   Eurydice_array_u8x8 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d40(&randomness0,
+    Eurydice_array_to_subslice_shared_d4(&randomness0,
       (core_ops_range_Range_87{ (size_t)0U, (size_t)8U })).ptr,
     (size_t)8U * sizeof (uint8_t));
   uint64_t

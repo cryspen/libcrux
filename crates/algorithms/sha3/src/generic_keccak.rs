@@ -427,7 +427,7 @@ mod cross_spec_tests {
         crate::simd::portable::store_block::<136>(&state, &mut impl_out, 0, 136);
         let mut spec_out = [0u8; 200];
         spec_out = spec_sponge::squeeze_state(&state, spec_out, 0, 136);
-        assert_eq!(impl_out[..136], spec_out[..136]);
+        assert_eq!(impl_out, spec_out);
     }
 
     #[test]
@@ -479,11 +479,7 @@ mod cross_spec_tests {
             crate::simd::portable::store_block::<136>(&state, &mut impl_out, 0, len);
             let mut spec_out = [0u8; 200];
             spec_out = spec_sponge::squeeze_state(&state, spec_out, 0, len);
-            assert_eq!(
-                impl_out[..len],
-                spec_out[..len],
-                "store_block mismatch at len={len}"
-            );
+            assert_eq!(impl_out, spec_out, "store_block mismatch at len={len}");
         }
     }
 
@@ -496,118 +492,7 @@ mod cross_spec_tests {
         crate::simd::portable::store_block::<136>(&state, &mut impl_out, offset, len);
         let mut spec_out = [0u8; 200];
         spec_out = spec_sponge::squeeze_state(&state, spec_out, offset, len);
-        assert_eq!(
-            impl_out[offset..offset + len],
-            spec_out[offset..offset + len]
-        );
-    }
-
-    // -- Layer 4: Top-level absorb / squeeze split --
-    //
-    // These tests pin down the refactor of `keccak1` into
-    // `absorb` + `squeeze`: each phase is compared against the spec
-    // independently.  They also confirm that the two-line
-    // `keccak1 = squeeze(absorb(...))` matches the monolithic spec
-    // `keccak` for every SHA-3 / SHAKE variant.
-
-    #[test]
-    fn absorb_matches_spec() {
-        // For each rate/delim, compare impl absorb's state against the
-        // spec absorb's state on a few message sizes that exercise
-        // zero, partial, and multi-block absorb paths.
-        fn check<const RATE: usize, const DELIM: u8>(msgs: &[&[u8]]) {
-            for msg in msgs {
-                let impl_s: KeccakState<1, u64> =
-                    crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
-                let spec_s = spec_sponge::absorb(RATE, DELIM, msg);
-                assert_eq!(
-                    impl_s.st,
-                    spec_s,
-                    "absorb mismatch at RATE={RATE}, DELIM={DELIM:#x}, len={}",
-                    msg.len()
-                );
-            }
-        }
-
-        let empty: &[u8] = &[];
-        let short: &[u8] = b"hello world";
-        let mut rate_minus_one = [0u8; 135];
-        for (i, b) in rate_minus_one.iter_mut().enumerate() {
-            *b = (i & 0xFF) as u8;
-        }
-        let mut multi_block = [0u8; 200];
-        for (i, b) in multi_block.iter_mut().enumerate() {
-            *b = (i & 0xFF) as u8;
-        }
-        let msgs: &[&[u8]] = &[empty, short, &rate_minus_one, &multi_block];
-
-        check::<144, 0x06>(msgs); // SHA3-224
-        check::<136, 0x06>(msgs); // SHA3-256
-        check::<104, 0x06>(msgs); // SHA3-384
-        check::<72, 0x06>(msgs); // SHA3-512
-        check::<168, 0x1f>(msgs); // SHAKE128
-        check::<136, 0x1f>(msgs); // SHAKE256
-    }
-
-    #[test]
-    fn squeeze_matches_spec() {
-        // Start from a state produced by impl absorb (which we just
-        // showed matches the spec) and confirm that squeeze produces
-        // the same bytes as the spec squeeze for output lengths that
-        // exercise every branch (zero blocks, exact blocks, tail).
-        fn check<const RATE: usize, const DELIM: u8, const OUT: usize>(msg: &[u8]) {
-            let impl_s = crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
-            let spec_s = spec_sponge::absorb(RATE, DELIM, msg);
-            debug_assert_eq!(impl_s.st, spec_s);
-
-            let mut impl_out = [0u8; OUT];
-            crate::generic_keccak::portable::squeeze::<RATE>(impl_s, &mut impl_out);
-            let spec_out = spec_sponge::squeeze::<OUT>(spec_s, RATE);
-            assert_eq!(
-                impl_out,
-                spec_out,
-                "squeeze mismatch at RATE={RATE}, DELIM={DELIM:#x}, OUT={OUT}, msg.len()={}",
-                msg.len()
-            );
-        }
-
-        let msg: &[u8] = b"the quick brown fox jumps over the lazy dog";
-
-        // Hash variants: OUT < RATE (single-squeeze path)
-        check::<144, 0x06, 28>(msg); // SHA3-224
-        check::<136, 0x06, 32>(msg); // SHA3-256
-        check::<104, 0x06, 48>(msg); // SHA3-384
-        check::<72, 0x06, 64>(msg); // SHA3-512
-                                    // SHAKE: OUT exercising loop and tail
-        check::<168, 0x1f, 16>(msg); // short shake128
-        check::<168, 0x1f, 200>(msg); // multi-block shake128 (loop + tail)
-        check::<136, 0x1f, 64>(msg); // short shake256
-        check::<136, 0x1f, 300>(msg); // multi-block shake256 (loop + tail)
-    }
-
-    #[test]
-    fn keccak1_matches_squeeze_of_absorb() {
-        // `keccak1` must be observationally equal to
-        // `squeeze(absorb(...))`, both on the impl side.  This pins
-        // the two-line rewrite of `keccak1`.
-        fn check<const RATE: usize, const DELIM: u8, const OUT: usize>(msg: &[u8]) {
-            let mut via_keccak1 = [0u8; OUT];
-            crate::generic_keccak::portable::keccak1::<RATE, DELIM>(msg, &mut via_keccak1);
-
-            let s = crate::generic_keccak::portable::absorb::<RATE, DELIM>(msg);
-            let mut via_split = [0u8; OUT];
-            crate::generic_keccak::portable::squeeze::<RATE>(s, &mut via_split);
-
-            assert_eq!(
-                via_keccak1, via_split,
-                "keccak1 != squeeze(absorb) at RATE={RATE}, DELIM={DELIM:#x}, OUT={OUT}",
-            );
-        }
-
-        let msg: &[u8] = b"refactor sanity check";
-        check::<136, 0x06, 32>(msg); // SHA3-256
-        check::<168, 0x1f, 64>(msg); // SHAKE128
-        check::<168, 0x1f, 200>(msg); // SHAKE128, multi-block + tail
+        assert_eq!(impl_out, spec_out);
     }
 }
 

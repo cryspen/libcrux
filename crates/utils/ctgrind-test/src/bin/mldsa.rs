@@ -37,15 +37,7 @@ fn test_sign_mldsa_87() {
     println!("mldsa87 signature: {:02x?}", &sig.as_slice()[..4]);
 }
 
-// XXX test other parameter configurations
-
 pub fn main() {
-    #[cfg(not(valgrind_ct_test))]
-    {
-        compile_error!(
-            "ctgrind_test mldsa binary needs to be compiled with '--cfg valgrind_ct_test'"
-        );
-    }
     test_sign_mldsa_44();
     test_sign_mldsa_65();
     test_sign_mldsa_87();

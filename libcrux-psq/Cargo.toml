@@ -1,7 +1,7 @@
 [package]
 name = "libcrux-psq"
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
-version = "0.0.9"
+version = "0.0.10"
 readme = "README.md"
 
 authors.workspace = true
@@ -16,7 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits.workspace = true
-libcrux-kem = { workspace = true, features = [
+libcrux-kem = { workspace = true, default-features = true, features = [
     "codec",
 ] }
 libcrux-chacha20poly1305.workspace = true
@@ -38,7 +38,7 @@ libcrux-ed25519 = { workspace = true, features = [
     "rand",
     "codec",
 ] }
-tls_codec = { version = "0.4.2", features = ["derive"] }
+tls_codec = { workspace = true }
 libcrux-ml-dsa = { workspace = true, features = ["codec"] }
 libcrux-aes.workspace = true
 

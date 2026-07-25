@@ -6,6 +6,8 @@ mod classify_secret;
 #[cfg(feature = "check-secret-independence")]
 mod secret_integers;
 #[cfg(feature = "check-secret-independence")]
+pub use classify_secret::{classify_mut_slice, declassify_mut_slice};
+#[cfg(feature = "check-secret-independence")]
 pub use secret_integers::*;
 
 // If the feature "check-secret-independence" is not set, we use public integers
@@ -13,6 +15,8 @@ pub use secret_integers::*;
 mod classify_public;
 #[cfg(not(feature = "check-secret-independence"))]
 mod public_integers;
+#[cfg(not(feature = "check-secret-independence"))]
+pub use classify_public::{classify_mut_slice, declassify_mut_slice};
 #[cfg(not(feature = "check-secret-independence"))]
 pub use public_integers::*;
 
@@ -153,8 +157,6 @@ pub trait Select {
 mod portable {
     use super::{Select, Swap};
     use crate::Declassify;
-    #[cfg(feature = "check-secret-independence")]
-    use crate::IntOps;
     use crate::{CastOps, U16, U32, U64, U8};
     use core::hint::black_box;
 

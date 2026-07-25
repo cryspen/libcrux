@@ -11,8 +11,12 @@
     # Keep this revision in sync with EURYDICE_REV in .docker/c/Dockerfile,
     # which is what CI uses for the extraction. charon and karamel follow
     # eurydice transitively, so pinning eurydice pins all three.
-    eurydice.url = "github:aeneasverif/eurydice/b227478b67c6a6e2ff611f978f10d6b7f26472ac";
-    hax.url = "github:hacspec/hax";
+    eurydice.url = "github:aeneasverif/eurydice/aaa9fa657fb6f09802edb890252040d94cd93982";
+    eurydice.inputs.karamel.inputs.fstar.follows = "fstar-pinned";
+    # Pin hax 0.3.6, update if hax-lib is updated in Cargo.toml
+    hax.url = "github:cryspen/hax/87ba96831ecfeb7dbb54efcf97036fbc5f25bc71";
+    # Pin F* to the version CI uses for hax lax/prove (see .github/workflows/mlkem-hax.yml).
+    fstar-pinned.url = "github:FStarLang/FStar/v2025.10.06";
     googletest = {
       url = "github:google/googletest/release-1.11.0";
       flake = false;
@@ -34,6 +38,7 @@
       flake-utils,
       rust-overlay,
       eurydice,
+      fstar-pinned,
       hax,
       googletest,
       benchmark,
@@ -51,7 +56,7 @@
         crane = charon.inputs.crane;
         # Use the overridden package exported by the eurydice flake.
         karamel = eurydice.packages.${system}.karamel;
-        fstar = eurydice.inputs.karamel.inputs.fstar;
+        fstar = fstar-pinned;
 
         tools-environment = {
           CHARON_HOME = charon.packages.${system}.charon;
@@ -98,13 +103,39 @@
           exec ${rustNightlyWithMiri}/bin/cargo-miri "$@"
         '';
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        # Cargo.lock is gitignored, so it isn't part of the flake's source tree.
-        # Read it from the invocation directory; requires `--impure` and that
-        # nix is invoked from the repo root.
-        defaultCargoLock = builtins.path {
-          path = "${builtins.getEnv "PWD"}/Cargo.lock";
-          name = "Cargo.lock";
-        };
+        # Cargo.lock is gitignored, so it isn't part of the flake's source
+        # tree. Read it from the invocation directory; requires `--impure`
+        # and that nix is invoked from the repo root. When the lockfile is
+        # absent (fresh checkout), fall back to an error-derivation so that
+        # the devShell still evaluates — its shellHook will then generate
+        # the lockfile via `cargo generate-lockfile`.
+        pwd = builtins.getEnv "PWD";
+        hasCargoLock = pwd != "" && builtins.pathExists "${pwd}/Cargo.lock";
+        defaultCargoLock =
+          if hasCargoLock then
+            builtins.path {
+              path = "${pwd}/Cargo.lock";
+              name = "Cargo.lock";
+            }
+          else
+            pkgs.runCommand "cargo-lock-missing" { } ''
+              cat >&2 <<'EOF'
+              error: Cargo.lock not found.
+
+              Cargo.lock is intentionally not committed to this repo. To
+              bootstrap it, enter the dev shell once (the shellHook runs
+              `cargo generate-lockfile` automatically):
+
+                nix develop --impure
+
+              Or run the dedicated app:
+
+                nix run --impure .#gen-lockfile
+
+              Then re-run your `nix build` command.
+              EOF
+              exit 1
+            '';
 
         # Construct a copy of the current directory with the given `Cargo.lock` added.
         build_src =
@@ -315,10 +346,14 @@
             fstar.packages.${system}.default
           ];
           runtimeEnv = tools-environment-strings;
+          # there is a mismatch between the version of karamel installed to $KRML_HOME by the flake.nix
+          # and what CI expects the layout to be from a repo checkout. In the installed version,
+          # the include path is include/krml/krml whereas it is include/krml in the repo
+          # Use --no-karamel_include for now to work around that
           text = ''
             root=$(git rev-parse --show-toplevel)
             cd "$root/libcrux-ml-kem/extracts"
-            ./extract-all.sh
+            ./extract-all.sh --no-karamel_include
           '';
         };
 
@@ -340,6 +375,38 @@
             ./boring.sh --no-clean
           '';
         };
+
+        combined-extract-app = pkgs.writeShellApplication {
+          name = "combined-extract";
+          runtimeInputs = [
+            rustToolchain
+            pkgs.llvmPackages_18.clang-tools
+            clang-format-18-wrapper
+            pkgs.git
+          ];
+          runtimeEnv = tools-environment-strings;
+          text = ''
+            root=$(git rev-parse --show-toplevel)
+            cd "$root/combined_extraction"
+            ./extract.sh "$@"
+          '';
+        };
+
+        gen-lockfile-app = pkgs.writeShellApplication {
+          name = "gen-lockfile";
+          runtimeInputs = [ rustToolchain ];
+          text = ''
+            if [ -f Cargo.lock ]; then
+              echo "Cargo.lock already exists at $PWD/Cargo.lock"
+              exit 0
+            fi
+            if [ ! -f Cargo.toml ]; then
+              echo "error: no Cargo.toml in $PWD — run this from the repo root" >&2
+              exit 1
+            fi
+            cargo generate-lockfile
+          '';
+        };
       in
       rec {
         packages = {
@@ -354,10 +421,23 @@
             type = "app";
             program = "${ml-dsa-extract-app}/bin/ml-dsa-extract";
           };
+          combined-extract = {
+            type = "app";
+            program = "${combined-extract-app}/bin/combined-extract";
+          };
+          gen-lockfile = {
+            type = "app";
+            program = "${gen-lockfile-app}/bin/gen-lockfile";
+          };
         };
         devShells.default = craneLib.devShell (
           tools-environment
           // {
+            # Build inputs are listed inline rather than pulled in via
+            # `inputsFrom = [ packages.ml-kem ]`. That reference would force
+            # crane to realize `cargoArtifacts` (and therefore Cargo.lock)
+            # just to enter the shell, which breaks a fresh checkout where
+            # the lockfile is generated by the shellHook below.
             packages = [
               pkgs.clang_18
               pkgs.openssl
@@ -367,15 +447,29 @@
               pkgs.libclang
               rustToolchain
               cargoMiri
+              hax.packages.${system}.default
               fstar.packages.${system}.default
               pkgs.qemu
+              pkgs.llvmPackages_18.clang-tools
+              clang-format-18-wrapper
+              pkgs.cmake
+              pkgs.mold-wrapped
+              pkgs.ninja
+              pkgs.git
+              pkgs.python3
+              pkgs.perl
             ];
-            inputsFrom = [ packages.ml-kem ];
             RUST_SRC_PATH = "${rustToolchain.outPath}/lib/rustlib/src/rust/library";
             LIBCLANG_PATH = "${pkgs.llvmPackages_18.libclang.lib}/lib";
             CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${pkgs.pkgsCross.aarch64-multiplatform.stdenv.cc}/bin/aarch64-unknown-linux-gnu-gcc";
             CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER = "qemu-aarch64";
             CC_aarch64_unknown_linux_gnu = "${pkgs.pkgsCross.aarch64-multiplatform.stdenv.cc}/bin/aarch64-unknown-linux-gnu-gcc";
+            shellHook = ''
+              if [ ! -f Cargo.lock ] && [ -f Cargo.toml ]; then
+                echo "[flake] Cargo.lock missing — running 'cargo generate-lockfile'..."
+                cargo generate-lockfile
+              fi
+            '';
           }
         );
       }

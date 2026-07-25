@@ -87,7 +87,9 @@ impl SignatureVerificationKey {
         signature: &Signature,
     ) -> Result<(), HandshakeError> {
         use tls_codec::SerializeBytes;
-        let payload = tx1.tls_serialize().map_err(HandshakeError::Serialize)?;
+        let payload = tx1
+            .tls_serialize_bytes()
+            .map_err(HandshakeError::Serialize)?;
         match (self, signature) {
             (SignatureVerificationKey::Ed25519(verification_key), Signature::Ed25519(sig)) => {
                 libcrux_ed25519::verify(&payload, verification_key.as_ref(), sig)

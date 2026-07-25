@@ -10,6 +10,7 @@ readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
 exclude = [
+    "combined_extraction",
     "c.sh",
     "/.devcontainer",
     "/.docker",
@@ -53,11 +54,11 @@ members = [
     "crates/algorithms/sha3",
     "crates/primitives/aead",
     "crates/primitives/digest",
-    "crates/sys/hacl",
-    "crates/sys/lib25519",
-    "crates/sys/libjade",
+    "crates/protocols/hpke",
+    "crates/protocols/hpke/libcrux_provider",
+    "crates/protocols/hpke/rust_crypto_provider",
+    "crates/protocols/hpke/traits",
     "crates/sys/platform",
-    "crates/sys/pqclean",
     "crates/testing/kats",
     "crates/utils/core-models",
     "crates/utils/ctgrind-test",
@@ -75,10 +76,19 @@ members = [
     "libcrux-psq/fuzz",
     "traits",
 ]
+
+# These crates are not part of the main libcrux library.
+exclude = [
+    "crates/sys/libjade",
+    "crates/sys/lib25519",
+    "crates/sys/pqclean",
+    "crates/sys/hacl",
+]
+
 resolver = "2"
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -96,42 +106,51 @@ allow-branch = ["main"]
 # crate-wide `proof!` markers. Return to the plain tag once the fix lands in a
 # hax release (main PR branch: fstar-quote-callsite-spans).
 hax-lib = { git = "https://github.com/cryspen/hax", branch = "fstar-quote-callsite-spans-037" }
-libcrux-aead = { version = "=0.0.8", path = "crates/primitives/aead" }
-libcrux-aes = { version = "=0.0.8", path = "crates/algorithms/aes" }
-libcrux-blake2 = { version = "=0.0.7", path = "crates/algorithms/blake2" }
-libcrux-chacha20poly1305 = { version = "=0.0.8", path = "crates/algorithms/chacha20poly1305" }
+libcrux-aead = { version = "=0.0.9", path = "crates/primitives/aead" }
+libcrux-aes = { version = "=0.0.9", path = "crates/algorithms/aes" }
+libcrux-blake2 = { version = "=0.0.8", path = "crates/algorithms/blake2" }
+libcrux-chacha20poly1305 = { version = "=0.0.9", path = "crates/algorithms/chacha20poly1305" }
 libcrux-poly1305 = { version = "=0.0.6", path = "crates/algorithms/poly1305" }
-libcrux-ecdsa = { version = "=0.0.7", path = "crates/algorithms/ecdsa" }
-libcrux-ed25519 = { version = "=0.0.8", path = "crates/algorithms/ed25519" }
+libcrux-ecdsa = { version = "=0.0.8", path = "crates/algorithms/ecdsa" }
+libcrux-ed25519 = { version = "=0.0.9", path = "crates/algorithms/ed25519" }
 libcrux-hacl-rs = { version = "=0.0.5", path = "crates/utils/hacl-rs" }
-libcrux-hkdf = { version = "=0.0.7", path = "crates/algorithms/hkdf" }
-libcrux-hmac = { version = "=0.0.7", path = "crates/algorithms/hmac" }
-libcrux-hmac-drbg = { version = "=0.0.4", path = "crates/algorithms/hmac-drbg" }
+libcrux-hkdf = { version = "=0.0.8", path = "crates/algorithms/hkdf" }
+libcrux-hmac = { version = "=0.0.8", path = "crates/algorithms/hmac" }
+libcrux-hmac-drbg = { version = "=0.0.1", path = "crates/algorithms/hmac-drbg" }
 libcrux-kmac = { version = "=0.0.1", path = "crates/algorithms/kmac" }
-libcrux-intrinsics = { version = "=0.0.7", path = "crates/utils/intrinsics" }
-libcrux-digest = { version = "=0.0.8", path = "crates/primitives/digest" }
-libcrux-rsa = { version = "=0.0.7", path = "crates/algorithms/rsa" }
-libcrux-sha2 = { version = "=0.0.7", path = "crates/algorithms/sha2" }
-libcrux-sha3 = { version = "=0.0.9", path = "crates/algorithms/sha3" }
-libcrux-traits = { version = "=0.0.7", path = "traits" }
-libcrux-kem = { version = "=0.0.8", path = "libcrux-kem" }
-libcrux-ml-dsa = { version = "=0.0.9", path = "libcrux-ml-dsa" }
+libcrux-intrinsics = { version = "=0.0.8", path = "crates/utils/intrinsics" }
+libcrux-digest = { version = "=0.0.9", path = "crates/primitives/digest" }
+libcrux-rsa = { version = "=0.0.8", path = "crates/algorithms/rsa" }
+libcrux-sha2 = { version = "=0.0.8", path = "crates/algorithms/sha2" }
+libcrux-sha3 = { version = "=0.0.10", path = "crates/algorithms/sha3" }
+libcrux-ml-dsa = { version = "=0.0.10", path = "libcrux-ml-dsa" }
 libcrux-platform = { version = "=0.0.3", path = "crates/sys/platform" }
-libcrux-psq = { version = "=0.0.9", path = "libcrux-psq" }
+libcrux-psq = { version = "=0.0.10", path = "libcrux-psq" }
+
+# HPKE
+hpke-rs = { version = "=0.7.0", path = "crates/protocols/hpke" }
+hpke-rs-crypto = { version = "=0.7.0", path = "crates/protocols/hpke/traits", default-features = false }
+hpke-rs-rust-crypto = { version = "=0.7.0", path = "crates/protocols/hpke/rust_crypto_provider", default-features = false }
+hpke-rs-libcrux = { version = "=0.7.0", path = "crates/protocols/hpke/libcrux_provider", default-features = false }
 
 # For the crates below it is necessary to set `default-features = true`
 # in workspace crates that depend on the default feature set.
-libcrux-ecdh = { version = "=0.0.7", path = "libcrux-ecdh", default-features = false }
-libcrux-curve25519 = { version = "=0.0.7", path = "crates/algorithms/curve25519", default-features = false }
-libcrux-ml-kem = { version = "=0.0.9", path = "libcrux-ml-kem", default-features = false }
-libcrux-p256 = { version = "=0.0.7", path = "crates/algorithms/p256", default-features = false }
+libcrux-kem = { version = "=0.0.9", path = "libcrux-kem", default-features = false }
+libcrux-traits = { version = "=0.0.8", path = "traits" }
+libcrux-ecdh = { version = "=0.0.8", path = "libcrux-ecdh", default-features = false }
+libcrux-curve25519 = { version = "=0.0.8", path = "crates/algorithms/curve25519", default-features = false }
+libcrux-ml-kem = { version = "=0.0.10", path = "libcrux-ml-kem", default-features = false }
+libcrux-p256 = { version = "=0.0.8", path = "crates/algorithms/p256", default-features = false }
 
 # Test utilities
 libcrux-kats = { path = "crates/testing/kats" }
 
 # Utilities
 libcrux-macros = { version = "=0.0.3", path = "crates/utils/macros" }
-libcrux-secrets = { version = "=0.0.5", path = "crates/utils/secrets" }
+libcrux-secrets = { version = "=0.0.6", path = "crates/utils/secrets" }
+
+# Encodings
+ tls_codec = { version = "0.5.0", features = ["derive"], default-features = false }
 
 # 3rd Party
 rand = { version = "0.10", default-features = false }
@@ -206,12 +225,12 @@ getrandom = { version = "0.4", optional = true }
 hax-lib.workspace = true
 
 # External Cryspen code.
-hpke-rs = { version = "0.6", features = ["libcrux"] }
+hpke-rs = { workspace = true, features = ["libcrux"] }
 
 # Primitives
 libcrux-aead.workspace = true
 libcrux-digest.workspace = true
-libcrux-kem.workspace = true
+libcrux-kem = { workspace = true, default-features = true }
 
 # Algorithms
 libcrux-aes.workspace = true

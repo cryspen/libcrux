@@ -1,13 +1,14 @@
 [package]
 name = "libcrux-hmac-drbg"
 readme = "Readme.md"
+version = "0.0.1"
+description = "Libcrux HMAC-DRBG implementation"
 
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
 license.workspace = true
 repository.workspace = true
-version.workspace = true
 
 [features]
 default = []

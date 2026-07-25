@@ -1,5 +1,6 @@
-use crate::{Error, HmacState};
 use libcrux_traits::digest::{arrayref, InitializeDigestState};
+
+use crate::{Error, HmacState};
 
 /// Generic streaming HMAC state, parametrized by output length, block size,
 /// and an incremental digest implementation `D`.
@@ -40,7 +41,7 @@ where
             Digest::update(&mut tmp, key)
                 .expect("This can't fail because we checked that key.len() <= u32::MAX");
             let mut hashed = [0u8; OUTLEN];
-            Digest::finish(&mut tmp, &mut hashed);
+            Digest::finish(tmp, &mut hashed);
             key_block[..OUTLEN].copy_from_slice(&hashed);
         }
 
@@ -68,16 +69,16 @@ where
         Digest::update(&mut self.inner, data).map_err(|_| Error::InvalidInputLength)
     }
 
-    fn finalize(mut self, dst: &mut [u8; OUTLEN]) {
+    fn finalize(self, dst: &mut [u8; OUTLEN]) {
         // Inner hash: finalize H((K xor ipad) || data).
         let mut inner_hash = [0u8; OUTLEN];
-        Digest::finish(&mut self.inner, &mut inner_hash);
+        Digest::finish(self.inner, &mut inner_hash);
 
         // Outer hash: H((K xor opad) || inner_hash).
         let mut outer = Digest::IncrementalState::new();
         Digest::update(&mut outer, &self.opad).expect("self.opad.len() is always <= u32::MAX");
         Digest::update(&mut outer, &inner_hash).expect("inner_hash.len() is always <= u32::MAX");
-        Digest::finish(&mut outer, dst);
+        Digest::finish(outer, dst);
     }
 }
 

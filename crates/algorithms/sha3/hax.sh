@@ -118,26 +118,29 @@ function patch_fstar_extractions() {
 }}' \
         "$target_dir"/Libcrux_sha3.Generic_keccak.Xof.fst
 
-    # hax omits the _super_i0 (KeccakItem superclass) field in the
-    # Squeeze2 trait instance; insert it so F* can resolve the class.
-    # Post load/store-split (2026-05-06) the Squeeze2/Squeeze4 impls
-    # moved from the parent `Simd.Arm64`/`Simd.Avx2` into the
-    # `.Store` submodules.
-    $SED -i '/f_squeeze2_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
-        "$target_dir"/Libcrux_sha3.Simd.Arm64.Store.fst
-
-    # Same omission in the AVX2 Squeeze4 trait instance.
-    $SED -i '/f_squeeze4_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' \
-        "$target_dir"/Libcrux_sha3.Simd.Avx2.Store.fst
+    # --- SIMD patches: guarded for the main-merge PORTABLE-only phase ---
+    # The proofs-branch store/load-split placed the Squeeze2/Squeeze4 trait
+    # impls in `Simd.{Arm64,Avx2}.Store` submodules; origin/main flattened the
+    # SIMD backends back to a plain `simd/{arm64,avx2}.rs`, so those submodule
+    # files are not produced. The sha3 SIMD store_block proofs are DEFERRED
+    # (see proofs/verification_status.md); guard each SIMD patch on file
+    # existence so PORTABLE extraction succeeds against main's flat SIMD.
+    for f in Libcrux_sha3.Simd.Arm64.Store.fst Libcrux_sha3.Simd.Arm64.fst; do
+        [ -f "$target_dir/$f" ] && $SED -i '/f_squeeze2_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' "$target_dir/$f"
+    done
+    for f in Libcrux_sha3.Simd.Avx2.Store.fst Libcrux_sha3.Simd.Avx2.fst; do
+        [ -f "$target_dir/$f" ] && $SED -i '/f_squeeze4_pre/i\    _super_i0 = FStar.Tactics.Typeclasses.solve;' "$target_dir/$f"
+    done
 
     # The incremental KeccakState wrappers hold a generic KeccakState
     # over an opaque SIMD vector record (Vec256 on AVX2 X4, uint64x2_t
     # on Neon X2) that has no decidable equality.  hax 0.3.7 has no
     # source-level `noeq` attribute and the F* backend does not detect
-    # non-eqtype records, so mark both wrappers noeq here.
-    $SED -i 's/^type t_KeccakState =/noeq type t_KeccakState =/' \
-        "$target_dir"/Libcrux_sha3.Avx2.X4.Incremental.fst \
-        "$target_dir"/Libcrux_sha3.Neon.X2.Incremental.fst
+    # non-eqtype records, so mark both wrappers noeq here.  Guarded (main
+    # may not emit these under its flat SIMD layout).
+    for f in Libcrux_sha3.Avx2.X4.Incremental.fst Libcrux_sha3.Neon.X2.Incremental.fst; do
+        [ -f "$target_dir/$f" ] && $SED -i 's/^type t_KeccakState =/noeq type t_KeccakState =/' "$target_dir/$f"
+    done
 
     # Note: per-u64-lane SMTPat lemma admits (lemma_mm256_*_u64x4)
     # are now injected directly from avx2_extract.rs via
