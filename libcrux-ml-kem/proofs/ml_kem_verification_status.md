@@ -37,18 +37,18 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 |            | ind_cca           |    1 |  27 |   0 |     |  16 |    1 |      0 |      10 |
 |            | instantiations    |    2 |  40 |   0 |     |  31 |    0 |      0 |       9 |
 |            | multiplexing      |    2 |  20 |   0 |     |  15 |    2 |      0 |       3 |
-|            | incremental       |    2 |  45 |   2 |     |  26 |   12 |      5 |       0 |
+|            | incremental       |    2 |  45 |   0 |     |  28 |   12 |      5 |       0 |
 |            | polynomial        |    1 |  59 |   0 |     |  21 |    9 |     20 |       9 |
 |            | invert_ntt        |    1 |   7 |   0 |     |   1 |    0 |      1 |       5 |
 |            | ntt               |    1 |  12 |   0 |     |   4 |    0 |      1 |       7 |
 |            | mlkem*            |    4 | 134 |   0 |     | 122 |    3 |      0 |       9 |
 |            | matrix            |    1 |   5 |   0 |     |   0 |    0 |      0 |       5 |
 |            | serialize         |    1 |  25 |   0 |     |   5 |    1 |      0 |      19 |
-|            | sampling          |    0 |   9 |   1 |     |   4 |    1 |      0 |       3 |
+|            | sampling          |    0 |   9 |   0 |     |   4 |    1 |      0 |       4 |
 |            | vector (top)      |    1 |   3 |   0 |     |   3 |    0 |      0 |       0 |
 |            | vector/traits     |    1 | 111 |   0 |     |  73 |   36 |      0 |       2 |
 |            | rej_sample_table  |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **27** | **620** | **3** | **3** | **374** | **83** | **27** | **130** |
+|            | **Generic total** | **27** | **620** | **0** | **3** | **376** | **83** | **27** | **131** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | arithmetic        |    1 |  13 |   0 |     |   6 |    7 |      0 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   0 |    0 |     10 |       0 |
@@ -80,19 +80,19 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 - **Total modules**: 44
 - **Total functions**: 963
-- **Lax** (admitted): 3 (0.3%)
+- **Lax** (admitted): 0 (0.0%)
 - **Unverified** (not extracted): 3 (0.3%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 957 (99.4%)
-  - Panic-free only (no further proof): 417 (43.3%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 960 (99.7%)
+  - Panic-free only (no further proof): 419 (43.5%)
   - Math (non-trivial ensures, no bounds/spec match): 274 (28.5%)
   - Bounds (range/interval ensures): 54 (5.6%)
-  - Hacspec (cites high-level spec): 212 (22.0%)
+  - Hacspec (cites high-level spec): 213 (22.1%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      27 |  620 |   3 |   3 | 374 |   83 |     27 |     130 |
+| Generic      |      27 |  620 |   0 |   3 | 376 |   83 |     27 |     131 |
 | Portable     |       6 |  121 |   0 |   0 |  31 |   51 |     10 |      29 |
 | Avx2         |       5 |  121 |   0 |   0 |   9 |   77 |      7 |      28 |
 | Neon         |       6 |  101 |   0 |   0 |   3 |   63 |     10 |      25 |
@@ -105,11 +105,24 @@ These Rust modules have no corresponding F\* file in the extraction directory �
 | ------------------------------ | ---------------------------------------- | --- |
 | Generic/lib                    | src/lib.rs                               |   3 |
 
-## Body-admit sites (audit)
+# Appendix (hand-written; appended by generate_verification_status.py)
 
-Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) inside their body. Auditable so the script's classification decisions are traceable.
+## Proof times
 
-| Module                    |  Line |
-| ------------------------- | ----- |
-| Generic/incremental       |   305 |
-| Generic/incremental       |   374 |
+The ml-kem proof sources (src annotations, `proofs/fstar/spec/` companions,
+committed hints) are byte-identical to the campaign state at `6584a585c`, so
+the campaign's timing data remains authoritative. Headline numbers (Apple
+Silicon, serial builds, committed hints via `--use_hints`):
+
+- Full ml-kem F* closure: ~22 min of Z3 wall cold (2026-05 cold baseline);
+  ~6–13 min for full `make` gates warm with committed hints.
+- Heaviest single queries: `Vector.Avx2.Serialize.deserialize_5_` (~35 s),
+  the portable `op_{ntt,inv_ntt}_layer_{2,3}_step` wrappers (50–70 s each
+  cold at rlimit 600/800), and the `Hacspec_ml_kem.Commute.*` NTT bridge
+  lemmas (`lemma_intra_vec_per_coeff` ~224 s in incremental gates).
+- Warm incremental `make all` gates run ~1–13 min depending on which cone a
+  change invalidates.
+
+Detailed per-function top-20/25 tables are tracked in the engineering log
+(`fstar-perf-top20.md`, snapshots through 2026-07); regenerate after any full
+cold build by aggregating `Query-stats` lines from the build log.

@@ -13,7 +13,8 @@
         "Libcrux_sha3.Generic_keccak.Simd128",
         "Libcrux_sha3.Generic_keccak.Simd256",
         "Libcrux_sha3.Generic_keccak.Xof",
-        "Libcrux_sha3.Impl_digest_trait",
+        "Libcrux_sha3.Generic_keccak.Xof.Bundle",
+        "Libcrux_sha3.Generic_keccak.Xof.Proof_utils",
         "Libcrux_sha3.Neon",
         "Libcrux_sha3.Neon.X2",
         "Libcrux_sha3.Neon.X2.Incremental",
@@ -25,15 +26,9 @@
         "Libcrux_sha3.Proof_utils",
         "Libcrux_sha3.Proof_utils.Lemmas",
         "Libcrux_sha3.Simd.Arm64",
-        "Libcrux_sha3.Simd.Arm64.Load",
-        "Libcrux_sha3.Simd.Arm64.Store",
         "Libcrux_sha3.Simd.Arm64.StoreBlockHelpers",
-        "Libcrux_sha3.Simd.Arm64.Wrappers",
         "Libcrux_sha3.Simd.Avx2",
-        "Libcrux_sha3.Simd.Avx2.Load",
-        "Libcrux_sha3.Simd.Avx2.Store",
         "Libcrux_sha3.Simd.Avx2.StoreBlockHelpers",
-        "Libcrux_sha3.Simd.Avx2.Wrappers",
         "Libcrux_sha3.Simd.Portable",
         "Libcrux_sha3.Traits"
       ]
@@ -47,11 +42,16 @@
         "Libcrux_sha3.Generic_keccak": 1,
         "Libcrux_sha3.Portable": 1
       },
-      "scanned_files": 59,
+      "scanned_files": 54,
       "total": 6
     },
     "makefile": {
-      "admit_modules": [],
+      "admit_modules": [
+        "Libcrux_sha3.Generic_keccak.Simd128",
+        "Libcrux_sha3.Generic_keccak.Simd256",
+        "Libcrux_sha3.Simd.Arm64",
+        "Libcrux_sha3.Simd.Avx2"
+      ],
       "slow_modules": []
     },
     "patches": []

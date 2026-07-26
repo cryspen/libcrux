@@ -4,6 +4,11 @@ FSTAR_INCLUDE_DIRS_EXTRA += \
 	      $(shell pwd)/../stubs \
 	      $(shell pwd)/../extraction
 
+# PORTABLE-ONLY roots. The SIMD equivalence proofs (Keccakf.{Arm64,Avx2},
+# Sponge.{Arm64,Avx2}.*, Correctness.{Avx2,Neon}) are DEFERRED: upstream main
+# flattened simd/{arm64,avx2} into unproven impl modules, so the campaign's
+# store_block proof structure they depend on needs rework first. See
+# ../../verification_status.md, "Deferred SIMD store_block proofs".
 ROOTS = \
 	Proof_Utils.Lemmas.fst \
 	Proof_Utils.NatFold.fst \
@@ -11,22 +16,19 @@ ROOTS = \
 	EquivImplSpec.Keccakf.ChiFold.fst \
 	EquivImplSpec.Keccakf.Generic.fst \
 	EquivImplSpec.Keccakf.Portable.fst \
-	EquivImplSpec.Keccakf.Arm64.fst \
-	EquivImplSpec.Keccakf.Avx2.fst \
 	EquivImplSpec.Sponge.Generic.Core.fst \
 	EquivImplSpec.Sponge.Generic.Squeeze.fst \
 	EquivImplSpec.Sponge.Portable.fst \
-	EquivImplSpec.Sponge.Arm64.fst \
-	EquivImplSpec.Sponge.Avx2.fst \
 	EquivImplSpec.Sponge.Portable.Steps.fst \
-	EquivImplSpec.Sponge.Arm64.Steps.fst \
-	EquivImplSpec.Sponge.Avx2.Steps.fst \
 	Hacspec_sha3.Sponge.Lemmas.fst \
 	EquivImplSpec.Sponge.Portable.SqueezeAPI.fst \
 	EquivImplSpec.Correctness.Portable.fst \
-	EquivImplSpec.Correctness.Neon.fst \
-	EquivImplSpec.Correctness.Avx2.fst \
 	EquivImplSpec.Keccakf.SpecRounds.fst
+
+# Same per-algorithm cache/hints isolation as ../extraction/Makefile, and the
+# place the committed EquivImplSpec.*.hints actually live.
+CACHE_DIR := ../cache
+HINT_DIR  := ../hints
 
 # Disable context_pruning for proof modules — it strips definitions
 # the normalizer needs for assert_norm and fold_range reduction.

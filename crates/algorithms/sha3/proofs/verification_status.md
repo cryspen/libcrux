@@ -26,48 +26,146 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 
 | Category   | File              | Mods | Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ---------- | ----------------- | ---- | --- | --- | --- | --- | ---- | ------ | ------- |
-| _Generic_  | lib               |    1 |  16 |   0 |     |   4 |    0 |      0 |      12 |
-|            | traits            |    1 |  14 |   0 |     |  11 |    3 |      0 |       0 |
-|            | proof_utils       |    1 |  10 |   0 |     |  10 |    0 |      0 |       0 |
-|            | impl_digest_trait |    1 |   1 |   0 |     |   1 |    0 |      0 |       0 |
+| _Generic_  | lib               |    1 |  16 |   0 |     |  12 |    0 |      0 |       4 |
+|            | traits            |    1 |  14 |   0 |     |  13 |    1 |      0 |       0 |
+|            | proof_utils       |    1 |   4 |   0 |     |   4 |    0 |      0 |       0 |
+|            | impl_digest_trait |    1 |   5 |   0 |   5 |   0 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | generic_keccak (top) |    1 |  56 |   0 |     |  56 |    0 |      0 |       0 |
+|            | generic_keccak (top) |    1 |  50 |   0 |     |  50 |    0 |      0 |       0 |
 |            | generic_keccak/constants |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
-|            | generic_keccak/xof |    1 |   8 |   0 |     |   2 |    6 |      0 |       0 |
-|            | **Generic total** | **8** | **105** | **0** |     | **84** | **9** |  **0** |  **12** |
+|            | generic_keccak/xof |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
+|            | **Generic total** | **8** | **98** | **0** | **5** | **82** | **7** |  **0** |   **4** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | generic_keccak    |    1 |  10 |   0 |     |   1 |    4 |      0 |       5 |
-|            | portable          |    1 |  50 |   0 |     |  10 |   34 |      0 |       6 |
+|            | portable          |    1 |   6 |   0 |     |   0 |    0 |      0 |       6 |
 |            | simd              |    4 |  20 |   0 |     |  17 |    3 |      0 |       0 |
-|            | **Portable total** | **6** | **80** | **0** |     | **28** | **41** |  **0** |  **11** |
+|            | **Portable total** | **6** | **36** | **0** |     | **18** | **7** |  **0** |  **11** |
 |            |                   |      |     |     |     |     |      |        |         |
-| _Avx2_     | generic_keccak    |    1 |  10 |   0 |     |   1 |    5 |      0 |       4 |
-|            | avx2              |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
-|            | simd              |    4 |  36 |   0 |     |  24 |   12 |      0 |       0 |
-|            | **Avx2 total**    | **6** | **55** | **0** |     | **28** | **23** |  **0** |   **4** |
+| _Avx2_     | generic_keccak    |    1 |   5 |   5 |     |   0 |    0 |      0 |       0 |
+|            | avx2              |    1 |   9 |   0 |     |   4 |    5 |      0 |       0 |
+|            | simd              |    4 |  54 |  19 |  35 |   0 |    0 |      0 |       0 |
+|            | **Avx2 total**    | **6** | **68** | **24** | **35** | **4** | **5** |  **0** |   **0** |
 |            |                   |      |     |     |     |     |      |        |         |
-| _Neon_     | generic_keccak    |    1 |   8 |   0 |     |   0 |    5 |      0 |       3 |
-|            | neon              |    1 |  15 |   0 |     |   3 |    5 |      0 |       7 |
-|            | simd              |    4 |  29 |   0 |     |  17 |   12 |      0 |       0 |
-|            | **Neon total**    | **6** | **52** | **0** |     | **20** | **22** |  **0** |  **10** |
+| _Neon_     | generic_keccak    |    1 |   5 |   5 |     |   0 |    0 |      0 |       0 |
+|            | neon              |    1 |  15 |   0 |     |  10 |    5 |      0 |       0 |
+|            | simd              |    4 |  46 |  18 |  28 |   0 |    0 |      0 |       0 |
+|            | **Neon total**    | **6** | **66** | **23** | **28** | **10** | **5** |  **0** |   **0** |
 
 ## Summary
 
 - **Total modules**: 26
-- **Total functions**: 292
-- **Lax** (admitted): 0 (0.0%)
-- **Unverified** (not extracted): 0 (0.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 292 (100.0%)
-  - Panic-free only (no further proof): 160 (54.8%)
-  - Math (non-trivial ensures, no bounds/spec match): 95 (32.5%)
+- **Total functions**: 268
+- **Lax** (admitted): 47 (17.5%)
+- **Unverified** (not extracted): 68 (25.4%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 153 (57.1%)
+  - Panic-free only (no further proof): 114 (42.5%)
+  - Math (non-trivial ensures, no bounds/spec match): 24 (9.0%)
   - Bounds (range/interval ensures): 0 (0.0%)
-  - Hacspec (cites high-level spec): 37 (12.7%)
+  - Hacspec (cites high-level spec): 15 (5.6%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |       8 |  105 |   0 |   0 |  84 |    9 |      0 |      12 |
-| Portable     |       6 |   80 |   0 |   0 |  28 |   41 |      0 |      11 |
-| Avx2         |       6 |   55 |   0 |   0 |  28 |   23 |      0 |       4 |
-| Neon         |       6 |   52 |   0 |   0 |  20 |   22 |      0 |      10 |
+| Generic      |       8 |   98 |   0 |   5 |  82 |    7 |      0 |       4 |
+| Portable     |       6 |   36 |   0 |   0 |  18 |    7 |      0 |      11 |
+| Avx2         |       6 |   68 |  24 |  35 |   4 |    5 |      0 |       0 |
+| Neon         |       6 |   66 |  23 |  28 |  10 |    5 |      0 |       0 |
+
+## Unverified Rust modules (not extracted to F\*)
+
+These Rust modules have no corresponding F\* file in the extraction directory — they were filtered out by hax (`-i -<module>::**` in `hax.py`) and are unverified at any tier.
+
+| Module                         | Path                                     | Fns | Functions |
+| ------------------------------ | ---------------------------------------- | --- | --------- |
+| Generic/impl_digest_trait      | src/impl_digest_trait.rs                 |   5 | `new`, `reset`, `update`, `finish`, `hash` |
+| Avx2/simd                      | src/simd/avx2/load.rs                    |   8 | `load_lane_u64`, `load_u64x4x4`, `load_u64x4`, `lemma_rate_mod`, `load_block`, `load_last`, `load_block`, `load_last` |
+| Avx2/simd                      | src/simd/avx2/store.rs                   |  14 | `stored`, `lemma_stored_frame`, `lemma_stored_union`, `lemma_stored_empty`, `lemma_window_stored`, `lemma_window_modifies`, `lemma_window_stored_single`, `store_u64x4x4`, `store_chunk8x4`, `store_tail_ragged_avx2`, `store_block_full_avx2`, `store_block_tail_avx2`, `store_block`, `squeeze4` |
+| Avx2/simd                      | src/simd/avx2/wrappers.rs                |  13 | `rotate_left`, `_veor5q_u64`, `_vrax1q_u64`, `_vxarq_u64`, `_vbcaxq_u64`, `_veorq_n_u64`, `zero`, `xor5`, `rotate_left1_and_xor`, `xor_and_rotate`, `and_not_xor`, `xor_constant`, `xor` |
+| Neon/simd                      | src/simd/arm64/load.rs                   |   8 | `load_lane_u64`, `lemma_rate_mod`, `load_u64x2`, `load_u64x2x2`, `load_block`, `load_last`, `load_block`, `load_last` |
+| Neon/simd                      | src/simd/arm64/store.rs                  |   8 | `stored`, `store_u64x2x2`, `store_tail_high`, `store_tail_low`, `store_block_full`, `store_block_tail`, `store_block`, `squeeze2` |
+| Neon/simd                      | src/simd/arm64/wrappers.rs               |  12 | `_veor5q_u64`, `_vrax1q_u64`, `_vxarq_u64`, `_vbcaxq_u64`, `_veorq_n_u64`, `zero`, `xor5`, `rotate_left1_and_xor`, `xor_and_rotate`, `and_not_xor`, `xor_constant`, `xor` |
+
+# Appendix (hand-written; appended by generate_verification_status.py)
+
+## Deferred SIMD store_block proofs
+
+During the 2026-07 merge of upstream `main` into the proofs line, upstream
+flattened `src/simd/{arm64,avx2}/` — the campaign's proven submodule tree
+(load/store/wrappers, including the ~2,200-line opaque-range `store_block`
+proofs) — into single ~200-line impl modules without proof annotations, and
+dropped the SIMD equivalence contracts from `generic_keccak/simd{128,256}.rs`
+and the Hacspec ensures from the Neon/AVX2 top-level APIs. The campaign's SIMD
+proofs (fully verified at campaign tip `6584a585c`) target the old module
+structure and need rework before they can re-attach.
+
+Until that rework lands, the following are **documented trust obligations**:
+
+- `proofs/fstar/extraction/Makefile` `ADMIT_MODULES` (each carries a
+  `# trusted-module:` mirror):
+  - `Libcrux_sha3.Simd.Arm64`, `Libcrux_sha3.Simd.Avx2` — main's flat SIMD
+    impls, unproven;
+  - `Libcrux_sha3.Generic_keccak.Simd128`, `Libcrux_sha3.Generic_keccak.Simd256`
+    — `keccak2`/`keccak4` carry runtime `assert!` obligations that the campaign
+    discharged via contracts citing the deferred SIMD equivalence stack.
+- Trusted posts on admitted functions: `keccak2`/`keccak4` length preservation
+  (justification comments at the functions; proven by the campaign for the
+  structured predecessor code).
+- `proofs/fstar/equivalence/Makefile` `ROOTS` is portable-only: the SIMD
+  equivalence modules (`EquivImplSpec.Correctness.{Avx2,Neon}`,
+  `EquivImplSpec.Keccakf.{Arm64,Avx2}`, `EquivImplSpec.Sponge.{Arm64,Avx2}.*`)
+  are removed from the build but remain tracked for the rework.
+- The hand-written `Libcrux_sha3.Simd.{Arm64,Avx2}.StoreBlockHelpers` modules
+  are excluded from the extraction ROOTS (tracked; cited only by the deferred
+  proofs).
+
+**What remains verified:** the portable path end-to-end — keccak-f, sponge,
+portable API and incremental API — including the `EquivImplSpec.*` functional
+correctness equivalence against the `Hacspec_sha3` spec; and the SIMD
+incremental API wrappers' length contracts against the proven generic keccak
+state machine (the `Simd.*` bodies themselves remain admitted).
+
+**Recovery path:** rework the opaque-range store_block proofs onto main's
+flattened simd modules, re-add the `generic_keccak/simd{128,256}` contracts and
+the Neon/AVX2 API Hacspec ensures, re-enable the SIMD equivalence ROOTS, and
+empty `ADMIT_MODULES`.
+
+Note on the summary table: the "Unverified (not extracted)" count includes
+the orphaned campaign proof-helper submodules under `src/simd/{arm64,avx2}/`
+(load/store/wrappers) — they are not compiled into the crate (main's flat
+`simd/{arm64,avx2}.rs` replaced them) and are retained in-tree only as the
+starting point for the store_block rework; and the "Lax" count is exactly the
+four deferred ADMIT modules above.
+
+The sha3 trust-ledger baseline was regenerated to record this surface — a
+documented, bounded exception to the monotonic-non-increase rule (SIMD
+deferral chosen 2026-07-25).
+
+## Proof times
+
+Per-module F* verification wall time for the post-merge portable
+verification (2026-07-26, Apple Silicon, serial `make -j2`, committed hints
+via `--use_hints`). Times are each module's slowest observed re-verify across
+the merge-adaptation builds (cold-ish; warm cache-hit revalidation is ~0.5 s
+per module). Modules not listed verified in under ~1.5 s.
+
+| Time (s) | Module |
+|---:|---|
+| 96.1 | Libcrux_sha3.Generic_keccak.Portable (absorb/squeeze FC bodies) |
+| 92.5 | EquivImplSpec.Keccakf.Generic |
+| 89.3 | Libcrux_sha3.Generic_keccak.Xof.Bundle |
+| 34.7 | Libcrux_sha3.Simd.Portable (load/store per-byte proofs) |
+| 20.3 | Libcrux_sha3.Generic_keccak |
+| 20.0 | Libcrux_sha3 (API dispatch) |
+| 19.2 | EquivImplSpec.Sponge.Portable |
+| 18.2 | EquivImplSpec.Sponge.Portable.Steps |
+| 17.2 | EquivImplSpec.Keccakf.ChiFold |
+| 17.1 | EquivImplSpec.Sponge.Portable.SqueezeAPI |
+| 14.7 | Libcrux_sha3.Portable.Incremental.Bundle |
+|  5.7 | Libcrux_sha3.Simd.Avx2 (admitted, typecheck only) |
+|  4.1 | Libcrux_sha3.Traits |
+|  3.9 | EquivImplSpec.Sponge.Generic.Core |
+|  3.1 | EquivImplSpec.Correctness.Portable (top theorems) |
+
+Full portable closure (extraction + equivalence sub-builds) completes in
+roughly 5–6 minutes cold with committed hints, ~40 s warm.

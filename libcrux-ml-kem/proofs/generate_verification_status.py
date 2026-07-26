@@ -930,6 +930,12 @@ def main():
     write_status_md(rows, config['crate_name'], output,
                     body_admit_sites_by_module, unverified_paths_seen,
                     module_counts_by_display)
+    # Hand-written appendix (proof times, deferral notes, ...): kept in a
+    # sibling .appendix.md file so regeneration preserves it verbatim.
+    appendix = os.path.splitext(output)[0] + '.appendix.md'
+    if os.path.isfile(appendix):
+        with open(appendix) as af, open(output, 'a') as of:
+            of.write('\n' + af.read())
     print(f"Generated {output}")
 
 

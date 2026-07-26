@@ -44,19 +44,19 @@ column gives the actionable zero-lax target.
 |            | specs             |    1 |   6 |   0 |     |   6 |    0 |      0 |       0 |
 |            | polynomial        |    1 |  17 |   0 |     |  10 |    3 |      4 |       0 |
 |            | ntt               |    1 |  10 |   0 |     |   6 |    0 |      2 |       2 |
-|            | arithmetic        |    1 |   7 |   1 |     |   1 |    1 |      4 |       0 |
+|            | arithmetic        |    1 |   7 |   0 |     |   0 |    1 |      6 |       0 |
 |            | matrix            |    1 |  11 |   0 |     |   0 |    0 |     11 |       0 |
-|            | sample            |    1 |  21 |   3 |     |  11 |    5 |      2 |       0 |
-|            | samplex4          |    1 |   7 |   2 |     |   0 |    0 |      5 |       0 |
+|            | sample            |    1 |  21 |   2 |     |  12 |    5 |      2 |       0 |
+|            | samplex4          |    1 |   7 |   0 |     |   0 |    1 |      6 |       0 |
 |            | pre_hash          |    1 |   9 |   0 |     |   7 |    2 |      0 |       0 |
 |            | hash_functions    |    1 |  79 |   0 |     |  69 |   10 |      0 |       0 |
-|            | encoding          |    6 |  46 |   1 |     |  33 |    7 |      5 |       0 |
-|            | ml_dsa_generic    |    4 |  43 |   6 |     |  37 |    0 |      0 |       0 |
+|            | encoding          |    6 |  46 |   0 |     |  30 |   10 |      6 |       0 |
+|            | ml_dsa_generic    |    4 |  43 |   0 |     |  43 |    0 |      0 |       0 |
 |            | ml_dsa_*          |    3 |  46 |   0 |     |  46 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | simd/traits       |    2 |  33 |   0 |     |   6 |   15 |      4 |       8 |
 |            | simd/tests        |    1 |   6 |   0 |   6 |   0 |    0 |      0 |       0 |
-|            | **Generic total** | **31** | **362** | **13** | **6** | **253** | **43** | **37** |  **10** |
+|            | **Generic total** | **31** | **362** | **2** | **6** | **256** | **47** | **41** |  **10** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | vector_type       |    1 |   3 |   0 |     |   3 |    0 |      0 |       0 |
 |            | arithmetic        |    1 |  21 |   0 |     |   2 |    3 |      1 |      15 |
@@ -80,19 +80,19 @@ column gives the actionable zero-lax target.
 
 - **Total modules**: 58
 - **Total functions**: 620
-- **Lax** (admitted): 13 (2.1%)
+- **Lax** (admitted): 2 (0.3%)
 - **Unverified** (not extracted): 6 (1.0%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 601 (96.9%)
-  - Panic-free only (no further proof): 272 (43.9%)
-  - Math (non-trivial ensures, no bounds/spec match): 152 (24.5%)
-  - Bounds (range/interval ensures): 86 (13.9%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 612 (98.7%)
+  - Panic-free only (no further proof): 275 (44.4%)
+  - Math (non-trivial ensures, no bounds/spec match): 156 (25.2%)
+  - Bounds (range/interval ensures): 90 (14.5%)
   - Hacspec (cites high-level spec): 91 (14.7%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |      31 |  362 |  13 |   6 | 253 |   43 |     37 |      10 |
+| Generic      |      31 |  362 |   2 |   6 | 256 |   47 |     41 |      10 |
 | Portable     |      12 |  121 |   0 |   0 |  10 |   40 |     24 |      47 |
 | Avx2         |      15 |  137 |   0 |   0 |   9 |   69 |     25 |      34 |
 
@@ -104,17 +104,26 @@ These Rust modules have no corresponding F\* file in the extraction directory �
 | ------------------------------ | ---------------------------------------- | --- |
 | Generic/simd/tests             | src/simd/tests.rs                        |   6 |
 
-## Body-admit sites (audit)
+# Appendix (hand-written; appended by generate_verification_status.py)
 
-Functions classified as lax due to `admit ()` (or `--admit_smt_queries true`) inside their body. Auditable so the script's classification decisions are traceable.
+## Proof times
 
-| Module                    |  Line |
-| ------------------------- | ----- |
-| Generic/arithmetic        |   111 |
-| Generic/encoding          |    78 |
-| Generic/ml_dsa_generic    |    78 |
-| Generic/ml_dsa_generic    |   262 |
-| Generic/ml_dsa_generic    |  1006 |
-| Generic/ml_dsa_generic    |  1044 |
-| Generic/ml_dsa_generic    |  1222 |
-| Generic/ml_dsa_generic    |  1274 |
+The ml-dsa proof sources (src annotations, `proofs/fstar/spec/` companions,
+committed hints) are byte-identical to the campaign state at `6584a585c`, so
+the campaign's timing data remains authoritative. Headline numbers (Apple
+Silicon, serial builds, committed hints via `--use_hints`):
+
+- Full ml-dsa F* closure: on the order of 1–2 hours cold; minutes warm with
+  the committed hints and a seeded `.checked` cache.
+- Heaviest module: `Libcrux_ml_dsa.Simd.Avx2.Invntt` — ~8.4 min for a clean
+  single-module re-verify with committed hints (2026-07-25 spot-check on the
+  merge branch; down from ~311 min pre-`#restart-solver` restructure, see the
+  per-decl `#restart-solver` campaign note).
+- The `--z3refresh`/`--split_queries always` declaration set (~7% of decls)
+  dominates build wall (~68%): the AVX2/portable NTT and inverse-NTT layer
+  proofs, `sign_internal`/`verify_internal` composition, and the encoding
+  serializers.
+
+Detailed per-function top-20 tables are tracked in the engineering log
+(`fstar-perf-top20.md`, snapshots through 2026-07); regenerate after any full
+cold build by aggregating `Query-stats` lines from the build log.
