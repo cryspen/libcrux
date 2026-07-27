@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- [#1539](https://github.com/celabshq/libcrux/pull/1539): Support for the
+  post-quantum and PQ/T-hybrid algorithms of
+  [draft-ietf-hpke-pq](https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04),
+  in the **libcrux provider only**, behind the new `draft-ietf-hpke-pq` feature.
+  Validated against the draft's published test vectors.
+  - Single-stage KDFs `KdfAlgorithm::Shake128 = 0x0010` and
+    `KdfAlgorithm::Shake256 = 0x0011`, with the corresponding one-stage HPKE
+    key schedule (`KeySchedule`, `Export`, `DeriveKeyPair`).
+  - ML-KEM-512 (`0x0040`), ML-KEM-768 (`0x0041`), and ML-KEM-1024 (`0x0042`) as
+    HPKE KEMs.
+  - The PQ/T-hybrid KEMs `KemAlgorithm::MlKem768P256 = 0x0050`,
+    `KemAlgorithm::MlKem1024P384 = 0x0051`, and `MLKEM768-X25519` (`0x647a`,
+    via X-Wing draft-06), per
+    [draft-irtf-cfrg-concrete-hybrid-kems-03](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-concrete-hybrid-kems-03).
+
 ## [0.7.0] (2026-07-15)
 
 ### Added
