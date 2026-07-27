@@ -27,50 +27,50 @@ The "Panic-safe" aggregate (sometimes useful for headline numbers) = Panic-free 
 | Category   | File              | Mods | Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ---------- | ----------------- | ---- | --- | --- | --- | --- | ---- | ------ | ------- |
 | _Generic_  | lib               |    1 |  16 |   0 |     |  12 |    0 |      0 |       4 |
-|            | traits            |    1 |  14 |   0 |     |  13 |    1 |      0 |       0 |
-|            | proof_utils       |    1 |   4 |   0 |     |   4 |    0 |      0 |       0 |
+|            | traits            |    1 |  14 |   0 |     |  11 |    3 |      0 |       0 |
+|            | proof_utils       |    1 |  10 |   0 |     |  10 |    0 |      0 |       0 |
 |            | impl_digest_trait |    1 |   5 |   0 |   5 |   0 |    0 |      0 |       0 |
 |            | simd (top)        |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | generic_keccak (top) |    1 |  50 |   0 |     |  50 |    0 |      0 |       0 |
 |            | generic_keccak/constants |    1 |   0 |   0 |     |   0 |    0 |      0 |       0 |
 |            | generic_keccak/xof |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
-|            | **Generic total** | **8** | **98** | **0** | **5** | **82** | **7** |  **0** |   **4** |
+|            | **Generic total** | **8** | **104** | **0** | **5** | **86** | **9** |  **0** |   **4** |
 |            |                   |      |     |     |     |     |      |        |         |
 | _Portable_ | generic_keccak    |    1 |  10 |   0 |     |   1 |    4 |      0 |       5 |
 |            | portable          |    1 |   6 |   0 |     |   0 |    0 |      0 |       6 |
 |            | simd              |    4 |  20 |   0 |     |  17 |    3 |      0 |       0 |
 |            | **Portable total** | **6** | **36** | **0** |     | **18** | **7** |  **0** |  **11** |
 |            |                   |      |     |     |     |     |      |        |         |
-| _Avx2_     | generic_keccak    |    1 |   5 |   5 |     |   0 |    0 |      0 |       0 |
-|            | avx2              |    1 |   9 |   0 |     |   4 |    5 |      0 |       0 |
-|            | simd              |    4 |  54 |  19 |  35 |   0 |    0 |      0 |       0 |
-|            | **Avx2 total**    | **6** | **68** | **24** | **35** | **4** | **5** |  **0** |   **0** |
+| _Avx2_     | generic_keccak    |    1 |  10 |   0 |     |   1 |    5 |      0 |       4 |
+|            | avx2              |    1 |   9 |   0 |     |   3 |    6 |      0 |       0 |
+|            | simd              |    4 |  36 |   0 |     |  24 |   12 |      0 |       0 |
+|            | **Avx2 total**    | **6** | **55** | **0** |     | **28** | **23** |  **0** |   **4** |
 |            |                   |      |     |     |     |     |      |        |         |
-| _Neon_     | generic_keccak    |    1 |   5 |   5 |     |   0 |    0 |      0 |       0 |
-|            | neon              |    1 |  15 |   0 |     |  10 |    5 |      0 |       0 |
-|            | simd              |    4 |  46 |  18 |  28 |   0 |    0 |      0 |       0 |
-|            | **Neon total**    | **6** | **66** | **23** | **28** | **10** | **5** |  **0** |   **0** |
+| _Neon_     | generic_keccak    |    1 |   8 |   0 |     |   0 |    5 |      0 |       3 |
+|            | neon              |    1 |  15 |   0 |     |   3 |    5 |      0 |       7 |
+|            | simd              |    4 |  29 |   0 |     |  17 |   12 |      0 |       0 |
+|            | **Neon total**    | **6** | **52** | **0** |     | **20** | **22** |  **0** |  **10** |
 
 ## Summary
 
 - **Total modules**: 26
-- **Total functions**: 268
-- **Lax** (admitted): 47 (17.5%)
-- **Unverified** (not extracted): 68 (25.4%)
-- **Panic-safe** (PF + Math + Bounds + Hacspec): 153 (57.1%)
-  - Panic-free only (no further proof): 114 (42.5%)
-  - Math (non-trivial ensures, no bounds/spec match): 24 (9.0%)
+- **Total functions**: 247
+- **Lax** (admitted): 0 (0.0%)
+- **Unverified** (not extracted): 5 (2.0%)
+- **Panic-safe** (PF + Math + Bounds + Hacspec): 242 (98.0%)
+  - Panic-free only (no further proof): 152 (61.5%)
+  - Math (non-trivial ensures, no bounds/spec match): 61 (24.7%)
   - Bounds (range/interval ensures): 0 (0.0%)
-  - Hacspec (cites high-level spec): 15 (5.6%)
+  - Hacspec (cites high-level spec): 29 (11.7%)
 
 ### Modules per category
 
 | Category     | Modules |  Fns | Lax | Unv |  PF | Math | Bounds | Hacspec |
 | ------------ | ------- | ---- | --- | --- | --- | ---- | ------ | ------- |
-| Generic      |       8 |   98 |   0 |   5 |  82 |    7 |      0 |       4 |
+| Generic      |       8 |  104 |   0 |   5 |  86 |    9 |      0 |       4 |
 | Portable     |       6 |   36 |   0 |   0 |  18 |    7 |      0 |      11 |
-| Avx2         |       6 |   68 |  24 |  35 |   4 |    5 |      0 |       0 |
-| Neon         |       6 |   66 |  23 |  28 |  10 |    5 |      0 |       0 |
+| Avx2         |       6 |   55 |   0 |   0 |  28 |   23 |      0 |       4 |
+| Neon         |       6 |   52 |   0 |   0 |  20 |   22 |      0 |      10 |
 
 ## Unverified Rust modules (not extracted to F\*)
 
@@ -79,12 +79,6 @@ These Rust modules have no corresponding F\* file in the extraction directory â€
 | Module                         | Path                                     | Fns | Functions |
 | ------------------------------ | ---------------------------------------- | --- | --------- |
 | Generic/impl_digest_trait      | src/impl_digest_trait.rs                 |   5 | `new`, `reset`, `update`, `finish`, `hash` |
-| Avx2/simd                      | src/simd/avx2/load.rs                    |   8 | `load_lane_u64`, `load_u64x4x4`, `load_u64x4`, `lemma_rate_mod`, `load_block`, `load_last`, `load_block`, `load_last` |
-| Avx2/simd                      | src/simd/avx2/store.rs                   |  14 | `stored`, `lemma_stored_frame`, `lemma_stored_union`, `lemma_stored_empty`, `lemma_window_stored`, `lemma_window_modifies`, `lemma_window_stored_single`, `store_u64x4x4`, `store_chunk8x4`, `store_tail_ragged_avx2`, `store_block_full_avx2`, `store_block_tail_avx2`, `store_block`, `squeeze4` |
-| Avx2/simd                      | src/simd/avx2/wrappers.rs                |  13 | `rotate_left`, `_veor5q_u64`, `_vrax1q_u64`, `_vxarq_u64`, `_vbcaxq_u64`, `_veorq_n_u64`, `zero`, `xor5`, `rotate_left1_and_xor`, `xor_and_rotate`, `and_not_xor`, `xor_constant`, `xor` |
-| Neon/simd                      | src/simd/arm64/load.rs                   |   8 | `load_lane_u64`, `lemma_rate_mod`, `load_u64x2`, `load_u64x2x2`, `load_block`, `load_last`, `load_block`, `load_last` |
-| Neon/simd                      | src/simd/arm64/store.rs                  |   8 | `stored`, `store_u64x2x2`, `store_tail_high`, `store_tail_low`, `store_block_full`, `store_block_tail`, `store_block`, `squeeze2` |
-| Neon/simd                      | src/simd/arm64/wrappers.rs               |  12 | `_veor5q_u64`, `_vrax1q_u64`, `_vxarq_u64`, `_vbcaxq_u64`, `_veorq_n_u64`, `zero`, `xor5`, `rotate_left1_and_xor`, `xor_and_rotate`, `and_not_xor`, `xor_constant`, `xor` |
 
 # Appendix (hand-written; appended by generate_verification_status.py)
 

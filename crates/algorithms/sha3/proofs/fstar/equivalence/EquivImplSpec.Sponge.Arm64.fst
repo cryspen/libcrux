@@ -481,7 +481,130 @@ let arm64_sc_load_last
    [lemma_store_block_eq_squeeze_state], but threads [arm64_lane]
    through the hax-proved per-lane ensures clause on [Simd.Arm64.store_block].
    ================================================================ *)
-#push-options "--z3rlimit 800"
+
+(* Consumer for the opaque [stored] predicate: extract the single per-byte
+   equation at index [k].  Mirror of the Avx2 [lemma_stored_index] at N=2. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 100"
+let lemma_stored_index_arm64
+      (s: t_Array I.t_e_uint64x2_t (mk_usize 25))
+      (out: t_Slice u8)
+      (start lane lo hi k: usize)
+  : Lemma
+      (requires
+        Libcrux_sha3.Simd.Arm64.Store.stored s out start lane lo hi /\
+        v lane < 2 /\ v start <= v k /\ v lo <= v k /\ v k < v hi /\
+        v k < v (Core_models.Slice.impl__len #u8 out) /\
+        v ((k -! start) /! mk_usize 8 <: usize) < 25)
+      (ensures
+        (out.[ k ] <: u8) ==
+        ((Core_models.Num.impl_u64__to_le_bytes
+              (I.get_lane_u64 (s.[ (k -! start) /! mk_usize 8 <: usize ]) lane)
+            <: t_Array u8 (mk_usize 8)).[ (k -! start) %! mk_usize 8 <: usize ]))
+  = reveal_opaque (`%Libcrux_sha3.Simd.Arm64.Store.stored)
+                  Libcrux_sha3.Simd.Arm64.Store.stored
+#pop-options
+
+(* Consumer for [squeeze_state]'s post [forall]: the single per-byte equation
+   at [i] (covers in/out range).  Verbatim copy of the Avx2 twin — generic in
+   the scalar [state: t_Array u64 25], independent of the SIMD backend. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+let lemma_squeeze_state_index
+      (out_len: usize)
+      (state: t_Array u64 (mk_usize 25))
+      (output: t_Array u8 out_len)
+      (out_offset len i: usize)
+  : Lemma
+      (requires
+        v len <= 200 /\ v out_len >= v len /\ v out_offset + v len <= v out_len /\
+        v i < v out_len)
+      (ensures
+        ((Hacspec_sha3.Sponge.squeeze_state out_len state output out_offset len).[ i ] <: u8)
+        ==
+        (if v out_offset <= v i && v i < v out_offset + v len
+         then ((Core_models.Num.impl_u64__to_le_bytes
+                   (state.[ (i -! out_offset) /! mk_usize 8 <: usize ])
+                 <: t_Array u8 (mk_usize 8)).[ (i -! out_offset) %! mk_usize 8 <: usize ])
+         else (output.[ i ] <: u8)))
+  = ()
+#pop-options
+
+(* Per-[i] byte equation [sq_lane_arm64.[i] == squeeze_state.[i]], proved from
+   store_block's OPAQUE [stored] ensures (via [lemma_stored_index_arm64]) rather
+   than by unfolding the store body.  Mirror of the Avx2 twin
+   [lemma_sq_lane_byte_eq_avx2] at N=2: the inline body-unfold path saturated
+   once impl [get_ij]/[set_ij] became transparent, so the facts filter EXCLUDES
+   the store body helpers (keeping [store_block] itself) forcing Z3 onto the
+   cheap opaque ensures. *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 800 --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid -Libcrux_sha3.Simd.Arm64.Store.store_block_full -Libcrux_sha3.Simd.Arm64.Store.store_block_tail -Libcrux_sha3.Simd.Arm64.Store.store_tail_high -Libcrux_sha3.Simd.Arm64.Store.store_tail_low -Libcrux_sha3.Simd.Arm64.Store.store_u64x2x2'"
+let lemma_sq_lane_byte_eq_arm64
+      (rate: usize)
+      (state: t_Array I.t_e_uint64x2_t (mk_usize 25))
+      (outputs: t_Array (t_Slice u8) (mk_usize 2))
+      (start: usize)
+      (len: usize)
+      (l: nat{l < 2})
+      (i: nat{i < Seq.length #u8 (outputs.[ mk_usize l ])})
+  : Lemma
+      (requires
+        Libcrux_sha3.Proof_utils.valid_rate rate /\
+        v len <= v rate /\
+        v start + v len <= Seq.length #u8 (outputs.[ mk_usize 0 ]) /\
+        Libcrux_sha3.Proof_utils.slices_same_len (mk_usize 2) outputs)
+      (ensures (
+        let out_l = outputs.[ mk_usize l ] in
+        let out_l_len = Core_models.Slice.impl__len #u8 out_l in
+        let lhs = sq_lane_arm64 rate state outputs start len l in
+        let rhs = Hacspec_sha3.Sponge.squeeze_state out_l_len
+                    (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
+                    (out_l <: t_Array u8 out_l_len) start len in
+        Seq.index (lhs <: Seq.seq u8) i == Seq.index (rhs <: Seq.seq u8) i))
+  = let ii = mk_usize i in
+    let out_l = outputs.[ mk_usize l ] in
+    let out_l_len = Core_models.Slice.impl__len #u8 out_l in
+    let lhs = sq_lane_arm64 rate state outputs start len l in
+    let rhs = Hacspec_sha3.Sponge.squeeze_state out_l_len
+                (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
+                (out_l <: t_Array u8 out_l_len) start len in
+    (* sq_lane_arm64 == store_block-lane-l (f_squeeze2 #impl reduces to store_block). *)
+    let sb0, sb1 =
+      Libcrux_sha3.Simd.Arm64.Store.store_block rate state
+        (outputs.[ mk_usize 0 ]) (outputs.[ mk_usize 1 ]) start len in
+    let sb_l = if l = 0 then sb0 else sb1 in
+    assert (lhs == sb_l);
+    (* Per-lane proof in an isolated context (only the one lane's
+       stored/modifies), dispatched by [match l] so each call is concrete. *)
+    let prove (sb: t_Slice u8) (lane: nat{lane = l})
+      : Lemma
+          (requires
+            sb == sb_l /\
+            Libcrux_sha3.Simd.Arm64.Store.stored state sb start (mk_usize lane)
+              start (start +! len) /\
+            Libcrux_sha3.Proof_utils.modifies_range out_l sb start (start +! len))
+          (ensures Seq.index (lhs <: Seq.seq u8) i == Seq.index (rhs <: Seq.seq u8) i) =
+      lemma_squeeze_state_index out_l_len
+        (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
+        (out_l <: t_Array u8 out_l_len) start len ii;
+      reveal_opaque (`%Libcrux_sha3.Proof_utils.modifies_range)
+                    Libcrux_sha3.Proof_utils.modifies_range;
+      if v start <= v ii && v ii < v start + v len then begin
+        let j : usize = (ii -! start) /! mk_usize 8 in
+        lemma_stored_index_arm64 state sb start (mk_usize lane) start (start +! len) ii;
+        KA.lemma_arm64_lane_unfold state.[j] lane;
+        let _ = I.get_lane_u64 state.[j] (mk_usize lane) in
+        ()
+      end;
+      assert (Seq.index (lhs <: Seq.seq u8) i == (lhs.[ ii ] <: u8));
+      assert (Seq.index (rhs <: Seq.seq u8) i == (rhs.[ ii ] <: u8))
+    in
+    (match l with
+     | 0 -> prove sb0 0
+     | _ -> prove sb1 1)
+#pop-options
+
+(* Bridge: pointwise equivalence of Arm64 [sq_lane_arm64] on lane [l] with the
+   scalar spec [squeeze_state], mapping [lemma_sq_lane_byte_eq_arm64] over the
+   output bytes.  Mirrors [lemma_sq_lane_avx2_eq_squeeze_state] at N=2. *)
+#push-options "--z3rlimit 400"
 let lemma_sq_lane_arm64_eq_squeeze_state
       (rate: usize)
       (state: t_Array I.t_e_uint64x2_t (mk_usize 25))
@@ -511,24 +634,9 @@ let lemma_sq_lane_arm64_eq_squeeze_state
                 out_l_len
                 (G.extract_lane (mk_usize 2) KA.lc_arm64 state l)
                 (out_l <: t_Array u8 out_l_len) start len in
-    assert (v (mk_usize l) = l);
     let byte_eq (i: nat{i < Seq.length out_l})
       : Lemma (Seq.index lhs i == Seq.index rhs i) =
-      let ii = mk_usize i in
-      assert (v ii < Seq.length out_l);
-      (* Fire the extract_lane SMTPat on the state index that matters for
-         byte i, and provide both get_lane_u64 instantiations so that the
-         arm64_lane ↔ get_lane_u64 SMTPat can equate lhs and rhs in the
-         "in range" branch. *)
-      if v start <= v ii && v ii < v start + v len then begin
-        let j : usize = (ii -! start) /! mk_usize 8 in
-        KA.lemma_arm64_lane_unfold state.[j] l;
-        assert ((G.extract_lane (mk_usize 2) KA.lc_arm64 state l).[j]
-                  == KA.arm64_lane state.[j] l);
-        let _ = I.get_lane_u64 state.[j] (mk_usize 0) in
-        let _ = I.get_lane_u64 state.[j] (mk_usize 1) in
-        ()
-      end
+      lemma_sq_lane_byte_eq_arm64 rate state outputs start len l i
     in
     Classical.forall_intro byte_eq;
     Rust_primitives.Arrays.eq_intro lhs rhs
