@@ -523,6 +523,23 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         }
     }
 
+    /// Set up the configuration for HPKE with a custom PRNG.
+    pub fn new_with_prng(
+        mode: Mode,
+        kem_id: KemAlgorithm,
+        kdf_id: KdfAlgorithm,
+        aead_id: AeadAlgorithm,
+        prng: Crypto::HpkePrng,
+    ) -> Self {
+        Self {
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id,
+            prng,
+        }
+    }
+
     /// Set up an HPKE sender.
     ///
     /// For the base and PSK modes this encapsulates the public key `pk_r`
