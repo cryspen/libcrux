@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c
         with:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
@@ -116,7 +116,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install latest nightly
-        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c
         with:
           toolchain: nightly
       - name: Install cargo-fuzz
@@ -132,7 +132,7 @@ jobs:
           persist-credentials: false
       # we use a target that lacks a pre-compiled libstd to check if any dependency is using libstd
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c
         with:
           toolchain: stable
           targets: thumbv7em-none-eabihf
