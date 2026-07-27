@@ -178,13 +178,11 @@ files:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       - [libcrux_ml_kem, mlkem512, avx2]
-    internal:
       - [libcrux_ml_kem, mlkem512, avx2, unpacked]
 
   - name: libcrux_mlkem512_portable
     api:
       - [libcrux_ml_kem, mlkem512, portable]
-    internal:
       - [libcrux_ml_kem, mlkem512, portable, unpacked]
 
   - name: libcrux_mlkem512
@@ -198,13 +196,11 @@ files:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       - [libcrux_ml_kem, mlkem768, avx2]
-    internal:
       - [libcrux_ml_kem, mlkem768, avx2, unpacked]
 
   - name: libcrux_mlkem768_portable
     api:
       - [libcrux_ml_kem, mlkem768, portable]
-    internal:
       - [libcrux_ml_kem, mlkem768, portable, unpacked]
 
   - name: libcrux_mlkem768
@@ -218,13 +214,11 @@ files:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
     api:
       - [libcrux_ml_kem, mlkem1024, avx2]
-    internal:
       - [libcrux_ml_kem, mlkem1024, avx2, unpacked]
 
   - name: libcrux_mlkem1024_portable
     api:
       - [libcrux_ml_kem, mlkem1024, portable]
-    internal:
       - [libcrux_ml_kem, mlkem1024, portable, unpacked]
 
   - name: libcrux_mlkem1024

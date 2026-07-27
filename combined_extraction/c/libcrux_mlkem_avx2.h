@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 03a9dbf07ad389374e301a47b3f0418a247bc6b0
+ * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
  */
 
 
@@ -511,6 +511,203 @@ libcrux_ml_kem_vector_avx2_rej_sample_14(
 This function found in impl {impl core::clone::Clone for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i libcrux_ml_kem_vector_avx2_clone_a4(const __m256i *self);
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $16size_t
+*/
+typedef struct Eurydice_arr_13_s { __m256i data[16U]; } Eurydice_arr_13;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_600_s { Eurydice_arr_13 data[3U]; } Eurydice_arr_600;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_600
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_601_s { Eurydice_arr_600 data[3U]; } Eurydice_arr_601;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $3size_t
+*/
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ef_s
+{
+  Eurydice_arr_600 t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_601 A;
+}
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ef;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $3size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef_s
+{
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_ef ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $3size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ef_s
+{
+  Eurydice_arr_600 ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ef;
+
+typedef struct libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked_s
+{
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_ef private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef public_key;
+}
+libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_3b_s { Eurydice_arr_13 data[4U]; } Eurydice_arr_3b;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_3b
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_cd0_s { Eurydice_arr_3b data[4U]; } Eurydice_arr_cd0;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $4size_t
+*/
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4_s
+{
+  Eurydice_arr_3b t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_cd0 A;
+}
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $4size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4_s
+{
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4 ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $4size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4_s
+{
+  Eurydice_arr_3b ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4;
+
+typedef struct libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked_s
+{
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4 private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 public_key;
+}
+libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types libcrux_ml_kem_polynomial_PolynomialRingElement_f6
+with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_ee_s { Eurydice_arr_13 data[2U]; } Eurydice_arr_ee;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_ee
+with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_e21_s { Eurydice_arr_ee data[2U]; } Eurydice_arr_e21;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $2size_t
+*/
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c7_s
+{
+  Eurydice_arr_ee t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_e21 A;
+}
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c7;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $2size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7_s
+{
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_c7 ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7;
+
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPrivateKeyUnpacked
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+- $2size_t
+*/
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_c7_s
+{
+  Eurydice_arr_ee ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
+}
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_c7;
+
+typedef struct libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked_s
+{
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_c7 private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 public_key;
+}
+libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked;
 
 #if defined(__cplusplus)
 }

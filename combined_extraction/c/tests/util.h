@@ -4,7 +4,6 @@
 #include <nlohmann/json.hpp>
 
 #include "libcrux_mlkem_common.h"
-#include "libcrux_mlkem768_portable.h"
 #include "libcrux_sha3_portable.h"
 
 using namespace std;

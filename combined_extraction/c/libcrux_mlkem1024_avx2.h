@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 03a9dbf07ad389374e301a47b3f0418a247bc6b0
+ * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
  */
 
 
@@ -25,6 +25,7 @@ extern "C" {
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
 #include "libcrux_mlkem_core.h"
+#include "libcrux_mlkem_avx2.h"
 #include "combined_core.h"
 
 /**
@@ -83,6 +84,125 @@ libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(const Eurydice_arr_a8 *p
  Returns `true` if valid, and `false` otherwise.
 */
 bool libcrux_ml_kem_mlkem1024_avx2_validate_public_key(const Eurydice_arr_d1 *public_key);
+
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
+libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024PublicKeyUnpacked;
+
+/**
+ Decapsulate ML-KEM 1024 (unpacked)
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an unpacked key pair of type [`MlKem1024KeyPairUnpacked`]
+ and an [`MlKem1024Ciphertext`].
+*/
+Eurydice_arr_ec
+libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *private_key,
+  const Eurydice_arr_d1 *ciphertext
+);
+
+/**
+ Encapsulate ML-KEM 1024 (unpacked)
+
+ Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
+ the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+ TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
+ <https://github.com/hacspec/hax/issues/770>
+*/
+tuple_25
+libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
+  Eurydice_arr_ec randomness
+);
+
+/**
+ Generate ML-KEM 1024 Key Pair in "unpacked" form
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
+  Eurydice_arr_c7 randomness,
+  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+);
+
+/**
+ Generate ML-KEM 1024 Key Pair in "unpacked" form.
+*/
+libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
+libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
+
+/**
+ Create a new, empty unpacked key.
+*/
+libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
+libcrux_ml_kem_mlkem1024_avx2_unpacked_init_key_pair(void);
+
+/**
+ Create a new, empty unpacked public key.
+*/
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
+libcrux_ml_kem_mlkem1024_avx2_unpacked_init_public_key(void);
+
+/**
+ Get an unpacked key from a private key.
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_from_private_mut(
+  const Eurydice_arr_a8 *private_key,
+  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+);
+
+/**
+ Get the serialized private key.
+*/
+Eurydice_arr_a8
+libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key(
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+);
+
+/**
+ Get the serialized private key.
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key_mut(
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  Eurydice_arr_a8 *serialized
+);
+
+/**
+ Get the serialized public key.
+*/
+Eurydice_arr_d1
+libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key(
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+);
+
+/**
+ Get the serialized public key.
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key_mut(
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  Eurydice_arr_d1 *serialized
+);
+
+/**
+ Get the serialized public key.
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_serialized_public_key(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
+  Eurydice_arr_d1 *serialized
+);
+
+/**
+ Get the unpacked public key.
+*/
+void
+libcrux_ml_kem_mlkem1024_avx2_unpacked_unpacked_public_key(
+  const Eurydice_arr_d1 *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *unpacked_public_key
+);
 
 #if defined(__cplusplus)
 }
