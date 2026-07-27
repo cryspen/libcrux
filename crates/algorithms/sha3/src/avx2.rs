@@ -1,10 +1,28 @@
 /// Performing 4 operations in parallel
 pub mod x4 {
+    #[cfg(hax)]
+    use hax_lib::int::ToInt;
+
     use crate::generic_keccak::simd256::keccak4;
 
     /// Perform 4 SHAKE256 operations in parallel
     #[allow(clippy::too_many_arguments)]
     #[inline(always)]
+    #[hax_lib::requires(
+        out0.len() < usize::MAX - 200 &&
+        out0.len() == out1.len() &&
+        out0.len() == out2.len() &&
+        out0.len() == out3.len() &&
+        input0.len() == input1.len() &&
+        input0.len() == input2.len() &&
+        input0.len() == input3.len()
+    )]
+    #[hax_lib::ensures(|_|
+        future(out0).len() == out0.len() &&
+        future(out1).len() == out1.len() &&
+        future(out2).len() == out2.len() &&
+        future(out3).len() == out3.len()
+    )]
     pub fn shake256(
         input0: &[u8],
         input1: &[u8],
@@ -20,11 +38,11 @@ pub mod x4 {
 
     /// An incremental API to perform 4 operations in parallel
     pub mod incremental {
-        use crate::generic_keccak::KeccakState as GenericState;
-        use libcrux_intrinsics::avx2::*;
-
         #[cfg(hax)]
         use hax_lib::int::ToInt;
+
+        use crate::generic_keccak::KeccakState as GenericState;
+        use libcrux_intrinsics::avx2::*;
 
         /// The Keccak state for the incremental API.
         pub struct KeccakState {

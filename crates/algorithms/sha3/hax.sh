@@ -40,6 +40,17 @@ function extract_all() {
         into -i "-** +libcrux_traits::digest::arrayref::Hash +libcrux_traits::digest::arrayref::HashError" \
         fstar --z3rlimit 80
 
+    # Remove stale generated F* before re-extracting.  hax never deletes files
+    # for modules that were removed/renamed, nor old interface (*.fsti) files
+    # when a module stops emitting one.  A leftover *.fsti silently SHADOWS the
+    # freshly generated *.fst (F* prefers the interface), hiding definitions
+    # behind opaque `val`s -> spurious "incomplete quantifiers" proof failures.
+    # (This is exactly what broke the SIMD load/store proofs: 7 stale
+    # Libcrux_sha3.*.fsti hid get_ij/set_ij.)  The 4 hand-written proof modules
+    # (no Rust source) are restored from git after extraction.
+    rm -f "$SCRIPT_DIR/proofs/fstar/extraction"/*.fst \
+          "$SCRIPT_DIR/proofs/fstar/extraction"/*.fsti
+
     extract crates/algorithms/sha3 \
         -C --features simd128,simd256 ";" \
         into -i "+**" \
@@ -109,6 +120,15 @@ function msg() {
 function patch_fstar_extractions() {
     go_to "crates/algorithms/sha3"
     local target_dir="proofs/fstar/extraction"
+
+    # Restore the hand-written proof modules removed by the pre-extract clean.
+    # These have no Rust source (hax does not regenerate them); Proof_utils.fst
+    # is hand-written and intentionally shadows any hax-generated version.
+    git checkout -- \
+        "$target_dir/Libcrux_sha3.Proof_utils.fst" \
+        "$target_dir/Libcrux_sha3.Proof_utils.Lemmas.fst" \
+        "$target_dir/Libcrux_sha3.Simd.Arm64.StoreBlockHelpers.fst" \
+        "$target_dir/Libcrux_sha3.Simd.Avx2.StoreBlockHelpers.fst" 2>/dev/null || true
     # hax emits Core_models.Array.from_fn which has the wrong type;
     # replace with Rust_primitives.Slice.array_from_fn and supply the
     # extra implicit #(usize -> u8) that array_from_fn requires.

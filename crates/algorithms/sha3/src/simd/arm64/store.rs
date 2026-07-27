@@ -636,7 +636,11 @@ fn store_block_tail(
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid'")]
+// Composer of `store_block_full` + `store_block_tail` into the opaque `stored`
+// / `modifies_range` posts.  The per-byte-forall reveal saturates cold at
+// rlimit 400 (it was hint-dependent in the campaign); verify it as a monolithic
+// query at 800 with `--z3refresh`, matching `store_block_full`/`store_block_tail`.
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries no --z3refresh --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid'")]
 #[hax_lib::requires(valid_rate(RATE) && len <= RATE && start.to_int() + len.to_int() <= out0.len().to_int() && out0.len() == out1.len())]
 #[hax_lib::ensures(|_| (future(out0).len() == out0.len()).to_prop()
     & (future(out1).len() == out1.len()).to_prop()
