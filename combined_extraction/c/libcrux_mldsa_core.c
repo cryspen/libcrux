@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -271,11 +271,11 @@ libcrux_ml_dsa_sample_inside_out_shuffle(
   bool done = false;
   for (size_t i = (size_t)0U; i < randomness.meta; i++)
   {
-    size_t _cloop_j = i;
-    const uint8_t *byte = &randomness.ptr[_cloop_j];
+    size_t i0 = i;
+    uint8_t byte = randomness.ptr[i0];
     if (!done)
     {
-      size_t sample_at = (size_t)(uint32_t)byte[0U];
+      size_t sample_at = (size_t)(uint32_t)byte;
       if (sample_at <= out_index[0U])
       {
         result->data[out_index[0U]] = result->data[sample_at];

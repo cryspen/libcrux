@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -146,7 +146,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_11(Eurydice_arr_d6 v)
 Eurydice_arr_80 libcrux_ml_kem_vector_portable_serialize_11(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_0b(libcrux_ml_kem_vector_portable_serialize_serialize_11(a));
+    libcrux_secrets_int_classify_public_declassify_cd_98(libcrux_ml_kem_vector_portable_serialize_serialize_11(a));
 }
 
 /**
@@ -257,13 +257,13 @@ This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for
 Eurydice_arr_d6 libcrux_ml_kem_vector_portable_to_i16_array_44(Eurydice_arr_d6 x)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_4b(libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x));
+    libcrux_secrets_int_classify_public_declassify_cd_8a(libcrux_ml_kem_vector_portable_vector_type_to_i16_array(x));
 }
 
 KRML_MUSTINLINE Eurydice_arr_d6 libcrux_ml_kem_vector_portable_vector_type_zero(void)
 {
   return
-    libcrux_secrets_int_public_integers_classify_f9_4b((
+    libcrux_secrets_int_classify_public_classify_a8_8a((
         KRML_CLITERAL(Eurydice_arr_d6){ .data = { 0U } }
       ));
 }
@@ -330,7 +330,7 @@ libcrux_ml_kem_vector_portable_to_bytes_44(
 )
 {
   libcrux_ml_kem_vector_portable_vector_type_to_bytes(x,
-    libcrux_secrets_int_public_integers_classify_mut_slice_75(bytes));
+    libcrux_secrets_int_classify_public_classify_mut_slice_75(bytes));
 }
 
 KRML_MUSTINLINE Eurydice_arr_d6
@@ -406,7 +406,7 @@ libcrux_ml_kem_vector_portable_arithmetic_cond_subtract_3329(Eurydice_arr_d6 vec
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
   {
     size_t i0 = i;
-    if (libcrux_secrets_int_public_integers_declassify_22_39(vec.data[i0]) >= 3329)
+    if (libcrux_secrets_int_classify_public_declassify_22_39(vec.data[i0]) >= 3329)
     {
       size_t uu____0 = i0;
       vec.data[uu____0] -= 3329;
@@ -490,11 +490,11 @@ int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(int3
   int32_t
   k =
     libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_as_i16_06(value)) *
-      libcrux_secrets_int_as_i32_c6(libcrux_secrets_int_public_integers_classify_f9_df(LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
+      libcrux_secrets_int_as_i32_c6(libcrux_secrets_int_classify_public_classify_f9_df(LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R));
   int32_t
   k_times_modulus =
     libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_as_i16_06(k)) *
-      libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+      libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_classify_public_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
   int16_t
   c =
     libcrux_secrets_int_as_i16_06(k_times_modulus >>
@@ -553,7 +553,7 @@ libcrux_ml_kem_vector_portable_montgomery_multiply_by_constant_44(
 {
   return
     libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_by_constant(vector,
-      libcrux_secrets_int_public_integers_classify_f9_39(constant));
+      libcrux_secrets_int_classify_public_classify_f9_39(constant));
 }
 
 KRML_MUSTINLINE Eurydice_arr_d6
@@ -631,7 +631,7 @@ uint8_t libcrux_ml_kem_vector_portable_compress_compress_message_coefficient(uin
 {
   int16_t
   shifted =
-    libcrux_secrets_int_public_integers_classify_f9_39(1664) - libcrux_secrets_int_as_i16_80(fe);
+    libcrux_secrets_int_classify_public_classify_f9_39(1664) - libcrux_secrets_int_as_i16_80(fe);
   int16_t mask = shifted >> 15U;
   int16_t shifted_to_positive = mask ^ shifted;
   int16_t shifted_positive_in_range = shifted_to_positive - 832;
@@ -713,7 +713,7 @@ libcrux_ml_kem_vector_portable_ntt_ntt_step(
   int16_t
   t =
     libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(vec->data[j],
-      libcrux_secrets_int_public_integers_classify_f9_39(zeta));
+      libcrux_secrets_int_classify_public_classify_f9_39(zeta));
   int16_t a_minus_t = vec->data[i] - t;
   int16_t a_plus_t = vec->data[i] + t;
   vec->data[j] = a_minus_t;
@@ -823,7 +823,7 @@ libcrux_ml_kem_vector_portable_ntt_inv_ntt_step(
   int16_t
   o1 =
     libcrux_ml_kem_vector_portable_arithmetic_montgomery_multiply_fe_by_fer(a_minus_b,
-      libcrux_secrets_int_public_integers_classify_f9_39(zeta));
+      libcrux_secrets_int_classify_public_classify_f9_39(zeta));
   vec->data[i] = o0;
   vec->data[j] = o1;
 }
@@ -984,42 +984,42 @@ libcrux_ml_kem_vector_portable_ntt_ntt_multiply(
   Eurydice_arr_d6 out = libcrux_ml_kem_vector_portable_vector_type_zero();
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(zeta0),
+    libcrux_secrets_int_classify_public_classify_f9_39(zeta0),
     (size_t)0U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(nzeta0),
+    libcrux_secrets_int_classify_public_classify_f9_39(nzeta0),
     (size_t)1U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(zeta1),
+    libcrux_secrets_int_classify_public_classify_f9_39(zeta1),
     (size_t)2U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(nzeta1),
+    libcrux_secrets_int_classify_public_classify_f9_39(nzeta1),
     (size_t)3U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(zeta2),
+    libcrux_secrets_int_classify_public_classify_f9_39(zeta2),
     (size_t)4U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(nzeta2),
+    libcrux_secrets_int_classify_public_classify_f9_39(nzeta2),
     (size_t)5U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(zeta3),
+    libcrux_secrets_int_classify_public_classify_f9_39(zeta3),
     (size_t)6U,
     &out);
   libcrux_ml_kem_vector_portable_ntt_ntt_multiply_binomials(lhs,
     rhs,
-    libcrux_secrets_int_public_integers_classify_f9_39(nzeta3),
+    libcrux_secrets_int_classify_public_classify_f9_39(nzeta3),
     (size_t)7U,
     &out);
   return out;
@@ -1070,7 +1070,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_1(Eurydice_arr_d6 v)
 Eurydice_array_u8x2 libcrux_ml_kem_vector_portable_serialize_1(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_75(libcrux_ml_kem_vector_portable_serialize_serialize_1(a));
+    libcrux_secrets_int_classify_public_declassify_cd_82(libcrux_ml_kem_vector_portable_serialize_serialize_1(a));
 }
 
 /**
@@ -1173,7 +1173,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_4(Eurydice_arr_d6 v)
 Eurydice_array_u8x8 libcrux_ml_kem_vector_portable_serialize_4(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_52(libcrux_ml_kem_vector_portable_serialize_serialize_4(a));
+    libcrux_secrets_int_classify_public_declassify_cd_6e(libcrux_ml_kem_vector_portable_serialize_serialize_4(a));
 }
 
 /**
@@ -1290,7 +1290,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_5(Eurydice_arr_d6 v)
 Eurydice_arr_6d libcrux_ml_kem_vector_portable_serialize_5(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_37(libcrux_ml_kem_vector_portable_serialize_serialize_5(a));
+    libcrux_secrets_int_classify_public_declassify_cd_30(libcrux_ml_kem_vector_portable_serialize_serialize_5(a));
 }
 
 /**
@@ -1429,7 +1429,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_10(Eurydice_arr_d6 v)
 Eurydice_arr_fc libcrux_ml_kem_vector_portable_serialize_10(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_2b(libcrux_ml_kem_vector_portable_serialize_serialize_10(a));
+    libcrux_secrets_int_classify_public_declassify_cd_8f(libcrux_ml_kem_vector_portable_serialize_serialize_10(a));
 }
 
 /**
@@ -1602,7 +1602,7 @@ libcrux_ml_kem_vector_portable_serialize_serialize_12(Eurydice_arr_d6 v)
 Eurydice_arr_94 libcrux_ml_kem_vector_portable_serialize_12(Eurydice_arr_d6 a)
 {
   return
-    libcrux_secrets_int_public_integers_declassify_22_40(libcrux_ml_kem_vector_portable_serialize_serialize_12(a));
+    libcrux_secrets_int_classify_public_declassify_cd_ed(libcrux_ml_kem_vector_portable_serialize_serialize_12(a));
 }
 
 /**
@@ -1970,7 +1970,7 @@ sample_from_uniform_distribution_next_1c(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -2102,7 +2102,7 @@ sample_from_uniform_distribution_next_1c0(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -2330,7 +2330,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_29(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_212(public_key, (size_t)1536U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_214(public_key, (size_t)1536U);
   deserialize_ring_elements_reduced_ee(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -4392,7 +4392,7 @@ deserialize_then_decompress_message_28(const Eurydice_arr_ec *serialized)
     size_t i0 = i;
     Eurydice_arr_d6
     coefficient_compressed =
-      libcrux_ml_kem_vector_portable_deserialize_1_44(Eurydice_array_to_subslice_shared_d4(serialized,
+      libcrux_ml_kem_vector_portable_deserialize_1_44(Eurydice_array_to_subslice_shared_d41(serialized,
           (
             KRML_CLITERAL(core_ops_range_Range_87){
               .start = (size_t)2U * i0,
@@ -4802,7 +4802,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_ef(Eury
     int32_t
     decompressed =
       libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_classify_public_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)10);
     decompressed >>= (uint32_t)(10 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
@@ -4865,7 +4865,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_c4(Eury
     int32_t
     decompressed =
       libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_classify_public_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)11);
     decompressed >>= (uint32_t)(11 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
@@ -5009,7 +5009,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_d1(Eury
     int32_t
     decompressed =
       libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_classify_public_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)4);
     decompressed >>= (uint32_t)(4 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
@@ -5072,7 +5072,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_f4(Eury
     int32_t
     decompressed =
       libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_classify_public_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
     decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)5);
     decompressed >>= (uint32_t)(5 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
@@ -5439,7 +5439,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_1c(const Eurydice_arr_d1 *public
 {
   Eurydice_arr_d21
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_ee(Eurydice_array_to_subslice_to_shared_212(public_key,
+    deserialize_ring_elements_reduced_out_ee(Eurydice_array_to_subslice_to_shared_214(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U)));
   Eurydice_arr_d1
   public_key_serialized =
@@ -6026,7 +6026,7 @@ sample_from_uniform_distribution_next_53(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -6156,7 +6156,7 @@ sample_from_uniform_distribution_next_530(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -6324,7 +6324,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_e0(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_210(public_key, (size_t)768U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_212(public_key, (size_t)768U);
   deserialize_ring_elements_reduced_66(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -7920,7 +7920,7 @@ deserialize_then_decompress_u_44(const Eurydice_arr_d2 *ciphertext)
     size_t i0 = i;
     Eurydice_borrow_slice_u8
     u_bytes =
-      Eurydice_array_to_subslice_shared_d44(ciphertext,
+      Eurydice_array_to_subslice_shared_d45(ciphertext,
         (
           KRML_CLITERAL(core_ops_range_Range_87){
             .start = i0 *
@@ -8172,7 +8172,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_53(const Eurydice_arr_03 *public
 {
   Eurydice_arr_1e
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_66(Eurydice_array_to_subslice_to_shared_210(public_key,
+    deserialize_ring_elements_reduced_out_66(Eurydice_array_to_subslice_to_shared_212(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U)));
   Eurydice_arr_03
   public_key_serialized =
@@ -8760,7 +8760,7 @@ sample_from_uniform_distribution_next_b6(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -8893,7 +8893,7 @@ sample_from_uniform_distribution_next_b60(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_portable_rej_sample_44(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -9062,7 +9062,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_22(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_211(public_key, (size_t)1152U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_213(public_key, (size_t)1152U);
   deserialize_ring_elements_reduced_68(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -10877,7 +10877,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_b6(const Eurydice_arr_5f *public
 {
   Eurydice_arr_bb0
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_68(Eurydice_array_to_subslice_to_shared_211(public_key,
+    deserialize_ring_elements_reduced_out_68(Eurydice_array_to_subslice_to_shared_213(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U)));
   Eurydice_arr_5f
   public_key_serialized =

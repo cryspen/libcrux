@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -1143,7 +1143,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vector)
     combined0);
   Eurydice_array_u8x8 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d40(&serialized,
+    Eurydice_array_to_subslice_shared_d42(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })).ptr,
     (size_t)8U * sizeof (uint8_t));
   return
@@ -1340,7 +1340,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_5(__m256i vector)
     upper_8);
   Eurydice_arr_6d arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d4(&serialized,
+    Eurydice_array_to_subslice_shared_d41(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)10U })).ptr,
     (size_t)10U * sizeof (uint8_t));
   return
@@ -1545,7 +1545,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector)
     upper_8);
   Eurydice_arr_fc arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d4(&serialized,
+    Eurydice_array_to_subslice_shared_d41(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)20U })).ptr,
     (size_t)20U * sizeof (uint8_t));
   return
@@ -1764,7 +1764,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector)
     upper_8);
   Eurydice_arr_94 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d4(&serialized,
+    Eurydice_array_to_subslice_shared_d41(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)24U })).ptr,
     (size_t)24U * sizeof (uint8_t));
   return
@@ -2181,7 +2181,7 @@ sample_from_uniform_distribution_next_79(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -2322,7 +2322,7 @@ sample_from_uniform_distribution_next_790(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -2554,7 +2554,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a1(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_211(public_key, (size_t)1152U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_213(public_key, (size_t)1152U);
   deserialize_ring_elements_reduced_e3(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -4919,7 +4919,7 @@ deserialize_then_decompress_message_52(const Eurydice_arr_ec *serialized)
     size_t i0 = i;
     __m256i
     coefficient_compressed =
-      libcrux_ml_kem_vector_avx2_deserialize_1_14(Eurydice_array_to_subslice_shared_d4(serialized,
+      libcrux_ml_kem_vector_avx2_deserialize_1_14(Eurydice_array_to_subslice_shared_d41(serialized,
           (
             KRML_CLITERAL(core_ops_range_Range_87){
               .start = (size_t)2U * i0,
@@ -6212,7 +6212,7 @@ libcrux_ml_kem_ind_cca_validate_public_key_79(const Eurydice_arr_5f *public_key)
 {
   Eurydice_arr_600
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_e3(Eurydice_array_to_subslice_to_shared_211(public_key,
+    deserialize_ring_elements_reduced_out_e3(Eurydice_array_to_subslice_to_shared_213(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U)));
   Eurydice_arr_5f
   public_key_serialized =
@@ -6900,7 +6900,7 @@ sample_from_uniform_distribution_next_74(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -7043,7 +7043,7 @@ sample_from_uniform_distribution_next_740(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -7216,7 +7216,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a0(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_212(public_key, (size_t)1536U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_214(public_key, (size_t)1536U);
   deserialize_ring_elements_reduced_5b(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -9143,7 +9143,7 @@ libcrux_ml_kem_ind_cca_validate_public_key_74(const Eurydice_arr_d1 *public_key)
 {
   Eurydice_arr_3b
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_5b(Eurydice_array_to_subslice_to_shared_212(public_key,
+    deserialize_ring_elements_reduced_out_5b(Eurydice_array_to_subslice_to_shared_214(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U)));
   Eurydice_arr_d1
   public_key_serialized =
@@ -9827,7 +9827,7 @@ sample_from_uniform_distribution_next_ce(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d45(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -9966,7 +9966,7 @@ sample_from_uniform_distribution_next_ce0(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d46(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_14(Eurydice_array_to_subslice_shared_d40(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_87){
                   .start = r * (size_t)24U,
@@ -10137,7 +10137,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_210(public_key, (size_t)768U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_212(public_key, (size_t)768U);
   deserialize_ring_elements_reduced_16(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -11772,7 +11772,7 @@ deserialize_then_decompress_u_e5(const Eurydice_arr_d2 *ciphertext)
     size_t i0 = i;
     Eurydice_borrow_slice_u8
     u_bytes =
-      Eurydice_array_to_subslice_shared_d44(ciphertext,
+      Eurydice_array_to_subslice_shared_d45(ciphertext,
         (
           KRML_CLITERAL(core_ops_range_Range_87){
             .start = i0 *
@@ -12033,7 +12033,7 @@ libcrux_ml_kem_ind_cca_validate_public_key_ce(const Eurydice_arr_03 *public_key)
 {
   Eurydice_arr_ee
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_16(Eurydice_array_to_subslice_to_shared_210(public_key,
+    deserialize_ring_elements_reduced_out_16(Eurydice_array_to_subslice_to_shared_212(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U)));
   Eurydice_arr_03
   public_key_serialized =

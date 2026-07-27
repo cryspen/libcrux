@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -1578,7 +1578,7 @@ libcrux_ml_dsa_sample_sample_challenge_ring_element_2e(
   randomness0 = libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_fa(&state);
   Eurydice_array_u8x8 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_d41(&randomness0,
+    Eurydice_array_to_subslice_shared_d4(&randomness0,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })).ptr,
     (size_t)8U * sizeof (uint8_t));
   uint64_t

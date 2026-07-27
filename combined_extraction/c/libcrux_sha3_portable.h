@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -47,6 +47,8 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_8d_s
   Eurydice_arr_0b buf;
   size_t buf_len;
   bool sponge;
+  Eurydice_arr_ff squeeze_buf;
+  size_t squeeze_pos;
 }
 libcrux_sha3_generic_keccak_xof_KeccakXofState_8d;
 
@@ -1472,10 +1474,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_9c_81(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -1616,7 +1622,9 @@ libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
 libcrux_sha3_portable_incremental_new_6d(void);
 
 /**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
+ Squeeze output bytes into `out`.
+
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1 : usize, RATE>[@TraitClause0, @TraitClause1]}
@@ -2267,6 +2275,8 @@ typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_55_s
   Eurydice_arr_88 buf;
   size_t buf_len;
   bool sponge;
+  Eurydice_arr_c5 squeeze_buf;
+  size_t squeeze_pos;
 }
 libcrux_sha3_generic_keccak_xof_KeccakXofState_55;
 
@@ -2349,10 +2359,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_9c_810(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -2484,7 +2498,9 @@ libcrux_sha3_generic_keccak_xof_KeccakXofState_55
 libcrux_sha3_portable_incremental_new_5f(void);
 
 /**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
+ Squeeze output bytes into `out`.
+
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1 : usize, RATE>[@TraitClause0, @TraitClause1]}

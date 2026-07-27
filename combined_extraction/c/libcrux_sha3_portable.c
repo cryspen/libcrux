@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 3286491e4e3e0179c9324cbb39dab8f0dae90118
+ * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
  */
 
 
@@ -149,7 +149,7 @@ KRML_MUSTINLINE const
 uint64_t
 *libcrux_sha3_traits_get_ij_71(const Eurydice_arr_7c *arr, size_t i, size_t j)
 {
-  return &arr->data[(size_t)5U * j + i];
+  return &arr->data[(size_t)5U * i + j];
 }
 
 /**
@@ -161,7 +161,7 @@ with const generics
 KRML_MUSTINLINE void
 libcrux_sha3_traits_set_ij_71(Eurydice_arr_7c *arr, size_t i, size_t j, uint64_t value)
 {
-  arr->data[(size_t)5U * j + i] = value;
+  arr->data[(size_t)5U * i + j] = value;
 }
 
 /**
@@ -2518,10 +2518,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_9c_81(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -2728,17 +2732,25 @@ with const generics
 libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
 libcrux_sha3_generic_keccak_xof_new_da_e9(void)
 {
-  libcrux_sha3_generic_keccak_xof_KeccakXofState_8d lit;
-  lit.inner = libcrux_sha3_generic_keccak_new_26_71();
+  Eurydice_arr_7c uu____0 = libcrux_sha3_generic_keccak_new_26_71();
+  Eurydice_arr_0b uu____1;
   Eurydice_arr_ff repeat_expression[1U];
   for (size_t i = (size_t)0U; i < (size_t)1U; i++)
   {
     repeat_expression[i] = libcrux_sha3_generic_keccak_xof_zero_block_da_e9();
   }
-  memcpy(lit.buf.data, repeat_expression, (size_t)1U * sizeof (Eurydice_arr_ff));
-  lit.buf_len = (size_t)0U;
-  lit.sponge = false;
-  return lit;
+  memcpy(uu____1.data, repeat_expression, (size_t)1U * sizeof (Eurydice_arr_ff));
+  return
+    (
+      KRML_CLITERAL(libcrux_sha3_generic_keccak_xof_KeccakXofState_8d){
+        .inner = uu____0,
+        .buf = uu____1,
+        .buf_len = (size_t)0U,
+        .sponge = false,
+        .squeeze_buf = libcrux_sha3_generic_keccak_xof_zero_block_da_e9(),
+        .squeeze_pos = (size_t)136U
+      }
+    );
 }
 
 /**
@@ -2754,7 +2766,9 @@ libcrux_sha3_portable_incremental_new_6d(void)
 }
 
 /**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
+ Squeeze output bytes into `out`.
+
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1 : usize, RATE>[@TraitClause0, @TraitClause1]}
@@ -2774,38 +2788,87 @@ libcrux_sha3_generic_keccak_xof_squeeze_27_76(
   size_t out_len = out.meta;
   if (!(out_len == (size_t)0U))
   {
-    if (self->sponge)
+    size_t out_offset = (size_t)0U;
+    if (self->squeeze_pos < (size_t)136U)
     {
-      libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
-    }
-    if (out_len > (size_t)0U)
-    {
-      size_t blocks = out_len / (size_t)136U;
-      size_t last = out_len - out_len % (size_t)136U;
-      if (blocks == (size_t)0U)
+      size_t avail = (size_t)136U - self->squeeze_pos;
+      size_t take;
+      if (avail < out_len)
       {
-        libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner, out, (size_t)0U, out_len);
+        take = avail;
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner, out, (size_t)0U, (size_t)136U);
+        take = out_len;
+      }
+      Eurydice_slice_copy(Eurydice_slice_subslice_to_mut_72(out, take),
+        Eurydice_array_to_subslice_shared_d4(&self->squeeze_buf,
+          (
+            KRML_CLITERAL(core_ops_range_Range_87){
+              .start = self->squeeze_pos,
+              .end = self->squeeze_pos + take
+            }
+          )),
+        uint8_t);
+      self->squeeze_pos += take;
+      out_offset = take;
+    }
+    if (!(out_offset == out_len))
+    {
+      if (self->sponge)
+      {
+        libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
+      }
+      self->sponge = true;
+      size_t remaining = out_len - out_offset;
+      size_t blocks = remaining / (size_t)136U;
+      size_t last_full = out_offset + blocks * (size_t)136U;
+      if (blocks == (size_t)0U)
+      {
+        libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner,
+          Eurydice_array_to_slice_mut_58(&self->squeeze_buf),
+          (size_t)0U,
+          (size_t)136U);
+        Eurydice_mut_borrow_slice_u8
+        uu____0 =
+          Eurydice_slice_subslice_mut_c8(out,
+            (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_offset, .end = out_len }));
+        Eurydice_slice_copy(uu____0,
+          Eurydice_array_to_subslice_to_shared_210(&self->squeeze_buf, remaining),
+          uint8_t);
+        self->squeeze_pos = remaining;
+      }
+      else
+      {
+        libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner, out, out_offset, (size_t)136U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
           libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner,
             out,
-            i0 * (size_t)136U,
+            out_offset + i0 * (size_t)136U,
             (size_t)136U);
         }
-        if (last < out_len)
+        size_t trailing = out_len - last_full;
+        if (trailing > (size_t)0U)
         {
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
-          libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner, out, last, out_len - last);
+          libcrux_sha3_simd_portable_squeeze_84_b2(&self->inner,
+            Eurydice_array_to_slice_mut_58(&self->squeeze_buf),
+            (size_t)0U,
+            (size_t)136U);
+          Eurydice_mut_borrow_slice_u8
+          uu____1 =
+            Eurydice_slice_subslice_mut_c8(out,
+              (KRML_CLITERAL(core_ops_range_Range_87){ .start = last_full, .end = out_len }));
+          Eurydice_slice_copy(uu____1,
+            Eurydice_array_to_subslice_to_shared_210(&self->squeeze_buf, trailing),
+            uint8_t);
+          self->squeeze_pos = trailing;
         }
       }
     }
-    self->sponge = true;
   }
 }
 
@@ -4064,10 +4127,14 @@ libcrux_sha3_generic_keccak_xof_buf_to_slices_call_once_9c_810(
 
 /**
  Note: This function exists to work around a hax bug where `core::array::from_fn`
- is extracted with an incorrect explicit type parameter `#(usize -> t_Slice u8)`
- instead of using the typeclass-based implicit parameter `#v_F` from
- `Core_models.Array.from_fn`.
+ is not extracted with a usable call to `Core_models.Array.from_fn`.
  See: https://github.com/cryspen/hax/issues/1920
+
+ The hand-written replacement supplies the closure-type implicit `#v_F`
+ explicitly as `#(usize -> t_Slice u8)`. Under F* v2026.03.24 the implicit
+ cannot be resolved from the refined closure argument alone (the closure has
+ type `(x: usize{x <. v_N}) -> t_Slice u8`, not the bare `usize -> t_Slice u8`
+ that `t_FnOnce` resolves against), so it must be given explicitly.
 */
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.buf_to_slices
@@ -4268,17 +4335,25 @@ with const generics
 libcrux_sha3_generic_keccak_xof_KeccakXofState_55
 libcrux_sha3_generic_keccak_xof_new_da_e90(void)
 {
-  libcrux_sha3_generic_keccak_xof_KeccakXofState_55 lit;
-  lit.inner = libcrux_sha3_generic_keccak_new_26_71();
+  Eurydice_arr_7c uu____0 = libcrux_sha3_generic_keccak_new_26_71();
+  Eurydice_arr_88 uu____1;
   Eurydice_arr_c5 repeat_expression[1U];
   for (size_t i = (size_t)0U; i < (size_t)1U; i++)
   {
     repeat_expression[i] = libcrux_sha3_generic_keccak_xof_zero_block_da_e90();
   }
-  memcpy(lit.buf.data, repeat_expression, (size_t)1U * sizeof (Eurydice_arr_c5));
-  lit.buf_len = (size_t)0U;
-  lit.sponge = false;
-  return lit;
+  memcpy(uu____1.data, repeat_expression, (size_t)1U * sizeof (Eurydice_arr_c5));
+  return
+    (
+      KRML_CLITERAL(libcrux_sha3_generic_keccak_xof_KeccakXofState_55){
+        .inner = uu____0,
+        .buf = uu____1,
+        .buf_len = (size_t)0U,
+        .sponge = false,
+        .squeeze_buf = libcrux_sha3_generic_keccak_xof_zero_block_da_e90(),
+        .squeeze_pos = (size_t)168U
+      }
+    );
 }
 
 /**
@@ -4291,7 +4366,9 @@ libcrux_sha3_portable_incremental_new_5f(void)
 }
 
 /**
- Squeeze `N` x `LEN` bytes. Only `N = 1` for now.
+ Squeeze output bytes into `out`.
+
+ Supports arbitrary-sized requests across multiple calls.
 */
 /**
 This function found in impl {libcrux_sha3::generic_keccak::xof::KeccakXofState<STATE, 1 : usize, RATE>[@TraitClause0, @TraitClause1]}
@@ -4311,38 +4388,87 @@ libcrux_sha3_generic_keccak_xof_squeeze_27_2a(
   size_t out_len = out.meta;
   if (!(out_len == (size_t)0U))
   {
-    if (self->sponge)
+    size_t out_offset = (size_t)0U;
+    if (self->squeeze_pos < (size_t)168U)
     {
-      libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
-    }
-    if (out_len > (size_t)0U)
-    {
-      size_t blocks = out_len / (size_t)168U;
-      size_t last = out_len - out_len % (size_t)168U;
-      if (blocks == (size_t)0U)
+      size_t avail = (size_t)168U - self->squeeze_pos;
+      size_t take;
+      if (avail < out_len)
       {
-        libcrux_sha3_simd_portable_squeeze_84_60(&self->inner, out, (size_t)0U, out_len);
+        take = avail;
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_84_60(&self->inner, out, (size_t)0U, (size_t)168U);
+        take = out_len;
+      }
+      Eurydice_slice_copy(Eurydice_slice_subslice_to_mut_72(out, take),
+        Eurydice_array_to_subslice_shared_d40(&self->squeeze_buf,
+          (
+            KRML_CLITERAL(core_ops_range_Range_87){
+              .start = self->squeeze_pos,
+              .end = self->squeeze_pos + take
+            }
+          )),
+        uint8_t);
+      self->squeeze_pos += take;
+      out_offset = take;
+    }
+    if (!(out_offset == out_len))
+    {
+      if (self->sponge)
+      {
+        libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
+      }
+      self->sponge = true;
+      size_t remaining = out_len - out_offset;
+      size_t blocks = remaining / (size_t)168U;
+      size_t last_full = out_offset + blocks * (size_t)168U;
+      if (blocks == (size_t)0U)
+      {
+        libcrux_sha3_simd_portable_squeeze_84_60(&self->inner,
+          Eurydice_array_to_slice_mut_2c(&self->squeeze_buf),
+          (size_t)0U,
+          (size_t)168U);
+        Eurydice_mut_borrow_slice_u8
+        uu____0 =
+          Eurydice_slice_subslice_mut_c8(out,
+            (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_offset, .end = out_len }));
+        Eurydice_slice_copy(uu____0,
+          Eurydice_array_to_subslice_to_shared_211(&self->squeeze_buf, remaining),
+          uint8_t);
+        self->squeeze_pos = remaining;
+      }
+      else
+      {
+        libcrux_sha3_simd_portable_squeeze_84_60(&self->inner, out, out_offset, (size_t)168U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
           libcrux_sha3_simd_portable_squeeze_84_60(&self->inner,
             out,
-            i0 * (size_t)168U,
+            out_offset + i0 * (size_t)168U,
             (size_t)168U);
         }
-        if (last < out_len)
+        size_t trailing = out_len - last_full;
+        if (trailing > (size_t)0U)
         {
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&self->inner);
-          libcrux_sha3_simd_portable_squeeze_84_60(&self->inner, out, last, out_len - last);
+          libcrux_sha3_simd_portable_squeeze_84_60(&self->inner,
+            Eurydice_array_to_slice_mut_2c(&self->squeeze_buf),
+            (size_t)0U,
+            (size_t)168U);
+          Eurydice_mut_borrow_slice_u8
+          uu____1 =
+            Eurydice_slice_subslice_mut_c8(out,
+              (KRML_CLITERAL(core_ops_range_Range_87){ .start = last_full, .end = out_len }));
+          Eurydice_slice_copy(uu____1,
+            Eurydice_array_to_subslice_to_shared_211(&self->squeeze_buf, trailing),
+            uint8_t);
+          self->squeeze_pos = trailing;
         }
       }
     }
-    self->sponge = true;
   }
 }
 
