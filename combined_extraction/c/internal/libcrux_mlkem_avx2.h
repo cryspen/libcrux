@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
+ * Libcrux: e94be780b81bee5571504387c46ecf4887db00fb
  */
 
 
@@ -27,18 +27,17 @@ extern "C" {
 #include "../libcrux_mlkem_avx2.h"
 
 /**
- Generate an unpacked key from a serialized key.
+ Get the unpacked public key.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.unpack_public_key
 with const generics
 - K= 3
 - T_AS_NTT_ENCODED_SIZE= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a1(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_d3(
   const Eurydice_arr_5f *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *unpacked_public_key
 );
@@ -176,8 +175,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_d4(
  Take a serialized private key and generate an unpacked key pair from it.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.keys_from_private_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.keypair_from_private_key
 with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
@@ -186,7 +184,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 1152
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_3e(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_keypair_from_private_key_71(
   const Eurydice_arr_7d *private_key,
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair
 );
@@ -216,11 +214,10 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_87_e3(void);
 
 /**
- Generate Unpacked Keys
+ Generate a key pair
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.generate_keypair
 with const generics
 - K= 3
 - CPA_PRIVATE_KEY_SIZE= 1152
@@ -230,14 +227,16 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db1(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_e9(
   Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *out
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked encapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.encapsulate
 with const generics
 - K= 3
 - CIPHERTEXT_SIZE= 1088
@@ -254,14 +253,16 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_f4
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_a81(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_26(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked decapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.decapsulate
 with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
@@ -281,73 +282,51 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_d91(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_19(
   const libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
   const Eurydice_arr_2b *ciphertext
 );
 
 /**
- Validate an ML-KEM public key.
-
- This implements the Modulus check in 7.2 2.
- Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
- `public_key` type.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key
 with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_79(const Eurydice_arr_5f *public_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_3b(
+  const Eurydice_arr_5f *public_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
+ Private key validation
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only
 with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_a4(const Eurydice_arr_7d *private_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_only_3b(
+  const Eurydice_arr_7d *private_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
- Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
- and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key
 with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
 - CIPHERTEXT_SIZE= 1088
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_d50(
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_d3(
   const Eurydice_arr_7d *private_key,
-  const Eurydice_arr_2b *_ciphertext
+  const Eurydice_arr_2b *ciphertext
 );
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair
 with const generics
 - K= 3
 - CPA_PRIVATE_KEY_SIZE= 1152
@@ -357,11 +336,12 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_db1(const Eurydice_arr_c7 *randomness);
+libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_e9(
+  const Eurydice_arr_c7 *randomness
+);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate
 with const generics
 - K= 3
 - CIPHERTEXT_SIZE= 1088
@@ -371,24 +351,20 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- C1_BLOCK_SIZE= 320
+- VECTOR_U_BLOCK_LEN= 320
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_f4
-libcrux_ml_kem_ind_cca_encapsulate_a11(
+libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_26(
   const Eurydice_arr_5f *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
- This code verifies on some machines, runs out of memory on others
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate
 with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
@@ -408,24 +384,23 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_decapsulate_661(
+libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_19(
   const Eurydice_arr_7d *private_key,
   const Eurydice_arr_2b *ciphertext
 );
 
 /**
- Generate an unpacked key from a serialized key.
+ Get the unpacked public key.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.unpack_public_key
 with const generics
 - K= 4
 - T_AS_NTT_ENCODED_SIZE= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a0(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_43(
   const Eurydice_arr_d1 *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *unpacked_public_key
 );
@@ -531,8 +506,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_f8(
  Take a serialized private key and generate an unpacked key pair from it.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.keys_from_private_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.keypair_from_private_key
 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
@@ -541,7 +515,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 1536
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_b2(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_keypair_from_private_key_39(
   const Eurydice_arr_a8 *private_key,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
@@ -571,11 +545,10 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_87_5b(void);
 
 /**
- Generate Unpacked Keys
+ Generate a key pair
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.generate_keypair
 with const generics
 - K= 4
 - CPA_PRIVATE_KEY_SIZE= 1536
@@ -585,14 +558,16 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db0(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_b3(
   Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *out
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked encapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.encapsulate
 with const generics
 - K= 4
 - CIPHERTEXT_SIZE= 1568
@@ -609,14 +584,16 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_25
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_a80(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_07(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked decapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.decapsulate
 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
@@ -636,73 +613,51 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_d90(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_85(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
   const Eurydice_arr_d1 *ciphertext
 );
 
 /**
- Validate an ML-KEM public key.
-
- This implements the Modulus check in 7.2 2.
- Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
- `public_key` type.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key
 with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_74(const Eurydice_arr_d1 *public_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_f5(
+  const Eurydice_arr_d1 *public_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
+ Private key validation
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only
 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_f8(const Eurydice_arr_a8 *private_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_only_f5(
+  const Eurydice_arr_a8 *private_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
- Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
- and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key
 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 - CIPHERTEXT_SIZE= 1568
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_b3(
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_43(
   const Eurydice_arr_a8 *private_key,
-  const Eurydice_arr_d1 *_ciphertext
+  const Eurydice_arr_d1 *ciphertext
 );
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair
 with const generics
 - K= 4
 - CPA_PRIVATE_KEY_SIZE= 1536
@@ -712,11 +667,12 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_db0(const Eurydice_arr_c7 *randomness);
+libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_b3(
+  const Eurydice_arr_c7 *randomness
+);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate
 with const generics
 - K= 4
 - CIPHERTEXT_SIZE= 1568
@@ -726,24 +682,20 @@ with const generics
 - C2_SIZE= 160
 - VECTOR_U_COMPRESSION_FACTOR= 11
 - VECTOR_V_COMPRESSION_FACTOR= 5
-- C1_BLOCK_SIZE= 352
+- VECTOR_U_BLOCK_LEN= 352
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_25
-libcrux_ml_kem_ind_cca_encapsulate_a10(
+libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_07(
   const Eurydice_arr_d1 *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
- This code verifies on some machines, runs out of memory on others
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate
 with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
@@ -763,24 +715,23 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_decapsulate_660(
+libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_85(
   const Eurydice_arr_a8 *private_key,
   const Eurydice_arr_d1 *ciphertext
 );
 
 /**
- Generate an unpacked key from a serialized key.
+ Get the unpacked public key.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.unpack_public_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.unpack_public_key
 with const generics
 - K= 2
 - T_AS_NTT_ENCODED_SIZE= 768
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_unpack_public_key_25(
   const Eurydice_arr_03 *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 *unpacked_public_key
 );
@@ -886,8 +837,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_4e(
  Take a serialized private key and generate an unpacked key pair from it.
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.keys_from_private_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.keypair_from_private_key
 with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
@@ -896,7 +846,7 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 768
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_a4(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_keypair_from_private_key_c3(
   const Eurydice_arr_ab0 *private_key,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
@@ -926,11 +876,10 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_87_16(void);
 
 /**
- Generate Unpacked Keys
+ Generate a key pair
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.generate_keypair
 with const generics
 - K= 2
 - CPA_PRIVATE_KEY_SIZE= 768
@@ -940,14 +889,16 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_generate_keypair_b8(
   Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *out
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked encapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.encapsulate
 with const generics
 - K= 2
 - CIPHERTEXT_SIZE= 768
@@ -964,14 +915,16 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_ab
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_a8(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_encapsulate_80(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+ Unpacked decapsulate
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.unpacked.decapsulate
 with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
@@ -991,73 +944,51 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_d9(
+libcrux_ml_kem_ind_cca_instantiations_avx2_unpacked_decapsulate_37(
   const libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair,
   const Eurydice_arr_d2 *ciphertext
 );
 
 /**
- Validate an ML-KEM public key.
-
- This implements the Modulus check in 7.2 2.
- Note that the size check in 7.2 1 is covered by the `PUBLIC_KEY_SIZE` in the
- `public_key` type.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_public_key
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_public_key
 with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_ce(const Eurydice_arr_03 *public_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_d5(
+  const Eurydice_arr_03 *public_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
+ Private key validation
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key_only
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key_only
 with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_37(const Eurydice_arr_ab0 *private_key);
+bool
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_only_d5(
+  const Eurydice_arr_ab0 *private_key
+);
 
 /**
- Validate an ML-KEM private key.
-
- This implements the Hash check in 7.3 3.
- Note that the size checks in 7.2 1 and 2 are covered by the `SECRET_KEY_SIZE`
- and `CIPHERTEXT_SIZE` in the `private_key` and `ciphertext` types.
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.validate_private_key
-with types libcrux_ml_kem_hash_functions_avx2_Simd256Hash
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.validate_private_key
 with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
 - CIPHERTEXT_SIZE= 768
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_85(
+libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_25(
   const Eurydice_arr_ab0 *private_key,
-  const Eurydice_arr_d2 *_ciphertext
+  const Eurydice_arr_d2 *ciphertext
 );
 
 /**
- Packed API
-
- Generate a key pair.
-
- Depending on the `Vector` and `Hasher` used, this requires different hardware
- features
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.generate_keypair
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.generate_keypair
 with const generics
 - K= 2
 - CPA_PRIVATE_KEY_SIZE= 768
@@ -1067,11 +998,12 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 libcrux_ml_kem_types_MlKemKeyPair_0d
-libcrux_ml_kem_ind_cca_generate_keypair_db(const Eurydice_arr_c7 *randomness);
+libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_b8(
+  const Eurydice_arr_c7 *randomness
+);
 
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.encapsulate
 with const generics
 - K= 2
 - CIPHERTEXT_SIZE= 768
@@ -1081,24 +1013,20 @@ with const generics
 - C2_SIZE= 128
 - VECTOR_U_COMPRESSION_FACTOR= 10
 - VECTOR_V_COMPRESSION_FACTOR= 4
-- C1_BLOCK_SIZE= 320
+- VECTOR_U_BLOCK_LEN= 320
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
 tuple_ab
-libcrux_ml_kem_ind_cca_encapsulate_a1(
+libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate_80(
   const Eurydice_arr_03 *public_key,
   const Eurydice_arr_ec *randomness
 );
 
 /**
- This code verifies on some machines, runs out of memory on others
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.ind_cca.decapsulate
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash, libcrux_ml_kem_variant_MlKem
+A monomorphic instance of libcrux_ml_kem.ind_cca.instantiations.avx2.decapsulate
 with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
@@ -1118,7 +1046,7 @@ with const generics
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
 Eurydice_arr_ec
-libcrux_ml_kem_ind_cca_decapsulate_66(
+libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate_37(
   const Eurydice_arr_ab0 *private_key,
   const Eurydice_arr_d2 *ciphertext
 );

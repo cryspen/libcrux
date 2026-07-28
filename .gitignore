@@ -20,4 +20,5 @@ Cargo.lock
 /proofs/fstar/*/.#*
 hax.fst.config.json
 /combined_extraction/generated/build/
-**/build
+/combined_extraction/c/build/
+/combined_extraction/c-header-only/build/

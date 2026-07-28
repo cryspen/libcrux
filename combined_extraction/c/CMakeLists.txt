@@ -11,7 +11,7 @@ project(libcrux-ml-dsa
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 20) # C++20 for the split-source (non-header-only) variant
 
 if(NOT MSVC)
     add_compile_options(
@@ -163,6 +163,8 @@ target_link_libraries(ml_kem_test1024 PRIVATE
     nlohmann_json::nlohmann_json
 )
 
+# NOTE: Kyber is not part of the combined extraction. This test target is
+# optional (gated on LIBCRUX_KYBER) and intentionally does not link combined_static.
 if(DEFINED ENV{LIBCRUX_KYBER})
     add_executable(kyber_test
         ${PROJECT_SOURCE_DIR}/tests/kyber768.cc

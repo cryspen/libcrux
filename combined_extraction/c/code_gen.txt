@@ -3,4 +3,4 @@ Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
 Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
 Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
 F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
-Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
+Libcrux: e94be780b81bee5571504387c46ecf4887db00fb

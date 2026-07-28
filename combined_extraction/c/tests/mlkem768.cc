@@ -90,32 +90,32 @@ TEST(MlKem768TestPortable, ConsistencyTest) {
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 }
 
-// TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
-//   Eurydice_arr_c7 keygen_rand = {};
+TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
+  Eurydice_arr_c7 keygen_rand = {};
 
-//   memset(keygen_rand.data, 0x13, 64);
-//   Eurydice_arr_ec encaps_rand = {};
+  memset(keygen_rand.data, 0x13, 64);
+  Eurydice_arr_ec encaps_rand = {};
 
-//   memset(encaps_rand.data, 0x15, 32);
+  memset(encaps_rand.data, 0x15, 32);
 
-//   // We put this on the heap to avoid blowing the stack.
-//   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair =
-//       static_cast<
-//           libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-//               *>(malloc(sizeof(
-//           libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked)));
-//   libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(keygen_rand,
-//                                                                   key_pair);
+  // We put this on the heap to avoid blowing the stack.
+  libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair =
+      static_cast<
+          libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
+              *>(malloc(sizeof(
+          libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked)));
+  libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(keygen_rand,
+                                                                  key_pair);
 
-//   auto ctxt = libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
-//       &key_pair->public_key, encaps_rand);
+  auto ctxt = libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
+      &key_pair->public_key, encaps_rand);
 
-//   auto sharedSecret2 = libcrux_ml_kem_mlkem768_portable_unpacked_decapsulate(
-//       key_pair, &ctxt.fst);
+  auto sharedSecret2 = libcrux_ml_kem_mlkem768_portable_unpacked_decapsulate(
+      key_pair, &ctxt.fst);
 
-//   EXPECT_EQ(0, memcmp(ctxt.snd.data, sharedSecret2.data,
-//                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
-// }
+  EXPECT_EQ(0, memcmp(ctxt.snd.data, sharedSecret2.data,
+                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+}
 
 TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
   Eurydice_arr_c7 keygen_rand = {};

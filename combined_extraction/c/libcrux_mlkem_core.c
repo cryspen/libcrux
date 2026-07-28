@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
+ * Libcrux: e94be780b81bee5571504387c46ecf4887db00fb
  */
 
 
@@ -242,12 +242,13 @@ with const generics
 uint8_t
 libcrux_ml_kem_utils_prf_input_inc_23(Eurydice_arr_d20 *prf_inputs, uint8_t domain_separator)
 {
-  for (size_t i = (size_t)0U; i < (size_t)4U; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     prf_inputs->data[i0].data[32U] = domain_separator;
-    domain_separator = (uint32_t)domain_separator + 1U;
-  }
+    domain_separator = (uint32_t)domain_separator + 1U;);
   return domain_separator;
 }
 
@@ -441,12 +442,13 @@ with const generics
 uint8_t
 libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_fd *prf_inputs, uint8_t domain_separator)
 {
-  for (size_t i = (size_t)0U; i < (size_t)3U; i++)
-  {
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
     size_t i0 = i;
     prf_inputs->data[i0].data[32U] = domain_separator;
-    domain_separator = (uint32_t)domain_separator + 1U;
-  }
+    domain_separator = (uint32_t)domain_separator + 1U;);
   return domain_separator;
 }
 
@@ -658,12 +660,13 @@ with const generics
 uint8_t
 libcrux_ml_kem_utils_prf_input_inc_af(Eurydice_arr_1b0 *prf_inputs, uint8_t domain_separator)
 {
-  for (size_t i = (size_t)0U; i < (size_t)2U; i++)
-  {
+  KRML_MAYBE_FOR2(i,
+    (size_t)0U,
+    (size_t)2U,
+    (size_t)1U,
     size_t i0 = i;
     prf_inputs->data[i0].data[32U] = domain_separator;
-    domain_separator = (uint32_t)domain_separator + 1U;
-  }
+    domain_separator = (uint32_t)domain_separator + 1U;);
   return domain_separator;
 }
 

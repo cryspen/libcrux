@@ -8,7 +8,7 @@
  * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: a6e7378ee45e998ddd56e22b018b4d9a38eb8466
+ * Libcrux: e94be780b81bee5571504387c46ecf4887db00fb
  */
 
 
@@ -346,8 +346,10 @@ load_last_37(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
   Eurydice_arr_9c
   buffers =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  for (size_t i = (size_t)0U; i < (size_t)4U; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d4(&buffers.data[i0],
         (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = len })),
@@ -357,8 +359,7 @@ load_last_37(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
     buffers.data[i0].data[len] = 31U;
     size_t uu____0 = i0;
     size_t uu____1 = (size_t)168U - (size_t)1U;
-    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;
-  }
+    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_68
   lvalue =
@@ -2006,11 +2007,15 @@ with const generics
 KRML_ATTRIBUTE_TARGET("avx2") static KRML_MUSTINLINE void chi_26_5d(Eurydice_arr_c40 *self)
 {
   Eurydice_arr_c40 old = self[0U];
-  for (size_t i0 = (size_t)0U; i0 < (size_t)5U; i0++)
-  {
+  KRML_MAYBE_FOR5(i0,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
     size_t i1 = i0;
-    for (size_t i = (size_t)0U; i < (size_t)5U; i++)
-    {
+    KRML_MAYBE_FOR5(i,
+      (size_t)0U,
+      (size_t)5U,
+      (size_t)1U,
       size_t j = i;
       set_26_5d(self,
         i1,
@@ -2019,9 +2024,7 @@ KRML_ATTRIBUTE_TARGET("avx2") static KRML_MUSTINLINE void chi_26_5d(Eurydice_arr
           index_6a_5d(&old,
             (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
           index_6a_5d(&old,
-            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)1U) % (size_t)5U }))[0U]));
-    }
-  }
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)1U) % (size_t)5U }))[0U]));););
 }
 
 /**
@@ -2279,8 +2282,10 @@ load_last_22(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
   Eurydice_arr_dc0
   buffers =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  for (size_t i = (size_t)0U; i < (size_t)4U; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d40(&buffers.data[i0],
         (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = len })),
@@ -2290,8 +2295,7 @@ load_last_22(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
     buffers.data[i0].data[len] = 31U;
     size_t uu____0 = i0;
     size_t uu____1 = (size_t)136U - (size_t)1U;
-    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;
-  }
+    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_68
   lvalue =

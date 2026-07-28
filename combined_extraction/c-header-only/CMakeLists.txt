@@ -11,7 +11,7 @@ project(libcrux-ml-dsa
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17) # C++17: header-only variant must be compatible with C++17 consumers
 
 if(NOT MSVC)
     add_compile_options(
@@ -85,6 +85,22 @@ add_executable(ml_kem_test768
     ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
 )
 target_link_libraries(ml_kem_test768 PRIVATE
+    gtest_main
+    nlohmann_json::nlohmann_json
+)
+
+add_executable(ml_dsa_test44
+    ${PROJECT_SOURCE_DIR}/tests/mldsa44.cc
+)
+target_link_libraries(ml_dsa_test44 PRIVATE
+    gtest_main
+    nlohmann_json::nlohmann_json
+)
+
+add_executable(ml_dsa_test87
+    ${PROJECT_SOURCE_DIR}/tests/mldsa87.cc
+)
+target_link_libraries(ml_dsa_test87 PRIVATE
     gtest_main
     nlohmann_json::nlohmann_json
 )
