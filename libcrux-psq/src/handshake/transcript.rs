@@ -31,7 +31,8 @@ impl Transcript {
         let mut hasher = libcrux_sha2::Sha256::new();
         hasher.update(&[DOMAIN_SEPARATOR]);
         hasher.update(
-            <Option<&Transcript> as SerializeBytes>::tls_serialize(&old_transcript)
+            old_transcript
+                .tls_serialize_bytes()
                 .map_err(Error::Serialize)?
                 .as_slice(),
         );

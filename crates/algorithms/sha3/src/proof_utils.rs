@@ -12,11 +12,6 @@ pub(crate) fn valid_rate(rate: usize) -> bool {
     rate != 0 && rate <= 200 && rate % 8 == 0 && (rate % 32 == 8 || rate % 32 == 16)
 }
 
-/// XOF state invariant: validates that buffer length and rate are valid.
-pub(crate) fn keccak_xof_state_inv(rate: usize, buf_len: usize) -> bool {
-    valid_rate(rate) && buf_len <= rate
-}
-
 pub(crate) use lemmas::{lemma_div_mul_mod, lemma_mul_succ_le};
 
 mod lemmas {

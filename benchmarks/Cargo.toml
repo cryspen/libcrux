@@ -21,7 +21,7 @@ libcrux-chacha20poly1305 = { path = "../crates/algorithms/chacha20poly1305" }
 libcrux-ecdh = { path = "../libcrux-ecdh" }
 libcrux-ecdsa = { path = "../crates/algorithms/ecdsa" }
 libcrux-ed25519 = { path = "../crates/algorithms/ed25519" }
-libcrux-kem = { path = "../libcrux-kem", features = ["tests"] }
+libcrux-kem = { path = "../libcrux-kem", features = ["tests"], default-features = true }
 libcrux-ml-kem = { path = "../libcrux-ml-kem" }
 libcrux-rsa = { path = "../crates/algorithms/rsa" }
 libcrux-sha2 = { path = "../crates/algorithms/sha2" }
@@ -31,10 +31,10 @@ rand_core_old = { version = "0.6", package = "rand_core" }
 
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
-ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+ed25519-dalek = { version = "3.0.0", features = ["rand_core"] }
 p256 = { version = "0.13", features = ["ecdh"] }
 sha2 = "0.11"
-sha3 = "0.11"
+sha3 = "0.12"
 x25519-dalek-ng = "1.1"
 
 # Benchmarking "Ring"
@@ -48,7 +48,7 @@ untrusted = "0.9.0"
 x25519-dalek = "2.0.1"
 
 # Benchmarking "Dalek Ristretto"
-curve25519-dalek = "4.1.2"
+curve25519-dalek = "5.0.0"
 
 # helpers needed for key conversion
 der = "0.7"
@@ -71,7 +71,7 @@ pqcrypto-kyber = { version = "0.8.0" }
 openssl = "0.10"
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dev-dependencies]
-libjade-sys = { version = "=0.0.3", path = "../crates/sys/libjade" }
+libjade-sys = { version = "=0.0.4", path = "../crates/sys/libjade" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(crypto_lib25519)'] }

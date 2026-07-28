@@ -1,8 +1,9 @@
 [package]
 name = "libcrux-ecdh"
-version = "0.0.6"
+version = "0.0.8"
 description = "Libcrux ECDH implementation"
 readme = "Readme.md"
+exclude = ["tests/wycheproof"]
 
 authors.workspace = true
 license.workspace = true
@@ -19,13 +20,11 @@ libcrux-curve25519 = { workspace = true, default-features = true }
 libcrux-p256 = { workspace = true, default-features = true, features = [
     "expose-hacl",
 ] }
-tls_codec = { version = "0.4.2", features = [
-    "derive",
-], optional = true }
+tls_codec = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
-std = ["rand/std"]
+std = ["rand/std", "tls_codec?/std"]
 codec = ["dep:tls_codec"]
 
 [dev-dependencies]

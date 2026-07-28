@@ -2,7 +2,8 @@
 name = "libcrux-ecdsa"
 description = "Formally verified ECDSA signature library"
 readme = "Readme.md"
-version = "0.0.6"
+version = "0.0.8"
+exclude = ["tests/*.json"]
 
 authors.workspace = true
 license.workspace = true

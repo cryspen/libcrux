@@ -1,0 +1,41 @@
+name: HPKE - Benchmarks
+
+on:
+  pull_request:
+    # Run only when something changes in hpke-rs, or its direct workspace dependencies
+    paths:
+      - 'crates/protocols/hpke/**'
+      - 'crates/algorithms/sha3/**/*.rs'
+      - 'libcrux-ecdh/**/*.rs'
+      - 'crates/algorithms/hkdf/**/*.rs'
+      - 'crates/primitives/aead/**/*.rs'
+      - 'libcrux-kem/**/*.rs'
+      - 'traits/**/*.rs'
+
+env:
+  CARGO_TERM_COLOR: always
+  
+defaults:
+  run:
+    working-directory: ./crates/protocols/hpke
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15-intel
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+    - name: HPKE Benchmarks
+      run: cargo bench manual_benches
+    - name: HPKE Rust Crypto Benchmarks
+      working-directory: ./crates/protocols/hpke/rust_crypto_provider
+      run: cargo bench

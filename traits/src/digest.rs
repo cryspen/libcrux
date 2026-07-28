@@ -84,8 +84,8 @@ impl<const N: usize, D: DigestIncrementalBase + slice::Hash> Hasher<N, D> {
 
 impl<const N: usize, D: slice::DigestIncremental> Hasher<N, D> {
     /// Finalize and write into a digest buffer, provided as a `&mut [u8]` slice.
-    pub fn finish_slice(&mut self, digest: &mut [u8]) -> Result<usize, slice::FinishError> {
-        D::finish(&mut self.state, digest)
+    pub fn finish_slice(self, digest: &mut [u8]) -> Result<usize, slice::FinishError> {
+        D::finish(self.state, digest)
     }
 }
 
@@ -109,12 +109,12 @@ impl<const N: usize, D: DigestIncrementalBase> Hasher<N, D> {
 
 impl<const N: usize, D: arrayref::DigestIncremental<N>> Hasher<N, D> {
     /// Finalize and write into a digest buffer, provided as a `&mut [u8; N]` array reference.
-    pub fn finish(&mut self, digest: &mut [u8; N]) {
-        D::finish(&mut self.state, digest)
+    pub fn finish(self, digest: &mut [u8; N]) {
+        D::finish(self.state, digest)
     }
     /// owned version of `finish()`
-    pub fn finish_to_owned(&mut self) -> [u8; N] {
-        <D as owned::DigestIncremental<N>>::finish(&mut self.state)
+    pub fn finish_to_owned(self) -> [u8; N] {
+        <D as owned::DigestIncremental<N>>::finish(self.state)
     }
 }
 

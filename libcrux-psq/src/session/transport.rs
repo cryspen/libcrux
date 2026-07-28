@@ -215,7 +215,7 @@ fn derive_channel_key<const IS_INITIATOR: bool>(session: &Session) -> Result<AEA
                 .map(|pk_binder| pk_binder.as_slice()),
             counter: session.channel_counter,
         }
-        .tls_serialize()
+        .tls_serialize_bytes()
         .map_err(Error::Serialize)?,
         session.aead_type,
     )

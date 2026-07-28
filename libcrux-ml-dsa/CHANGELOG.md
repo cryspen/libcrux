@@ -5,38 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.10] (2026-07-15)
+
+### Added
+
+- [#1457](https://github.com/celabshq/libcrux/pull/1457): Add dependency on libcrux-secrets for optional valgrind integration
+
+### Changed
+
+- [#1534](https://github.com/celabshq/libcrux/pull/1534): Update dependencies: `libcrux-secrets`, `libcrux-sha3`, `libcrux-intrinsics`, `core-models`
+
+## [0.0.9] (2026-05-13)
+
+### Fixed
+
+- [#1398](https://github.com/celabshq/libcrux/pull/1398): Fix incorrect AVX2 use_hint implementation
+- [#1395](https://github.com/celabshq/libcrux/pull/1395): Fully reduce iNTT inputs on AVX2
+
+### Changed
+
+- [#1434](https://github.com/celabshq/libcrux/pull/1434): Update dependencies: `core-models`, `libcrux-intrinsics`
+- [#1433](https://github.com/celabshq/libcrux/pull/1433): Update dependencies: `libcrux-sha3`
+
 ## [0.0.8] (2026-03-19)
 
 ### Fixed
 
-- [#1348](https://github.com/cryspen/libcrux/pull/1348): Fix incorrect hint decoding
-- [#1347](https://github.com/cryspen/libcrux/pull/1347): Fix incorrect norm check of signer response during verification
+- [#1348](https://github.com/celabshq/libcrux/pull/1348): Fix incorrect hint decoding
+- [#1347](https://github.com/celabshq/libcrux/pull/1347): Fix incorrect norm check of signer response during verification
 
 ### Changed
 
-- [#1368](https://github.com/cryspen/libcrux/pull/1368): Update dependencies: `libcrux-sha3`
+- [#1368](https://github.com/celabshq/libcrux/pull/1368): Update dependencies: `libcrux-sha3`
 
 ## [0.0.7] (2026-02-12)
 
 ### Changed
 
-- [#1324](https://github.com/cryspen/libcrux/pull/1324): Update dependencies: `libcrux-sha3`, `libcrux-intrinsics`
+- [#1324](https://github.com/celabshq/libcrux/pull/1324): Update dependencies: `libcrux-sha3`, `libcrux-intrinsics`
 
 ## [0.0.6] (2026-01-22)
 
-- [#1297](https://github.com/cryspen/libcrux/pull/1297): Update dependencies
+- [#1297](https://github.com/celabshq/libcrux/pull/1297): Update dependencies
   
 ## [0.0.5] (2026-01-12)
 
-- [#1280](https://github.com/cryspen/libcrux/pull/1280): Update dependencies `libcrux-platform`, `libcrux-sha3`
-- [#1248](https://github.com/cryspen/libcrux/pull/1248): Add serialization of generic structs using `tls_codec` (feature `codec`).
-- [#1225](https://github.com/cryspen/libcrux/pull/1225): In tests, use the latest versions of ACVP KATs exported by `libcrux-kats`.
+- [#1280](https://github.com/celabshq/libcrux/pull/1280): Update dependencies `libcrux-platform`, `libcrux-sha3`
+- [#1248](https://github.com/celabshq/libcrux/pull/1248): Add serialization of generic structs using `tls_codec` (feature `codec`).
+- [#1225](https://github.com/celabshq/libcrux/pull/1225): In tests, use the latest versions of ACVP KATs exported by `libcrux-kats`.
 
 ## [0.0.4] (2025-11-05)
 
-- [#1222](https://github.com/cryspen/libcrux/pull/1222): [Intrinsics] Fix incorrect `_vxarq_u64` intrisic
-- [#1207](https://github.com/cryspen/libcrux/pull/1207): Fix incorrect `pre_hash_buffer` length
+- [#1222](https://github.com/celabshq/libcrux/pull/1222): [Intrinsics] Fix incorrect `_vxarq_u64` intrisic
+- [#1207](https://github.com/celabshq/libcrux/pull/1207): Fix incorrect `pre_hash_buffer` length
 
 ## [0.0.3] (2025-06-30)
 
-- [#993](https://github.com/cryspen/libcrux/pull/993): Update dependency `macros`
+- [#993](https://github.com/celabshq/libcrux/pull/993): Update dependency `macros`

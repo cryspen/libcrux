@@ -1,0 +1,80 @@
+[package]
+name = "hpke-rs"
+version = "0.7.0"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs"
+description = "HPKE Implementation"
+readme = "Readme.md"
+repository = "https://github.com/celabshq/libcrux"
+exclude = ["/tests"]
+
+[dependencies]
+log = "0.4"
+serde = { version = "1.0", features = ["derive"], optional = true }
+tls_codec = { workspace = true, optional = true }
+subtle = { version = "2.6", default-features = false }
+zeroize = { version = "1.5", features = ["zeroize_derive"] }
+hpke-rs-crypto.workspace = true
+libcrux-sha3.workspace = true
+hpke-rs-rust-crypto = { workspace = true, optional = true }
+hpke-rs-libcrux = { workspace = true, optional = true }
+
+# `--all-features` does not build: `draft-connolly-cfrg-hpke-mlkem` and
+# `draft-ietf-hpke-pq` are mutually exclusive. Pin a working set for docs.rs.
+[package.metadata.docs.rs]
+no-default-features = true
+features = ["std", "serialization", "hazmat", "rustcrypto", "libcrux", "draft-ietf-hpke-pq"]
+
+[features]
+default = []
+std = [
+    "hpke-rs-crypto/std",
+    "hpke-rs-rust-crypto?/std",
+    "hpke-rs-libcrux?/std",
+]
+serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
+hazmat = []
+rustcrypto = ["dep:hpke-rs-rust-crypto"]
+libcrux = ["dep:hpke-rs-libcrux"]
+libcrux-rustcrypto-p-curves = ["hpke-rs-libcrux?/rustcrypto-p-curves"]
+experimental = ["hpke-rs-rust-crypto?/experimental"]
+draft-connolly-cfrg-hpke-mlkem = ["hpke-rs-libcrux?/draft-connolly-cfrg-hpke-mlkem"]
+draft-ietf-hpke-pq = [
+    "libcrux",
+    "hpke-rs-libcrux/draft-ietf-hpke-pq"
+]
+
+hpke-test = ["std"]
+hpke-test-prng = [
+    "hpke-rs-rust-crypto?/deterministic-prng",
+    "hpke-rs-libcrux?/deterministic-prng",
+] # ⚠️ Enable testing PRNG - DO NOT USE
+
+[dev-dependencies]
+hpke-rs-crypto = { workspace = true, features = ["std"] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+lazy_static = "1.4"
+rayon = "1.5"
+hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
+hpke-rs-rust-crypto.workspace = true
+hpke-rs-libcrux.workspace = true
+rand = { version = "0.10" }
+pretty_env_logger = "0.5"
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "bench"
+harness = false
+required-features = ["libcrux", "rustcrypto"]
+
+[[bench]]
+name = "bench_pq"
+harness = false
+required-features = ["draft-ietf-hpke-pq", "libcrux"]
+
+[[bench]]
+name = "manual_benches"
+harness = false

@@ -1,0 +1,50 @@
+name: Workspace - Build & Test
+
+on:
+  merge_group:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main", "*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test: 
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # 2.85.2
+        with:
+          tool: nextest
+          
+      # This does not include doctest, because nextest doesn't support doctests.
+      # XXX: We skip one outdated core-models tests here, fixed by https://github.com/celabshq/libcrux/pull/1481
+      - name: Run workspace tests
+        run: cargo nextest run --workspace --no-fail-fast -- --skip _mm256_bsrli_epi128
+        
+      - name: Run workspace doctests
+        run: cargo test --doc --workspace --no-fail-fast
+        
+  workspace-test-status:
+    if: ${{ always() }}
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }} 
+        run: exit 0 
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }} 
+        run: exit 1 
+

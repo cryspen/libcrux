@@ -1,6 +1,7 @@
 //! This module defines classification and declassification over secret integers
 //! These implementations are meant to be used when feature `check-secret-independence` is set
 use super::classify_secret::*;
+use crate::mem_requests::ct_classify;
 use crate::traits::*;
 use core::ops::*;
 
@@ -16,58 +17,9 @@ pub type I128 = Secret<i128>;
 pub type U128 = Secret<u128>;
 
 // Construct a secret integer
-pub const fn secret<T>(x: T) -> Secret<T> {
+pub fn secret<T: Scalar>(x: T) -> Secret<T> {
+    ct_classify(&x);
     Secret(x)
-}
-
-// Classify a scalar
-impl<T: Scalar> Classify for T {
-    type Classified = Secret<T>;
-    fn classify(self) -> Secret<Self> {
-        secret(self)
-    }
-}
-
-// Declassify a scalar
-impl<T: Scalar> Declassify for Secret<T> {
-    type Declassified = T;
-    fn declassify(self) -> T {
-        self.0
-    }
-}
-
-// Classify a reference to a scalar
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret values is the same
-impl<'a, T: Scalar> ClassifyRef for &'a T {
-    type ClassifiedRef = &'a Secret<T>;
-    fn classify_ref(self) -> &'a Secret<T> {
-        unsafe { core::mem::transmute(self) }
-    }
-}
-
-// Declassify a reference to a scalar
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret values is the same
-impl<'a, T: Scalar> DeclassifyRef for &'a Secret<T> {
-    type DeclassifiedRef = &'a T;
-    fn declassify_ref(self) -> &'a T {
-        unsafe { core::mem::transmute(self) }
-    }
-}
-
-/// Classify a mutable reference to a slice
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret slices is the same
-pub fn classify_mut_slice<T: Scalar>(x: &mut [T]) -> &mut [Secret<T>] {
-    unsafe { core::mem::transmute(x) }
-}
-
-/// Declassify a mutable reference to a slice
-// Note: this is safe since the `Secret` type is `repr(transparent)`, so
-//       the memory representation of the public and secret slices is the same
-pub fn declassify_mut_slice<T: Scalar>(x: &mut [Secret<T>]) -> &mut [T] {
-    unsafe { core::mem::transmute(x) }
 }
 
 // We define a series of operations that are safe over secret values
@@ -76,7 +28,7 @@ pub fn declassify_mut_slice<T: Scalar>(x: &mut [Secret<T>]) -> &mut [T] {
 // The absence of those operations enforces our secret independence discipline.
 
 // Add secret values
-impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
+impl<T: Add<Output: Scalar> + Scalar, V: Into<Secret<T>>> Add<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn add(self, rhs: V) -> Self::Output {
         self.0.add(rhs.into().0).into()
@@ -84,7 +36,7 @@ impl<T: Add, V: Into<Secret<T>>> Add<V> for Secret<T> {
 }
 
 // Subtract secret values
-impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
+impl<T: Sub<Output: Scalar> + Scalar, V: Into<Secret<T>>> Sub<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn sub(self, rhs: V) -> Self::Output {
         self.0.sub(rhs.into().0).into()
@@ -92,7 +44,7 @@ impl<T: Sub, V: Into<Secret<T>>> Sub<V> for Secret<T> {
 }
 
 // Negate secret values
-impl<T: Neg> Neg for Secret<T> {
+impl<T: Neg<Output: Scalar> + Scalar> Neg for Secret<T> {
     type Output = Secret<T::Output>;
 
     fn neg(self) -> Self::Output {
@@ -101,7 +53,7 @@ impl<T: Neg> Neg for Secret<T> {
 }
 
 // Multiply secret values
-impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
+impl<T: Mul<Output: Scalar> + Scalar, V: Into<Secret<T>>> Mul<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn mul(self, rhs: V) -> Self::Output {
         self.0.mul(rhs.into().0).into()
@@ -109,7 +61,7 @@ impl<T: Mul, V: Into<Secret<T>>> Mul<V> for Secret<T> {
 }
 
 // Bitwise Xor of secret values
-impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
+impl<T: BitXor<Output: Scalar> + Scalar, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitxor(self, rhs: V) -> Self::Output {
         self.0.bitxor(rhs.into().0).into()
@@ -117,7 +69,7 @@ impl<T: BitXor, V: Into<Secret<T>>> BitXor<V> for Secret<T> {
 }
 
 // Bitwise Or of secret values
-impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
+impl<T: BitOr<Output: Scalar> + Scalar, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitor(self, rhs: V) -> Self::Output {
         self.0.bitor(rhs.into().0).into()
@@ -125,7 +77,7 @@ impl<T: BitOr, V: Into<Secret<T>>> BitOr<V> for Secret<T> {
 }
 
 // Bitwise And of secret values
-impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
+impl<T: BitAnd<Output: Scalar> + Scalar, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
     type Output = Secret<T::Output>;
     fn bitand(self, rhs: V) -> Self::Output {
         self.0.bitand(rhs.into().0).into()
@@ -133,7 +85,7 @@ impl<T: BitAnd, V: Into<Secret<T>>> BitAnd<V> for Secret<T> {
 }
 
 // Bitwise Not of secret values
-impl<T: Not> Not for Secret<T> {
+impl<T: Not<Output: Scalar> + Scalar> Not for Secret<T> {
     type Output = Secret<T::Output>;
     fn not(self) -> Self::Output {
         self.0.not().into()
@@ -143,9 +95,9 @@ impl<T: Not> Not for Secret<T> {
 // Shift-left of secret values
 // Note: the number of bits we shift the value by is not secret,
 //       since some implementations may leak this value
-impl<U, T: Shl<U>> Shl<U> for Secret<T>
+impl<U, T: Shl<U> + Scalar> Shl<U> for Secret<T>
 where
-    T::Output: Into<T>,
+    T::Output: Into<T> + Scalar,
 {
     type Output = Secret<T>;
     fn shl(self, rhs: U) -> Self::Output {
@@ -156,9 +108,9 @@ where
 // Shift-right of secret values
 // Note: the number of bits we shift the value by is not secret,
 //       since some implementations may leak this value
-impl<U, T: Shr<U>> Shr<U> for Secret<T>
+impl<U, T: Shr<U> + Scalar> Shr<U> for Secret<T>
 where
-    T::Output: Into<T>,
+    T::Output: Into<T> + Scalar,
 {
     type Output = Secret<T>;
     fn shr(self, rhs: U) -> Self::Output {
@@ -167,87 +119,87 @@ where
 }
 
 // += over secret values
-impl<T: AddAssign, V: Into<Secret<T>>> AddAssign<V> for Secret<T> {
+impl<T: AddAssign + Scalar, V: Into<Secret<T>>> AddAssign<V> for Secret<T> {
     fn add_assign(&mut self, rhs: V) {
         self.0 += rhs.into().0
     }
 }
 
 // -= over secret values
-impl<T: SubAssign, V: Into<Secret<T>>> SubAssign<V> for Secret<T> {
+impl<T: SubAssign + Scalar, V: Into<Secret<T>>> SubAssign<V> for Secret<T> {
     fn sub_assign(&mut self, rhs: V) {
         self.0 -= rhs.into().0
     }
 }
 
 // *= over secret values
-impl<T: MulAssign, V: Into<Secret<T>>> MulAssign<V> for Secret<T> {
+impl<T: MulAssign + Scalar, V: Into<Secret<T>>> MulAssign<V> for Secret<T> {
     fn mul_assign(&mut self, rhs: V) {
         self.0 *= rhs.into().0
     }
 }
 
 // ^= over secret values
-impl<T: BitXorAssign, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T> {
+impl<T: BitXorAssign + Scalar, V: Into<Secret<T>>> BitXorAssign<V> for Secret<T> {
     fn bitxor_assign(&mut self, rhs: V) {
         self.0 ^= rhs.into().0;
     }
 }
 
 // |= over secret values
-impl<T: BitOrAssign, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T> {
+impl<T: BitOrAssign + Scalar, V: Into<Secret<T>>> BitOrAssign<V> for Secret<T> {
     fn bitor_assign(&mut self, rhs: V) {
         self.0 |= rhs.into().0;
     }
 }
 
 // &= over secret values
-impl<T: BitAndAssign, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T> {
+impl<T: BitAndAssign + Scalar, V: Into<Secret<T>>> BitAndAssign<V> for Secret<T> {
     fn bitand_assign(&mut self, rhs: V) {
         self.0 &= rhs.into().0;
     }
 }
 
 // >>= over secret values
-impl<U, T: ShrAssign<U>> ShrAssign<U> for Secret<T> {
+impl<U, T: ShrAssign<U> + Scalar> ShrAssign<U> for Secret<T> {
     fn shr_assign(&mut self, rhs: U) {
         self.0 >>= rhs;
     }
 }
 
 // <<= over secret values
-impl<U, T: ShlAssign<U>> ShlAssign<U> for Secret<T> {
+impl<U, T: ShlAssign<U> + Scalar> ShlAssign<U> for Secret<T> {
     fn shl_assign(&mut self, rhs: U) {
         self.0 <<= rhs;
     }
 }
 
-// Implement Intops for secret integers
+// Implement inherent methods for secret integers
 macro_rules! impl_int_ops {
     ($t:ty) => {
-        impl IntOps for Secret<$t> {
-            fn wrapping_add<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+        impl Secret<$t> {
+            pub fn wrapping_add<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_add(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_sub<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+            pub fn wrapping_sub<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_sub(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_mul<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
+            pub fn wrapping_mul<T: Into<Secret<$t>>>(self, rhs: T) -> Self {
                 self.declassify()
                     .wrapping_mul(rhs.into().declassify())
                     .classify()
             }
-            fn wrapping_neg(self) -> Self {
+            pub fn wrapping_neg(self) -> Self {
                 self.declassify().wrapping_neg().classify()
             }
-            fn rotate_left(self, rhs: u32) -> Self {
+            pub fn rotate_left(self, rhs: u32) -> Self {
                 self.declassify().rotate_left(rhs).classify()
             }
-            fn rotate_right(self, rhs: u32) -> Self {
+            pub fn rotate_right(self, rhs: u32) -> Self {
                 self.declassify().rotate_right(rhs).classify()
             }
         }
@@ -264,20 +216,20 @@ impl_int_ops!(i32);
 impl_int_ops!(i64);
 impl_int_ops!(i128);
 
-// Implement EncodingOps for secret integers
+// Implement encoding inherent methods for secret integers
 macro_rules! impl_encode_ops {
     ($t:ty, $N:literal) => {
-        impl EncodeOps<U8, $N> for Secret<$t> {
-            fn to_le_bytes(&self) -> [U8; $N] {
+        impl Secret<$t> {
+            pub fn to_le_bytes(&self) -> [U8; $N] {
                 self.0.to_le_bytes().classify()
             }
-            fn to_be_bytes(&self) -> [U8; $N] {
+            pub fn to_be_bytes(&self) -> [U8; $N] {
                 self.0.to_be_bytes().classify()
             }
-            fn from_le_bytes(x: [U8; $N]) -> Self {
+            pub fn from_le_bytes(x: [U8; $N]) -> Self {
                 <$t>::from_le_bytes(x.declassify()).classify()
             }
-            fn from_be_bytes(x: [U8; $N]) -> Self {
+            pub fn from_be_bytes(x: [U8; $N]) -> Self {
                 <$t>::from_be_bytes(x.declassify()).classify()
             }
         }

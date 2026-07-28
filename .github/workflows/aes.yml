@@ -1,11 +1,11 @@
-name: AES-GCM
+name: AES-AEADs
 
 on:
   merge_group:
   pull_request:
     branches: ["main", "dev", "*"]
     paths:
-      - "crates/algorithms/aesgcm/**"
+      - "crates/algorithms/aes/**"
   workflow_dispatch:
 
 env:
@@ -33,10 +33,10 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: crates/algorithms/aesgcm
+        working-directory: crates/algorithms/aes
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: taiki-e/install-action@cargo-hack
 
       - name: Update dependencies
@@ -124,10 +124,10 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: crates/algorithms/aesgcm
+        working-directory: crates/algorithms/aes
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Update dependencies
         run: cargo update
@@ -149,10 +149,10 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: crates/algorithms/aesgcm
+        working-directory: crates/algorithms/aes
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: 🛠️ Setup Rust Nightly
         run: |

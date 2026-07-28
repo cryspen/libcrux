@@ -10,14 +10,29 @@ use crate::{
         (forall i. forall j. Spec.Utils.is_i32b_array_opaque 
             (v ${crate::simd::traits::specs::FIELD_MAX}) 
             (i0._super_i2.f_repr (Seq.index (Seq.index vector i).f_simd_units j)))"#))]
+/// CAUTION: This function must only be called with inputs for
+/// which it is safe to leak the index of a violating coefficient.
+///
+/// For all norm checks during ML-DSA signature generation it is
+/// safe to leak the index of a violating coefficient.
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations>(
     vector: &[PolynomialRingElement<SIMDUnit>],
     bound: i32,
 ) -> bool {
     let mut result = false;
     for i in 0..vector.len() {
+        // XXX: We can't use the non-short-circuiting core::ops::BitOr
+        // here, because of an issue in hax-lib v0.3.6.
+        // (cf. https://github.com/cryspen/libcrux/issues/1437)
+        //
+        // Using the short-circuiting OR here is safe, even if it
+        // leaks the index of a coefficient that violates the norm
+        // check. See
+        // `PolynomialRingElemen<SIMDUnit>::infinity_norm_exceeds` for
+        // more details.
         result = result || vector[i].infinity_norm_exceeds(bound);
     }
+
     result
 }
 
@@ -66,7 +81,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
         )
         .and(forall(|j: usize| implies(
             j >= i && j < old_t.len(),
-            fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+            fstar!(r#"${t[j]} == ${old_t.as_slice()[j]} /\ ${t1[j]} == ${old_t1.as_slice()[j]}"#)
         ))));
 
         for j in 0..t[i].simd_units.len() {
@@ -75,14 +90,16 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations>(
             )
             .and(forall(|j: usize| implies(
                 j > i && j < old_t.len(),
-                fstar!(r#"${t[j]} == ${old_t[j]} /\ ${t1[j]} == ${old_t1[j]}"#)
+                fstar!(
+                    r#"${t[j]} == ${old_t.as_slice()[j]} /\ ${t1[j]} == ${old_t1.as_slice()[j]}"#
+                )
             )))
             .and(forall(|k: usize| implies(
                 k >= j && k < crate::simd::traits::SIMD_UNITS_IN_RING_ELEMENT,
                 fstar!(
                     r#"
-                        ${t[i].simd_units[k]} == ${old_t[i].simd_units[k]} /\
-                        ${t1[i].simd_units[k]} == ${old_t1[i].simd_units[k]}
+                        ${t[i].simd_units[k]} == ${old_t.as_slice()[i].simd_units[k]} /\
+                        ${t1[i].simd_units[k]} == ${old_t1.as_slice()[i].simd_units[k]}
                     "#
                 )
             ))));
@@ -186,7 +203,9 @@ pub(crate) fn use_hint<SIMDUnit: Operations>(
     re_vector: &mut [PolynomialRingElement<SIMDUnit>],
 ) {
     #[cfg(hax)]
-    let old_re_vector = re_vector.to_vec();
+    let old_re_vector_vec = re_vector.to_vec();
+    #[cfg(hax)]
+    let old_re_vector = old_re_vector_vec.as_slice();
 
     for i in 0..re_vector.len() {
         hax_lib::loop_invariant!(|i: usize| fstar!(

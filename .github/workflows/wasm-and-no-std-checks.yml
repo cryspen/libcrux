@@ -10,7 +10,7 @@ jobs:
   no-std-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install target
         run: rustup target add thumbv7em-none-eabihf
@@ -24,7 +24,7 @@ jobs:
   wasm-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install target
         run: rustup target add wasm32-unknown-unknown

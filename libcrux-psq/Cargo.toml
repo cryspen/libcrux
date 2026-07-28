@@ -1,7 +1,7 @@
 [package]
 name = "libcrux-psq"
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
-version = "0.0.8"
+version = "0.0.10"
 readme = "README.md"
 
 authors.workspace = true
@@ -16,7 +16,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 
 [dependencies]
 libcrux-traits.workspace = true
-libcrux-kem = { workspace = true, features = [
+libcrux-kem = { workspace = true, default-features = true, features = [
     "codec",
 ] }
 libcrux-chacha20poly1305.workspace = true
@@ -38,12 +38,11 @@ libcrux-ed25519 = { workspace = true, features = [
     "rand",
     "codec",
 ] }
-tls_codec = { version = "0.4.2", features = ["derive"] }
+tls_codec = { workspace = true }
 libcrux-ml-dsa = { workspace = true, features = ["codec"] }
-libcrux-aesgcm.workspace = true
+libcrux-aes.workspace = true
 
 [dev-dependencies]
-libcrux-psq = { path = ".", features = ["test-utils"] }
 rand_core = { version = "0.10" }
 clap = { version = "4.5.30", features = ["derive"] }
 criterion = "0.8"
@@ -58,20 +57,7 @@ classic-mceliece = ["dep:classic-mceliece-rust", "rand_old"]
 # ⚠️ CAUTION! Enabling this makes it the responsibility of the application to avoid nonce re-use.
 nonce-control = []
 
-# DO NOT USE: This feature enables implementations backed
-# by non-post-quantum KEMs and should only be used for
-# testing purposes and benchmark baselines.
-test-utils = ["v1"]
-
-[[bench]]
-name = "psq"
-harness = false
-required-features = ["v1", "classic-mceliece", "test-utils"]
-
 [[bench]]
 name = "psq_v2"
 harness = false
 
-[[example]]
-name = "psq"
-required-features = ["v1"]

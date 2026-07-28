@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-kem"
-version = "0.0.7"
+version = "0.0.9"
 description = "Libcrux KEM implementation"
 readme = "README.md"
 
@@ -25,7 +25,7 @@ libcrux-p256.workspace = true
 libcrux-traits.workspace = true
 
 rand = { version = "0.10", default-features = false }
-tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
+tls_codec = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
