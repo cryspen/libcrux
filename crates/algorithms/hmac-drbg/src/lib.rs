@@ -69,7 +69,7 @@ pub const RESEED_INTERVAL: u64 = 1 << 48;
 /// Maximum number of bytes that can be requested in a single [`HmacDrbg::generate`] call
 /// (SP 800-90A §10.1 Tables 1 and 2).
 ///
-/// Requesting more returns [`GenerateError::RequestInvalid`].
+/// Requesting more returns [`GenerateError::OutputTooLarge`].
 pub const MAX_GENERATE_BYTES: usize = 65_536;
 
 /// Minimum entropy input length in bytes (SP 800-90A Table 2: security strength).
@@ -284,7 +284,6 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     /// On any failure the instance is poisoned and `Error::HealthCheckFailed` is
     /// returned.
     //
-    // #hax: requires output.len() > 0
     // #hax: requires output.len() <= MAX_GENERATE_BYTES
     // #hax: requires true   // additional_input has no length constraint
     // #hax: requires self.reseed_counter <= RESEED_INTERVAL
@@ -302,11 +301,8 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
         if self.reseed_counter > RESEED_INTERVAL {
             return Err(GenerateError::ReseedRequired);
         }
-        if output.is_empty() {
-            return Err(GenerateError::RequestInvalid);
-        }
         if output.len() > MAX_GENERATE_BYTES {
-            return Err(GenerateError::RequestInvalid);
+            return Err(GenerateError::OutputTooLarge);
         }
 
         // Update state with additional_input (might be empty).

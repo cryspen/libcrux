@@ -347,7 +347,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
             // we just ensured that no reseed is required
             Err(crate::GenerateError::ReseedRequired) => unreachable!(),
             // We know how much data we request and it's fine
-            Err(crate::GenerateError::RequestInvalid) => unreachable!(),
+            Err(crate::GenerateError::OutputTooLarge) => unreachable!(),
             // Again, the input size is safe.
             Err(crate::GenerateError::InputTooLarge) => unreachable!(),
         }
@@ -392,14 +392,12 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> ran
     }
 
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        let (chunks, rest): (&mut [[u8; MAX_GENERATE_BYTES]], _) = dst.as_chunks_mut();
-
-        for chunk in chunks {
-            self.safe_generate_small(chunk);
+        let mut written = 0;
+        while written < dst.len() {
+            let chunk = (dst.len() - written).min(MAX_GENERATE_BYTES);
+            self.safe_generate_small(&mut dst[written..written + chunk]);
+            written += chunk;
         }
-
-        self.safe_generate_small(rest);
-
         Ok(())
     }
 }

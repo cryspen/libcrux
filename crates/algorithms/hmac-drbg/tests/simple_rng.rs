@@ -153,8 +153,7 @@ fn sha512_satisfies_crypto_rng() {
 
 /// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
 #[test]
-#[should_panic(expected = "internal error: entered unreachable code")]
-fn sha256_fill_bytes_panics() {
+fn sha256_fill_bytes_succeeds_for_multiple_of_max_bytes() {
     let mut rng = make_sha256();
     for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
         let mut output = vec![0xaa; len];
@@ -169,8 +168,7 @@ fn sha256_fill_bytes_panics() {
 
 /// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
 #[test]
-#[should_panic(expected = "internal error: entered unreachable code")]
-fn sha384_fill_bytes_panics() {
+fn sha384_fill_bytes_succeeds_for_multiple_of_max_bytes() {
     let mut rng = make_sha384();
     for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
         let mut output = vec![0xaa; len];
@@ -183,8 +181,7 @@ fn sha384_fill_bytes_panics() {
 
 /// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
 #[test]
-#[should_panic(expected = "internal error: entered unreachable code")]
-fn sha512_fill_bytes_panics() {
+fn sha512_fill_bytes_succeeds_for_multiple_of_max_bytes() {
     let mut rng = make_sha512();
     for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
         let mut output = vec![0xaa; len];

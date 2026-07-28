@@ -180,7 +180,8 @@ macro_rules! run_reseeding {
                     }
 
                     // One block per full chunk, plus one for the remainder.
-                    let blocks = len / MAX_GENERATE_BYTES + 1;
+                    // No block for an empty chunk, so we use div_ceil.
+                    let blocks = len.div_ceil(MAX_GENERATE_BYTES);
                     let expected = expect_counter(before, blocks);
                     assert_eq!(rng_a.reseed_counter(), expected);
                     assert_eq!(rng_b.reseed_counter(), expected);
