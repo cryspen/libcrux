@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (libcrux-macros) [#1550](https://github.com/celabshq/libcrux/pull/1550): Update syn dependency to 3.0
 - (libcrux-secrets) [#1551](https://github.com/celabshq/libcrux/pull/1551) Update crabgrind to 0.3.1
 
+### Added
+
+## [Unreleased]
+
+### Added
+
+- (hpke-rs) [#1539](https://github.com/celabshq/libcrux/pull/1539): Support for the
+  post-quantum and PQ/T-hybrid algorithms of
+  [draft-ietf-hpke-pq](https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04),
+  in the **libcrux provider only**, behind the new `draft-ietf-hpke-pq` feature.
+
 ## [0.0.5] (2026-07-15)
 
 ### Fixed
