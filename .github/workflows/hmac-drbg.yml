@@ -1,0 +1,103 @@
+name: HMAC-DRBG
+
+permissions: {}
+
+on:
+  merge_group:
+  pull_request:
+    branches: ["main", "dev", "*"]
+    paths:
+      - "crates/algorithms/hmac-drbg/**"
+      - .github/workflows/hmac-drbg.yml
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: crates/algorithms/hmac-drbg
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@43aecc8d72668fbcfe75c31400bc4f890f1c5853 # v2.83.2
+        with:
+          tool: cargo-hack
+
+      - name: 🔨 Build
+        run: |
+          cargo build --all-targets --verbose
+
+      - name: 🔨 Build Release
+        run: cargo build --release --all-targets --verbose
+
+      # Test ...
+
+      - name: 🏃🏻‍♀️ Test
+        run: |
+          cargo hack test --each-feature --exclude-features testing --verbose
+
+      - name: 🏃🏻‍♀️ Test Release
+        run: |
+          cargo hack test --each-feature --exclude-features testing --verbose --release
+
+  fuzz:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest # macos-15
+          - ubuntu-latest
+        target:
+          - new
+          - generate
+          - lifecycle
+          - reseeding
+
+    runs-on: ${{ matrix.os }}
+    env:
+      FUZZ_TIME: 300 # seconds = 5 mins
+    defaults:
+      run:
+        shell: bash
+        working-directory: crates/algorithms/hmac-drbg
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install latest nightly
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c
+        with:
+          toolchain: nightly
+          components: rust-src, llvm-tools-preview
+
+      # install-action with cargo-binstall fallback doesn't work for cargo-fuzz
+      - name: Install cargo-fuzz
+        run: |
+          cargo install cargo-fuzz --locked
+
+      # disable lto for fuzzing due to https://github.com/rust-fuzz/cargo-fuzz/issues/384
+      - name: 🏃🏻‍♀️ Fuzz ${{ matrix.target }}
+        run: CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=${{ env.FUZZ_TIME }}
