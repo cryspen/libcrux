@@ -56,6 +56,10 @@ unfold let csh : bv256 =
                    (mk_i8 (-1)) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 (-1)) (mk_i8 8) (mk_i8 7) (mk_i8 6)
                    (mk_i8 (-1)) (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 (-1)) (mk_i8 2) (mk_i8 1) (mk_i8 0)
 
+(* opaque: confine the shuffle/permute bit-routing SMTPat cascade to lemma_gather.
+   Consumers see `gathered c0` as an atom whose only fact is lemma_gather's per-bit
+   equation, so their bitvector proofs never unfold the 256-bit gather symbolically. *)
+[@@ "opaque_to_smt"]
 let gathered (c0: bv256) : bv256 =
   I.mm256_shuffle_epi8 (I.mm256_permutevar8x32_epi32 c0 cpm) csh
 
@@ -63,17 +67,46 @@ let gathered (c0: bv256) : bv256 =
 #push-options "--z3rlimit 400 --ifuel 3"
 let lemma_gather (c0: bv256) (j: nat{j<8}) (r: nat{r<3}) (s: nat{s<8})
   : Lemma ((gathered c0).(mk_int (32*j+8*r+s)) == c0.(mk_int (24*j+8*r+s))) =
-  ()
+  reveal_opaque (`%gathered) gathered
 #pop-options
 
 let v_MASK : i32 = (mk_i32 1 <<! mk_i32 23 <: i32) -! mk_i32 1
 
+(* Per-bit core, factored into a STANDALONE clean-context lemma: bit `i` of the gathered+
+   masked lane == bit `i` of the spec coefficient. The obligation (loadu byte-index arith +
+   coeff_gather_bv_lemma's 4-way byte ladder + the mask cutoff) is the heavy work, isolated
+   here from lemma_layerA_se's ambient composition context.  `gathered` opaque keeps bit
+   access to lemma_gather's clean equation, never the 256-bit shuffle/permute routing.
+   `--using_facts_from '* -Proof_helpers'`: this lemma needs only Spec.Intrinsics (the mm256
+   bit lemmas) + Spec.MLDSA.Math + this module — NOT the 88-decl Proof_helpers filt8/shuffle-
+   table theory that the *other* lemmas open. Excluding its SMTPat surface stops it inflating
+   this VC's typing context (~2x on the host build), the difference between the rlimit cliff
+   and a comfortable margin. `--split_queries always` runs each internal case as its own tiny
+   sub-query UPFRONT (no monolithic attempt to saturate) so every one completes and banks a
+   replayable hint core. This replaces the former inlined `aux` + the `--z3refresh` band-aid,
+   whose monolithic query saturated cold (rlimit 600, no replayable core). *)
+#push-options "--z3rlimit 400 --ifuel 2 --fuel 1 --split_queries always --using_facts_from '* -Libcrux_ml_dsa.Simd.Avx2.Rejection_sample.Proof_helpers'"
+let lemma_layerA_se_bit (se: t_Array u8 (mk_usize 32)) (input: t_Slice u8) (j:nat{j<8}) (i:u64{v i<32})
+  : Lemma
+    (requires Seq.length input == 24 /\
+              (forall (k:nat). k<24 ==> Seq.index se k == Seq.index input k))
+    (ensures (let c0 = I.mm256_loadu_si256_u8 (se <: t_Slice u8) in
+              i32_to_bv (to_i32x8 (I.mm256_and_si256 (gathered c0) (I.mm256_set1_epi32 v_MASK)) (mk_u64 j)) i
+              == i32_to_bv (M.rejection_sample_coefficient input (sz j)) i)) =
+  let c0 = I.mm256_loadu_si256_u8 (se <: t_Slice u8) in
+  M.rejection_sample_coefficient_lemma input (sz j);
+  coeff_gather_bv_lemma (Seq.index input (3*j)) (Seq.index input (3*j+1)) (Seq.index input (3*j+2)) i;
+  if v i < 24 then begin
+    let r = v i / 8 in let s = v i % 8 in
+    FStar.Math.Lemmas.euclidean_division_definition (v i) 8;
+    lemma_gather c0 j r s
+  end else ()
+#pop-options
+
 (* Layer A core: the gathered+masked vector's lane j == the spec coefficient, given se's bytes.
-   --z3refresh: this heavy 32-bit bitvector-extensionality proof cold-saturates one auto-split
-   sub-query without a fresh solver per query. Its recorded hint transitively depends on
-   Simd.Traits, so any change there (e.g. the 2026-07-05 infinity_norm precond relaxation)
-   invalidates the hint and forces this cold reverify; --z3refresh keeps it deterministic. *)
-#push-options "--z3rlimit 600 --ifuel 2 --fuel 1 --z3refresh"
+   Trivial composition of the per-bit lemma (via forall_intro) with 32-bit extensionality —
+   the heavy work lives in lemma_layerA_se_bit, so this query is fast-stable cold. *)
+#push-options "--z3rlimit 100 --ifuel 1 --fuel 1"
 let lemma_layerA_se (se: t_Array u8 (mk_usize 32)) (input: t_Slice u8) (j:nat{j<8})
   : Lemma
     (requires Seq.length input == 24 /\
@@ -83,18 +116,12 @@ let lemma_layerA_se (se: t_Array u8 (mk_usize 32)) (input: t_Slice u8) (j:nat{j<
              == M.rejection_sample_coefficient input (sz j)) =
   let c0 = I.mm256_loadu_si256_u8 (se <: t_Slice u8) in
   let result = I.mm256_and_si256 (gathered c0) (I.mm256_set1_epi32 v_MASK) in
-  M.rejection_sample_coefficient_lemma input (sz j);
-  let aux (i:u64{v i<32})
+  let bit (i:u64{v i<32})
     : Lemma (i32_to_bv (to_i32x8 result (mk_u64 j)) i
              == i32_to_bv (M.rejection_sample_coefficient input (sz j)) i) =
-    coeff_gather_bv_lemma (Seq.index input (3*j)) (Seq.index input (3*j+1)) (Seq.index input (3*j+2)) i;
-    if v i < 24 then begin
-      let r = v i / 8 in let s = v i % 8 in
-      FStar.Math.Lemmas.euclidean_division_definition (v i) 8;
-      lemma_gather c0 j r s
-    end else ()
+    lemma_layerA_se_bit se input j i
   in
-  FStar.Classical.forall_intro aux;
+  FStar.Classical.forall_intro bit;
   i32_to_bv_ext (to_i32x8 result (mk_u64 j)) (M.rejection_sample_coefficient input (sz j))
 #pop-options
 
@@ -123,12 +150,12 @@ let lemma_se_bytes (input: t_Slice u8)
 #pop-options
 
 (* full Layer A: the real bytestream gather == the spec coefficient *)
-(* --z3refresh: same cold-reverify stability as lemma_layerA_se (which this calls). *)
-#push-options "--z3rlimit 600 --ifuel 2 --fuel 2 --z3refresh"
+#push-options "--z3rlimit 400 --ifuel 2 --fuel 2"
 let lemma_layerA (input: t_Slice u8) (j:nat{j<8})
   : Lemma (requires Seq.length input == 24)
           (ensures to_i32x8 (bytestream_to_potential_coefficients input) (mk_u64 j)
                    == M.rejection_sample_coefficient input (sz j)) =
+  reveal_opaque (`%gathered) gathered;
   let se0 : t_Array u8 (mk_usize 32) = Rust_primitives.Hax.repeat (mk_u8 0) (mk_usize 32) in
   let se = Rust_primitives.Hax.Monomorphized_update_at.update_at_range_to se0
              ({ R.f_end = mk_usize 24 } <: R.t_RangeTo usize)
