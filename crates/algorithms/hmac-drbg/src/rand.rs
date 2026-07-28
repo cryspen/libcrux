@@ -352,6 +352,25 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
             Err(crate::GenerateError::InputTooLarge) => unreachable!(),
         }
     }
+
+    /// Returns the inner DRBG's reseed counter.
+    ///
+    /// See [`HmacDrbg::reseed_counter`] for further information.
+    pub fn reseed_counter(&self) -> u64 {
+        self.drbg.reseed_counter()
+    }
+
+    /// Force-set the inner DRBG's reseed counter (for testing the auto-reseed
+    /// path).
+    ///
+    /// Reaching [`RESEED_INTERVAL`] by generating is not feasible, so tests and
+    /// fuzz targets that need the reseed branch have to jump the counter there.
+    ///
+    /// [`RESEED_INTERVAL`]: crate::RESEED_INTERVAL
+    #[cfg(any(test, feature = "testing"))]
+    pub fn set_reseed_counter(&mut self, v: u64) {
+        self.drbg.set_reseed_counter(v);
+    }
 }
 
 #[cfg(not(feature = "health-tests"))]
