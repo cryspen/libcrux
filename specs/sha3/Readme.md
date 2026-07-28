@@ -18,11 +18,11 @@ Run `hax_fstar.sh extract` to produce the F* files, and `hax_fstar.sh prove` to 
 ### Lean
 
 Prerequisites:
-* Hax from `hax-evit`, commit `1f85fc1`
-  https://github.com/cryspen/hax-evit/tree/1f85fc13b9967080cc657863e2000ba5d4aa8647
-  (This is a not publicly available yet.)
-* Aeneas `8d2077c`
-  (https://github.com/cryspen/aeneas/releases/tag/nightly-2026.06.04)
+* Hax `2fedcb2b` (mainline https://github.com/cryspen/hax) providing the `lean`
+  backend, with the charon/aeneas binaries it pins in `pins.toml`
+  (aeneas `nightly-2026.07.21-52fd438`, charon `nightly-2026.07.16`).
+* The Hax Lean proof library `cryspen/hax-lean` at `v0.2.0` and Lean toolchain
+  `leanprover/lean4:v4.31.0` (both pulled in via `proofs/lean/lakefile.toml`).
 
-Run `hax_aeneas.py` to extract. Run `cd proofs/aeneas-lean && lake update && lake build` to
+Run `hax_aeneas.py` to extract. Run `cd proofs/lean && lake update && lake build` to
 type-check.
