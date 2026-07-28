@@ -18,10 +18,8 @@
 #include "eurydice_glue.h"
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
+#include "libcrux_mlkem_core.h"
 #include "combined_core.h"
 
 #define LIBCRUX_ML_KEM_MLKEM1024_VECTOR_U_COMPRESSION_FACTOR ((size_t)11U)
@@ -62,9 +60,6 @@ typedef Eurydice_arr_d1 libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM1024_SECRET_KEY_SIZE (LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_SECRET_KEY_SIZE + LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_PUBLIC_KEY_SIZE + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE + LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE)
 
-#if defined(__cplusplus)
-}
-#endif
 
 #define libcrux_mlkem1024_H_DEFINED
 #endif /* libcrux_mlkem1024_H */

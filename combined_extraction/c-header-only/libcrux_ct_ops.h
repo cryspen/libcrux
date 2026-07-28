@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
- * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
+ * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
+ * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
- * F*: unset
- * Libcrux: c580de08c2461add5a35427c264aeeacde26bcf5
+ * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
+ * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
  */
 
 
@@ -18,9 +18,6 @@
 #include "eurydice_glue.h"
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "libcrux_mlkem_core.h"
 #include "combined_core.h"
@@ -82,7 +79,7 @@ libcrux_ml_kem_constant_time_ops_select_ct(
 {
   uint8_t
   mask = core_num__u8__wrapping_sub(libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  Eurydice_arr_ec out = { .data = { 0U } };
+  Eurydice_arr_ec out = { { 0U } };
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE; i++)
   {
     size_t i0 = i;
@@ -120,9 +117,6 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
       selector);
 }
 
-#if defined(__cplusplus)
-}
-#endif
 
 #define libcrux_ct_ops_H_DEFINED
 #endif /* libcrux_ct_ops_H */

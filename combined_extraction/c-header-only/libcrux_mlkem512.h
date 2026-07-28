@@ -18,9 +18,6 @@
 #include "eurydice_glue.h"
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "libcrux_mlkem_core.h"
 #include "combined_core.h"
@@ -67,9 +64,6 @@ typedef Eurydice_arr_03 libcrux_ml_kem_mlkem512_MlKem512PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM512_SECRET_KEY_SIZE (LIBCRUX_ML_KEM_MLKEM512_CPA_PKE_SECRET_KEY_SIZE + LIBCRUX_ML_KEM_MLKEM512_CPA_PKE_PUBLIC_KEY_SIZE + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE + LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE)
 
-#if defined(__cplusplus)
-}
-#endif
 
 #define libcrux_mlkem512_H_DEFINED
 #endif /* libcrux_mlkem512_H */

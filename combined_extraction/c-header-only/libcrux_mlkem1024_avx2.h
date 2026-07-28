@@ -12,12 +12,18 @@
  */
 
 
-#include "libcrux_mlkem1024_avx2.h"
+#ifndef libcrux_mlkem1024_avx2_H
+#define libcrux_mlkem1024_avx2_H
+
+#include "eurydice_glue.h"
+
+
+
+#include "libcrux_mlkem_avx2.h"
 
 #include "libcrux_mlkem_core.h"
 #include "libcrux_mlkem_avx2.h"
 #include "combined_core.h"
-#include "internal/libcrux_mlkem_avx2.h"
 
 /**
  Decapsulate ML-KEM 1024
@@ -26,7 +32,7 @@
  The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-Eurydice_arr_ec
+static inline Eurydice_arr_ec
 libcrux_ml_kem_mlkem1024_avx2_decapsulate(
   const Eurydice_arr_a8 *private_key,
   const Eurydice_arr_d1 *ciphertext
@@ -43,7 +49,7 @@ libcrux_ml_kem_mlkem1024_avx2_decapsulate(
  bytes of `randomness`.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-tuple_25
+static inline tuple_25
 libcrux_ml_kem_mlkem1024_avx2_encapsulate(
   const Eurydice_arr_d1 *public_key,
   Eurydice_arr_ec randomness
@@ -56,7 +62,7 @@ libcrux_ml_kem_mlkem1024_avx2_encapsulate(
  Generate ML-KEM 1024 Key Pair
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
+static inline libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(Eurydice_arr_c7 randomness)
 {
   return libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair_b3(&randomness);
@@ -68,7 +74,7 @@ libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(Eurydice_arr_c7 randomness)
  Returns `true` if valid, and `false` otherwise.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-bool
+static inline bool
 libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
   const Eurydice_arr_a8 *private_key,
   const Eurydice_arr_d1 *ciphertext
@@ -85,7 +91,7 @@ libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-bool
+static inline bool
 libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(const Eurydice_arr_a8 *private_key)
 {
   return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_private_key_only_f5(private_key);
@@ -97,11 +103,14 @@ libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(const Eurydice_arr_a8 *p
  Returns `true` if valid, and `false` otherwise.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-bool
+static inline bool
 libcrux_ml_kem_mlkem1024_avx2_validate_public_key(const Eurydice_arr_d1 *public_key)
 {
   return libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key_f5(public_key);
 }
+
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
+libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024PublicKeyUnpacked;
 
 /**
  Decapsulate ML-KEM 1024 (unpacked)
@@ -111,7 +120,7 @@ libcrux_ml_kem_mlkem1024_avx2_validate_public_key(const Eurydice_arr_d1 *public_
  and an [`MlKem1024Ciphertext`].
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-Eurydice_arr_ec
+static inline Eurydice_arr_ec
 libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *private_key,
   const Eurydice_arr_d1 *ciphertext
@@ -132,7 +141,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
  <https://github.com/hacspec/hax/issues/770>
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-tuple_25
+static inline tuple_25
 libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_ec randomness
@@ -147,7 +156,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
  Generate ML-KEM 1024 Key Pair in "unpacked" form
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
   Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
@@ -160,7 +169,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 1024 Key Pair in "unpacked" form.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
+static inline libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomness)
 {
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
@@ -173,7 +182,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomn
  Create a new, empty unpacked key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
+static inline libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_mlkem1024_avx2_unpacked_init_key_pair(void)
 {
   return libcrux_ml_kem_ind_cca_unpacked_default_87_5b();
@@ -183,7 +192,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_init_key_pair(void)
  Create a new, empty unpacked public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
+static inline libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
 libcrux_ml_kem_mlkem1024_avx2_unpacked_init_public_key(void)
 {
   return libcrux_ml_kem_ind_cca_unpacked_default_1d_5b();
@@ -193,7 +202,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_init_public_key(void)
  Get an unpacked key from a private key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_from_private_mut(
   const Eurydice_arr_a8 *private_key,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
@@ -207,7 +216,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_from_private_mut(
  Get the serialized private key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-Eurydice_arr_a8
+static inline Eurydice_arr_a8
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 )
@@ -219,7 +228,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key(
  Get the serialized private key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key_mut(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
   Eurydice_arr_a8 *serialized
@@ -232,7 +241,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key_mut(
  Get the serialized public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-Eurydice_arr_d1
+static inline Eurydice_arr_d1
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 )
@@ -244,7 +253,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key(
  Get the serialized public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key_mut(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
   Eurydice_arr_d1 *serialized
@@ -257,7 +266,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key_mut(
  Get the serialized public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_serialized_public_key(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_d1 *serialized
@@ -270,7 +279,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_serialized_public_key(
  Get the unpacked public key.
 */
 KRML_ATTRIBUTE_TARGET("avx2")
-void
+static inline void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_unpacked_public_key(
   const Eurydice_arr_d1 *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *unpacked_public_key
@@ -280,3 +289,6 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_unpacked_public_key(
     unpacked_public_key);
 }
 
+
+#define libcrux_mlkem1024_avx2_H_DEFINED
+#endif /* libcrux_mlkem1024_avx2_H */

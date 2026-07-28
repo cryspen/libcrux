@@ -12,17 +12,13 @@
  */
 
 
-#ifndef internal_libcrux_mlkem_common_H
-#define internal_libcrux_mlkem_common_H
+#ifndef libcrux_mlkem_common_H
+#define libcrux_mlkem_common_H
 
 #include "eurydice_glue.h"
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
-#include "internal/libcrux_mlkem_portable.h"
 #include "libcrux_mlkem_portable.h"
 #include "libcrux_mlkem_core.h"
 #include "combined_core.h"
@@ -792,9 +788,6 @@ libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate_19(
   return libcrux_ml_kem_ind_cca_decapsulate_fd(private_key, ciphertext);
 }
 
-#if defined(__cplusplus)
-}
-#endif
 
-#define internal_libcrux_mlkem_common_H_DEFINED
-#endif /* internal_libcrux_mlkem_common_H */
+#define libcrux_mlkem_common_H_DEFINED
+#endif /* libcrux_mlkem_common_H */
