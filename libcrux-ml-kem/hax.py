@@ -80,9 +80,16 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
-        # Extract libcrux-secrets
+        # Extract libcrux-secrets WITHOUT interfaces (`--interfaces "-**"`), so the
+        # classify / CastOps implementations are TRANSPARENT to consumers.  The
+        # abstract `.fsti` (with `true` posts) hides the classify-is-identity fact
+        # (`classify = fun self -> self`), which is not cold-provable through the
+        # typeclass-method encoding — so `v (f_as_u16 x) == v (cast x)` could only
+        # be replayed from stale hints, breaking any consumer whose hints drifted
+        # (e.g. Vector.Portable.Compress.compress post-merge).  Transparency lets
+        # `f_as_*` reduce to the plain reinterpret cast.  See
+        # feedback_postmerge_audit_order.
         include_str = "+**"
-        interface_include = ""
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -90,6 +97,8 @@ class extractAction(argparse.Action):
             "-i",
             include_str,
             "fstar",
+            "--interfaces",
+            "-**",
         ]
         hax_env = {}
         shell(

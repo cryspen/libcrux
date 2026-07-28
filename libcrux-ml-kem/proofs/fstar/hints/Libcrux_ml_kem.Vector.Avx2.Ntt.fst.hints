@@ -4968,7 +4968,7 @@
         "typing_Tm_abs_4c612e88f5a42ebab5c6c84bb88dea85"
       ],
       0,
-      "a314f9c58660af91f417b2898b8ac469"
+      "83d38c02c1636f8c1b166cd303d75a16"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_3_step",
@@ -5132,7 +5132,7 @@
         "typing_Tm_abs_4c612e88f5a42ebab5c6c84bb88dea85"
       ],
       0,
-      "4b1ba0314a574af16d283115b2e9952d"
+      "a803ab8bf9b84d9b78396d4bbcea6cd8"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_3_step",
@@ -13829,7 +13829,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "12e996e3214149f988305a48fc1a7925"
+      "1f5eb46420f35f0c18357e6c96d2c547"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply",
@@ -13848,7 +13848,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "5e0c34b4c9198209a35639f467046d11"
+      "99df56a69c79d83c508631b22899a560"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply",
@@ -13867,7 +13867,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "cff3e076ba78c34ef6b9921c6273c9ed"
+      "56d8091f0661575becada748bf9324e6"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply",
@@ -13886,7 +13886,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "cc145d986cec6454bf4a0077a9910df7"
+      "677e9594c239f262db377a446129b672"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply",
