@@ -74,9 +74,16 @@ ADMIT_MODULES =
 # inv_ntt_layer_2_step_branch_post) eliminates the SMT context flooding.
 # ADMIT_MODULES += Libcrux_ml_kem.Invert_ntt.fst
 
+# NOTE: the shared crates/utils/intrinsics extraction dir is intentionally NOT
+# on the include path — ml-kem carries its own Libcrux_intrinsics.* copy in the
+# sibling `../intrinsics` dir (extracted via --output-dir under ml-kem's
+# pre_core_models config) to avoid the cross-crate flip-flop / stale-.fsti
+# contamination. `../intrinsics` is a dedicated dir (NOT `../extraction`) so
+# FINDLIBS never auto-includes it on sibling crates' paths. See
+# fstar-helpers/Makefile.generic.
 FSTAR_INCLUDE_DIRS_EXTRA += ../spec \
+	      ../intrinsics \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
-	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction \
 	      $(shell git rev-parse --show-toplevel)/specs/ml-kem/proofs/fstar/commute
 
 ENABLE_HINTS = --use_hints --record_hints

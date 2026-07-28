@@ -31,31 +31,69 @@ def shell(command, expect=0, cwd=None, env={}):
         raise Exception("Error {}. Expected {}.".format(ret, expect))
 
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+ML_KEM_EXTRACTION_DIR = os.path.join(SCRIPT_DIR, "proofs", "fstar", "extraction")
+# ml-kem carries its OWN copy of the shared intrinsics modules
+# (Libcrux_intrinsics.{Avx2_extract,Arm64_extract}), extracted below via
+# `--output-dir` into this DEDICATED subdir (not the main `extraction` tree).
+# Rationale: FINDLIBS (Makefile.generic) auto-includes EVERY workspace crate's
+# `proofs/fstar/extraction` on EVERY other crate's path, so putting the local
+# intrinsics copy in `extraction/` would make ml-kem's / ml-dsa's / sha3's
+# copies collide on each other's include path (F* silently picks the
+# alphabetically-last one → wrong variant).  A `proofs/fstar/intrinsics` sibling
+# dir is NOT auto-discovered by FINDLIBS (it only looks at `.../extraction`), so
+# it is added to ONLY ml-kem's own include path via FSTAR_INCLUDE_DIRS_EXTRA
+# (`../intrinsics`) — exactly like the existing `../spec` / `../commute` dirs.
+# The shared crates/utils/intrinsics tree is likewise excluded from the include
+# path in Makefile.generic, so this local copy is the one that is used.
+ML_KEM_INTRINSICS_DIR = os.path.join(SCRIPT_DIR, "proofs", "fstar", "intrinsics")
+
+
+def run_dep_extract(rel_script):
+    """Invoke a canonical per-dependency `hax.py extract` (single source of
+    truth for that uniform shared dep; idempotent — skips if already
+    extracted).  Keeps the shared platform/secrets trees from flip-flopping
+    between per-algorithm configs."""
+    script = os.path.join(REPO_ROOT, rel_script)
+    print(f"[ml-kem/hax.py] -> {rel_script} extract")
+    subprocess.run([sys.executable, script, "extract"], check=True)
+
+
+def clean_generated_fstar(directory):
+    """Remove generated `.fst`/`.fsti` from an extraction dir BEFORE re-extracting.
+    hax extracts incrementally (unchanged modules keep their old files) and NEVER
+    deletes a `.fsti` when a module stops emitting an interface — a leftover
+    `.fsti` then silently SHADOWS the fresh `.fst` (the stale-.fsti contamination
+    that broke the SHA-3 SIMD proofs).  A clean-then-extract guarantees the dir
+    holds exactly what the current config produces.  These dirs contain no
+    hand-written `.fst`/`.fsti` (only a tracked `Makefile`), so this is safe."""
+    if not os.path.isdir(directory):
+        return
+    import glob
+    for f in glob.glob(os.path.join(directory, "*.fst")) + glob.glob(os.path.join(directory, "*.fsti")):
+        os.remove(f)
+
+
 class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
-        # Extract platform interfaces
-        include_str = "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count"
-        interface_include = "+**"
-        cargo_hax_into = [
-            "cargo",
-            "hax",
-            "into",
-            "-i",
-            include_str,
-            "fstar",
-            "--interfaces",
-            interface_include,
-        ]
-        hax_env = {}
-        shell(
-            cargo_hax_into,
-            cwd="../crates/sys/platform",
-            env=hax_env,
-        )
+        # Extract the uniform shared platform dep via its canonical script
+        # (single source of truth; idempotent).  platform stays in its own
+        # crate dir and is auto-included by Makefile.generic's dependencies().
+        run_dep_extract("crates/sys/platform/hax.py")
 
-        # Extract intrinsics interfaces
-        include_str = "+:**"
+        # Extract intrinsics into ml-kem's OWN extraction dir (--output-dir), so
+        # the shared crates/utils/intrinsics tree is never clobbered by ml-kem's
+        # `pre_core_models` config (which routes avx2 -> Avx2_extract, the
+        # bit_vec stub — the cross-crate flip vs ml-dsa's real Avx2).  We exclude
+        # `libcrux_core_models::**`: under pre_core_models ml-kem references ZERO
+        # `Libcrux_core_models.*` (it uses the hax `Core_models` proof-lib +
+        # BitVec.Intrinsics), so `+:**` would only emit vestigial core-models
+        # signature modules that, as roots in this dir, would COLLIDE with the
+        # core-models crate's extraction tree (Error 72 — the shared-core-models
+        # contamination this refactor eliminates).
+        include_str = "+:** -libcrux_core_models::**"
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
@@ -67,6 +105,8 @@ class extractAction(argparse.Action):
             "into",
             "-i",
             include_str,
+            "--output-dir",
+            ML_KEM_INTRINSICS_DIR,
             "fstar",
             "--interfaces",
             interface_include,
@@ -74,38 +114,26 @@ class extractAction(argparse.Action):
         hax_env = {
             'RUSTFLAGS': "--cfg pre_core_models"
         }
+        # Force a rebuild of the intrinsics crate (touch its sources) so the
+        # pre_core_models variant is regenerated even if a prior extraction in
+        # this working tree built it under a DIFFERENT config (e.g. ml-dsa's
+        # non-pcm real `Avx2`): hax reuses the cached THIR when cargo thinks the
+        # crate is fresh, so without this touch ml-kem can silently pick up
+        # ml-dsa's `Avx2.fst` instead of its own `Avx2_extract.fst` (the
+        # cross-crate cargo-freshness flip). Harmless in single-crate CI.
+        import glob as _glob
+        for _src in _glob.glob(os.path.join(REPO_ROOT, "crates/utils/intrinsics/src/*.rs")):
+            os.utime(_src, None)
+        clean_generated_fstar(ML_KEM_INTRINSICS_DIR)
         shell(
             cargo_hax_into,
-            cwd="../crates/utils/intrinsics",
+            cwd=os.path.join(REPO_ROOT, "crates/utils/intrinsics"),
             env=hax_env,
         )
 
-        # Extract libcrux-secrets WITHOUT interfaces (`--interfaces "-**"`), so the
-        # classify / CastOps implementations are TRANSPARENT to consumers.  The
-        # abstract `.fsti` (with `true` posts) hides the classify-is-identity fact
-        # (`classify = fun self -> self`), which is not cold-provable through the
-        # typeclass-method encoding — so `v (f_as_u16 x) == v (cast x)` could only
-        # be replayed from stale hints, breaking any consumer whose hints drifted
-        # (e.g. Vector.Portable.Compress.compress post-merge).  Transparency lets
-        # `f_as_*` reduce to the plain reinterpret cast.  See
-        # feedback_postmerge_audit_order.
-        include_str = "+**"
-        cargo_hax_into = [
-            "cargo",
-            "hax",
-            "into",
-            "-i",
-            include_str,
-            "fstar",
-            "--interfaces",
-            "-**",
-        ]
-        hax_env = {}
-        shell(
-            cargo_hax_into,
-            cwd="../crates/utils/secrets",
-            env=hax_env,
-        )
+        # Extract the uniform shared secrets dep via its canonical script
+        # (transparent `--interfaces "-**"`; single source of truth; idempotent).
+        run_dep_extract("crates/utils/secrets/hax.py")
 
         # Extract ml-kem reference spec (hacspec_ml_kem)
         include_str = "+**"
@@ -120,7 +148,7 @@ class extractAction(argparse.Action):
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../specs/ml-kem",
+            cwd=os.path.join(REPO_ROOT, "specs/ml-kem"),
             env=hax_env,
         )
 
@@ -186,18 +214,19 @@ class extractAction(argparse.Action):
         hax_env = {
             'RUSTFLAGS': "--cfg pre_core_models"
         }
+        clean_generated_fstar(ML_KEM_EXTRACTION_DIR)
         shell(
             cargo_hax_into,
-            cwd=".",
+            cwd=SCRIPT_DIR,
             env=hax_env,
         )
 
         # Apply post-extraction patches
         import glob
-        patches = sorted(glob.glob("proofs/fstar/extraction-patches/*.patch"))
+        patches = sorted(glob.glob(os.path.join(SCRIPT_DIR, "proofs/fstar/extraction-patches/*.patch")))
         for patch in patches:
             print(f"\nApplying patch: {patch}")
-            shell(["git", "apply", patch], cwd=".")
+            shell(["git", "apply", patch], cwd=SCRIPT_DIR)
 
         # Drop runtime-dispatch alloc-helper modules.  These contain
         # `Box<dyn Keys>` / `&dyn Any` that hax extracts as F* `dyn 1 (...)`,
@@ -228,6 +257,7 @@ class extractAction(argparse.Action):
             "proofs/fstar/extraction/Libcrux_ml_kem.Mlkem1024.Incremental.Rand.fsti",
         ]
         for f in alloc_helpers:
+            f = os.path.join(SCRIPT_DIR, f)
             if os.path.exists(f):
                 os.remove(f)
 

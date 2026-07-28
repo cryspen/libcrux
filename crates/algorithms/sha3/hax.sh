@@ -9,20 +9,35 @@ function extract_all() {
     # not need for the SHA-3 proofs.
     export RUSTFLAGS="${RUSTFLAGS:-} --cfg pre_core_models"
 
-    extract crates/sys/platform \
-        into -i "+:** -**::x86::init::cpuid -**::x86::init::cpuid_count" \
-        fstar --z3rlimit 80 --interfaces "+**"
+    # Uniform shared deps via their canonical scripts (single source of truth;
+    # idempotent).  They are content-invariant to pre_core_models, so a canonical
+    # config serves sha3 too.  This also UNIFIES sha3's secrets: it previously
+    # omitted `--interfaces "-**"`, drifting from ml-kem/ml-dsa; the canonical
+    # secrets script always extracts transparently (`--interfaces "-**"`).
+    dep_extract crates/sys/platform
+    dep_extract crates/utils/core-models
 
-    extract crates/utils/core-models into fstar
-
+    # Extract intrinsics into sha3's OWN dedicated intrinsics dir (--output-dir),
+    # so the shared crates/utils/intrinsics tree is never clobbered.  sha3 uses the
+    # pre_core_models mapping (avx2 -> Avx2_extract, the bit_vec stub) WITH
+    # interfaces (`--interfaces "+**"`), matching its committed config.
+    #
+    # Force a rebuild of the intrinsics crate (touch its sources) so the
+    # pre_core_models variant is regenerated even if a prior extraction in this
+    # working tree built it under a DIFFERENT config (e.g. ml-dsa's non-pcm real
+    # `Avx2`): hax reuses the cached THIR when cargo thinks the crate is fresh, so
+    # without this touch sha3 can silently pick up ml-dsa's `Avx2.fst` instead of
+    # its own `Avx2_extract.fst` (the cross-crate cargo-freshness flip). Harmless
+    # in single-crate CI (one extra intrinsics recompile).
+    touch "$REPO_ROOT/crates/utils/intrinsics/src/"*.rs
+    clean_generated_fstar "$SHA3_INTRINSICS_DIR"
     extract crates/utils/intrinsics \
         -C --features simd128,simd256 ";" \
         into -i "-libcrux_core_models::**" \
+        --output-dir "$SHA3_INTRINSICS_DIR" \
         fstar --z3rlimit 80 --interfaces "+**"
 
-    extract crates/utils/secrets \
-        into -i "+**" \
-        fstar --z3rlimit 80
+    dep_extract crates/utils/secrets
 
     # Minimal libcrux-traits surface needed by sha3's
     # `impl_digest_trait` module: only the `digest::arrayref` oneshot
@@ -91,6 +106,18 @@ function init_vars() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
     SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_NAME}"
+    REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+    # sha3 carries its OWN copy of the shared intrinsics modules
+    # (Libcrux_intrinsics.{Avx2_extract,Arm64_extract}), extracted via --output-dir
+    # into this DEDICATED subdir (not the main `extraction` tree).  FINDLIBS
+    # (Makefile.generic) auto-includes every workspace crate's
+    # `proofs/fstar/extraction` on every other crate's path, so a per-algorithm
+    # intrinsics copy in `extraction/` would collide (same module names, DIFFERENT
+    # content) on sibling paths.  A `proofs/fstar/intrinsics` sibling dir is NOT
+    # auto-discovered by FINDLIBS, so it is added ONLY to sha3's own include path
+    # via FSTAR_INCLUDE_DIRS_EXTRA (`../intrinsics`).  The shared
+    # crates/utils/intrinsics tree is likewise excluded in Makefile.generic.
+    SHA3_INTRINSICS_DIR="$SCRIPT_DIR/proofs/fstar/intrinsics"
 
     detect_sed
 
@@ -178,6 +205,33 @@ function extract() {
         msg "$RED" "extract extraction failed for ${BOLD}$1${RESET}"
         exit 1
     }
+}
+
+# Invoke a canonical per-dependency extraction script (single source of truth
+# for that uniform shared dep; idempotent — skips if already extracted).  Keeps
+# the shared platform/core-models/secrets trees from flip-flopping between
+# per-algorithm configs (feedback_shared_coremodels_extraction_contamination).
+# NOTE: the dep scripts do NOT set `--cfg pre_core_models`, and these deps are
+# content-invariant to it (empirically verified), so a canonical config serves
+# sha3 too even though sha3 extracts its own code under pre_core_models.
+function dep_extract() {
+    local dep="$1"   # e.g. crates/sys/platform
+    msg "$BLUE" "dep_extract ${BOLD}$dep${RESET}"
+    python3 "$REPO_ROOT/$dep/hax.py" extract || {
+        msg "$RED" "dep extraction failed for ${BOLD}$dep${RESET}"
+        exit 1
+    }
+}
+
+# Remove generated .fst/.fsti from an extraction dir BEFORE re-extracting.  hax
+# extracts incrementally and NEVER deletes a .fsti when a module stops emitting
+# one; a leftover .fsti then silently SHADOWS the fresh .fst (the stale-.fsti
+# contamination that broke the SHA-3 SIMD proofs).  The dedicated intrinsics dir
+# holds only generated files, so removing all is safe.
+function clean_generated_fstar() {
+    local dir="$1"
+    [ -d "$dir" ] && rm -f "$dir"/*.fst "$dir"/*.fsti
+    return 0
 }
 
 function extract_to_lean() {
