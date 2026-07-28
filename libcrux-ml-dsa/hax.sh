@@ -13,6 +13,16 @@ function extract_all() {
         into -i "-libcrux_core_models::**" \
         fstar --z3rlimit 80
 
+    # Extract libcrux-secrets WITHOUT interfaces (`--interfaces "-**"`, transparent),
+    # matching libcrux-ml-kem/hax.py.  The shared secrets tree must agree on
+    # transparency across crates to avoid an abstract/transparent flip-flop (the
+    # abstract .fsti hides the classify-is-identity fact — see feedback_postmerge_
+    # audit_order).  ml-dsa uses no classify/f_as so is unaffected by the choice,
+    # but extracting it here keeps ml-dsa's build self-contained and consistent.
+    extract crates/utils/secrets \
+        into -i "+**" \
+        fstar --interfaces "-**"
+
     # Extract the ml-dsa reference spec (crate `hacspec_ml_dsa`).  The
     # hand-written Spec.MLDSA.Math.fsti and Hacspec_ml_dsa.Commute.Chunk
     # depend on these `Hacspec_ml_dsa.*` modules; without this step the

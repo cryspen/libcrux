@@ -44,7 +44,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0c78f7aab2649e7d37c7dff18873a96b"
+      "fda07562e8f414c665b06ad3606aa732"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.generate_key_pair",
@@ -73,7 +73,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c8679d58ab6129c24d7143e5220f348b"
+      "af2f1fb767ef59f0296fb6b81995cf9e"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign",
@@ -132,7 +132,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8340072beed491ff38c1b55af7030eb3"
+      "8900f63c042951cfdf1b742037be138d"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign_mut",
@@ -192,7 +192,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "baa0658d3b30495fada30e83548f2d90"
+      "6ca27a667f8a59f897423232e4327f22"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.sign_pre_hashed_shake128",
@@ -274,7 +274,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7b94600f30862bd8479ce5892e07feee"
+      "173701af8ef5f54c8c3362bb852fd013"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify",
@@ -336,7 +336,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bd654c9f6893cf7535558e3fb9637ef6"
+      "b1e7b9611510cd9ba5b2d9e6f0d90d62"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify_pre_hashed_shake128",
@@ -391,7 +391,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a81562d593eda23db93b54f8c03fd61f"
+      "21a4cbb2d29860ef1b8e351e289bbbf7"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_87_.Portable.verify_pre_hashed_shake128",
@@ -420,7 +420,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f55fe7cb9076ac26ee656fe925af5751"
+      "5787010340040a03aca84b4a5bb41744"
     ]
   ]
 ]

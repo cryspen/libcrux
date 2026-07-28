@@ -639,7 +639,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a571c7c6d48907deac95fb87f2a43fab"
+      "753c482ca8fb8395b0d7854ad04e31fd"
     ],
     [
       "Libcrux_ml_dsa.Arithmetic.make_hint",
@@ -787,7 +787,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "423f0dedfee56db28d3c23364507e748"
+      "b4605b98524b08853a589b6cc3c766cb"
     ],
     [
       "Libcrux_ml_dsa.Arithmetic.make_hint",
@@ -1849,7 +1849,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "fdc50451713f8820533b898a11593ebb"
+      "10e00ecf128f91059b6a7a81f4369380"
     ],
     [
       "Libcrux_ml_dsa.Arithmetic.uuse_hint",
@@ -2099,7 +2099,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "292b5fc8b4d56437bf0f0972f5c1ac6c"
+      "fcda0270b83e5ee46143a3b9980bf955"
     ],
     [
       "Libcrux_ml_dsa.Arithmetic.uuse_hint",

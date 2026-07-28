@@ -13,7 +13,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "e239cf1725d51f4263f74bf0ca2b6798"
+      "0d7cdc3e43eab57d7fdcf28f536b6f3a"
     ],
     [
       "Spec.MLDSA.NttConstants.zeta_r",
@@ -35,7 +35,7 @@
         "typing_Spec.MLDSA.Math.mod_q"
       ],
       0,
-      "9e11bdd6762dbce8b9d389731be8bb67"
+      "57ea0859b05a457b47bdeddbadf2c315"
     ]
   ]
 ]

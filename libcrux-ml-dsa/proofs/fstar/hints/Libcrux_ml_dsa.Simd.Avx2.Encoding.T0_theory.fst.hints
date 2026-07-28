@@ -39,7 +39,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e13f7200a1da18ddcffcfe86f50e4ed8"
+      "dd24feacc22fbe93b418e6d4675a2aaf"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.T0_theory.mm256_add_epi64_lemma_smtpat",
@@ -66,7 +66,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "4bbf648f71cead5e3ad36911298b902f"
+      "53351a8cc8d375ff260bcceb08221192"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.T0_theory.deserialize_unsigned_post",
