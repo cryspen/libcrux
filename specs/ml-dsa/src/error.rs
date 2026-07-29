@@ -1,6 +1,8 @@
 /// Errors raised by the ML-DSA spec.
 
-#[derive(Debug, PartialEq, Eq)]
+// Debug's derived impl is not translatable by aeneas; keep it for F*/native only.
+#[derive(PartialEq, Eq)]
+#[cfg_attr(not(hax_backend_lean), derive(Debug))]
 pub enum MlDsaError {
     /// `SampleInBall` (FIPS 204, Algorithm 29) exhausted the 1024-byte
     /// hash buffer without finding τ valid Fisher-Yates positions.
