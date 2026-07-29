@@ -125,8 +125,11 @@ let fwd_shuffle_160 (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 160) vv in
     shuf160 0; shuf160 1; shuf160 2; shuf160 3; shuf160 4; shuf160 5; shuf160 6; shuf160 7
 
+(* `c` is symbolic here, so the shuffle fact's immediate-range side condition has
+   to be taken as a hypothesis; both call sites pass a literal (245 / 160). *)
 let fwd_shuffle_preserves_bound (c: i32) (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (b: nat) : Lemma
-  (requires FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
+  (requires v c >= 0 /\ v c < 256 /\
+            FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
   (ensures FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 (Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv)))
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv in
     let aux (i:nat{i<16}) : Lemma (FS.is_i16b b (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 r) i)) =
@@ -276,8 +279,10 @@ let fwd2_shuffle_68 (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 68) vv in
     shuf68 0; shuf68 1; shuf68 2; shuf68 3; shuf68 4; shuf68 5; shuf68 6; shuf68 7
 
+(* `c` is symbolic here, so the shuffle/permute fact's immediate-range side
+   condition has to be taken as a hypothesis; every call site passes a literal. *)
 let fwd2_shuffle_preserves_bound (c: i32) (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (b: nat) : Lemma
-  (requires FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
+  (requires v c >= 0 /\ v c < 256 /\ FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
   (ensures FS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 (Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv)))
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv in
     let aux (i:nat{i<16}) : Lemma (FS.is_i16b b (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 r) i)) =
@@ -427,7 +432,9 @@ let lemma_mm256_castsi256_si128 (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec25
         Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma v 16 k;
         assert (k / 16 == i);
         assert (k % 16 == nthv);
-        assert (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 v k == v k)
+        (* pcm applied the vector as a `bit_vec` FUNCTION here; over core-models the
+           same step is the PROVEN companion bit fact. *)
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_castsi256_si128 v k
       in
       Classical.forall_intro auxb;
       Rust_primitives.Integers.lemma_int_t_eq_via_bits a b
@@ -469,7 +476,9 @@ let lemma_mm256_extracti128_si256_1 (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_V
         assert (k % 16 == nthv);
         assert (k' / 16 == i + 8);
         assert (k' % 16 == nthv);
-        assert (Libcrux_intrinsics.Avx2.mm256_extracti128_si256 (mk_i32 1) v k == v (k + 128))
+        (* pcm applied the vector as a `bit_vec` FUNCTION here; over core-models the
+           same step is the PROVEN companion bit fact. *)
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_extracti128_si256_1 v k
       in
       Classical.forall_intro auxb;
       Rust_primitives.Integers.lemma_int_t_eq_via_bits a b
@@ -577,8 +586,10 @@ let lemma_shuffle_160 (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemm
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 (mk_i32 160) vv in
     shuf160 0; shuf160 1; shuf160 2; shuf160 3; shuf160 4; shuf160 5; shuf160 6; shuf160 7
 
+(* `c` is symbolic here, so the shuffle/permute fact's immediate-range side
+   condition has to be taken as a hypothesis; every call site passes a literal. *)
 let lemma_shuffle_preserves_bound (c: i32) (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (b: nat) : Lemma
-  (requires ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
+  (requires v c >= 0 /\ v c < 256 /\ ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
   (ensures ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 (Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv)))
   = let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi32 c vv in
     let aux (i:nat{i<16}) : Lemma (ZS.is_i16b b (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 r) i)) =
@@ -748,8 +759,10 @@ let lemma_permute_160 (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemm
   = let r = Libcrux_intrinsics.Avx2.mm256_permute4x64_epi64 (mk_i32 160) vv in
     perm160 0; perm160 1; perm160 2; perm160 3
 
+(* `c` is symbolic here, so the shuffle/permute fact's immediate-range side
+   condition has to be taken as a hypothesis; every call site passes a literal. *)
 let lemma_permute_preserves_bound (c: i32) (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (b: nat) : Lemma
-  (requires ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
+  (requires v c >= 0 /\ v c < 256 /\ ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vv))
   (ensures ZS.is_i16b_array b (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 (Libcrux_intrinsics.Avx2.mm256_permute4x64_epi64 c vv)))
   = let r = Libcrux_intrinsics.Avx2.mm256_permute4x64_epi64 c vv in
     let aux (i:nat{i<16}) : Lemma (ZS.is_i16b b (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 r) i)) =
@@ -931,56 +944,57 @@ let lemma_inv_l2_post
 // bit-exact simulation (2000 random trials).
 // ─────────────────────────────────────────────────────────────────────────
 
-// ── shuffle_epi8 dynamic-mask (no_semantics) closure ───────────────────────
-// The grouping/swap masks are NOT `mm256_set_epi8` syntactic literals at the
-// shuffle call (threaded as the free var `m`), so `BitVec.Intrinsics`'s tactic
-// routes them to the uninterpreted `mm256_shuffle_epi8_no_semantics`.  Trusted
-// axiom (256-bit PSHUFB, the analog of sampling.rs's 128-bit one): per result
-// bit i, byte nth=i/8 of the mask selects input byte (idx%16) WITHIN i's
-// 128-bit half (idx>127 => 0).  Validated against the executable core-models
-// model by `shuffle256_epi8_dynamic_mask_formula` in interpretations.rs.
-// Kept ml-kem-local (not in shared BitVec.Intrinsics.fsti) to avoid a
-// stale-cascade into the sha3 / ml-dsa proof trees.
-[@@ "trusted: trusted-extern: PSHUFB (256-bit) semantics for the uninterpreted mm256_shuffle_epi8_no_semantics (core-models validated)"]
-assume val mm256_shuffle_epi8_no_semantics_lemma (a b: bit_vec 256) (i: nat{i < 256})
-  : Lemma
-    (BitVec.Intrinsics.mm256_shuffle_epi8_no_semantics a b i ==
-      (let nth = i / 8 in
-       let idx: nat =
-         b (8 * nth) + 2 * b (8 * nth + 1) + 4 * b (8 * nth + 2) + 8 * b (8 * nth + 3) +
-         16 * b (8 * nth + 4) + 32 * b (8 * nth + 5) + 64 * b (8 * nth + 6) +
-         128 * b (8 * nth + 7)
-       in
-       if idx > 127 then 0 else a ((idx % 16) * 8 + i % 8 + (i / 128) * 128)))
+(* ── shuffle_epi8 (256-bit PSHUFB) ─────────────────────────────────────────────
+   RE-HOMED onto core-models (was: a hand-written, UNTESTED `assume val`
+   `mm256_shuffle_epi8_no_semantics_lemma` stating PSHUFB's bit semantics over
+   pcm's `bit_vec`, because `BitVec.Intrinsics`'s tactic routed a non-literal
+   mask to an uninterpreted symbol).  core-models MODELS the op
+   (`Int_vec.e_mm256_shuffle_epi8`) and the model is differentially tested against
+   the real intrinsic, so the axiom is gone: the per-lane bridge below is PROVEN
+   from `Canon.lemma_mm256_shuffle_epi8` (the tested lift + the proven codec
+   round-trip), `Canon.lemma_iv_shuffle_epi8_sel` (the model's select branch) and
+   `Canon.lemma_i16_from_i8_pair` (two agreeing i8 sub-lanes give an agreeing i16
+   lane).  Net: one untested axiom removed from the TCB. *)
 
-// The unsigned value of mask byte `n` (8 bits LSB-first), = the axiom's `idx`.
-let mbv (g: bit_vec 256) (n:nat{n<32}) : nat =
-  g (8*n) + 2 * g (8*n+1) + 4 * g (8*n+2) + 8 * g (8*n+3) +
-  16 * g (8*n+4) + 32 * g (8*n+5) + 64 * g (8*n+6) + 128 * g (8*n+7)
+(* The unsigned value of mask byte `n` — the PSHUFB index byte. *)
+let mbv (g: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (n: nat{n < 32}) : nat =
+  (Rust_primitives.Integers.v
+     (Libcrux_core_models.Abstractions.Funarr.impl_5__get (mk_u64 32) #i8
+        (Libcrux_core_models.Intrinsics_views.to_i8x32 g) (mk_u64 n))) % 256
 
-// Generic per-lane bridge: if mask bytes 2k/2k+1 select (within k's half) the
-// two bytes of input i16-lane `sg`, then output i16-lane k == input lane sg.
-// No `match k` (symbolic k, minimal context) — the dispatchers below pin k.
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 100 --split_queries always"
+(* Generic per-lane bridge: if mask bytes 2k/2k+1 select (within k's half) the
+   two bytes of input i16-lane `sg`, then output i16-lane k == input lane sg.
+   No `match k` (symbolic k, minimal context) — the dispatchers below pin k. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let lemma_shuffle8_lane (vv m: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (k: nat{k<16}) (sg: nat{sg<16}) : Lemma
   (requires
      (let h = k/8 in
       mbv m (2*k) <= 127 /\ mbv m (2*k+1) <= 127 /\
       mbv m (2*k) % 16 == 2*(sg - h*8) /\ mbv m (2*k+1) % 16 == 2*(sg - h*8) + 1 /\
       sg / 8 == h))
-  (ensures Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (BitVec.Intrinsics.mm256_shuffle_epi8_no_semantics vv m) k
+  (ensures Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (Libcrux_intrinsics.Avx2.mm256_shuffle_epi8 vv m) k
            == Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv sg)
-  = let r = BitVec.Intrinsics.mm256_shuffle_epi8_no_semantics vv m in
-    let aux (bb: usize{v bb < 16}) : Lemma
-      (get_bit (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane r k) bb == get_bit (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv sg) bb) =
-      let b = v bb in
-      Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma r 16 (16*k+b);
-      Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma vv 16 (16*sg+b);
-      mm256_shuffle_epi8_no_semantics_lemma vv m (16*k+b);
-      (if b < 8 then () else ())
-    in
-    Classical.forall_intro aux;
-    Rust_primitives.Integers.lemma_int_t_eq_via_bits (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane r k) (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv sg)
+  = reveal_opaque (`%Libcrux_intrinsics.Avx2.mm256_shuffle_epi8)
+                  Libcrux_intrinsics.Avx2.mm256_shuffle_epi8;
+    Libcrux_core_models.Intrinsics_views.lemma_mm256_shuffle_epi8 vv m;
+    let r = Libcrux_intrinsics.Avx2.mm256_shuffle_epi8 vv m in
+    let h = k/8 in
+    let mvv = Libcrux_core_models.Intrinsics_views.to_i8x32 m in
+    (* `mbv <= 127` on an i8 lane is exactly "the index byte is non-negative",
+       i.e. PSHUFB takes the select branch rather than zeroing. *)
+    assert (Rust_primitives.Integers.v
+              (Libcrux_core_models.Abstractions.Funarr.impl_5__get (mk_u64 32) #i8 mvv (mk_u64 (2*k))) >= 0);
+    assert (Rust_primitives.Integers.v
+              (Libcrux_core_models.Abstractions.Funarr.impl_5__get (mk_u64 32) #i8 mvv (mk_u64 (2*k+1))) >= 0);
+    Libcrux_core_models.Intrinsics_views.lemma_iv_shuffle_epi8_sel
+      (Libcrux_core_models.Intrinsics_views.to_i8x32 vv) mvv (2*k);
+    Libcrux_core_models.Intrinsics_views.lemma_iv_shuffle_epi8_sel
+      (Libcrux_core_models.Intrinsics_views.to_i8x32 vv) mvv (2*k+1);
+    assert ((2*k) / 16 == h);
+    assert ((2*k+1) / 16 == h);
+    assert (16 * h + (mbv m (2*k)) % 16 == 2 * sg);
+    assert (16 * h + (mbv m (2*k+1)) % 16 == 2 * sg + 1);
+    Libcrux_core_models.Intrinsics_views.lemma_i16_from_i8_pair r vv k sg
 #pop-options
 
 let group_mask8 : Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256 =
@@ -996,6 +1010,76 @@ let swap_mask8 : Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256 =
   (mk_i8 3) (mk_i8 2) (mk_i8 13) (mk_i8 12) (mk_i8 15) (mk_i8 14) (mk_i8 9) (mk_i8 8)
   (mk_i8 11) (mk_i8 10) (mk_i8 5) (mk_i8 4) (mk_i8 7) (mk_i8 6) (mk_i8 1) (mk_i8 0)
   (mk_i8 3) (mk_i8 2)
+
+(* Byte values of the two concrete PSHUFB masks, from the canonical `set_epi8`
+   op-lemma + its per-lane interpretation lemma.  (Under pcm these were
+   `assert_norm`s over the concrete `bit_vec` model; over core-models the lane
+   view is a codec, so the values come from lemmas instead of normalisation.) *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let lemma_group_mask8_byte (n: nat{n < 32})
+  : Lemma (mbv group_mask8 n ==
+           (match n % 16 with
+             | 0 -> 0
+             | 1 -> 1
+             | 2 -> 4
+             | 3 -> 5
+             | 4 -> 8
+             | 5 -> 9
+             | 6 -> 12
+             | 7 -> 13
+             | 8 -> 2
+             | 9 -> 3
+             | 10 -> 6
+             | 11 -> 7
+             | 12 -> 10
+             | 13 -> 11
+             | 14 -> 14
+             | _ -> 15))
+  = reveal_opaque (`%Libcrux_intrinsics.Avx2.mm256_set_epi8) Libcrux_intrinsics.Avx2.mm256_set_epi8;
+    Libcrux_core_models.Intrinsics_views.lemma_mm256_set_epi8
+      (mk_i8 15) (mk_i8 14) (mk_i8 11) (mk_i8 10) (mk_i8 7) (mk_i8 6) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4) (mk_i8 1) (mk_i8 0)
+      (mk_i8 15) (mk_i8 14) (mk_i8 11) (mk_i8 10) (mk_i8 7) (mk_i8 6) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4) (mk_i8 1) (mk_i8 0);
+    Libcrux_core_models.Intrinsics_views.lemma_iv_set_epi8
+      (mk_i8 15) (mk_i8 14) (mk_i8 11) (mk_i8 10) (mk_i8 7) (mk_i8 6) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4) (mk_i8 1) (mk_i8 0)
+      (mk_i8 15) (mk_i8 14) (mk_i8 11) (mk_i8 10) (mk_i8 7) (mk_i8 6) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4) (mk_i8 1) (mk_i8 0) n
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let lemma_swap_mask8_byte (n: nat{n < 32})
+  : Lemma (mbv swap_mask8 n ==
+           (match n % 16 with
+             | 0 -> 2
+             | 1 -> 3
+             | 2 -> 0
+             | 3 -> 1
+             | 4 -> 6
+             | 5 -> 7
+             | 6 -> 4
+             | 7 -> 5
+             | 8 -> 10
+             | 9 -> 11
+             | 10 -> 8
+             | 11 -> 9
+             | 12 -> 14
+             | 13 -> 15
+             | 14 -> 12
+             | _ -> 13))
+  = reveal_opaque (`%Libcrux_intrinsics.Avx2.mm256_set_epi8) Libcrux_intrinsics.Avx2.mm256_set_epi8;
+    Libcrux_core_models.Intrinsics_views.lemma_mm256_set_epi8
+      (mk_i8 13) (mk_i8 12) (mk_i8 15) (mk_i8 14) (mk_i8 9) (mk_i8 8) (mk_i8 11) (mk_i8 10)
+      (mk_i8 5) (mk_i8 4) (mk_i8 7) (mk_i8 6) (mk_i8 1) (mk_i8 0) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 15) (mk_i8 14) (mk_i8 9) (mk_i8 8) (mk_i8 11) (mk_i8 10)
+      (mk_i8 5) (mk_i8 4) (mk_i8 7) (mk_i8 6) (mk_i8 1) (mk_i8 0) (mk_i8 3) (mk_i8 2);
+    Libcrux_core_models.Intrinsics_views.lemma_iv_set_epi8
+      (mk_i8 13) (mk_i8 12) (mk_i8 15) (mk_i8 14) (mk_i8 9) (mk_i8 8) (mk_i8 11) (mk_i8 10)
+      (mk_i8 5) (mk_i8 4) (mk_i8 7) (mk_i8 6) (mk_i8 1) (mk_i8 0) (mk_i8 3) (mk_i8 2)
+      (mk_i8 13) (mk_i8 12) (mk_i8 15) (mk_i8 14) (mk_i8 9) (mk_i8 8) (mk_i8 11) (mk_i8 10)
+      (mk_i8 5) (mk_i8 4) (mk_i8 7) (mk_i8 6) (mk_i8 1) (mk_i8 0) (mk_i8 3) (mk_i8 2) n
+#pop-options
 
 (* Evens/odds grouping shuffle at the concrete mask (passed as `m`):
    out half-lane k takes input half-lane sigma(k), sigma = [0,2,4,6,1,3,5,7]. *)
@@ -1014,22 +1098,22 @@ let lemma_nttmul_shuffle_group_lane (vv m: Libcrux_intrinsics.Avx2_ml_kem_views.
                    else 2*(k-12)+9))
   = assert (m == group_mask8);
     (match k with
-     | 0  -> assert_norm (mbv group_mask8 0 == 0);  assert_norm (mbv group_mask8 1 == 1);  lemma_shuffle8_lane vv m 0 0
-     | 1  -> assert_norm (mbv group_mask8 2 == 4);  assert_norm (mbv group_mask8 3 == 5);  lemma_shuffle8_lane vv m 1 2
-     | 2  -> assert_norm (mbv group_mask8 4 == 8);  assert_norm (mbv group_mask8 5 == 9);  lemma_shuffle8_lane vv m 2 4
-     | 3  -> assert_norm (mbv group_mask8 6 == 12); assert_norm (mbv group_mask8 7 == 13); lemma_shuffle8_lane vv m 3 6
-     | 4  -> assert_norm (mbv group_mask8 8 == 2);  assert_norm (mbv group_mask8 9 == 3);  lemma_shuffle8_lane vv m 4 1
-     | 5  -> assert_norm (mbv group_mask8 10 == 6); assert_norm (mbv group_mask8 11 == 7); lemma_shuffle8_lane vv m 5 3
-     | 6  -> assert_norm (mbv group_mask8 12 == 10);assert_norm (mbv group_mask8 13 == 11);lemma_shuffle8_lane vv m 6 5
-     | 7  -> assert_norm (mbv group_mask8 14 == 14);assert_norm (mbv group_mask8 15 == 15);lemma_shuffle8_lane vv m 7 7
-     | 8  -> assert_norm (mbv group_mask8 16 == 0); assert_norm (mbv group_mask8 17 == 1); lemma_shuffle8_lane vv m 8 8
-     | 9  -> assert_norm (mbv group_mask8 18 == 4); assert_norm (mbv group_mask8 19 == 5); lemma_shuffle8_lane vv m 9 10
-     | 10 -> assert_norm (mbv group_mask8 20 == 8); assert_norm (mbv group_mask8 21 == 9); lemma_shuffle8_lane vv m 10 12
-     | 11 -> assert_norm (mbv group_mask8 22 == 12);assert_norm (mbv group_mask8 23 == 13);lemma_shuffle8_lane vv m 11 14
-     | 12 -> assert_norm (mbv group_mask8 24 == 2); assert_norm (mbv group_mask8 25 == 3); lemma_shuffle8_lane vv m 12 9
-     | 13 -> assert_norm (mbv group_mask8 26 == 6); assert_norm (mbv group_mask8 27 == 7); lemma_shuffle8_lane vv m 13 11
-     | 14 -> assert_norm (mbv group_mask8 28 == 10);assert_norm (mbv group_mask8 29 == 11);lemma_shuffle8_lane vv m 14 13
-     | 15 -> assert_norm (mbv group_mask8 30 == 14);assert_norm (mbv group_mask8 31 == 15);lemma_shuffle8_lane vv m 15 15
+     | 0  -> lemma_group_mask8_byte 0;  lemma_group_mask8_byte 1;  lemma_shuffle8_lane vv m 0 0
+     | 1  -> lemma_group_mask8_byte 2;  lemma_group_mask8_byte 3;  lemma_shuffle8_lane vv m 1 2
+     | 2  -> lemma_group_mask8_byte 4;  lemma_group_mask8_byte 5;  lemma_shuffle8_lane vv m 2 4
+     | 3  -> lemma_group_mask8_byte 6; lemma_group_mask8_byte 7; lemma_shuffle8_lane vv m 3 6
+     | 4  -> lemma_group_mask8_byte 8;  lemma_group_mask8_byte 9;  lemma_shuffle8_lane vv m 4 1
+     | 5  -> lemma_group_mask8_byte 10; lemma_group_mask8_byte 11; lemma_shuffle8_lane vv m 5 3
+     | 6  -> lemma_group_mask8_byte 12;lemma_group_mask8_byte 13;lemma_shuffle8_lane vv m 6 5
+     | 7  -> lemma_group_mask8_byte 14;lemma_group_mask8_byte 15;lemma_shuffle8_lane vv m 7 7
+     | 8  -> lemma_group_mask8_byte 16; lemma_group_mask8_byte 17; lemma_shuffle8_lane vv m 8 8
+     | 9  -> lemma_group_mask8_byte 18; lemma_group_mask8_byte 19; lemma_shuffle8_lane vv m 9 10
+     | 10 -> lemma_group_mask8_byte 20; lemma_group_mask8_byte 21; lemma_shuffle8_lane vv m 10 12
+     | 11 -> lemma_group_mask8_byte 22;lemma_group_mask8_byte 23;lemma_shuffle8_lane vv m 11 14
+     | 12 -> lemma_group_mask8_byte 24; lemma_group_mask8_byte 25; lemma_shuffle8_lane vv m 12 9
+     | 13 -> lemma_group_mask8_byte 26; lemma_group_mask8_byte 27; lemma_shuffle8_lane vv m 13 11
+     | 14 -> lemma_group_mask8_byte 28;lemma_group_mask8_byte 29;lemma_shuffle8_lane vv m 14 13
+     | 15 -> lemma_group_mask8_byte 30;lemma_group_mask8_byte 31;lemma_shuffle8_lane vv m 15 15
      | _ -> ())
 #pop-options
 
@@ -1046,22 +1130,22 @@ let lemma_nttmul_swap_lane (vv m: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256)
    Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (if k % 2 = 0 then k+1 else k-1))
   = assert (m == swap_mask8);
     (match k with
-     | 0  -> assert_norm (mbv swap_mask8 0 == 2);  assert_norm (mbv swap_mask8 1 == 3);  lemma_shuffle8_lane vv m 0 1
-     | 1  -> assert_norm (mbv swap_mask8 2 == 0);  assert_norm (mbv swap_mask8 3 == 1);  lemma_shuffle8_lane vv m 1 0
-     | 2  -> assert_norm (mbv swap_mask8 4 == 6);  assert_norm (mbv swap_mask8 5 == 7);  lemma_shuffle8_lane vv m 2 3
-     | 3  -> assert_norm (mbv swap_mask8 6 == 4);  assert_norm (mbv swap_mask8 7 == 5);  lemma_shuffle8_lane vv m 3 2
-     | 4  -> assert_norm (mbv swap_mask8 8 == 10); assert_norm (mbv swap_mask8 9 == 11); lemma_shuffle8_lane vv m 4 5
-     | 5  -> assert_norm (mbv swap_mask8 10 == 8); assert_norm (mbv swap_mask8 11 == 9); lemma_shuffle8_lane vv m 5 4
-     | 6  -> assert_norm (mbv swap_mask8 12 == 14);assert_norm (mbv swap_mask8 13 == 15);lemma_shuffle8_lane vv m 6 7
-     | 7  -> assert_norm (mbv swap_mask8 14 == 12);assert_norm (mbv swap_mask8 15 == 13);lemma_shuffle8_lane vv m 7 6
-     | 8  -> assert_norm (mbv swap_mask8 16 == 2); assert_norm (mbv swap_mask8 17 == 3); lemma_shuffle8_lane vv m 8 9
-     | 9  -> assert_norm (mbv swap_mask8 18 == 0); assert_norm (mbv swap_mask8 19 == 1); lemma_shuffle8_lane vv m 9 8
-     | 10 -> assert_norm (mbv swap_mask8 20 == 6); assert_norm (mbv swap_mask8 21 == 7); lemma_shuffle8_lane vv m 10 11
-     | 11 -> assert_norm (mbv swap_mask8 22 == 4); assert_norm (mbv swap_mask8 23 == 5); lemma_shuffle8_lane vv m 11 10
-     | 12 -> assert_norm (mbv swap_mask8 24 == 10);assert_norm (mbv swap_mask8 25 == 11);lemma_shuffle8_lane vv m 12 13
-     | 13 -> assert_norm (mbv swap_mask8 26 == 8); assert_norm (mbv swap_mask8 27 == 9); lemma_shuffle8_lane vv m 13 12
-     | 14 -> assert_norm (mbv swap_mask8 28 == 14);assert_norm (mbv swap_mask8 29 == 15);lemma_shuffle8_lane vv m 14 15
-     | 15 -> assert_norm (mbv swap_mask8 30 == 12);assert_norm (mbv swap_mask8 31 == 13);lemma_shuffle8_lane vv m 15 14
+     | 0  -> lemma_swap_mask8_byte 0;  lemma_swap_mask8_byte 1;  lemma_shuffle8_lane vv m 0 1
+     | 1  -> lemma_swap_mask8_byte 2;  lemma_swap_mask8_byte 3;  lemma_shuffle8_lane vv m 1 0
+     | 2  -> lemma_swap_mask8_byte 4;  lemma_swap_mask8_byte 5;  lemma_shuffle8_lane vv m 2 3
+     | 3  -> lemma_swap_mask8_byte 6;  lemma_swap_mask8_byte 7;  lemma_shuffle8_lane vv m 3 2
+     | 4  -> lemma_swap_mask8_byte 8; lemma_swap_mask8_byte 9; lemma_shuffle8_lane vv m 4 5
+     | 5  -> lemma_swap_mask8_byte 10; lemma_swap_mask8_byte 11; lemma_shuffle8_lane vv m 5 4
+     | 6  -> lemma_swap_mask8_byte 12;lemma_swap_mask8_byte 13;lemma_shuffle8_lane vv m 6 7
+     | 7  -> lemma_swap_mask8_byte 14;lemma_swap_mask8_byte 15;lemma_shuffle8_lane vv m 7 6
+     | 8  -> lemma_swap_mask8_byte 16; lemma_swap_mask8_byte 17; lemma_shuffle8_lane vv m 8 9
+     | 9  -> lemma_swap_mask8_byte 18; lemma_swap_mask8_byte 19; lemma_shuffle8_lane vv m 9 8
+     | 10 -> lemma_swap_mask8_byte 20; lemma_swap_mask8_byte 21; lemma_shuffle8_lane vv m 10 11
+     | 11 -> lemma_swap_mask8_byte 22; lemma_swap_mask8_byte 23; lemma_shuffle8_lane vv m 11 10
+     | 12 -> lemma_swap_mask8_byte 24;lemma_swap_mask8_byte 25;lemma_shuffle8_lane vv m 12 13
+     | 13 -> lemma_swap_mask8_byte 26; lemma_swap_mask8_byte 27; lemma_shuffle8_lane vv m 13 12
+     | 14 -> lemma_swap_mask8_byte 28;lemma_swap_mask8_byte 29;lemma_shuffle8_lane vv m 14 15
+     | 15 -> lemma_swap_mask8_byte 30;lemma_swap_mask8_byte 31;lemma_shuffle8_lane vv m 15 14
      | _ -> ())
 #pop-options
 
@@ -1204,58 +1288,28 @@ let lemma_set32_i16x2_to_i32 (lo hi: i16) (x: i32)
     FStar.Math.Lemmas.euclidean_division_definition (v x) 65536
 #pop-options
 
-#push-options "--fuel 1 --ifuel 2 --z3rlimit 100"
+(* PROVEN from the canonical set_epi32 op-lemma + its per-lane interpretation
+   lemma + the lane32<->to_i32x8 bridge.  (Under pcm this was a ~45-line per-bit
+   argument that applied the vector as a `bit_vec` FUNCTION; over core-models the
+   i32 lane view IS the codec, so the fact is direct.) *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
 let lemma_nttmul_set32_lane (e7 e6 e5 e4 e3 e2 e1 e0: i32) (j: nat{j < 8}) : Lemma
   (ZA.lane32 (Libcrux_intrinsics.Avx2.mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0) j ==
    v (if j = 0 then e0 else if j = 1 then e1 else if j = 2 then e2
       else if j = 3 then e3 else if j = 4 then e4 else if j = 5 then e5
       else if j = 6 then e6 else e7))
-  = let vv = Libcrux_intrinsics.Avx2.mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0 in
-    let ej : i32 = (if j = 0 then e0 else if j = 1 then e1 else if j = 2 then e2
-      else if j = 3 then e3 else if j = 4 then e4 else if j = 5 then e5
-      else if j = 6 then e6 else e7) in
-    let lo = Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j) in
-    let hi = Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j+1) in
-    let aux_lo (n: nat{n < 16}) : Lemma (get_bit lo (sz n) == get_bit ej (sz n)) =
-      let k : nat = 16 * (2*j) + n in
-      FStar.Math.Lemmas.lemma_mult_le_left 32 j 7;
-      FStar.Math.Lemmas.small_div n 16;
-      FStar.Math.Lemmas.small_mod n 16;
-      FStar.Math.Lemmas.lemma_div_plus n (2*j) 16;
-      FStar.Math.Lemmas.lemma_mod_plus n (2*j) 16;
-      Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma vv 16 k;
-      assert (k / 16 == 2*j /\ k % 16 == n);
-      assert (get_bit lo (sz n) == vv k);
-      FStar.Math.Lemmas.small_div n 32;
-      FStar.Math.Lemmas.small_mod n 32;
-      FStar.Math.Lemmas.lemma_div_plus n j 32;
-      FStar.Math.Lemmas.lemma_mod_plus n j 32;
-      assert (k / 32 == j /\ k % 32 == n);
-      (match j with | 0 -> () | 1 -> () | 2 -> () | 3 -> ()
-                    | 4 -> () | 5 -> () | 6 -> () | 7 -> () | _ -> ()) in
-    Classical.forall_intro aux_lo;
-    let aux_hi (n: nat{n < 16}) : Lemma (get_bit hi (sz n) == get_bit ej (sz (16 + n))) =
-      let k : nat = 16 * (2*j+1) + n in
-      FStar.Math.Lemmas.lemma_mult_le_left 32 j 7;
-      FStar.Math.Lemmas.small_div n 16;
-      FStar.Math.Lemmas.small_mod n 16;
-      FStar.Math.Lemmas.lemma_div_plus n (2*j+1) 16;
-      FStar.Math.Lemmas.lemma_mod_plus n (2*j+1) 16;
-      Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma vv 16 k;
-      assert (k / 16 == 2*j+1 /\ k % 16 == n);
-      assert (get_bit hi (sz n) == vv k);
-      FStar.Math.Lemmas.small_div (16+n) 32;
-      FStar.Math.Lemmas.small_mod (16+n) 32;
-      FStar.Math.Lemmas.lemma_div_plus (16+n) j 32;
-      FStar.Math.Lemmas.lemma_mod_plus (16+n) j 32;
-      assert (k / 32 == j /\ k % 32 == 16 + n);
-      (match j with | 0 -> () | 1 -> () | 2 -> () | 3 -> ()
-                    | 4 -> () | 5 -> () | 6 -> () | 7 -> () | _ -> ()) in
-    Classical.forall_intro aux_hi;
-    lemma_set32_i16x2_to_i32 lo hi ej;
+  = reveal_opaque (`%Libcrux_intrinsics.Avx2.mm256_set_epi32)
+                  Libcrux_intrinsics.Avx2.mm256_set_epi32;
+    let vv = Libcrux_intrinsics.Avx2.mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0 in
+    Libcrux_core_models.Intrinsics_views.lemma_mm256_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0;
+    Libcrux_intrinsics.Avx2_ml_kem_views.lemma_lane32_eq_to_i32x8 vv j;
+    Libcrux_core_models.Intrinsics_views.lemma_iv_set_epi32 e7 e6 e5 e4 e3 e2 e1 e0 j;
+    (* `ZA.lane32` is an `opaque_to_smt` COPY of the companion's `lane32`; unfold
+       it so the companion's bridge fact lands on the goal. *)
     assert (ZA.lane32 vv j ==
-            (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j)) % 65536) + 65536 * v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j+1)))
-        by (FStar.Tactics.norm [delta_only [`%ZA.lane32]]; FStar.Tactics.trefl ())
+            (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j)) % 65536) +
+            65536 * v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane vv (2*j+1)))
+      by (FStar.Tactics.norm [delta_only [`%ZA.lane32]]; FStar.Tactics.trefl ())
 #pop-options
 
 let lemma_nttmul_slli16_lane (vv: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (k: nat{k < 16}) : Lemma
