@@ -1,0 +1,18 @@
+name = "HacspecMlKem"
+version = "0.1.0"
+defaultTargets = ["HacspecMlKem"]
+
+[[lean_lib]]
+name = "HacspecMlKem"
+
+[[require]]
+name = "Hax"
+git = "https://github.com/cryspen/hax-lean"
+rev = "v0.2.0"
+
+# HacspecMlKem's spec references `hacspec_sha3.sha3.*`, so it depends on the
+# HacspecSha3 spec. Local worktree path for now (same as the libcrux-iot side);
+# TODO: point at a pushed cryspen/libcrux rev once the spec migration lands.
+[[require]]
+name = "HacspecSha3"
+path = "/workspace/libcrux/proofs-update/specs/sha3/proofs/lean"

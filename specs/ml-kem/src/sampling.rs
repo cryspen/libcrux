@@ -94,7 +94,7 @@ pub fn sample_ntt<const N: usize, const N8: usize, const N12: usize, const N96: 
 }
 
 #[hax_lib::requires(eta <= 4 && coins.len() == eta)]
-#[hax_lib::ensures(|r| r.val <= eta as u16)]
+#[cfg_attr(hax, hax_lib::ensures(|r| r.val <= eta as u16))]
 fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
     hax_lib::debug_assert!(eta <= 4 && coins.len() == eta);
     let mut sum: u16 = 0;

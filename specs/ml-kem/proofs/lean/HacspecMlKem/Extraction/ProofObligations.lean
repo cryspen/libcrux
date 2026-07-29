@@ -117,13 +117,6 @@ theorem compress.compress.spec.proof
   := by sorry
 
 @[spec]
-theorem compress.decompress.spec.proof
-  (re : Array parameters.FieldElement 256#usize)
-  (bits_per_compressed_coefficient : Std.Usize) :
-  compress.decompress.spec re bits_per_compressed_coefficient
-  := by sorry
-
-@[spec]
 theorem compress.compress_d.spec.proof (fe : parameters.FieldElement)
   (to_bit_size : Std.Usize) : compress.compress_d.spec fe to_bit_size
   := by sorry

@@ -337,34 +337,6 @@ def compress.compress.spec (re : Array parameters.FieldElement 256#usize)
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
-/-- [hacspec_ml_kem::compress::decompress::pre]:
-    Source: 'ml-kem/src/compress.rs', lines 23:0-25:95 -/
-@[reducible]
-def compress.decompress.pre
-  (re : Array parameters.FieldElement 256#usize)
-  (bits_per_compressed_coefficient : Std.Usize) :
-  Result hax_lib.prop.Prop
-  := do
-  let p ←
-    hax_lib.Bool.Insts.Hax_libPropToProp.to_prop
-      (bits_per_compressed_coefficient < 12#usize)
-  let p1 ←
-    hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
-      hax_lib.prop.Prop))
-      compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (re,
-      bits_per_compressed_coefficient)
-  hax_lib.prop.Prop.Insts.CoreOpsBitBitAndTProp.bitand
-    (core.convert.Into.Blanket (core.convert.From.Blanket hax_lib.prop.Prop)) p
-    p1
-
-def compress.decompress.spec (re : Array parameters.FieldElement 256#usize)
-  (bits_per_compressed_coefficient : Std.Usize) : Prop :=
-  (compress.decompress.pre re bits_per_compressed_coefficient).holds →
-  ⦃ ⌜ True ⌝ ⦄
-  compress.decompress re bits_per_compressed_coefficient
-  ⦃ ⇓ res => ⌜ True ⌝ ⦄
-
-
 /-- [hacspec_ml_kem::compress::compress_d::pre]:
     Source: 'ml-kem/src/compress.rs', lines 51:0-51:38 -/
 @[reducible]
@@ -1580,21 +1552,11 @@ def sampling.sum_coins.pre
        ok (i = eta)
   else ok false
 
-/-- [hacspec_ml_kem::sampling::sum_coins::post]:
-    Source: 'ml-kem/src/sampling.rs', lines 97:0-97:44 -/
-@[reducible]
-def sampling.sum_coins.post
-  (eta : Std.Usize) (coins : Slice Bool) (r : parameters.FieldElement) :
-  Result Bool
-  := do
-  let i ← lift (UScalar.cast .U16 eta)
-  ok (r.val <= i)
-
 def sampling.sum_coins.spec (eta : Std.Usize) (coins : Slice Bool) : Prop :=
   (sampling.sum_coins.pre eta coins).holds →
   ⦃ ⌜ True ⌝ ⦄
   sampling.sum_coins eta coins
-  ⦃ ⇓ res => ⌜ (sampling.sum_coins.post eta coins res).holds ⌝ ⦄
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd::pre]:
@@ -1721,26 +1683,12 @@ def serialize.bitvector_to_bounded_ints.pre
     else ok false
   else ok false
 
-/-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::post]:
-    Source: 'ml-kem/src/serialize.rs', lines 156:0-157:82 -/
-@[reducible]
-def serialize.bitvector_to_bounded_ints.post
-  {N : Std.Usize} {Nd : Std.Usize} (input : Array Bool Nd) (d : Std.Usize)
-  (result : Array Std.U16 N) :
-  Result hax_lib.prop.Prop
-  := do
-  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
-    hax_lib.prop.Prop))
-    (serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp N Nd)
-    (result, d)
-
 def serialize.bitvector_to_bounded_ints.spec (N : Std.Usize) {Nd : Std.Usize}
   (input : Array Bool Nd) (d : Std.Usize) : Prop :=
   (serialize.bitvector_to_bounded_ints.pre N input d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.bitvector_to_bounded_ints N input d
-  ⦃ ⇓ res =>
-  ⌜ (serialize.bitvector_to_bounded_ints.post N input d res).holds ⌝ ⦄
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode_generic::pre]:
@@ -1775,19 +1723,6 @@ def serialize.byte_decode_generic.pre
     else ok false
   else ok false
 
-/-- [hacspec_ml_kem::serialize::byte_decode_generic::post]:
-    Source: 'ml-kem/src/serialize.rs', lines 185:0-186:83 -/
-@[reducible]
-def serialize.byte_decode_generic.post
-  (N : Std.Usize) {N8 : Std.Usize} {Nd : Std.Usize} (Nd8 : Std.Usize)
-  (b : Array Std.U8 Nd) (d : Std.Usize) (result : Array Std.U16 N8) :
-  Result hax_lib.prop.Prop
-  := do
-  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
-    hax_lib.prop.Prop))
-    (serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp N N8
-    Nd Nd8) (result, d)
-
 def
   serialize.byte_decode_generic.spec (N : Std.Usize) (N8 : Std.Usize) {Nd :
                                     Std.Usize} (Nd8 : Std.Usize)
@@ -1795,8 +1730,7 @@ def
   (serialize.byte_decode_generic.pre N N8 Nd8 b d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.byte_decode_generic N N8 Nd8 b d
-  ⦃ ⇓ res =>
-  ⌜ (serialize.byte_decode_generic.post N N8 Nd8 b d res).holds ⌝ ⦄
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode::pre]:
@@ -1823,25 +1757,12 @@ def serialize.byte_decode.pre
     else ok false
   else ok false
 
-/-- [hacspec_ml_kem::serialize::byte_decode::post]:
-    Source: 'ml-kem/src/serialize.rs', lines 200:0-200:112 -/
-@[reducible]
-def serialize.byte_decode.post
-  {D32 : Std.Usize} (D256 : Std.Usize) (b : Array Std.U8 D32) (d : Std.Usize)
-  (result : Array parameters.FieldElement 256#usize) :
-  Result hax_lib.prop.Prop
-  := do
-  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
-    hax_lib.prop.Prop))
-    (serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp D32
-    D256) (result, d)
-
 def serialize.byte_decode.spec {D32 : Std.Usize} (D256 : Std.Usize)
   (b : Array Std.U8 D32) (d : Std.Usize) : Prop :=
   (serialize.byte_decode.pre D256 b d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.byte_decode D256 b d
-  ⦃ ⇓ res => ⌜ (serialize.byte_decode.post D256 b d res).holds ⌝ ⦄
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into::pre]:

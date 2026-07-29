@@ -30,11 +30,6 @@ structure parameters.FieldElement where
 def compress.compress.closure :=
   Array parameters.FieldElement 256#usize × Std.Usize
 
-/-- [hacspec_ml_kem::compress::_#1::requires::closure]
-    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
-def compress.__1.requires.closure :=
-  Array parameters.FieldElement 256#usize × Std.Usize
-
 /-- [hacspec_ml_kem::compress::decompress::closure]
     Source: 'ml-kem/src/compress.rs', lines 27:12-27:68 -/
 def compress.decompress.closure :=
@@ -248,21 +243,5 @@ def polynomial.add_error_reduce.closure :=
 def polynomial.add_standard_error_reduce.closure :=
   Array parameters.FieldElement 256#usize × Array parameters.FieldElement
   256#usize
-
-/-- [hacspec_ml_kem::serialize::_#5::ensures::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
-def serialize.__5.ensures.closure (N : Std.Usize) (Nd : Std.Usize) :=
-  Array Std.U16 N × Std.Usize
-
-/-- [hacspec_ml_kem::serialize::_#7::ensures::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 186:20-186:80 -/
-def serialize.__7.ensures.closure (N : Std.Usize) (N8 : Std.Usize) (Nd :
-  Std.Usize) (Nd8 : Std.Usize) :=
-  Array Std.U16 N8 × Std.Usize
-
-/-- [hacspec_ml_kem::serialize::_#9::ensures::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 200:44-200:109 -/
-def serialize.__9.ensures.closure (D32 : Std.Usize) (D256 : Std.Usize) :=
-  Array parameters.FieldElement 256#usize × Std.Usize
 
 end hacspec_ml_kem
