@@ -329,7 +329,7 @@ let compress_castsi256_lemma (vc: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256)
         Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec128_as_i16x8_lemma (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 vc) 16 k;
         Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma vc 16 k;
         assert (k / 16 == i); assert (k % 16 == nthv);
-        assert (Libcrux_intrinsics.Avx2.mm256_castsi256_si128 vc k == vc k)
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_castsi256_si128 vc k
       in Classical.forall_intro auxb;
       Rust_primitives.Integers.lemma_int_t_eq_via_bits a b
     in Classical.forall_intro aux
@@ -361,7 +361,7 @@ let compress_extracti128_lemma (vc: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec25
         Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma vc 16 k';
         assert (k / 16 == i); assert (k % 16 == nthv);
         assert (k' / 16 == i + 8); assert (k' % 16 == nthv);
-        assert (Libcrux_intrinsics.Avx2.mm256_extracti128_si256 (mk_i32 1) vc k == vc (k + 128))
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_extracti128_si256_1 vc k
       in Classical.forall_intro auxb;
       Rust_primitives.Integers.lemma_int_t_eq_via_bits a b
     in Classical.forall_intro aux

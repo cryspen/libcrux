@@ -151,10 +151,14 @@ let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0
           [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))]
   = admit ()
 
+(* NB: NO SMTPat.  `mm256_setzero_si256 ()` is a fully GROUND core-models
+   `t_BitVec` term, so an SMTPat on `vec256_as_i16x16 (mm256_setzero_si256 ())`
+   is a variable-free trigger → Z3 emits "pattern does not contain any variable",
+   which corrupts F*'s output parse into an Error 276 (whereas under pcm the
+   `bit_vec` result carried a variable).  Consumers call this explicitly. *)
 [@@ "trusted: validated-axiom: i16x16 view of mm256_setzero_si256 (core-models differential-tested)"]
 let lemma_mm256_setzero_si256 (u: Prims.unit)
-  : Lemma (vec256_as_i16x16 (mm256_setzero_si256 ()) == Seq.create 16 (mk_i16 0))
-          [SMTPat (vec256_as_i16x16 (mm256_setzero_si256 ()))] = admit ()
+  : Lemma (vec256_as_i16x16 (mm256_setzero_si256 ()) == Seq.create 16 (mk_i16 0)) = admit ()
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_srai_epi16 (core-models differential-tested)"]
 let lemma_mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
@@ -373,6 +377,54 @@ let lemma_mm_mulhi_epi16 (lhs rhs: t_Vec128)
 let lemma_mm_set1_epi16 (constant: i16)
   : Lemma (vec128_as_i16x8 (mm_set1_epi16 constant) == Spec.Utils.create (sz 8) constant)
           [SMTPat (vec128_as_i16x8 (mm_set1_epi16 constant))] = admit ()
+
+(* ── Bit-function view of a core-models t_BitVec ──────────────────────────────
+   core-models `t_BitVec N` is structurally a bit-array (a `t_FunArray` of
+   `t_Bit`).  `bv_bit` is its DEFINITIONAL view as a pcm-style bit function
+   (`nat -> bit`): it reads bit `i` through the `t_Index` instance and maps
+   `t_Bit` to `{0,1}`.  This is a DEFINITION, NOT a trusted axiom — it replaces
+   the pcm `bit_vec` FUNCTION application (`v (idx)`) that the deferred bridges
+   below used, phrasing them over the real core-models struct instead.  The
+   migrated Serialize/Compress/Sampling bit proofs apply the vector via `bv_bit`
+   in place of the pcm direct application. *)
+let bv_bit (#n: u64) (bv: Libcrux_core_models.Abstractions.Bitvec.t_BitVec n)
+           (i: nat{i < v n}) : Rust_primitives.Integers.bit =
+  match bv.[ mk_u64 i ] <: Libcrux_core_models.Abstractions.Bit.t_Bit with
+  | Libcrux_core_models.Abstractions.Bit.Bit_One  -> 1
+  | Libcrux_core_models.Abstractions.Bit.Bit_Zero -> 0
+
+(* Cast / extract preserve the underlying bits — PROVEN from the transparent
+   core-models ops (`e_mm256_castsi256_si128 v = from_fn (fun i -> v.[i])`,
+   `e_mm256_extracti128_si256 1 v = from_fn (fun i -> v.[i + 128])`).  NOT
+   trusted axioms; they discharge the `cast vc k == vc k` step that pcm's
+   Compress/Ntt bit proofs relied on. *)
+let lemma_bv_bit_castsi256_si128 (vc: t_Vec256) (k: nat{k < 128})
+  : Lemma (bv_bit (mm256_castsi256_si128 vc) k == bv_bit vc k)
+  = reveal_opaque (`%mm256_castsi256_si128) mm256_castsi256_si128
+
+let lemma_bv_bit_extracti128_si256_1 (vc: t_Vec256) (k: nat{k < 128})
+  : Lemma (bv_bit (mm256_extracti128_si256 (mk_i32 1) vc) k == bv_bit vc (k + 128))
+  = reveal_opaque (`%mm256_extracti128_si256) mm256_extracti128_si256
+
+(* ── Bit-level lane-view bridges (over core-models `t_BitVec`) ─────────────────
+   The i16x16 / i16x8 lane view's `d`-bit-per-element serialization at bit `i`
+   equals raw bit `(i/d)*16 + i%d` of the underlying vector.  Trusted axioms
+   (verbatim the pcm `Avx2_extract.fsti` facts, RHS re-phrased over the real
+   `t_BitVec` via `bv_bit`); validated by the core-models differential tests.
+   admit-NEUTRAL: pcm carried these as abstract `val`s. *)
+[@@ "trusted: validated-axiom: i16x16 lane-view d-bit serialization equals raw t_BitVec bits (core-models differential-tested)"]
+let bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+      (vec: t_Vec256) (d: nat{d > 0 /\ d <= 16}) (i: nat{i < 16 * d})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array (vec256_as_i16x16 vec) d i
+             == bv_bit vec ((i / d) * 16 + i % d))
+  = admit ()
+
+[@@ "trusted: validated-axiom: i16x8 lane-view d-bit serialization equals raw t_BitVec bits (core-models differential-tested)"]
+let bit_vec_of_int_t_array_vec128_as_i16x8_lemma
+      (vec: t_Vec128) (d: nat{d > 0 /\ d <= 16}) (i: nat{i < 8 * d})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array (vec128_as_i16x8 vec) d i
+             == bv_bit vec ((i / d) * 16 + i % d))
+  = admit ()
 
 (* ============================================================================
    DEFERRED — bit-level bridges + byte store/load, authored per-module when

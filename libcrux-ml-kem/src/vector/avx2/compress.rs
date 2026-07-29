@@ -394,6 +394,7 @@ pub fn decompress_1(a: Vec256) -> Vec256 {
 
     proof!(
         r#"
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_setzero_si256 ();
         assert(Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 $z == Seq.create 16 (mk_i16 0));
         assert(forall i. Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 $z) i == mk_i16 0);
         assert(forall i. let x = Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 $a) i in 
