@@ -114,10 +114,12 @@ use hpke_rs_crypto::HpkeTestRng;
 #[cfg(not(feature = "hpke-test-prng"))]
 use hpke_rs_crypto::TryRng;
 use hpke_rs_crypto::{
-    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
+    types::{
+        AeadAlgorithm, KdfAlgorithm, KemAlgorithm, SingleStageKdfAlgorithm, TwoStageKdfAlgorithm,
+    },
     HpkeCrypto,
 };
-use prelude::kdf::{labeled_expand, labeled_extract};
+use prelude::kdf::{labeled_derive, labeled_expand, labeled_extract, length_prefixed};
 
 /// Re-export of the HPKE types from the [`hpke_rs_crypto`] crate.
 pub use hpke_rs_crypto::types as hpke_types;
@@ -407,11 +409,25 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     ///  return LabeledExpand(self.exporter_secret, "sec", exporter_context, L)
     ///```
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Result<Vec<u8>, HpkeError> {
+        const LABEL: &str = "sec";
+
+        if let Ok(kdf) = SingleStageKdfAlgorithm::try_from(self.hpke.kdf_id) {
+            return labeled_derive::<Crypto>(
+                kdf,
+                &self.hpke.ciphersuite(),
+                &self.exporter_secret,
+                LABEL,
+                exporter_context,
+                length,
+            )
+            .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)));
+        }
+
         labeled_expand::<Crypto>(
-            self.hpke.kdf_id,
+            self.hpke.two_stage_kdf()?,
             &self.exporter_secret,
             &self.hpke.ciphersuite(),
-            "sec",
+            LABEL,
             exporter_context,
             length,
         )
@@ -741,16 +757,23 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         ])
     }
 
+    /// The two-stage KDF for this ciphersuite, or an error if it is single-stage.
+    #[inline]
+    fn two_stage_kdf(&self) -> Result<TwoStageKdfAlgorithm, HpkeError> {
+        TwoStageKdfAlgorithm::try_from(self.kdf_id)
+            .map_err(|_| HpkeError::CryptoError("Unsupported KDF".to_string()))
+    }
+
     #[inline]
     fn key_schedule_context(
         &self,
+        kdf: TwoStageKdfAlgorithm,
         info: &[u8],
         psk_id: &[u8],
         suite_id: &[u8],
     ) -> Result<Vec<u8>, HpkeError> {
-        let psk_id_hash =
-            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id)?;
-        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info)?;
+        let psk_id_hash = labeled_extract::<Crypto>(kdf, &[0], suite_id, "psk_id_hash", psk_id)?;
+        let info_hash = labeled_extract::<Crypto>(kdf, &[0], suite_id, "info_hash", info)?;
         Ok(util::concat(&[
             &[self.mode as u8],
             &psk_id_hash,
@@ -769,13 +792,55 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     ) -> Result<Context<Crypto>, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.ciphersuite();
-        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id)?;
-        let secret =
-            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk)
-                .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
+
+        // Single-stage (SHAKE) KDFs use a different key-schedule shape: a single
+        // `LabeledDerive` producing key ‖ base_nonce ‖ exporter_secret, with the
+        // PSK/info length-prefixed. See draft-ietf-hpke-pq.
+        if let Ok(kdf) = SingleStageKdfAlgorithm::try_from(self.kdf_id) {
+            let nk = Crypto::aead_key_length(self.aead_id);
+            let nn = Crypto::aead_nonce_length(self.aead_id);
+            let nh = Crypto::kdf_digest_length(self.kdf_id);
+
+            // Every value below is emitted with a 2-byte length prefix; reject
+            // anything that would not fit rather than silently truncating it.
+            for field in [psk, shared_secret, psk_id, info] {
+                if field.len() > u16::MAX as usize {
+                    return Err(HpkeError::InvalidInput);
+                }
+            }
+
+            let secrets = util::concat(&[&length_prefixed(psk), &length_prefixed(shared_secret)]);
+            let context = util::concat(&[
+                &[self.mode as u8],
+                &length_prefixed(psk_id),
+                &length_prefixed(info),
+            ]);
+            let secret = labeled_derive::<Crypto>(
+                kdf,
+                &suite_id,
+                &secrets,
+                "secret",
+                &context,
+                nk + nn + nh,
+            )
+            .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
+
+            return Ok(Context {
+                key: secret[..nk].to_vec(),
+                nonce: secret[nk..nk + nn].to_vec(),
+                exporter_secret: secret[nk + nn..].to_vec(),
+                sequence_number: 0,
+                hpke: self.clone(),
+            });
+        }
+
+        let kdf = self.two_stage_kdf()?;
+        let key_schedule_context = self.key_schedule_context(kdf, info, psk_id, &suite_id)?;
+        let secret = labeled_extract::<Crypto>(kdf, shared_secret, &suite_id, "secret", psk)
+            .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
 
         let key = labeled_expand::<Crypto>(
-            self.kdf_id,
+            kdf,
             &secret,
             &suite_id,
             "key",
@@ -784,7 +849,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         )
         .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
         let base_nonce = labeled_expand::<Crypto>(
-            self.kdf_id,
+            kdf,
             &secret,
             &suite_id,
             "base_nonce",
@@ -793,7 +858,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         )
         .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
         let exporter_secret = labeled_expand::<Crypto>(
-            self.kdf_id,
+            kdf,
             &secret,
             &suite_id,
             "exp",

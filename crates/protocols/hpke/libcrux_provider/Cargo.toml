@@ -15,6 +15,7 @@ libcrux-ecdh.workspace = true
 libcrux-hkdf.workspace = true
 libcrux-kem.workspace = true
 libcrux-aead.workspace = true
+libcrux-sha3.workspace = true
 libcrux-traits.workspace = true
 # RustCrypto curves not available in libcrux
 # TODO: These should be replaced with libcrux implementations as soon as they
@@ -36,10 +37,23 @@ zeroize = "1.8.2"
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 
+# `--all-features` does not build: `draft-connolly-cfrg-hpke-mlkem` and
+# `draft-ietf-hpke-pq` are mutually exclusive. Pin a working set for docs.rs.
+[package.metadata.docs.rs]
+no-default-features = true
+features = ["std", "draft-ietf-hpke-pq"]
+
 [features]
 deterministic-prng = [] # ⚠️ FOR TESTING ONLY.
 rustcrypto-p-curves = ["dep:p384", "dep:p521"]
+# DEPRECATED: superseded by `draft-ietf-hpke-pq`. Cannot be enabled together
+# with it. Emits a build warning when used.
 draft-connolly-cfrg-hpke-mlkem = []
+# Post-quantum HPKE ciphersuites (SHAKE256 KDF, pure ML-KEM and the
+# ML-KEM/ECDH hybrid KEMs) as used by the MLS PQ ciphersuites.
+# For MLKEM1024-P384, "rustcrypto-p-curves" must be enabled as well for now.
+# <https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq>
+draft-ietf-hpke-pq = []
 std = [
     "rand/std",
     "rand_chacha/std",
