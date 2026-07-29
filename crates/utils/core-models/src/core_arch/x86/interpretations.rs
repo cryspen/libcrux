@@ -9,6 +9,61 @@ pub mod int_vec {
     #[allow(unused)]
     use crate::core_arch::x86;
 
+    // ── movemask models as Z3-friendly base-2 folds (Option B, Phase 1, Task B) ──
+    // The extracted movemask models (`_mm{,256}_movemask_ps/epi8`) were a flat
+    // 16-/8-way `+` spine that Z3 cannot reason about (the value-vs-bit
+    // characterization saturates: proving `bit i == sign of lane i` by unfolding
+    // times out both at low and high ifuel).  We `#[exclude]` those bodies and
+    // define the models here as a base-2 (LSB-first) accumulation of the per-lane
+    // sign bits — the SAME numeric value (differentially tested), but a `Tot nat`
+    // recursion over which the `movemask_bit` companion is a trivial digit
+    // extraction.  Self-contained (no `int_vec_interp` dependency, avoiding a
+    // circular import).  Grandfathered-OK primitive-model shaping.
+    #[hax_lib::fstar::replace(
+        r#"
+let rec e_movemask_bit_sum_i8
+    (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i8)
+    (off: nat) (n: nat{off + n <= 16}) : Tot nat (decreases n) =
+  if n = 0 then 0
+  else (if (a.[ mk_u64 off ] <: i8) <. mk_i8 0 then 1 else 0)
+       + 2 * e_movemask_bit_sum_i8 a (off + 1) (n - 1)
+
+let rec e_movemask_bit_sum_i32
+    (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32)
+    (off: nat) (n: nat{off + n <= 8}) : Tot nat (decreases n) =
+  if n = 0 then 0
+  else (if (a.[ mk_u64 off ] <: i32) <. mk_i32 0 then 1 else 0)
+       + 2 * e_movemask_bit_sum_i32 a (off + 1) (n - 1)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 60"
+let rec e_movemask_bit_sum_i8_bound
+    (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i8)
+    (off: nat) (n: nat{off + n <= 16})
+    : Lemma (ensures e_movemask_bit_sum_i8 a off n < pow2 n) (decreases n) =
+  if n = 0 then assert_norm (pow2 0 == 1)
+  else (e_movemask_bit_sum_i8_bound a (off + 1) (n - 1); FStar.Math.Lemmas.pow2_plus 1 (n - 1))
+
+let rec e_movemask_bit_sum_i32_bound
+    (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32)
+    (off: nat) (n: nat{off + n <= 8})
+    : Lemma (ensures e_movemask_bit_sum_i32 a off n < pow2 n) (decreases n) =
+  if n = 0 then assert_norm (pow2 0 == 1)
+  else (e_movemask_bit_sum_i32_bound a (off + 1) (n - 1); FStar.Math.Lemmas.pow2_plus 1 (n - 1))
+#pop-options
+
+let e_mm_movemask_epi8 (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 16) i8) : i32 =
+  e_movemask_bit_sum_i8_bound a 0 16;
+  assert_norm (pow2 16 == 65536);
+  mk_i32 (e_movemask_bit_sum_i8 a 0 16)
+
+let e_mm256_movemask_ps (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (mk_u64 8) i32) : i32 =
+  e_movemask_bit_sum_i32_bound a 0 8;
+  assert_norm (pow2 8 == 256);
+  mk_i32 (e_movemask_bit_sum_i32 a 0 8)
+"#
+    )]
+    const _: () = {};
+
     pub fn _mm256_set1_epi32(x: i32) -> i32x8 {
         i32x8::from_fn(|_| x)
     }
@@ -138,6 +193,10 @@ pub mod int_vec {
         a
     }
 
+    // Model body replaced by a base-2 fold in the `fstar::replace` block above
+    // (Z3-friendly `e_movemask_bit_sum_*`); the flat `+` spine here is kept for
+    // cargo/differential-testing only.  See that block for the F* definition.
+    #[hax_lib::exclude]
     pub fn _mm256_movemask_ps(a: i32x8) -> i32 {
         let a0: i32 = if a[0] < 0 { 1 } else { 0 };
         let a1 = if a[1] < 0 { 2 } else { 0 };
@@ -433,7 +492,10 @@ pub mod int_vec {
         i32x8::from_fn(|i| if mask[i] < 0 { b[i] } else { a[i] })
     }
 
-    #[hax_lib::fstar::verification_status(lax)]
+    // Model body replaced by a base-2 fold in the `fstar::replace` block above
+    // (Z3-friendly `e_movemask_bit_sum_*`); the flat `+` spine here is kept for
+    // cargo/differential-testing only.  See that block for the F* definition.
+    #[hax_lib::exclude]
     pub fn _mm_movemask_epi8(a: i8x16) -> i32 {
         let a0 = if a[0] < 0 { 1 } else { 0 };
         let a1 = if a[1] < 0 { 2 } else { 0 };
