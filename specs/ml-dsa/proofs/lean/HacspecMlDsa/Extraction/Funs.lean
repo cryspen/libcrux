@@ -1813,14 +1813,14 @@ def encoding.coeff_from_half_byte
     else ok core.option.Option.None
 
 /-- Trait implementation: [hacspec_ml_dsa::error::{impl core::marker::StructuralPartialEq for hacspec_ml_dsa::error::MlDsaError}]
-    Source: 'ml-dsa/src/error.rs', lines 4:9-4:18 -/
+    Source: 'ml-dsa/src/error.rs', lines 6:36-6:45 -/
 @[reducible]
 def error.MlDsaError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq error.MlDsaError := {
 }
 
 /-- [hacspec_ml_dsa::error::{impl core::cmp::PartialEq<hacspec_ml_dsa::error::MlDsaError> for hacspec_ml_dsa::error::MlDsaError}::eq]:
-    Source: 'ml-dsa/src/error.rs', lines 4:9-4:18
+    Source: 'ml-dsa/src/error.rs', lines 6:36-6:45
     Visibility: public -/
 def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
   (self : error.MlDsaError) (other : error.MlDsaError) : Result Bool := do
@@ -1829,7 +1829,7 @@ def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [hacspec_ml_dsa::error::{impl core::cmp::PartialEq<hacspec_ml_dsa::error::MlDsaError> for hacspec_ml_dsa::error::MlDsaError}]
-    Source: 'ml-dsa/src/error.rs', lines 4:9-4:18 -/
+    Source: 'ml-dsa/src/error.rs', lines 6:36-6:45 -/
 @[reducible]
 impl_def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError : core.cmp.PartialEq
   error.MlDsaError error.MlDsaError := {
@@ -1839,7 +1839,7 @@ impl_def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError : core.cmp.PartialEq
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::error::{impl core::cmp::Eq for hacspec_ml_dsa::error::MlDsaError}]
-    Source: 'ml-dsa/src/error.rs', lines 4:20-4:22 -/
+    Source: 'ml-dsa/src/error.rs', lines 6:47-6:49 -/
 @[reducible]
 def error.MlDsaError.Insts.CoreCmpEq : core.cmp.Eq error.MlDsaError := {
   PartialEqInst := error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError

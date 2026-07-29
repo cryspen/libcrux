@@ -24,7 +24,7 @@ noncomputable section
 namespace hacspec_ml_kem
 
 /-- [hacspec_ml_kem::parameters::createi]:
-    Source: 'ml-kem/src/parameters.rs', lines 397:0-399:1
+    Source: 'ml-kem/src/parameters.rs', lines 398:0-400:1
     Visibility: public -/
 def parameters.createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
@@ -34,7 +34,7 @@ def parameters.createi
   core.array.from_fn N coreopsfunctionFnMutFTupleUsizeTInst f
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::new]:
-    Source: 'ml-kem/src/parameters.rs', lines 321:4-323:5
+    Source: 'ml-kem/src/parameters.rs', lines 322:4-324:5
     Visibility: public -/
 def parameters.FieldElement.new
   (val : Std.U16) : Result parameters.FieldElement := do
@@ -624,7 +624,7 @@ def parameters.hash_functions.G
   hacspec_sha3.sha3.sha3_512 input
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::neg]:
-    Source: 'ml-kem/src/parameters.rs', lines 355:4-357:5
+    Source: 'ml-kem/src/parameters.rs', lines 356:4-358:5
     Visibility: public -/
 def parameters.FieldElement.neg
   (self : parameters.FieldElement) : Result parameters.FieldElement := do
@@ -633,7 +633,7 @@ def parameters.FieldElement.neg
   parameters.FieldElement.new i1
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::mul]:
-    Source: 'ml-kem/src/parameters.rs', lines 350:4-352:5
+    Source: 'ml-kem/src/parameters.rs', lines 351:4-353:5
     Visibility: public -/
 def parameters.FieldElement.mul
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -648,7 +648,7 @@ def parameters.FieldElement.mul
   parameters.FieldElement.new i5
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::add]:
-    Source: 'ml-kem/src/parameters.rs', lines 337:4-339:5
+    Source: 'ml-kem/src/parameters.rs', lines 338:4-340:5
     Visibility: public -/
 def parameters.FieldElement.add
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -1556,7 +1556,7 @@ def matrix.sample_matrix_A
     A_as_ntt xof_input1
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::sub]:
-    Source: 'ml-kem/src/parameters.rs', lines 342:4-347:5
+    Source: 'ml-kem/src/parameters.rs', lines 343:4-348:5
     Visibility: public -/
 def parameters.FieldElement.sub
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -4739,14 +4739,14 @@ def parameters.implicit_rejection_hash_input_size
   32#usize + i
 
 /-- [hacspec_ml_kem::parameters::{impl core::clone::Clone for hacspec_ml_kem::parameters::FieldElement}::clone]:
-    Source: 'ml-kem/src/parameters.rs', lines 309:9-309:14
+    Source: 'ml-kem/src/parameters.rs', lines 312:36-312:41
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCloneClone.clone
   (self : parameters.FieldElement) : Result parameters.FieldElement := do
   ok self
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::clone::Clone for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:9-309:14 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:36-312:41 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreCloneClone : core.clone.Clone
   parameters.FieldElement := {
@@ -4754,7 +4754,7 @@ def parameters.FieldElement.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::marker::Copy for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:16-309:20 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:43-312:47 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreMarkerCopy : core.marker.Copy
   parameters.FieldElement := {
@@ -4762,14 +4762,14 @@ def parameters.FieldElement.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::marker::StructuralPartialEq for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:22-309:31 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:49-312:58 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq parameters.FieldElement := {
 }
 
 /-- [hacspec_ml_kem::parameters::{impl core::cmp::PartialEq<hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::parameters::FieldElement}::eq]:
-    Source: 'ml-kem/src/parameters.rs', lines 309:22-309:31
+    Source: 'ml-kem/src/parameters.rs', lines 312:49-312:58
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -4778,7 +4778,7 @@ def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
   ok (self.val = other.val)
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::PartialEq<hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:22-309:31 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:49-312:58 -/
 @[reducible]
 impl_def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement :
   core.cmp.PartialEq parameters.FieldElement parameters.FieldElement := {
@@ -4788,7 +4788,7 @@ impl_def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement :
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::Eq for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:33-309:35 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:60-312:62 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreCmpEq : core.cmp.Eq
   parameters.FieldElement := {
@@ -4796,7 +4796,7 @@ def parameters.FieldElement.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [hacspec_ml_kem::parameters::{impl core::cmp::Ord for hacspec_ml_kem::parameters::FieldElement}::cmp]:
-    Source: 'ml-kem/src/parameters.rs', lines 309:49-309:52
+    Source: 'ml-kem/src/parameters.rs', lines 312:76-312:79
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpOrd.cmp
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -4805,7 +4805,7 @@ def parameters.FieldElement.Insts.CoreCmpOrd.cmp
   core.U16.Insts.CoreCmpOrd.cmp self.val other.val
 
 /-- [hacspec_ml_kem::parameters::{impl core::cmp::PartialOrd<hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::parameters::FieldElement}::partial_cmp]:
-    Source: 'ml-kem/src/parameters.rs', lines 309:37-309:47
+    Source: 'ml-kem/src/parameters.rs', lines 312:64-312:74
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement.partial_cmp
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
@@ -4815,7 +4815,7 @@ def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement.partial_cmp
   ok (core.option.Option.Some o)
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::PartialOrd<hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:37-309:47 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:64-312:74 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement :
   core.cmp.PartialOrd parameters.FieldElement parameters.FieldElement := {
@@ -4825,7 +4825,7 @@ def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement :
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::Ord for hacspec_ml_kem::parameters::FieldElement}]
-    Source: 'ml-kem/src/parameters.rs', lines 309:49-309:52 -/
+    Source: 'ml-kem/src/parameters.rs', lines 312:76-312:79 -/
 @[reducible]
 def parameters.FieldElement.Insts.CoreCmpOrd : core.cmp.Ord
   parameters.FieldElement := {
@@ -4835,7 +4835,7 @@ def parameters.FieldElement.Insts.CoreCmpOrd : core.cmp.Ord
 }
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::from_i16]:
-    Source: 'ml-kem/src/parameters.rs', lines 330:4-334:5
+    Source: 'ml-kem/src/parameters.rs', lines 331:4-335:5
     Visibility: public -/
 def parameters.FieldElement.from_i16
   (v : Std.I16) : Result parameters.FieldElement := do

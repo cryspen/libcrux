@@ -20,7 +20,7 @@ set_option maxRecDepth 2048
 namespace hacspec_ml_kem
 
 /-- [hacspec_ml_kem::parameters::FieldElement]
-    Source: 'ml-kem/src/parameters.rs', lines 313:0-316:1
+    Source: 'ml-kem/src/parameters.rs', lines 314:0-317:1
     Visibility: public -/
 structure parameters.FieldElement where
   val : Std.U16

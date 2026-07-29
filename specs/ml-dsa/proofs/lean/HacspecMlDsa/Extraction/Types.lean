@@ -60,7 +60,7 @@ def encoding.sig_decode.closure (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN :
   Std.Usize × Slice Std.U8 × Std.Usize
 
 /-- [hacspec_ml_dsa::error::MlDsaError]
-    Source: 'ml-dsa/src/error.rs', lines 6:0-35:1
+    Source: 'ml-dsa/src/error.rs', lines 7:0-36:1
     Visibility: public -/
 @[discriminant isize]
 inductive error.MlDsaError where
