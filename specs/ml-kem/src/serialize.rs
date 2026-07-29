@@ -168,6 +168,7 @@ pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
             // Using addition instead of bit-OR makes the bound
             // discharge tractable for Z3 (the bits are disjoint by
             // construction, so OR == +).
+            #[cfg(hax)]
             hax_lib::loop_invariant!(|j: usize| coefficient < (1u16 << j));
             if input[i * d + j] {
                 coefficient += 1u16 << j;
@@ -215,6 +216,7 @@ pub fn byte_decode<const D32: usize, const D256: usize>(b: &[u8; D32], d: usize)
 pub fn serialize_secret_key_into<const RANK: usize>(vector: &Vector<RANK>, out: &mut [u8]) {
     hax_lib::debug_assert!(out.len() == RANK * BYTES_PER_RING_ELEMENT);
     for i in 0..RANK {
+        #[cfg(hax)]
         hax_lib::loop_invariant!(|_i: usize| out.len() == RANK * BYTES_PER_RING_ELEMENT);
         let encoded = byte_encode::<{ 32 * 12 }, { 256 * 12 }>(vector[i], 12);
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT].copy_from_slice(&encoded);
@@ -311,6 +313,7 @@ pub fn compress_then_serialize_u_into<const RANK: usize>(
 ) {
     let du_poly_size = (COEFFICIENTS_IN_RING_ELEMENT * du) / 8;
     for i in 0..RANK {
+        #[cfg(hax)]
         hax_lib::loop_invariant!(
             |_i: usize| out.len() == (RANK * COEFFICIENTS_IN_RING_ELEMENT * du) / 8
         );
