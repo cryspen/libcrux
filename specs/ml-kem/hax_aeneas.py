@@ -26,3 +26,33 @@ result = subprocess.run(
     ["cargo", "hax", "into", "lean"],
     env={**os.environ, "RUSTFLAGS": "--cfg hax_backend_lean"}
 )
+if result.returncode != 0:
+    print(f"warning: hax/aeneas exited with code {result.returncode}; "
+          f"continuing with post-processing.", file=sys.stderr)
+
+# Post-process the generated Funs.lean for hax-lean v0.2.0 gaps.
+funs_lean = Path("proofs/lean/HacspecMlKem/Extraction/Funs.lean")
+content = funs_lean.read_text()
+
+# 1. Drop the `core.fmt.{Display,Arguments}` panic-formatting machinery before
+#    each `fail panic` (hax-lean v0.2.0 does not model it). Leaves `fail panic`.
+content = re.sub(
+    r"[ \t]*let a ←\n[ \t]*core\.fmt\.rt\.Argument\.new_display.*?"
+    r"\(Array\.make \d+#usize \[ a[^\]]*\]\)\n",
+    "", content, flags=re.DOTALL)
+
+# 2. `core.cmp.PartialEq` has no `ne` field in hax-lean v0.2.0 (it is a default
+#    method, not a struct field). Drop the generated `ne := …default …` field.
+content = re.sub(
+    r"\n[ \t]*ne := core\.cmp\.PartialEq\.ne\.default\n[ \t]*[^\n]+\n(\s*})",
+    r"\n\1", content)
+
+# 3. Inside `matrix.{multiply_matrix_by_column,transpose}` the `matrix` parameter
+#    shadows the `matrix` sub-namespace, so the closure-instance reference passed
+#    to `createi` fails to resolve. Force top-level resolution with `_root_.`.
+for _fn in ("multiply_matrix_by_column", "transpose"):
+    content = content.replace(
+        f"(matrix.{_fn}.closure",
+        f"(_root_.hacspec_ml_kem.matrix.{_fn}.closure")
+
+funs_lean.write_text(content)

@@ -20,3 +20,82 @@ set_option maxHeartbeats 1000000
 set_option maxRecDepth 2048
 open hacspec_ml_kem
 
+-- Hand-written CoreModels stubs for symbols hax-lean v0.2.0 doesn't define.
+-- Ported from the old aeneas-lean spec Missing.lean (libcrux a4cfb1eb); the
+-- range-index / U16 Ord / Slice PartialEq / Array.as_slice / Formatter.write_str
+-- / ChunksExact.next models from that file are now provided natively by
+-- CoreModels, so only the still-missing ones are kept here.
+
+noncomputable section
+
+namespace CoreModels.core
+
+/-- `TryFrom<&[T]>` for `[T; N]`. -/
+def SharedAArray.Insts.CoreConvertTryFromSharedASliceTryFromSliceError.try_from
+    {T : Type} (N : Aeneas.Std.Usize) (s : Aeneas.Std.Slice T) :
+    Aeneas.Std.Result (result.Result (Aeneas.Std.Array T N) array.TryFromSliceError) :=
+  if h: s.len = N then
+    Aeneas.Std.Result.ok (result.Result.Ok ⟨s.val, by scalar_tac⟩)
+  else
+    Aeneas.Std.Result.ok (result.Result.Err ())
+
+/-- `Try::branch` for `Result<T, E>` (residual = `Result<Infallible, E>`).
+    The `?`-operator desugar — branch is the "is this Ok or Err" split. -/
+def result.Result.Insts.CoreOpsTry_traitTry.branch
+    {T E : Type} (r : result.Result T E) :
+    Aeneas.Std.Result (ops.control_flow.ControlFlow (result.Result convert.Infallible E) T) :=
+  match r with
+  | .Ok x => Aeneas.Std.Result.ok (.Continue x)
+  | .Err e => Aeneas.Std.Result.ok (.Break (.Err e))
+
+/-- `FromResidual::from_residual` for `Result<T, F>` from residual
+    `Result<Infallible, E>` via `F: From<E>`. The other half of the
+    `?`-operator desugar — lifts a Residual back into the carrier
+    monad through the `From` instance. -/
+def result.Result.Insts.CoreOpsTry_traitFromResidualResultInfallibleE.from_residual
+    {E F : Type} (T : Type) (FromInst : convert.From F E)
+    (residual : result.Result convert.Infallible E) :
+    Aeneas.Std.Result (result.Result T F) :=
+  match residual with
+  | .Err e => do
+    let f ← FromInst.«from» e
+    Aeneas.Std.Result.ok (.Err f)
+  | .Ok _ => Aeneas.Std.Result.fail Aeneas.Std.Error.panic  -- Infallible has no inhabitants
+
+/-- `Slice::split_at` — routes to Aeneas's `core.slice.Slice.split_at`. -/
+def slice.Slice.split_at {T : Type} (s : Aeneas.Std.Slice T) (mid : Aeneas.Std.Usize) :
+    Aeneas.Std.Result (Aeneas.Std.Slice T × Aeneas.Std.Slice T) :=
+  Aeneas.Std.core.slice.Slice.split_at s mid
+
+/-- `PartialEq<Bool>` for `Bool`. (`cmp.PartialEq` is not a class in
+    hax-lean v0.2.0, so this is a plain `def`, not an `instance`.) -/
+def Bool.Insts.CoreCmpPartialEqBool : cmp.PartialEq Bool Bool :=
+  { eq := fun x y => Aeneas.Std.Result.ok (x == y) }
+
+/-- `PartialEq` not-equal for `&A` vs `&B`. Forwards to the underlying
+    `PartialEq A B` instance. -/
+def Shared1A.Insts.CoreCmpPartialEqShared0B.ne
+    {A B : Type} (inst : cmp.PartialEq A B) (a : A) (b : B) :
+    Aeneas.Std.Result Bool := do
+  let eq ← inst.eq a b
+  Aeneas.Std.Result.ok (!eq)
+
+/-- `Formatter::debug_struct_field1_finish`. No-op stub returning Ok. -/
+def fmt.Formatter.debug_struct_field1_finish
+    {T : Type} (f : fmt.Formatter)
+    (_name : Aeneas.Std.Slice Aeneas.Std.U8)
+    (_field : Aeneas.Std.Slice Aeneas.Std.U8)
+    (_value : T) :
+    Aeneas.Std.Result ((result.Result Unit fmt.Error) × fmt.Formatter) :=
+  Aeneas.Std.Result.ok (result.Result.Ok (), f)
+
+/-- `slice.Slice.chunks_exact`. Builds the
+    ChunksExact iterator state from a slice and chunk size. -/
+def slice.Slice.chunks_exact {T : Type} (s : Aeneas.Std.Slice T)
+    (chunk_size : Aeneas.Std.Usize) :
+    Aeneas.Std.Result (slice.iter.ChunksExact T) :=
+  Aeneas.Std.Result.ok { cs := chunk_size, elements := s }
+
+end CoreModels.core
+
+end

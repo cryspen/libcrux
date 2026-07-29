@@ -981,7 +981,7 @@ def
   {RANK : Std.Usize} (c : matrix.multiply_matrix_by_column.closure RANK)
   (tupled_args : Std.Usize) :
   Result ((Array parameters.FieldElement 256#usize) ×
-    (matrix.multiply_matrix_by_column.closure RANK))
+    (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK))
   := do
   let (a, a1) := c
   let fe ← parameters.FieldElement.new 0#u16
@@ -1010,7 +1010,7 @@ def
 def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnOnce
-  (matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
+  (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   call_once :=
     matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
@@ -1022,7 +1022,7 @@ def
 def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnMut
-  (matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
+  (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   FnOnceInst :=
     matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -1041,7 +1041,7 @@ def matrix.multiply_matrix_by_column
   Result (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
-    (matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
+    (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
     RANK) (matrix, vector)
 
 /-- [hacspec_ml_kem::matrix::add_vectors::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::matrix::add_vectors::closure<'_0, '_1, RANK>}::call_mut]:
@@ -1856,15 +1856,6 @@ def ind_cpa.sample_secret
     let out ← parameters.hash_functions.PRF 192#usize s
     sampling.sample_poly_cbd 1536#usize 3#usize out
   | _ =>
-    let a ←
-      core.fmt.rt.Argument.new_display core.Usize.Insts.CoreFmtDisplay eta
-    let _ ←
-      core.fmt.Arguments.new
-        (Array.make 19#usize [
-          16#u8, 117#u8, 110#u8, 115#u8, 117#u8, 112#u8, 112#u8, 111#u8,
-          114#u8, 116#u8, 101#u8, 100#u8, 32#u8, 101#u8, 116#u8, 97#u8, 61#u8,
-          192#u8, 0#u8
-          ]) (Array.make 1#usize [ a ])
     fail panic
 
 /-- [hacspec_ml_kem::ind_cpa::sample_vector_cbd::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::ind_cpa::sample_vector_cbd::closure<'_0, '_1, '_2, RANK>}::call_mut]:
@@ -2338,14 +2329,6 @@ def serialize.byte_encode_into
     let s ← lift (Array.to_slice a)
     core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy out s
   | _ =>
-    let a ←
-      core.fmt.rt.Argument.new_display core.Usize.Insts.CoreFmtDisplay d
-    let _ ←
-      core.fmt.Arguments.new
-        (Array.make 17#usize [
-          14#u8, 117#u8, 110#u8, 115#u8, 117#u8, 112#u8, 112#u8, 111#u8,
-          114#u8, 116#u8, 101#u8, 100#u8, 32#u8, 100#u8, 61#u8, 192#u8, 0#u8
-          ]) (Array.make 1#usize [ a ])
     fail panic
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_v]:
@@ -2759,7 +2742,7 @@ def
   {RANK : Std.Usize} (c : matrix.transpose.closure.closure RANK)
   (tupled_args : Std.Usize) :
   Result ((Array parameters.FieldElement 256#usize) ×
-    (matrix.transpose.closure.closure RANK))
+    (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK))
   := do
   let (a, i) := c
   let a1 ← Array.index_usize a tupled_args
@@ -2785,7 +2768,7 @@ def
 def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnOnce
-  (matrix.transpose.closure.closure RANK) Std.Usize (Array
+  (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   call_once :=
     matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
@@ -2797,7 +2780,7 @@ def
 def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnMut
-  (matrix.transpose.closure.closure RANK) Std.Usize (Array
+  (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   FnOnceInst :=
     matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -2813,11 +2796,11 @@ def
   {RANK : Std.Usize} (c : matrix.transpose.closure RANK)
   (tupled_args : Std.Usize) :
   Result ((Array (Array parameters.FieldElement 256#usize) RANK) ×
-    (matrix.transpose.closure RANK))
+    (_root_.hacspec_ml_kem.matrix.transpose.closure RANK))
   := do
   let a ←
     parameters.createi RANK
-      (matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
+      (_root_.hacspec_ml_kem.matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
       RANK) (c, tupled_args)
   ok (a, c)
 
@@ -2838,7 +2821,7 @@ def
 @[reducible]
 def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK
-  (RANK : Std.Usize) : core.ops.function.FnOnce (matrix.transpose.closure RANK)
+  (RANK : Std.Usize) : core.ops.function.FnOnce (_root_.hacspec_ml_kem.matrix.transpose.closure RANK)
   Std.Usize (Array (Array parameters.FieldElement 256#usize) RANK) := {
   call_once :=
     matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK.call_once
@@ -2849,7 +2832,7 @@ def
 @[reducible]
 def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
-  (RANK : Std.Usize) : core.ops.function.FnMut (matrix.transpose.closure RANK)
+  (RANK : Std.Usize) : core.ops.function.FnMut (_root_.hacspec_ml_kem.matrix.transpose.closure RANK)
   Std.Usize (Array (Array parameters.FieldElement 256#usize) RANK) := {
   FnOnceInst :=
     matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK
@@ -2868,7 +2851,7 @@ def matrix.transpose
   Result (Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   := do
   parameters.createi RANK
-    (matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
+    (_root_.hacspec_ml_kem.matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
     RANK) matrix
 
 /-- [hacspec_ml_kem::matrix::compute_vector_u]:
@@ -3219,14 +3202,6 @@ def serialize.byte_decode_dyn
         r
     serialize.byte_decode 3072#usize a 12#usize
   | _ =>
-    let a ←
-      core.fmt.rt.Argument.new_display core.Usize.Insts.CoreFmtDisplay d
-    let _ ←
-      core.fmt.Arguments.new
-        (Array.make 17#usize [
-          14#u8, 117#u8, 110#u8, 115#u8, 117#u8, 112#u8, 112#u8, 111#u8,
-          114#u8, 116#u8, 101#u8, 100#u8, 32#u8, 100#u8, 61#u8, 192#u8, 0#u8
-          ]) (Array.make 1#usize [ a ])
     fail panic
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_v]:
@@ -4711,8 +4686,6 @@ def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
 impl_def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement :
   core.cmp.PartialEq parameters.FieldElement parameters.FieldElement := {
   eq := parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
-  ne := core.cmp.PartialEq.ne.default
-    parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::Eq for hacspec_ml_kem::parameters::FieldElement}]
