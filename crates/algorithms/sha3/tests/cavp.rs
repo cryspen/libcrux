@@ -137,6 +137,7 @@ shake_vo_test!(
     shake256_ema
 );
 
+#[cfg(feature = "incremental")]
 macro_rules! shake_vo_test_incremental {
     ($name:ident, $kats_fn:path, $shake:ty) => {
         #[test]
@@ -159,11 +160,13 @@ macro_rules! shake_vo_test_incremental {
     };
 }
 
+#[cfg(feature = "incremental")]
 shake_vo_test_incremental!(
     SHAKE128VariableOut_incremental,
     libcrux_kats::sha3::shake128_variable_out,
     libcrux_sha3::portable::incremental::Shake128Xof
 );
+#[cfg(feature = "incremental")]
 shake_vo_test_incremental!(
     SHAKE256VariableOut_incremental,
     libcrux_kats::sha3::shake256_variable_out,
@@ -241,7 +244,7 @@ sha3_neon_test!(
 macro_rules! shake128_neon_test {
     ($test_name:ident, $kats_fn:path) => {
         #[test]
-        #[cfg(feature = "simd128")]
+        #[cfg(all(feature = "simd128", feature = "incremental"))]
         #[allow(non_snake_case)]
         fn $test_name() {
             let _ = pretty_env_logger::try_init();
@@ -270,7 +273,7 @@ shake128_neon_test!(neon_SHAKE128LongMsg, libcrux_kats::sha3::shake128_long);
 macro_rules! shake256_neon_test {
     ($test_name:ident, $kats_fn:path) => {
         #[test]
-        #[cfg(feature = "simd128")]
+        #[cfg(all(feature = "simd128", feature = "incremental"))]
         #[allow(non_snake_case)]
         fn $test_name() {
             let _ = pretty_env_logger::try_init();
@@ -297,7 +300,7 @@ shake256_neon_test!(neon_SHAKE256LongMsg, libcrux_kats::sha3::shake256_long);
 macro_rules! shake256_vo_neon_test {
     ($test_name:ident, $kats_fn:path) => {
         #[test]
-        #[cfg(feature = "simd128")]
+        #[cfg(all(feature = "simd128", feature = "incremental"))]
         #[allow(non_snake_case)]
         fn $test_name() {
             let _ = pretty_env_logger::try_init();
@@ -326,7 +329,7 @@ shake256_vo_neon_test!(
 macro_rules! shake256_avx2_test {
     ($test_name:ident, $kats_fn:path) => {
         #[test]
-        #[cfg(feature = "simd256")]
+        #[cfg(all(feature = "simd256", feature = "incremental"))]
         #[allow(non_snake_case)]
         fn $test_name() {
             let _ = pretty_env_logger::try_init();
@@ -359,7 +362,7 @@ shake256_avx2_test!(avx2_SHAKE256LongMsg, libcrux_kats::sha3::shake256_long);
 macro_rules! shake256_vo_avx2_test {
     ($test_name:ident, $kats_fn:path) => {
         #[test]
-        #[cfg(feature = "simd256")]
+        #[cfg(all(feature = "simd256", feature = "incremental"))]
         #[allow(non_snake_case)]
         fn $test_name() {
             let _ = pretty_env_logger::try_init();

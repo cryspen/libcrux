@@ -104,25 +104,25 @@ jobs:
         working-directory: crates/algorithms/sha3
         run: |
           cargo clean
-          cargo test --verbose $RUST_TARGET_FLAG
+          cargo test --features incremental --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Release
         working-directory: crates/algorithms/sha3
         run: |
           cargo clean
-          cargo test --release --verbose $RUST_TARGET_FLAG
+          cargo test --features incremental --release --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable
         working-directory: crates/algorithms/sha3
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --features incremental --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ SHA3 Test Portable Release
         working-directory: crates/algorithms/sha3
         run: |
           cargo clean
-          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --features incremental --verbose --release $RUST_TARGET_FLAG
 
       # Test ...
 

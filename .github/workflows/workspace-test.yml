@@ -33,6 +33,9 @@ jobs:
       - name: Run workspace tests
         run: cargo nextest run --workspace --no-fail-fast -- --skip _mm256_bsrli_epi128
         
+      - name: Run libcrux-sha3 incremental tests
+        run: cargo nextest run -p libcrux-sha3 --features incremental --no-fail-fast
+        
       - name: Run workspace doctests
         run: cargo test --doc --workspace --no-fail-fast
         

@@ -23,6 +23,7 @@ function extract_all() {
     # result is a fixed-length `t_Array u8 v_LEN`. An interface would erase that to
     # `t_Slice u8` with a trivial postcondition and the subtyping check fails.
     extract crates/algorithms/sha3 \
+        --features incremental \
         into -i "+**" \
         -i "-**::avx2::**" \
         -i "-**::arm64::**" \

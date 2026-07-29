@@ -368,7 +368,7 @@ mod neon_cross_spec {
 // AVX2 (simd256) — cross-spec via x4 incremental API
 // =========================================================================
 
-#[cfg(feature = "simd256")]
+#[cfg(all(feature = "simd256", feature = "incremental"))]
 mod avx2_cross_spec {
     #[test]
     fn avx2_x4_shake256_matches_spec() {

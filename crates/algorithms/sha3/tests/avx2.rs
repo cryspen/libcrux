@@ -1,4 +1,4 @@
-#![cfg(feature = "simd256")]
+#![cfg(all(feature = "simd256", feature = "incremental"))]
 
 mod test_vectors;
 

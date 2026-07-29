@@ -48,4 +48,5 @@ pub fn shake256(digest: &mut [u8], data: &[u8]) {
 }
 
 /// An incremental API for SHAKE
+#[cfg(feature = "incremental")]
 pub mod incremental;

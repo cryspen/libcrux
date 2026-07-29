@@ -121,10 +121,10 @@ pub(crate) fn store_block<const RATE: usize>(
     let octets = len / 8;
 
     #[cfg(hax)]
-    let out_len = out.len(); // ghost variable
+    let _out_len = out.len(); // ghost variable
 
     for i in 0..octets {
-        hax_lib::loop_invariant!(|i: usize| out.len() == out_len);
+        hax_lib::loop_invariant!(|i: usize| out.len() == _out_len);
 
         let bytes = get_ij(s, i / 5, i % 5).to_le_bytes();
         let out_pos = start + 8 * i;
