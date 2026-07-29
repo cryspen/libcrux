@@ -83,6 +83,12 @@ class extractAction(argparse.Action):
         # crate dir and is auto-included by Makefile.generic's dependencies().
         run_dep_extract("crates/sys/platform/hax.py")
 
+        # MIGRATION (2026-07-28): ml-kem AVX2 now rests on the tested core-models
+        # intrinsics (mirror ml-dsa hax.sh).  Extract the core-models crate so its
+        # `Libcrux_core_models.*` modules are on the shared include path; the real
+        # `Libcrux_intrinsics.Avx2` op bodies route through them.  Idempotent.
+        run_dep_extract("crates/utils/core-models/hax.py")
+
         # Extract intrinsics into ml-kem's OWN extraction dir (--output-dir), so
         # the shared crates/utils/intrinsics tree is never clobbered by ml-kem's
         # `pre_core_models` config (which routes avx2 -> Avx2_extract, the
@@ -93,8 +99,15 @@ class extractAction(argparse.Action):
         # signature modules that, as roots in this dir, would COLLIDE with the
         # core-models crate's extraction tree (Error 72 — the shared-core-models
         # contamination this refactor eliminates).
-        include_str = "+:** -libcrux_core_models::**"
-        interface_include = "+**"
+        # MIGRATION (2026-07-28): non-pcm core-models path (mirror ml-dsa hax.sh's
+        # intrinsics step).  Exclude re-EMITTING the core-models modules (they are
+        # provided by the `dep_extract` above from the shared `../` dir — emitting
+        # them here as roots would collide, Error 72).  Drop `--cfg pre_core_models`
+        # so lib.rs routes avx2 -> the REAL `Libcrux_intrinsics.Avx2` (core-models),
+        # not the `Avx2_extract` bit_vec stub.  TRANSPARENT (no `--interfaces`): the
+        # consumers (Spec.Avx2Lanes companion) must see the `.fst` op BODIES so
+        # `reveal_opaque` can unfold `mm256_OP = e_mm256_OP`.
+        include_str = "-libcrux_core_models::**"
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -108,12 +121,10 @@ class extractAction(argparse.Action):
             "--output-dir",
             ML_KEM_INTRINSICS_DIR,
             "fstar",
-            "--interfaces",
-            interface_include,
+            "--z3rlimit",
+            "80",
         ]
-        hax_env = {
-            'RUSTFLAGS': "--cfg pre_core_models"
-        }
+        hax_env = {}
         # Force a rebuild of the intrinsics crate (touch its sources) so the
         # pre_core_models variant is regenerated even if a prior extraction in
         # this working tree built it under a DIFFERENT config (e.g. ml-dsa's
@@ -205,15 +216,13 @@ class extractAction(argparse.Action):
             "--interfaces",
             interface_include,
         ]
-        # ml-kem is not yet migrated to the core-models intrinsics: its AVX2
-        # contracts cite `Libcrux_intrinsics.Avx2_extract` (bit_vec views), so
-        # the crate must compile with the intrinsics' `pre_core_models` mapping
-        # (see crates/utils/intrinsics/src/lib.rs and the extraction Makefile's
-        # per-algorithm cache comment). Before the env-leak fix in 171d30642
-        # this flag leaked here from the intrinsics step; now it's explicit.
-        hax_env = {
-            'RUSTFLAGS': "--cfg pre_core_models"
-        }
+        # MIGRATION (2026-07-28): ml-kem AVX2 now rests on the core-models
+        # intrinsics (mirror ml-dsa).  Dropping `--cfg pre_core_models` makes
+        # lib.rs route avx2 -> the real `Libcrux_intrinsics.Avx2`, so ml-kem's
+        # AVX2 contracts cite `Avx2` (+ the Spec.Avx2Lanes lane-view companion)
+        # instead of the `Avx2_extract` bit_vec stub.  NEON/Portable unaffected
+        # (pre_core_models only gates the avx2 module in lib.rs).
+        hax_env = {}
         clean_generated_fstar(ML_KEM_EXTRACTION_DIR)
         shell(
             cargo_hax_into,
