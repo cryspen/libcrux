@@ -15,7 +15,10 @@ use crate::vector::portable::PortableVector;
 #[hax_lib::ensures(|result| fstar!(r#"forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"#))]
 // 2026-06-30: bring the relocated ml-kem srli i16-view SMTPat into scope
 // (moved out of Avx2_extract to keep sha3's interface lean).
-#[hax_lib::fstar::before(r#"open Libcrux_intrinsics.Avx2_ml_kem_views"#)]
+#[hax_lib::fstar::before(
+    r#"open Libcrux_intrinsics.Avx2
+open Libcrux_intrinsics.Avx2_ml_kem_views"#
+)]
 pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // Suppose |vector| is laid out as follows (superscript number indicates the
     // corresponding bit is duplicated that many times):
@@ -785,7 +788,7 @@ with _. Libcrux_ml_kem.Vector.Avx2_theory.lemma_vec256_lane_bounded ${vector} 11
 introduce forall (i: nat{i < 176}).
     bit_vec_of_int_t_array result 8 i == ${vector} ((i / 11) * 16 + i % 11)
 with begin
-  Libcrux_intrinsics.Avx2_extract.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+  Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
     ${vector} 11 i
 end
 "#
@@ -813,11 +816,11 @@ introduce forall (i: nat{i < 256}).
             bit_vec_of_int_t_array (${bytes} <: t_Array _ (sz 22)) 8 j)
 with begin
   if i % 16 >= 11 then begin
-    Libcrux_intrinsics.Avx2_extract.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+    Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
       result 16 i;
     ()
   end else begin
-    Libcrux_intrinsics.Avx2_extract.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+    Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
       result 11 ((i / 16) * 11 + i % 16)
   end
 end

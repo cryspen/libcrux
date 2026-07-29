@@ -6,6 +6,8 @@ use super::{
 
 #[hax_lib::fstar::before(
     r#"
+open Libcrux_intrinsics.Avx2
+open Libcrux_intrinsics.Avx2_ml_kem_views
 open Libcrux_ml_kem.Vector.Avx2.Sampling_theory
 "#
 )]
@@ -68,7 +70,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         let g0: nat = v (${good}.[ mk_usize 0 ] <: u8) in
         assert (forall (i: nat{i < 256}).
             ${compare_with_field_modulus} i ==
-            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
+            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
              then 1 else 0));
         Hacspec_ml_kem.Commute.Rej_table.lemma_good_bits ${good} ${compare_with_field_modulus} ${potential_coefficients} 0;
         Hacspec_ml_kem.Commute.Rej_table.intro_top_bits_clear ${potential_coefficients};
@@ -78,7 +80,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
             BitVec.Intrinsics.mm_shuffle_epi8_no_semantics ${lower_coefficients} ${lower_shuffles_vec});
         lemma_half_done ${potential_coefficients} ${lower_coefficients} ${lower_shuffles_vec} ${lower_shuffled} ${lower_shuffles} 0 g0;
         introduce forall (j: nat{j < 8}).
-            Seq.index ${output} j == Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${lower_shuffled}) j
+            Seq.index ${output} j == Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 ${lower_shuffled}) j
         with FStar.Seq.lemma_index_slice ${output} 0 8 j;
         assert (forall (j: nat{j < 8}).
             j < Hacspec_ml_kem.Commute.Rej_table.popcount8 g0 ==>
@@ -121,7 +123,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         (* upper-half driver *)
         assert (forall (i: nat{i < 256}).
             ${compare_with_field_modulus} i ==
-            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
+            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
              then 1 else 0));
         Hacspec_ml_kem.Commute.Rej_table.lemma_good_bits ${good} ${compare_with_field_modulus} ${potential_coefficients} 1;
         Hacspec_ml_kem.Commute.Rej_table.intro_top_bits_clear ${potential_coefficients};
@@ -133,7 +135,7 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         (* output indexing through the second store *)
         let range = { Core_models.Ops.Range.f_start = ${sampled_count};
                       Core_models.Ops.Range.f_end = ${sampled_count} +! mk_usize 8 } in
-        let s' = Libcrux_intrinsics.Avx2_extract.mm_storeu_si128
+        let s' = Libcrux_intrinsics.Avx2.mm_storeu_si128
                    ((${output_after_lower}.[ range ] <: t_Slice i16)) ${upper_shuffled} in
         assert (${output} ==
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range ${output_after_lower} range s');

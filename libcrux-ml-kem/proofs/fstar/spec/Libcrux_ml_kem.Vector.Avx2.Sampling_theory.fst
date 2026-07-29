@@ -85,18 +85,18 @@ let lemma_half_done
     (ensures
       forall (j: nat{j < 8}).
         j < Hacspec_ml_kem.Commute.Rej_table.popcount8 g ==>
-        (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) >= 0 /\
-         v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) <= 3328))
+        (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) >= 0 /\
+         v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) <= 3328))
   = lemma_shuffle_semantics_of_axiom a mask res;
     Hacspec_ml_kem.Commute.Rej_table.lemma_mask_of_row_loadu mask row;
     Hacspec_ml_kem.Commute.Rej_table.intro_row_of_table row g;
     Hacspec_ml_kem.Commute.Rej_table.lemma_half_of_cast a potential half;
     introduce forall (j: nat{j < 8}).
         j < Hacspec_ml_kem.Commute.Rej_table.popcount8 g ==>
-        (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) >= 0 /\
-         v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) <= 3328)
+        (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) >= 0 /\
+         v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) <= 3328)
     with introduce j < Hacspec_ml_kem.Commute.Rej_table.popcount8 g ==>
-        (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) >= 0 /\
-         v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 res) j) <= 3328)
+        (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) >= 0 /\
+         v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 res) j) <= 3328)
     with _. Hacspec_ml_kem.Commute.Rej_table.lemma_half_lane_bounded potential a mask res row half g j
 #pop-options

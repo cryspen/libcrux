@@ -4,7 +4,8 @@ use super::*;
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
-module FI = Libcrux_intrinsics.Avx2_extract
+open Libcrux_intrinsics.Avx2
+open Libcrux_intrinsics.Avx2_ml_kem_views
 module FS = Spec.Utils
 module FA = Libcrux_ml_kem.Vector.Avx2.Arithmetic
 open Libcrux_ml_kem.Vector.Avx2.Ntt_theory
@@ -13,12 +14,12 @@ open Libcrux_ml_kem.Vector.Avx2.Ntt_theory
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                             Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                            Spec.Utils.is_i16b_array (7*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+                            Spec.Utils.is_i16b_array (7*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array (8*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array (8*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     Spec.Utils.ntt_layer_1_butterfly_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3"#))]
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3"#))]
 pub(crate) fn ntt_layer_1_step(
     vector: Vec256,
     zeta0: i16,
@@ -31,7 +32,7 @@ pub(crate) fn ntt_layer_1_step(
         -zeta0, -zeta0, zeta0, zeta0,
     );
     proof!(
-        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}))"#
+        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas}))"#
     );
 
     let rhs0 = mm256_shuffle_epi32::<0b11_11_01_01>(vector);
@@ -50,27 +51,27 @@ pub(crate) fn ntt_layer_1_step(
     let result = mm256_add_epi16(lhs, rhs);
     proof!(
         r#"lemma_fwd_l1_resultv ${vector} ${lhs} ${rhs} ${result};
-           assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 0) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 1) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 2) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 3) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 4) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 5) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 6) == - v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 7) == - v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 8) == v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 9) == v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 10) == - v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 11) == - v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 12) == v zeta3 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 13) == v zeta3 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 14) == - v zeta3 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 15) == - v zeta3);
+           assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 0) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 1) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 2) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 3) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 4) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 5) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 6) == - v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 7) == - v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 8) == v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 9) == v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 10) == - v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 11) == - v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 12) == v zeta3 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 13) == v zeta3 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 14) == - v zeta3 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 15) == - v zeta3);
            lemma_fwd_l1_post
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${rhs})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${rhs})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result})
              zeta0 zeta1 zeta2 zeta3"#
     );
     result
@@ -83,19 +84,19 @@ pub(crate) fn ntt_layer_1_step(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                            Spec.Utils.is_i16b_array (6*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+                            Spec.Utils.is_i16b_array (6*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array (7*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array (7*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     Spec.Utils.ntt_layer_2_butterfly_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) zeta0 zeta1"#))]
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) zeta0 zeta1"#))]
 pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let zetas = mm256_set_epi16(
         -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0, -zeta0,
         zeta0, zeta0, zeta0, zeta0,
     );
     proof!(
-        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}))"#
+        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas}))"#
     );
 
     let rhs0 = mm256_shuffle_epi32::<0b11_10_11_10>(vector);
@@ -114,27 +115,27 @@ pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256
     let result = mm256_add_epi16(lhs, rhs);
     proof!(
         r#"lemma_fwd_l2_resultv ${vector} ${lhs} ${rhs} ${result};
-           assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 0) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 1) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 2) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 3) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 4) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 5) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 6) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 7) == - v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 8) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 9) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 10) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 11) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 12) == - v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 13) == - v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 14) == - v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 15) == - v zeta1);
+           assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 0) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 1) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 2) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 3) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 4) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 5) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 6) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 7) == - v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 8) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 9) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 10) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 11) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 12) == - v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 13) == - v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 14) == - v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 15) == - v zeta1);
            lemma_fwd_l2_post
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${rhs})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${rhs})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result})
              zeta0 zeta1"#
     );
     result
@@ -144,16 +145,16 @@ pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-    Spec.Utils.is_i16b_array (5*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+    Spec.Utils.is_i16b_array (5*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array (6*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array (6*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     (forall (i:nat). i < 8 ==>
-       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) i) % 3329 ==
-         (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i) +
-          v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) * v zeta * 169) % 3329 /\
-       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) (i+8)) % 3329 ==
-         (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i) -
-          v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) * v zeta * 169) % 3329)
+       v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) i) % 3329 ==
+         (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) i) +
+          v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) (i+8)) * v zeta * 169) % 3329 /\
+       v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) (i+8)) % 3329 ==
+         (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) i) -
+          v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) (i+8)) * v zeta * 169) % 3329)
 "#))]
 pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let rhs = mm256_extracti128_si256::<1>(vector);
@@ -165,9 +166,9 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     // Pre for mont_mul: is_i16b_array 1664 zetas_v128 (since |zeta| <= 1664)
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${zetas_v128} i) == v zeta);
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${zetas_v128} i) == v zeta);
            assert (Spec.Utils.is_i16b_array 1664
-                     (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${zetas_v128}))"#
+                     (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 ${zetas_v128}))"#
     );
 
     let rhs = arithmetic::montgomery_multiply_m128i_by_constants(rhs, zetas_v128);
@@ -176,8 +177,8 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     //                  (v(get_lane vector (i+8)) * v zeta * 169) % 3329
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i) % 3329 ==
-                (v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8))
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${rhs} i) % 3329 ==
+                (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) (i + 8))
                   * v zeta * 169) % 3329)"#
     );
 
@@ -190,25 +191,25 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     // Use lemma_add_i_128 (SMTPat) to lift +. to +.
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lhs} i) +
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i));
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lower_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lhs} i) +
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${rhs} i));
            assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i) +
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i))"#
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lower_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) i) +
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${rhs} i))"#
     );
 
     let upper_coefficients = mm_sub_epi16(lhs, rhs);
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lhs} i) -
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i));
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lhs} i) -
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${rhs} i));
            assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i) -
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${rhs} i))"#
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) i) -
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${rhs} i))"#
     );
 
     let combined_lo = mm256_castsi128_si256(lower_coefficients);
@@ -220,11 +221,11 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     proof!(
         r#"
         assert (forall (i:nat). i < 8 ==>
-                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) i ==
-                Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i);
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${combined}) i ==
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lower_coefficients} i);
         assert (forall (i:nat). i < 8 ==>
-                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) (i + 8) ==
-                Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i)"#
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${combined}) (i + 8) ==
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i)"#
     );
     combined
 }
@@ -233,7 +234,8 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
-module ZI = Libcrux_intrinsics.Avx2_extract
+open Libcrux_intrinsics.Avx2
+open Libcrux_intrinsics.Avx2_ml_kem_views
 module ZS = Spec.Utils
 module ZA = Libcrux_ml_kem.Vector.Avx2.Arithmetic
 "#
@@ -241,12 +243,12 @@ module ZA = Libcrux_ml_kem.Vector.Avx2.Arithmetic
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                             Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-                            Spec.Utils.is_i16b_array (4*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+                            Spec.Utils.is_i16b_array (4*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     Spec.Utils.inv_ntt_layer_1_butterfly_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3"#))]
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3"#))]
 pub(crate) fn inv_ntt_layer_1_step(
     vector: Vec256,
     zeta0: i16,
@@ -281,23 +283,23 @@ pub(crate) fn inv_ntt_layer_1_step(
 
     let result = mm256_blend_epi16::<0b1_1_0_0_1_1_0_0>(sum_reduced, sum_times_zetas);
     proof!(
-        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}));
-           assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 2) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 3) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 6) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 7) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 10) == v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 11) == v zeta2 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 14) == v zeta3 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 15) == v zeta3);
+        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas}));
+           assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 2) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 3) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 6) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 7) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 10) == v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 11) == v zeta2 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 14) == v zeta3 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 15) == v zeta3);
            lemma_blend_204 ${sum_reduced} ${sum_times_zetas};
            lemma_inv_l1_post
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${sum})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${sum_reduced})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${sum_times_zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${sum})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${sum_reduced})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${sum_times_zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result})
              zeta0 zeta1 zeta2 zeta3"#
     );
     result
@@ -307,12 +309,12 @@ pub(crate) fn inv_ntt_layer_1_step(
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
-                            Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+                            Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     Spec.Utils.inv_ntt_layer_2_butterfly_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) zeta0 zeta1"#))]
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) zeta0 zeta1"#))]
 pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let lhs = mm256_permute4x64_epi64::<0b11_11_01_01>(vector);
     proof!(
@@ -339,22 +341,22 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
 
     let result = mm256_blend_epi16::<0b1_1_1_1_0_0_0_0>(sum, sum_times_zetas);
     proof!(
-        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas}));
-           assert (v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 4) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 5) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 6) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 7) == v zeta0 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 12) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 13) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 14) == v zeta1 /\
-                   v (Libcrux_intrinsics.Avx2_extract.get_lane ${zetas} 15) == v zeta1);
+        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas}));
+           assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 4) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 5) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 6) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 7) == v zeta0 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 12) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 13) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 14) == v zeta1 /\
+                   v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 15) == v zeta1);
            lemma_blend_240 ${sum} ${sum_times_zetas};
            lemma_inv_l2_post
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${sum})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${sum_times_zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${zetas})
-             (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${sum})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${sum_times_zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas})
+             (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result})
              zeta0 zeta1"#
     );
     result
@@ -363,16 +365,16 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
 #[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
-    Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector})"#))]
+    Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array (4*3328) (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array (4*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     (forall (i:nat). i < 8 ==>
-       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) i) % 3329 ==
-         (v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) +
-          v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i)) % 3329 /\
-       v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) (i+8)) % 3329 ==
-         ((v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) (i+8)) -
-           v (Seq.index (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${vector}) i))
+       v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) i) % 3329 ==
+         (v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) (i+8)) +
+          v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) i)) % 3329 /\
+       v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) (i+8)) % 3329 ==
+         ((v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) (i+8)) -
+           v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector}) i))
           * v zeta * 169) % 3329)
 "#))]
 pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
@@ -388,25 +390,25 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     // mm_add_epi16 post + lemma_add_i_128 (SMTPat) lift +. → +
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) +
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))"#
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lower_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) (i + 8)) +
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) i))"#
     );
 
     let upper_coefficients = mm_sub_epi16(lhs, rhs);
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) ==
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
-                v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))"#
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i) ==
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) (i + 8)) -
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) i))"#
     );
 
     let zetas_v128 = mm_set1_epi16(zeta);
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${zetas_v128} i) == v zeta);
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${zetas_v128} i) == v zeta);
            assert (Spec.Utils.is_i16b_array 1664
-                     (Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8 ${zetas_v128}))"#
+                     (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 ${zetas_v128}))"#
     );
 
     let upper_coefficients =
@@ -416,9 +418,9 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     //               (v(vec[i+8]) - v(vec[i])) * v zeta * 169 % 3329
     proof!(
         r#"assert (forall (i:nat). i < 8 ==>
-                v (Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i) % 3329 ==
-                ((v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) (i + 8)) -
-                  v (Libcrux_intrinsics.Avx2_extract.get_lane (${vector}) i))
+                v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i) % 3329 ==
+                ((v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) (i + 8)) -
+                  v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${vector}) i))
                  * v zeta * 169) % 3329)"#
     );
 
@@ -432,11 +434,11 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     proof!(
         r#"
         assert (forall (i:nat). i < 8 ==>
-                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) i ==
-                Libcrux_intrinsics.Avx2_extract.get_lane128 ${lower_coefficients} i);
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${combined}) i ==
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${lower_coefficients} i);
         assert (forall (i:nat). i < 8 ==>
-                Libcrux_intrinsics.Avx2_extract.get_lane (${combined}) (i + 8) ==
-                Libcrux_intrinsics.Avx2_extract.get_lane128 ${upper_coefficients} i)"#
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane (${combined}) (i + 8) ==
+                Libcrux_intrinsics.Avx2_ml_kem_views.get_lane128 ${upper_coefficients} i)"#
     );
     combined
 }
@@ -445,44 +447,44 @@ pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
     Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 0) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 1) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 2) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 3) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 4) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 5) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 6) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 7) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 8) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 9) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 10) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 11) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 12) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 13) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 14) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${lhs} 15) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 0) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 1) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 2) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 3) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 4) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 5) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 6) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 7) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 8) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 9) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 10) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 11) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 12) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 13) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 14) /\
-    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_extract.get_lane ${rhs} 15)"#))]
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 0) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 1) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 2) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 3) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 4) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 5) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 6) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 7) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 8) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 9) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 10) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 11) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 12) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 13) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 14) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${lhs} 15) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 0) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 1) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 2) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 3) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 4) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 5) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 6) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 7) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 8) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 9) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 10) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 11) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 12) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 13) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 14) /\
+    Spec.Utils.is_i16b 4096 (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${rhs} 15)"#))]
 #[hax_lib::ensures(|result| fstar!(r#"
-    Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result}) /\
+    Spec.Utils.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) /\
     Spec.Utils.ntt_multiply_butterfly_post
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${lhs})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${rhs})
-      (Libcrux_intrinsics.Avx2_extract.vec256_as_i16x16 ${result})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${lhs})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${rhs})
+      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result})
       zeta0 zeta1 zeta2 zeta3"#))]
 pub(crate) fn ntt_multiply(
     lhs: Vec256,
@@ -557,10 +559,10 @@ pub(crate) fn ntt_multiply(
     proof!(
         r#"lemma_nttmul_zv zeta0 zeta1 zeta2 zeta3 ${zeta_multipliers};
         lemma_nttmul_main ${shuffle_with} ${swap_with} ${lhs} ${rhs} ${zeta_multipliers} zeta0 zeta1 zeta2 zeta3;
-        assert (ZS.is_i16b_array 3328 (ZI.vec256_as_i16x16 ${result}));
+        assert (ZS.is_i16b_array 3328 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}));
         assert (Spec.Utils.ntt_multiply_butterfly_post
-          (ZI.vec256_as_i16x16 ${lhs}) (ZI.vec256_as_i16x16 ${rhs})
-          (ZI.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3)"#
+          (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${lhs}) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${rhs})
+          (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}) zeta0 zeta1 zeta2 zeta3)"#
     );
     result
 }
