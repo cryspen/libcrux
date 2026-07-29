@@ -136,11 +136,20 @@ let lemma_shuffle245_even (vec: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (
    context, ~ms each).  The mulhi assembly below cites these and EXCLUDES the
    quantified intrinsic posts (`--using_facts_from -...`) so the 7 coexisting
    lane-foralls (mul_epu32 ×2, shuffle ×2, unpack ×3) cannot cross-saturate. *)
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
+(* mul_epu32: the `lane64u`/`lane32` unfolding + the unsigned-product bound is the
+   heaviest of the per-lane ground facts (it was riding at 46.5/50 cold, i.e. on
+   the edge, and tipped over once the companion's op-facts became proofs rather
+   than admits).  Give it its own budget + a fresh solver rather than leaving a
+   query that only passes on a lucky Z3 path. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 250"
+#restart-solver
 let mul_epu32_lane_nn (a b: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (i: nat{i < 4})
   : Lemma (requires 0 <= Libcrux_intrinsics.Avx2_ml_kem_views.lane32 a (2 * i) /\ 0 <= Libcrux_intrinsics.Avx2_ml_kem_views.lane32 b (2 * i))
           (ensures Libcrux_intrinsics.Avx2_ml_kem_views.lane64u (Libcrux_intrinsics.Avx2.mm256_mul_epu32 a b) i ==
                    Libcrux_intrinsics.Avx2_ml_kem_views.lane32 a (2 * i) * Libcrux_intrinsics.Avx2_ml_kem_views.lane32 b (2 * i)) = ()
+#pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
 let unpacklo_lane (a b: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (k: nat{k < 8})
   : Lemma (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 (Libcrux_intrinsics.Avx2.mm256_unpacklo_epi32 a b) k ==
            (match k with | 0 -> Libcrux_intrinsics.Avx2_ml_kem_views.lane32 a 0 | 1 -> Libcrux_intrinsics.Avx2_ml_kem_views.lane32 b 0
@@ -473,6 +482,13 @@ let lemma_decompress_half (c0: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec128) (c
     mullo_lane_nowrap c1 fm j;
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d1 j == xv * 3329);
     slli1_lane_nowrap d1 j;
+    (* hand Z3 the (xv*3329)*2 == 2*xv*3329 reassociation explicitly: cold (no
+       hint) it reports "unknown because unknown" on this nonlinear step under
+       the fact-filter, even though the stage lemma supplies the equality. *)
+    FStar.Math.Lemmas.paren_mul_right 2 xv 3329;
+    assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d2 j ==
+            Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d1 j * 2);
+    assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d1 j * 2 == (xv * 3329) * 2);
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d2 j == 2 * xv * 3329);
     add_lane_2cb d2 twocb j (pow2 dd);
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d3 j == 2 * xv * 3329 + pow2 dd);
