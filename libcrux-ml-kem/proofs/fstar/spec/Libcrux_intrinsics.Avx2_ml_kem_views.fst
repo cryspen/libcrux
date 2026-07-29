@@ -4,6 +4,13 @@ open FStar.Mul
 open Core_models
 open Libcrux_intrinsics.Avx2
 
+(* Canonical Option-B intrinsics view + PROVEN op-lemmas (Phase-3 A-on-B adapter). *)
+module Funarr = Libcrux_core_models.Abstractions.Funarr
+module Canon  = Libcrux_core_models.Intrinsics_views
+module IV     = Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
+module Avx2c  = Libcrux_core_models.Core_arch.X86.Avx2
+module Sse2c  = Libcrux_core_models.Core_arch.X86.Sse2
+
 (* ============================================================================
    ml-kem AVX2 lane-view + per-op fact companion (core-models migration).
 
@@ -56,8 +63,30 @@ unfold type t_Vec128 = Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 
    semantics carried by the admitted fact-lemmas below (validated by the
    core-models differential tests).  P2 gives it a body = core-models
    `to_i16x16` (FunArray -> t_Array via createi). *)
-assume val vec256_as_i16x16 (x: t_Vec256) : t_Array i16 (sz 16)
+(* A-on-B adapter: Seq view = per-lane read of the canonical FunArray view. *)
+let vec256_as_i16x16 (x: t_Vec256) : t_Array i16 (sz 16) =
+  Seq.init 16 (fun i -> Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 x) (mk_u64 i))
 let get_lane (v: t_Vec256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
+
+(* One-line Seq<->FunArray index iso (Seq.init index). *)
+let vec256_index (x: t_Vec256) (i: nat{i < 16})
+  : Lemma (Seq.index (vec256_as_i16x16 x) i
+           == Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec256_as_i16x16 x) i)]
+  = ()
+
+(* Reduction of an Int_vec FunArray produced by `from_fn 16` at a Seq index. *)
+let index_from_fn16 (#t: Type0) (g: (i: u64{v i < 16}) -> t) (i: nat{i < 16})
+  : Lemma (Funarr.impl_5__get (mk_u64 16) #t
+             (Funarr.impl_5__from_fn (mk_u64 16) #t #(u64 -> t) g) (mk_u64 i)
+           == g (mk_u64 i))
+  = ()
+
+let index_from_fn8 (#t: Type0) (g: (i: u64{v i < 8}) -> t) (i: nat{i < 8})
+  : Lemma (Funarr.impl_5__get (mk_u64 8) #t
+             (Funarr.impl_5__from_fn (mk_u64 8) #t #(u64 -> t) g) (mk_u64 i)
+           == g (mk_u64 i))
+  = ()
 
 (* Signed value of the 32-bit lane `j` (low half = i16 lane 2j, high = 2j+1). *)
 let lane32 (vec: t_Vec256) (j: nat{j < 8}) : int =
@@ -92,44 +121,93 @@ let blend_sel (c: i32) (k: nat{k < 16}) : bool =
   ((match k % 8 with | 0 -> cb | 1 -> cb / 2 | 2 -> cb / 4 | 3 -> cb / 8
                      | 4 -> cb / 16 | 5 -> cb / 32 | 6 -> cb / 64 | _ -> cb / 128) % 2) = 1
 
-(* Abstract i16x8 lane view of a 128-bit vector (pcm `val vec128_as_i16x8`). *)
-assume val vec128_as_i16x8 (x: t_Vec128) : t_Array i16 (sz 8)
+(* i16x8 lane view of a 128-bit vector (A-on-B adapter over canonical to_i16x8). *)
+let vec128_as_i16x8 (x: t_Vec128) : t_Array i16 (sz 8) =
+  Seq.init 8 (fun i -> Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 i))
 let get_lane128 (v: t_Vec128) (i:nat{i < 8}) = Seq.index (vec128_as_i16x8 v) i
+
+let vec128_index (x: t_Vec128) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_i16x8 x) i
+           == Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_i16x8 x) i)]
+  = ()
 
 (* ── i16x16-view arithmetic/logical facts ─────────────────────────────────── *)
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_add_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm256_add_epi16 (lhs rhs: t_Vec256)
   : Lemma (vec256_as_i16x16 (mm256_add_epi16 lhs rhs)
            == Spec.Utils.map2 ( +. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
-          [SMTPat (vec256_as_i16x16 (mm256_add_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_add_epi16 lhs rhs))] =
+  reveal_opaque (`%mm256_add_epi16) mm256_add_epi16;
+  Canon.lemma_mm256_add_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_add_epi16 lhs rhs))
+                     (Spec.Utils.map2 ( +. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_sub_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm256_sub_epi16 (lhs rhs: t_Vec256)
   : Lemma (vec256_as_i16x16 (mm256_sub_epi16 lhs rhs)
            == Spec.Utils.map2 ( -. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
-          [SMTPat (vec256_as_i16x16 (mm256_sub_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_sub_epi16 lhs rhs))] =
+  reveal_opaque (`%mm256_sub_epi16) mm256_sub_epi16;
+  Canon.lemma_mm256_sub_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_sub_epi16 lhs rhs))
+                     (Spec.Utils.map2 ( -. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_mullo_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm256_mullo_epi16 (v1 v2: t_Vec256)
   : Lemma (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2)
            == Spec.Utils.map2 mul_mod (vec256_as_i16x16 v1) (vec256_as_i16x16 v2))
-          [SMTPat (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2))] =
+  reveal_opaque (`%mm256_mullo_epi16) mm256_mullo_epi16;
+  Canon.lemma_mm256_mullo_epi16 v1 v2;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_mullo_epi16 v1 v2))
+                     (Spec.Utils.map2 mul_mod (vec256_as_i16x16 v1) (vec256_as_i16x16 v2))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_mulhi_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let lemma_mm256_mulhi_epi16 (lhs rhs: t_Vec256)
   : Lemma (vec256_as_i16x16 (mm256_mulhi_epi16 lhs rhs)
            == Spec.Utils.map2 (fun x y ->
                 cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
               (vec256_as_i16x16 lhs)
               (vec256_as_i16x16 rhs))
-          [SMTPat (vec256_as_i16x16 (mm256_mulhi_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_mulhi_epi16 lhs rhs))] =
+  reveal_opaque (`%mm256_mulhi_epi16) mm256_mulhi_epi16;
+  Canon.lemma_mm256_mulhi_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_mulhi_epi16 lhs rhs))
+              (Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
+              (vec256_as_i16x16 lhs)
+              (vec256_as_i16x16 rhs))
+#pop-options
 
-[@@ "trusted: validated-axiom: i16x16 view of mm256_and_si256 (core-models differential-tested)"]
+(* PROVEN over core-models: reveal the intrinsic to the hardware op, then the
+   canonical shared per-lane `and` commutation (`Canon.lemma_and_i16x16`, itself
+   a proven i16 slice/decode commutation on top of the differentially-tested raw
+   `and` lift). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
 let lemma_mm256_and_si256 (lhs rhs: t_Vec256)
   : Lemma (vec256_as_i16x16 (mm256_and_si256 lhs rhs)
            == Spec.Utils.map2 ( &. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
-          [SMTPat (vec256_as_i16x16 (mm256_and_si256 lhs rhs))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_and_si256 lhs rhs))] =
+  reveal_opaque (`%mm256_and_si256) mm256_and_si256;
+  let r = mm256_and_si256 lhs rhs in
+  let aux (i: nat{i < 16})
+      : Lemma (Seq.index (vec256_as_i16x16 r) i ==
+               Seq.index (Spec.Utils.map2 ( &. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs)) i) =
+    Canon.lemma_and_i16x16 lhs rhs i
+  in
+  Classical.forall_intro aux;
+  Seq.lemma_eq_intro (vec256_as_i16x16 r)
+    (Spec.Utils.map2 ( &. ) (vec256_as_i16x16 lhs) (vec256_as_i16x16 rhs))
+#pop-options
 
 (* ml-kem i16-view characterization of mm256_xor (called explicitly by Compress;
    also SMTPat).  Coexists with sha3's u64x4-view of the same op. *)
@@ -140,9 +218,15 @@ let lemma_mm256_xor_si256 (lhs rhs: t_Vec256)
           [SMTPat (vec256_as_i16x16 (mm256_xor_si256 lhs rhs))] = admit ()
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_set1_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm256_set1_epi16 (constant: i16)
   : Lemma (vec256_as_i16x16 (mm256_set1_epi16 constant) == Spec.Utils.create (sz 16) constant)
-          [SMTPat (vec256_as_i16x16 (mm256_set1_epi16 constant))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_set1_epi16 constant))] =
+  reveal_opaque (`%mm256_set1_epi16) mm256_set1_epi16;
+  Canon.lemma_mm256_set1_epi16 constant;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_set1_epi16 constant))
+                     (Spec.Utils.create (sz 16) constant)
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_set_epi16 (core-models differential-tested)"]
 let lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0
@@ -161,11 +245,17 @@ let lemma_mm256_setzero_si256 (u: Prims.unit)
   : Lemma (vec256_as_i16x16 (mm256_setzero_si256 ()) == Seq.create 16 (mk_i16 0)) = admit ()
 
 [@@ "trusted: validated-axiom: i16x16 view of mm256_srai_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let lemma_mm256_srai_epi16 (v_SHIFT_BY: i32) (vector: t_Vec256)
   : Lemma (requires v_SHIFT_BY >=. mk_i32 0 /\ v_SHIFT_BY <. mk_i32 16)
           (ensures vec256_as_i16x16 (mm256_srai_epi16 v_SHIFT_BY vector)
                    == Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (vec256_as_i16x16 vector))
-          [SMTPat (vec256_as_i16x16 (mm256_srai_epi16 v_SHIFT_BY vector))] = admit ()
+          [SMTPat (vec256_as_i16x16 (mm256_srai_epi16 v_SHIFT_BY vector))] =
+  reveal_opaque (`%mm256_srai_epi16) mm256_srai_epi16;
+  Canon.lemma_mm256_srai_epi16 v_SHIFT_BY vector;
+  Seq.lemma_eq_intro (vec256_as_i16x16 (mm256_srai_epi16 v_SHIFT_BY vector))
+                   (Spec.Utils.map_array (fun x -> x >>! v_SHIFT_BY) (vec256_as_i16x16 vector))
+#pop-options
 
 (* ml-kem i16-view of the logical right shift (called explicitly by Compress,
    e.g. lemma_mm256_srli_epi16_15; also SMTPat). *)
@@ -175,6 +265,58 @@ let lemma_mm256_srli_epi16 (v_SHIFT_BY: i32 {v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY <
            == Spec.Utils.map_array (fun (x:i16) -> cast ((cast x <: u16) >>! v_SHIFT_BY) <: i16)
                 (vec256_as_i16x16 vector))
           [SMTPat (vec256_as_i16x16 (mm256_srli_epi16 v_SHIFT_BY vector))] = admit ()
+
+(* ── cross-width bridge wrapper + lane32-half helper (Phase-3 gap-2) ───────── *)
+
+(* thin ml-kem wrapper over the crate-independent canonical bridge: the i16-pair
+   `lane32` value equals the native i32 decode of the same 32 bits. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 60"
+let lemma_lane32_eq_to_i32x8 (vec: t_Vec256) (j: nat{j < 8})
+  : Lemma (lane32 vec j ==
+           Rust_primitives.Integers.v
+             (Funarr.impl_5__get (mk_u64 8) #i32 (Canon.to_i32x8 vec) (mk_u64 j))) =
+  assert_norm (pow2 16 == 65536);
+  Canon.lemma_lane32_bridge vec j
+#pop-options
+
+(* lane32 decomposes into its two i16 sub-lanes (pure lane32-definition arithmetic;
+   re-derived here as Arithmetic_theory.lemma_lane32_halves is a downstream consumer). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_halves (w: t_Vec256) (j: nat{j < 8})
+  : Lemma ((lane32 w j) @% pow2 16 == Rust_primitives.Integers.v (get_lane w (2 * j)) /\
+           (lane32 w j) / pow2 16 == Rust_primitives.Integers.v (get_lane w (2 * j + 1))) =
+  let lo = Rust_primitives.Integers.v (get_lane w (2 * j)) in
+  let hi = Rust_primitives.Integers.v (get_lane w (2 * j + 1)) in
+  assert_norm (pow2 16 == 65536);
+  FStar.Math.Lemmas.lemma_div_plus (lo % pow2 16) hi (pow2 16);
+  FStar.Math.Lemmas.small_div (lo % pow2 16) (pow2 16);
+  FStar.Math.Lemmas.modulo_addition_lemma (lo % pow2 16) (pow2 16) hi;
+  FStar.Math.Lemmas.small_mod (lo % pow2 16) (pow2 16);
+  Spec.Utils.lemma_range_at_percent lo (pow2 16)
+#pop-options
+
+(* left-shift by 16 of an i32 lane: the low i16 sub-lane becomes 0, the high i16
+   sub-lane becomes the original low i16 (pure integer / modular arithmetic). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_shl16 (w: int)
+  : Lemma (ensures (let vv = (w * pow2 16) @% pow2 32 in
+                    vv @% pow2 16 == 0 /\ vv / pow2 16 == w @% pow2 16)) =
+  assert_norm (pow2 32 == pow2 16 * pow2 16);
+  assert_norm (pow2 32 / 2 == pow2 16 * pow2 15);
+  assert_norm (pow2 16 == 2 * pow2 15);
+  let n16 = pow2 16 in
+  let wm = w % n16 in
+  FStar.Math.Lemmas.lemma_mod_lt w n16;
+  FStar.Math.Lemmas.modulo_scale_lemma w n16 n16;
+  if wm >= pow2 15 then begin
+    FStar.Math.Lemmas.cancel_mul_div (wm - n16) n16;
+    FStar.Math.Lemmas.cancel_mul_mod (wm - n16) n16
+  end
+  else begin
+    FStar.Math.Lemmas.cancel_mul_div wm n16;
+    FStar.Math.Lemmas.cancel_mul_mod wm n16
+  end
+#pop-options
 
 (* ── lane32-view (32-bit lane) facts ──────────────────────────────────────── *)
 
@@ -206,33 +348,97 @@ let lemma_madd_epi16_lane32 (lhs rhs: t_Vec256)
                @% 4294967296)
           [SMTPat (mm256_madd_epi16 lhs rhs)] = admit ()
 
-[@@ "trusted: validated-axiom: lane32 view of mm256_set1_epi32 (core-models differential-tested)"]
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let lemma_mm256_set1_epi32 (constant: i32)
   : Lemma (ensures forall (j: nat). j < 8 ==>
              lane32 (mm256_set1_epi32 constant) j == v constant /\
              ((0 <= v constant /\ v constant < pow2 16) ==>
                (get_lane (mm256_set1_epi32 constant) (2 * j) == (cast constant <: i16) /\
                 get_lane (mm256_set1_epi32 constant) (2 * j + 1) == mk_i16 0)))
-          [SMTPat (mm256_set1_epi32 constant)] = admit ()
+          [SMTPat (mm256_set1_epi32 constant)] =
+  reveal_opaque (`%mm256_set1_epi32) mm256_set1_epi32;
+  Canon.lemma_mm256_set1_epi32 constant;
+  let r = mm256_set1_epi32 constant in
+  let aux (j: nat{j < 8})
+      : Lemma (lane32 r j == v constant /\
+               ((0 <= v constant /\ v constant < pow2 16) ==>
+                 (get_lane r (2 * j) == (cast constant <: i16) /\
+                  get_lane r (2 * j + 1) == mk_i16 0))) =
+    lemma_lane32_eq_to_i32x8 r j;
+    Canon.lemma_iv_set1_epi32 constant j;
+    assert (lane32 r j == v constant);
+    assert_norm (pow2 16 == 65536);
+    introduce (0 <= v constant /\ v constant < pow2 16) ==>
+              (get_lane r (2 * j) == (cast constant <: i16) /\ get_lane r (2 * j + 1) == mk_i16 0)
+    with _pf. (
+      lemma_halves r j;
+      FStar.Math.Lemmas.small_div (v constant) (pow2 16);
+      assert (v (get_lane r (2 * j + 1)) == 0);
+      assert (get_lane r (2 * j + 1) == mk_i16 0);
+      assert (v (get_lane r (2 * j)) == (v constant) @% pow2 16);
+      assert (v (cast constant <: i16) == (v constant) @% pow2 16);
+      assert (get_lane r (2 * j) == (cast constant <: i16))
+    )
+  in
+  Classical.forall_intro aux
+#pop-options
 
-[@@ "trusted: validated-axiom: lane32 view of mm256_srai_epi32 (core-models differential-tested)"]
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let lemma_mm256_srai_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
   : Lemma (ensures
              (v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 32) ==>
              (forall (j: nat). j < 8 ==>
                 lane32 (mm256_srai_epi32 v_SHIFT_BY vector) j == (lane32 vector j) / pow2 (v v_SHIFT_BY)))
-          [SMTPat (mm256_srai_epi32 v_SHIFT_BY vector)] = admit ()
+          [SMTPat (mm256_srai_epi32 v_SHIFT_BY vector)] =
+  reveal_opaque (`%mm256_srai_epi32) mm256_srai_epi32;
+  Canon.lemma_mm256_srai_epi32 v_SHIFT_BY vector;
+  let r = mm256_srai_epi32 v_SHIFT_BY vector in
+  introduce (v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 32) ==>
+            (forall (j: nat). j < 8 ==>
+               lane32 r j == (lane32 vector j) / pow2 (v v_SHIFT_BY))
+  with _pf. (
+    let aux (j: nat{j < 8}) : Lemma (lane32 r j == (lane32 vector j) / pow2 (v v_SHIFT_BY)) =
+      lemma_lane32_eq_to_i32x8 r j;
+      lemma_lane32_eq_to_i32x8 vector j;
+      Canon.lemma_iv_srai32 v_SHIFT_BY (Canon.to_i32x8 vector) j
+    in
+    Classical.forall_intro aux
+  )
+#pop-options
 
-[@@ "trusted: validated-axiom: lane32 view of mm256_srli_epi32 (core-models differential-tested)"]
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let lemma_mm256_srli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
   : Lemma (ensures
              (v v_SHIFT_BY > 0 /\ v v_SHIFT_BY < 32) ==>
              (forall (j: nat). j < 8 ==>
                 lane32 (mm256_srli_epi32 v_SHIFT_BY vector) j ==
                 (lane32 vector j % 4294967296) / pow2 (v v_SHIFT_BY)))
-          [SMTPat (mm256_srli_epi32 v_SHIFT_BY vector)] = admit ()
+          [SMTPat (mm256_srli_epi32 v_SHIFT_BY vector)] =
+  reveal_opaque (`%mm256_srli_epi32) mm256_srli_epi32;
+  Canon.lemma_mm256_srli_epi32 v_SHIFT_BY vector;
+  let r = mm256_srli_epi32 v_SHIFT_BY vector in
+  introduce (v v_SHIFT_BY > 0 /\ v v_SHIFT_BY < 32) ==>
+            (forall (j: nat). j < 8 ==>
+               lane32 r j == (lane32 vector j % 4294967296) / pow2 (v v_SHIFT_BY))
+  with _pf. (
+    let aux (j: nat{j < 8})
+        : Lemma (lane32 r j == (lane32 vector j % 4294967296) / pow2 (v v_SHIFT_BY)) =
+      lemma_lane32_eq_to_i32x8 r j;
+      lemma_lane32_eq_to_i32x8 vector j;
+      Canon.lemma_iv_srli32 v_SHIFT_BY (Canon.to_i32x8 vector) j;
+      let xj = Funarr.impl_5__get (mk_u64 8) #i32 (Canon.to_i32x8 vector) (mk_u64 j) in
+      assert_norm (pow2 32 == 4294967296);
+      (* cast i32->u32 is the unsigned rep; u32 >>! = floor div; the result is
+         < 2^31 (shift>=1) so cast back to i32 is identity. *)
+      assert (v (cast xj <: u32) == (v xj) % pow2 32);
+      FStar.Math.Lemmas.lemma_div_lt_nat ((v xj) % pow2 32) 32 (v v_SHIFT_BY);
+      Spec.Utils.lemma_range_at_percent (((v xj) % pow2 32) / pow2 (v v_SHIFT_BY)) (pow2 32)
+    in
+    Classical.forall_intro aux
+  )
+#pop-options
 
-[@@ "trusted: validated-axiom: lane32 view of mm256_slli_epi32 (core-models differential-tested)"]
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
 let lemma_mm256_slli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
   : Lemma (ensures
              ((v v_SHIFT_BY == 16) ==>
@@ -244,7 +450,53 @@ let lemma_mm256_slli_epi32 (v_SHIFT_BY: i32) (vector: t_Vec256)
                (forall (j: nat). j < 8 ==>
                   lane32 (mm256_slli_epi32 v_SHIFT_BY vector) j ==
                     (lane32 vector j * pow2 (v v_SHIFT_BY)) @% 4294967296)))
-          [SMTPat (mm256_slli_epi32 v_SHIFT_BY vector)] = admit ()
+          [SMTPat (mm256_slli_epi32 v_SHIFT_BY vector)] =
+  reveal_opaque (`%mm256_slli_epi32) mm256_slli_epi32;
+  Canon.lemma_mm256_slli_epi32 v_SHIFT_BY vector;
+  let r = mm256_slli_epi32 v_SHIFT_BY vector in
+  assert_norm (pow2 32 == 4294967296);
+  let laneB (j: nat{j < 8})
+      : Lemma (requires v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 32)
+              (ensures lane32 r j == (lane32 vector j * pow2 (v v_SHIFT_BY)) @% 4294967296) =
+    lemma_lane32_eq_to_i32x8 r j;
+    lemma_lane32_eq_to_i32x8 vector j;
+    Canon.lemma_iv_slli32 v_SHIFT_BY (Canon.to_i32x8 vector) j;
+    let xj = Funarr.impl_5__get (mk_u64 8) #i32 (Canon.to_i32x8 vector) (mk_u64 j) in
+    assert (v (cast xj <: u32) == (v xj) % pow2 32);
+    FStar.Math.Lemmas.lemma_mod_mul_distr_l (v xj) (pow2 (v v_SHIFT_BY)) (pow2 32);
+    FStar.Math.Lemmas.lemma_mod_mod ((v xj * pow2 (v v_SHIFT_BY)) % pow2 32)
+      (v xj * pow2 (v v_SHIFT_BY)) (pow2 32)
+  in
+  let laneA (j: nat{j < 8})
+      : Lemma (requires v v_SHIFT_BY == 16)
+              (ensures get_lane r (2 * j) == mk_i16 0 /\
+                       get_lane r (2 * j + 1) == get_lane vector (2 * j)) =
+    laneB j;
+    lemma_halves r j;
+    lemma_halves vector j;
+    assert_norm (pow2 32 == 4294967296);
+    lemma_shl16 (lane32 vector j)
+  in
+  introduce (v v_SHIFT_BY == 16) ==>
+            (forall (k: nat). {:pattern (get_lane r k)} k < 16 ==>
+               get_lane r k == (if k % 2 = 0 then mk_i16 0 else get_lane vector (k - 1)))
+  with _pf. (
+    let auxA (k: nat{k < 16})
+        : Lemma (get_lane r k == (if k % 2 = 0 then mk_i16 0 else get_lane vector (k - 1))) =
+      laneA (k / 2)
+    in
+    Classical.forall_intro auxA
+  );
+  introduce (v v_SHIFT_BY >= 0 /\ v v_SHIFT_BY < 32) ==>
+            (forall (j: nat). j < 8 ==>
+               lane32 r j == (lane32 vector j * pow2 (v v_SHIFT_BY)) @% 4294967296)
+  with _pf. (
+    let auxB (j: nat{j < 8})
+        : Lemma (lane32 r j == (lane32 vector j * pow2 (v v_SHIFT_BY)) @% 4294967296) = laneB j
+    in
+    Classical.forall_intro auxB
+  )
+#pop-options
 
 [@@ "trusted: validated-axiom: lane32 view of mm256_unpacklo_epi32 (core-models differential-tested)"]
 let lemma_mm256_unpacklo_epi32 (lhs rhs: t_Vec256)
@@ -353,30 +605,57 @@ let lemma_mm_add_epi16 (lhs rhs: t_Vec128)
           [SMTPat (vec128_as_i16x8 (mm_add_epi16 lhs rhs))] = admit ()
 
 [@@ "trusted: validated-axiom: i16x8 view of mm_sub_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm_sub_epi16 (lhs rhs: t_Vec128)
   : Lemma (vec128_as_i16x8 (mm_sub_epi16 lhs rhs)
            == Spec.Utils.map2 ( -. ) (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
-          [SMTPat (vec128_as_i16x8 (mm_sub_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec128_as_i16x8 (mm_sub_epi16 lhs rhs))] =
+  reveal_opaque (`%mm_sub_epi16) mm_sub_epi16;
+  Canon.lemma_mm_sub_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (mm_sub_epi16 lhs rhs))
+                     (Spec.Utils.map2 ( -. ) (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x8 view of mm_mullo_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm_mullo_epi16 (lhs rhs: t_Vec128)
   : Lemma (vec128_as_i16x8 (mm_mullo_epi16 lhs rhs)
            == Spec.Utils.map2 mul_mod (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
-          [SMTPat (vec128_as_i16x8 (mm_mullo_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec128_as_i16x8 (mm_mullo_epi16 lhs rhs))] =
+  reveal_opaque (`%mm_mullo_epi16) mm_mullo_epi16;
+  Canon.lemma_mm_mullo_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (mm_mullo_epi16 lhs rhs))
+                     (Spec.Utils.map2 mul_mod (vec128_as_i16x8 lhs) (vec128_as_i16x8 rhs))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x8 view of mm_mulhi_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let lemma_mm_mulhi_epi16 (lhs rhs: t_Vec128)
   : Lemma (vec128_as_i16x8 (mm_mulhi_epi16 lhs rhs)
            == Spec.Utils.map2 (fun x y ->
                 cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
               (vec128_as_i16x8 lhs)
               (vec128_as_i16x8 rhs))
-          [SMTPat (vec128_as_i16x8 (mm_mulhi_epi16 lhs rhs))] = admit ()
+          [SMTPat (vec128_as_i16x8 (mm_mulhi_epi16 lhs rhs))] =
+  reveal_opaque (`%mm_mulhi_epi16) mm_mulhi_epi16;
+  Canon.lemma_mm_mulhi_epi16 lhs rhs;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (mm_mulhi_epi16 lhs rhs))
+              (Spec.Utils.map2 (fun x y ->
+                cast (((cast x <: i32) *. (cast y <: i32)) >>! (mk_i32 16)) <: i16)
+              (vec128_as_i16x8 lhs)
+              (vec128_as_i16x8 rhs))
+#pop-options
 
 [@@ "trusted: validated-axiom: i16x8 view of mm_set1_epi16 (core-models differential-tested)"]
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
 let lemma_mm_set1_epi16 (constant: i16)
   : Lemma (vec128_as_i16x8 (mm_set1_epi16 constant) == Spec.Utils.create (sz 8) constant)
-          [SMTPat (vec128_as_i16x8 (mm_set1_epi16 constant))] = admit ()
+          [SMTPat (vec128_as_i16x8 (mm_set1_epi16 constant))] =
+  reveal_opaque (`%mm_set1_epi16) mm_set1_epi16;
+  Canon.lemma_mm_set1_epi16 constant;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (mm_set1_epi16 constant))
+                     (Spec.Utils.create (sz 8) constant)
+#pop-options
 
 (* ── Bit-function view of a core-models t_BitVec ──────────────────────────────
    core-models `t_BitVec N` is structurally a bit-array (a `t_FunArray` of
