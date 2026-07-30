@@ -1,10 +1,15 @@
 /*
- *    Copyright 2023 Cryspen Sarl
+ *    Copyright 2026 CE Labs
  *
  *    Licensed under the Apache License, Version 2.0 or MIT.
  *    - http://www.apache.org/licenses/LICENSE-2.0
  *    - http://opensource.org/licenses/MIT
  */
+
+// Single source file for all ML-DSA sizes. Each test binary is built from
+// this file with MLDSA_VARIANT defined to 44, 65, or 87 (see
+// CMakeLists.txt), which selects the right headers, key/signature sizes, and,
+// via the MLDSA_* macros below, the right variant-specific symbol names.
 
 #include <gtest/gtest.h>
 
@@ -12,12 +17,47 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 
+#ifndef MLDSA_VARIANT
+#error "MLDSA_VARIANT must be defined to 44, 65, or 87"
+#endif
+
+#if MLDSA_VARIANT == 44
+#include "libcrux_mldsa44_portable.h"
+#define MLDSA_VERIFICATION_KEY_SIZE 1312U
+#define MLDSA_SIGNING_KEY_SIZE 2560U
+#define MLDSA_SIGNATURE_SIZE 2420U
+#elif MLDSA_VARIANT == 65
 #include "libcrux_mldsa65_portable.h"
+#define MLDSA_VERIFICATION_KEY_SIZE 1952U
+#define MLDSA_SIGNING_KEY_SIZE 4032U
+#define MLDSA_SIGNATURE_SIZE 3309U
+#elif MLDSA_VARIANT == 87
+#include "libcrux_mldsa87_portable.h"
+#define MLDSA_VERIFICATION_KEY_SIZE 2592U
+#define MLDSA_SIGNING_KEY_SIZE 4896U
+#define MLDSA_SIGNATURE_SIZE 4627U
+#else
+#error "Unsupported MLDSA_VARIANT (expected 44, 65, or 87)"
+#endif
+
 #include "libcrux_sha3_portable.h"
 
 using namespace std;
 
 typedef vector<uint8_t> bytes;
+
+#define MLDSA_CAT_(a, b) a##b
+#define MLDSA_CAT(a, b) MLDSA_CAT_(a, b)
+#define MLDSA_STRINGIFY(x) #x
+#define MLDSA_TOSTRING(x) MLDSA_STRINGIFY(x)
+
+// libcrux_ml_dsa_ml_dsa_<VARIANT><suffix>, e.g. _portable_generate_key_pair
+#define MLDSA_SYM(suffix) \
+  MLDSA_CAT(MLDSA_CAT(libcrux_ml_dsa_ml_dsa_, MLDSA_VARIANT), suffix)
+// MlDsa<VARIANT><suffix> test-suite names
+#define MLDSA_SUITE(suffix) MLDSA_CAT(MLDSA_CAT(MlDsa, MLDSA_VARIANT), suffix)
+// tests/nistkats-<VARIANT>.json
+#define MLDSA_KATS_PATH "tests/nistkats-" MLDSA_TOSTRING(MLDSA_VARIANT) ".json"
 
 Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
   Eurydice_borrow_slice_u8 s = {0};
@@ -26,16 +66,12 @@ Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
   return s;
 }
 
-
-TEST(MlDsa65TestPortable, ConsistencyTest) {
+TEST(MLDSA_SUITE(TestPortable), ConsistencyTest) {
   // Generate key pair
   Eurydice_arr_ec keygen_rand = {0};
   memset(keygen_rand.data, 0x13, 32);
 
-  Eurydice_arr_24 signing_key = {0};
-  Eurydice_arr_29 verification_key = {0};
-  libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
-      keygen_rand, &signing_key, &verification_key);
+  auto key_pair = MLDSA_SYM(_portable_generate_key_pair)(keygen_rand);
 
   // Sign
   uint8_t msg[79] = {0};
@@ -45,41 +81,47 @@ TEST(MlDsa65TestPortable, ConsistencyTest) {
 
   auto msg_slice = mk_borrow_slice_u8((uint8_t *)msg, 79);
   auto context_slice = mk_borrow_slice_u8((uint8_t *)context, 3);
-  Eurydice_arr_0c signature = {0};
-  auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
-      &signing_key, msg_slice, context_slice, sign_rand, &signature);
-  EXPECT_EQ(signature_result.tag, core_result_Ok);
-
-  // Verify
-  auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
-      &verification_key, msg_slice, context_slice, &signature);
-
-  EXPECT_EQ(result.tag, core_result_Ok);
-}
-
-#ifdef LIBCRUX_X64
-#include "libcrux_mldsa65_avx2.h"
-
-TEST(MlDsa65TestAvx2, ConsistencyTest) {
-  Eurydice_arr_ec keygen_rand = {0};
-  memset(keygen_rand.data, 0x13, 32);
-  auto key_pair = libcrux_ml_dsa_ml_dsa_65_avx2_generate_key_pair(keygen_rand);
-
-  // Sign
-  uint8_t msg[79] = {0};
-  Eurydice_arr_ec sign_rand = {0};
-  memset(sign_rand.data, 0x13, 32);
-  uint8_t context[3] = {0};
-
-  auto msg_slice = mk_borrow_slice_u8((uint8_t *)msg, 79);
-  auto context_slice = mk_borrow_slice_u8((uint8_t *)context, 3);
-  auto signature_result = libcrux_ml_dsa_ml_dsa_65_avx2_sign(
+  auto signature_result = MLDSA_SYM(_portable_sign)(
       &key_pair.signing_key, msg_slice, context_slice, sign_rand);
   EXPECT_EQ(signature_result.tag, core_result_Ok);
   auto signature = signature_result.val.case_Ok;
 
   // Verify
-  auto result = libcrux_ml_dsa_ml_dsa_65_avx2_verify(
+  auto result = MLDSA_SYM(_portable_verify)(
+      &key_pair.verification_key, msg_slice, context_slice, &signature);
+
+  EXPECT_EQ(result.tag, core_result_Ok);
+}
+
+#ifdef LIBCRUX_X64
+#if MLDSA_VARIANT == 44
+#include "libcrux_mldsa44_avx2.h"
+#elif MLDSA_VARIANT == 65
+#include "libcrux_mldsa65_avx2.h"
+#elif MLDSA_VARIANT == 87
+#include "libcrux_mldsa87_avx2.h"
+#endif
+
+TEST(MLDSA_SUITE(TestAvx2), ConsistencyTest) {
+  Eurydice_arr_ec keygen_rand = {0};
+  memset(keygen_rand.data, 0x13, 32);
+  auto key_pair = MLDSA_SYM(_avx2_generate_key_pair)(keygen_rand);
+
+  // Sign
+  uint8_t msg[79] = {0};
+  Eurydice_arr_ec sign_rand = {0};
+  memset(sign_rand.data, 0x13, 32);
+  uint8_t context[3] = {0};
+
+  auto msg_slice = mk_borrow_slice_u8((uint8_t *)msg, 79);
+  auto context_slice = mk_borrow_slice_u8((uint8_t *)context, 3);
+  auto signature_result = MLDSA_SYM(_avx2_sign)(
+      &key_pair.signing_key, msg_slice, context_slice, sign_rand);
+  EXPECT_EQ(signature_result.tag, core_result_Ok);
+  auto signature = signature_result.val.case_Ok;
+
+  // Verify
+  auto result = MLDSA_SYM(_avx2_verify)(
       &key_pair.verification_key, msg_slice, context_slice, &signature);
 
   EXPECT_EQ(result.tag, core_result_Ok);
@@ -153,9 +195,9 @@ vector<KAT> read_kats(string path) {
   return kats;
 }
 
-TEST(MlDsa65TestPortable, NISTKnownAnswerTest) {
+TEST(MLDSA_SUITE(TestPortable), NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
-  auto kats = read_kats("tests/nistkats-65.json");
+  auto kats = read_kats(MLDSA_KATS_PATH);
 
   Eurydice_arr_ec keygen_rand = {0};
   Eurydice_arr_ec sign_rand = {0};
@@ -164,18 +206,15 @@ TEST(MlDsa65TestPortable, NISTKnownAnswerTest) {
     // Generate key pair
     memcpy(keygen_rand.data, kat.key_generation_seed.data(), 32);
 
-    Eurydice_arr_24 signing_key = {0};
-    Eurydice_arr_29 verification_key = {0};
-    libcrux_ml_dsa_ml_dsa_65_portable_generate_key_pair_mut(
-        keygen_rand, &signing_key, &verification_key);
+    auto key_pair = MLDSA_SYM(_portable_generate_key_pair)(keygen_rand);
 
-    auto vk_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(verification_key.data, 1952U));
+    auto vk_hash = libcrux_sha3_sha256(mk_borrow_slice_u8(
+        key_pair.verification_key.data, MLDSA_VERIFICATION_KEY_SIZE));
     EXPECT_EQ(0, memcmp(vk_hash.data,
                         kat.sha3_256_hash_of_verification_key.data(), 32));
 
-    auto sk_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(signing_key.data, 4032U));
+    auto sk_hash = libcrux_sha3_sha256(
+        mk_borrow_slice_u8(key_pair.signing_key.data, MLDSA_SIGNING_KEY_SIZE));
     EXPECT_EQ(
         0, memcmp(sk_hash.data, kat.sha3_256_hash_of_signing_key.data(), 32));
 
@@ -184,27 +223,28 @@ TEST(MlDsa65TestPortable, NISTKnownAnswerTest) {
     Eurydice_borrow_slice_u8 context = {0};
 
     auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
-    Eurydice_arr_0c signature = {0};
-    auto signature_result = libcrux_ml_dsa_ml_dsa_65_portable_sign_mut(
-        &signing_key, msg_slice, context, sign_rand, &signature);
+    auto signature_result = MLDSA_SYM(_portable_sign)(
+        &key_pair.signing_key, msg_slice, context, sign_rand);
     EXPECT_EQ(signature_result.tag, core_result_Ok);
+    auto signature = signature_result.val.case_Ok;
 
     auto sig_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, 3309U));
+        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, MLDSA_SIGNATURE_SIZE));
     EXPECT_EQ(0,
               memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
 
     // Verify
-    auto result = libcrux_ml_dsa_ml_dsa_65_portable_verify(
-        &verification_key, msg_slice, context, &signature);
+    auto result = MLDSA_SYM(_portable_verify)(
+        &key_pair.verification_key, msg_slice, context, &signature);
+
     EXPECT_EQ(result.tag, core_result_Ok);
   }
 }
 
 #ifdef LIBCRUX_X64
-TEST(MlDsa65TestAvx2, NISTKnownAnswerTest) {
+TEST(MLDSA_SUITE(TestAvx2), NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
-  auto kats = read_kats("tests/nistkats-65.json");
+  auto kats = read_kats(MLDSA_KATS_PATH);
 
   Eurydice_arr_ec keygen_rand = {0};
   Eurydice_arr_ec sign_rand = {0};
@@ -213,18 +253,15 @@ TEST(MlDsa65TestAvx2, NISTKnownAnswerTest) {
     // Generate key pair
     memcpy(keygen_rand.data, kat.key_generation_seed.data(), 32);
 
-    Eurydice_arr_24 signing_key = {0};
-    Eurydice_arr_29 verification_key = {0};
-    libcrux_ml_dsa_ml_dsa_65_avx2_generate_key_pair_mut(
-        keygen_rand, &signing_key, &verification_key);
+    auto key_pair = MLDSA_SYM(_avx2_generate_key_pair)(keygen_rand);
 
-    auto vk_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(verification_key.data, 1952U));
+    auto vk_hash = libcrux_sha3_sha256(mk_borrow_slice_u8(
+        key_pair.verification_key.data, MLDSA_VERIFICATION_KEY_SIZE));
     EXPECT_EQ(0, memcmp(vk_hash.data,
                         kat.sha3_256_hash_of_verification_key.data(), 32));
 
-    auto sk_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(signing_key.data, 4032U));
+    auto sk_hash = libcrux_sha3_sha256(
+        mk_borrow_slice_u8(key_pair.signing_key.data, MLDSA_SIGNING_KEY_SIZE));
     EXPECT_EQ(
         0, memcmp(sk_hash.data, kat.sha3_256_hash_of_signing_key.data(), 32));
 
@@ -233,20 +270,21 @@ TEST(MlDsa65TestAvx2, NISTKnownAnswerTest) {
     Eurydice_borrow_slice_u8 context = {0};
 
     auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
-    Eurydice_arr_0c signature = {0};
-    auto signature_result = libcrux_ml_dsa_ml_dsa_65_avx2_sign_mut(
-        &signing_key, msg_slice, context, sign_rand, &signature);
+    auto signature_result = MLDSA_SYM(_avx2_sign)(
+        &key_pair.signing_key, msg_slice, context, sign_rand);
     EXPECT_EQ(signature_result.tag, core_result_Ok);
+    auto signature = signature_result.val.case_Ok;
 
     auto sig_hash =
-        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, 3309U));
+        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, MLDSA_SIGNATURE_SIZE));
     EXPECT_EQ(0,
               memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
 
     // Verify
-    auto result = libcrux_ml_dsa_ml_dsa_65_avx2_verify(
-        &verification_key, msg_slice, context, &signature);
+    auto result = MLDSA_SYM(_avx2_verify)(
+        &key_pair.verification_key, msg_slice, context, &signature);
+
     EXPECT_EQ(result.tag, core_result_Ok);
   }
 }
-#endif  // #ifdef LIBCRUX_X64
+#endif  // LIBCRUX_X64

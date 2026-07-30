@@ -73,6 +73,14 @@ The `c/` build defines a `combined_static` library; all test binaries link
 against it.  The `c-header-only/` build has no library target — tests include
 the headers directly.
 
+`c/tests/` and `c-header-only/tests/` are the same directory
+(`c-header-only/tests` is a symlink to `c/tests`). `tests/mlkem.cc` and
+`tests/mldsa.cc` are single, variant-parameterized source files — each test
+binary compiles the same source with `MLKEM_VARIANT`/`MLDSA_VARIANT` defined
+via `target_compile_definitions` (e.g. `ml_kem_test768` compiles `mlkem.cc`
+with `MLKEM_VARIANT=768`) to select the right headers, sizes, and symbol
+names.
+
 Set `LIBCRUX_KYBER=1` before cmake to also build the optional Kyber 768
 compatibility test (not part of the combined extraction itself).
 

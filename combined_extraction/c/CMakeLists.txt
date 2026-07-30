@@ -124,9 +124,14 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
+# tests/mldsa.cc and tests/mlkem.cc are single, variant-parameterized source
+# files (see MLDSA_VARIANT / MLKEM_VARIANT in the files themselves); each
+# target below compiles the same source with a different variant defined.
+
 add_executable(ml_dsa_test44
-    ${PROJECT_SOURCE_DIR}/tests/mldsa44.cc
+    ${PROJECT_SOURCE_DIR}/tests/mldsa.cc
 )
+target_compile_definitions(ml_dsa_test44 PRIVATE MLDSA_VARIANT=44)
 target_link_libraries(ml_dsa_test44 PRIVATE
     combined_static
     gtest_main
@@ -134,8 +139,9 @@ target_link_libraries(ml_dsa_test44 PRIVATE
 )
 
 add_executable(ml_dsa_test65
-    ${PROJECT_SOURCE_DIR}/tests/mldsa65.cc
+    ${PROJECT_SOURCE_DIR}/tests/mldsa.cc
 )
+target_compile_definitions(ml_dsa_test65 PRIVATE MLDSA_VARIANT=65)
 target_link_libraries(ml_dsa_test65 PRIVATE
     combined_static
     gtest_main
@@ -143,8 +149,9 @@ target_link_libraries(ml_dsa_test65 PRIVATE
 )
 
 add_executable(ml_dsa_test87
-    ${PROJECT_SOURCE_DIR}/tests/mldsa87.cc
+    ${PROJECT_SOURCE_DIR}/tests/mldsa.cc
 )
+target_compile_definitions(ml_dsa_test87 PRIVATE MLDSA_VARIANT=87)
 target_link_libraries(ml_dsa_test87 PRIVATE
     combined_static
     gtest_main
@@ -152,8 +159,9 @@ target_link_libraries(ml_dsa_test87 PRIVATE
 )
 
 add_executable(ml_kem_test512
-    ${PROJECT_SOURCE_DIR}/tests/mlkem512.cc
+    ${PROJECT_SOURCE_DIR}/tests/mlkem.cc
 )
+target_compile_definitions(ml_kem_test512 PRIVATE MLKEM_VARIANT=512)
 target_link_libraries(ml_kem_test512 PRIVATE
     combined_static
     gtest_main
@@ -161,8 +169,9 @@ target_link_libraries(ml_kem_test512 PRIVATE
 )
 
 add_executable(ml_kem_test768
-    ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
+    ${PROJECT_SOURCE_DIR}/tests/mlkem.cc
 )
+target_compile_definitions(ml_kem_test768 PRIVATE MLKEM_VARIANT=768)
 target_link_libraries(ml_kem_test768 PRIVATE
     combined_static
     gtest_main
@@ -170,8 +179,9 @@ target_link_libraries(ml_kem_test768 PRIVATE
 )
 
 add_executable(ml_kem_test1024
-    ${PROJECT_SOURCE_DIR}/tests/mlkem1024.cc
+    ${PROJECT_SOURCE_DIR}/tests/mlkem.cc
 )
+target_compile_definitions(ml_kem_test1024 PRIVATE MLKEM_VARIANT=1024)
 target_link_libraries(ml_kem_test1024 PRIVATE
     combined_static
     gtest_main
