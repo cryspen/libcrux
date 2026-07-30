@@ -1612,3 +1612,92 @@ let lemma_iv_set_epi32 (e7 e6 e5 e4 e3 e2 e1 e0: i32) (j: nat{j < 8})
                             iota; zeta; primops];
         FStar.Tactics.smt ())
 #pop-options
+
+(* ============================================================================
+   Unsigned 32/64 lane bridges — the `mul_epu32` shape.
+
+   `lemma_mm256_mul_epu32` above is stated at the `to_u64x4` view over
+   `to_u32x8` operands, so it is the ONE ml-kem lane fact that crosses BOTH a
+   signedness change and a width change.  Two small codec facts close the gap
+   to the i16/i32 views the ml-kem companion uses:
+
+     (a) the u32 lane view is the i32 lane view reduced mod 2^32 — the SAME
+         `lane_reader`, only `tc_of_u` differs (`lemma_tc_mod`);
+     (b) a u64 lane is the base-2^32 concatenation of its two u32 sub-lanes —
+         the unsigned analogue of `lemma_lane32_bridge` (no `tc_pair` step is
+         needed, since `tc_of_u` is the identity on unsigned widths).
+   ============================================================================ *)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_to_u32_val (vec: bv256) (j: nat{j < 8})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 8) #u32 (to_u32x8 vec) (mk_u64 j)) ==
+             IVi.tc_of_u Int.U32 (IVi.dsum2 (IVi.lane_reader (mk_u64 256) 32 vec (mk_u64 j)) 0 32)) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 256) 32 vec (mk_u64 j) in
+  IVi.dsum2_bound reader 0 32;
+  IVi.lemma_tc_range Int.U32 (IVi.dsum2 reader 0 32)
+
+let lemma_to_u64_val (vec: bv256) (i: nat{i < 4})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 4) #u64 (to_u64x4 vec) (mk_u64 i)) ==
+             IVi.tc_of_u Int.U64 (IVi.dsum2 (IVi.lane_reader (mk_u64 256) 64 vec (mk_u64 i)) 0 64)) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 256) 64 vec (mk_u64 i) in
+  IVi.dsum2_bound reader 0 64;
+  IVi.lemma_tc_range Int.U64 (IVi.dsum2 reader 0 64)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_u32_of_i32 (vec: bv256) (j: nat{j < 8})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 8) #u32 (to_u32x8 vec) (mk_u64 j)) ==
+             (v (Funarr.impl_5__get (mk_u64 8) #i32 (to_i32x8 vec) (mk_u64 j))) % pow2 32) =
+  assert_norm (Int.bits Int.U32 == 32);
+  assert_norm (Int.bits Int.I32 == 32);
+  assert_norm (~(Int.signed Int.U32));
+  let reader = IVi.lane_reader (mk_u64 256) 32 vec (mk_u64 j) in
+  IVi.dsum2_bound reader 0 32;
+  let u = IVi.dsum2 reader 0 32 in
+  lemma_to_u32_val vec j;
+  lemma_to_i32_val vec j;
+  lemma_tc_mod Int.U32 u;
+  lemma_tc_mod Int.I32 u
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_u64_concat32 (vec: bv256) (i: nat{i < 4})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 4) #u64 (to_u64x4 vec) (mk_u64 i)) ==
+             v (Funarr.impl_5__get (mk_u64 8) #u32 (to_u32x8 vec) (mk_u64 (2 * i))) +
+             pow2 32 * v (Funarr.impl_5__get (mk_u64 8) #u32 (to_u32x8 vec) (mk_u64 (2 * i + 1)))) =
+  assert_norm (Int.bits Int.U32 == 32);
+  assert_norm (Int.bits Int.U64 == 64);
+  let reader64 = IVi.lane_reader (mk_u64 256) 64 vec (mk_u64 i) in
+  let readerLo = IVi.lane_reader (mk_u64 256) 32 vec (mk_u64 (2 * i)) in
+  let readerHi = IVi.lane_reader (mk_u64 256) 32 vec (mk_u64 (2 * i + 1)) in
+  IVi.dsum2_bound reader64 0 64;
+  IVi.dsum2_bound readerLo 0 32;
+  IVi.dsum2_bound readerHi 0 32;
+  lemma_to_u64_val vec i;
+  lemma_to_u32_val vec (2 * i);
+  lemma_to_u32_val vec (2 * i + 1);
+  lemma_tc_mod Int.U64 (IVi.dsum2 reader64 0 64);
+  lemma_tc_mod Int.U32 (IVi.dsum2 readerLo 0 32);
+  lemma_tc_mod Int.U32 (IVi.dsum2 readerHi 0 32);
+  dsum2_split reader64 0 32 32;
+  dsum2_shift reader64 readerLo 0 0 32
+    (fun k -> lemma_reader_refine (mk_u64 256) 32 2 vec i 0 k);
+  dsum2_shift reader64 readerHi 32 0 32
+    (fun k -> lemma_reader_refine (mk_u64 256) 32 2 vec i 1 k)
+#pop-options
+
+(* per-lane value of the interpreted unsigned 32x32->64 multiply. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_iv_mul_epu32 (a b: Funarr.t_FunArray (mk_u64 8) u32) (i: nat{i < 4})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 4) #u64 (IV.e_mm256_mul_epu32 a b) (mk_u64 i)) ==
+             v (Funarr.impl_5__get (mk_u64 8) #u32 a (mk_u64 (2 * i))) *
+             v (Funarr.impl_5__get (mk_u64 8) #u32 b (mk_u64 (2 * i)))) =
+  assert (v (Funarr.impl_5__get (mk_u64 4) #u64 (IV.e_mm256_mul_epu32 a b) (mk_u64 i)) ==
+          v (Funarr.impl_5__get (mk_u64 8) #u32 a (mk_u64 (2 * i))) *
+          v (Funarr.impl_5__get (mk_u64 8) #u32 b (mk_u64 (2 * i))))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_mul_epu32];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
