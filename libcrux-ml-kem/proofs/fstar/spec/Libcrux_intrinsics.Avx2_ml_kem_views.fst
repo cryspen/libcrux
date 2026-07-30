@@ -1927,3 +1927,107 @@ let lemma_deserialize_1_bits (a b: i16) (i: nat{i < 256})
    else ());
   ()
 #pop-options
+
+(* ── concat-pairs (madd-by-[2^n;1]) machinery — the P2 keystone shared by
+   serialize_4/5/10/12.  `mm256_concat_pairs_n n x` = madd(x, set_epi16(2^n,1,…));
+   with per-lane bits >= n of x ZERO the 32-lane value is the exact bit
+   concatenation x_{2q} + 2^n * x_{2q+1}, so bit b of the lane is bit b of the
+   even lane (b < n), bit b-n of the odd lane (n <= b < 2n), else 0. *)
+
+(* dsum2 of an all-zero window is 0. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let rec lemma_dsum2_zero (f: nat -> Libcrux_core_models.Abstractions.Bit.t_Bit) (off n: nat)
+    (h: (k: nat{off <= k /\ k < off + n}) -> Lemma (IVi.bval (f k) == 0))
+  : Lemma (ensures IVi.dsum2 f off n == 0) (decreases n) =
+  if n = 0 then ()
+  else (h off; lemma_dsum2_zero f (off + 1) (n - 1) (fun k -> h k))
+#pop-options
+
+(* bits >= n of i16 lane l all zero ==> the lane VALUE is in [0, 2^n). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_lane_high_zero_bound (x: t_Vec256) (l: nat{l < 16}) (n: nat{1 <= n /\ n <= 15})
+  : Lemma (requires forall (c: nat{c < 16}). c >= n ==> bv_bit x (16 * l + c) = 0)
+          (ensures 0 <= v (get_lane x l) /\ v (get_lane x l) < pow2 n) =
+  let reader = IVi.lane_reader (mk_u64 256) 16 x (mk_u64 l) in
+  Canon.lemma_to_i16_val x l;
+  (* dsum2 0 16 = dsum2 0 n + 2^n * dsum2 n (16-n); the tail is an all-zero window *)
+  Canon.dsum2_split reader 0 n (16 - n);
+  let htail (k: nat{n <= k /\ k < 16}) : Lemma (IVi.bval (reader k) == 0) =
+    lemma_bv_bit_reader #(mk_u64 256) 16 x l k
+  in
+  lemma_dsum2_zero reader n (16 - n) htail;
+  IVi.dsum2_bound reader 0 n;
+  (* value = tc_of_u I16 u with u = dsum2 0 n < 2^n <= 2^15 -> tc is the identity *)
+  IVi.lemma_tc_range Rust_primitives.Integers.I16 (IVi.dsum2 reader 0 16);
+  assert (IVi.dsum2 reader 0 16 == IVi.dsum2 reader 0 n);
+  FStar.Math.Lemmas.pow2_le_compat 15 n
+#pop-options
+
+(* bit c of a lane with a NON-NEGATIVE value is a plain digit of that value. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 200"
+let lemma_get_bit_nonneg (y: i16) (c: nat{c < 16})
+  : Lemma (requires v y >= 0)
+          (ensures Rust_primitives.Integers.get_bit y (sz c) == ((v y) / pow2 c) % 2) =
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16)
+#pop-options
+
+(* digit b of the concatenation S = x0 + 2^n * x1 (both halves in [0, 2^n)). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400 --split_queries always"
+let lemma_concat_digit (x0 x1: nat) (n: nat{1 <= n /\ n <= 12}) (b: nat{b < 32})
+  : Lemma (requires x0 < pow2 n /\ x1 < pow2 n)
+          (ensures ((x0 + pow2 n * x1) / pow2 b) % 2 ==
+                   (if b < n then (x0 / pow2 b) % 2
+                    else if b < 2 * n then (x1 / pow2 (b - n)) % 2
+                    else 0)) =
+  let s = x0 + pow2 n * x1 in
+  if b < n then begin
+    (* s / 2^b = x0/2^b + 2^(n-b)*x1, and the second summand is even *)
+    FStar.Math.Lemmas.pow2_plus (n - b) b;
+    FStar.Math.Lemmas.lemma_div_plus x0 (pow2 (n - b) * x1) (pow2 b);
+    FStar.Math.Lemmas.pow2_plus 1 (n - b - 1);
+    FStar.Math.Lemmas.lemma_mod_plus (x0 / pow2 b) (pow2 (n - b - 1) * x1) 2
+  end
+  else if b < 2 * n then begin
+    (* s / 2^n = x1 + x0/2^n = x1; then divide by 2^(b-n) *)
+    FStar.Math.Lemmas.lemma_div_plus x0 x1 (pow2 n);
+    FStar.Math.Lemmas.small_division_lemma_1 x0 (pow2 n);
+    FStar.Math.Lemmas.pow2_plus n (b - n);
+    FStar.Math.Lemmas.division_multiplication_lemma s (pow2 n) (pow2 (b - n))
+  end
+  else begin
+    (* s < 2^(2n) <= 2^b *)
+    FStar.Math.Lemmas.pow2_plus n n;
+    FStar.Math.Lemmas.lemma_mult_lt_left (pow2 n) x1 (pow2 n);
+    FStar.Math.Lemmas.pow2_le_compat b (2 * n);
+    FStar.Math.Lemmas.small_division_lemma_1 s (pow2 b)
+  end
+#pop-options
+
+(* digit bridges: bit (32q+b) / (16l+c) of the vector == a plain digit of the
+   corresponding lane VALUE (clean-context, reusable for every width). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_lane32_digit (r: t_Vec256) (q: nat{q < 8}) (b: nat{b < 32})
+  : Lemma (requires 0 <= lane32 r q /\ lane32 r q < pow2 31)
+          (ensures bv_bit r (32 * q + b) == ((lane32 r q) / pow2 b) % 2) =
+  assert_norm (256 == 8 * 32);
+  lemma_bv_bit_reader #(mk_u64 256) 32 r q b;
+  Canon.lemma_readback Rust_primitives.Integers.I32 (mk_u64 256) (mk_u64 8) r (mk_u64 q) b;
+  Canon.lemma_to_i32_val r q;
+  lemma_lane32_eq_to_i32x8 r q;
+  let reader32 = IVi.lane_reader (mk_u64 256) 32 r (mk_u64 q) in
+  IVi.dsum2_bound reader32 0 32;
+  IVi.lemma_tc_range Rust_primitives.Integers.I32 (IVi.dsum2 reader32 0 32);
+  assert (IVi.dsum2 reader32 0 32 == lane32 r q);
+  Canon.lemma_get_bit_tc Rust_primitives.Integers.I32 (IVi.dsum2 reader32 0 32) b
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_lane16_digit (x: t_Vec256) (l: nat{l < 16}) (c: nat{c < 16})
+  : Lemma (requires v (get_lane x l) >= 0)
+          (ensures bv_bit x (16 * l + c) == ((v (get_lane x l)) / pow2 c) % 2) =
+  assert_norm (256 == 16 * 16);
+  lemma_get_bit_nonneg (get_lane x l) c;
+  lemma_bv_bit_reader #(mk_u64 256) 16 x l c;
+  Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 256) (mk_u64 16) x (mk_u64 l) c
+#pop-options
