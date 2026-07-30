@@ -1194,3 +1194,52 @@ let lemma_mm256_set_epi16_bound (v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2
     [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] =
   lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0
 #pop-options
+
+(* ── `mm256_cmpgt_epi16`: lane form, and the bit-0 form its consumers need ─────
+   pcm stated this as an `ensures` on the op itself (an unvalidated axiom in
+   `Avx2_extract.fsti`); the migrated `Libcrux_intrinsics.Avx2` op carries no
+   ensures at all and the DEFERRED note above parked the shape.  Both facts below
+   are PROVEN: over core-models the op IS modeled, `IV.e_mm256_cmpgt_epi16`
+   yielding `mk_i16 (-1)` or `mk_i16 0` per lane.
+
+   Stated at TWO granularities on purpose.  The lane form is the primitive; the
+   bit form is what the consumers actually ask for, and note their bit index is
+   `16 * l` — a symbolic LANE at a CONCRETE bit offset (`Serialize.serialize_1_`'s
+   post reads `vector (i * 16)`).  Keeping the offset ground is what makes the
+   bit form cheap: a symbolic-offset version needs "every bit of `mk_i16 (-1)` is
+   set", which is a 16-way `pow2` argument Z3 will not find (measured: it gives up
+   at rlimit 5.9 of 300, i.e. a trigger gap, not a budget one). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_lane_mm256_cmpgt_epi16 (lhs rhs: t_Vec256) (l: nat{l < 16})
+  : Lemma (Seq.index (vec256_as_i16x16 (mm256_cmpgt_epi16 lhs rhs)) l
+           == (if Seq.index (vec256_as_i16x16 lhs) l >. Seq.index (vec256_as_i16x16 rhs) l
+               then mk_i16 (-1) else mk_i16 0)) =
+  reveal_opaque (`%mm256_cmpgt_epi16) mm256_cmpgt_epi16;
+  Canon.lemma_mm256_cmpgt_epi16 lhs rhs;
+  assert (Funarr.impl_5__get (mk_u64 16) #i16
+            (IV.e_mm256_cmpgt_epi16 (Canon.to_i16x16 lhs) (Canon.to_i16x16 rhs)) (mk_u64 l)
+          == (if Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 lhs) (mk_u64 l) >.
+                 Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 rhs) (mk_u64 l)
+              then mk_i16 (-1) else mk_i16 0))
+    by (FStar.Tactics.norm [delta_only [`%IV.e_mm256_cmpgt_epi16]; iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit0_mm256_cmpgt_epi16 (lhs rhs: t_Vec256) (l: nat{l < 16})
+  : Lemma (bv_bit (mm256_cmpgt_epi16 lhs rhs) (16 * l)
+           == (if Seq.index (vec256_as_i16x16 lhs) l >. Seq.index (vec256_as_i16x16 rhs) l
+               then 1 else 0)) =
+  reveal_opaque (`%mm256_cmpgt_epi16) mm256_cmpgt_epi16;
+  let r = mm256_cmpgt_epi16 lhs rhs in
+  lemma_lane_mm256_cmpgt_epi16 lhs rhs l;
+  (* bit 0 of i16 lane `l` IS raw bit `16*l` *)
+  Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 256) (mk_u64 16) r (mk_u64 l) 0;
+  (* ground: bit 0 of -1 is set, bit 0 of 0 is clear *)
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16);
+  assert_norm (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16 (mk_i16 (-1))
+                 (sz 0) == 1);
+  assert_norm (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16 (mk_i16 0)
+                 (sz 0) == 0)
+#pop-options

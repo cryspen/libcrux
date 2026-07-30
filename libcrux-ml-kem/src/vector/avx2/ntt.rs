@@ -427,6 +427,14 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
 }
 
 #[inline(always)]
+// `inv_ntt_layer_3_step` had ONE sub-query that only ever passed via hint REPLAY: once a
+// dependency digest changes (here, two additions to the canonical `Intrinsics_views`), the
+// replay fails and the query saturates COLD at the full rlimit 400 (measured: 334 s).  A
+// saturating query cannot be re-recorded — it produces no hint by construction — so it has
+// to be made fast-stable cold.  `#restart-solver` gives this declaration a fresh z3 per
+// sub-query, so the 50-odd preceding split sub-queries cannot pollute the solver state it
+// runs in (same fix, same shape, as the ml-dsa `Simd.Avx2.Invntt` decls).
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
 #[hax_lib::fstar::options("--z3rlimit 400 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta /\
     Spec.Utils.is_i16b_array (2*3328) (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector})"#))]
