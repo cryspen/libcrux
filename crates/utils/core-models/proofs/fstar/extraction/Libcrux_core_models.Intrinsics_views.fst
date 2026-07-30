@@ -1701,3 +1701,58 @@ let lemma_iv_mul_epu32 (a b: Funarr.t_FunArray (mk_u64 8) u32) (i: nat{i < 4})
                             iota; zeta; primops];
         FStar.Tactics.smt ())
 #pop-options
+
+(* ── 128-bit twins of the two byte-granular PSHUFB ingredients ────────────────
+   The 256-bit versions above (`lemma_iv_shuffle_epi8_sel`, `lemma_i16_from_i8_pair`)
+   retired the hand-written 256-bit PSHUFB semantics axiom.  ml-kem's rejection
+   sampling needs the same pair at 128 bits.  Note the 128-bit model has NO
+   half-lane base: `e_mm_shuffle_epi8` selects `vector.[idx % 16]` outright, where
+   the 256-bit one selects `16*(i/16) + idx%16`.  So the `sel` statement is
+   strictly simpler than its 256-bit counterpart, not merely narrower. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_iv_mm_shuffle_epi8_sel (a b: Funarr.t_FunArray (mk_u64 16) i8) (i: nat{i < 16})
+    : Lemma (requires v (Funarr.impl_5__get (mk_u64 16) #i8 b (mk_u64 i)) >= 0)
+            (ensures
+              (let idx : nat = v (Funarr.impl_5__get (mk_u64 16) #i8 b (mk_u64 i)) in
+               idx % 16 < 16 /\
+               Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_shuffle_epi8 a b) (mk_u64 i) ==
+               Funarr.impl_5__get (mk_u64 16) #i8 a (mk_u64 (idx % 16)))) =
+  let bi = Funarr.impl_5__get (mk_u64 16) #i8 b (mk_u64 i) in
+  let idx : nat = v bi in
+  assert (v (cast bi <: u8) == idx);
+  lemma_u8_high_bit_clear (cast bi <: u8);
+  assert (idx % 16 < 16);
+  assert (Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_shuffle_epi8 a b) (mk_u64 i) ==
+          Funarr.impl_5__get (mk_u64 16) #i8 a (mk_u64 (idx % 16)))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_shuffle_epi8];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_i16x8_from_i8_pair (x y: bv128) (k: nat{k < 8}) (k': nat{k' < 8})
+    : Lemma (requires
+               Funarr.impl_5__get (mk_u64 16) #i8 (to_i8x16 x) (mk_u64 (2 * k)) ==
+               Funarr.impl_5__get (mk_u64 16) #i8 (to_i8x16 y) (mk_u64 (2 * k')) /\
+               Funarr.impl_5__get (mk_u64 16) #i8 (to_i8x16 x) (mk_u64 (2 * k + 1)) ==
+               Funarr.impl_5__get (mk_u64 16) #i8 (to_i8x16 y) (mk_u64 (2 * k' + 1)))
+            (ensures Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 x) (mk_u64 k) ==
+                     Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 y) (mk_u64 k')) =
+  assert_norm (Int.bits Int.I8 == 8);
+  assert_norm (Int.bits Int.I16 == 16);
+  let xr : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 x) (mk_u64 k) in
+  let yr : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 y) (mk_u64 k') in
+  let aux (b: usize{v b < 16}) : Lemma (Int.get_bit #Int.I16 xr b == Int.get_bit #Int.I16 yr b) =
+    let h : nat = (v b) / 8 in
+    let l : nat = (v b) % 8 in
+    assert (v b == 8 * h + l);
+    lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) x (mk_u64 k) (v b);
+    lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) y (mk_u64 k') (v b);
+    lemma_readback Int.I8 (mk_u64 128) (mk_u64 16) x (mk_u64 (2 * k + h)) l;
+    lemma_readback Int.I8 (mk_u64 128) (mk_u64 16) y (mk_u64 (2 * k' + h)) l;
+    lemma_reader_refine (mk_u64 128) 8 2 x k h l;
+    lemma_reader_refine (mk_u64 128) 8 2 y k' h l
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.I16 xr yr
+#pop-options
