@@ -159,7 +159,18 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
 
         // Now that they're all in the most significant bit position, shift them
         // down to the least significant bit.
-        mm256_srli_epi16::<15>(coefficients_in_msb)
+        let result = mm256_srli_epi16::<15>(coefficients_in_msb);
+        proof!(
+            r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i
+    = ( if i % 16 >= 1 then 0
+        else let j = (i / 16) * 1 + i % 16 in
+             if i < 128 then get_bit $a (sz j) else get_bit $b (sz (j - 8)))
+with Libcrux_intrinsics.Avx2_ml_kem_views.lemma_deserialize_1_bits $a $b i
+"#
+        );
+        result
     }
 
     deserialize_1_u8s(bytes[0], bytes[1])

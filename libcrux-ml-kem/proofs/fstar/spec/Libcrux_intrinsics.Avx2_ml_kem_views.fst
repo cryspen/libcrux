@@ -1713,3 +1713,217 @@ let lemma_bv_bit_mm_shuffle_epi8 (a b: t_Vec128) (i: nat{i < 128})
     lemma_bv_bit_reader 8 a (u % 16) sb
   end
 #pop-options
+
+(* ── deserialize_1 machinery: ground mullo-by-2^k bit move, srli15 lane bits,
+   and THE per-index deserialize_1 bit obligation (mirror of
+   `lemma_serialize_1_bits` for the decode direction).  serialize.rs's
+   deserialize_1_i16s proof! block calls `lemma_deserialize_1_bits` per index. *)
+
+(* bit 15 of a wrapping i16 multiply by (2^k mod 2^16) is bit (15-k) of the
+   input — the "multiply moves the wanted bit to the MSB" step. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400"
+let lemma_mul_pow2_bit15 (x m: i16) (k: nat{k <= 15})
+  : Lemma (requires (v m) % pow2 16 == pow2 k)
+          (ensures Rust_primitives.Integers.get_bit (Rust_primitives.Integers.mul_mod x m) (sz 15) ==
+                   Rust_primitives.Integers.get_bit x (sz (15 - k))) =
+  let y : i16 = Rust_primitives.Integers.mul_mod x m in
+  let n16 = pow2 16 in
+  assert_norm (pow2 16 == 65536); assert_norm (pow2 15 == 32768);
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16);
+  (* unsigned 16-bit images: get_bit z nth == ((v z % 2^16) / 2^nth) % 2 *)
+  let x16 = (v x) % n16 in
+  let y16 = (v y) % n16 in
+  (* wrap: v y == (v x * v m) @% 2^16, whose plain mod-2^16 image is the same *)
+  assert ((v y) % n16 == (v x * v m) % n16);
+  FStar.Math.Lemmas.lemma_mod_mul_distr_r (v x) (v m) n16;
+  FStar.Math.Lemmas.lemma_mod_mul_distr_l (v x) (pow2 k) n16;
+  assert (y16 == (x16 * pow2 k) % n16);
+  (* bit 15 of (x16 * 2^k) mod 2^16 == bit (15-k) of x16 *)
+  FStar.Math.Lemmas.pow2_modulo_division_lemma_1 (x16 * pow2 k) 15 16;
+  FStar.Math.Lemmas.pow2_plus k (15 - k);
+  FStar.Math.Lemmas.division_multiplication_lemma (x16 * pow2 k) (pow2 k) (pow2 (15 - k));
+  FStar.Math.Lemmas.cancel_mul_div x16 (pow2 k);
+  FStar.Math.Lemmas.modulo_modulo_lemma ((x16 * pow2 k) / pow2 15) 2 (pow2 0);
+  assert ((y16 / pow2 15) % 2 == (x16 / pow2 (15 - k)) % 2)
+#pop-options
+
+(* srli-15 lane: bit 0 of the shifted lane is bit 15 of the input lane; all
+   higher bits are 0. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 200 --split_queries always"
+let lemma_srli15_lane_bits (y: i16) (bb: nat{bb < 16})
+  : Lemma (Rust_primitives.Integers.get_bit
+             (cast ((cast y <: u16) >>! mk_i32 15 <: u16) <: i16) (sz bb) ==
+           (if bb = 0 then Rust_primitives.Integers.get_bit y (sz 15) else 0)) =
+  assert_norm (pow2 15 == 32768); assert_norm (pow2 16 == 65536);
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16);
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.U16);
+  let yu : u16 = cast y <: u16 in
+  let sh : u16 = yu >>! mk_i32 15 in
+  assert (v yu == (v y) % pow2 16);
+  assert (v sh == (v yu) / pow2 15);
+  assert (v sh == 0 \/ v sh == 1);
+  let r : i16 = cast sh <: i16 in
+  assert (v r == v sh);
+  if bb = 0 then ()
+  else FStar.Math.Lemmas.small_division_lemma_1 (v r) (pow2 bb)
+#pop-options
+
+(* THE deserialize_1 bit obligation: bit i of the srli15(mullo(set_epi16 lanes,
+   set_epi16 mults)) spine.  Statement recomputes the extracted spine verbatim
+   (same set/mullo/srli applications), so the proof! call site links by
+   congruence. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deserialize_1_bits (a b: i16) (i: nat{i < 256})
+  : Lemma
+      (let coeff = mm256_set_epi16 b b b b b b b b a a a a a a a a in
+       let mults = mm256_set_epi16 (mk_i16 1 <<! mk_i32 8 <: i16)
+           (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 10 <: i16)
+           (mk_i16 1 <<! mk_i32 11 <: i16) (mk_i16 1 <<! mk_i32 12 <: i16)
+           (mk_i16 1 <<! mk_i32 13 <: i16) (mk_i16 1 <<! mk_i32 14 <: i16) (mk_i16 (-32768))
+           (mk_i16 1 <<! mk_i32 8 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+           (mk_i16 1 <<! mk_i32 10 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16)
+           (mk_i16 1 <<! mk_i32 12 <: i16) (mk_i16 1 <<! mk_i32 13 <: i16)
+           (mk_i16 1 <<! mk_i32 14 <: i16) (mk_i16 (-32768)) in
+       let r = mm256_srli_epi16 (mk_i32 15) (mm256_mullo_epi16 coeff mults) in
+       bv_bit r i = (if i % 16 >= 1 then 0
+                     else let j = (i / 16) * 1 + i % 16 in
+                          if i < 128 then Rust_primitives.Integers.get_bit a (sz j)
+                          else Rust_primitives.Integers.get_bit b (sz (j - 8)))) =
+  let coeff = mm256_set_epi16 b b b b b b b b a a a a a a a a in
+  let mults = mm256_set_epi16 (mk_i16 1 <<! mk_i32 8 <: i16)
+      (mk_i16 1 <<! mk_i32 9 <: i16) (mk_i16 1 <<! mk_i32 10 <: i16)
+      (mk_i16 1 <<! mk_i32 11 <: i16) (mk_i16 1 <<! mk_i32 12 <: i16)
+      (mk_i16 1 <<! mk_i32 13 <: i16) (mk_i16 1 <<! mk_i32 14 <: i16) (mk_i16 (-32768))
+      (mk_i16 1 <<! mk_i32 8 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+      (mk_i16 1 <<! mk_i32 10 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16)
+      (mk_i16 1 <<! mk_i32 12 <: i16) (mk_i16 1 <<! mk_i32 13 <: i16)
+      (mk_i16 1 <<! mk_i32 14 <: i16) (mk_i16 (-32768)) in
+  let msb = mm256_mullo_epi16 coeff mults in
+  let r = mm256_srli_epi16 (mk_i32 15) msb in
+  let l = i / 16 in
+  let bb = i % 16 in
+  bit_vec_of_int_t_array_vec256_as_i16x16_lemma r 16 i;
+  assert (Seq.index (vec256_as_i16x16 msb) l ==
+          Rust_primitives.Integers.mul_mod (Seq.index (vec256_as_i16x16 coeff) l)
+                             (Seq.index (vec256_as_i16x16 mults) l));
+  assert (Seq.index (vec256_as_i16x16 r) l ==
+          (cast ((cast (Seq.index (vec256_as_i16x16 msb) l) <: u16) >>! mk_i32 15 <: u16) <: i16));
+  (if false then ()
+   else if l = 0 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 0 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 0 == (mk_i16 (-32768)));
+     assert_norm ((v ((mk_i16 (-32768)) <: i16)) % pow2 16 == pow2 15);
+     lemma_mul_pow2_bit15 a ((mk_i16 (-32768)) <: i16) 15;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 (-32768)) <: i16)) bb
+   end
+   else if l = 1 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 1 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 1 == (mk_i16 1 <<! mk_i32 14 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16)) % pow2 16 == pow2 14);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16) 14;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16)) bb
+   end
+   else if l = 2 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 2 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 2 == (mk_i16 1 <<! mk_i32 13 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16)) % pow2 16 == pow2 13);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16) 13;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16)) bb
+   end
+   else if l = 3 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 3 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 3 == (mk_i16 1 <<! mk_i32 12 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16)) % pow2 16 == pow2 12);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16) 12;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16)) bb
+   end
+   else if l = 4 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 4 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 4 == (mk_i16 1 <<! mk_i32 11 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16)) % pow2 16 == pow2 11);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16) 11;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16)) bb
+   end
+   else if l = 5 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 5 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 5 == (mk_i16 1 <<! mk_i32 10 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16)) % pow2 16 == pow2 10);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16) 10;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16)) bb
+   end
+   else if l = 6 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 6 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 6 == (mk_i16 1 <<! mk_i32 9 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16)) % pow2 16 == pow2 9);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16) 9;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16)) bb
+   end
+   else if l = 7 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 7 == a);
+     assert (Seq.index (vec256_as_i16x16 mults) 7 == (mk_i16 1 <<! mk_i32 8 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16)) % pow2 16 == pow2 8);
+     lemma_mul_pow2_bit15 a ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16) 8;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod a ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16)) bb
+   end
+   else if l = 8 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 8 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 8 == (mk_i16 (-32768)));
+     assert_norm ((v ((mk_i16 (-32768)) <: i16)) % pow2 16 == pow2 15);
+     lemma_mul_pow2_bit15 b ((mk_i16 (-32768)) <: i16) 15;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 (-32768)) <: i16)) bb
+   end
+   else if l = 9 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 9 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 9 == (mk_i16 1 <<! mk_i32 14 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16)) % pow2 16 == pow2 14);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16) 14;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 14 <: i16) <: i16)) bb
+   end
+   else if l = 10 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 10 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 10 == (mk_i16 1 <<! mk_i32 13 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16)) % pow2 16 == pow2 13);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16) 13;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 13 <: i16) <: i16)) bb
+   end
+   else if l = 11 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 11 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 11 == (mk_i16 1 <<! mk_i32 12 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16)) % pow2 16 == pow2 12);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16) 12;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 12 <: i16) <: i16)) bb
+   end
+   else if l = 12 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 12 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 12 == (mk_i16 1 <<! mk_i32 11 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16)) % pow2 16 == pow2 11);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16) 11;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 11 <: i16) <: i16)) bb
+   end
+   else if l = 13 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 13 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 13 == (mk_i16 1 <<! mk_i32 10 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16)) % pow2 16 == pow2 10);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16) 10;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 10 <: i16) <: i16)) bb
+   end
+   else if l = 14 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 14 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 14 == (mk_i16 1 <<! mk_i32 9 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16)) % pow2 16 == pow2 9);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16) 9;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 9 <: i16) <: i16)) bb
+   end
+   else if l = 15 then begin
+     assert (Seq.index (vec256_as_i16x16 coeff) 15 == b);
+     assert (Seq.index (vec256_as_i16x16 mults) 15 == (mk_i16 1 <<! mk_i32 8 <: i16));
+     assert_norm ((v ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16)) % pow2 16 == pow2 8);
+     lemma_mul_pow2_bit15 b ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16) 8;
+     lemma_srli15_lane_bits (Rust_primitives.Integers.mul_mod b ((mk_i16 1 <<! mk_i32 8 <: i16) <: i16)) bb
+   end
+   else ());
+  ()
+#pop-options
