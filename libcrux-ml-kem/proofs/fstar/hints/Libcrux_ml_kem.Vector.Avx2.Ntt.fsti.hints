@@ -1,5 +1,5 @@
 [
-  "434dbfc4f6c74b0e516260211abea2e4",
+  "648e05492cbcd6d56f6889bc08aaa740",
   [
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_1_step",
@@ -29,7 +29,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "26edde057e3df64cc4825d6c299e1258"
+      "f1372814050974e5a847783ff62ff039"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_2_step",
@@ -59,7 +59,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "96f8ae7aab278b4231d7c08fe794c170"
+      "9dfd13e25a69794c5b5bb3e45ba3c1eb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_layer_3_step",
@@ -96,7 +96,34 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "624c1c5ce9411221163873e11d031fb0"
+      "53facdf0ed01e675f6608ef3e134ae6e"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_1_mult",
+      1,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.unsigned",
+        "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "typing_Rust_primitives.Integers.bits",
+        "typing_tok_Rust_primitives.Integers.U64@tok"
+      ],
+      0,
+      "a69ea7286cb96198bf9205ca54a1cacc"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_1_step",
@@ -126,7 +153,34 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6149bcf16aa8fa0e2f84b77f170b3439"
+      "e19414bd3dd618b8cb26d57586f0177d"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_2_mult",
+      1,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.unsigned",
+        "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "typing_Rust_primitives.Integers.bits",
+        "typing_tok_Rust_primitives.Integers.U64@tok"
+      ],
+      0,
+      "bea7ddf0ffa607ea5199ae6a2dc37574"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_2_step",
@@ -156,7 +210,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "23e1cf590db561d1f8dd323ab6f962ea"
+      "1a55c721b554c3146d1a7637a25b88b2"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.inv_ntt_layer_3_step",
@@ -193,7 +247,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0e9d267fbec277d08d4eb6ef11192ba4"
+      "ca0c6893cfdbc0f469866d6cfb79edfb"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply__v_PERMUTE_WITH",
@@ -223,7 +277,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "5d2c8e81e7e0c1c8578a11be7b961b56"
+      "93dbfb598c55e84f62a8ef015eeedb80"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Ntt.ntt_multiply",
@@ -252,7 +306,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8a8fce78dd63b462197b5c8be28431c7"
+      "49c1204192fef5515adca5e3688bd743"
     ]
   ]
 ]

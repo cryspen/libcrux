@@ -230,7 +230,15 @@ pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     combined
 }
 
-// Lemma library relocated to proofs/fstar/spec/Libcrux_ml_kem.Vector.Avx2.Ntt_theory.fst.
+// The all-literal `mult` selector of `inv_ntt_layer_1_step`, isolated in its own
+// tiny function.  Each of its sixteen `mk_i16 (+/-1)` literals carries a trivial
+// `Integers.range` well-formedness check.  Inside `inv_ntt_layer_1_step` those
+// checks SATURATE at the full rlimit: `--ext context_pruning` keeps only the
+// fact-ids it deems relevant per split sub-query, and the shuffle / permute /
+// sums / montgomery / barrett / blend machinery crowds the basic numeral axioms
+// out of the relevant set.  Here the context is one op plus one lemma, so it does
+// not.  (Factoring the whole pre-`zetas` HALF instead does NOT work — measured: it
+// merely moves the same saturation from the consumer into the producer.)
 #[inline(always)]
 #[hax_lib::fstar::before(
     r#"
@@ -240,6 +248,34 @@ module ZS = Spec.Utils
 module ZA = Libcrux_ml_kem.Vector.Avx2.Arithmetic
 "#
 )]
+#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::ensures(|mult| fstar!(r#"
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 0) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 1) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 2) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 3) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 4) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 5) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 6) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 7) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 8) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 9) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 10) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 11) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 12) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 13) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 14) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 15) == -1"#))]
+fn inv_ntt_layer_1_mult() -> Vec256 {
+    let mult = mm256_set_epi16(-1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1);
+    proof!(
+        r#"lemma_mm256_set_epi16_lanes (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1)"#
+    );
+    mult
+}
+
+// Lemma library relocated to proofs/fstar/spec/Libcrux_ml_kem.Vector.Avx2.Ntt_theory.fst.
+#[inline(always)]
 #[hax_lib::fstar::options("--z3rlimit 300 --split_queries always")]
 #[hax_lib::requires(fstar!(r#"Spec.Utils.is_i16b 1664 zeta0 /\ Spec.Utils.is_i16b 1664 zeta1 /\
                             Spec.Utils.is_i16b 1664 zeta2 /\ Spec.Utils.is_i16b 1664 zeta3 /\
@@ -268,7 +304,7 @@ pub(crate) fn inv_ntt_layer_1_step(
            lemma_shuffle_preserves_bound (mk_i32 160) ${vector} (4*3328)"#
     );
 
-    let mult = mm256_set_epi16(-1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1);
+    let mult = inv_ntt_layer_1_mult();
     let rhs = mm256_mullo_epi16(rhs0, mult);
 
     let sum = mm256_add_epi16(lhs, rhs);
@@ -283,8 +319,7 @@ pub(crate) fn inv_ntt_layer_1_step(
 
     let result = mm256_blend_epi16::<0b1_1_0_0_1_1_0_0>(sum_reduced, sum_times_zetas);
     proof!(
-        r#"assert (Spec.Utils.is_i16b_array 1664 (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${zetas}));
-           assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 2) == v zeta0 /\
+        r#"assert (v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 2) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 3) == v zeta0 /\
                    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 6) == v zeta1 /\
                    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${zetas} 7) == v zeta1 /\
@@ -303,6 +338,35 @@ pub(crate) fn inv_ntt_layer_1_step(
              zeta0 zeta1 zeta2 zeta3"#
     );
     result
+}
+
+// The all-literal `mult` selector of `inv_ntt_layer_2_step` — same
+// pruning-starvation isolation as `inv_ntt_layer_1_mult`, see its comment.
+#[inline(always)]
+#[hax_lib::fstar::options("--z3rlimit 100")]
+#[hax_lib::ensures(|mult| fstar!(r#"
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 0) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 1) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 2) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 3) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 4) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 5) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 6) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 7) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 8) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 9) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 10) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 11) == 1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 12) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 13) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 14) == -1 /\
+    v (Libcrux_intrinsics.Avx2_ml_kem_views.get_lane ${mult} 15) == -1"#))]
+fn inv_ntt_layer_2_mult() -> Vec256 {
+    let mult = mm256_set_epi16(-1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1);
+    proof!(
+        r#"lemma_mm256_set_epi16_lanes (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 (-1)) (mk_i16 1) (mk_i16 1) (mk_i16 1) (mk_i16 1)"#
+    );
+    mult
 }
 
 // Lemma library relocated to proofs/fstar/spec/Libcrux_ml_kem.Vector.Avx2.Ntt_theory.fst.
@@ -328,7 +392,7 @@ pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Ve
            lemma_permute_preserves_bound (mk_i32 160) ${vector} 3328"#
     );
 
-    let mult = mm256_set_epi16(-1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1);
+    let mult = inv_ntt_layer_2_mult();
     let rhs = mm256_mullo_epi16(rhs0, mult);
 
     let sum = mm256_add_epi16(lhs, rhs);
