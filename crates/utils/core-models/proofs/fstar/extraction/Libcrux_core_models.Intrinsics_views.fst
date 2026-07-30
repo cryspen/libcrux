@@ -1756,3 +1756,208 @@ let lemma_i16x8_from_i8_pair (x y: bv128) (k: nat{k < 8}) (k': nat{k' < 8})
   Classical.forall_intro aux;
   Int.lemma_int_t_eq_via_bits #Int.I16 xr yr
 #pop-options
+
+(* ============================================================================
+   Serialize-migration batch (2026-07-30): per-lane facts for the remaining
+   AVX2 serialize/deserialize register ops — the variable 32-bit left shift,
+   the 64-bit immediate right shift, the 8x32 lane permute, and the 128-bit
+   `set_epi8` twin.  Same recipes as their siblings above (`delta_only` norm
+   + smt for the from_fn index round-trip; the set_epi8 twin mirrors
+   `lemma_iv_set_epi8` at half width).  All PROVEN — no new trust.
+   ============================================================================ *)
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+let lemma_iv_sllv_epi32 (a b: Funarr.t_FunArray (mk_u64 8) i32) (j: nat{j < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #i32 (IV.e_mm256_sllv_epi32 a b) (mk_u64 j) ==
+             (let bj = Funarr.impl_5__get (mk_u64 8) #i32 b (mk_u64 j) in
+              if (bj >. mk_i32 31) || (bj <. mk_i32 0)
+              then mk_i32 0
+              else cast ((cast (Funarr.impl_5__get (mk_u64 8) #i32 a (mk_u64 j)) <: u32) <<! bj <: u32)
+                   <: i32)) =
+  assert (Funarr.impl_5__get (mk_u64 8) #i32 (IV.e_mm256_sllv_epi32 a b) (mk_u64 j) ==
+          (let bj = Funarr.impl_5__get (mk_u64 8) #i32 b (mk_u64 j) in
+           if (bj >. mk_i32 31) || (bj <. mk_i32 0)
+           then mk_i32 0
+           else cast ((cast (Funarr.impl_5__get (mk_u64 8) #i32 a (mk_u64 j)) <: u32) <<! bj <: u32)
+                <: i32))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_sllv_epi32];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+
+let lemma_iv_srli64 (imm: i32) (arr: Funarr.t_FunArray (mk_u64 4) i64) (j: nat{j < 4})
+    : Lemma (requires v imm >= 0 /\ v imm < 64)
+            (ensures Funarr.impl_5__get (mk_u64 4) #i64 (IV.e_mm256_srli_epi64 imm arr) (mk_u64 j) ==
+                     (cast ((cast (Funarr.impl_5__get (mk_u64 4) #i64 arr (mk_u64 j)) <: u64) >>! imm <: u64)
+                      <: i64)) =
+  lemma_rem_euclid256 imm;
+  assert (Funarr.impl_5__get (mk_u64 4) #i64 (IV.e_mm256_srli_epi64 imm arr) (mk_u64 j) ==
+          (cast ((cast (Funarr.impl_5__get (mk_u64 4) #i64 arr (mk_u64 j)) <: u64) >>! imm <: u64) <: i64))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_srli_epi64];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+
+let lemma_iv_permutevar8x32 (a b: Funarr.t_FunArray (mk_u64 8) i32) (j: nat{j < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #i32 (IV.e_mm256_permutevar8x32_epi32 a b) (mk_u64 j) ==
+             (Funarr.impl_5__get (mk_u64 8) #i32 a
+                ((cast (Funarr.impl_5__get (mk_u64 8) #i32 b (mk_u64 j)) <: u64) %! mk_u64 8))) =
+  assert (Funarr.impl_5__get (mk_u64 8) #i32 (IV.e_mm256_permutevar8x32_epi32 a b) (mk_u64 j) ==
+          (Funarr.impl_5__get (mk_u64 8) #i32 a
+             ((cast (Funarr.impl_5__get (mk_u64 8) #i32 b (mk_u64 j)) <: u64) %! mk_u64 8)))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_permutevar8x32_epi32];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_iv_mm_set_epi8 (e15 e14 e13 e12 e11 e10 e9 e8 e7 e6 e5 e4 e3 e2 e1 e0: i8) (j: nat{j < 16})
+    : Lemma (Funarr.impl_5__get (mk_u64 16) #i8
+               (IV.e_mm_set_epi8 e15 e14 e13 e12 e11 e10 e9 e8 e7 e6 e5 e4 e3 e2 e1 e0) (mk_u64 j) ==
+             (match j with
+              | 0 -> e0
+              | 1 -> e1
+              | 2 -> e2
+              | 3 -> e3
+              | 4 -> e4
+              | 5 -> e5
+              | 6 -> e6
+              | 7 -> e7
+              | 8 -> e8
+              | 9 -> e9
+              | 10 -> e10
+              | 11 -> e11
+              | 12 -> e12
+              | 13 -> e13
+              | 14 -> e14
+              | 15 -> e15)) =
+  assert (Funarr.impl_5__get (mk_u64 16) #i8
+            (IV.e_mm_set_epi8 e15 e14 e13 e12 e11 e10 e9 e8 e7 e6 e5 e4 e3 e2 e1 e0) (mk_u64 j) ==
+          (match j with
+           | 0 -> e0
+           | 1 -> e1
+           | 2 -> e2
+           | 3 -> e3
+           | 4 -> e4
+           | 5 -> e5
+           | 6 -> e6
+           | 7 -> e7
+           | 8 -> e8
+           | 9 -> e9
+           | 10 -> e10
+           | 11 -> e11
+           | 12 -> e12
+           | 13 -> e13
+           | 14 -> e14
+           | 15 -> e15))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_set_epi8];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+(* ── Serialize-migration batch, tranche 2: mm_packs_epi16 per-lane fact, the
+   128-half i16-lane transfers (castsi256_si128 / extracti128_si256 1), and the
+   I8 lane-value decode (the `lemma_to_i16_val` mirror at 128/I8).  All PROVEN. *)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_iv_mm_packs_epi16 (a b: Funarr.t_FunArray (mk_u64 8) i16) (k: nat{k < 16})
+    : Lemma (Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_packs_epi16 a b) (mk_u64 k) ==
+             (let x = if k < 8
+                      then Funarr.impl_5__get (mk_u64 8) #i16 a (mk_u64 k)
+                      else Funarr.impl_5__get (mk_u64 8) #i16 b (mk_u64 (k - 8)) in
+              if x >. mk_i16 127 then mk_i8 127
+              else if x <. mk_i16 (-128) then mk_i8 (-128)
+              else cast x <: i8)) =
+  assert (Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_packs_epi16 a b) (mk_u64 k) ==
+          (let x = if k < 8
+                   then Funarr.impl_5__get (mk_u64 8) #i16 a (mk_u64 k)
+                   else Funarr.impl_5__get (mk_u64 8) #i16 b (mk_u64 (k - 8)) in
+           if x >. mk_i16 127 then mk_i8 127
+           else if x <. mk_i16 (-128) then mk_i8 (-128)
+           else cast x <: i8))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_packs_epi16;
+                                        `%Core_models.Num.impl_i8__MAX;
+                                        `%Core_models.Num.impl_i8__MIN];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_cast256_si128_lane_i16 (a: bv256) (l: nat{l < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 (IV.e_mm256_castsi256_si128 a)) (mk_u64 l) ==
+             Funarr.impl_5__get (mk_u64 16) #i16 (to_i16x16 a) (mk_u64 l)) =
+  assert_norm (Int.bits Int.I16 == 16);
+  let xr : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (to_i16x8 (IV.e_mm256_castsi256_si128 a)) (mk_u64 l) in
+  let yr : i16 = Funarr.impl_5__get (mk_u64 16) #i16 (to_i16x16 a) (mk_u64 l) in
+  let aux (b: usize{v b < 16}) : Lemma (Int.get_bit #Int.I16 xr b == Int.get_bit #Int.I16 yr b) =
+    lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) (IV.e_mm256_castsi256_si128 a) (mk_u64 l) (v b);
+    lemma_readback Int.I16 (mk_u64 256) (mk_u64 16) a (mk_u64 l) (v b)
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.I16 xr yr
+
+let lemma_extracti128_1_lane_i16 (a: bv256) (l: nat{l < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #i16
+               (to_i16x8 (IV.e_mm256_extracti128_si256 (mk_i32 1) a)) (mk_u64 l) ==
+             Funarr.impl_5__get (mk_u64 16) #i16 (to_i16x16 a) (mk_u64 (8 + l))) =
+  assert_norm (Int.bits Int.I16 == 16);
+  let xr : i16 = Funarr.impl_5__get (mk_u64 8) #i16
+                   (to_i16x8 (IV.e_mm256_extracti128_si256 (mk_i32 1) a)) (mk_u64 l) in
+  let yr : i16 = Funarr.impl_5__get (mk_u64 16) #i16 (to_i16x16 a) (mk_u64 (8 + l)) in
+  let aux (b: usize{v b < 16}) : Lemma (Int.get_bit #Int.I16 xr b == Int.get_bit #Int.I16 yr b) =
+    lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) (IV.e_mm256_extracti128_si256 (mk_i32 1) a) (mk_u64 l) (v b);
+    lemma_readback Int.I16 (mk_u64 256) (mk_u64 16) a (mk_u64 (8 + l)) (v b)
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.I16 xr yr
+
+let lemma_to_i8_val_128 (vec: bv128) (n: nat{n < 16})
+    : Lemma (v (Funarr.impl_5__get (mk_u64 16) #i8 (to_i8x16 vec) (mk_u64 n)) ==
+             IVi.tc_of_u Int.I8 (IVi.dsum2 (IVi.lane_reader (mk_u64 128) 8 vec (mk_u64 n)) 0 8)) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 128) 8 vec (mk_u64 n) in
+  IVi.dsum2_bound reader 0 8;
+  IVi.lemma_tc_range Int.I8 (IVi.dsum2 reader 0 8)
+#pop-options
+
+(* ── Serialize-migration batch, tranche 3: per-lane slli_epi16, and the
+   ZEROING branch of the 128-bit PSHUFB (negative index byte -> 0), the
+   complement of `lemma_iv_mm_shuffle_epi8_sel` above.  All PROVEN. *)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
+let lemma_iv_slli16 (imm: i32) (arr: Funarr.t_FunArray (mk_u64 16) i16) (j: nat{j < 16})
+    : Lemma (requires v imm >= 0 /\ v imm < 16)
+            (ensures Funarr.impl_5__get (mk_u64 16) #i16 (IV.e_mm256_slli_epi16 imm arr) (mk_u64 j) ==
+                     (cast ((cast (Funarr.impl_5__get (mk_u64 16) #i16 arr (mk_u64 j)) <: u16)
+                            <<! imm <: u16) <: i16)) =
+  lemma_rem_euclid256 imm;
+  assert (Funarr.impl_5__get (mk_u64 16) #i16 (IV.e_mm256_slli_epi16 imm arr) (mk_u64 j) ==
+          (cast ((cast (Funarr.impl_5__get (mk_u64 16) #i16 arr (mk_u64 j)) <: u16) <<! imm <: u16)
+           <: i16))
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_slli_epi16];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options
+
+(* the high bit of a wrapped negative index byte is SET, so PSHUFB takes the
+   zeroing branch (converse of `lemma_u8_high_bit_clear`). *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_u8_high_bit_set (x: u8)
+    : Lemma (requires v x >= 128) (ensures ~((x &. mk_u8 128) == mk_u8 0)) =
+  assert_norm (pow2 7 == 128);
+  Int.get_bit_and #Int.U8 x (mk_u8 128) (sz 7);
+  reveal_opaque (`%Rust_primitives.Integers.get_bit) (Rust_primitives.Integers.get_bit #Int.U8)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_iv_mm_shuffle_epi8_neg (a b: Funarr.t_FunArray (mk_u64 16) i8) (i: nat{i < 16})
+    : Lemma (requires v (Funarr.impl_5__get (mk_u64 16) #i8 b (mk_u64 i)) < 0)
+            (ensures Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_shuffle_epi8 a b) (mk_u64 i) ==
+                     mk_i8 0) =
+  let bi = Funarr.impl_5__get (mk_u64 16) #i8 b (mk_u64 i) in
+  let idx : u8 = cast bi <: u8 in
+  assert (v idx >= 128);
+  lemma_u8_high_bit_set idx;
+  assert (Funarr.impl_5__get (mk_u64 16) #i8 (IV.e_mm_shuffle_epi8 a b) (mk_u64 i) == mk_i8 0)
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_shuffle_epi8];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options

@@ -68,16 +68,19 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     proof!(
         r#"
         let g0: nat = v (${good}.[ mk_usize 0 ] <: u8) in
-        assert (forall (i: nat{i < 256}).
-            ${compare_with_field_modulus} i ==
-            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
-             then 1 else 0));
+        introduce forall (l: nat{l < 16}).
+            Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${compare_with_field_modulus} (16 * l) ==
+            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) l)
+             then 1 else 0)
+        with (
+          Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit0_mm256_cmpgt_epi16 ${field_modulus} ${potential_coefficients} l;
+          assert (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${field_modulus}) l ==
+                  Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+        );
         Hacspec_ml_kem.Commute.Rej_table.lemma_good_bits ${good} ${compare_with_field_modulus} ${potential_coefficients} 0;
         Hacspec_ml_kem.Commute.Rej_table.intro_top_bits_clear ${potential_coefficients};
         assert (${lower_shuffles} ==
             Seq.index Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE g0);
-        assert (${lower_shuffled} ==
-            BitVec.Intrinsics.mm_shuffle_epi8_no_semantics ${lower_coefficients} ${lower_shuffles_vec});
         lemma_half_done ${potential_coefficients} ${lower_coefficients} ${lower_shuffles_vec} ${lower_shuffled} ${lower_shuffles} 0 g0;
         introduce forall (j: nat{j < 8}).
             Seq.index ${output} j == Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 ${lower_shuffled}) j
@@ -121,16 +124,19 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         assert (v ${sampled_count} == c0);
         assert (v ${result} == c0 + c1);
         (* upper-half driver *)
-        assert (forall (i: nat{i < 256}).
-            ${compare_with_field_modulus} i ==
-            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) (i / 16))
-             then 1 else 0));
+        introduce forall (l: nat{l < 16}).
+            Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${compare_with_field_modulus} (16 * l) ==
+            (if 3329 > v (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${potential_coefficients}) l)
+             then 1 else 0)
+        with (
+          Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit0_mm256_cmpgt_epi16 ${field_modulus} ${potential_coefficients} l;
+          assert (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${field_modulus}) l ==
+                  Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
+        );
         Hacspec_ml_kem.Commute.Rej_table.lemma_good_bits ${good} ${compare_with_field_modulus} ${potential_coefficients} 1;
         Hacspec_ml_kem.Commute.Rej_table.intro_top_bits_clear ${potential_coefficients};
         assert (${upper_shuffles} ==
             Seq.index Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE g1);
-        assert (${upper_shuffled} ==
-            BitVec.Intrinsics.mm_shuffle_epi8_no_semantics ${upper_coefficients} ${upper_shuffles_vec});
         lemma_half_done ${potential_coefficients} ${upper_coefficients} ${upper_shuffles_vec} ${upper_shuffled} ${upper_shuffles} 1 g1;
         (* output indexing through the second store *)
         let range = { Core_models.Ops.Range.f_start = ${sampled_count};

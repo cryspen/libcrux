@@ -27,7 +27,8 @@ open Rust_primitives.BitVectors
 module L = FStar.List.Tot
 module ML = FStar.Math.Lemmas
 module RT = Libcrux_ml_kem.Vector.Rej_sample_table
-module AVX = Libcrux_intrinsics.Avx2_extract
+module AVX = Libcrux_intrinsics.Avx2_ml_kem_views
+module I = Libcrux_intrinsics.Avx2
 
 (* ===================================================================== *)
 (* popcount8 / nth_set_bit                                               *)
@@ -833,9 +834,10 @@ let lemma_lane_split (lane: nat) (t: nat{t < 16})
    their i16 values agree. *)
 #push-options "--z3rlimit 200"
 let lemma_vec128_lane_eq_bits
-      (w: bit_vec 128) (src: bit_vec 256) (lane: nat{lane < 8}) (src_lane: nat{src_lane < 16})
+      (w: AVX.t_Vec128) (src: AVX.t_Vec256) (lane: nat{lane < 8}) (src_lane: nat{src_lane < 16})
   : Lemma
-      (requires forall (t: nat{t < 16}). w (16 * lane + t) == src (16 * src_lane + t))
+      (requires forall (t: nat{t < 16}).
+          AVX.bv_bit w (16 * lane + t) == AVX.bv_bit src (16 * src_lane + t))
       (ensures
         Seq.index (AVX.vec128_as_i16x8 w) lane ==
         Seq.index (AVX.vec256_as_i16x16 src) src_lane)
@@ -853,9 +855,9 @@ let lemma_vec128_lane_eq_bits
 (* Per-lane bound for a vec256 whose per-lane top bits are clear
    (copy of the local recipe in Vector.Avx2 / Vector.Avx2.Serialize —
    neither exports it). *)
-let lemma_vec256_lane_bounded (vec: bit_vec 256) (n: nat{n > 0 /\ n <= 16}) (i: nat{i < 16})
+let lemma_vec256_lane_bounded (vec: AVX.t_Vec256) (n: nat{n > 0 /\ n <= 16}) (i: nat{i < 16})
   : Lemma
-      (requires forall (b: nat{b < 16}). b >= n ==> vec (i * 16 + b) == 0)
+      (requires forall (b: nat{b < 16}). b >= n ==> AVX.bv_bit vec (i * 16 + b) == 0)
       (ensures bounded (Seq.index (AVX.vec256_as_i16x16 vec) i) n)
   = let arr = AVX.vec256_as_i16x16 vec in
     let lane = Seq.index arr i in
@@ -882,39 +884,39 @@ let lemma_vec256_lane_bounded (vec: bit_vec 256) (n: nat{n > 0 /\ n <= 16}) (i: 
 (* ===================================================================== *)
 
 [@@ "opaque_to_smt"]
-let shuffle_semantics (a mask res: bit_vec 128) : prop =
+let shuffle_semantics (a mask res: AVX.t_Vec128) : prop =
   forall (i: nat{i < 128}).
-    res i ==
+    AVX.bv_bit res i ==
     (let nth = i / 8 in
       let idx: nat =
-        mask (8 * nth) + 2 * mask (8 * nth + 1) + 4 * mask (8 * nth + 2) +
-        8 * mask (8 * nth + 3) + 16 * mask (8 * nth + 4) + 32 * mask (8 * nth + 5) +
-        64 * mask (8 * nth + 6) + 128 * mask (8 * nth + 7)
+        AVX.bv_bit mask (8 * nth) + 2 * AVX.bv_bit mask (8 * nth + 1) + 4 * AVX.bv_bit mask (8 * nth + 2) +
+        8 * AVX.bv_bit mask (8 * nth + 3) + 16 * AVX.bv_bit mask (8 * nth + 4) + 32 * AVX.bv_bit mask (8 * nth + 5) +
+        64 * AVX.bv_bit mask (8 * nth + 6) + 128 * AVX.bv_bit mask (8 * nth + 7)
       in
-      if idx > 127 then 0 else a ((idx % 16) * 8 + i % 8))
+      if idx > 127 then 0 else AVX.bv_bit a ((idx % 16) * 8 + i % 8))
 
-let intro_shuffle_semantics (a mask res: bit_vec 128)
+let intro_shuffle_semantics (a mask res: AVX.t_Vec128)
   : Lemma
       (requires
         forall (i: nat{i < 128}).
-          res i ==
+          AVX.bv_bit res i ==
           (let nth = i / 8 in
             let idx: nat =
-              mask (8 * nth) + 2 * mask (8 * nth + 1) + 4 * mask (8 * nth + 2) +
-              8 * mask (8 * nth + 3) + 16 * mask (8 * nth + 4) + 32 * mask (8 * nth + 5) +
-              64 * mask (8 * nth + 6) + 128 * mask (8 * nth + 7)
+              AVX.bv_bit mask (8 * nth) + 2 * AVX.bv_bit mask (8 * nth + 1) + 4 * AVX.bv_bit mask (8 * nth + 2) +
+              8 * AVX.bv_bit mask (8 * nth + 3) + 16 * AVX.bv_bit mask (8 * nth + 4) + 32 * AVX.bv_bit mask (8 * nth + 5) +
+              64 * AVX.bv_bit mask (8 * nth + 6) + 128 * AVX.bv_bit mask (8 * nth + 7)
             in
-            if idx > 127 then 0 else a ((idx % 16) * 8 + i % 8)))
+            if idx > 127 then 0 else AVX.bv_bit a ((idx % 16) * 8 + i % 8)))
       (ensures shuffle_semantics a mask res)
   = reveal_opaque (`%shuffle_semantics) (shuffle_semantics a mask res)
 
 [@@ "opaque_to_smt"]
-let mask_of_row (mask: bit_vec 128) (row: t_Array u8 (mk_usize 16)) : prop =
-  forall (i: nat{i < 128}). mask i == get_bit (Seq.index row (i / 8)) (sz (i % 8))
+let mask_of_row (mask: AVX.t_Vec128) (row: t_Array u8 (mk_usize 16)) : prop =
+  forall (i: nat{i < 128}). AVX.bv_bit mask i == get_bit (Seq.index row (i / 8)) (sz (i % 8))
 
-let intro_mask_of_row (mask: bit_vec 128) (row: t_Array u8 (mk_usize 16))
+let intro_mask_of_row (mask: AVX.t_Vec128) (row: t_Array u8 (mk_usize 16))
   : Lemma
-      (requires forall (i: nat{i < 128}). mask i == get_bit (Seq.index row (i / 8)) (sz (i % 8)))
+      (requires forall (i: nat{i < 128}). AVX.bv_bit mask i == get_bit (Seq.index row (i / 8)) (sz (i % 8)))
       (ensures mask_of_row mask row)
   = reveal_opaque (`%mask_of_row) (mask_of_row mask row)
 
@@ -929,27 +931,28 @@ let intro_row_of_table (row: t_Array u8 (mk_usize 16)) (g: nat{g < 256})
   = reveal_opaque (`%row_of_table) (row_of_table row g)
 
 [@@ "opaque_to_smt"]
-let half_of (a: bit_vec 128) (potential: bit_vec 256) (half: nat{half <= 1}) : prop =
-  forall (i: nat{i < 128}). a i == potential (128 * half + i)
+let half_of (a: AVX.t_Vec128) (potential: AVX.t_Vec256) (half: nat{half <= 1}) : prop =
+  forall (i: nat{i < 128}). AVX.bv_bit a i == AVX.bv_bit potential (128 * half + i)
 
-let intro_half_of (a: bit_vec 128) (potential: bit_vec 256) (half: nat{half <= 1})
-  : Lemma (requires forall (i: nat{i < 128}). a i == potential (128 * half + i))
-          (ensures half_of a potential half)
+let intro_half_of (a: AVX.t_Vec128) (potential: AVX.t_Vec256) (half: nat{half <= 1})
+  : Lemma
+      (requires forall (i: nat{i < 128}). AVX.bv_bit a i == AVX.bv_bit potential (128 * half + i))
+      (ensures half_of a potential half)
   = reveal_opaque (`%half_of) (half_of a potential half)
 
 [@@ "opaque_to_smt"]
-let top_bits_clear (potential: bit_vec 256) : prop =
-  forall (i: nat{i < 256}). i % 16 >= 12 ==> potential i == 0
+let top_bits_clear (potential: AVX.t_Vec256) : prop =
+  forall (i: nat{i < 256}). i % 16 >= 12 ==> AVX.bv_bit potential i == 0
 
-let intro_top_bits_clear (potential: bit_vec 256)
-  : Lemma (requires forall (i: nat{i < 256}). i % 16 >= 12 ==> potential i == 0)
+let intro_top_bits_clear (potential: AVX.t_Vec256)
+  : Lemma (requires forall (i: nat{i < 256}). i % 16 >= 12 ==> AVX.bv_bit potential i == 0)
           (ensures top_bits_clear potential)
   = reveal_opaque (`%top_bits_clear) (top_bits_clear potential)
 
 (* Bit k of g is set iff vec256 lane `8*half + k` is a kept (< 3329)
    coefficient. *)
 [@@ "opaque_to_smt"]
-let good_bits (g: nat) (potential: bit_vec 256) (half: nat{half <= 1}) : prop =
+let good_bits (g: nat) (potential: AVX.t_Vec256) (half: nat{half <= 1}) : prop =
   forall (k: nat{k < 8}).
     (g / pow2 k) % 2 ==
     (if v (Seq.index (AVX.vec256_as_i16x16 potential) (8 * half + k)) < 3329 then 1 else 0)
@@ -961,13 +964,13 @@ let good_bits (g: nat) (potential: bit_vec 256) (half: nat{half <= 1}) : prop =
 (* idx decoding: the 8 mask bits of byte `nth` sum (LSB-first weighted) to
    the byte's value. *)
 #push-options "--z3rlimit 200"
-let lemma_mask_byte_value (mask: bit_vec 128) (row: t_Array u8 (mk_usize 16)) (nth: nat{nth < 16})
+let lemma_mask_byte_value (mask: AVX.t_Vec128) (row: t_Array u8 (mk_usize 16)) (nth: nat{nth < 16})
   : Lemma
       (requires mask_of_row mask row)
       (ensures
-        mask (8 * nth) + 2 * mask (8 * nth + 1) + 4 * mask (8 * nth + 2) +
-        8 * mask (8 * nth + 3) + 16 * mask (8 * nth + 4) + 32 * mask (8 * nth + 5) +
-        64 * mask (8 * nth + 6) + 128 * mask (8 * nth + 7) ==
+        AVX.bv_bit mask (8 * nth) + 2 * AVX.bv_bit mask (8 * nth + 1) + 4 * AVX.bv_bit mask (8 * nth + 2) +
+        8 * AVX.bv_bit mask (8 * nth + 3) + 16 * AVX.bv_bit mask (8 * nth + 4) + 32 * AVX.bv_bit mask (8 * nth + 5) +
+        64 * AVX.bv_bit mask (8 * nth + 6) + 128 * AVX.bv_bit mask (8 * nth + 7) ==
         v (Seq.index row nth))
   = reveal_opaque (`%mask_of_row) (mask_of_row mask row);
     lemma_byte_split nth 0; lemma_byte_split nth 1; lemma_byte_split nth 2; lemma_byte_split nth 3;
@@ -992,17 +995,17 @@ let lemma_row_bytes (row: t_Array u8 (mk_usize 16)) (g: nat{g < 256}) (j: nat{j 
    `nth` of the shuffle is source byte `idx`, bit for bit. *)
 #push-options "--z3rlimit 200 --split_queries always --z3refresh"
 let lemma_shuffle_byte
-      (a mask res: bit_vec 128) (row: t_Array u8 (mk_usize 16))
+      (a mask res: AVX.t_Vec128) (row: t_Array u8 (mk_usize 16))
       (nth: nat{nth < 16}) (idx: nat{idx <= 15})
   : Lemma
       (requires
         shuffle_semantics a mask res /\ mask_of_row mask row /\
         v (Seq.index row nth) == idx)
-      (ensures forall (s: nat{s < 8}). res (8 * nth + s) == a (8 * idx + s))
+      (ensures forall (s: nat{s < 8}). AVX.bv_bit res (8 * nth + s) == AVX.bv_bit a (8 * idx + s))
   = reveal_opaque (`%shuffle_semantics) (shuffle_semantics a mask res);
     lemma_mask_byte_value mask row nth;
     ML.small_mod idx 16;
-    introduce forall (s: nat{s < 8}). res (8 * nth + s) == a (8 * idx + s)
+    introduce forall (s: nat{s < 8}). AVX.bv_bit res (8 * nth + s) == AVX.bv_bit a (8 * idx + s)
     with lemma_byte_split nth s
 #pop-options
 
@@ -1010,7 +1013,7 @@ let lemma_shuffle_byte
    `nth_set_bit g j`, bit for bit. *)
 #push-options "--z3rlimit 200 --split_queries always --z3refresh"
 let lemma_shuffled_lane
-      (a mask res: bit_vec 128)
+      (a mask res: AVX.t_Vec128)
       (row: t_Array u8 (mk_usize 16))
       (g: nat{g < 256})
       (j: nat{j < 8 /\ j < popcount8 g})
@@ -1018,16 +1021,16 @@ let lemma_shuffled_lane
       (requires shuffle_semantics a mask res /\ mask_of_row mask row /\ row_of_table row g)
       (ensures
         nth_set_bit g j < 8 /\
-        (forall (t: nat{t < 16}). res (16 * j + t) == a (16 * nth_set_bit g j + t)))
+        (forall (t: nat{t < 16}). AVX.bv_bit res (16 * j + t) == AVX.bv_bit a (16 * nth_set_bit g j + t)))
   = lemma_row_bytes row g j;
     let k = nth_set_bit g j in
     lemma_shuffle_byte a mask res row (2 * j) (2 * k);
     lemma_shuffle_byte a mask res row (2 * j + 1) (2 * k + 1);
-    introduce forall (t: nat{t < 16}). res (16 * j + t) == a (16 * k + t)
+    introduce forall (t: nat{t < 16}). AVX.bv_bit res (16 * j + t) == AVX.bv_bit a (16 * k + t)
     with begin
       if t < 8
-      then assert (res (8 * (2 * j) + t) == a (8 * (2 * k) + t))
-      else assert (res (8 * (2 * j + 1) + (t - 8)) == a (8 * (2 * k + 1) + (t - 8)))
+      then assert (AVX.bv_bit res (8 * (2 * j) + t) == AVX.bv_bit a (8 * (2 * k) + t))
+      else assert (AVX.bv_bit res (8 * (2 * j + 1) + (t - 8)) == AVX.bv_bit a (8 * (2 * k + 1) + (t - 8)))
     end
 #pop-options
 
@@ -1036,8 +1039,8 @@ let lemma_shuffled_lane
    `half = 1` the upper (lanes 8..15). *)
 #push-options "--z3rlimit 200 --split_queries always --z3refresh"
 let lemma_half_lane_bounded
-      (potential: bit_vec 256)
-      (a mask res: bit_vec 128)
+      (potential: AVX.t_Vec256)
+      (a mask res: AVX.t_Vec128)
       (row: t_Array u8 (mk_usize 16))
       (half: nat{half <= 1})
       (g: nat{g < 256})
@@ -1053,10 +1056,10 @@ let lemma_half_lane_bounded
     let k = nth_set_bit g j in
     let src_lane = 8 * half + k in
     reveal_opaque (`%half_of) (half_of a potential half);
-    introduce forall (t: nat{t < 16}). res (16 * j + t) == potential (16 * src_lane + t)
+    introduce forall (t: nat{t < 16}). AVX.bv_bit res (16 * j + t) == AVX.bv_bit potential (16 * src_lane + t)
     with begin
-      assert (res (16 * j + t) == a (16 * k + t));
-      assert (a (16 * k + t) == potential (128 * half + (16 * k + t)))
+      assert (AVX.bv_bit res (16 * j + t) == AVX.bv_bit a (16 * k + t));
+      assert (AVX.bv_bit a (16 * k + t) == AVX.bv_bit potential (128 * half + (16 * k + t)))
     end;
     lemma_vec128_lane_eq_bits res potential j src_lane;
     (* the kept lane is < 3329: bit k of g is set *)
@@ -1065,8 +1068,8 @@ let lemma_half_lane_bounded
     assert (v (Seq.index (AVX.vec256_as_i16x16 potential) src_lane) < 3329);
     (* and >= 0 (12-bit value): top 4 bits of the lane are clear *)
     reveal_opaque (`%top_bits_clear) (top_bits_clear potential);
-    introduce forall (b: nat{b < 16}). b >= 12 ==> potential (src_lane * 16 + b) == 0
-    with introduce b >= 12 ==> potential (src_lane * 16 + b) == 0
+    introduce forall (b: nat{b < 16}). b >= 12 ==> AVX.bv_bit potential (src_lane * 16 + b) == 0
+    with introduce b >= 12 ==> AVX.bv_bit potential (src_lane * 16 + b) == 0
     with _. lemma_lane_split src_lane b;
     lemma_vec256_lane_bounded potential 12 src_lane
 #pop-options
@@ -1082,13 +1085,13 @@ let lemma_popcount8_u8 (g: nat{g < 256})
    vec256 lane `8*half + k` is < 3329. *)
 #push-options "--z3rlimit 200"
 let lemma_good_bits
-    (good: t_Array u8 (mk_usize 2)) (cmp potential: bit_vec 256) (half: nat{half <= 1})
+    (good: t_Array u8 (mk_usize 2)) (cmp potential: AVX.t_Vec256) (half: nat{half <= 1})
   : Lemma
       (requires
-        (forall (i: nat{i < 16}). bit_vec_of_int_t_array good 8 i == cmp (i * 16)) /\
-        (forall (i: nat{i < 256}).
-            cmp i ==
-            (if 3329 > v (Seq.index (AVX.vec256_as_i16x16 potential) (i / 16)) then 1 else 0)))
+        (forall (i: nat{i < 16}). bit_vec_of_int_t_array good 8 i == AVX.bv_bit cmp (i * 16)) /\
+        (forall (l: nat{l < 16}).
+            AVX.bv_bit cmp (16 * l) ==
+            (if 3329 > v (Seq.index (AVX.vec256_as_i16x16 potential) l) then 1 else 0)))
       (ensures good_bits (v (Seq.index good half)) potential half)
   = reveal_opaque (`%good_bits) (good_bits (v (Seq.index good half)) potential half);
     introduce forall (k: nat{k < 8}).
@@ -1103,19 +1106,27 @@ let lemma_good_bits
 #pop-options
 
 (* Term-level intro helpers: establish the sealed atoms directly from the
-   BitVec.Intrinsics term equalities, each in its own clean context so the
+   Libcrux_intrinsics.Avx2 op term equalities, each in its own clean context so the
    underlying foralls never leak into a consumer's VC. *)
 #push-options "--z3rlimit 200"
-let lemma_mask_of_row_loadu (mask: bit_vec 128) (row: t_Array u8 (mk_usize 16))
-  : Lemma (requires mask == BitVec.Intrinsics.mm_loadu_si128 row)
+let lemma_mask_of_row_loadu (mask: AVX.t_Vec128) (row: t_Array u8 (mk_usize 16))
+  : Lemma (requires mask == I.mm_loadu_si128 (row <: t_Slice u8))
           (ensures mask_of_row mask row)
-  = intro_mask_of_row mask row
+  = let aux (i: nat{i < 128})
+      : Lemma (AVX.bv_bit mask i == get_bit (Seq.index row (i / 8)) (sz (i % 8)))
+      = AVX.lemma_bv_bit_mm_loadu_si128 (row <: t_Slice u8) i
+    in
+    Classical.forall_intro aux;
+    intro_mask_of_row mask row
 
-let lemma_half_of_cast (a: bit_vec 128) (potential: bit_vec 256) (half: nat{half <= 1})
+let lemma_half_of_cast (a: AVX.t_Vec128) (potential: AVX.t_Vec256) (half: nat{half <= 1})
   : Lemma
       (requires
-        (half == 0 ==> a == BitVec.Intrinsics.mm256_castsi256_si128 potential) /\
-        (half == 1 ==> a == BitVec.Intrinsics.mm256_extracti128_si256 (mk_i32 1) potential))
+        (half == 0 ==> a == I.mm256_castsi256_si128 potential) /\
+        (half == 1 ==> a == I.mm256_extracti128_si256 (mk_i32 1) potential))
       (ensures half_of a potential half)
-  = intro_half_of a potential half
+  = if half = 0
+    then Classical.forall_intro (AVX.lemma_bv_bit_castsi256_si128 potential)
+    else Classical.forall_intro (AVX.lemma_bv_bit_extracti128_si256_1 potential);
+    intro_half_of a potential half
 #pop-options

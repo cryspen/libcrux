@@ -12,7 +12,7 @@ use crate::vector::portable::PortableVector;
 #[hax_lib::fstar::options(
     "--ext context_pruning --compat_pre_core 0 --split_queries always --z3rlimit 400"
 )]
-#[hax_lib::ensures(|result| fstar!(r#"forall i. bit_vec_of_int_t_array $result 8 i == $vector (i * 16)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 16}). bit_vec_of_int_t_array $result 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector (i * 16)"#))]
 // 2026-06-30: bring the relocated ml-kem srli i16-view SMTPat into scope
 // (moved out of Avx2_extract to keep sha3's interface lean).
 #[hax_lib::fstar::before(
@@ -60,32 +60,6 @@ pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // 0xFF 0x00 0x00 0x00 | 0xFF 0x00 0x00 0x00 | 0x00 0x00 0x00 0x00 | 0x00 0x00 0x00 0xFF
     let msbs = mm_packs_epi16(low_msbs, high_msbs);
 
-    proof!(
-        r#"
-let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
-  introduce forall (i: nat{i < 16}). bits_packed' i = $vector (i * 16)
-  with (
-    match i with
-    | 0  -> assert_norm (bits_packed' 0  = $vector 0  )
-    | 1  -> assert_norm (bits_packed' 1  = $vector 16 )
-    | 2  -> assert_norm (bits_packed' 2  = $vector 32 )
-    | 3  -> assert_norm (bits_packed' 3  = $vector 48 )
-    | 4  -> assert_norm (bits_packed' 4  = $vector 64 )
-    | 5  -> assert_norm (bits_packed' 5  = $vector 80 )
-    | 6  -> assert_norm (bits_packed' 6  = $vector 96 )
-    | 7  -> assert_norm (bits_packed' 7  = $vector 112)
-    | 8  -> assert_norm (bits_packed' 8  = $vector 128)
-    | 9  -> assert_norm (bits_packed' 9  = $vector 144)
-    | 10 -> assert_norm (bits_packed' 10 = $vector 160)
-    | 11 -> assert_norm (bits_packed' 11 = $vector 176)
-    | 12 -> assert_norm (bits_packed' 12 = $vector 192)
-    | 13 -> assert_norm (bits_packed' 13 = $vector 208)
-    | 14 -> assert_norm (bits_packed' 14 = $vector 224)
-    | _  -> assert_norm (bits_packed' 15 = $vector 240)
-  )
-"#
-    );
-
     // Now that every element is either 0xFF or 0x00, we just extract the most
     // significant bit from each element and collate them into two bytes.
     let bits_packed = mm_movemask_epi8(msbs);
@@ -94,7 +68,12 @@ let bits_packed' = BitVec.Intrinsics.mm_movemask_epi8_bv msbs in
 
     proof!(
         r#"
-assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (sz i) == get_bit $bits_packed (sz (i + 8)))
+assert (Seq.index $result 0 == (cast ($bits_packed <: i32) <: u8));
+assert (Seq.index $result 1 == (cast ($bits_packed >>! mk_i32 8 <: i32) <: u8));
+introduce forall (i: nat{i < 16}).
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array $result 8 i ==
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector (i * 16)
+with Libcrux_intrinsics.Avx2_ml_kem_views.lemma_serialize_1_bits $vector $result i
 "#
     );
 
@@ -105,7 +84,7 @@ assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (s
 #[hax_lib::requires(bytes.len() == 2)]
 #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 >= 1 then 0
         else let j = (i / 16) * 1 + i % 16 in
              bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 2)) 8 j))
@@ -115,7 +94,7 @@ assert (forall (i: nat {i < 8}). get_bit ($bits_packed >>! (mk_i32 8) <: i32) (s
 pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 >= 1 then 0
         else let j = (i / 16) * 1 + i % 16 in
              if i < 128 then get_bit $a (sz j) else get_bit $b (sz (j - 8)))
@@ -129,7 +108,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
 
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 >= 1 then 0
         else let j = (i / 16) * 1 + i % 16 in
              if i < 128 then get_bit $a (sz j) else get_bit $b (sz (j - 8)))
@@ -203,10 +182,10 @@ fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
 #[hax_lib::requires(
     fstar!(
-        r#"forall (i: nat{i < 256}). i % 16 < 4 || $vector i = 0"#
+        r#"forall (i: nat{i < 256}). i % 16 < 4 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector i = 0"#
     )
 )]
-#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == $vector ((i/4) * 16 + i%4)"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 64}). bit_vec_of_int_t_array $r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector ((i/4) * 16 + i%4)"#))]
 #[inline(always)]
 pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
@@ -262,14 +241,14 @@ assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialize
 #[inline(always)]
 #[hax_lib::requires(bytes.len() == 8)]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-  $result i = (if i % 16 >= 4 then 0
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 4 then 0
                else let j = (i / 16) * 4 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 8)) 8 j)"#))]
 #[hax_lib::fstar::before("#restart-solver")]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 < 4
         then let j = (i / 16) * 4 + i % 16 in
              (match i / 32 with
@@ -294,7 +273,7 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
 
     #[hax_lib::ensures(|coefficients| fstar!(
         r#"forall (i:nat{i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 < 4
         then let j = (i / 16) * 4 + i % 16 in
              (match i / 32 with
@@ -376,16 +355,18 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
-#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || vector i = 0"#))]
-#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 80}). bit_vec_of_int_t_array r 8 i == vector ((i/5) * 16 + i%5)"#))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 80}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/5) * 16 + i%5)"#))]
 pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
     #[inline(always)]
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
-    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || vector i = 0"#))]
+    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
          forall (i: nat{i < 80}).
-           vector ((i/5) * 16 + i%5) == (if i < 40 then $lower_8 i else $upper_8 (i - 40))
+           Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/5) * 16 + i%5) ==
+             (if i < 40 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+              else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 40))
       )
     "#
     ))]
@@ -478,7 +459,7 @@ fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 800")]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 10"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-  $result i = (if i % 16 >= 5 then 0
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 5 then 0
                else let j = (i / 16) * 5 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 j)"#))]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
@@ -490,7 +471,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-      $result i =
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i =
         (if i % 16 >= 5 then 0
          else let shift_inv = ((i / 16) % 2) * 5 + (((i / 16) % 8) / 2) * 2 in
               let j = i + shift_inv in
@@ -499,7 +480,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
                 if byte_pos < 16
                 then (byte_pos / 4) * 2 + (byte_pos % 2)
                 else ((byte_pos - 16) / 4) * 2 + ((byte_pos - 16) % 2) + 8 in
-              $c (c_byte * 8 + j % 8))"#))]
+              Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $c (c_byte * 8 + j % 8))"#))]
     fn deserialize_5_vec(c: Vec128) -> Vec256 {
         let coefficients_loaded = mm256_si256_from_two_si128(c, c);
 
@@ -598,15 +579,17 @@ assert (forall (b: nat{b < 8}). $coefficients (8*15 + b) == bit_vec_of_int_t_arr
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
-#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == vector ((i/10) * 16 + i%10)"#))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/10) * 16 + i%10)"#))]
 pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || vector i = 0"#))]
+    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
          forall (i: nat{i < 160}).
-           vector ((i/10) * 16 + i%10) == (if i < 80 then $lower_8 i else $upper_8 (i - 80))
+           Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/10) * 16 + i%10) ==
+             (if i < 80 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+              else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 80))
       )
     "#
     ))]
@@ -691,17 +674,18 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 20"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-  $result i = (if i % 16 >= 10 then 0
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 10 then 0
                else let j = (i / 16) * 10 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 20)) 8 j)"#))]
 pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
     #[inline(always)]
     #[hax_lib::ensures(|coefficients| fstar!(r#"
 forall (i: nat {i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 >= 10 then 0
         else let j = (i / 16) * 10 + i % 16 in
-             if i < 128 then $lower_coefficients0 j else $upper_coefficients0 (j - 32)))
+             if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_coefficients0 j
+             else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_coefficients0 (j - 32)))
 "#))]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     fn deserialize_10_vec(lower_coefficients0: Vec128, upper_coefficients0: Vec128) -> Vec256 {
@@ -767,13 +751,17 @@ assert_norm(BitVec.Utils.forall256 (fun i ->
 // in the companion Libcrux_ml_kem.Vector.Avx2_theory (a companion is checked
 // before both Serialize and Vector.Avx2, so no local copy is needed).
 #[hax_lib::fstar::before(r#"open Libcrux_ml_kem.Vector.Avx2_theory"#)]
-#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 11 || vector i = 0"#))]
-#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 176}). bit_vec_of_int_t_array r 8 i == vector ((i/11) * 16 + i%11)"#))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 11 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 176}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/11) * 16 + i%11)"#))]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
     let mut array = [0i16; 16];
+    #[cfg(hax)]
+    let array0 = array;
     mm256_storeu_si256_i16(&mut array, vector);
     proof!(
         r#"
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_storeu_si256_i16 ($array0 <: t_Slice i16) ${vector};
+assert (array == Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${vector});
 introduce forall (j: nat). j < 16 ==>
     Rust_primitives.BitVectors.bounded (Seq.index array j) 11
 with introduce j < 16 ==>
@@ -786,7 +774,8 @@ with _. Libcrux_ml_kem.Vector.Avx2_theory.lemma_vec256_lane_bounded ${vector} 11
     proof!(
         r#"
 introduce forall (i: nat{i < 176}).
-    bit_vec_of_int_t_array result 8 i == ${vector} ((i / 11) * 16 + i % 11)
+    bit_vec_of_int_t_array result 8 i ==
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${vector} ((i / 11) * 16 + i % 11)
 with begin
   Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
     ${vector} 11 i
@@ -800,7 +789,7 @@ end
 #[hax_lib::fstar::options("--ext context_pruning --z3rlimit 200")]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 22"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-  $result i = (if i % 16 >= 11 then 0
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 11 then 0
                else let j = (i / 16) * 11 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 22)) 8 j)"#))]
 pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
@@ -809,8 +798,10 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let result = mm256_loadu_si256_i16(&array);
     proof!(
         r#"
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_loadu_si256_i16 ($array <: t_Slice i16);
+assert (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 result == $array);
 introduce forall (i: nat{i < 256}).
-    result i =
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit result i =
       (if i % 16 >= 11 then 0
        else let j = (i / 16) * 11 + i % 16 in
             bit_vec_of_int_t_array (${bytes} <: t_Array _ (sz 22)) 8 j)
@@ -831,16 +822,18 @@ end
 
 #[inline(always)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
-#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == vector ((i/12) * 16 + i%12)"#))]
+#[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/12) * 16 + i%12)"#))]
 pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     #[inline(always)]
     #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
-    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || vector i = 0"#))]
+    #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
          forall (i: nat{i < 192}).
-           vector ((i/12) * 16 + i%12) == (if i < 96 then $lower_8 i else $upper_8 (i - 96))
+           Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/12) * 16 + i%12) ==
+             (if i < 96 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+              else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 96))
       )
     "#
     ))]
@@ -882,17 +875,18 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
 #[inline(always)]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 24"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
-  $result i = (if i % 16 >= 12 then 0
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 12 then 0
                else let j = (i / 16) * 12 + i % 16 in
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 24)) 8 j)"#))]
 pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
     #[inline(always)]
     #[hax_lib::ensures(|coefficients| fstar!(r#"
 forall (i: nat {i < 256}).
-      $coefficients i
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
     = ( if i % 16 >= 12 then 0
         else let j = (i / 16) * 12 + i % 16 in
-             if i < 128 then $lower_coefficients0 j else $upper_coefficients0 (j - 64)))
+             if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_coefficients0 j
+             else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_coefficients0 (j - 64)))
 "#))]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     fn deserialize_12_vec(lower_coefficients0: Vec128, upper_coefficients0: Vec128) -> Vec256 {

@@ -14,10 +14,10 @@ open Rust_primitives.BitVectors
    to fit in `n` bits.  Used by every `op_deserialize_N_post_bridge` to
    discharge the per-lane `bounded` conjunct of `deserialize_post_N`. *)
 let lemma_vec256_lane_bounded
-      (vec: bit_vec 256) (n: nat{n > 0 /\ n <= 16}) (i: nat{i < 16})
+      (vec: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (n: nat{n > 0 /\ n <= 16}) (i: nat{i < 16})
     : Lemma
       (requires forall (b: nat{b < 16}). b >= n ==>
-                  vec (i * 16 + b) == 0)
+                  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vec (i * 16 + b) == 0)
       (ensures
         Rust_primitives.BitVectors.bounded
           (Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 vec) i) n)
@@ -38,11 +38,11 @@ let lemma_vec256_lane_bounded
     // gives us the constrained version; the SMTPat-fired lemma will use it.
     Rust_primitives.BitVectors.lemma_get_bit_bounded' lane n
 
-let op_deserialize_1_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_1_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 2 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 1 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 1 then 0
              else let j = (i / 16) * 1 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 2)) 8 j)))
   (ensures
@@ -65,15 +65,15 @@ let op_deserialize_1_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     with introduce i < 16 ==> Rust_primitives.BitVectors.bounded (Seq.index arr i) 1
     with _. lemma_vec256_lane_bounded v 1 i
 
-let op_serialize_1_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_1_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 >= 1 ==> v j == 0)
+  (ensures forall (j: nat{j < 256}). j % 16 >= 1 ==> Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j == 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 >= 1 ==> v j == 0
-    with introduce j % 16 >= 1 ==> v j == 0
+    introduce forall (j: nat{j < 256}). j % 16 >= 1 ==> Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j == 0
+    with introduce j % 16 >= 1 ==> Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j == 0
     with _. begin
       Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma v 16 j;
       // bit_vec_of_int_t_array arr 16 j == v j; lane = j / 16, lane bit = j % 16 >= 1;
@@ -81,12 +81,12 @@ let op_serialize_1_pre_bridge (v: bit_vec 256) : Lemma
       ()
     end
 
-let op_serialize_1_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 2)) : Lemma
+let op_serialize_1_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 2)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 1
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 16}).
-      bit_vec_of_int_t_array r 8 i == v (i * 16)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v (i * 16)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 1
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -104,14 +104,14 @@ let op_serialize_1_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 2)) : L
       (bit_vec_of_int_t_array arr 1)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_serialize_4_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_4_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 < 4 || v j = 0)
+  (ensures forall (j: nat{j < 256}). j % 16 < 4 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 < 4 || v j = 0
+    introduce forall (j: nat{j < 256}). j % 16 < 4 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0
     with begin
       if j % 16 < 4 then ()
       else begin
@@ -123,12 +123,12 @@ let op_serialize_4_pre_bridge (v: bit_vec 256) : Lemma
       end
     end
 
-let op_serialize_4_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 8)) : Lemma
+let op_serialize_4_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 8)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 4
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 64}).
-      bit_vec_of_int_t_array r 8 i == v ((i / 4) * 16 + i % 4)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v ((i / 4) * 16 + i % 4)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 4
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -144,11 +144,11 @@ let op_serialize_4_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 8)) : L
       (bit_vec_of_int_t_array arr 4)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_deserialize_4_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_4_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 8 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 4 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 4 then 0
              else let j = (i / 16) * 4 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 8)) 8 j)))
   (ensures
@@ -171,14 +171,14 @@ let op_deserialize_4_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     with introduce i < 16 ==> Rust_primitives.BitVectors.bounded (Seq.index arr i) 4
     with _. lemma_vec256_lane_bounded v 4 i
 
-let op_serialize_10_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_10_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 < 10 || v j = 0)
+  (ensures forall (j: nat{j < 256}). j % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 < 10 || v j = 0
+    introduce forall (j: nat{j < 256}). j % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0
     with begin
       if j % 16 < 10 then ()
       else begin
@@ -187,12 +187,12 @@ let op_serialize_10_pre_bridge (v: bit_vec 256) : Lemma
       end
     end
 
-let op_serialize_10_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 20)) : Lemma
+let op_serialize_10_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 20)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 10
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 160}).
-      bit_vec_of_int_t_array r 8 i == v ((i / 10) * 16 + i % 10)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v ((i / 10) * 16 + i % 10)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 10
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -208,11 +208,11 @@ let op_serialize_10_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 20)) :
       (bit_vec_of_int_t_array arr 10)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_deserialize_10_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_10_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 20 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 10 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 10 then 0
              else let j = (i / 16) * 10 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 20)) 8 j)))
   (ensures
@@ -235,14 +235,14 @@ let op_deserialize_10_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     with introduce i < 16 ==> Rust_primitives.BitVectors.bounded (Seq.index arr i) 10
     with _. lemma_vec256_lane_bounded v 10 i
 
-let op_serialize_12_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_12_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 < 12 || v j = 0)
+  (ensures forall (j: nat{j < 256}). j % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 < 12 || v j = 0
+    introduce forall (j: nat{j < 256}). j % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0
     with begin
       if j % 16 < 12 then ()
       else begin
@@ -251,12 +251,12 @@ let op_serialize_12_pre_bridge (v: bit_vec 256) : Lemma
       end
     end
 
-let op_serialize_12_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 24)) : Lemma
+let op_serialize_12_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 24)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 12
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 192}).
-      bit_vec_of_int_t_array r 8 i == v ((i / 12) * 16 + i % 12)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v ((i / 12) * 16 + i % 12)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 12
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -272,11 +272,11 @@ let op_serialize_12_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 24)) :
       (bit_vec_of_int_t_array arr 12)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_deserialize_12_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_12_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 24 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 12 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 12 then 0
              else let j = (i / 16) * 12 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 24)) 8 j)))
   (ensures
@@ -299,14 +299,14 @@ let op_deserialize_12_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     with introduce i < 16 ==> Rust_primitives.BitVectors.bounded (Seq.index arr i) 12
     with _. lemma_vec256_lane_bounded v 12 i
 
-let op_serialize_11_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_11_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 < 11 || v j = 0)
+  (ensures forall (j: nat{j < 256}). j % 16 < 11 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 < 11 || v j = 0
+    introduce forall (j: nat{j < 256}). j % 16 < 11 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0
     with begin
       if j % 16 < 11 then ()
       else begin
@@ -315,12 +315,12 @@ let op_serialize_11_pre_bridge (v: bit_vec 256) : Lemma
       end
     end
 
-let op_serialize_11_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 22)) : Lemma
+let op_serialize_11_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 22)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 11
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 176}).
-      bit_vec_of_int_t_array r 8 i == v ((i / 11) * 16 + i % 11)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v ((i / 11) * 16 + i % 11)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 11
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -336,11 +336,11 @@ let op_serialize_11_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 22)) :
       (bit_vec_of_int_t_array arr 11)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_deserialize_11_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_11_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 22 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 11 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 11 then 0
              else let j = (i / 16) * 11 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 22)) 8 j)))
   (ensures
@@ -363,14 +363,14 @@ let op_deserialize_11_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
     with introduce i < 16 ==> Rust_primitives.BitVectors.bounded (Seq.index arr i) 11
     with _. lemma_vec256_lane_bounded v 11 i
 
-let op_serialize_5_pre_bridge (v: bit_vec 256) : Lemma
+let op_serialize_5_pre_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5
               (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v))
-  (ensures forall (j: nat{j < 256}). j % 16 < 5 || v j = 0)
+  (ensures forall (j: nat{j < 256}). j % 16 < 5 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0)
   = let arr : t_Array i16 (sz 16) =
       Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v
     in
-    introduce forall (j: nat{j < 256}). j % 16 < 5 || v j = 0
+    introduce forall (j: nat{j < 256}). j % 16 < 5 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v j = 0
     with begin
       if j % 16 < 5 then ()
       else begin
@@ -379,12 +379,12 @@ let op_serialize_5_pre_bridge (v: bit_vec 256) : Lemma
       end
     end
 
-let op_serialize_5_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 10)) : Lemma
+let op_serialize_5_post_bridge (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) (r: t_Array u8 (mk_usize 10)) : Lemma
   (requires
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_pre_N 5
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) /\
     (forall (i: nat{i < 80}).
-      bit_vec_of_int_t_array r 8 i == v ((i / 5) * 16 + i % 5)))
+      bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v ((i / 5) * 16 + i % 5)))
   (ensures
     Libcrux_ml_kem.Vector.Traits.Spec.serialize_post_N 5
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 v) r)
@@ -400,11 +400,11 @@ let op_serialize_5_post_bridge (v: bit_vec 256) (r: t_Array u8 (mk_usize 10)) : 
       (bit_vec_of_int_t_array arr 5)
       (BitVecEq.retype (bit_vec_of_int_t_array r 8))
 
-let op_deserialize_5_post_bridge (input: t_Slice u8) (v: bit_vec 256) : Lemma
+let op_deserialize_5_post_bridge (input: t_Slice u8) (v: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec256) : Lemma
   (requires
     Seq.length input == 10 /\
     (forall (i: nat{i < 256}).
-      v i = (if i % 16 >= 5 then 0
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit v i = (if i % 16 >= 5 then 0
              else let j = (i / 16) * 5 + i % 16 in
                   bit_vec_of_int_t_array (input <: t_Array _ (sz 10)) 8 j)))
   (ensures

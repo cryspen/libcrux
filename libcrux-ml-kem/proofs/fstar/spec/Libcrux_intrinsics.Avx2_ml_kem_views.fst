@@ -1243,3 +1243,266 @@ let lemma_bv_bit0_mm256_cmpgt_epi16 (lhs rhs: t_Vec256) (l: nat{l < 16})
   assert_norm (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16 (mk_i16 0)
                  (sz 0) == 0)
 #pop-options
+
+(* ============================================================================
+   SERIALIZE / SAMPLING MIGRATION BATCH (2026-07-30)
+   ============================================================================ *)
+
+module IVi = Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp
+
+(* ── the bv_bit <-> lane_reader collapse (definitional; both sides read
+   `bv._0` at index `w*l + b`, and `bval` is exactly `bv_bit`'s Bit match). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_bv_bit_reader (#n: u64) (w: pos)
+    (bv: Libcrux_core_models.Abstractions.Bitvec.t_BitVec n)
+    (l: nat) (b: nat{b < w /\ w * l + b < v n})
+  : Lemma (IVi.bval (IVi.lane_reader n w bv (mk_u64 l) b) == bv_bit bv (w * l + b)) =
+  FStar.Math.Lemmas.lemma_mult_le_right l 1 w;
+  assert (l <= w * l)
+#pop-options
+
+(* ── TRUSTED slice-I/O semantics (5 tagged axioms) ────────────────────────────
+   These five ops are HARNESS PRIMITIVES: the corresponding `_mm*` functions in
+   core-models are `#[hax_lib::exclude] { unimplemented!() }` — they are the
+   raw-pointer FFI behind the `BitVec<N> <-> __m128i/__m256i` `From` bridges —
+   so core-models CANNOT prove them, and the migrated `Libcrux_intrinsics.Avx2`
+   carries them as bare `assume val`s with length-only ensures.  pcm carried the
+   SAME fact shapes as equally-unvalidated `Avx2_extract.fsti` op-ensures (see
+   the DEFERRED block above), so each axiom is an EXPLICITATION of pre-existing
+   trust, not net-new trust.  Evidence anchors: the core-models differential
+   tests in crates/utils/core-models/src/core_arch/x86/interpretations.rs.
+   Ledger accounting (deliberate, called out per session-4 trust note):
+   "+5 previously-implicit axioms made explicit and tagged". *)
+
+[@@ "trusted: trusted-extern: _mm_loadu_si128 is a core-models harness primitive (hax exclude / BitVec<128> From bridge); byte/bit formula validated by the round-trip differential test interpretations.rs:1612"]
+assume
+val lemma_bv_bit_mm_loadu_si128 (input: t_Slice u8) (i: nat{i < 128})
+  : Lemma (requires Seq.length input == 16)
+          (ensures bv_bit (mm_loadu_si128 input) i ==
+                   Rust_primitives.Integers.get_bit (Seq.index input (i / 8)) (sz (i % 8)))
+
+[@@ "trusted: trusted-extern: _mm_storeu_si128 (i16 slice) harness primitive; stores exactly the 8 LSB-first i16 lanes (vec128_as_i16x8) to output[0..8], framing the rest — formula named at interpretations.rs:2399, round-trip test :1628"]
+assume
+val lemma_mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
+  : Lemma (requires Seq.length output >= 8)
+          (ensures (let output' = mm_storeu_si128 output vector in
+                    Seq.length output' == Seq.length output /\
+                    (forall (j: nat{j < 8}).
+                       Seq.index output' j == Seq.index (vec128_as_i16x8 vector) j) /\
+                    (forall (j: nat{j < Seq.length output}).
+                       j >= 8 ==> Seq.index output' j == Seq.index output j)))
+
+[@@ "trusted: trusted-extern: _mm_storeu_si128 (byte slice) harness primitive; the 16 stored bytes carry the 128 vector bits LSB-first per byte — lane/bit decomposition tests interpretations.rs:2399-2442, round-trips :1612/:1628"]
+assume
+val lemma_mm_storeu_bytes_si128 (output: t_Slice u8) (vector: t_Vec128)
+  : Lemma (requires Seq.length output == 16)
+          (ensures (let output' = mm_storeu_bytes_si128 output vector in
+                    Seq.length output' == 16 /\
+                    (forall (i: nat{i < 128}).
+                       Rust_primitives.BitVectors.bit_vec_of_int_t_array
+                         (output' <: t_Array u8 (sz 16)) 8 i ==
+                       bv_bit vector i)))
+
+[@@ "trusted: trusted-extern: _mm256_storeu_si256 (i16 slice) harness primitive; stores exactly the 16 i16 lanes (vec256_as_i16x16) — model interpretations.rs:646-660, loadu round-trip :1673; NOTE no dedicated i16-STORE differential test exists yet (flagged for follow-up)"]
+assume
+val lemma_mm256_storeu_si256_i16 (output: t_Slice i16) (vector: t_Vec256)
+  : Lemma (requires Seq.length output == 16)
+          (ensures mm256_storeu_si256_i16 output vector == vec256_as_i16x16 vector)
+
+[@@ "trusted: trusted-extern: _mm256_loadu_si256 (i16 slice) harness primitive; loads the 16 i16 lanes — round-trip differential test interpretations.rs:1673"]
+assume
+val lemma_mm256_loadu_si256_i16 (input: t_Slice i16)
+  : Lemma (requires Seq.length input == 16)
+          (ensures vec256_as_i16x16 (mm256_loadu_si256_i16 input) == input)
+
+(* ── PROVEN serialize_1 machinery (spike port + the A1 sign analog) ─────────── *)
+
+(* value of an i16 lane shifted left by 15 (as u16, cast back): only the parity
+   of the input lane survives, as the sign bit. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_shl15_value (x: i16)
+  : Lemma (v (cast ((cast x <: u16) <<! mk_i32 15 <: u16) <: i16) ==
+           (if v x % 2 = 1 then -32768 else 0)) =
+  let xu : u16 = cast x <: u16 in
+  let sh : u16 = xu <<! mk_i32 15 in
+  assert_norm (pow2 15 == 32768); assert_norm (pow2 16 == 65536);
+  FStar.Math.Lemmas.pow2_multiplication_modulo_lemma_2 (v xu) 16 15;
+  FStar.Math.Lemmas.modulo_modulo_lemma (v x) 2 32768
+#pop-options
+
+(* (A1) sign bit of byte i of `packs(cast(slli15 v), extract1(slli15 v))` ==
+   raw bit 16*i of v — the last spike assumption, now PROVEN from the canonical
+   per-lane facts (slli16 value, 128-half transfers, packs saturation). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_slli15_packs_sign (vector: t_Vec256) (i: nat{i < 16})
+  : Lemma
+      (let s = mm256_slli_epi16 (mk_i32 15) vector in
+       let msbs = mm_packs_epi16 (mm256_castsi256_si128 s) (mm256_extracti128_si256 (mk_i32 1) s) in
+       Canon.sign_bit8 (Canon.to_i8x16 msbs) i == bv_bit vector (16 * i)) =
+  reveal_opaque (`%mm256_slli_epi16) mm256_slli_epi16;
+  reveal_opaque (`%mm256_castsi256_si128) mm256_castsi256_si128;
+  reveal_opaque (`%mm256_extracti128_si256) mm256_extracti128_si256;
+  reveal_opaque (`%mm_packs_epi16) mm_packs_epi16;
+  let s = mm256_slli_epi16 (mk_i32 15) vector in
+  let lo = mm256_castsi256_si128 s in
+  let hi = mm256_extracti128_si256 (mk_i32 1) s in
+  let msbs = mm_packs_epi16 lo hi in
+  Canon.lemma_mm256_slli_epi16 (mk_i32 15) vector;
+  Canon.lemma_iv_slli16 (mk_i32 15) (Canon.to_i16x16 vector) i;
+  Canon.lemma_mm256_castsi256_si128 s;
+  Canon.lemma_mm256_extracti128_si256 (mk_i32 1) s;
+  (if i < 8
+   then Canon.lemma_cast256_si128_lane_i16 s i
+   else Canon.lemma_extracti128_1_lane_i16 s (i - 8));
+  Canon.lemma_mm_packs_epi16 lo hi;
+  Canon.lemma_iv_mm_packs_epi16 (Canon.to_i16x8 lo) (Canon.to_i16x8 hi) i;
+  let x = Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 vector) (mk_u64 i) in
+  lemma_shl15_value x;
+  Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 256) (mk_u64 16) vector (mk_u64 i) 0;
+  lemma_bv_bit_reader 16 vector i 0;
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I16);
+  assert_norm (pow2 0 == 1); assert_norm (pow2 16 == 65536);
+  FStar.Math.Lemmas.lemma_mod_plus (v x) 32768 2
+#pop-options
+
+(* migrated-op movemask wrappers over the canonical PROVEN movemask companions *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_mm_movemask_bound (a: t_Vec128)
+  : Lemma (0 <= v (mm_movemask_epi8 a) /\ v (mm_movemask_epi8 a) < pow2 16) =
+  reveal_opaque (`%mm_movemask_epi8) mm_movemask_epi8;
+  Canon.lemma_mm_movemask_epi8 a;
+  IV.e_movemask_bit_sum_i8_bound (Canon.to_i8x16 a) 0 16;
+  assert_norm (pow2 16 == 65536)
+
+let lemma_bv_bit_mm_movemask_epi8 (a: t_Vec128) (i: nat{i < 16})
+  : Lemma ((v (mm_movemask_epi8 a) / pow2 i) % 2 == Canon.sign_bit8 (Canon.to_i8x16 a) i) =
+  reveal_opaque (`%mm_movemask_epi8) mm_movemask_epi8;
+  Canon.movemask_epi8_bit a i
+#pop-options
+
+(* byte packaging (spike P7, ported verbatim): bit i of the 2-byte array
+   [x as u8; (x >> 8) as u8] == bit i of the movemask scalar x. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 100"
+let lemma_bit_mod (x: nat) (n: nat{n >= 1}) (i: nat{i < n})
+  : Lemma (((x % pow2 n) / pow2 i) % 2 == (x / pow2 i) % 2) =
+  FStar.Math.Lemmas.pow2_modulo_division_lemma_1 x i n;
+  FStar.Math.Lemmas.pow2_plus 1 (n - i - 1);
+  FStar.Math.Lemmas.modulo_modulo_lemma (x / pow2 i) 2 (pow2 (n - i - 1))
+#pop-options
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 200"
+let lemma_cast_u8 (x: i32)
+  : Lemma (requires 0 <= v x) (ensures v (cast (x <: i32) <: u8) == (v x) % pow2 8) =
+  assert_norm (pow2 8 == 256)
+
+let lemma_shift8 (x: i32)
+  : Lemma (requires 0 <= v x /\ v x < pow2 16)
+          (ensures v (x >>! mk_i32 8 <: i32) == (v x) / pow2 8) =
+  assert_norm (pow2 8 == 256); assert_norm (pow2 16 == 65536)
+#pop-options
+
+(* THE serialize_1 bit obligation, assembled: `result` is the 2-byte packaging of
+   the movemask of the slli15/packs chain, and its d=8 serialization at bit i is
+   raw bit 16*i of the input vector.  Called from serialize.rs's proof! block
+   with the extracted `bits_packed`/`result` terms. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_serialize_1_bits (vector: t_Vec256) (result: t_Array u8 (mk_usize 2)) (i: nat{i < 16})
+  : Lemma
+      (requires
+        (let s = mm256_slli_epi16 (mk_i32 15) vector in
+         let msbs = mm_packs_epi16 (mm256_castsi256_si128 s) (mm256_extracti128_si256 (mk_i32 1) s) in
+         let bits_packed = mm_movemask_epi8 msbs in
+         Seq.index result 0 == (cast (bits_packed <: i32) <: u8) /\
+         Seq.index result 1 == (cast (bits_packed >>! mk_i32 8 <: i32) <: u8)))
+      (ensures Rust_primitives.BitVectors.bit_vec_of_int_t_array result 8 i == bv_bit vector (16 * i)) =
+  let s = mm256_slli_epi16 (mk_i32 15) vector in
+  let msbs = mm_packs_epi16 (mm256_castsi256_si128 s) (mm256_extracti128_si256 (mk_i32 1) s) in
+  let bits_packed = mm_movemask_epi8 msbs in
+  lemma_mm_movemask_bound msbs;
+  lemma_bv_bit_mm_movemask_epi8 msbs i;
+  lemma_slli15_packs_sign vector i;
+  (* res_bit: bit (i%8) of byte (i/8) == bit i of the scalar *)
+  (if i < 8
+   then begin
+     lemma_cast_u8 bits_packed;
+     lemma_bit_mod (v bits_packed) 8 i
+   end
+   else begin
+     let j = i - 8 in
+     lemma_shift8 bits_packed;
+     lemma_cast_u8 (bits_packed >>! mk_i32 8 <: i32);
+     lemma_bit_mod (v bits_packed / pow2 8) 8 j;
+     FStar.Math.Lemmas.pow2_plus 8 j;
+     FStar.Math.Lemmas.division_multiplication_lemma (v bits_packed) (pow2 8) (pow2 j)
+   end);
+  reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.U8)
+#pop-options
+
+(* ── PROVEN 128-bit PSHUFB bit semantics (retires the Sampling_theory axiom) ── *)
+
+(* weighted LSB-first bit sum of byte `nth` == the dsum2 lane reader fold *)
+#push-options "--fuel 9 --ifuel 1 --z3rlimit 300"
+let lemma_byte_bits_dsum2 (b: t_Vec128) (nth: nat{nth < 16})
+  : Lemma (IVi.dsum2 (IVi.lane_reader (mk_u64 128) 8 b (mk_u64 nth)) 0 8 ==
+           bv_bit b (8 * nth) + 2 * bv_bit b (8 * nth + 1) + 4 * bv_bit b (8 * nth + 2) +
+           8 * bv_bit b (8 * nth + 3) + 16 * bv_bit b (8 * nth + 4) + 32 * bv_bit b (8 * nth + 5) +
+           64 * bv_bit b (8 * nth + 6) + 128 * bv_bit b (8 * nth + 7)) =
+  let f = IVi.lane_reader (mk_u64 128) 8 b (mk_u64 nth) in
+  lemma_bv_bit_reader 8 b nth 0;
+  lemma_bv_bit_reader 8 b nth 1;
+  lemma_bv_bit_reader 8 b nth 2;
+  lemma_bv_bit_reader 8 b nth 3;
+  lemma_bv_bit_reader 8 b nth 4;
+  lemma_bv_bit_reader 8 b nth 5;
+  lemma_bv_bit_reader 8 b nth 6;
+  lemma_bv_bit_reader 8 b nth 7;
+  assert (IVi.dsum2 f 8 0 == 0);
+  assert (IVi.dsum2 f 7 1 == IVi.bval (f 7) + 2 * IVi.dsum2 f 8 0);
+  assert (IVi.dsum2 f 6 2 == IVi.bval (f 6) + 2 * IVi.dsum2 f 7 1);
+  assert (IVi.dsum2 f 5 3 == IVi.bval (f 5) + 2 * IVi.dsum2 f 6 2);
+  assert (IVi.dsum2 f 4 4 == IVi.bval (f 4) + 2 * IVi.dsum2 f 5 3);
+  assert (IVi.dsum2 f 3 5 == IVi.bval (f 3) + 2 * IVi.dsum2 f 4 4);
+  assert (IVi.dsum2 f 2 6 == IVi.bval (f 2) + 2 * IVi.dsum2 f 3 5);
+  assert (IVi.dsum2 f 1 7 == IVi.bval (f 1) + 2 * IVi.dsum2 f 2 6);
+  assert (IVi.dsum2 f 0 8 == IVi.bval (f 0) + 2 * IVi.dsum2 f 1 7)
+#pop-options
+
+(* PSHUFB (128-bit), full bit form: exactly the shape of
+   Hacspec_ml_kem.Commute.Rej_table.shuffle_semantics — PROVEN, replacing the
+   trusted `mm_shuffle_epi8_no_semantics_lemma` axiom (Sampling_theory). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_bv_bit_mm_shuffle_epi8 (a b: t_Vec128) (i: nat{i < 128})
+  : Lemma (bv_bit (mm_shuffle_epi8 a b) i ==
+           (let nth = i / 8 in
+            let idx: nat =
+              bv_bit b (8 * nth) + 2 * bv_bit b (8 * nth + 1) + 4 * bv_bit b (8 * nth + 2) +
+              8 * bv_bit b (8 * nth + 3) + 16 * bv_bit b (8 * nth + 4) + 32 * bv_bit b (8 * nth + 5) +
+              64 * bv_bit b (8 * nth + 6) + 128 * bv_bit b (8 * nth + 7) in
+            if idx > 127 then 0 else bv_bit a ((idx % 16) * 8 + i % 8))) =
+  reveal_opaque (`%mm_shuffle_epi8) mm_shuffle_epi8;
+  Canon.lemma_mm_shuffle_epi8 a b;
+  let nth = i / 8 in
+  let sb = i % 8 in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_byte_bits_dsum2 b nth;
+  Canon.lemma_to_i8_val_128 b nth;
+  IVi.dsum2_bound (IVi.lane_reader (mk_u64 128) 8 b (mk_u64 nth)) 0 8;
+  let u : nat = IVi.dsum2 (IVi.lane_reader (mk_u64 128) 8 b (mk_u64 nth)) 0 8 in
+  let r = mm_shuffle_epi8 a b in
+  Canon.lemma_readback Rust_primitives.Integers.I8 (mk_u64 128) (mk_u64 16) r (mk_u64 nth) sb;
+  lemma_bv_bit_reader 8 r nth sb;
+  assert_norm (pow2 8 == 256);
+  if u > 127
+  then begin
+    Canon.lemma_iv_mm_shuffle_epi8_neg (Canon.to_i8x16 a) (Canon.to_i8x16 b) nth;
+    reveal_opaque (`%Rust_primitives.Integers.get_bit)
+                  (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.I8)
+  end
+  else begin
+    Canon.lemma_iv_mm_shuffle_epi8_sel (Canon.to_i8x16 a) (Canon.to_i8x16 b) nth;
+    Canon.lemma_readback Rust_primitives.Integers.I8 (mk_u64 128) (mk_u64 16) a (mk_u64 (u % 16)) sb;
+    lemma_bv_bit_reader 8 a (u % 16) sb
+  end
+#pop-options
