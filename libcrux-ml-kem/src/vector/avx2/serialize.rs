@@ -223,7 +223,10 @@ with Libcrux_ml_kem.Vector.Avx2.Concat_pairs_theory.lemma_concat_pairs_bits $n $
     result
 }
 
-#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+// The rlimit matches serialize_5/10/12; serialize_4 was the only width riding the
+// module default (80), which starves the final store/gather composition query
+// (measured: 80.000 canceled -> 99/400 succeeded, no other change).
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(
     fstar!(
         r#"forall (i: nat{i < 256}). i % 16 < 4 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector i = 0"#
@@ -263,19 +266,25 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     // 0: 0xHG_FE_DC_BA 1: 0x00_00_00_00 | 2: 0x00_00_00_00 3: 0x00_00_00_00 | 4: 0xPO_NM_LK_JI ....
     //
     // We put the element at 4 after the element at 0 ...
-    let combined =
+    // NB `combined256` is unshadowed from `combined`: a rebound name drops its
+    // earlier let-equation, and the gather lemma needs the whole chain in scope.
+    let combined256 =
         mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
-    let combined = mm256_castsi256_si128(combined);
+    let combined = mm256_castsi256_si128(combined256);
 
     // ... so that we can read them out in one go.
+    #[cfg(hax)]
+    let serialized_pre = serialized;
     mm_storeu_bytes_si128(&mut serialized, combined);
 
     proof!(
         r#"
-assert (forall (i: nat{i < 64}). $combined i == bit_vec_of_int_t_array serialized 8 i);
-  introduce forall (i: nat {i < 64}). $combined i = vector ((i / 4) * 16 + i % 4)
-  with assert_norm (BitVec.Utils.forall64 (fun i -> $combined i = $vector ((i / 4) * 16 + i % 4)));
-  assert (forall (i: nat{i < 64}). bit_vec_of_int_t_array serialized 8 i == $vector ((i / 4) * 16 + i % 4))
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128 $serialized_pre $combined;
+introduce forall (i: nat{i < 64}).
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array $serialized 8 i ==
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector ((i / 4) * 16 + i % 4)
+with Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_4_gather_bits
+       $vector $adjacent_2_combined i
 "#
     );
 
