@@ -180,14 +180,47 @@ with Libcrux_intrinsics.Avx2_ml_kem_views.lemma_deserialize_1_bits $a $b i
 /// of the shape `0b0…0b₁…bₙa₁…aₙ`, if `x` is a sequence of pairs of
 /// 16 bits, of the shape `(0b0…0a₁…aₙ, 0b0…0b₁…bₙ)` (where the last
 /// `n` bits are non-zero).
-#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_concat_pairs_n}")]
+// 2026-07-30 (core-models migration): the pcm-era
+// `#[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {…}")]` stub is
+// DELETED — the real body extracts fine over core-models, and the bit-concatenation
+// post is PROVEN by `Concat_pairs_theory.lemma_concat_pairs_bits` (no new trust).
+// `n` is unshadowed to `sh` so both stay nameable from the `fstar!` antiquotes.
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 300")]
+#[hax_lib::requires(fstar!(r#"1 <= v $n /\ v $n <= 12 /\
+  (forall (l: nat{l < 256}). l % 16 >= v $n ==>
+     Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $x l = 0)"#))]
+#[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i ==
+    (if i % 32 < v $n
+     then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $x ((i / 32) * 32 + i % 32)
+     else if i % 32 < 2 * v $n
+     then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $x ((i / 32) * 32 + 16 + (i % 32 - v $n))
+     else 0)"#))]
 fn mm256_concat_pairs_n(n: u8, x: Vec256) -> Vec256 {
-    let n = 1 << n;
-    mm256_madd_epi16(
+    let sh = 1 << n;
+    let result = mm256_madd_epi16(
         x,
-        mm256_set_epi16(n, 1, n, 1, n, 1, n, 1, n, 1, n, 1, n, 1, n, 1),
-    )
+        mm256_set_epi16(sh, 1, sh, 1, sh, 1, sh, 1, sh, 1, sh, 1, sh, 1, sh, 1),
+    );
+    proof!(
+        r#"
+FStar.Math.Lemmas.pow2_le_compat 12 (v $n);
+assert_norm (pow2 12 == 4096);
+assert_norm (pow2 16 == 65536);
+FStar.Math.Lemmas.small_mod (pow2 (v $n)) (pow2 16);
+assert (v $sh == pow2 (v $n));
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i ==
+      (if i % 32 < v $n
+       then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $x ((i / 32) * 32 + i % 32)
+       else if i % 32 < 2 * v $n
+       then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $x ((i / 32) * 32 + 16 + (i % 32 - v $n))
+       else 0)
+with Libcrux_ml_kem.Vector.Avx2.Concat_pairs_theory.lemma_concat_pairs_bits $n $sh $x i
+"#
+    );
+    result
 }
 
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]

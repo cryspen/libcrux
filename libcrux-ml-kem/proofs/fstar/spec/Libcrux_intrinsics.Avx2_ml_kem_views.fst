@@ -2032,118 +2032,15 @@ let lemma_bv_bit_lane16_digit (x: t_Vec256) (l: nat{l < 16}) (c: nat{c < 16})
   Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 256) (mk_u64 16) x (mk_u64 l) c
 #pop-options
 
-(* the madd 32-lane VALUE: exact bit concatenation of the two i16 half lanes. *)
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
-let lemma_concat_pairs_lane32 (n: u8) (sh: i16) (x: t_Vec256) (q: nat{q < 8})
-  : Lemma
-      (requires 1 <= v n /\ v n <= 12 /\ v sh == pow2 (v n) /\
-                (forall (l: nat{l < 256}). l % 16 >= v n ==> bv_bit x l = 0))
-      (ensures (let r = mm256_madd_epi16 x
-                          (mm256_set_epi16 sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)
-                             sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)) in
-                v (get_lane x (2 * q)) >= 0 /\ v (get_lane x (2 * q)) < pow2 (v n) /\
-                v (get_lane x (2 * q + 1)) >= 0 /\ v (get_lane x (2 * q + 1)) < pow2 (v n) /\
-                lane32 r q == v (get_lane x (2 * q)) + pow2 (v n) * v (get_lane x (2 * q + 1)) /\
-                0 <= lane32 r q /\ lane32 r q < pow2 31)) =
-  let nn = v n in
-  let m = mm256_set_epi16 sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)
-            sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) in
-  let r = mm256_madd_epi16 x m in
-  (if false then ()
-   else if q = 0 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 0 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 1 == sh);
-     assert (lane32 r 0 == (v (get_lane x 0) * 1 + v (get_lane x 1) * v sh) @% 4294967296)
-   end
-   else if q = 1 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 2 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 3 == sh);
-     assert (lane32 r 1 == (v (get_lane x 2) * 1 + v (get_lane x 3) * v sh) @% 4294967296)
-   end
-   else if q = 2 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 4 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 5 == sh);
-     assert (lane32 r 2 == (v (get_lane x 4) * 1 + v (get_lane x 5) * v sh) @% 4294967296)
-   end
-   else if q = 3 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 6 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 7 == sh);
-     assert (lane32 r 3 == (v (get_lane x 6) * 1 + v (get_lane x 7) * v sh) @% 4294967296)
-   end
-   else if q = 4 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 8 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 9 == sh);
-     assert (lane32 r 4 == (v (get_lane x 8) * 1 + v (get_lane x 9) * v sh) @% 4294967296)
-   end
-   else if q = 5 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 10 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 11 == sh);
-     assert (lane32 r 5 == (v (get_lane x 10) * 1 + v (get_lane x 11) * v sh) @% 4294967296)
-   end
-   else if q = 6 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 12 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 13 == sh);
-     assert (lane32 r 6 == (v (get_lane x 12) * 1 + v (get_lane x 13) * v sh) @% 4294967296)
-   end
-   else if q = 7 then begin
-     assert (Seq.index (vec256_as_i16x16 m) 14 == mk_i16 1);
-     assert (Seq.index (vec256_as_i16x16 m) 15 == sh);
-     assert (lane32 r 7 == (v (get_lane x 14) * 1 + v (get_lane x 15) * v sh) @% 4294967296)
-   end
-   else ());
-  assert (lane32 r q == (v (get_lane x (2 * q)) * 1 + v (get_lane x (2 * q + 1)) * v sh) @% 4294967296);
-  let hz (l: nat{l < 16}) : Lemma (forall (c: nat{c < 16}). c >= nn ==> bv_bit x (16 * l + c) = 0) = () in
-  hz (2 * q); hz (2 * q + 1);
-  lemma_lane_high_zero_bound x (2 * q) nn;
-  lemma_lane_high_zero_bound x (2 * q + 1) nn;
-  let x0 = v (get_lane x (2 * q)) in
-  let x1 = v (get_lane x (2 * q + 1)) in
-  let s = x0 + pow2 nn * x1 in
-  FStar.Math.Lemmas.pow2_plus nn nn;
-  FStar.Math.Lemmas.lemma_mult_lt_left (pow2 nn) x1 (pow2 nn);
-  FStar.Math.Lemmas.pow2_le_compat 24 (2 * nn);
-  assert_norm (pow2 24 < pow2 31);
-  assert (0 <= s /\ s < pow2 31);
-  assert_norm (pow2 32 == 4294967296);
-  assert_norm (pow2 31 + pow2 31 == pow2 32);
-  FStar.Math.Lemmas.small_mod s (pow2 32);
-  assert ((x0 * 1 + x1 * v sh) == s);
-  assert (s @% 4294967296 == s)
-#pop-options
-
-(* THE concat-pairs bit obligation.  `sh` is the shift constant threaded as a
-   free parameter (v sh == 2^(v n)) so the call site links by congruence.
-   Pure composition of the three helpers. *)
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
-let lemma_concat_pairs_bits (n: u8) (sh: i16) (x: t_Vec256) (i: nat{i < 256})
-  : Lemma
-      (requires 1 <= v n /\ v n <= 12 /\ v sh == pow2 (v n) /\
-                (forall (l: nat{l < 256}). l % 16 >= v n ==> bv_bit x l = 0))
-      (ensures (let r = mm256_madd_epi16 x
-                          (mm256_set_epi16 sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)
-                             sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)) in
-                bv_bit r i ==
-                (if i % 32 < v n then bv_bit x ((i / 32) * 32 + i % 32)
-                 else if i % 32 < 2 * v n then bv_bit x ((i / 32) * 32 + 16 + (i % 32 - v n))
-                 else 0))) =
-  let nn = v n in
-  let m = mm256_set_epi16 sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1)
-            sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) sh (mk_i16 1) in
-  let r = mm256_madd_epi16 x m in
-  let q = i / 32 in
-  let b = i % 32 in
-  FStar.Math.Lemmas.euclidean_division_definition i 32;
-  lemma_concat_pairs_lane32 n sh x q;
-  lemma_bv_bit_lane32_digit r q b;
-  let x0 = v (get_lane x (2 * q)) in
-  let x1 = v (get_lane x (2 * q + 1)) in
-  lemma_concat_digit x0 x1 nn b;
-  (if b < nn then lemma_bv_bit_lane16_digit x (2 * q) b
-   else if b < 2 * nn then lemma_bv_bit_lane16_digit x (2 * q + 1) (b - nn)
-   else ());
-  assert (32 * q == (i / 32) * 32);
-  assert (16 * (2 * q) + b == (i / 32) * 32 + i % 32 \/ ~(b < nn));
-  assert (16 * (2 * q + 1) + (b - nn) == (i / 32) * 32 + 16 + (i % 32 - nn) \/ ~(b >= nn /\ b < 2 * nn))
-#pop-options
+(* ── concat-pairs keystone: RELOCATED 2026-07-30 ───────────────────────────
+   `lemma_concat_pairs_lane32` / `lemma_concat_pairs_bits` used to live here and
+   could only be landed behind a per-decl `#restart-solver` (solver-state
+   pollution from this module's ~2000 preceding lines of queries; 480 s cold for
+   the lane32 arm dispatch alone).  They now live in
+   `Libcrux_ml_kem.Vector.Avx2.Concat_pairs_theory`, which reaches the facts
+   below by EXPLICIT CALL (per feedback_smtpat_only_for_user_consumed_lemmas)
+   and verifies in 9 s cold with no restart-solver.  The digit bridges above
+   (`lemma_bv_bit_lane32_digit` / `lemma_bv_bit_lane16_digit` /
+   `lemma_lane_high_zero_bound` / `lemma_concat_digit` / `lemma_dsum2_zero` /
+   `lemma_get_bit_nonneg`) STAY here: they are width-generic and every
+   deserialize-width proof reuses them. *)
