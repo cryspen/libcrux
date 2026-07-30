@@ -398,7 +398,28 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
         let coefficients_in_lsb = mm256_srli_epi16::<4>(coefficients_in_msb);
 
         // Zero the remaining bits.
-        mm256_and_si256(coefficients_in_lsb, mm256_set1_epi16((1 << 4) - 1))
+        let result = mm256_and_si256(coefficients_in_lsb, mm256_set1_epi16((1 << 4) - 1));
+        proof!(
+            r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i
+    = ( if i % 16 < 4
+        then let j = (i / 16) * 4 + i % 16 in
+             (match i / 32 with
+             | 0 -> get_bit $b0 (sz j)
+             | 1 -> get_bit $b1 (sz (j - 8))
+             | 2 -> get_bit $b2 (sz (j - 16))
+             | 3 -> get_bit $b3 (sz (j - 24))
+             | 4 -> get_bit $b4 (sz (j - 32))
+             | 5 -> get_bit $b5 (sz (j - 40))
+             | 6 -> get_bit $b6 (sz (j - 48))
+             | 7 -> get_bit $b7 (sz (j - 56)))
+        else 0)
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_4_bits $b0 $b1 $b2 $b3 $b4 $b5
+       $b6 $b7 i
+"#
+        );
+        result
     }
 
     deserialize_4_u8s(
