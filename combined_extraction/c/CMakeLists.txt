@@ -29,6 +29,21 @@ if(NOT MSVC)
     )
 endif(NOT MSVC)
 
+option(ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
+if(ENABLE_SANITIZERS)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        # Compile flags: Enable ASan + UBSan and keep frame pointers for good stack traces
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        # Link flags: Ensure the sanitizer runtime libraries are linked
+        add_link_options(-fsanitize=address,undefined)
+        message(STATUS "Sanitizers (ASan + UBSan) ENABLED")
+    elseif(MSVC)
+        # MSVC natively supports ASan (UBSan requires clang-cl)
+        add_compile_options(/fsanitize=address)
+        message(STATUS "AddressSanitizer ENABLED (MSVC)")
+    endif()
+endif()
+
 if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0") OR
     (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND

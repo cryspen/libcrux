@@ -8,7 +8,7 @@ Two output formats are provided.
 | Directory        | Format       | ML-KEM variants  | ML-DSA variants |
 |------------------|--------------|------------------|-----------------|
 | `c/`             | split-source | 512 · 768 · 1024 | 44 · 65 · 87    |
-| `c-header-only/` | header-only  | 768              | 44 · 65 · 87    |
+| `c-header-only/` | header-only  | 512 · 768 · 1024 | 44 · 65 · 87    |
 
 **Split-source** (`c/`): separate `.c` and `.h` files.  Build the
 `combined_static` library from the `.c` files and link against it.
@@ -75,3 +75,11 @@ the headers directly.
 
 Set `LIBCRUX_KYBER=1` before cmake to also build the optional Kyber 768
 compatibility test (not part of the combined extraction itself).
+
+Enable ASan/UBSan (GCC/Clang) or ASan (MSVC) with `-DENABLE_SANITIZERS=ON`,
+off by default:
+
+```bash
+cmake -B build -DENABLE_SANITIZERS=ON
+cmake --build build
+```

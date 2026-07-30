@@ -115,6 +115,7 @@ TEST(MlKem512TestPortableUnpacked, ConsistencyTest) {
 
   EXPECT_EQ(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+  free(key_pair);
 }
 
 TEST(Kyber512TestPortable, ModifiedCiphertextTest) {
@@ -165,7 +166,7 @@ TEST(Kyber512TestPortable, ModifiedSecretKeyTest) {
   EXPECT_NE(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-  modify_secret_key(ctxt.snd.data, LIBCRUX_ML_KEM_MLKEM512_SECRET_KEY_SIZE,
+  modify_secret_key(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM512_SECRET_KEY_SIZE,
                     true);
   auto sharedSecret3 =
       libcrux_ml_kem_mlkem512_portable_decapsulate(&key_pair.sk, &ctxt.fst);
@@ -305,7 +306,7 @@ TEST(Kyber512TestAvx2, ModifiedSecretKeyTest) {
   EXPECT_NE(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-  modify_secret_key(ctxt.snd.data, LIBCRUX_ML_KEM_MLKEM512_SECRET_KEY_SIZE,
+  modify_secret_key(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM512_SECRET_KEY_SIZE,
                     true);
   auto sharedSecret3 =
       libcrux_ml_kem_mlkem512_avx2_decapsulate(&key_pair.sk, &ctxt.fst);

@@ -115,6 +115,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest) {
 
   EXPECT_EQ(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+  free(key_pair);
 }
 
 TEST(Kyber768TestPortable, ModifiedCiphertextTest) {
@@ -169,7 +170,7 @@ TEST(Kyber768TestPortable, ModifiedSecretKeyTest) {
   EXPECT_NE(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-  modify_secret_key(ctxt.snd.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE,
+  modify_secret_key(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE,
                     true);
   auto sharedSecret3 =
       libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst);
@@ -320,7 +321,7 @@ TEST(Kyber768TestAvx2, ModifiedSecretKeyTest) {
   EXPECT_NE(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-  modify_secret_key(ctxt.snd.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE,
+  modify_secret_key(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE,
                     true);
   auto sharedSecret3 =
       libcrux_ml_kem_mlkem768_avx2_decapsulate(&key_pair.sk, &ctxt.fst);
