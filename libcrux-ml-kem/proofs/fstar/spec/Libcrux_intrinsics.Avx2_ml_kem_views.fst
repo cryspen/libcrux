@@ -101,6 +101,27 @@ let vec256_as_i16x16_len (x: t_Vec256)
           [SMTPat (Seq.length (vec256_as_i16x16 x))]
   = ()
 
+(* The `t_Array i16 (sz 16)` -> `t_Slice i16` coercion, as ONE GROUND fact.
+
+   Every consumer that passes a lane view to a `t_Slice`-typed spec (e.g.
+   `Spec.Utils.is_i16b_array`) pays the `t_Slice` refinement
+   `Seq.length s <= max_usize`.  The `_len` lemma above is NOT enough: composing
+   `Seq.length … == 16` with `16 <= max_usize` needs the numeral/`pow2` axioms for
+   `max_usize`, and under `--ext context_pruning` those get crowded out of a heavy
+   decl's pruned relevant-set — the VC then SATURATES (observed: Ntt's
+   `inv_ntt_layer_1_step` sub-query 104, rlimit 300.000 canceled, on a coercion
+   that is trivially true).  Handing over the FINISHED inequality survives pruning
+   because the fact mentions all three of `Seq.length`, the view, and `max_usize`.
+
+   The trigger is deliberately the view application itself rather than
+   `Seq.length (view x)`: the narrower trigger does fire, yet the composition still
+   starves, so the ground form has to be in scope wherever the view is. Safe
+   despite the breadth — the payload is a single quantifier-free inequality. *)
+let vec256_as_i16x16_slice_ok (x: t_Vec256)
+  : Lemma (Seq.length (vec256_as_i16x16 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec256_as_i16x16 x)]
+  = assert_norm (16 <= Rust_primitives.Integers.max_usize)
+
 (* Reduction of an Int_vec FunArray produced by `from_fn 16` at a Seq index. *)
 let index_from_fn16 (#t: Type0) (g: (i: u64{v i < 16}) -> t) (i: nat{i < 16})
   : Lemma (Funarr.impl_5__get (mk_u64 16) #t
@@ -164,6 +185,12 @@ let vec128_as_i16x8_len (x: t_Vec128)
   : Lemma (Seq.length (vec128_as_i16x8 x) == 8)
           [SMTPat (Seq.length (vec128_as_i16x8 x))]
   = ()
+
+(* 128-bit twin of `vec256_as_i16x16_slice_ok` — same rationale. *)
+let vec128_as_i16x8_slice_ok (x: t_Vec128)
+  : Lemma (Seq.length (vec128_as_i16x8 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_i16x8 x)]
+  = assert_norm (8 <= Rust_primitives.Integers.max_usize)
 
 (* ── i16x16-view arithmetic/logical facts ─────────────────────────────────── *)
 
