@@ -35,9 +35,10 @@ module Sse2c  = Libcrux_core_models.Core_arch.X86.Sse2
    in `Libcrux_core_models.Intrinsics_views` (which itself rests only on the
    differentially-tested `Int_vec.Lemmas` lifts plus the PROVEN codec round-trip).
    Under pcm these same facts were abstract `val`s / assumed `#[ensures]`, so the
-   trust surface here has strictly SHRUNK.  Exactly ONE fact is still assumed —
-   `lemma_mm256_mul_epu32`, the only one crossing both a signedness and a width
-   change; it carries a `[@@ "trusted: …"]` tag and a note on what closes it.
+   trust surface here has strictly SHRUNK.  As of 2026-07-29 NO fact in this
+   module is assumed: the last one (`lemma_mm256_mul_epu32`, the only one crossing
+   both a signedness and a width change) is proven from the canonical unsigned
+   codec bridges `Canon.lemma_u32_of_i32` / `Canon.lemma_u64_concat32`.
    The views keep ml-kem's Seq/Array shape (`vec256_as_i16x16 : t_Array i16 (sz
    16)`, `get_lane`, `Spec.Utils.map2`) so the consuming proofs are untouched.
 
@@ -66,7 +67,22 @@ unfold type t_Vec128 = Libcrux_core_models.Abstractions.Bitvec.t_BitVec (mk_u64 
    semantics carried by the admitted fact-lemmas below (validated by the
    core-models differential tests).  P2 gives it a body = core-models
    `to_i16x16` (FunArray -> t_Array via createi). *)
-(* A-on-B adapter: Seq view = per-lane read of the canonical FunArray view. *)
+(* A-on-B adapter: Seq view = per-lane read of the canonical FunArray view.
+
+   OPAQUE (2026-07-29).  Under pcm this was an abstract `assume val`, so consumers
+   could only ever see it as an ATOM of type `t_Array i16 (sz 16)`.  Giving it a
+   body made it TRANSPARENT, and that regressed consumers two ways:
+     * the `t_Array i16 (sz 16)` -> `t_Slice i16` coercion VC
+       (`Seq.length … <= max_usize`) stopped following from the declared result
+       type and had to be re-derived through `Seq.init`, which STARVES under
+       `--ext context_pruning`; and
+     * every `Seq.index (view x) i` goal acquired a second, dead-end path (unfold
+       to `Seq.init`, then the OPAQUE `Canon.to_i16x16`) competing with the
+       op-fact lemmas — 16 lanes of that saturates a split sub-query.
+   `opaque_to_smt` restores pcm's abstraction while keeping the definition (so it
+   is still PROVEN, not assumed).  The ONLY route from the Seq view to the
+   canonical FunArray view is `vec256_index` below, which reveals internally. *)
+[@@ "opaque_to_smt"]
 let vec256_as_i16x16 (x: t_Vec256) : t_Array i16 (sz 16) =
   Seq.init 16 (fun i -> Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 x) (mk_u64 i))
 let get_lane (v: t_Vec256) (i:nat{i < 16}) = Seq.index (vec256_as_i16x16 v) i
@@ -76,6 +92,13 @@ let vec256_index (x: t_Vec256) (i: nat{i < 16})
   : Lemma (Seq.index (vec256_as_i16x16 x) i
            == Funarr.impl_5__get (mk_u64 16) #i16 (Canon.to_i16x16 x) (mk_u64 i))
           [SMTPat (Seq.index (vec256_as_i16x16 x) i)]
+  = reveal_opaque (`%vec256_as_i16x16) vec256_as_i16x16
+
+(* Length, from the declared result type — SMTPat so the `t_Array -> t_Slice`
+   coercion VC of every consumer closes without touching the (now opaque) body. *)
+let vec256_as_i16x16_len (x: t_Vec256)
+  : Lemma (Seq.length (vec256_as_i16x16 x) == 16)
+          [SMTPat (Seq.length (vec256_as_i16x16 x))]
   = ()
 
 (* Reduction of an Int_vec FunArray produced by `from_fn 16` at a Seq index. *)
@@ -124,7 +147,9 @@ let blend_sel (c: i32) (k: nat{k < 16}) : bool =
   ((match k % 8 with | 0 -> cb | 1 -> cb / 2 | 2 -> cb / 4 | 3 -> cb / 8
                      | 4 -> cb / 16 | 5 -> cb / 32 | 6 -> cb / 64 | _ -> cb / 128) % 2) = 1
 
-(* i16x8 lane view of a 128-bit vector (A-on-B adapter over canonical to_i16x8). *)
+(* i16x8 lane view of a 128-bit vector (A-on-B adapter over canonical to_i16x8).
+   OPAQUE for the same reasons as `vec256_as_i16x16` above. *)
+[@@ "opaque_to_smt"]
 let vec128_as_i16x8 (x: t_Vec128) : t_Array i16 (sz 8) =
   Seq.init 8 (fun i -> Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 i))
 let get_lane128 (v: t_Vec128) (i:nat{i < 8}) = Seq.index (vec128_as_i16x8 v) i
@@ -133,6 +158,11 @@ let vec128_index (x: t_Vec128) (i: nat{i < 8})
   : Lemma (Seq.index (vec128_as_i16x8 x) i
            == Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 i))
           [SMTPat (Seq.index (vec128_as_i16x8 x) i)]
+  = reveal_opaque (`%vec128_as_i16x8) vec128_as_i16x8
+
+let vec128_as_i16x8_len (x: t_Vec128)
+  : Lemma (Seq.length (vec128_as_i16x8 x) == 8)
+          [SMTPat (Seq.length (vec128_as_i16x8 x))]
   = ()
 
 (* ── i16x16-view arithmetic/logical facts ─────────────────────────────────── *)
@@ -400,22 +430,48 @@ let lemma_mm256_mullo_epi32 (lhs rhs: t_Vec256)
   Classical.forall_intro aux
 #pop-options
 
-(* DEFERRED (the one remaining lane-op admit).  Unlike every other lane fact, the
-   `lane64u` view crosses BOTH a signedness change (`to_u32x8` vs `to_i32x8`) and
-   a width change (32 -> 64 unsigned), so it needs two further codec bridges in
-   the canonical module that the rest of the set does not:
-     (a) `v (to_u32x8 x) j == (v (to_i32x8 x) j) % 2^32`   (`lemma_tc_mod` at U32/I32), and
-     (b) `v (to_u64x4 x) i == v (to_u32x8 x) (2i) + 2^32 * v (to_u32x8 x) (2i+1)`
-         (the unsigned analogue of `Canon.lemma_lane32_bridge`, via dsum2_split
-         + the reader refinement).
-   Both are mechanical; deferred to keep this pass within budget.  Consumer:
-   Compress's `mul_epu32_lane_nn` only. *)
-[@@ "trusted: validated-axiom: lane64u view of mm256_mul_epu32 (core-models differential-tested)"]
+(* The `lane64u` view is the only lane fact crossing BOTH a signedness change
+   (`to_u32x8` vs `to_i32x8`) and a width change (32 -> 64 unsigned), so it needed
+   two extra codec bridges in the canonical module that the rest of the set does
+   not: `Canon.lemma_u32_of_i32` and `Canon.lemma_u64_concat32`.  Both are now
+   PROVEN there, so this fact is no longer assumed.  Consumer: Compress's
+   `mul_epu32_lane_nn`. *)
+(* PROVEN from the canonical unsigned codec bridges.  The chain, per 64-bit lane
+   `i`:  `lane64u r i` is the base-2^32 concatenation of the two i32 sub-lanes
+   `2i`/`2i+1` reduced mod 2^32 (= the u32 lane view, `lemma_u32_of_i32`), which
+   IS the native u64 lane (`lemma_u64_concat32`); the canonical op-lemma pushes
+   that onto `IV.e_mm256_mul_epu32`, whose per-lane value is the product of the
+   two EVEN u32 operand lanes (`lemma_iv_mul_epu32`); each of those is the
+   operand's `lane32 … % 2^32` by the same codec bridge. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let lemma_mm256_mul_epu32 (lhs rhs: t_Vec256)
   : Lemma (ensures forall (i: nat). i < 4 ==>
              lane64u (mm256_mul_epu32 lhs rhs) i ==
              (lane32 lhs (2 * i) % 4294967296) * (lane32 rhs (2 * i) % 4294967296))
-          [SMTPat (mm256_mul_epu32 lhs rhs)] = admit ()
+          [SMTPat (mm256_mul_epu32 lhs rhs)] =
+  reveal_opaque (`%mm256_mul_epu32) mm256_mul_epu32;
+  Canon.lemma_mm256_mul_epu32 lhs rhs;
+  let r = mm256_mul_epu32 lhs rhs in
+  assert_norm (pow2 32 == 4294967296);
+  let aux (i: nat{i < 4})
+      : Lemma (lane64u r i ==
+               (lane32 lhs (2 * i) % 4294967296) * (lane32 rhs (2 * i) % 4294967296)) =
+    (* result side: lane64u r i == v (u64 lane i of r) *)
+    Canon.lemma_u64_concat32 r i;
+    Canon.lemma_u32_of_i32 r (2 * i);
+    Canon.lemma_u32_of_i32 r (2 * i + 1);
+    lemma_lane32_eq_to_i32x8 r (2 * i);
+    lemma_lane32_eq_to_i32x8 r (2 * i + 1);
+    (* the interpreted op's per-lane value *)
+    Canon.lemma_iv_mul_epu32 (Canon.to_u32x8 lhs) (Canon.to_u32x8 rhs) i;
+    (* operand side: v (u32 lane 2i of x) == lane32 x (2i) % 2^32 *)
+    Canon.lemma_u32_of_i32 lhs (2 * i);
+    Canon.lemma_u32_of_i32 rhs (2 * i);
+    lemma_lane32_eq_to_i32x8 lhs (2 * i);
+    lemma_lane32_eq_to_i32x8 rhs (2 * i)
+  in
+  Classical.forall_intro aux
+#pop-options
 
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let lemma_madd_epi16_lane32 (lhs rhs: t_Vec256)
@@ -1053,3 +1109,61 @@ let bit_vec_of_int_t_array_vec128_as_i16x8_lemma
    mm256_cmpgt_epi16 bit-form: forall (i: nat{i < 256}). result i ==
      (if (vec256_as_i16x16 lhs).[i/16] > (vec256_as_i16x16 rhs).[i/16] then 1 else 0)
    ========================================================================== *)
+
+(* ============================================================================
+   Per-lane GROUND corollary of `lemma_mm256_set_epi16`.
+
+   `lemma_mm256_set_epi16` hands consumers the `Spec.Utils.create16` FORM of the
+   lane view.  Every `Ntt` layer step then needs the 16 lane VALUES, and deriving
+   them from that form forces Z3 to chase, per lane, the chain
+     get_lane r k -> Seq.index (vec256_as_i16x16 r) k -> Seq.index (create16 ...) k
+   with `vec256_index`'s SMTPat offering a competing (dead-end, opaque-codec)
+   rewrite of the same term -- 16 times, inside the layer step's heavy
+   `--split_queries always` context.  That saturates.
+
+   This corollary pays the `create16` index chain ONCE, here, in a clean context,
+   and hands consumers 16 GROUND equalities instead.  It reuses the trigger term
+   of the `create16` lemma above, so no new trigger SHAPE enters any consumer.
+   ============================================================================ *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_mm256_set_epi16_lanes (v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0: i16)
+  : Lemma
+    (ensures
+      (let r = mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 in
+       get_lane r 0 == v0 /\ get_lane r 1 == v1 /\ get_lane r 2 == v2 /\ get_lane r 3 == v3 /\
+       get_lane r 4 == v4 /\ get_lane r 5 == v5 /\ get_lane r 6 == v6 /\ get_lane r 7 == v7 /\
+       get_lane r 8 == v8 /\ get_lane r 9 == v9 /\ get_lane r 10 == v10 /\ get_lane r 11 == v11 /\
+       get_lane r 12 == v12 /\ get_lane r 13 == v13 /\ get_lane r 14 == v14 /\
+       get_lane r 15 == v15))
+    [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))]
+  = lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0
+#pop-options
+
+(* Bound corollary of `lemma_mm256_set_epi16`, in IMPLICATION form.
+
+   `Spec.Utils.is_i16b_array b arr` is a `forall i` over a SYMBOLIC index, so the
+   16 ground lane equalities above cannot discharge it — that needs the
+   `create16` if-ladder at a symbolic `i`, which is exactly the expensive step we
+   are keeping out of consumer contexts.  So prove it here, once, universally in
+   the bound `b`: consumers get the bound by instantiating `b` and discharging 16
+   GROUND `is_i16b` hypotheses (their own `requires` plus literal lanes).
+
+   Same trigger term as the two lemmas above; the inner `forall b` carries its own
+   goal-directed pattern. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_mm256_set_epi16_bound (v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0: i16)
+  : Lemma
+    (ensures
+      (let r = mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0 in
+       forall (b: nat).
+         {:pattern (Spec.Utils.is_i16b_array b (vec256_as_i16x16 r))}
+         (Spec.Utils.is_i16b b v0 /\ Spec.Utils.is_i16b b v1 /\ Spec.Utils.is_i16b b v2 /\
+          Spec.Utils.is_i16b b v3 /\ Spec.Utils.is_i16b b v4 /\ Spec.Utils.is_i16b b v5 /\
+          Spec.Utils.is_i16b b v6 /\ Spec.Utils.is_i16b b v7 /\ Spec.Utils.is_i16b b v8 /\
+          Spec.Utils.is_i16b b v9 /\ Spec.Utils.is_i16b b v10 /\ Spec.Utils.is_i16b b v11 /\
+          Spec.Utils.is_i16b b v12 /\ Spec.Utils.is_i16b b v13 /\ Spec.Utils.is_i16b b v14 /\
+          Spec.Utils.is_i16b b v15) ==>
+         Spec.Utils.is_i16b_array b (vec256_as_i16x16 r)))
+    [SMTPat (vec256_as_i16x16 (mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0))] =
+  lemma_mm256_set_epi16 v15 v14 v13 v12 v11 v10 v9 v8 v7 v6 v5 v4 v3 v2 v1 v0
+#pop-options

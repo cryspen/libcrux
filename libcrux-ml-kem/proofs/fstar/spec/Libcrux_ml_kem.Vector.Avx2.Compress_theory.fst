@@ -489,6 +489,10 @@ let lemma_decompress_half (c0: Libcrux_intrinsics.Avx2_ml_kem_views.t_Vec128) (c
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d2 j ==
             Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d1 j * 2);
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d1 j * 2 == (xv * 3329) * 2);
+    (* and the commutation too: under the fact-filter the products are ATOMS, so
+       Z3 does not get `(xv*3329)*2 == 2*(xv*3329)` for free — without this the
+       step below saturates (rlimit 100.000, canceled). *)
+    FStar.Math.Lemmas.swap_mul (xv * 3329) 2;
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d2 j == 2 * xv * 3329);
     add_lane_2cb d2 twocb j (pow2 dd);
     assert (Libcrux_intrinsics.Avx2_ml_kem_views.lane32 d3 j == 2 * xv * 3329 + pow2 dd);
