@@ -12,8 +12,8 @@ pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
 pub type Vec256Float = __m256;
 
-#[hax_lib::opaque]
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     // Note: in this module the `debug_assert_eq!` are essentially sanity
@@ -21,22 +21,35 @@ pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     // are total: for example, `mm256_extracti128_si256` asserts CONTROL is
     // either zero or one, but the intel spec allows any value, so our model
     // does. Thus, we guard those debug asserts so that they don't appear in F*.
+    //
+    // The memory ops (`loadu`/`storeu`) are raw-pointer FFI, so under the hax
+    // cfg their bodies delegate to the extractable slice-I/O models in
+    // core-models' `extra` module instead — see that module for the (total)
+    // semantics. The non-hax path is unchanged.
     #[cfg(not(hax))]
-    debug_assert_eq!(output.len(), 32);
-    unsafe {
-        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+    {
+        debug_assert_eq!(output.len(), 32);
+        unsafe {
+            _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+        }
     }
+    #[cfg(hax)]
+    extra::mm256_storeu_si256_u8_model(output, vector)
 }
 
-#[hax_lib::opaque]
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     #[cfg(not(hax))]
-    debug_assert_eq!(output.len(), 16);
-    unsafe {
-        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+    {
+        debug_assert_eq!(output.len(), 16);
+        unsafe {
+            _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+        }
     }
+    #[cfg(hax)]
+    extra::mm256_storeu_si256_i16_model(output, vector)
 }
 
 #[hax_lib::opaque]
@@ -50,15 +63,19 @@ pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
     }
 }
 
-#[hax_lib::opaque]
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     #[cfg(not(hax))]
-    debug_assert!(output.len() >= 8);
-    unsafe {
-        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+    {
+        debug_assert!(output.len() >= 8);
+        unsafe {
+            _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+        }
     }
+    #[cfg(hax)]
+    extra::mm_storeu_si128_i16_model(output, vector)
 }
 
 #[hax_lib::opaque]
@@ -91,23 +108,31 @@ pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
     }
 }
 
-#[hax_lib::opaque]
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     #[cfg(not(hax))]
-    debug_assert_eq!(output.len(), 16);
-    unsafe {
-        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+    {
+        debug_assert_eq!(output.len(), 16);
+        unsafe {
+            _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+        }
     }
+    #[cfg(hax)]
+    extra::mm_storeu_bytes_si128_model(output, vector)
 }
 
-#[hax_lib::opaque]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     #[cfg(not(hax))]
-    debug_assert_eq!(input.len(), 16);
-    unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
+    {
+        debug_assert_eq!(input.len(), 16);
+        unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
+    }
+    #[cfg(hax)]
+    extra::mm_loadu_si128_model(input)
 }
 
 #[hax_lib::opaque]
@@ -116,20 +141,28 @@ pub fn mm_loadu_si128_u128(input: &u128) -> Vec128 {
     unsafe { _mm_loadu_si128(input as *const u128 as *const __m128i) }
 }
 
-#[hax_lib::opaque]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     #[cfg(not(hax))]
-    debug_assert_eq!(input.len(), 32);
-    unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
+    {
+        debug_assert_eq!(input.len(), 32);
+        unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
+    }
+    #[cfg(hax)]
+    extra::mm256_loadu_si256_u8_model(input)
 }
 
-#[hax_lib::opaque]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
     #[cfg(not(hax))]
-    debug_assert_eq!(input.len(), 16);
-    unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
+    {
+        debug_assert_eq!(input.len(), 16);
+        unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
+    }
+    #[cfg(hax)]
+    extra::mm256_loadu_si256_i16_model(input)
 }
 
 #[hax_lib::opaque]

@@ -1261,59 +1261,266 @@ let lemma_bv_bit_reader (#n: u64) (w: pos)
   assert (l <= w * l)
 #pop-options
 
-(* ── TRUSTED slice-I/O semantics (5 tagged axioms) ────────────────────────────
-   These five ops are HARNESS PRIMITIVES: the corresponding `_mm*` functions in
-   core-models are `#[hax_lib::exclude] { unimplemented!() }` — they are the
-   raw-pointer FFI behind the `BitVec<N> <-> __m128i/__m256i` `From` bridges —
-   so core-models CANNOT prove them, and the migrated `Libcrux_intrinsics.Avx2`
-   carries them as bare `assume val`s with length-only ensures.  pcm carried the
-   SAME fact shapes as equally-unvalidated `Avx2_extract.fsti` op-ensures (see
-   the DEFERRED block above), so each axiom is an EXPLICITATION of pre-existing
-   trust, not net-new trust.  Evidence anchors: the core-models differential
-   tests in crates/utils/core-models/src/core_arch/x86/interpretations.rs.
-   Ledger accounting (deliberate, called out per session-4 trust note):
-   "+5 previously-implicit axioms made explicit and tagged". *)
+(* ── PROVEN slice-I/O semantics (2026-07-30; formerly 5 tagged trusted axioms) ─
+   The memory-op WRAPPERS in `crates/utils/intrinsics/src/avx2.rs` now carry
+   extractable model bodies under the hax cfg: they delegate to the slice-I/O
+   models in core-models' `Extra` module (loads: `from_iv` over a guarded
+   byte/lane read; stores: a ground spine of guarded per-lane writes), so the
+   facts below are PROVEN from the concrete definitions — reveals of the
+   (opaque) wrapper + model, the canonical `to_iv`/`from_iv` round-trip
+   (`IVi.lemma_conv_rt`), `Canon.lemma_readback`, and `lemma_bv_bit_reader`.
+   The models are differentially tested against the real intrinsics
+   (`*_model_diff` tests in core-models interpretations.rs, including the
+   previously-missing i16-store test, plus host-independent round-trips).
+   Companion trusted-extern axioms: 5 -> 0.  The u8 256-bit pair (consumed by
+   `Vector.Avx2` from_bytes/to_bytes) is proven here too, so no new axiom is
+   ever needed for it. *)
 
-[@@ "trusted: trusted-extern: _mm_loadu_si128 is a core-models harness primitive (hax exclude / BitVec<128> From bridge); byte/bit formula validated by the round-trip differential test interpretations.rs:1612"]
-assume
-val lemma_bv_bit_mm_loadu_si128 (input: t_Slice u8) (i: nat{i < 128})
+module Extra = Libcrux_core_models.Core_arch.X86.Extra
+
+(* from_fn-at-index reduction at width 32 (16/8 twins earlier in the file). *)
+let index_from_fn32 (#t: Type0) (g: (i: u64{v i < 32}) -> t) (i: nat{i < 32})
+  : Lemma (Funarr.impl_5__get (mk_u64 32) #t
+             (Funarr.impl_5__from_fn (mk_u64 32) #t #(u64 -> t) g) (mk_u64 i)
+           == g (mk_u64 i))
+  = ()
+
+(* Load models: lane `l` of the canonical `to_iv` view is the input element.
+   `to_iv (from_iv arr)` collapses by `IVi.lemma_conv_rt` (SMTPat); the guarded
+   from_fn read reduces at the in-range index. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_loadu_si128_lane (input: t_Slice u8) (l: nat{l < 16})
+  : Lemma (requires Seq.length input == 16)
+          (ensures Funarr.impl_5__get (mk_u64 16) #u8
+                     (IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16)
+                        (Extra.mm_loadu_si128_model input)) (mk_u64 l)
+                   == Seq.index input l) =
+  reveal_opaque (`%Extra.mm_loadu_si128_model) Extra.mm_loadu_si128_model
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_loadu_si256_u8_lane (input: t_Slice u8) (l: nat{l < 32})
+  : Lemma (requires Seq.length input == 32)
+          (ensures Funarr.impl_5__get (mk_u64 32) #u8
+                     (IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 256) (mk_u64 32)
+                        (Extra.mm256_loadu_si256_u8_model input)) (mk_u64 l)
+                   == Seq.index input l) =
+  reveal_opaque (`%Extra.mm256_loadu_si256_u8_model) Extra.mm256_loadu_si256_u8_model
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_loadu_si256_i16_lane (input: t_Slice i16) (l: nat{l < 16})
+  : Lemma (requires Seq.length input == 16)
+          (ensures Funarr.impl_5__get (mk_u64 16) #i16
+                     (Canon.to_i16x16 (Extra.mm256_loadu_si256_i16_model input)) (mk_u64 l)
+                   == Seq.index input l) =
+  reveal_opaque (`%Extra.mm256_loadu_si256_i16_model) Extra.mm256_loadu_si256_i16_model
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_mm_loadu_si128 (input: t_Slice u8) (i: nat{i < 128})
   : Lemma (requires Seq.length input == 16)
           (ensures bv_bit (mm_loadu_si128 input) i ==
-                   Rust_primitives.Integers.get_bit (Seq.index input (i / 8)) (sz (i % 8)))
+                   Rust_primitives.Integers.get_bit (Seq.index input (i / 8)) (sz (i % 8))) =
+  reveal_opaque (`%mm_loadu_si128) mm_loadu_si128;
+  let bv = mm_loadu_si128 input in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_bv_bit_reader #(mk_u64 128) 8 bv (i / 8) (i % 8);
+  Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) bv
+    (mk_u64 (i / 8)) (i % 8);
+  lemma_loadu_si128_lane input (i / 8)
+#pop-options
 
-[@@ "trusted: trusted-extern: _mm_storeu_si128 (i16 slice) harness primitive; stores exactly the 8 LSB-first i16 lanes (vec128_as_i16x8) to output[0..8], framing the rest — formula named at interpretations.rs:2399, round-trip test :1628"]
-assume
-val lemma_mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_mm256_loadu_si256_u8 (input: t_Slice u8) (i: nat{i < 256})
+  : Lemma (requires Seq.length input == 32)
+          (ensures bv_bit (mm256_loadu_si256_u8 input) i ==
+                   Rust_primitives.Integers.get_bit (Seq.index input (i / 8)) (sz (i % 8))) =
+  reveal_opaque (`%mm256_loadu_si256_u8) mm256_loadu_si256_u8;
+  let bv = mm256_loadu_si256_u8 input in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_bv_bit_reader #(mk_u64 256) 8 bv (i / 8) (i % 8);
+  Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 256) (mk_u64 32) bv
+    (mk_u64 (i / 8)) (i % 8);
+  lemma_loadu_si256_u8_lane input (i / 8)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_mm256_loadu_si256_i16 (input: t_Slice i16)
+  : Lemma (requires Seq.length input == 16)
+          (ensures vec256_as_i16x16 (mm256_loadu_si256_i16 input) == input) =
+  reveal_opaque (`%mm256_loadu_si256_i16) mm256_loadu_si256_i16;
+  let bv = mm256_loadu_si256_i16 input in
+  let aux (l: nat{l < 16}) : Lemma (Seq.index (vec256_as_i16x16 bv) l == Seq.index input l) =
+    lemma_loadu_si256_i16_lane input l
+  in
+  FStar.Classical.forall_intro aux;
+  Seq.lemma_eq_intro (vec256_as_i16x16 bv) input
+#pop-options
+
+(* Store models: the extracted body is a ground spine of guarded per-lane
+   `update_at_usize` writes of the canonical `to_iv` lanes; under the length
+   hypothesis every guard is true, so lane `j` of the result is `to_iv` lane
+   `j` and the tail is framed. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_mm_storeu_si128 (output: t_Slice i16) (vector: t_Vec128)
   : Lemma (requires Seq.length output >= 8)
           (ensures (let output' = mm_storeu_si128 output vector in
                     Seq.length output' == Seq.length output /\
                     (forall (j: nat{j < 8}).
                        Seq.index output' j == Seq.index (vec128_as_i16x8 vector) j) /\
                     (forall (j: nat{j < Seq.length output}).
-                       j >= 8 ==> Seq.index output' j == Seq.index output j)))
+                       j >= 8 ==> Seq.index output' j == Seq.index output j))) =
+  reveal_opaque (`%mm_storeu_si128) mm_storeu_si128;
+  reveal_opaque (`%Extra.mm_storeu_si128_i16_model) Extra.mm_storeu_si128_i16_model
+#pop-options
 
-[@@ "trusted: trusted-extern: _mm_storeu_si128 (byte slice) harness primitive; the 16 stored bytes carry the 128 vector bits LSB-first per byte — lane/bit decomposition tests interpretations.rs:2399-2442, round-trips :1612/:1628"]
-assume
-val lemma_mm_storeu_bytes_si128 (output: t_Slice u8) (vector: t_Vec128)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_mm_storeu_bytes_si128 (output: t_Slice u8) (vector: t_Vec128)
   : Lemma (requires Seq.length output == 16)
           (ensures (let output' = mm_storeu_bytes_si128 output vector in
                     Seq.length output' == 16 /\
                     (forall (i: nat{i < 128}).
                        Rust_primitives.BitVectors.bit_vec_of_int_t_array
                          (output' <: t_Array u8 (sz 16)) 8 i ==
-                       bv_bit vector i)))
+                       bv_bit vector i))) =
+  reveal_opaque (`%mm_storeu_bytes_si128) mm_storeu_bytes_si128;
+  reveal_opaque (`%Extra.mm_storeu_bytes_si128_model) Extra.mm_storeu_bytes_si128_model;
+  let output' = mm_storeu_bytes_si128 output vector in
+  let lanes = IVi.e_ee_18__impl__to_u8x16 vector in
+  let s0 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output (mk_usize 0) (lanes.[ mk_u64 0 ] <: u8) in
+  let s1 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s0 (mk_usize 1) (lanes.[ mk_u64 1 ] <: u8) in
+  let s2 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (mk_usize 2) (lanes.[ mk_u64 2 ] <: u8) in
+  let s3 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (mk_usize 3) (lanes.[ mk_u64 3 ] <: u8) in
+  let s4 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s3 (mk_usize 4) (lanes.[ mk_u64 4 ] <: u8) in
+  let s5 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s4 (mk_usize 5) (lanes.[ mk_u64 5 ] <: u8) in
+  let s6 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s5 (mk_usize 6) (lanes.[ mk_u64 6 ] <: u8) in
+  let s7 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s6 (mk_usize 7) (lanes.[ mk_u64 7 ] <: u8) in
+  let s8 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s7 (mk_usize 8) (lanes.[ mk_u64 8 ] <: u8) in
+  let s9 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s8 (mk_usize 9) (lanes.[ mk_u64 9 ] <: u8) in
+  let s10 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s9 (mk_usize 10) (lanes.[ mk_u64 10 ] <: u8) in
+  let s11 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s10 (mk_usize 11) (lanes.[ mk_u64 11 ] <: u8) in
+  let s12 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s11 (mk_usize 12) (lanes.[ mk_u64 12 ] <: u8) in
+  let s13 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s12 (mk_usize 13) (lanes.[ mk_u64 13 ] <: u8) in
+  let s14 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s13 (mk_usize 14) (lanes.[ mk_u64 14 ] <: u8) in
+  let s15 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s14 (mk_usize 15) (lanes.[ mk_u64 15 ] <: u8) in
+  assert (output' == s15);
+  assert (lanes == IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vector);
+  let aux (i: nat{i < 128})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array
+               (output' <: t_Array u8 (sz 16)) 8 i == bv_bit vector i) =
+    FStar.Math.Lemmas.euclidean_division_definition i 8;
+    Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vector
+      (mk_u64 (i / 8)) (i % 8);
+    lemma_bv_bit_reader #(mk_u64 128) 8 vector (i / 8) (i % 8);
+    assert (Seq.index output' (i / 8) ==
+            Funarr.impl_5__get (mk_u64 16) #u8
+              (IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vector)
+              (mk_u64 (i / 8)))
+  in
+  FStar.Classical.forall_intro aux
+#pop-options
 
-[@@ "trusted: trusted-extern: _mm256_storeu_si256 (i16 slice) harness primitive; stores exactly the 16 i16 lanes (vec256_as_i16x16) — model interpretations.rs:646-660, loadu round-trip :1673; NOTE no dedicated i16-STORE differential test exists yet (flagged for follow-up)"]
-assume
-val lemma_mm256_storeu_si256_i16 (output: t_Slice i16) (vector: t_Vec256)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_mm256_storeu_si256_i16 (output: t_Slice i16) (vector: t_Vec256)
   : Lemma (requires Seq.length output == 16)
-          (ensures mm256_storeu_si256_i16 output vector == vec256_as_i16x16 vector)
+          (ensures mm256_storeu_si256_i16 output vector == vec256_as_i16x16 vector) =
+  reveal_opaque (`%mm256_storeu_si256_i16) mm256_storeu_si256_i16;
+  reveal_opaque (`%Extra.mm256_storeu_si256_i16_model) Extra.mm256_storeu_si256_i16_model;
+  let output' = mm256_storeu_si256_i16 output vector in
+  let lanes = IVi.e_ee_3__impl__to_i16x16 vector in
+  let s0 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output (mk_usize 0) (lanes.[ mk_u64 0 ] <: i16) in
+  let s1 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s0 (mk_usize 1) (lanes.[ mk_u64 1 ] <: i16) in
+  let s2 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (mk_usize 2) (lanes.[ mk_u64 2 ] <: i16) in
+  let s3 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (mk_usize 3) (lanes.[ mk_u64 3 ] <: i16) in
+  let s4 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s3 (mk_usize 4) (lanes.[ mk_u64 4 ] <: i16) in
+  let s5 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s4 (mk_usize 5) (lanes.[ mk_u64 5 ] <: i16) in
+  let s6 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s5 (mk_usize 6) (lanes.[ mk_u64 6 ] <: i16) in
+  let s7 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s6 (mk_usize 7) (lanes.[ mk_u64 7 ] <: i16) in
+  let s8 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s7 (mk_usize 8) (lanes.[ mk_u64 8 ] <: i16) in
+  let s9 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s8 (mk_usize 9) (lanes.[ mk_u64 9 ] <: i16) in
+  let s10 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s9 (mk_usize 10) (lanes.[ mk_u64 10 ] <: i16) in
+  let s11 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s10 (mk_usize 11) (lanes.[ mk_u64 11 ] <: i16) in
+  let s12 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s11 (mk_usize 12) (lanes.[ mk_u64 12 ] <: i16) in
+  let s13 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s12 (mk_usize 13) (lanes.[ mk_u64 13 ] <: i16) in
+  let s14 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s13 (mk_usize 14) (lanes.[ mk_u64 14 ] <: i16) in
+  let s15 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s14 (mk_usize 15) (lanes.[ mk_u64 15 ] <: i16) in
+  assert (output' == s15);
+  let aux (j: nat{j < 16})
+    : Lemma (Seq.index output' j == Seq.index (vec256_as_i16x16 vector) j) = ()
+  in
+  FStar.Classical.forall_intro aux;
+  Seq.lemma_eq_intro output' (vec256_as_i16x16 vector)
+#pop-options
 
-[@@ "trusted: trusted-extern: _mm256_loadu_si256 (i16 slice) harness primitive; loads the 16 i16 lanes — round-trip differential test interpretations.rs:1673"]
-assume
-val lemma_mm256_loadu_si256_i16 (input: t_Slice i16)
-  : Lemma (requires Seq.length input == 16)
-          (ensures vec256_as_i16x16 (mm256_loadu_si256_i16 input) == input)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_mm256_storeu_si256_u8 (output: t_Slice u8) (vector: t_Vec256)
+  : Lemma (requires Seq.length output == 32)
+          (ensures (let output' = mm256_storeu_si256_u8 output vector in
+                    Seq.length output' == 32 /\
+                    (forall (i: nat{i < 256}).
+                       Rust_primitives.BitVectors.bit_vec_of_int_t_array
+                         (output' <: t_Array u8 (sz 32)) 8 i ==
+                       bv_bit vector i))) =
+  reveal_opaque (`%mm256_storeu_si256_u8) mm256_storeu_si256_u8;
+  reveal_opaque (`%Extra.mm256_storeu_si256_u8_model) Extra.mm256_storeu_si256_u8_model;
+  let output' = mm256_storeu_si256_u8 output vector in
+  let lanes = IVi.e_ee_9__impl__to_u8x32 vector in
+  let s0 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output (mk_usize 0) (lanes.[ mk_u64 0 ] <: u8) in
+  let s1 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s0 (mk_usize 1) (lanes.[ mk_u64 1 ] <: u8) in
+  let s2 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s1 (mk_usize 2) (lanes.[ mk_u64 2 ] <: u8) in
+  let s3 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s2 (mk_usize 3) (lanes.[ mk_u64 3 ] <: u8) in
+  let s4 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s3 (mk_usize 4) (lanes.[ mk_u64 4 ] <: u8) in
+  let s5 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s4 (mk_usize 5) (lanes.[ mk_u64 5 ] <: u8) in
+  let s6 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s5 (mk_usize 6) (lanes.[ mk_u64 6 ] <: u8) in
+  let s7 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s6 (mk_usize 7) (lanes.[ mk_u64 7 ] <: u8) in
+  let s8 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s7 (mk_usize 8) (lanes.[ mk_u64 8 ] <: u8) in
+  let s9 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s8 (mk_usize 9) (lanes.[ mk_u64 9 ] <: u8) in
+  let s10 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s9 (mk_usize 10) (lanes.[ mk_u64 10 ] <: u8) in
+  let s11 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s10 (mk_usize 11) (lanes.[ mk_u64 11 ] <: u8) in
+  let s12 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s11 (mk_usize 12) (lanes.[ mk_u64 12 ] <: u8) in
+  let s13 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s12 (mk_usize 13) (lanes.[ mk_u64 13 ] <: u8) in
+  let s14 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s13 (mk_usize 14) (lanes.[ mk_u64 14 ] <: u8) in
+  let s15 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s14 (mk_usize 15) (lanes.[ mk_u64 15 ] <: u8) in
+  let s16 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s15 (mk_usize 16) (lanes.[ mk_u64 16 ] <: u8) in
+  let s17 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s16 (mk_usize 17) (lanes.[ mk_u64 17 ] <: u8) in
+  let s18 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s17 (mk_usize 18) (lanes.[ mk_u64 18 ] <: u8) in
+  let s19 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s18 (mk_usize 19) (lanes.[ mk_u64 19 ] <: u8) in
+  let s20 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s19 (mk_usize 20) (lanes.[ mk_u64 20 ] <: u8) in
+  let s21 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s20 (mk_usize 21) (lanes.[ mk_u64 21 ] <: u8) in
+  let s22 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s21 (mk_usize 22) (lanes.[ mk_u64 22 ] <: u8) in
+  let s23 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s22 (mk_usize 23) (lanes.[ mk_u64 23 ] <: u8) in
+  let s24 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s23 (mk_usize 24) (lanes.[ mk_u64 24 ] <: u8) in
+  let s25 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s24 (mk_usize 25) (lanes.[ mk_u64 25 ] <: u8) in
+  let s26 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s25 (mk_usize 26) (lanes.[ mk_u64 26 ] <: u8) in
+  let s27 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s26 (mk_usize 27) (lanes.[ mk_u64 27 ] <: u8) in
+  let s28 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s27 (mk_usize 28) (lanes.[ mk_u64 28 ] <: u8) in
+  let s29 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s28 (mk_usize 29) (lanes.[ mk_u64 29 ] <: u8) in
+  let s30 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s29 (mk_usize 30) (lanes.[ mk_u64 30 ] <: u8) in
+  let s31 = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s30 (mk_usize 31) (lanes.[ mk_u64 31 ] <: u8) in
+  assert (output' == s31);
+  assert (lanes == IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 256) (mk_u64 32) vector);
+  (* split the 32-deep index walk in half: each forall is a <=16-step chain *)
+  assert (forall (l: nat{l < 32}). l >= 16 ==> Seq.index output' l == (lanes.[ mk_u64 l ] <: u8));
+  assert (forall (l: nat{l < 16}). Seq.index s15 l == (lanes.[ mk_u64 l ] <: u8));
+  assert (forall (l: nat{l < 16}). Seq.index s23 l == Seq.index s15 l);
+  assert (forall (l: nat{l < 16}). Seq.index output' l == Seq.index s23 l);
+  assert (forall (l: nat{l < 16}). Seq.index output' l == Seq.index s15 l);
+  assert (forall (l: nat{l < 32}). Seq.index output' l == (lanes.[ mk_u64 l ] <: u8));
+  let aux (i: nat{i < 256})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array
+               (output' <: t_Array u8 (sz 32)) 8 i == bv_bit vector i) =
+    FStar.Math.Lemmas.euclidean_division_definition i 8;
+    Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 256) (mk_u64 32) vector
+      (mk_u64 (i / 8)) (i % 8);
+    lemma_bv_bit_reader #(mk_u64 256) 8 vector (i / 8) (i % 8);
+    assert (Seq.index output' (i / 8) ==
+            Funarr.impl_5__get (mk_u64 32) #u8
+              (IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 256) (mk_u64 32) vector)
+              (mk_u64 (i / 8)))
+  in
+  FStar.Classical.forall_intro aux
+#pop-options
 
 (* ── PROVEN serialize_1 machinery (spike port + the A1 sign analog) ─────────── *)
 

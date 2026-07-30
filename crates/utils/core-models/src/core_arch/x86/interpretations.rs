@@ -1733,6 +1733,124 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 assert_eq!(&data[..], &out[..]);
             }
         }
+
+        // Differential tests for the extractable slice-I/O models in
+        // `x86::extra` (`*_model`): each compares the MODEL's result against
+        // the real intrinsic operating on the same data. These are the models
+        // the `libcrux-intrinsics` wrappers delegate to under the hax cfg, so
+        // every slice-I/O semantics lemma is grounded here.
+        use crate::core_arch::x86::extra;
+
+        #[test]
+        fn mm_loadu_si128_model_diff() {
+            for _ in 0..1000 {
+                let bytes: Vec<u8> = (0..16).map(|_| rand::random::<u8>()).collect();
+                let hw = unsafe { upstream::_mm_loadu_si128(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0u8; 16];
+                unsafe {
+                    upstream::_mm_storeu_si128(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let model_bytes: Vec<u8> = extra::mm_loadu_si128_model(&bytes).to_vec();
+                assert_eq!(&model_bytes[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm256_loadu_si256_u8_model_diff() {
+            for _ in 0..1000 {
+                let bytes: Vec<u8> = (0..32).map(|_| rand::random::<u8>()).collect();
+                let hw = unsafe { upstream::_mm256_loadu_si256(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0u8; 32];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let model_bytes: Vec<u8> = extra::mm256_loadu_si256_u8_model(&bytes).to_vec();
+                assert_eq!(&model_bytes[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm256_loadu_si256_i16_model_diff() {
+            for _ in 0..1000 {
+                let data: Vec<i16> = (0..16).map(|_| rand::random::<i16>()).collect();
+                let hw = unsafe { upstream::_mm256_loadu_si256(data.as_ptr() as *const _) };
+                let mut hw_out = [0i16; 16];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let model_lanes: Vec<i16> = extra::mm256_loadu_si256_i16_model(&data).to_vec();
+                assert_eq!(&model_lanes[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm_storeu_si128_i16_model_diff() {
+            // Store into a LONGER slice (12 lanes, sentinel-filled) so the
+            // "write 8 lanes, frame the tail" semantics is compared against
+            // hardware too, not just the exact-width case.
+            for _ in 0..1000 {
+                let bv: BitVec<128> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm_loadu_si128(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0x7C7Ci16; 12];
+                unsafe {
+                    upstream::_mm_storeu_si128(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0x7C7Ci16; 12];
+                extra::mm_storeu_si128_i16_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm_storeu_bytes_si128_model_diff() {
+            for _ in 0..1000 {
+                let bv: BitVec<128> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm_loadu_si128(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0u8; 16];
+                unsafe {
+                    upstream::_mm_storeu_si128(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0u8; 16];
+                extra::mm_storeu_bytes_si128_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm256_storeu_si256_i16_model_diff() {
+            // Closes the previously-flagged gap: mm256_storeu_si256_i16 had
+            // no dedicated differential store test.
+            for _ in 0..1000 {
+                let bv: BitVec<256> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm256_loadu_si256(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0i16; 16];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0i16; 16];
+                extra::mm256_storeu_si256_i16_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm256_storeu_si256_u8_model_diff() {
+            for _ in 0..1000 {
+                let bv: BitVec<256> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm256_loadu_si256(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0u8; 32];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0u8; 32];
+                extra::mm256_storeu_si256_u8_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
     }
 }
 
@@ -2622,5 +2740,97 @@ mod track_i_axiom_transcription_tests {
                 assert_eq!(sv[k], ain[sigma_swap(k)]);
             }
         }
+    }
+}
+
+/// Host-independent tests for the slice-I/O models in `x86::extra`
+/// (`*_model`): pure-Rust semantics checks that run on every target, arm
+/// included. The model-vs-hardware differential twins live in the arch-gated
+/// `tests` module above (run on x86, e.g. via the podman cross recipe).
+#[cfg(test)]
+mod slice_io_model_tests {
+    use crate::abstractions::bitvec::BitVec;
+    use crate::core_arch::x86::extra;
+    use crate::helpers::test::HasRandom;
+
+    /// Loads agree with the canonical byte/lane serialization (`from_slice`).
+    #[test]
+    fn load_models_match_from_slice() {
+        for _ in 0..100 {
+            let b16: Vec<u8> = (0..16).map(|_| rand::random::<u8>()).collect();
+            assert_eq!(
+                extra::mm_loadu_si128_model(&b16),
+                BitVec::from_slice(&b16, 8)
+            );
+            let b32: Vec<u8> = (0..32).map(|_| rand::random::<u8>()).collect();
+            assert_eq!(
+                extra::mm256_loadu_si256_u8_model(&b32),
+                BitVec::from_slice(&b32, 8)
+            );
+            let l16: Vec<i16> = (0..16).map(|_| rand::random::<i16>()).collect();
+            assert_eq!(
+                extra::mm256_loadu_si256_i16_model(&l16),
+                BitVec::from_slice(&l16, 16)
+            );
+        }
+    }
+
+    /// store(load(x)) == x for every load/store pair, at exact slice width.
+    #[test]
+    fn store_load_roundtrips() {
+        for _ in 0..100 {
+            let b16: Vec<u8> = (0..16).map(|_| rand::random::<u8>()).collect();
+            let mut out16 = [0u8; 16];
+            extra::mm_storeu_bytes_si128_model(&mut out16, extra::mm_loadu_si128_model(&b16));
+            assert_eq!(&out16[..], &b16[..]);
+
+            let b32: Vec<u8> = (0..32).map(|_| rand::random::<u8>()).collect();
+            let mut out32 = [0u8; 32];
+            extra::mm256_storeu_si256_u8_model(&mut out32, extra::mm256_loadu_si256_u8_model(&b32));
+            assert_eq!(&out32[..], &b32[..]);
+
+            let l16: Vec<i16> = (0..16).map(|_| rand::random::<i16>()).collect();
+            let mut lout16 = [0i16; 16];
+            extra::mm256_storeu_si256_i16_model(
+                &mut lout16,
+                extra::mm256_loadu_si256_i16_model(&l16),
+            );
+            assert_eq!(&lout16[..], &l16[..]);
+
+            let l8: Vec<i16> = (0..8).map(|_| rand::random::<i16>()).collect();
+            let mut lout8 = [0i16; 8];
+            extra::mm_storeu_si128_i16_model(&mut lout8, BitVec::from_slice(&l8, 16));
+            assert_eq!(&lout8[..], &l8[..]);
+        }
+    }
+
+    /// The 128-bit i16 store writes lanes 0..8 and frames the tail.
+    #[test]
+    fn mm_storeu_si128_i16_model_frames_tail() {
+        for _ in 0..100 {
+            let v: BitVec<128> = BitVec::random();
+            let lanes: Vec<i16> = v.to_vec();
+            let mut out = [0x7C7Ci16; 12];
+            extra::mm_storeu_si128_i16_model(&mut out, v);
+            assert_eq!(&out[..8], &lanes[..]);
+            assert_eq!(&out[8..], &[0x7C7Ci16; 4][..]);
+        }
+    }
+
+    /// Stores into a too-short slice write nothing at all (totality of the
+    /// models — one top-level length guard; unreachable from the real
+    /// wrappers, which always pass at least the vector width).
+    #[test]
+    fn short_slice_stores_are_total() {
+        let v: BitVec<128> = BitVec::random();
+        let bytes: Vec<u8> = v.to_vec();
+        let mut out = [0xABu8; 5];
+        extra::mm_storeu_bytes_si128_model(&mut out, v);
+        assert_eq!(&out[..], &[0xABu8; 5][..]);
+        // Short loads read 0 past the end.
+        let bv = extra::mm_loadu_si128_model(&bytes[..5]);
+        let loaded: Vec<u8> = bv.to_vec();
+        assert_eq!(&loaded[..5], &bytes[..5]);
+        assert_eq!(&loaded[5..], &[0u8; 11][..]);
     }
 }

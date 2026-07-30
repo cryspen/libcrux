@@ -1312,6 +1312,185 @@ pub mod extra {
     pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: BitVec<128>) {
         output.copy_from_slice(&vector.to_vec()[..]);
     }
+
+    // ── Extractable slice-I/O models for the memory intrinsics ──────────────
+    //
+    // The upstream `_mm*_loadu/storeu_*` intrinsics are raw-pointer FFI and
+    // cannot be modeled in the `core_arch` mirror itself (no memory model).
+    // The slice-based wrappers in `libcrux-intrinsics` delegate to the models
+    // below under the hax cfg, so their extracted bodies are concrete and the
+    // slice-I/O bit/lane semantics become provable lemmas instead of axioms.
+    //
+    // The models are TOTAL: loads read 0 past the end of a short slice and
+    // stores drop lane-writes past the end, so no precondition leaks into the
+    // wrappers' signatures.  Real callers always pass slices of exactly (or,
+    // for the 128-bit i16 store, at least) the vector width, where the
+    // degenerate branches are unreachable.  Stores are written as per-lane
+    // guarded writes (not a loop) so proofs see a ground `Seq.upd` spine.
+
+    /// Model of `_mm_loadu_si128` reading 16 bytes, LSB-first per byte.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_loadu_si128_model(input: &[u8]) -> BitVec<128> {
+        BitVec::from_u8x16(FunArray::from_fn(|j| {
+            if (j as usize) < input.len() {
+                input[j as usize]
+            } else {
+                0
+            }
+        }))
+    }
+
+    /// Model of `_mm256_loadu_si256` reading 32 bytes, LSB-first per byte.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_loadu_si256_u8_model(input: &[u8]) -> BitVec<256> {
+        BitVec::from_u8x32(FunArray::from_fn(|j| {
+            if (j as usize) < input.len() {
+                input[j as usize]
+            } else {
+                0
+            }
+        }))
+    }
+
+    /// Model of `_mm256_loadu_si256` reading 16 i16 lanes.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_loadu_si256_i16_model(input: &[i16]) -> BitVec<256> {
+        BitVec::from_i16x16(FunArray::from_fn(|j| {
+            if (j as usize) < input.len() {
+                input[j as usize]
+            } else {
+                0
+            }
+        }))
+    }
+
+    /// Model of `_mm_storeu_si128` on an i16 slice: writes the 8 lanes
+    /// to `output[0..8]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes; per-lane guards would make the extracted WP
+    /// split into 2^8 paths, which blows up F* elaboration).  Real callers
+    /// always pass slices of at least the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_storeu_si128_i16_model(output: &mut [i16], vector: BitVec<128>) {
+        let lanes = BitVec::to_i16x8(vector);
+        if output.len() >= 8 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+            output[4] = lanes[4];
+            output[5] = lanes[5];
+            output[6] = lanes[6];
+            output[7] = lanes[7];
+        }
+    }
+
+    /// Model of `_mm_storeu_si128` on a byte slice (LSB-first per byte): writes the 16 lanes
+    /// to `output[0..16]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes; per-lane guards would make the extracted WP
+    /// split into 2^16 paths, which blows up F* elaboration).  Real callers
+    /// always pass slices of at least the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_storeu_bytes_si128_model(output: &mut [u8], vector: BitVec<128>) {
+        let lanes = BitVec::to_u8x16(vector);
+        if output.len() >= 16 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+            output[4] = lanes[4];
+            output[5] = lanes[5];
+            output[6] = lanes[6];
+            output[7] = lanes[7];
+            output[8] = lanes[8];
+            output[9] = lanes[9];
+            output[10] = lanes[10];
+            output[11] = lanes[11];
+            output[12] = lanes[12];
+            output[13] = lanes[13];
+            output[14] = lanes[14];
+            output[15] = lanes[15];
+        }
+    }
+
+    /// Model of `_mm256_storeu_si256` on an i16 slice: writes the 16 lanes
+    /// to `output[0..16]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes; per-lane guards would make the extracted WP
+    /// split into 2^16 paths, which blows up F* elaboration).  Real callers
+    /// always pass slices of at least the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_storeu_si256_i16_model(output: &mut [i16], vector: BitVec<256>) {
+        let lanes = BitVec::to_i16x16(vector);
+        if output.len() >= 16 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+            output[4] = lanes[4];
+            output[5] = lanes[5];
+            output[6] = lanes[6];
+            output[7] = lanes[7];
+            output[8] = lanes[8];
+            output[9] = lanes[9];
+            output[10] = lanes[10];
+            output[11] = lanes[11];
+            output[12] = lanes[12];
+            output[13] = lanes[13];
+            output[14] = lanes[14];
+            output[15] = lanes[15];
+        }
+    }
+
+    /// Model of `_mm256_storeu_si256` on a byte slice (LSB-first per byte): writes the 32 lanes
+    /// to `output[0..32]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes; per-lane guards would make the extracted WP
+    /// split into 2^32 paths, which blows up F* elaboration).  Real callers
+    /// always pass slices of at least the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_storeu_si256_u8_model(output: &mut [u8], vector: BitVec<256>) {
+        let lanes = BitVec::to_u8x32(vector);
+        if output.len() >= 32 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+            output[4] = lanes[4];
+            output[5] = lanes[5];
+            output[6] = lanes[6];
+            output[7] = lanes[7];
+            output[8] = lanes[8];
+            output[9] = lanes[9];
+            output[10] = lanes[10];
+            output[11] = lanes[11];
+            output[12] = lanes[12];
+            output[13] = lanes[13];
+            output[14] = lanes[14];
+            output[15] = lanes[15];
+            output[16] = lanes[16];
+            output[17] = lanes[17];
+            output[18] = lanes[18];
+            output[19] = lanes[19];
+            output[20] = lanes[20];
+            output[21] = lanes[21];
+            output[22] = lanes[22];
+            output[23] = lanes[23];
+            output[24] = lanes[24];
+            output[25] = lanes[25];
+            output[26] = lanes[26];
+            output[27] = lanes[27];
+            output[28] = lanes[28];
+            output[29] = lanes[29];
+            output[30] = lanes[30];
+            output[31] = lanes[31];
+        }
+    }
 }
 
 /// Tests of equivalence between `safe::*` and `upstream::*`.
