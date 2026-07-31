@@ -128,6 +128,63 @@ let i64_to_bv_to_i64x4_inv (vec: bv256) (i: u64{v i < 4}) (j: u64{v j < 64})
   bit_view_inv Ints.I64 (mk_u64 256) (mk_u64 4) vec i j
 #pop-options
 
+(* i64x2 view of a bv128 (private; the Sse2 128-bit analogue of to_i64x4). *)
+let to_i64x2p (x: bv128) : t_FunArray (mk_u64 2) i64 = (Canon.to_i64x2 x)._0
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 250"
+let i64_to_bv_to_i64x2_inv (vec: bv128) (i: u64{v i < 2}) (j: u64{v j < 64})
+  : Lemma (i64_to_bv (to_i64x2p vec i) j == vec.(mk_int (v i * 64 + v j))) =
+  bit_view_inv Ints.I64 (mk_u64 128) (mk_u64 2) vec i j
+#pop-options
+
+(* ---- i64 lane <-> its two i32 sub-lanes (private; the cross-view bridge) ----
+   Both views read the SAME raw bits: bit `b` of the i32 lane `2k+h` and bit
+   `32*h+b` of the i64 lane `k` are both raw bit `64*k + 32*h + b`. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lane32_bit_of_lane64 (vec: bv256) (k: u64{v k < 4}) (h: nat{h < 2}) (b: nat{b < 32})
+  : Lemma (IVi.encode_bit Ints.I32 (to_i32x8 vec (mk_u64 (2 * v k + h))) b ==
+           IVi.encode_bit Ints.I64 (to_i64x4 vec k) (32 * h + b)) =
+  bit_view_inv Ints.I32 (mk_u64 256) (mk_u64 8) vec (mk_u64 (2 * v k + h)) (mk_u64 b);
+  bit_view_inv Ints.I64 (mk_u64 256) (mk_u64 4) vec k (mk_u64 (32 * h + b))
+#pop-options
+
+(* The two i32 sub-lanes of an i64 lane ARE the truncation / high-half of it. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let lemma_i32_sub_lanes (vec: bv256) (k: u64{v k < 4})
+  : Lemma (to_i32x8 vec (mk_u64 (2 * v k)) == Ints.cast_mod #Ints.I64 #Ints.I32 (to_i64x4 vec k) /\
+           to_i32x8 vec (mk_u64 (2 * v k + 1)) ==
+             Ints.cast_mod #Ints.I64 #Ints.I32
+               (Ints.shift_right #Ints.I64 #Ints.I32 (to_i64x4 vec k) (mk_i32 32))) =
+  let y  : i64 = to_i64x4 vec k in
+  let lo : i32 = to_i32x8 vec (mk_u64 (2 * v k)) in
+  let hi : i32 = to_i32x8 vec (mk_u64 (2 * v k + 1)) in
+  let ylo : i32 = Ints.cast_mod #Ints.I64 #Ints.I32 y in
+  let yhi : i32 = Ints.cast_mod #Ints.I64 #Ints.I32
+                    (Ints.shift_right #Ints.I64 #Ints.I32 y (mk_i32 32)) in
+  let auxlo (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit lo jj == Ints.get_bit ylo jj) =
+    lane32_bit_of_lane64 vec k 0 (v jj);
+    ebit_is_get_bit Ints.I32 lo (v jj);
+    ebit_is_get_bit Ints.I64 y (v jj)
+  in
+  let auxhi (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit hi jj == Ints.get_bit yhi jj) =
+    lane32_bit_of_lane64 vec k 1 (v jj);
+    ebit_is_get_bit Ints.I32 hi (v jj);
+    ebit_is_get_bit Ints.I64 y (32 + v jj)
+  in
+  FStar.Classical.forall_intro auxlo;
+  Ints.lemma_int_t_eq_via_bits lo ylo;
+  FStar.Classical.forall_intro auxhi;
+  Ints.lemma_int_t_eq_via_bits hi yhi
+#pop-options
+
+(* i64-lane equality transfers to both i32 sub-lanes. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_i32_lane_transfer (x y: bv256) (kx ky: u64{v kx < 4 /\ v ky < 4}) (h: nat{h < 2})
+  : Lemma (requires to_i64x4 x kx == to_i64x4 y ky)
+          (ensures to_i32x8 x (mk_u64 (2 * v kx + h)) == to_i32x8 y (mk_u64 (2 * v ky + h))) =
+  lemma_i32_sub_lanes x kx;
+  lemma_i32_sub_lanes y ky
+#pop-options
+
 (* ---- (#13) inversion / definitional ---- *)
 let to_from_i32x8_inv_lemma x =
   IVi.lemma_conv_rt Ints.I32 (mk_u64 256) (mk_u64 8) (Funarr.FunArray x)
@@ -180,14 +237,65 @@ let i32_to_bv_to_i32x8_inv vec i j =
   bit_view_inv Ints.I32 (mk_u64 256) (mk_u64 8) vec i j
 #pop-options
 let mm256_bsrli_epi128_lemma = admit ()
-let mm256_permutevar8x32_epi32_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_permutevar8x32_epi32_lemma vector control i =
+  reveal_opaque (`%I.mm256_permutevar8x32_epi32) I.mm256_permutevar8x32_epi32;
+  let lane = i /! mk_u64 32 in
+  let bit  = i %! mk_u64 32 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  Canon.lemma_mm256_permutevar8x32_epi32 vector control;
+  let nth_block : u64 = mk_u64 (v (to_i32x8 control lane) % 8) in
+  i32_to_bv_to_i32x8_inv (I.mm256_permutevar8x32_epi32 vector control) lane bit;
+  i32_to_bv_to_i32x8_inv vector nth_block bit
+#pop-options
 let mm256_srlv_epi32_bv_lemma = admit ()
 let mm_sllv_epi32_bv_lemma = admit ()
 let mm256_sllv_epi32_bv_lemma = admit ()
 let mm256_srlv_epi64_bv_lemma = admit ()
-let mm256_srli_epi64_bv_lemma = admit ()
-let mm256_slli_epi64_bv_lemma = admit ()
-let mm_srli_epi64_bv_lemma = admit ()
+(* The three 64-bit immediate shifts. All carry `0 < shift < 64` in the .fsti, so
+   the model's `rem_euclid IMM8 256` is the identity and its `> 63` guard is dead:
+   each lane is the LOGICAL (u64-routed) shift, whose bits are read off by the
+   get_bit_shr / get_bit_shl / get_bit_cast algebra. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_srli_epi64_bv_lemma shift vector i =
+  reveal_opaque (`%I.mm256_srli_epi64) I.mm256_srli_epi64;
+  Canon.lemma_rem_euclid256 shift;
+  let lane = i /! mk_u64 64 in
+  let bit  = i %! mk_u64 64 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 64;
+  Canon.lemma_mm256_srli_epi64 shift vector;
+  i64_to_bv_to_i64x4_inv (I.mm256_srli_epi64 shift vector) lane bit;
+  bit_of_get_bit Ints.I64 (to_i64x4 (I.mm256_srli_epi64 shift vector) lane) (v bit);
+  if v bit + v shift < 64
+  then (i64_to_bv_to_i64x4_inv vector lane (mk_u64 (v bit + v shift));
+        bit_of_get_bit Ints.I64 (to_i64x4 vector lane) (v bit + v shift))
+
+let mm256_slli_epi64_bv_lemma shift vector i =
+  reveal_opaque (`%I.mm256_slli_epi64) I.mm256_slli_epi64;
+  Canon.lemma_rem_euclid256 shift;
+  let lane = i /! mk_u64 64 in
+  let bit  = i %! mk_u64 64 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 64;
+  Canon.lemma_mm256_slli_epi64 shift vector;
+  i64_to_bv_to_i64x4_inv (I.mm256_slli_epi64 shift vector) lane bit;
+  bit_of_get_bit Ints.I64 (to_i64x4 (I.mm256_slli_epi64 shift vector) lane) (v bit);
+  if v bit >= v shift
+  then (i64_to_bv_to_i64x4_inv vector lane (mk_u64 (v bit - v shift));
+        bit_of_get_bit Ints.I64 (to_i64x4 vector lane) (v bit - v shift))
+
+let mm_srli_epi64_bv_lemma shift vector i =
+  reveal_opaque (`%I.mm_srli_epi64) I.mm_srli_epi64;
+  Canon.lemma_rem_euclid256 shift;
+  let lane = i /! mk_u64 64 in
+  let bit  = i %! mk_u64 64 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 64;
+  Canon.lemma_mm_srli_epi64 shift vector;
+  i64_to_bv_to_i64x2_inv (I.mm_srli_epi64 shift vector) lane bit;
+  bit_of_get_bit Ints.I64 (to_i64x2p (I.mm_srli_epi64 shift vector) lane) (v bit);
+  if v bit + v shift < 64
+  then (i64_to_bv_to_i64x2_inv vector lane (mk_u64 (v bit + v shift));
+        bit_of_get_bit Ints.I64 (to_i64x2p vector lane) (v bit + v shift))
+#pop-options
 let i16_mul_32extended_bv_lemma = admit ()
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
 let i16_mul_32extended_bv_lemma1 x i =
@@ -197,7 +305,17 @@ let i16_mul_32extended_bv_lemma1 x i =
   reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32)
 #pop-options
 let i16_mul_32extendedi16_bv_lemma = admit ()
-let mm256_madd_epi16_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_madd_epi16_lemma a b i =
+  reveal_opaque (`%I.mm256_madd_epi16) I.mm256_madd_epi16;
+  reveal_opaque (`%i16_mul_32extended) i16_mul_32extended;
+  reveal_opaque (`%i32_wrapping_add) i32_wrapping_add;
+  let lane = i /! mk_u64 32 in
+  let bit  = i %! mk_u64 32 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  Canon.lemma_mm256_madd_epi16 a b;
+  i32_to_bv_to_i32x8_inv (I.mm256_madd_epi16 a b) lane bit
+#pop-options
 let mm256_add_epi64_lemma = admit ()
 let mm256_madd_epi16_specialized_lemma = admit ()
 let i32_to_bv_add_bv_lemma = admit ()
@@ -221,7 +339,17 @@ let mm256_set_epi16_lemma v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 
 #pop-options
 let mm256_shuffle_epi8_lemma = admit ()
 let mm_shuffle_epi8_lemma = admit ()
-let mm256_mullo_epi16_bv_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_mullo_epi16_bv_lemma a b i =
+  reveal_opaque (`%I.mm256_mullo_epi16) I.mm256_mullo_epi16;
+  reveal_opaque (`%i16_mul_32extended_i16) i16_mul_32extended_i16;
+  reveal_opaque (`%i16_mul_32extended) i16_mul_32extended;
+  let lane = i /! mk_u64 16 in
+  let bit  = i %! mk_u64 16 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 16;
+  Canon.lemma_mm256_mullo_epi16 a b;
+  i16_to_bv_to_i16x16_inv (I.mm256_mullo_epi16 a b) lane bit
+#pop-options
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
 let mm256_shuffle_epi32_lemma a b i =
   reveal_opaque (`%I.mm256_shuffle_epi32) I.mm256_shuffle_epi32;
@@ -241,7 +369,17 @@ let mm256_mullo_epi32_lemma a b i =
   reveal_opaque_arithmetic_ops #i32_inttype;
   Canon.lemma_mm256_mullo_epi32 a b
 #pop-options
-let mm256_mul_epi32_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_mul_epi32_lemma a b i =
+  reveal_opaque (`%I.mm256_mul_epi32) I.mm256_mul_epi32;
+  reveal_opaque_arithmetic_ops #Ints.I64;
+  reveal_opaque_cast_ops #Ints.I32 #Ints.I64;
+  reveal_opaque_cast_ops #Ints.I64 #Ints.I32;
+  let k = i /! mk_u64 2 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 2;
+  Canon.lemma_mm256_mul_epi32 a b;
+  lemma_i32_sub_lanes (I.mm256_mul_epi32 a b) k
+#pop-options
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let mm256_srai_epi32_lemma v_IMM8 a i =
   reveal_opaque (`%I.mm256_srai_epi32) I.mm256_srai_epi32;
@@ -390,8 +528,35 @@ let mm256_castsi256_si128_lemma a i =
   FStar.Classical.forall_intro aux;
   Ints.lemma_int_t_eq_via_bits l r
 #pop-options
-let mm256_unpacklo_epi64_lemma = admit ()
-let mm256_unpackhi_epi64_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_unpacklo_epi64_lemma a b i =
+  reveal_opaque (`%I.mm256_unpacklo_epi64) I.mm256_unpacklo_epi64;
+  Canon.lemma_mm256_unpacklo_epi64 a b;
+  let r = I.mm256_unpacklo_epi64 a b in
+  (match v i with
+   | 0 -> lemma_i32_lane_transfer r a (mk_u64 0) (mk_u64 0) 0
+   | 1 -> lemma_i32_lane_transfer r a (mk_u64 0) (mk_u64 0) 1
+   | 2 -> lemma_i32_lane_transfer r b (mk_u64 1) (mk_u64 0) 0
+   | 3 -> lemma_i32_lane_transfer r b (mk_u64 1) (mk_u64 0) 1
+   | 4 -> lemma_i32_lane_transfer r a (mk_u64 2) (mk_u64 2) 0
+   | 5 -> lemma_i32_lane_transfer r a (mk_u64 2) (mk_u64 2) 1
+   | 6 -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 2) 0
+   | _ -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 2) 1)
+
+let mm256_unpackhi_epi64_lemma a b i =
+  reveal_opaque (`%I.mm256_unpackhi_epi64) I.mm256_unpackhi_epi64;
+  Canon.lemma_mm256_unpackhi_epi64 a b;
+  let r = I.mm256_unpackhi_epi64 a b in
+  (match v i with
+   | 0 -> lemma_i32_lane_transfer r a (mk_u64 0) (mk_u64 1) 0
+   | 1 -> lemma_i32_lane_transfer r a (mk_u64 0) (mk_u64 1) 1
+   | 2 -> lemma_i32_lane_transfer r b (mk_u64 1) (mk_u64 1) 0
+   | 3 -> lemma_i32_lane_transfer r b (mk_u64 1) (mk_u64 1) 1
+   | 4 -> lemma_i32_lane_transfer r a (mk_u64 2) (mk_u64 3) 0
+   | 5 -> lemma_i32_lane_transfer r a (mk_u64 2) (mk_u64 3) 1
+   | 6 -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 3) 0
+   | _ -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 3) 1)
+#pop-options
 let mm_loadu_si128_lemma = admit ()
 let i32_lt_pow2_n_to_bit_zero_lemma = admit ()
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
@@ -450,7 +615,31 @@ let lemma_from_i32x8_def_pt f =
 #pop-options
 let mm256_storeu_si256_i32_lemma = admit ()
 let mm256_storeu_si256_i32_len_lemma out vec = ()
-let mm256_setzero_si256_lemma = admit ()
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 250"
+(* every raw bit of setzero is 0 (mirror of Canon.lemma_setzero_raw, at bit level) *)
+let setzero_bv (k: u64{v k < 256}) : Lemma ((I.mm256_setzero_si256 ()).(k) == Bit_Zero) =
+  Canon.lemma_setzero_si256_lift ();
+  let f : (i: u64{v i < 256}) -> t_Bit = fun temp_0_ -> (let _:u64 = temp_0_ in Bit_Zero) in
+  assert (IV.e_mm256_setzero_si256 () ==
+          Libcrux_core_models.Abstractions.Bitvec.impl_9__from_fn (mk_u64 256) #(u64 -> t_Bit) f)
+    by (FStar.Tactics.norm [delta_only [`%IV.e_mm256_setzero_si256]; iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  Canon.lemma_impl9_index f k
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_setzero_si256_lemma i =
+  let z = I.mm256_setzero_si256 () in
+  let r = to_i32x8 z i in
+  let aux (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit r jj == Ints.get_bit (mk_i32 0) jj) =
+    let j = mk_u64 (v jj) in
+    setzero_bv (mk_u64 (v i * 32 + v jj));
+    i32_to_bv_to_i32x8_inv z i j;
+    ebit_is_get_bit Ints.I32 r (v jj);
+    reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32)
+  in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits r (mk_i32 0)
+#pop-options
 let mm256_loadu_si256_i32_lemma = admit ()
 let vec256_blendv_epi32_lemma = admit ()
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
