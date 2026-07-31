@@ -76,34 +76,58 @@ fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
        (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}.f_elements))
 "#))]
 pub(super) fn from_bytes(array: &[u8]) -> SIMD256Vector {
+    // Name the loaded sub-slice so the load's bit lemma and the post's
+    // `Seq.slice array 0 32` are the SAME term in the proof below.
+    let head = &array[0..32];
     let result = SIMD256Vector {
-        elements: mm256_loadu_si256_u8(&array[0..32]),
+        elements: mm256_loadu_si256_u8(head),
     };
-    // Bridge the intrinsic's `bit_vec_equal` ensures (bit-vec form) to the
-    // `from_le_bytes_post_N` (i16x16 byte-view) post: the i16x16 view of the
-    // loaded vector is bit-for-bit the loaded vector, so the byte-array and
-    // i16-array views share the same bit vector.
+    // Bridge the load to the `from_le_bytes_post_N` post, which unfolds to
+    // `bit_vec_of_int_t_array head 8 == bit_vec_of_int_t_array (i16x16 view) 16`
+    // -- an equality of two bit_vec FUNCTIONS, so it needs a pointwise intro.
+    //
+    // Per-index chain, for i < 256:
+    //   bit_vec_of_int_t_array (vec256_as_i16x16 elts) 16 i
+    //     == bv_bit elts ((i/16)*16 + i%16)        (the i16x16 readback lemma)
+    //     == bv_bit elts i                         (euclidean division at 16)
+    //     == get_bit head.[i/8] (i%8)              (the u8 load's bit lemma)
+    //     == bit_vec_of_int_t_array head 8 i       (definitional, via `on`)
+    //
+    // NB the old `${result}.f_elements i` form only typechecked under pcm,
+    // where `bit_vec 256` WAS the function `i:nat{i<256} -> bit`.  Over
+    // core-models `t_BitVec` is not a function; bit access is `bv_bit`.
     proof!(
         r#"
+assert (Seq.length ${head} == 32);
+let head_arr : t_Array u8 (mk_usize 32) = ${head} in
 introduce forall (i: nat{i < 256}).
-    Rust_primitives.BitVectors.bit_vec_of_int_t_array
-      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}.f_elements) 16 i
-    == ${result}.f_elements i
-with Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
-       ${result}.f_elements 16 i;
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array head_arr 8 i
+    == Rust_primitives.BitVectors.bit_vec_of_int_t_array
+         (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}.f_elements) 16 i
+with (
+  FStar.Math.Lemmas.euclidean_division_definition i 16;
+  Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+    ${result}.f_elements 16 i;
+  Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_mm256_loadu_si256_u8 ${head} i
+);
 BitVecEq.bit_vec_equal_intro
+  (Rust_primitives.BitVectors.bit_vec_of_int_t_array head_arr 8)
   (Rust_primitives.BitVectors.bit_vec_of_int_t_array
-     (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}.f_elements) 16)
-  ${result}.f_elements"#
+     (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${result}.f_elements) 16)"#
     );
     result
 }
 
 // Carries the trait's `to_le_bytes_post_N` post directly so the trait
-// wrapper in `impl Operations` is a one-line call.  Marked `panic_free`:
-// body is panic-checked, but the bridge from `mm256_storeu_si256_u8`'s
-// strengthened val ensures (bit_vec form) through `update_at_range` to
-// `to_le_bytes_post_N` is admitted at this layer.
+// wrapper in `impl Operations` is a one-line call.
+//
+// NOTE (2026-07-31): this comment previously claimed the function was
+// "marked panic_free" with the bit_vec bridge "admitted at this layer".
+// That is stale -- there is no panic_free/lax attribute here and
+// `fstar_admits` reports no admit in this module beyond hax's generated
+// `Copy` instance, so the post below is genuinely proof obligation, not
+// an assumption.  The proof block itself is still pcm-era and is the
+// module's current failure frontier; see the session-11 status doc.
 #[inline(always)]
 #[hax_lib::requires(bytes.len() >= 32)]
 #[hax_lib::ensures(|_| fstar!(r#"
