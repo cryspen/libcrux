@@ -633,7 +633,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     fn deserialize_5_vec(c: Vec128) -> Vec256 {
         let coefficients_loaded = mm256_si256_from_two_si128(c, c);
 
-        let coefficients = mm256_shuffle_epi8(
+        let shuffled = mm256_shuffle_epi8(
             coefficients_loaded,
             mm256_set_epi8(
                 15, 14, 15, 14, 13, 12, 13, 12, 11, 10, 11, 10, 9, 8, 9, 8, 7, 6, 7, 6, 5, 4, 5, 4,
@@ -641,8 +641,8 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
             ),
         );
 
-        let coefficients = mm256_mullo_epi16(
-            coefficients,
+        let scaled = mm256_mullo_epi16(
+            shuffled,
             mm256_set_epi16(
                 1 << 0,
                 1 << 5,
@@ -662,22 +662,24 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
                 1 << 11,
             ),
         );
-        let result = mm256_srli_epi16::<11>(coefficients);
-        // FRONTIER (core-models migration): the pcm-era proof script here was
-        //     assert_norm (BitVec.Utils.forall256 (fun i -> $result i = …))
-        // which applies a bit-vector as a FUNCTION (`$result i`) — that is the
-        // index-indexed pcm `bit_vec 256`, not core-models' `t_BitVec 256`, so
-        // it no longer even TYPE-CHECKS (Error 71, "Expected a function").  It
-        // is deleted rather than ported because a port is the deserialize_5
-        // gather+unpack family, not a rewrite (see
-        // `project_coremodels_assert_norm_does_not_port`: assert_norm cannot
-        // reduce through the symbolic `dsum2` lane codec).
-        //
-        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
-        // an Error 19 on this one function.  Deleting the dead script is what
-        // lets F* elaborate past this declaration at all — a type error here is
-        // a HARD STOP that hid serialize_10/_12 and deserialize_10/_12 from the
-        // checker entirely, whereas an SMT failure lets it continue.
+        let result = mm256_srli_epi16::<11>(scaled);
+        proof!(
+            r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${result} i =
+      (if i % 16 >= 5 then 0
+       else let shift_inv = ((i / 16) % 2) * 5 + (((i / 16) % 8) / 2) * 2 in
+            let j = i + shift_inv in
+            let byte_pos = j / 8 in
+            let c_byte =
+              if byte_pos < 16
+              then (byte_pos / 4) * 2 + (byte_pos % 2)
+              else ((byte_pos - 16) / 4) * 2 + ((byte_pos - 16) % 2) + 8 in
+            Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${c} (c_byte * 8 + j % 8))
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_5_bits
+       ${c} ${coefficients_loaded} i
+"#
+        );
         result
     }
 

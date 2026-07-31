@@ -848,3 +848,159 @@ let lemma_deserialize_12_bits (lo0 up0: t_Vec128) (co: t_Vec256) (i: nat{i < 256
   lemma_deser12_unpack_bit co i;
   if i % 16 < 12 then lemma_deser12_gather_bit lo0 up0 co i
 #pop-options
+
+module BP = Libcrux_ml_kem.Vector.Avx2.Byteperm_theory
+
+(* ── deserialize_5: the srli-ONLY unpack ─────────────────────────────────────
+   Width 5 is the one width with NO and-mask: a logical shift right by 11
+   already leaves exactly the 5 live bits in positions 0..4 and zeroes above,
+   so `lemma_srli_and_mask_bits` does not apply.  This is its mask-free twin;
+   `lemma_deser5_lane` then composes it with `lemma_mul_pow2_bit` exactly the
+   way `lemma_deser_lane` does at widths 4 / 10 / 12. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_srli_bits (y: i16) (sh: nat{1 <= sh /\ sh <= 15}) (c: nat{c < 16})
+  : Lemma (ensures
+            RI.get_bit ((cast ((cast y <: u16) >>! mk_i32 sh <: u16) <: i16)) (sz c) ==
+            (if c < 16 - sh then RI.get_bit y (sz (sh + c)) else 0)) =
+  assert_norm (pow2 16 == 65536);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.I16);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.U16);
+  let yu: u16 = cast y <: u16 in
+  let s: u16 = yu >>! mk_i32 sh in
+  assert (v yu == (v y) % pow2 16);
+  assert (v s == (v yu) / pow2 sh);
+  FStar.Math.Lemmas.lemma_div_lt_nat (v yu) 16 sh;
+  let r: i16 = cast s <: i16 in
+  assert (v r == v s);
+  FStar.Math.Lemmas.small_mod (v r) (pow2 16);
+  if c < 16 - sh then begin
+    FStar.Math.Lemmas.pow2_plus sh c;
+    FStar.Math.Lemmas.division_multiplication_lemma (v yu) (pow2 sh) (pow2 c)
+  end
+  else begin
+    FStar.Math.Lemmas.pow2_le_compat c (16 - sh);
+    FStar.Math.Lemmas.small_division_lemma_1 (v r) (pow2 c)
+  end
+#pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_deser5_lane (x m: i16) (k: nat) (sh: nat{1 <= sh /\ sh <= 15}) (c: nat{c < 16})
+  : Lemma (requires (v m) % pow2 16 == pow2 k /\ k <= sh)
+          (ensures
+            RI.get_bit ((cast ((cast (RI.mul_mod x m) <: u16) >>! mk_i32 sh <: u16) <: i16))
+                       (sz c) ==
+            (if c < 16 - sh then RI.get_bit x (sz (sh - k + c)) else 0)) =
+  lemma_srli_bits (RI.mul_mod x m) sh c;
+  if c < 16 - sh then lemma_mul_pow2_bit x m k (sh + c)
+#pop-options
+
+(* the multipliers.  Lane l carries 2^(11 - shift_inv l) with
+   shift_inv l = 5*(l%2) + 2*((l%8)/2) — the same expression the function's own
+   `ensures` names, so after the `srli 11` bit c of the result lane reads bit
+   shift_inv l + c of the shuffled lane and no algebra survives into the post. *)
+unfold let deser5_mults =
+  mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 5 <: i16)
+                  (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 7 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+                  (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 5 <: i16)
+                  (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 7 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+                  (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16)
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_deser5_consts ()
+  : Lemma ((v (mk_i16 1 <<! mk_i32 0 <: i16)) % pow2 16 == pow2 0 /\
+           (v (mk_i16 1 <<! mk_i32 2 <: i16)) % pow2 16 == pow2 2 /\
+           (v (mk_i16 1 <<! mk_i32 4 <: i16)) % pow2 16 == pow2 4 /\
+           (v (mk_i16 1 <<! mk_i32 5 <: i16)) % pow2 16 == pow2 5 /\
+           (v (mk_i16 1 <<! mk_i32 6 <: i16)) % pow2 16 == pow2 6 /\
+           (v (mk_i16 1 <<! mk_i32 7 <: i16)) % pow2 16 == pow2 7 /\
+           (v (mk_i16 1 <<! mk_i32 9 <: i16)) % pow2 16 == pow2 9 /\
+           (v (mk_i16 1 <<! mk_i32 11 <: i16)) % pow2 16 == pow2 11) =
+  assert_norm (pow2 0 == 1); assert_norm (pow2 2 == 4); assert_norm (pow2 4 == 16);
+  assert_norm (pow2 5 == 32); assert_norm (pow2 6 == 64); assert_norm (pow2 7 == 128);
+  assert_norm (pow2 9 == 512); assert_norm (pow2 11 == 2048); assert_norm (pow2 16 == 65536)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always"
+let lemma_deser5_mult_lane (l: nat{l < 16})
+  : Lemma (ensures (v (get_lane deser5_mults l)) % pow2 16 ==
+                   pow2 (11 - (5 * (l % 2) + 2 * ((l % 8) / 2)))) =
+  lemma_deser5_consts ();
+  lemma_mm256_set_epi16_lanes
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 5 <: i16)
+    (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 7 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+    (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 5 <: i16)
+    (mk_i16 1 <<! mk_i32 2 <: i16) (mk_i16 1 <<! mk_i32 7 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 9 <: i16)
+    (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1 <<! mk_i32 11 <: i16);
+  (if l = 0       then assert (get_lane deser5_mults 0  == (mk_i16 1 <<! mk_i32 11 <: i16))
+   else if l = 1  then assert (get_lane deser5_mults 1  == (mk_i16 1 <<! mk_i32 6  <: i16))
+   else if l = 2  then assert (get_lane deser5_mults 2  == (mk_i16 1 <<! mk_i32 9  <: i16))
+   else if l = 3  then assert (get_lane deser5_mults 3  == (mk_i16 1 <<! mk_i32 4  <: i16))
+   else if l = 4  then assert (get_lane deser5_mults 4  == (mk_i16 1 <<! mk_i32 7  <: i16))
+   else if l = 5  then assert (get_lane deser5_mults 5  == (mk_i16 1 <<! mk_i32 2  <: i16))
+   else if l = 6  then assert (get_lane deser5_mults 6  == (mk_i16 1 <<! mk_i32 5  <: i16))
+   else if l = 7  then assert (get_lane deser5_mults 7  == (mk_i16 1 <<! mk_i32 0  <: i16))
+   else if l = 8  then assert (get_lane deser5_mults 8  == (mk_i16 1 <<! mk_i32 11 <: i16))
+   else if l = 9  then assert (get_lane deser5_mults 9  == (mk_i16 1 <<! mk_i32 6  <: i16))
+   else if l = 10 then assert (get_lane deser5_mults 10 == (mk_i16 1 <<! mk_i32 9  <: i16))
+   else if l = 11 then assert (get_lane deser5_mults 11 == (mk_i16 1 <<! mk_i32 4  <: i16))
+   else if l = 12 then assert (get_lane deser5_mults 12 == (mk_i16 1 <<! mk_i32 7  <: i16))
+   else if l = 13 then assert (get_lane deser5_mults 13 == (mk_i16 1 <<! mk_i32 2  <: i16))
+   else if l = 14 then assert (get_lane deser5_mults 14 == (mk_i16 1 <<! mk_i32 5  <: i16))
+   else assert (get_lane deser5_mults 15 == (mk_i16 1 <<! mk_i32 0 <: i16)))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser5_unpack_bit (sh256: t_Vec256) (i: nat{i < 256})
+  : Lemma (ensures
+      (let r = mm256_srli_epi16 (mk_i32 11) (mm256_mullo_epi16 sh256 deser5_mults) in
+       bv_bit r i ==
+       (if i % 16 >= 5 then 0
+        else bv_bit sh256 ((i / 16) * 16 + (5 * ((i / 16) % 2) + 2 * (((i / 16) % 8) / 2))
+                           + i % 16)))) =
+  let msb = mm256_mullo_epi16 sh256 deser5_mults in
+  let r = mm256_srli_epi16 (mk_i32 11) msb in
+  let l = i / 16 in
+  let b = i % 16 in
+  let si = 5 * (l % 2) + 2 * ((l % 8) / 2) in
+  lemma_deser5_consts ();
+  lemma_deser5_mult_lane l;
+  bit_vec_of_int_t_array_vec256_as_i16x16_lemma r 16 i;
+  assert (get_lane msb l == RI.mul_mod (get_lane sh256 l) (get_lane deser5_mults l));
+  assert (get_lane r l == (cast ((cast (get_lane msb l) <: u16) >>! mk_i32 11 <: u16) <: i16));
+  lemma_deser5_lane (get_lane sh256 l) (get_lane deser5_mults l) (11 - si) 11 b;
+  if b < 5 then bit_vec_of_int_t_array_vec256_as_i16x16_lemma sh256 16 (16 * l + si + b)
+#pop-options
+
+(* ── the whole `deserialize_5_vec` obligation, one index at a time ───────────
+   `co` is the 128+128 duplication `mm256_si256_from_two_si128 c c`; it enters
+   as a FREE parameter carrying exactly the post the wrapper supplies. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deserialize_5_bits (c: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             forall (k: nat{k < 256}).
+               bv_bit co k == (if k < 128 then bv_bit c k else bv_bit c (k - 128)))
+          (ensures
+             (let r = mm256_srli_epi16 (mk_i32 11)
+                        (mm256_mullo_epi16 (mm256_shuffle_epi8 co BP.deser5_mask) deser5_mults) in
+              bv_bit r i ==
+              (if i % 16 >= 5 then 0
+               else let shift_inv = ((i / 16) % 2) * 5 + (((i / 16) % 8) / 2) * 2 in
+                    let j = i + shift_inv in
+                    let byte_pos = j / 8 in
+                    let c_byte = if byte_pos < 16
+                                 then (byte_pos / 4) * 2 + byte_pos % 2
+                                 else ((byte_pos - 16) / 4) * 2 + (byte_pos - 16) % 2 + 8 in
+                    bv_bit c (c_byte * 8 + j % 8)))) =
+  lemma_deser5_unpack_bit (mm256_shuffle_epi8 co BP.deser5_mask) i;
+  if i % 16 < 5 then begin
+    let l = i / 16 in
+    let si = 5 * (l % 2) + 2 * ((l % 8) / 2) in
+    BP.lemma_deser5_gather_bit c co (16 * l + si + i % 16)
+  end
+#pop-options

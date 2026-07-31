@@ -1238,3 +1238,70 @@ let lemma_serialize_12_upper_bits (x y: t_Vec256) (i: nat{i < 96})
   lemma_bv_bit_extracti128_si256_1 (ser12_chain y) i;
   lemma_serialize_12_gather_bits x y (i + 128)
 #pop-options
+
+(* ── deserialize_5: the 256-bit gather shuffle ───────────────────────────────
+   `deserialize_5_vec` duplicates its single 128-bit input into BOTH halves and
+   then gathers with one 256-bit VPSHUFB.  Within each 128-bit lane byte b
+   reads source byte (b/4)*2 + b%2, and the high lane's map is that shifted by
+   8 — the 5-bits-per-coefficient stride packs 5 source bytes per 8
+   coefficients, so each 4-byte output group re-reads a 2-byte source window.
+
+   Stated in the piecewise form the function's own `ensures` uses (`c_byte`),
+   so the composition downstream is a pure INDEX SHIFT with no arithmetic to
+   re-derive under the `bv_bit`. *)
+unfold let deser5_bytemap (b: nat{b < 32}) : nat =
+  if b < 16 then (b / 4) * 2 + b % 2 else ((b - 16) / 4) * 2 + (b - 16) % 2 + 8
+
+unfold let deser5_mask =
+  mm256_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 15) (mk_i8 14) (mk_i8 13) (mk_i8 12) (mk_i8 13)
+                 (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 8)
+                 (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 4)
+                 (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+                 (mk_i8 1) (mk_i8 0)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser5_mask_bytes (nth: nat{nth < 32})
+  : Lemma (ensures v (vec256_byte deser5_mask nth) == deser5_bytemap nth) =
+  reveal_opaque (`%mm256_set_epi8) mm256_set_epi8;
+  Canon.lemma_mm256_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 15) (mk_i8 14) (mk_i8 13) (mk_i8 12)
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 8)
+    (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 4)
+    (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 1) (mk_i8 0);
+  Canon.lemma_iv_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 15) (mk_i8 14) (mk_i8 13) (mk_i8 12)
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 8)
+    (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 4)
+    (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 1) (mk_i8 0) nth
+#pop-options
+
+(* the shuffle, as a pure index shift.  The `16 * (nth / 16)` of the sel form
+   is the per-128-lane restriction of VPSHUFB; it survives as the
+   `128 * (i / 128)` below. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser5_shuffle_bit (a: t_Vec256) (i: nat{i < 256})
+  : Lemma (ensures bv_bit (mm256_shuffle_epi8 a deser5_mask) i ==
+                   bv_bit a (128 * (i / 128) + 8 * deser5_bytemap (i / 8) + i % 8)) =
+  let nth = i / 8 in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  FStar.Math.Lemmas.division_multiplication_lemma i 8 16;
+  lemma_deser5_mask_bytes nth;
+  FStar.Math.Lemmas.small_mod (deser5_bytemap nth) 16;
+  lemma_bv_bit_mm256_shuffle_epi8_sel a deser5_mask i (16 * (nth / 16) + deser5_bytemap nth)
+#pop-options
+
+(* ── the gather, with the 128+128 duplication collapsed ──────────────────────
+   `coefficients_loaded` is `mm256_si256_from_two_si128 c c`, so BOTH halves
+   are `c` and the `128 * (i / 128)` lane offset above cancels against the
+   concat's own `k - 128`: every bit lands on the same index of `c`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser5_gather_bit (c: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             forall (k: nat{k < 256}).
+               bv_bit co k == (if k < 128 then bv_bit c k else bv_bit c (k - 128)))
+          (ensures bv_bit (mm256_shuffle_epi8 co deser5_mask) i ==
+                   bv_bit c (8 * deser5_bytemap (i / 8) + i % 8)) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_deser5_shuffle_bit co i;
+  if i < 128 then assert (i / 128 == 0) else assert (i / 128 == 1)
+#pop-options
