@@ -400,3 +400,69 @@ let lemma_bv_bit_mm_shuffle_epi8_sel (a b: t_Vec128) (i: nat{i < 128}) (sel: nat
   Canon.lemma_readback RI.I8 (mk_u64 128) (mk_u64 16) a (mk_u64 sel) sb;
   lemma_bv_bit_reader 8 a sel sb
 #pop-options
+
+(* ── deserialize_10: the two 128-bit gather shuffles ────────────────────────
+   `deserialize_10_vec` gathers with two 128-bit PSHUFBs before concatenating.
+   Both masks are the same byte map up to the +6 offset of the high half:
+
+     lo  9,8,8,7,7,6,6,5, 4,3,3,2,2,1,1,0   (byte 15 first, as `mm_set_epi8`)
+     hi  15,14,14,13,13,12,12,11, 10,9,9,8,8,7,7,6
+
+   i.e. byte b reads source byte `(b+1)/2` within its 8-byte group, plus one
+   group-carry — the 10-bits-per-coefficient stride.  Stating it in that closed
+   form (rather than 16 literal arms) is what lets the downstream index algebra
+   go through: the gather step below is then a pure INDEX SHIFT, per
+   `feedback_split_simd_lemma_three_contexts`. *)
+unfold let deser10_bytemap (b: nat{b < 16}) : nat = (b + 1) / 2 + (if b < 8 then 0 else 1)
+
+unfold let deser10_lo_mask =
+  mm_set_epi8 (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7) (mk_i8 6) (mk_i8 6) (mk_i8 5)
+              (mk_i8 4) (mk_i8 3) (mk_i8 3) (mk_i8 2) (mk_i8 2) (mk_i8 1) (mk_i8 1) (mk_i8 0)
+
+unfold let deser10_hi_mask =
+  mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 13) (mk_i8 12) (mk_i8 12)
+              (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7)
+              (mk_i8 6)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser10_lo_mask_bytes (b: nat{b < 16})
+  : Lemma (ensures v (vec128_byte deser10_lo_mask b) == deser10_bytemap b) =
+  reveal_opaque (`%mm_set_epi8) mm_set_epi8;
+  Canon.lemma_mm_set_epi8 (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7) (mk_i8 6) (mk_i8 6)
+    (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 3) (mk_i8 2) (mk_i8 2) (mk_i8 1) (mk_i8 1) (mk_i8 0);
+  Canon.lemma_iv_mm_set_epi8 (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7) (mk_i8 6) (mk_i8 6)
+    (mk_i8 5) (mk_i8 4) (mk_i8 3) (mk_i8 3) (mk_i8 2) (mk_i8 2) (mk_i8 1) (mk_i8 1) (mk_i8 0) b
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser10_hi_mask_bytes (b: nat{b < 16})
+  : Lemma (ensures v (vec128_byte deser10_hi_mask b) == deser10_bytemap b + 6) =
+  reveal_opaque (`%mm_set_epi8) mm_set_epi8;
+  Canon.lemma_mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 13) (mk_i8 12)
+    (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7)
+    (mk_i8 6);
+  Canon.lemma_iv_mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 13) (mk_i8 12)
+    (mk_i8 12) (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 7)
+    (mk_i8 6) b
+#pop-options
+
+(* the two gathers, each as a pure index shift *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser10_shuffle_lo_bit (a: t_Vec128) (i: nat{i < 128})
+  : Lemma (ensures bv_bit (mm_shuffle_epi8 a deser10_lo_mask) i ==
+                   bv_bit a (8 * deser10_bytemap (i / 8) + i % 8)) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_deser10_lo_mask_bytes (i / 8);
+  FStar.Math.Lemmas.small_mod (deser10_bytemap (i / 8)) 16;
+  lemma_bv_bit_mm_shuffle_epi8_sel a deser10_lo_mask i (deser10_bytemap (i / 8))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser10_shuffle_hi_bit (a: t_Vec128) (i: nat{i < 128})
+  : Lemma (ensures bv_bit (mm_shuffle_epi8 a deser10_hi_mask) i ==
+                   bv_bit a (8 * (deser10_bytemap (i / 8) + 6) + i % 8)) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_deser10_hi_mask_bytes (i / 8);
+  FStar.Math.Lemmas.small_mod (deser10_bytemap (i / 8) + 6) 16;
+  lemma_bv_bit_mm_shuffle_epi8_sel a deser10_hi_mask i (deser10_bytemap (i / 8) + 6)
+#pop-options
