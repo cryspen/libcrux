@@ -1,13 +1,12 @@
 name: Combined Extraction - Build & Test C
 
 on:
-  merge_group:
   push:
-    branches: ["main", "dev"]
+    branches: ["main"]
     paths:
       - "combined_extraction/**"
   pull_request:
-    branches: ["main", "dev"]
+    branches: ["main"]
     paths:
       - "combined_extraction/**"
   workflow_dispatch:
@@ -17,20 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  combined-extraction-c-tests-status:
-    if: ${{ always() }}
-    needs:
-      - build-test
-      - build-test-sanitizers
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ (contains(needs.*.result, 'failure')) }}
-        run: exit 1
-
   # just build and run the checked-in C and C-header-only variants.
   build-test:
     strategy:
@@ -64,11 +49,9 @@ jobs:
 
       - name: 🏃🏻‍♀️ Test
         run: ctest --test-dir build --output-on-failure
-        if: ${{ matrix.os != 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Test
         run: ctest --test-dir build -C Debug --output-on-failure
-        if: ${{ matrix.os == 'windows-latest' }}
 
   # # ASan/UBSan leg, Linux + clang only. Note: gcc 14 + sanitizers on the
   # # c-header-only variant has been observed to exhaust RAM during linking in

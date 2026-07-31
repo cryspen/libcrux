@@ -222,14 +222,25 @@ target_link_libraries(sha3_test PRIVATE
 
 # --- CTest registration
 
+# The test binaries read their KAT files from paths relative to the working
+# directory (e.g. tests/nistkats-44.json), so they have to run from the source
+# directory. ctest would otherwise default to the build directory.
 enable_testing()
-add_test(NAME ml_dsa_test44 COMMAND ml_dsa_test44)
-add_test(NAME ml_dsa_test65 COMMAND ml_dsa_test65)
-add_test(NAME ml_dsa_test87 COMMAND ml_dsa_test87)
-add_test(NAME ml_kem_test512 COMMAND ml_kem_test512)
-add_test(NAME ml_kem_test768 COMMAND ml_kem_test768)
-add_test(NAME ml_kem_test1024 COMMAND ml_kem_test1024)
-add_test(NAME sha3_test COMMAND sha3_test)
+set(LIBCRUX_TESTS
+    ml_dsa_test44
+    ml_dsa_test65
+    ml_dsa_test87
+    ml_kem_test512
+    ml_kem_test768
+    ml_kem_test1024
+    sha3_test
+)
 if(DEFINED ENV{LIBCRUX_KYBER})
-    add_test(NAME kyber_test COMMAND kyber_test)
+    list(APPEND LIBCRUX_TESTS kyber_test)
 endif(DEFINED ENV{LIBCRUX_KYBER})
+
+foreach(test ${LIBCRUX_TESTS})
+    add_test(NAME ${test} COMMAND ${test}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+endforeach()
