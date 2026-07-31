@@ -683,36 +683,37 @@ with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_5_bits
         result
     }
 
+    // The ten source bytes are bound to locals so the byte-bridge lemma can
+    // name them: it pins them to `Seq.index bytes k` by EQUATIONAL requires,
+    // which the caller discharges from these let-equations, so no slice
+    // reasoning enters the lemma's own context.
+    let b0 = bytes[0];
+    let b1 = bytes[1];
+    let b2 = bytes[2];
+    let b3 = bytes[3];
+    let b4 = bytes[4];
+    let b5 = bytes[5];
+    let b6 = bytes[6];
+    let b7 = bytes[7];
+    let b8 = bytes[8];
+    let b9 = bytes[9];
     let coefficients = mm_set_epi8(
-        bytes[9] as i8,
-        bytes[8] as i8,
-        bytes[8] as i8,
-        bytes[7] as i8,
-        bytes[7] as i8,
-        bytes[6] as i8,
-        bytes[6] as i8,
-        bytes[5] as i8,
-        bytes[4] as i8,
-        bytes[3] as i8,
-        bytes[3] as i8,
-        bytes[2] as i8,
-        bytes[2] as i8,
-        bytes[1] as i8,
-        bytes[1] as i8,
-        bytes[0] as i8,
+        b9 as i8, b8 as i8, b8 as i8, b7 as i8, b7 as i8, b6 as i8, b6 as i8, b5 as i8, b4 as i8,
+        b3 as i8, b3 as i8, b2 as i8, b2 as i8, b1 as i8, b1 as i8, b0 as i8,
     );
     let result = deserialize_5_vec(coefficients);
-    // FRONTIER (core-models migration): the 16 per-k byte bridges that stood
-    // here — `assert (forall b. $coefficients (8*k + b) == bit_vec_of_int_t_array
-    // $bytes 8 (byte_map[k]*8 + b))` — apply a bit-vector as a FUNCTION
-    // (`$coefficients (…)`), the index-indexed pcm `bit_vec 128`.  Over
-    // core-models `t_BitVec 128` that is Error 71, a TYPE error, i.e. a HARD
-    // STOP that abandons the whole module at this declaration.  Deleted, not
-    // ported: the port is the deserialize_5 family (the `mm_set_epi8` byte
-    // bridge is `Avx2_ml_kem_views.lemma_bv_bit_mm_set_epi8`'s job).
-    //
-    // No admit is added: the `ensures` above stays, unproven and visible as an
-    // Error 19 on this one function.
+    proof!(
+        r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${result} i =
+      (if i % 16 >= 5 then 0
+       else let j = (i / 16) * 5 + i % 16 in
+            Rust_primitives.BitVectors.bit_vec_of_int_t_array
+              (${bytes} <: t_Array u8 (sz 10)) 8 j)
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_5_outer_bits
+       ${bytes} ${b0} ${b1} ${b2} ${b3} ${b4} ${b5} ${b6} ${b7} ${b8} ${b9} ${result} i
+"#
+    );
     result
 }
 

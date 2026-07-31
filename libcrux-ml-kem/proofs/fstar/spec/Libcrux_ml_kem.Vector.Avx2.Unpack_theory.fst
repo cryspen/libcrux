@@ -1004,3 +1004,151 @@ let lemma_deserialize_5_bits (c: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
     BP.lemma_deser5_gather_bit c co (16 * l + si + i % 16)
   end
 #pop-options
+
+(* ── the outer deserialize_5 byte bridge ─────────────────────────────────────
+   `deserialize_5` loads its 128-bit operand with a `mm_set_epi8` of ten
+   `bytes[k] as i8`, duplicating the seven straddling bytes.  Byte n of that
+   vector is source byte `deser10_bytemap n` — the SAME closed form the
+   deserialize_10 gather uses, because both are the "one extra byte per 8-byte
+   group" stride of a sub-byte-aligned code.
+
+   Session 9 deleted the sixteen pcm-era per-k bridges here (they applied a
+   bit-vector as a FUNCTION and were a type error, i.e. a hard stop); this is
+   their core-models replacement, and unlike them it is ONE lemma, not 16. *)
+
+(* bit (8n + t) of a 128-bit vector IS bit t of its byte n. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_vec128_byte (a: t_Vec128) (n: nat{n < 16}) (t: nat{t < 8})
+  : Lemma (ensures bv_bit a (8 * n + t) == RI.get_bit (vec128_byte a n) (sz t)) =
+  Canon.lemma_readback RI.I8 (mk_u64 128) (mk_u64 16) a (mk_u64 n) t;
+  lemma_bv_bit_reader 8 a n t
+#pop-options
+
+(* `x as i8` keeps the eight bits of `x: u8` — the two's-complement branch of
+   `get_bit` adds back exactly the 256 the cast subtracted. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+let lemma_get_bit_cast_u8_i8 (x: u8) (t: nat{t < 8})
+  : Lemma (ensures RI.get_bit (cast x <: i8) (sz t) == RI.get_bit x (sz t)) =
+  assert_norm (pow2 8 == 256);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.I8);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.U8)
+#pop-options
+
+unfold let deser5_src (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9: u8) (k: nat{k < 10}) : u8 =
+  if k = 0 then b0 else if k = 1 then b1 else if k = 2 then b2 else if k = 3 then b3
+  else if k = 4 then b4 else if k = 5 then b5 else if k = 6 then b6 else if k = 7 then b7
+  else if k = 8 then b8 else b9
+
+unfold let deser5_load (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9: u8) =
+  mm_set_epi8 (cast b9 <: i8) (cast b8 <: i8) (cast b8 <: i8) (cast b7 <: i8) (cast b7 <: i8)
+              (cast b6 <: i8) (cast b6 <: i8) (cast b5 <: i8) (cast b4 <: i8) (cast b3 <: i8)
+              (cast b3 <: i8) (cast b2 <: i8) (cast b2 <: i8) (cast b1 <: i8) (cast b1 <: i8)
+              (cast b0 <: i8)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser5_load_bytes (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9: u8) (n: nat{n < 16})
+  : Lemma (ensures vec128_byte (deser5_load b0 b1 b2 b3 b4 b5 b6 b7 b8 b9) n ==
+                   (cast (deser5_src b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 (deser10_bytemap n)) <: i8)) =
+  reveal_opaque (`%mm_set_epi8) mm_set_epi8;
+  Canon.lemma_mm_set_epi8 (cast b9 <: i8) (cast b8 <: i8) (cast b8 <: i8) (cast b7 <: i8)
+    (cast b7 <: i8) (cast b6 <: i8) (cast b6 <: i8) (cast b5 <: i8) (cast b4 <: i8)
+    (cast b3 <: i8) (cast b3 <: i8) (cast b2 <: i8) (cast b2 <: i8) (cast b1 <: i8)
+    (cast b1 <: i8) (cast b0 <: i8);
+  Canon.lemma_iv_mm_set_epi8 (cast b9 <: i8) (cast b8 <: i8) (cast b8 <: i8) (cast b7 <: i8)
+    (cast b7 <: i8) (cast b6 <: i8) (cast b6 <: i8) (cast b5 <: i8) (cast b4 <: i8)
+    (cast b3 <: i8) (cast b3 <: i8) (cast b2 <: i8) (cast b2 <: i8) (cast b1 <: i8)
+    (cast b1 <: i8) (cast b0 <: i8) n
+#pop-options
+
+#push-options "--fuel 0 --ifuel 2 --z3rlimit 300"
+let lemma_deser5_src_index (bytes: t_Slice u8) (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9: u8)
+      (k: nat{k < 10})
+  : Lemma (requires Seq.length bytes == 10 /\
+                    b0 == Seq.index bytes 0 /\ b1 == Seq.index bytes 1 /\
+                    b2 == Seq.index bytes 2 /\ b3 == Seq.index bytes 3 /\
+                    b4 == Seq.index bytes 4 /\ b5 == Seq.index bytes 5 /\
+                    b6 == Seq.index bytes 6 /\ b7 == Seq.index bytes 7 /\
+                    b8 == Seq.index bytes 8 /\ b9 == Seq.index bytes 9)
+          (ensures deser5_src b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 k == Seq.index bytes k) = ()
+#pop-options
+
+(* THE index identity, verified by hand over all 16 lanes.  Result lane l bit b
+   reads shuffled flat bit jj = 16*l + shift_inv(l) + b; the gather sends that
+   to byte `deser5_bytemap (jj/8)` of the loaded vector, and the load sends THAT
+   to source byte `deser10_bytemap` of it — which is exactly (5*l+b)/8, with the
+   bit offset jj%8 already equal to (5*l+b)%8.  Sixteen ground arms on l, eight
+   of which need the ONE b-split where jj crosses a multiple of 8.  Pure integer
+   arithmetic: no vector term is in scope. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser5_outer_index (l: nat{l < 16}) (b: nat{b < 5})
+  : Lemma (ensures
+      (let jj = 16 * l + (5 * (l % 2) + 2 * ((l % 8) / 2)) + b in
+       let j5 = 5 * l + b in
+       jj < 256 /\ jj % 8 == j5 % 8 /\
+       deser10_bytemap (BP.deser5_bytemap (jj / 8)) == j5 / 8)) =
+  let jj = 16 * l + (5 * (l % 2) + 2 * ((l % 8) / 2)) + b in
+  FStar.Math.Lemmas.euclidean_division_definition jj 8;
+  (if l = 0       then assert (jj / 8 == 0)
+   else if l = 1  then (if b < 3 then assert (jj / 8 == 2)  else assert (jj / 8 == 3))
+   else if l = 2  then assert (jj / 8 == 4)
+   else if l = 3  then (if b < 1 then assert (jj / 8 == 6)  else assert (jj / 8 == 7))
+   else if l = 4  then (if b < 4 then assert (jj / 8 == 8)  else assert (jj / 8 == 9))
+   else if l = 5  then assert (jj / 8 == 11)
+   else if l = 6  then (if b < 2 then assert (jj / 8 == 12) else assert (jj / 8 == 13))
+   else if l = 7  then assert (jj / 8 == 15)
+   else if l = 8  then assert (jj / 8 == 16)
+   else if l = 9  then (if b < 3 then assert (jj / 8 == 18) else assert (jj / 8 == 19))
+   else if l = 10 then assert (jj / 8 == 20)
+   else if l = 11 then (if b < 1 then assert (jj / 8 == 22) else assert (jj / 8 == 23))
+   else if l = 12 then (if b < 4 then assert (jj / 8 == 24) else assert (jj / 8 == 25))
+   else if l = 13 then assert (jj / 8 == 27)
+   else if l = 14 then (if b < 2 then assert (jj / 8 == 28) else assert (jj / 8 == 29))
+   else assert (jj / 8 == 31))
+#pop-options
+
+(* the whole outer `deserialize_5` obligation, one index at a time.  The ten
+   byte locals enter as free parameters pinned to `Seq.index bytes k` by
+   EQUATIONAL requires, so the caller discharges them from its own
+   let-equations and no slice reasoning enters this context — the
+   `lemma_store_glue_two_writes` shape from session 8. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deserialize_5_outer_bits
+      (bytes: t_Slice u8) (b0 b1 b2 b3 b4 b5 b6 b7 b8 b9: u8) (r: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             Seq.length bytes == 10 /\
+             b0 == Seq.index bytes 0 /\ b1 == Seq.index bytes 1 /\
+             b2 == Seq.index bytes 2 /\ b3 == Seq.index bytes 3 /\
+             b4 == Seq.index bytes 4 /\ b5 == Seq.index bytes 5 /\
+             b6 == Seq.index bytes 6 /\ b7 == Seq.index bytes 7 /\
+             b8 == Seq.index bytes 8 /\ b9 == Seq.index bytes 9 /\
+             (forall (k: nat{k < 256}).
+                bv_bit r k ==
+                (if k % 16 >= 5 then 0
+                 else let shift_inv = ((k / 16) % 2) * 5 + (((k / 16) % 8) / 2) * 2 in
+                      let j = k + shift_inv in
+                      let byte_pos = j / 8 in
+                      let c_byte = if byte_pos < 16
+                                   then (byte_pos / 4) * 2 + byte_pos % 2
+                                   else ((byte_pos - 16) / 4) * 2 + (byte_pos - 16) % 2 + 8 in
+                      bv_bit (deser5_load b0 b1 b2 b3 b4 b5 b6 b7 b8 b9)
+                             (c_byte * 8 + j % 8))))
+          (ensures
+             bv_bit r i ==
+             (if i % 16 >= 5 then 0
+              else Rust_primitives.BitVectors.bit_vec_of_int_t_array
+                     (bytes <: t_Array u8 (sz 10)) 8 ((i / 16) * 5 + i % 16))) =
+  if i % 16 < 5 then begin
+    let l = i / 16 in
+    let b = i % 16 in
+    let jj = 16 * l + (5 * (l % 2) + 2 * ((l % 8) / 2)) + b in
+    let n = jj / 8 in
+    let t = jj % 8 in
+    let m = BP.deser5_bytemap n in
+    let src = deser10_bytemap m in
+    lemma_deser5_outer_index l b;
+    lemma_deser5_load_bytes b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 m;
+    lemma_bv_bit_vec128_byte (deser5_load b0 b1 b2 b3 b4 b5 b6 b7 b8 b9) m t;
+    lemma_deser5_src_index bytes b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 src;
+    lemma_get_bit_cast_u8_i8 (deser5_src b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 src) t
+  end
+#pop-options
