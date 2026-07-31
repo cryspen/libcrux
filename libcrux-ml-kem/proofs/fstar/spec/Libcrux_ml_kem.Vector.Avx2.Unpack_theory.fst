@@ -299,3 +299,104 @@ let lemma_bv_bit_si256_from_two_si128 (lo hi: t_Vec128) (k: nat{k < 256})
   lemma_bv_bit_inserti128_si256_1 (mm256_castsi128_si256 lo) hi k;
   if k < 128 then lemma_bv_bit_castsi128_si256 lo k
 #pop-options
+
+(* ── the width-generic unpack arithmetic, shared by deserialize_10 / _12 ────
+   `lemma_srli4_and15_bits` / `lemma_deser4_lane` above are the width-4
+   instances of exactly this shape; these generalise the shift amount and the
+   mask width so widths 10 (srli 6, mask 1023) and 12 (srli 4, mask 4095) need
+   no new bit arithmetic at all.  Pure i16/u16 — no vector terms in scope, per
+   `feedback_split_simd_lemma_three_contexts`. *)
+
+(* bit c of a low-w mask constant 2^w - 1. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+let lemma_bit_of_low_mask (mask: i16) (w: nat{1 <= w /\ w <= 15}) (c: nat{c < 16})
+  : Lemma (requires v mask == pow2 w - 1)
+          (ensures RI.get_bit mask (sz c) == (if c < w then 1 else 0)) =
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.I16);
+  assert_norm (pow2 16 == 65536);
+  FStar.Math.Lemmas.pow2_le_compat 15 w;
+  FStar.Math.Lemmas.small_mod (v mask) (pow2 16);
+  if c < w then begin
+    (* 2^w - 1 == 2^c * (2^(w-c) - 1) + (2^c - 1), and 2^(w-c) - 1 is odd *)
+    FStar.Math.Lemmas.pow2_plus c (w - c);
+    FStar.Math.Lemmas.small_division_lemma_1 (pow2 c - 1) (pow2 c);
+    FStar.Math.Lemmas.lemma_div_plus (pow2 c - 1) (pow2 (w - c) - 1) (pow2 c);
+    FStar.Math.Lemmas.pow2_plus 1 (w - c - 1)
+  end
+  else begin
+    FStar.Math.Lemmas.pow2_le_compat c w;
+    FStar.Math.Lemmas.small_division_lemma_1 (pow2 w - 1) (pow2 c)
+  end
+#pop-options
+
+(* the width-w extract: `(y >>u sh) & (2^w - 1)` keeps bits sh..sh+w-1 of y in
+   positions 0..w-1.  (Width-4 instance: `lemma_srli4_and15_bits`.) *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_srli_and_mask_bits (y mask: i16) (sh: nat{1 <= sh /\ sh <= 15})
+      (w: nat{1 <= w /\ w <= 15}) (c: nat{c < 16})
+  : Lemma (requires v mask == pow2 w - 1 /\ sh + w <= 16)
+          (ensures
+            RI.get_bit ((cast ((cast y <: u16) >>! mk_i32 sh <: u16) <: i16) &. mask) (sz c) ==
+            (if c < w then RI.get_bit y (sz (sh + c)) else 0)) =
+  assert_norm (pow2 16 == 65536);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.I16);
+  reveal_opaque (`%RI.get_bit) (RI.get_bit #RI.U16);
+  let yu: u16 = cast y <: u16 in
+  let s: u16 = yu >>! mk_i32 sh in
+  assert (v yu == (v y) % pow2 16);
+  assert (v s == (v yu) / pow2 sh);
+  FStar.Math.Lemmas.pow2_le_compat sh 1;
+  FStar.Math.Lemmas.lemma_div_lt_nat (v yu) 16 sh;
+  let r: i16 = cast s <: i16 in
+  assert (v r == v s);
+  lemma_bit_of_low_mask mask w c;
+  RI.get_bit_and r mask (sz c);
+  if c < w then begin
+    FStar.Math.Lemmas.pow2_plus sh c;
+    FStar.Math.Lemmas.division_multiplication_lemma (v yu) (pow2 sh) (pow2 c);
+    FStar.Math.Lemmas.small_mod (v r) (pow2 16)
+  end
+#pop-options
+
+(* one lane of the deserialize unpack: source lane `x`, multiplier `m == 2^k`,
+   right shift `sh`, mask `2^w - 1`.  Bit c of the unpacked lane is bit
+   (sh - k + c) of the source lane, for c < w, and 0 above. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+let lemma_deser_lane (x m mask: i16) (k: nat) (sh: nat{1 <= sh /\ sh <= 15})
+      (w: nat{1 <= w /\ w <= 15}) (c: nat{c < 16})
+  : Lemma (requires (v m) % pow2 16 == pow2 k /\ v mask == pow2 w - 1 /\
+                    k <= sh /\ sh + w <= 16)
+          (ensures
+            RI.get_bit ((cast ((cast (RI.mul_mod x m) <: u16) >>! mk_i32 sh <: u16) <: i16) &. mask)
+                       (sz c) ==
+            (if c < w then RI.get_bit x (sz (sh - k + c)) else 0)) =
+  lemma_srli_and_mask_bits (RI.mul_mod x m) mask sh w c;
+  if c < w then lemma_mul_pow2_bit x m k (sh + c)
+#pop-options
+
+(* ── VPSHUFB, select branch, 128-bit, in bv_bit form ───────────────────────
+   The 128-bit twin of `Byteperm_theory.lemma_bv_bit_mm256_shuffle_epi8_sel`;
+   deserialize_10 / _12 gather their bytes with two 128-bit PSHUFBs before the
+   concatenation, and only the 256-bit sel form existed.  The `16 * (nth / 16)`
+   lane term of the 256-bit version drops out — a 128-bit shuffle has a single
+   lane. *)
+let vec128_byte (bv: t_Vec128) (k: nat{k < 16}) : i8 =
+  Funarr.impl_5__get (mk_u64 16) #i8 (Canon.to_i8x16 bv) (mk_u64 k)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_mm_shuffle_epi8_sel (a b: t_Vec128) (i: nat{i < 128}) (sel: nat{sel < 16})
+  : Lemma (requires v (vec128_byte b (i / 8)) >= 0 /\
+                    sel == (v (vec128_byte b (i / 8))) % 16)
+          (ensures bv_bit (mm_shuffle_epi8 a b) i == bv_bit a (8 * sel + i % 8)) =
+  reveal_opaque (`%mm_shuffle_epi8) mm_shuffle_epi8;
+  Canon.lemma_mm_shuffle_epi8 a b;
+  let nth = i / 8 in
+  let sb = i % 8 in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  let r = mm_shuffle_epi8 a b in
+  Canon.lemma_iv_mm_shuffle_epi8_sel (Canon.to_i8x16 a) (Canon.to_i8x16 b) nth;
+  Canon.lemma_readback RI.I8 (mk_u64 128) (mk_u64 16) r (mk_u64 nth) sb;
+  lemma_bv_bit_reader 8 r nth sb;
+  Canon.lemma_readback RI.I8 (mk_u64 128) (mk_u64 16) a (mk_u64 sel) sb;
+  lemma_bv_bit_reader 8 a sel sb
+#pop-options
