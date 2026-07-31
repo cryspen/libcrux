@@ -565,8 +565,20 @@ val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i)]
 
+// CORRECTNESS FIX (2026-07-31): this was an UNPROVABLE axiom without the
+// `requires`.  For an out-of-[0,255] IMM8 the axiom and the CPU-differentially-
+// tested core-models model DIVERGE: the axiom returns 0 whenever `IMM8 < 0`,
+// while `e_mm256_slli_epi32` shifts by `IMM8.rem_euclid(256)` — so at e.g.
+// IMM8 = -256 the model returns `a` unchanged, not 0.  The two agree on ALL of
+// IMM8 in [0,255]; the divergent region is not CPU-differential-tested (`mk!`
+// covers <0>..<255>), is unreachable (every ml-dsa call site uses IMM8 in {1,13},
+// one of them behind `requires v SHIFT_BY == 13`), and is not expressible by the
+// hardware, whose IMM8 is an 8-bit immediate.  Adding the (already-satisfied)
+// range precondition turns a possibly-wrong trusted axiom into a PROVEN lemma.
+// The `ensures` is kept in its original `if` shape so consumers see the same fact.
 val mm256_slli_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
-  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
+  Lemma (requires v v_IMM8 >= 0 /\ v v_IMM8 <= 31)
+        (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
          (
          if v_IMM8 <. mk_i32 0 || v_IMM8 >. mk_i32 31
          then mk_i32 0

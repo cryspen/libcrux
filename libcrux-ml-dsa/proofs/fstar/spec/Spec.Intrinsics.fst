@@ -186,6 +186,42 @@ let lemma_i32_sub_lanes (vec: bv256) (k: u64{v k < 4})
   Ints.lemma_int_t_eq_via_bits hi yhi
 #pop-options
 
+(* ---- i128 lane <-> its four i32 sub-lanes (private) ---- *)
+let to_i128x2p (x: bv256) : t_FunArray (mk_u64 2) i128 = (Canon.to_i128x2 x)._0
+
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let lemma_i32_sub_lane_of_i128 (vec: bv256) (k: u64{v k < 2}) (h: nat{h < 4})
+  : Lemma (to_i32x8 vec (mk_u64 (4 * v k + h)) ==
+           Ints.cast_mod #Ints.I128 #Ints.I32
+             (Ints.shift_right #Ints.I128 #Ints.I32 (to_i128x2p vec k) (mk_i32 (32 * h)))) =
+  let y : i128 = to_i128x2p vec k in
+  let l : i32 = to_i32x8 vec (mk_u64 (4 * v k + h)) in
+  let r : i32 = Ints.cast_mod #Ints.I128 #Ints.I32
+                  (Ints.shift_right #Ints.I128 #Ints.I32 y (mk_i32 (32 * h))) in
+  let aux (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit l jj == Ints.get_bit r jj) =
+    (* both sides read raw bit 128*k + 32*h + jj *)
+    bit_view_inv Ints.I32 (mk_u64 256) (mk_u64 8) vec (mk_u64 (4 * v k + h)) (mk_u64 (v jj));
+    bit_view_inv Ints.I128 (mk_u64 256) (mk_u64 2) vec k (mk_u64 (32 * h + v jj));
+    ebit_is_get_bit Ints.I32 l (v jj);
+    ebit_is_get_bit Ints.I128 y (32 * h + v jj)
+  in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits l r
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 250"
+let lemma_i32_from_i128_transfer (x y: bv256) (kx ky: u64{v kx < 2 /\ v ky < 2}) (h: nat{h < 4})
+  : Lemma (requires to_i128x2p x kx == to_i128x2p y ky)
+          (ensures to_i32x8 x (mk_u64 (4 * v kx + h)) == to_i32x8 y (mk_u64 (4 * v ky + h))) =
+  lemma_i32_sub_lane_of_i128 x kx h;
+  lemma_i32_sub_lane_of_i128 y ky h
+
+let lemma_i32_of_i128_zero (x: bv256) (k: u64{v k < 2}) (h: nat{h < 4})
+  : Lemma (requires to_i128x2p x k == mk_i128 0)
+          (ensures to_i32x8 x (mk_u64 (4 * v k + h)) == mk_i32 0) =
+  lemma_i32_sub_lane_of_i128 x k h
+#pop-options
+
 (* i64-lane equality transfers to both i32 sub-lanes. *)
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let lemma_i32_lane_transfer (x y: bv256) (kx ky: u64{v kx < 4 /\ v ky < 4}) (h: nat{h < 2})
@@ -462,11 +498,22 @@ let mm256_srai_epi32_lemma v_IMM8 a i =
   reveal_opaque_arithmetic_ops #i32_inttype;
   Canon.lemma_mm256_srai_epi32 v_IMM8 a
 #pop-options
-(* CLIFF: slli model/axiom diverge for out-of-range IMM8: .fsti returns 0 when
-   v_IMM8 < 0, but core-models e_mm256_slli_epi32 shifts by (rem_euclid IMM8 256),
-   which for e.g. IMM8 = -256 is a shift-by-0 (= a), not 0. Provable only under a
-   0 <= IMM8 <= 31 precondition the .fsti does not carry. Hedged axiom. *)
-let mm256_slli_epi32_lemma = admit ()
+(* Under the (new, always-satisfied) `0 <= IMM8 <= 31` precondition the model's
+   `rem_euclid IMM8 256` is the identity and its `> 31` guard is dead, so both
+   sides are the same left shift — one routed through u32, matched bit by bit. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_slli_epi32_lemma v_IMM8 a i =
+  reveal_opaque (`%I.mm256_slli_epi32) I.mm256_slli_epi32;
+  reveal_opaque_arithmetic_ops #i32_inttype;
+  Canon.lemma_rem_euclid256 v_IMM8;
+  Canon.lemma_mm256_slli_epi32 v_IMM8 a;
+  let x : i32 = to_i32x8 a i in
+  let l : i32 = to_i32x8 (I.mm256_slli_epi32 v_IMM8 a) i in
+  let r : i32 = Ints.shift_left #Ints.I32 #Ints.I32 x v_IMM8 in
+  let aux (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit l jj == Ints.get_bit r jj) = () in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits l r
+#pop-options
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_and_si256_lemma a b i =
   let r = to_i32x8 (I.mm256_and_si256 a b) i in
@@ -588,7 +635,24 @@ let mm256_blend_epi32_lemma imm8 a b i =
 #pop-options
 let mm256_set_m128i_bv_lemma = admit ()
 let mm256_set_m128i_lemma = admit ()
-let mm256_permute2x128_si256_lemma_i32x4 = admit ()
+#restart-solver
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_permute2x128_si256_lemma_i32x4 imm8 a b j =
+  reveal_opaque (`%I.mm256_permute2x128_si256) I.mm256_permute2x128_si256;
+  Canon.lemma_mm256_permute2x128_si256 imm8 a b;
+  let r = I.mm256_permute2x128_si256 imm8 a b in
+  let i : u64 = j /! mk_u64 4 in
+  let offset : nat = v j % 4 in
+  FStar.Math.Lemmas.lemma_div_mod (v j) 4;
+  let control : i32 = imm8 >>! (i *! mk_u64 4 <: u64) in
+  if ((control >>! mk_i32 3 <: i32) %! mk_i32 2 <: i32) =. mk_i32 1
+  then lemma_i32_of_i128_zero r i offset
+  else (match v (control %! mk_i32 4 <: i32) with
+        | 0 -> lemma_i32_from_i128_transfer r a i (mk_u64 0) offset
+        | 1 -> lemma_i32_from_i128_transfer r a i (mk_u64 1) offset
+        | 2 -> lemma_i32_from_i128_transfer r b i (mk_u64 0) offset
+        | _ -> lemma_i32_from_i128_transfer r b i (mk_u64 1) offset)
+#pop-options
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_castsi256_si128_lemma a i =
   let l = to_i32x4 (I.mm256_castsi256_si128 a) i in
