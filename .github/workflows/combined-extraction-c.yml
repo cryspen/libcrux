@@ -42,13 +42,14 @@ jobs:
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
 
+      # CMAKE_BUILD_TYPE covers single-config generators (Makefiles/Ninja),
+      # --config/-C covers multi-config ones (Visual Studio on Windows). Each
+      # is ignored by the generator it doesn't apply to, so the same commands
+      # work on all three runners.
       - name: 🔨 Build
         run: |
-          cmake -B build
-          cmake --build build
-
-      - name: 🏃🏻‍♀️ Test
-        run: ctest --test-dir build --output-on-failure
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --config Debug
 
       - name: 🏃🏻‍♀️ Test
         run: ctest --test-dir build -C Debug --output-on-failure
