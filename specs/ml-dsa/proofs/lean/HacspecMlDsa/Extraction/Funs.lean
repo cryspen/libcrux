@@ -1834,8 +1834,6 @@ def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
 impl_def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError : core.cmp.PartialEq
   error.MlDsaError error.MlDsaError := {
   eq := error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
-  ne := core.cmp.PartialEq.ne.default
-    error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::error::{impl core::cmp::Eq for hacspec_ml_dsa::error::MlDsaError}]
@@ -2071,7 +2069,7 @@ def
   matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : matrix.matrix_vector_ntt.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (matrix.matrix_vector_ntt.closure K L))
+  Result ((Array Std.I32 256#usize) × (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure K L))
   := do
   let (a, a1) := c
   let acc ←
@@ -2098,7 +2096,7 @@ def
 def
   matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
   (K : Std.Usize) (L : Std.Usize) : core.ops.function.FnOnce
-  (matrix.matrix_vector_ntt.closure K L) Std.Usize (Array Std.I32 256#usize)
+  (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure K L) Std.Usize (Array Std.I32 256#usize)
   := {
   call_once :=
     matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
@@ -2110,7 +2108,7 @@ def
 def
   matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
   (K : Std.Usize) (L : Std.Usize) : core.ops.function.FnMut
-  (matrix.matrix_vector_ntt.closure K L) Std.Usize (Array Std.I32 256#usize)
+  (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure K L) Std.Usize (Array Std.I32 256#usize)
   := {
   FnOnceInst :=
     matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
@@ -2128,7 +2126,7 @@ def matrix.matrix_vector_ntt
   Result (Array (Array Std.I32 256#usize) K)
   := do
   createi K
-    (matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
+    (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
     K L) (a_hat, v_hat)
 
 /-- [hacspec_ml_dsa::sampling::rej_bounded_poly]: loop body 0:

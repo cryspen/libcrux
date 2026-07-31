@@ -26,3 +26,26 @@ result = subprocess.run(
     ["cargo", "hax", "into", "lean"],
     env={**os.environ, "RUSTFLAGS": "--cfg hax_backend_lean"}
 )
+if result.returncode != 0:
+    print(f"warning: hax/aeneas exited with code {result.returncode}; "
+          f"continuing with post-processing.", file=sys.stderr)
+
+# Post-process the generated Funs.lean for hax-lean v0.2.0 gaps (mirrors ml-kem).
+funs_lean = Path("proofs/lean/HacspecMlDsa/Extraction/Funs.lean")
+content = funs_lean.read_text()
+
+# 1. `core.cmp.PartialEq` has no `ne` field in hax-lean v0.2.0 (it is a default
+#    method, not a struct field). Drop the generated `ne := …default …` field.
+content = re.sub(
+    r"\n[ \t]*ne := core\.cmp\.PartialEq\.ne\.default\n[ \t]*[^\n]+\n(\s*})",
+    r"\n\1", content)
+
+# 2. Inside `matrix.matrix_vector_ntt` the `matrix` parameter shadows the
+#    `matrix` sub-namespace, so the closure-instance reference passed to
+#    `createi` fails to resolve. Force top-level resolution with `_root_.`.
+for _fn in ("matrix_vector_ntt",):
+    content = content.replace(
+        f"(matrix.{_fn}.closure",
+        f"(_root_.hacspec_ml_dsa.matrix.{_fn}.closure")
+
+funs_lean.write_text(content)
