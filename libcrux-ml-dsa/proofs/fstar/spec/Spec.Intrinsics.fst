@@ -13,6 +13,7 @@ module Avx2c  = Libcrux_core_models.Core_arch.X86.Avx2
 module Funarr = Libcrux_core_models.Abstractions.Funarr
 module BV     = Libcrux_core_models.Abstractions.Bitvec
 module Ints   = Rust_primitives.Integers
+module Extra  = Libcrux_core_models.Core_arch.X86.Extra
 
 #set-options "--fuel 1 --ifuel 1 --z3rlimit 60"
 
@@ -119,6 +120,15 @@ let bit_of_get_bit (t: Ints.inttype) (x: Ints.int_t t) (b: nat{b < Ints.bits t})
 (* u8 -> i32 `cast` coincides with `cast_mod` (value in range), so the
    get_bit_cast / get_bit_cast_extend SMTPats (stated on cast_mod) fire. *)
 let cast_u8_i32 (a: u8) : Lemma ((cast a <: i32) == Ints.cast_mod #Ints.U8 #Ints.I32 a) = ()
+let cast_u8_i8 (a: u8) : Lemma ((cast a <: i8) == Ints.cast_mod #Ints.U8 #Ints.I8 a) = ()
+#pop-options
+
+(* u8x32 view of a bv256 (private; the 256-bit analogue of to_u8x16). *)
+let to_u8x32p (x: bv256) : t_FunArray (mk_u64 32) u8 = (IVi.e_ee_9__impl__to_u8x32 x)._0
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 250"
+let u8_to_bv_to_u8x32_inv (vec: bv256) (i: u64{v i < 32}) (j: u64{v j < 8})
+  : Lemma (u8_to_bv (to_u8x32p vec i) j == vec.(mk_int (v i * 8 + v j))) =
+  bit_view_inv Ints.U8 (mk_u64 256) (mk_u64 32) vec i j
 #pop-options
 
 (* i64 analogue of i32_to_bv_to_i32x4_inv (private helper). *)
@@ -228,8 +238,71 @@ let mm256_and_si256 lhs rhs i =
   Canon.lemma_and_si256_lift lhs rhs;
   Canon.lemma_and_funarr lhs rhs i
 #pop-options
-let mm_storeu_bytes_si128_lemma = admit ()
-let update_at_range_bv_lemma = admit ()
+(* ---- slice-I/O CONTENT, via the core-models `Extra` memory-op models ----
+   `Libcrux_intrinsics.Avx2`'s store/load ops are `[@@ "opaque_to_smt"] let op =
+   Extra.<op>_model` (their `#[cfg(hax)]` bodies), so revealing both sides turns
+   each content lemma into a codec round-trip / `update_at_usize` chain readout —
+   the mechanism ml-kem's `lemma_mm256_storeu_si256_i16` already uses. *)
+(* The model is a 16-step `update_at_usize` (= `Seq.upd`) chain guarded by
+   `len >= 16`.  Three separated contexts, because the two obligations fight:
+   the `reveal_opaque` norm-equations need the UNSPLIT context (they bail under
+   `--split_queries always`), while reading the chain off at a SYMBOLIC index
+   needs the literal case split.  So: unfold in one lemma, dispatch in another.
+   `store16` is OPAQUE: left transparent, its 16-deep `Seq.upd` chain inflates
+   every later decl's context (measured: it took `mm256_mullo_epi16_bv_lemma`
+   from 62 s to a >5 min grind).  Only its two consumers below reveal it. *)
+[@@ "opaque_to_smt"]
+let store16 (out: t_Slice u8 {Seq.length out >= 16}) (vec: bv128)
+  : (r: t_Slice u8 {Seq.length r == Seq.length out}) =
+  let upd = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize in
+  let s0  = upd out (mk_usize 0)  (to_u8x16 vec (mk_u64 0))  in
+  let s1  = upd s0  (mk_usize 1)  (to_u8x16 vec (mk_u64 1))  in
+  let s2  = upd s1  (mk_usize 2)  (to_u8x16 vec (mk_u64 2))  in
+  let s3  = upd s2  (mk_usize 3)  (to_u8x16 vec (mk_u64 3))  in
+  let s4  = upd s3  (mk_usize 4)  (to_u8x16 vec (mk_u64 4))  in
+  let s5  = upd s4  (mk_usize 5)  (to_u8x16 vec (mk_u64 5))  in
+  let s6  = upd s5  (mk_usize 6)  (to_u8x16 vec (mk_u64 6))  in
+  let s7  = upd s6  (mk_usize 7)  (to_u8x16 vec (mk_u64 7))  in
+  let s8  = upd s7  (mk_usize 8)  (to_u8x16 vec (mk_u64 8))  in
+  let s9  = upd s8  (mk_usize 9)  (to_u8x16 vec (mk_u64 9))  in
+  let s10 = upd s9  (mk_usize 10) (to_u8x16 vec (mk_u64 10)) in
+  let s11 = upd s10 (mk_usize 11) (to_u8x16 vec (mk_u64 11)) in
+  let s12 = upd s11 (mk_usize 12) (to_u8x16 vec (mk_u64 12)) in
+  let s13 = upd s12 (mk_usize 13) (to_u8x16 vec (mk_u64 13)) in
+  let s14 = upd s13 (mk_usize 14) (to_u8x16 vec (mk_u64 14)) in
+  upd s14 (mk_usize 15) (to_u8x16 vec (mk_u64 15))
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let storeu_bytes_unfold (out: t_Slice u8 {Seq.length out >= 16}) (vec: bv128)
+  : Lemma (I.mm_storeu_bytes_si128 out vec == store16 out vec) =
+  reveal_opaque (`%store16) store16;
+  reveal_opaque (`%I.mm_storeu_bytes_si128) I.mm_storeu_bytes_si128;
+  reveal_opaque (`%Extra.mm_storeu_bytes_si128_model) Extra.mm_storeu_bytes_si128_model
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400 --split_queries always"
+let store16_index (out: t_Slice u8 {Seq.length out >= 16}) (vec: bv128) (i: nat{i < 16})
+  : Lemma (Seq.index (store16 out vec) i == to_u8x16 vec (mk_int i)) =
+  reveal_opaque (`%store16) store16;
+  match i with
+  | 0  -> () | 1  -> () | 2  -> () | 3  -> () | 4  -> () | 5  -> () | 6  -> () | 7  -> ()
+  | 8  -> () | 9  -> () | 10 -> () | 11 -> () | 12 -> () | 13 -> () | 14 -> () | _ -> ()
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let mm_storeu_bytes_si128_lemma out vec i =
+  storeu_bytes_unfold out vec;
+  store16_index out vec i
+#pop-options
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let update_at_range_bv_lemma f_start f_end bytes dummy_out vec i =
+  Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+    bytes ({ f_start; f_end }) (I.mm_storeu_bytes_si128 dummy_out vec);
+  if i >= v f_start && i < v f_end
+  then mm_storeu_bytes_si128_lemma dummy_out vec (i - v f_start)
+#pop-options
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 250"
 let u8_to_bv_to_u8x16_inv vec i j =
   bit_view_inv Ints.U8 (mk_u64 128) (mk_u64 16) vec i j
@@ -339,6 +412,9 @@ let mm256_set_epi16_lemma v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 
 #pop-options
 let mm256_shuffle_epi8_lemma = admit ()
 let mm_shuffle_epi8_lemma = admit ()
+(* proof-residence: locked(cold-gate) — this decl is the module's heaviest and is
+   sensitive to accumulated solver state (it grinds without the restart). *)
+#restart-solver
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_mullo_epi16_bv_lemma a b i =
   reveal_opaque (`%I.mm256_mullo_epi16) I.mm256_mullo_epi16;
@@ -557,7 +633,15 @@ let mm256_unpackhi_epi64_lemma a b i =
    | 6 -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 3) 0
    | _ -> lemma_i32_lane_transfer r b (mk_u64 3) (mk_u64 3) 1)
 #pop-options
-let mm_loadu_si128_lemma = admit ()
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let mm_loadu_si128_lemma bytes i =
+  reveal_opaque (`%I.mm_loadu_si128) I.mm_loadu_si128;
+  reveal_opaque (`%Extra.mm_loadu_si128_model) Extra.mm_loadu_si128_model;
+  let lane = i /! mk_u64 8 in
+  let bit  = i %! mk_u64 8 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 8;
+  u8_to_bv_to_u8x16_inv (I.mm_loadu_si128 bytes) lane bit
+#pop-options
 let i32_lt_pow2_n_to_bit_zero_lemma = admit ()
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let shl_casted_u8_bv_lemma a b i =
@@ -668,8 +752,33 @@ let i32_to_bv_ext a c =
   IVi.lemma_decode_encode Ints.I32 a;
   IVi.lemma_decode_encode Ints.I32 c
 #pop-options
-let to_i8x16_mm_loadu_si128_lemma = admit ()
-let mm256_loadu_si256_u8_lemma = admit ()
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let to_i8x16_mm_loadu_si128_lemma bytes nth =
+  reveal_opaque (`%I.mm_loadu_si128) I.mm_loadu_si128;
+  reveal_opaque (`%Extra.mm_loadu_si128_model) Extra.mm_loadu_si128_model;
+  let m = I.mm_loadu_si128 bytes in
+  let l : i8 = to_i8x16 m nth in
+  let r : i8 = cast (Seq.index bytes (v nth)) <: i8 in
+  cast_u8_i8 (Seq.index bytes (v nth));
+  let aux (jj: Ints.usize{v jj < 8}) : Lemma (Ints.get_bit l jj == Ints.get_bit r jj) =
+    let j = mk_u64 (v jj) in
+    bit_view_inv Ints.I8 (mk_u64 128) (mk_u64 16) m nth j;
+    bit_view_inv Ints.U8 (mk_u64 128) (mk_u64 16) m nth j;
+    ebit_is_get_bit Ints.I8 l (v jj);
+    ebit_is_get_bit Ints.U8 (to_u8x16 m nth) (v jj)
+  in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits l r
+#pop-options
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let mm256_loadu_si256_u8_lemma bytes i =
+  reveal_opaque (`%I.mm256_loadu_si256_u8) I.mm256_loadu_si256_u8;
+  reveal_opaque (`%Extra.mm256_loadu_si256_u8_model) Extra.mm256_loadu_si256_u8_model;
+  let lane = i /! mk_u64 8 in
+  let bit  = i %! mk_u64 8 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 8;
+  u8_to_bv_to_u8x32_inv (I.mm256_loadu_si256_u8 bytes) lane bit
+#pop-options
 let mm_storeu_si128_i32_lemma = admit ()
 let mm_storeu_si128_i32_len_lemma out vec = ()
 let mm256_movemask_ps_lemma = admit ()
