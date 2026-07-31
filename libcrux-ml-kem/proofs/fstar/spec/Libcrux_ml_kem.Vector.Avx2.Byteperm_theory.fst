@@ -803,3 +803,438 @@ let lemma_store_glue_two_writes
   in
   FStar.Classical.forall_intro aux
 #pop-options
+
+(* ============================================================================
+   THE serialize_10 AND serialize_12 GATHER CHAINS
+
+   Both are STRICTLY SHORTER than serialize_5: after `concat_pairs_n n` each
+   64-bit lane holds 2n live bits, and for n = 10 / 12 that is already
+   byte-aligned (40 = 5 bytes, 48 = 6 bytes), so ONE sllv/srli64 pair suffices
+   and the single VPSHUFB gathers the bytes.  serialize_5 needed a second pair
+   only because 2*5 = 10 bits is not byte-aligned.
+
+   Consequently these two widths add NO new op-level machinery — they reuse
+   `lemma_bv_bit_mm256_sllv_epi32`, `lemma_bv_bit_mm256_srli_epi64`,
+   `lemma_bv_bit_mm256_shuffle_epi8_sel`, `lemma_bv_bit_castsi256_si128` and
+   `lemma_bv_bit_extracti128_si256_1` unchanged.  Per width the only new
+   content is: two ground constants, one shift-pair index shift, one shuffle
+   index shift, the gather dispatch, and the two consumer forms.
+   ========================================================================== *)
+
+(* ── the width-generic index algebra, shared by every serialize_N ──────────
+   After the gather, output bit `u` reads y-bit `32*(u/2n) + u%2n`; composing
+   the `concat_pairs_n n` post with that yields exactly `(u/n)*16 + u%n`.
+   Pure integers, no vector terms.  (serialize_5's `lemma_ser5_index` carries
+   the same fact at n=5 plus the extra two-stage decomposition it needs.) *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 300 --split_queries always"
+let lemma_pack_index (n: nat{n >= 1}) (u: nat)
+  : Lemma (ensures
+            (u % (2 * n) < n ==> (u / n) * 16 + u % n == 32 * (u / (2 * n)) + u % (2 * n)) /\
+            (u % (2 * n) >= n ==>
+               (u / n) * 16 + u % n == 32 * (u / (2 * n)) + 16 + (u % (2 * n) - n))) =
+  (* u = (u % 2n) + 2n*(u/2n), so u/n = 2*(u/2n) + (u%2n)/n and u%n = (u%2n)%n *)
+  FStar.Math.Lemmas.euclidean_division_definition u (2 * n);
+  FStar.Math.Lemmas.lemma_div_plus (u % (2 * n)) (2 * (u / (2 * n))) n;
+  FStar.Math.Lemmas.lemma_mod_plus (u % (2 * n)) (2 * (u / (2 * n))) n;
+  if u % (2 * n) < n then begin
+    FStar.Math.Lemmas.small_division_lemma_1 (u % (2 * n)) n;
+    FStar.Math.Lemmas.small_mod (u % (2 * n)) n
+  end
+  else begin
+    FStar.Math.Lemmas.lemma_div_plus (u % (2 * n) - n) 1 n;
+    FStar.Math.Lemmas.lemma_mod_plus (u % (2 * n) - n) 1 n;
+    FStar.Math.Lemmas.small_division_lemma_1 (u % (2 * n) - n) n;
+    FStar.Math.Lemmas.small_mod (u % (2 * n) - n) n
+  end
+#pop-options
+
+(* ────────────────────────────── serialize_10 ─────────────────────────────── *)
+
+unfold let ser10_sh =
+  mm256_set_epi32 (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12)
+                  (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12)
+
+unfold let ser10_mask =
+  mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+
+(* the whole register chain, exactly as serialize_10_vec composes it *)
+unfold let ser10_chain (y: t_Vec256) : t_Vec256 =
+  mm256_shuffle_epi8 (mm256_srli_epi64 (mk_i32 12) (mm256_sllv_epi32 y ser10_sh)) ser10_mask
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_ser10_sh_dwords (j: nat{j < 8})
+  : Lemma (ensures v (vec256_dword ser10_sh j) == (if j % 2 = 0 then 12 else 0)) =
+  reveal_opaque (`%mm256_set_epi32) mm256_set_epi32;
+  Canon.lemma_mm256_set_epi32 (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12)
+    (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12);
+  Canon.lemma_iv_set_epi32 (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12)
+    (mk_i32 0) (mk_i32 12) (mk_i32 0) (mk_i32 12) j
+#pop-options
+
+(* the 10 LIVE mask bytes per 128-bit half: bytes 0..4 select bytes 0..4 (the
+   40 bits of 64-bit lane 0), bytes 5..9 select bytes 8..12 (lane 1). *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_ser10_mask_bytes (nth: nat{nth < 32})
+  : Lemma (requires nth % 16 < 10)
+          (ensures v (vec256_byte ser10_mask nth) ==
+                   (if nth % 16 < 5 then nth % 16 else nth % 16 + 3)) =
+  reveal_opaque (`%mm256_set_epi8) mm256_set_epi8;
+  Canon.lemma_mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0);
+  Canon.lemma_iv_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 12) (mk_i8 11)
+    (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0) nth
+#pop-options
+
+(* ── step 1: the 12-shift pair, as an index shift ─────────────────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser10_shift_bit (y: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires i % 64 < 40)
+          (ensures bv_bit (mm256_srli_epi64 (mk_i32 12) (mm256_sllv_epi32 y ser10_sh)) i ==
+                   bv_bit y (if i % 64 < 20 then i else i + 12)) =
+  let q = i / 64 in
+  let u = i % 64 in
+  FStar.Math.Lemmas.euclidean_division_definition i 64;
+  lemma_bv_bit_mm256_srli_epi64 (mk_i32 12) (mm256_sllv_epi32 y ser10_sh) i;
+  if u < 20 then begin
+    (* index 64q + u + 12 sits in dword 2q (shift 12), at bit u + 12 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u + 12) 32;
+    FStar.Math.Lemmas.lemma_div_plus (u + 12) (2 * q) 32;
+    FStar.Math.Lemmas.lemma_mod_plus (u + 12) (2 * q) 32;
+    FStar.Math.Lemmas.small_mod (u + 12) 32;
+    lemma_ser10_sh_dwords (2 * q);
+    lemma_bv_bit_mm256_sllv_epi32 y ser10_sh (64 * q + u + 12) 12
+  end
+  else begin
+    (* index 64q + u + 12 sits in dword 2q+1 (shift 0), at bit u - 20 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u - 20) 32;
+    FStar.Math.Lemmas.lemma_div_plus (u - 20) (2 * q + 1) 32;
+    FStar.Math.Lemmas.lemma_mod_plus (u - 20) (2 * q + 1) 32;
+    FStar.Math.Lemmas.small_mod (u - 20) 32;
+    lemma_ser10_sh_dwords (2 * q + 1);
+    lemma_bv_bit_mm256_sllv_epi32 y ser10_sh (64 * q + u + 12) 0
+  end
+#pop-options
+
+(* ── step 2: VPSHUFB, as an index shift ───────────────────────────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser10_shuffle_bit (b: t_Vec256) (k: nat{k < 256})
+  : Lemma (requires k % 128 < 80)
+          (ensures bv_bit (mm256_shuffle_epi8 b ser10_mask) k ==
+                   bv_bit b (if k % 128 < 40 then k else k + 24)) =
+  let h = k / 128 in
+  let u = k % 128 in
+  let nth = k / 8 in
+  let sb = k % 8 in
+  FStar.Math.Lemmas.euclidean_division_definition k 128;
+  FStar.Math.Lemmas.euclidean_division_definition k 8;
+  FStar.Math.Lemmas.euclidean_division_definition u 8;
+  (* nth == 16h + u/8, and u/8 < 10, so nth % 16 == u/8 and nth / 16 == h *)
+  FStar.Math.Lemmas.small_division_lemma_1 (u / 8) 16;
+  FStar.Math.Lemmas.lemma_div_plus (u / 8) h 16;
+  FStar.Math.Lemmas.lemma_mod_plus (u / 8) h 16;
+  FStar.Math.Lemmas.small_mod (u / 8) 16;
+  lemma_ser10_mask_bytes nth;
+  let m = v (vec256_byte ser10_mask nth) in
+  FStar.Math.Lemmas.small_mod m 16;
+  lemma_bv_bit_mm256_shuffle_epi8_sel b ser10_mask k (16 * (nth / 16) + m % 16);
+  assert (8 * (16 * (nth / 16) + m % 16) + sb == 128 * h + 8 * m + sb)
+#pop-options
+
+(* ── the gather, dispatched over the two 40-bit windows of each half ──────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser10_gather_bit (y: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires i % 128 < 80)
+          (ensures bv_bit (ser10_chain y) i ==
+                   bv_bit y (128 * (i / 128) + 32 * ((i % 128) / 20) + (i % 128) % 20)) =
+  let h = i / 128 in
+  let u = i % 128 in
+  FStar.Math.Lemmas.euclidean_division_definition i 128;
+  let b = mm256_srli_epi64 (mk_i32 12) (mm256_sllv_epi32 y ser10_sh) in
+  lemma_ser10_shuffle_bit b i;
+  if u < 40 then begin
+    (* the shuffle stays at i, whose i % 64 == u < 40 *)
+    FStar.Math.Lemmas.small_division_lemma_1 u 64;
+    FStar.Math.Lemmas.lemma_div_plus u (2 * h) 64;
+    FStar.Math.Lemmas.lemma_mod_plus u (2 * h) 64;
+    FStar.Math.Lemmas.small_mod u 64;
+    lemma_ser10_shift_bit y i
+  end
+  else begin
+    (* the shuffle moves to i+24 == 64*(2h+1) + (u-40), so (i+24) % 64 == u-40 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u - 40) 64;
+    FStar.Math.Lemmas.lemma_div_plus (u - 40) (2 * h + 1) 64;
+    FStar.Math.Lemmas.lemma_mod_plus (u - 40) (2 * h + 1) 64;
+    FStar.Math.Lemmas.small_mod (u - 40) 64;
+    lemma_ser10_shift_bit y (i + 24)
+  end
+#pop-options
+
+(* THE serialize_10 obligation, per output bit of the 256-bit chain result. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_10_gather_bits (x y: t_Vec256) (i: nat{i < 256})
+  : Lemma
+      (requires
+        i % 128 < 80 /\
+        (forall (k: nat{k < 256}).
+           bv_bit y k ==
+           (if k % 32 < 10 then bv_bit x ((k / 32) * 32 + k % 32)
+            else if k % 32 < 20 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 10))
+            else 0)))
+      (ensures bv_bit (ser10_chain y) i ==
+               bv_bit x (128 * (i / 128) + ((i % 128) / 10) * 16 + (i % 128) % 10)) =
+  let h = i / 128 in
+  let u = i % 128 in
+  lemma_ser10_gather_bit y i;
+  lemma_pack_index 10 u;
+  (* the y-index is 32 * (4h + u/20) + u%20, so its %32 is u%20 and /32 is 4h+u/20 *)
+  FStar.Math.Lemmas.small_division_lemma_1 (u % 20) 32;
+  FStar.Math.Lemmas.lemma_div_plus (u % 20) (4 * h + u / 20) 32;
+  FStar.Math.Lemmas.lemma_mod_plus (u % 20) (4 * h + u / 20) 32;
+  FStar.Math.Lemmas.small_mod (u % 20) 32
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_10_lower_bits (x y: t_Vec256) (i: nat{i < 80})
+  : Lemma
+      (requires (forall (k: nat{k < 256}).
+                   bv_bit y k ==
+                   (if k % 32 < 10 then bv_bit x ((k / 32) * 32 + k % 32)
+                    else if k % 32 < 20 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 10))
+                    else 0)))
+      (ensures bv_bit (mm256_castsi256_si128 (ser10_chain y)) i ==
+               bv_bit x ((i / 10) * 16 + i % 10)) =
+  FStar.Math.Lemmas.small_division_lemma_1 i 128;
+  FStar.Math.Lemmas.small_mod i 128;
+  lemma_bv_bit_castsi256_si128 (ser10_chain y) i;
+  lemma_serialize_10_gather_bits x y i
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_10_upper_bits (x y: t_Vec256) (i: nat{i < 80})
+  : Lemma
+      (requires (forall (k: nat{k < 256}).
+                   bv_bit y k ==
+                   (if k % 32 < 10 then bv_bit x ((k / 32) * 32 + k % 32)
+                    else if k % 32 < 20 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 10))
+                    else 0)))
+      (ensures bv_bit (mm256_extracti128_si256 (mk_i32 1) (ser10_chain y)) i ==
+               bv_bit x (128 + (i / 10) * 16 + i % 10)) =
+  FStar.Math.Lemmas.small_division_lemma_1 i 128;
+  FStar.Math.Lemmas.lemma_div_plus i 1 128;
+  FStar.Math.Lemmas.lemma_mod_plus i 1 128;
+  FStar.Math.Lemmas.small_mod i 128;
+  lemma_bv_bit_extracti128_si256_1 (ser10_chain y) i;
+  lemma_serialize_10_gather_bits x y (i + 128)
+#pop-options
+
+(* ────────────────────────────── serialize_12 ─────────────────────────────── *)
+
+unfold let ser12_sh =
+  mm256_set_epi32 (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8)
+                  (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8)
+
+unfold let ser12_mask =
+  mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+
+unfold let ser12_chain (y: t_Vec256) : t_Vec256 =
+  mm256_shuffle_epi8 (mm256_srli_epi64 (mk_i32 8) (mm256_sllv_epi32 y ser12_sh)) ser12_mask
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_ser12_sh_dwords (j: nat{j < 8})
+  : Lemma (ensures v (vec256_dword ser12_sh j) == (if j % 2 = 0 then 8 else 0)) =
+  reveal_opaque (`%mm256_set_epi32) mm256_set_epi32;
+  Canon.lemma_mm256_set_epi32 (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8)
+    (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8);
+  Canon.lemma_iv_set_epi32 (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8)
+    (mk_i32 0) (mk_i32 8) (mk_i32 0) (mk_i32 8) j
+#pop-options
+
+(* the 12 LIVE mask bytes per 128-bit half: bytes 0..5 select bytes 0..5 (the
+   48 bits of 64-bit lane 0), bytes 6..11 select bytes 8..13 (lane 1). *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_ser12_mask_bytes (nth: nat{nth < 32})
+  : Lemma (requires nth % 16 < 12)
+          (ensures v (vec256_byte ser12_mask nth) ==
+                   (if nth % 16 < 6 then nth % 16 else nth % 16 + 2)) =
+  reveal_opaque (`%mm256_set_epi8) mm256_set_epi8;
+  Canon.lemma_mm256_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0);
+  Canon.lemma_iv_set_epi8 (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0)
+    (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1)) (mk_i8 (-1))
+    (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 10)
+    (mk_i8 9) (mk_i8 8) (mk_i8 5) (mk_i8 4)
+    (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 0) nth
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser12_shift_bit (y: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires i % 64 < 48)
+          (ensures bv_bit (mm256_srli_epi64 (mk_i32 8) (mm256_sllv_epi32 y ser12_sh)) i ==
+                   bv_bit y (if i % 64 < 24 then i else i + 8)) =
+  let q = i / 64 in
+  let u = i % 64 in
+  FStar.Math.Lemmas.euclidean_division_definition i 64;
+  lemma_bv_bit_mm256_srli_epi64 (mk_i32 8) (mm256_sllv_epi32 y ser12_sh) i;
+  if u < 24 then begin
+    (* index 64q + u + 8 sits in dword 2q (shift 8), at bit u + 8 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u + 8) 32;
+    FStar.Math.Lemmas.lemma_div_plus (u + 8) (2 * q) 32;
+    FStar.Math.Lemmas.lemma_mod_plus (u + 8) (2 * q) 32;
+    FStar.Math.Lemmas.small_mod (u + 8) 32;
+    lemma_ser12_sh_dwords (2 * q);
+    lemma_bv_bit_mm256_sllv_epi32 y ser12_sh (64 * q + u + 8) 8
+  end
+  else begin
+    (* index 64q + u + 8 sits in dword 2q+1 (shift 0), at bit u - 24 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u - 24) 32;
+    FStar.Math.Lemmas.lemma_div_plus (u - 24) (2 * q + 1) 32;
+    FStar.Math.Lemmas.lemma_mod_plus (u - 24) (2 * q + 1) 32;
+    FStar.Math.Lemmas.small_mod (u - 24) 32;
+    lemma_ser12_sh_dwords (2 * q + 1);
+    lemma_bv_bit_mm256_sllv_epi32 y ser12_sh (64 * q + u + 8) 0
+  end
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser12_shuffle_bit (b: t_Vec256) (k: nat{k < 256})
+  : Lemma (requires k % 128 < 96)
+          (ensures bv_bit (mm256_shuffle_epi8 b ser12_mask) k ==
+                   bv_bit b (if k % 128 < 48 then k else k + 16)) =
+  let h = k / 128 in
+  let u = k % 128 in
+  let nth = k / 8 in
+  let sb = k % 8 in
+  FStar.Math.Lemmas.euclidean_division_definition k 128;
+  FStar.Math.Lemmas.euclidean_division_definition k 8;
+  FStar.Math.Lemmas.euclidean_division_definition u 8;
+  (* nth == 16h + u/8, and u/8 < 12, so nth % 16 == u/8 and nth / 16 == h *)
+  FStar.Math.Lemmas.small_division_lemma_1 (u / 8) 16;
+  FStar.Math.Lemmas.lemma_div_plus (u / 8) h 16;
+  FStar.Math.Lemmas.lemma_mod_plus (u / 8) h 16;
+  FStar.Math.Lemmas.small_mod (u / 8) 16;
+  lemma_ser12_mask_bytes nth;
+  let m = v (vec256_byte ser12_mask nth) in
+  FStar.Math.Lemmas.small_mod m 16;
+  lemma_bv_bit_mm256_shuffle_epi8_sel b ser12_mask k (16 * (nth / 16) + m % 16);
+  assert (8 * (16 * (nth / 16) + m % 16) + sb == 128 * h + 8 * m + sb)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_ser12_gather_bit (y: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires i % 128 < 96)
+          (ensures bv_bit (ser12_chain y) i ==
+                   bv_bit y (128 * (i / 128) + 32 * ((i % 128) / 24) + (i % 128) % 24)) =
+  let h = i / 128 in
+  let u = i % 128 in
+  FStar.Math.Lemmas.euclidean_division_definition i 128;
+  let b = mm256_srli_epi64 (mk_i32 8) (mm256_sllv_epi32 y ser12_sh) in
+  lemma_ser12_shuffle_bit b i;
+  if u < 48 then begin
+    (* the shuffle stays at i, whose i % 64 == u < 48 *)
+    FStar.Math.Lemmas.small_division_lemma_1 u 64;
+    FStar.Math.Lemmas.lemma_div_plus u (2 * h) 64;
+    FStar.Math.Lemmas.lemma_mod_plus u (2 * h) 64;
+    FStar.Math.Lemmas.small_mod u 64;
+    lemma_ser12_shift_bit y i
+  end
+  else begin
+    (* the shuffle moves to i+16 == 64*(2h+1) + (u-48), so (i+16) % 64 == u-48 *)
+    FStar.Math.Lemmas.small_division_lemma_1 (u - 48) 64;
+    FStar.Math.Lemmas.lemma_div_plus (u - 48) (2 * h + 1) 64;
+    FStar.Math.Lemmas.lemma_mod_plus (u - 48) (2 * h + 1) 64;
+    FStar.Math.Lemmas.small_mod (u - 48) 64;
+    lemma_ser12_shift_bit y (i + 16)
+  end
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_12_gather_bits (x y: t_Vec256) (i: nat{i < 256})
+  : Lemma
+      (requires
+        i % 128 < 96 /\
+        (forall (k: nat{k < 256}).
+           bv_bit y k ==
+           (if k % 32 < 12 then bv_bit x ((k / 32) * 32 + k % 32)
+            else if k % 32 < 24 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 12))
+            else 0)))
+      (ensures bv_bit (ser12_chain y) i ==
+               bv_bit x (128 * (i / 128) + ((i % 128) / 12) * 16 + (i % 128) % 12)) =
+  let h = i / 128 in
+  let u = i % 128 in
+  lemma_ser12_gather_bit y i;
+  lemma_pack_index 12 u;
+  (* the y-index is 32 * (4h + u/24) + u%24, so its %32 is u%24 and /32 is 4h+u/24 *)
+  FStar.Math.Lemmas.small_division_lemma_1 (u % 24) 32;
+  FStar.Math.Lemmas.lemma_div_plus (u % 24) (4 * h + u / 24) 32;
+  FStar.Math.Lemmas.lemma_mod_plus (u % 24) (4 * h + u / 24) 32;
+  FStar.Math.Lemmas.small_mod (u % 24) 32
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_12_lower_bits (x y: t_Vec256) (i: nat{i < 96})
+  : Lemma
+      (requires (forall (k: nat{k < 256}).
+                   bv_bit y k ==
+                   (if k % 32 < 12 then bv_bit x ((k / 32) * 32 + k % 32)
+                    else if k % 32 < 24 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 12))
+                    else 0)))
+      (ensures bv_bit (mm256_castsi256_si128 (ser12_chain y)) i ==
+               bv_bit x ((i / 12) * 16 + i % 12)) =
+  FStar.Math.Lemmas.small_division_lemma_1 i 128;
+  FStar.Math.Lemmas.small_mod i 128;
+  lemma_bv_bit_castsi256_si128 (ser12_chain y) i;
+  lemma_serialize_12_gather_bits x y i
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_serialize_12_upper_bits (x y: t_Vec256) (i: nat{i < 96})
+  : Lemma
+      (requires (forall (k: nat{k < 256}).
+                   bv_bit y k ==
+                   (if k % 32 < 12 then bv_bit x ((k / 32) * 32 + k % 32)
+                    else if k % 32 < 24 then bv_bit x ((k / 32) * 32 + 16 + (k % 32 - 12))
+                    else 0)))
+      (ensures bv_bit (mm256_extracti128_si256 (mk_i32 1) (ser12_chain y)) i ==
+               bv_bit x (128 + (i / 12) * 16 + i % 12)) =
+  FStar.Math.Lemmas.small_division_lemma_1 i 128;
+  FStar.Math.Lemmas.lemma_div_plus i 1 128;
+  FStar.Math.Lemmas.lemma_mod_plus i 1 128;
+  FStar.Math.Lemmas.small_mod i 128;
+  lemma_bv_bit_extracti128_si256_1 (ser12_chain y) i;
+  lemma_serialize_12_gather_bits x y (i + 128)
+#pop-options

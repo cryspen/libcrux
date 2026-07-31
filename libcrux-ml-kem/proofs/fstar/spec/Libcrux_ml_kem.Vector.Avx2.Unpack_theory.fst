@@ -232,3 +232,70 @@ let lemma_deserialize_4_bits (b0 b1 b2 b3 b4 b5 b6 b7: i16) (i: nat{i < 256})
    else ());
   assert (l < 16)
 #pop-options
+
+module Canon = Libcrux_core_models.Intrinsics_views
+module IVi   = Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp
+module IV    = Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
+module Funarr = Libcrux_core_models.Abstractions.Funarr
+
+(* ── `mm256_si256_from_two_si128` — the 128+128 -> 256 concatenation ─────────
+   `mm256_castsi128_si256` zero-extends into the low half and
+   `mm256_inserti128_si256 1` replaces the HIGH 128-bit lane, so the
+   composition is a pure concatenation.  Under pcm neither op had a model
+   ("the upper 128 bits are undefined"), so the wrapper carried a
+   `fstar::replace(interface)` stub — an unverified hand-written substitute for
+   the real body.  Over core-models both ops ARE modelled, so the stub goes and
+   the wrapper gets a contract proven from its actual code.
+
+   Trust accounting: `castsi128_si256` rests on the tested lift axiom
+   `Canon.lemma_castsi128_si256_lift` (same class as xor / setzero — a
+   differential-tested raw-op identity); `inserti128_si256` on the i128x2 lane
+   view plus `Canon.lemma_readback` at I128, exactly the route
+   `lemma_mm_storeu_bytes_si128` takes at U8.  Net: one `fstar::replace` stub
+   retired for one already-present tested identity.
+
+   Developed here per `feedback_develop_locally_upstream_once`; belongs next to
+   `lemma_bv_bit_castsi256_si128` / `lemma_bv_bit_extracti128_si256_1` in
+   `Avx2_ml_kem_views` once the deserialize widths have exercised it. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_castsi128_si256 (a: t_Vec128) (k: nat{k < 256})
+  : Lemma (bv_bit (mm256_castsi128_si256 a) k == (if k < 128 then bv_bit a k else 0)) =
+  reveal_opaque (`%mm256_castsi128_si256) mm256_castsi128_si256;
+  Canon.lemma_castsi128_si256_lift a
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_bv_bit_inserti128_si256_1 (a: t_Vec256) (b: t_Vec128) (k: nat{k < 256})
+  : Lemma (bv_bit (mm256_inserti128_si256 (mk_i32 1) a b) k ==
+           (if k < 128 then bv_bit a k else bv_bit b (k - 128))) =
+  reveal_opaque (`%mm256_inserti128_si256) mm256_inserti128_si256;
+  let r = mm256_inserti128_si256 (mk_i32 1) a b in
+  Canon.lemma_mm256_inserti128_si256 (mk_i32 1) a b;
+  assert (Canon.to_i128x2 r ==
+          IV.e_mm256_inserti128_si256 (mk_i32 1) (Canon.to_i128x2 a) (Canon.to_i128x1 b));
+  if k < 128 then begin
+    Canon.lemma_readback RI.I128 (mk_u64 256) (mk_u64 2) r (mk_u64 0) k;
+    Canon.lemma_readback RI.I128 (mk_u64 256) (mk_u64 2) a (mk_u64 0) k;
+    lemma_bv_bit_reader #(mk_u64 256) 128 r 0 k;
+    lemma_bv_bit_reader #(mk_u64 256) 128 a 0 k;
+    assert (Funarr.impl_5__get (mk_u64 2) #i128 (Canon.to_i128x2 r) (mk_u64 0) ==
+            Funarr.impl_5__get (mk_u64 2) #i128 (Canon.to_i128x2 a) (mk_u64 0))
+  end
+  else begin
+    Canon.lemma_readback RI.I128 (mk_u64 256) (mk_u64 2) r (mk_u64 1) (k - 128);
+    Canon.lemma_readback RI.I128 (mk_u64 128) (mk_u64 1) b (mk_u64 0) (k - 128);
+    lemma_bv_bit_reader #(mk_u64 256) 128 r 1 (k - 128);
+    lemma_bv_bit_reader #(mk_u64 128) 128 b 0 (k - 128);
+    assert (Funarr.impl_5__get (mk_u64 2) #i128 (Canon.to_i128x2 r) (mk_u64 1) ==
+            Funarr.impl_5__get (mk_u64 1) #i128 (Canon.to_i128x1 b) (mk_u64 0))
+  end
+#pop-options
+
+(* the wrapper's contract, in the form its consumers use *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_si256_from_two_si128 (lo hi: t_Vec128) (k: nat{k < 256})
+  : Lemma (bv_bit (mm256_inserti128_si256 (mk_i32 1) (mm256_castsi128_si256 lo) hi) k ==
+           (if k < 128 then bv_bit lo k else bv_bit hi (k - 128))) =
+  lemma_bv_bit_inserti128_si256_1 (mm256_castsi128_si256 lo) hi k;
+  if k < 128 then lemma_bv_bit_castsi128_si256 lo k
+#pop-options
