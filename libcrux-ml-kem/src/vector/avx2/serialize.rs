@@ -861,6 +861,7 @@ with ()
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 20"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
   Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 10 then 0
@@ -876,6 +877,7 @@ forall (i: nat {i < 256}).
              if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_coefficients0 j
              else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_coefficients0 (j - 32)))
 "#))]
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
     #[hax_lib::fstar::before(r#"[@@"opaque_to_smt"]"#)]
     fn deserialize_10_vec(lower_coefficients0: Vec128, upper_coefficients0: Vec128) -> Vec256 {
         let lower_coefficients = mm_shuffle_epi8(
@@ -887,10 +889,10 @@ forall (i: nat {i < 256}).
             mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
         );
 
-        let coefficients = mm256_si256_from_two_si128(lower_coefficients, upper_coefficients);
+        let concatenated = mm256_si256_from_two_si128(lower_coefficients, upper_coefficients);
 
-        let coefficients = mm256_mullo_epi16(
-            coefficients,
+        let scaled = mm256_mullo_epi16(
+            concatenated,
             mm256_set_epi16(
                 1 << 0,
                 1 << 2,
@@ -910,32 +912,48 @@ forall (i: nat {i < 256}).
                 1 << 6,
             ),
         );
-        let coefficients = mm256_srli_epi16::<6>(coefficients);
+        let shifted = mm256_srli_epi16::<6>(scaled);
         // Here I can prove this `and` is not useful
-        let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 10) - 1));
-        // FRONTIER (core-models migration): the pcm-era proof script here was
-        //     assert_norm (BitVec.Utils.forall256 (fun i -> $coefficients i = …))
-        // which applies a bit-vector as a FUNCTION — the index-indexed pcm
-        // `bit_vec 256`, not core-models' `t_BitVec 256`.  It no longer
-        // type-checks (Error 71), and a TYPE error is a HARD STOP: F* abandons
-        // the module at that declaration, so leaving it in place hid every
-        // later declaration from the checker.  Deleted, not ported — the port
-        // is the deserialize_10 unpack family (all its ingredients exist:
-        // `lemma_bv_bit_mm_shuffle_epi8`, the new
-        // `Unpack_theory.lemma_bv_bit_si256_from_two_si128`,
-        // `lemma_mul_pow2_bit`, `lemma_bv_bit_lane16_digit`).
-        //
-        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
-        // an Error 19 on this one function.
+        let coefficients = mm256_and_si256(shifted, mm256_set1_epi16((1 << 10) - 1));
+        proof!(
+            r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${coefficients} i
+    = ( if i % 16 >= 10 then 0
+        else let j = (i / 16) * 10 + i % 16 in
+             if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${lower_coefficients0} j
+             else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${upper_coefficients0} (j - 32))
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_10_bits
+       ${lower_coefficients0} ${upper_coefficients0} ${concatenated} i
+"#
+        );
         coefficients
     }
 
-    let lower_coefficients = &bytes[0..16];
-    let upper_coefficients = &bytes[4..20];
-    deserialize_10_vec(
-        mm_loadu_si128(lower_coefficients),
-        mm_loadu_si128(upper_coefficients),
-    )
+    let lower_bytes = &bytes[0..16];
+    let upper_bytes = &bytes[4..20];
+    let lower_coefficients = mm_loadu_si128(lower_bytes);
+    let upper_coefficients = mm_loadu_si128(upper_bytes);
+    let result = deserialize_10_vec(lower_coefficients, upper_coefficients);
+    proof!(
+        r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${result} i
+    = ( if i % 16 >= 10 then 0
+        else let j = (i / 16) * 10 + i % 16 in
+             Rust_primitives.BitVectors.bit_vec_of_int_t_array
+               (${bytes} <: t_Array u8 (sz 20)) 8 j)
+with (if i % 16 < 10
+      then (let j = (i / 16) * 10 + i % 16 in
+            if i < 128
+            then Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_mm_loadu_si128 ${lower_bytes} j
+            else (FStar.Math.Lemmas.lemma_div_plus (j - 32) 4 8;
+                  FStar.Math.Lemmas.lemma_mod_plus (j - 32) 4 8;
+                  Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_mm_loadu_si128
+                    ${upper_bytes} (j - 32))))
+"#
+    );
+    result
 }
 
 #[inline(always)]
@@ -1117,6 +1135,7 @@ with ()
 }
 
 #[inline(always)]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(fstar!(r#"Seq.length bytes == 24"#))]
 #[hax_lib::ensures(|result| fstar!(r#"forall (i: nat{i < 256}).
   Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i = (if i % 16 >= 12 then 0
@@ -1124,6 +1143,7 @@ with ()
                      bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 24)) 8 j)"#))]
 pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
     #[inline(always)]
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
     #[hax_lib::ensures(|coefficients| fstar!(r#"
 forall (i: nat {i < 256}).
       Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $coefficients i
@@ -1143,10 +1163,10 @@ forall (i: nat {i < 256}).
             mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
         );
 
-        let coefficients = mm256_si256_from_two_si128(lower_coefficients, upper_coefficients);
+        let concatenated = mm256_si256_from_two_si128(lower_coefficients, upper_coefficients);
 
-        let coefficients = mm256_mullo_epi16(
-            coefficients,
+        let scaled = mm256_mullo_epi16(
+            concatenated,
             mm256_set_epi16(
                 1 << 0,
                 1 << 4,
@@ -1166,25 +1186,44 @@ forall (i: nat {i < 256}).
                 1 << 4,
             ),
         );
-        let coefficients = mm256_srli_epi16::<4>(coefficients);
-        let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 12) - 1));
-        // FRONTIER (core-models migration): the pcm-era proof script here was
-        //     assert_norm (BitVec.Utils.forall256 (fun i -> $coefficients i = …))
-        // which applies a bit-vector as a FUNCTION — the index-indexed pcm
-        // `bit_vec 256`, not core-models' `t_BitVec 256`.  It no longer
-        // type-checks (Error 71), and a TYPE error is a HARD STOP: F* abandons
-        // the module at that declaration, so leaving it in place hid every
-        // later declaration from the checker.  Deleted, not ported — the port
-        // is the deserialize_12 unpack family (all its ingredients exist:
-        // `lemma_bv_bit_mm_shuffle_epi8`, the new
-        // `Unpack_theory.lemma_bv_bit_si256_from_two_si128`,
-        // `lemma_mul_pow2_bit`, `lemma_bv_bit_lane16_digit`).
-        //
-        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
-        // an Error 19 on this one function.
+        let shifted = mm256_srli_epi16::<4>(scaled);
+        let coefficients = mm256_and_si256(shifted, mm256_set1_epi16((1 << 12) - 1));
+        proof!(
+            r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${coefficients} i
+    = ( if i % 16 >= 12 then 0
+        else let j = (i / 16) * 12 + i % 16 in
+             if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${lower_coefficients0} j
+             else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${upper_coefficients0} (j - 64))
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_12_bits
+       ${lower_coefficients0} ${upper_coefficients0} ${concatenated} i
+"#
+        );
         coefficients
     }
-    let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
-    let upper_coefficients = mm_loadu_si128(&bytes[8..24]);
-    deserialize_12_vec(lower_coefficients, upper_coefficients)
+    let lower_bytes = &bytes[0..16];
+    let upper_bytes = &bytes[8..24];
+    let lower_coefficients = mm_loadu_si128(lower_bytes);
+    let upper_coefficients = mm_loadu_si128(upper_bytes);
+    let result = deserialize_12_vec(lower_coefficients, upper_coefficients);
+    proof!(
+        r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${result} i
+    = ( if i % 16 >= 12 then 0
+        else let j = (i / 16) * 12 + i % 16 in
+             Rust_primitives.BitVectors.bit_vec_of_int_t_array
+               (${bytes} <: t_Array u8 (sz 24)) 8 j)
+with (if i % 16 < 12
+      then (let j = (i / 16) * 12 + i % 16 in
+            if i < 128
+            then Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_mm_loadu_si128 ${lower_bytes} j
+            else (FStar.Math.Lemmas.lemma_div_plus (j - 64) 8 8;
+                  FStar.Math.Lemmas.lemma_mod_plus (j - 64) 8 8;
+                  Libcrux_intrinsics.Avx2_ml_kem_views.lemma_bv_bit_mm_loadu_si128
+                    ${upper_bytes} (j - 64))))
+"#
+    );
+    result
 }

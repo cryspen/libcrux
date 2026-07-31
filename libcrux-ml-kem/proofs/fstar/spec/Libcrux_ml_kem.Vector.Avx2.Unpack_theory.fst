@@ -466,3 +466,385 @@ let lemma_deser10_shuffle_hi_bit (a: t_Vec128) (i: nat{i < 128})
   FStar.Math.Lemmas.small_mod (deser10_bytemap (i / 8) + 6) 16;
   lemma_bv_bit_mm_shuffle_epi8_sel a deser10_hi_mask i (deser10_bytemap (i / 8) + 6)
 #pop-options
+
+(* ── deserialize_10: the unpack multipliers and the low-10 mask ─────────────
+   `mm256_set_epi16` lists lane 15 first, so lane l carries 2^(6 - 2*(l%4)).
+   After the `srli 6` that makes bit c of the result lane read bit 2*(l%4) + c
+   of the shuffled lane — a pure INDEX SHIFT, which is the shape the rest of
+   the chain composes with. *)
+unfold let deser10_mults =
+  mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+                  (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+
+unfold let deser10_mask = mm256_set1_epi16 ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1 <: i16)
+
+(* the four multiplier literals + the mask literal, as ground pow2 images.
+   Pure integer arithmetic, no vector terms. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_deser10_consts ()
+  : Lemma ((v (mk_i16 1 <<! mk_i32 0 <: i16)) % pow2 16 == pow2 0 /\
+           (v (mk_i16 1 <<! mk_i32 2 <: i16)) % pow2 16 == pow2 2 /\
+           (v (mk_i16 1 <<! mk_i32 4 <: i16)) % pow2 16 == pow2 4 /\
+           (v (mk_i16 1 <<! mk_i32 6 <: i16)) % pow2 16 == pow2 6 /\
+           v ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1 <: i16) == pow2 10 - 1) =
+  assert_norm (pow2 0 == 1); assert_norm (pow2 2 == 4); assert_norm (pow2 4 == 16);
+  assert_norm (pow2 6 == 64); assert_norm (pow2 10 == 1024); assert_norm (pow2 16 == 65536)
+#pop-options
+
+(* the ground 16-arm lane dispatch, in its own context: only the constant
+   vector is in scope. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always"
+let lemma_deser10_mult_lane (l: nat{l < 16})
+  : Lemma (ensures (v (get_lane deser10_mults l)) % pow2 16 == pow2 (6 - 2 * (l % 4))) =
+  lemma_deser10_consts ();
+  lemma_mm256_set_epi16_lanes
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 2 <: i16)
+    (mk_i16 1 <<! mk_i32 4 <: i16) (mk_i16 1 <<! mk_i32 6 <: i16);
+  (if l = 0       then assert (get_lane deser10_mults 0  == (mk_i16 1 <<! mk_i32 6 <: i16))
+   else if l = 1  then assert (get_lane deser10_mults 1  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 2  then assert (get_lane deser10_mults 2  == (mk_i16 1 <<! mk_i32 2 <: i16))
+   else if l = 3  then assert (get_lane deser10_mults 3  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 4  then assert (get_lane deser10_mults 4  == (mk_i16 1 <<! mk_i32 6 <: i16))
+   else if l = 5  then assert (get_lane deser10_mults 5  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 6  then assert (get_lane deser10_mults 6  == (mk_i16 1 <<! mk_i32 2 <: i16))
+   else if l = 7  then assert (get_lane deser10_mults 7  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 8  then assert (get_lane deser10_mults 8  == (mk_i16 1 <<! mk_i32 6 <: i16))
+   else if l = 9  then assert (get_lane deser10_mults 9  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 10 then assert (get_lane deser10_mults 10 == (mk_i16 1 <<! mk_i32 2 <: i16))
+   else if l = 11 then assert (get_lane deser10_mults 11 == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 12 then assert (get_lane deser10_mults 12 == (mk_i16 1 <<! mk_i32 6 <: i16))
+   else if l = 13 then assert (get_lane deser10_mults 13 == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 14 then assert (get_lane deser10_mults 14 == (mk_i16 1 <<! mk_i32 2 <: i16))
+   else assert (get_lane deser10_mults 15 == (mk_i16 1 <<! mk_i32 0 <: i16)))
+#pop-options
+
+(* ── the unpack spine, as a pure index shift on the (still opaque) input ──── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser10_unpack_bit (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (ensures
+      (let r = mm256_and_si256
+                 (mm256_srli_epi16 (mk_i32 6) (mm256_mullo_epi16 co deser10_mults)) deser10_mask in
+       bv_bit r i == (if i % 16 >= 10 then 0
+                      else bv_bit co ((i / 16) * 16 + 2 * ((i / 16) % 4) + i % 16)))) =
+  let msb = mm256_mullo_epi16 co deser10_mults in
+  let lsb = mm256_srli_epi16 (mk_i32 6) msb in
+  let r = mm256_and_si256 lsb deser10_mask in
+  let l = i / 16 in
+  let b = i % 16 in
+  lemma_deser10_consts ();
+  lemma_deser10_mult_lane l;
+  bit_vec_of_int_t_array_vec256_as_i16x16_lemma r 16 i;
+  assert (get_lane msb l == RI.mul_mod (get_lane co l) (get_lane deser10_mults l));
+  assert (get_lane lsb l == (cast ((cast (get_lane msb l) <: u16) >>! mk_i32 6 <: u16) <: i16));
+  assert (get_lane deser10_mask l == ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1 <: i16));
+  assert (get_lane r l == (get_lane lsb l &. get_lane deser10_mask l));
+  lemma_deser_lane (get_lane co l) (get_lane deser10_mults l)
+                   ((mk_i16 1 <<! mk_i32 10 <: i16) -! mk_i16 1 <: i16)
+                   (6 - 2 * (l % 4)) 6 10 b;
+  if b < 10 then bit_vec_of_int_t_array_vec256_as_i16x16_lemma co 16 (16 * l + 2 * (l % 4) + b)
+#pop-options
+
+(* ── the index identity that closes the gather, pure integer arithmetic ─────
+   Result lane l bit b reads shuffled flat bit d = 16*l + 2*(l%4) + b, and the
+   gather byte map sends that back to source bit 10*l + b.  Eight ground arms
+   on l (q = l/4 in {0,1} x s = l%4 in {0..3}), each with the ONE b-split at
+   the point where (18*(l%4) + b) crosses a multiple of 8. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser10_index (l: nat{l < 8}) (b: nat{b < 10})
+  : Lemma (ensures (let d = 16 * l + 2 * (l % 4) + b in
+                    8 * deser10_bytemap (d / 8) + d % 8 == 10 * l + b)) =
+  let d = 16 * l + 2 * (l % 4) + b in
+  FStar.Math.Lemmas.euclidean_division_definition d 8;
+  (if l = 0      then (if b < 8 then assert (d / 8 == 0)  else assert (d / 8 == 1))
+   else if l = 1 then (if b < 6 then assert (d / 8 == 2)  else assert (d / 8 == 3))
+   else if l = 2 then (if b < 4 then assert (d / 8 == 4)  else assert (d / 8 == 5))
+   else if l = 3 then (if b < 2 then assert (d / 8 == 6)  else assert (d / 8 == 7))
+   else if l = 4 then (if b < 8 then assert (d / 8 == 8)  else assert (d / 8 == 9))
+   else if l = 5 then (if b < 6 then assert (d / 8 == 10) else assert (d / 8 == 11))
+   else if l = 6 then (if b < 4 then assert (d / 8 == 12) else assert (d / 8 == 13))
+   else               (if b < 2 then assert (d / 8 == 14) else assert (d / 8 == 15)))
+#pop-options
+
+(* ── the gather: both halves, via the two 128-bit shuffles + the concat ───── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser10_gather_bit (lo0 up0: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             (forall (k: nat{k < 256}).
+                bv_bit co k ==
+                (if k < 128 then bv_bit (mm_shuffle_epi8 lo0 deser10_lo_mask) k
+                 else bv_bit (mm_shuffle_epi8 up0 deser10_hi_mask) (k - 128))) /\
+             i % 16 < 10)
+          (ensures
+             bv_bit co ((i / 16) * 16 + 2 * ((i / 16) % 4) + i % 16) ==
+             (let j = (i / 16) * 10 + i % 16 in
+              if i < 128 then bv_bit lo0 j else bv_bit up0 (j - 32))) =
+  let l = i / 16 in
+  let b = i % 16 in
+  if i < 128 then begin
+    assert (l < 8);
+    let d = 16 * l + 2 * (l % 4) + b in
+    assert (d < 128);
+    lemma_deser10_index l b;
+    lemma_deser10_shuffle_lo_bit lo0 d
+  end
+  else begin
+    assert (l >= 8 /\ l < 16);
+    let l' = l - 8 in
+    FStar.Math.Lemmas.lemma_mod_plus l' 2 4;
+    assert (l % 4 == l' % 4);
+    let d' = 16 * l' + 2 * (l' % 4) + b in
+    assert (16 * l + 2 * (l % 4) + b == d' + 128);
+    assert (d' < 128);
+    lemma_deser10_index l' b;
+    lemma_deser10_shuffle_hi_bit up0 d'
+  end
+#pop-options
+
+(* ── the whole `deserialize_10_vec` obligation, one index at a time ─────────
+   `co` is the 128+128 concatenation; it enters as a FREE parameter carrying
+   exactly the post `mm256_si256_from_two_si128` supplies, so the wrapper (a
+   Serialize-module function, invisible here) never has to be named. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deserialize_10_bits (lo0 up0: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             forall (k: nat{k < 256}).
+               bv_bit co k ==
+               (if k < 128 then bv_bit (mm_shuffle_epi8 lo0 deser10_lo_mask) k
+                else bv_bit (mm_shuffle_epi8 up0 deser10_hi_mask) (k - 128)))
+          (ensures
+             (let r = mm256_and_si256
+                        (mm256_srli_epi16 (mk_i32 6) (mm256_mullo_epi16 co deser10_mults))
+                        deser10_mask in
+              bv_bit r i == (if i % 16 >= 10 then 0
+                             else let j = (i / 16) * 10 + i % 16 in
+                                  if i < 128 then bv_bit lo0 j else bv_bit up0 (j - 32)))) =
+  lemma_deser10_unpack_bit co i;
+  if i % 16 < 10 then lemma_deser10_gather_bit lo0 up0 co i
+#pop-options
+
+(* ── deserialize_12: the two 128-bit gather shuffles ────────────────────────
+   Same shape as deserialize_10, one width up.  Both masks are the same byte
+   map up to the +4 offset of the high half:
+
+     lo  11,10,10,9, 8,7,7,6, 5,4,4,3, 2,1,1,0   (byte 15 first, as `mm_set_epi8`)
+     hi  15,14,14,13, 12,11,11,10, 9,8,8,7, 6,5,5,4
+
+   i.e. within each group of FOUR bytes the map is (base, base+1, base+1,
+   base+2) with base = 3 * (b / 4) — the 12-bits-per-coefficient stride, three
+   source bytes per four gathered bytes. *)
+unfold let deser12_bytemap (b: nat{b < 16}) : nat = 3 * (b / 4) + (b % 4 + 1) / 2
+
+unfold let deser12_lo_mask =
+  mm_set_epi8 (mk_i8 11) (mk_i8 10) (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 7) (mk_i8 6)
+              (mk_i8 5) (mk_i8 4) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 1) (mk_i8 0)
+
+unfold let deser12_hi_mask =
+  mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 12) (mk_i8 11) (mk_i8 11)
+              (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 5)
+              (mk_i8 4)
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser12_lo_mask_bytes (b: nat{b < 16})
+  : Lemma (ensures v (vec128_byte deser12_lo_mask b) == deser12_bytemap b) =
+  reveal_opaque (`%mm_set_epi8) mm_set_epi8;
+  Canon.lemma_mm_set_epi8 (mk_i8 11) (mk_i8 10) (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 7) (mk_i8 7)
+    (mk_i8 6) (mk_i8 5) (mk_i8 4) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 1) (mk_i8 0);
+  Canon.lemma_iv_mm_set_epi8 (mk_i8 11) (mk_i8 10) (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 7)
+    (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 4) (mk_i8 4) (mk_i8 3) (mk_i8 2) (mk_i8 1) (mk_i8 1)
+    (mk_i8 0) b
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_deser12_hi_mask_bytes (b: nat{b < 16})
+  : Lemma (ensures v (vec128_byte deser12_hi_mask b) == deser12_bytemap b + 4) =
+  reveal_opaque (`%mm_set_epi8) mm_set_epi8;
+  Canon.lemma_mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 12) (mk_i8 11)
+    (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 5)
+    (mk_i8 4);
+  Canon.lemma_iv_mm_set_epi8 (mk_i8 15) (mk_i8 14) (mk_i8 14) (mk_i8 13) (mk_i8 12) (mk_i8 11)
+    (mk_i8 11) (mk_i8 10) (mk_i8 9) (mk_i8 8) (mk_i8 8) (mk_i8 7) (mk_i8 6) (mk_i8 5) (mk_i8 5)
+    (mk_i8 4) b
+#pop-options
+
+(* the two gathers, each as a pure index shift *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser12_shuffle_lo_bit (a: t_Vec128) (i: nat{i < 128})
+  : Lemma (ensures bv_bit (mm_shuffle_epi8 a deser12_lo_mask) i ==
+                   bv_bit a (8 * deser12_bytemap (i / 8) + i % 8)) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_deser12_lo_mask_bytes (i / 8);
+  FStar.Math.Lemmas.small_mod (deser12_bytemap (i / 8)) 16;
+  lemma_bv_bit_mm_shuffle_epi8_sel a deser12_lo_mask i (deser12_bytemap (i / 8))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser12_shuffle_hi_bit (a: t_Vec128) (i: nat{i < 128})
+  : Lemma (ensures bv_bit (mm_shuffle_epi8 a deser12_hi_mask) i ==
+                   bv_bit a (8 * (deser12_bytemap (i / 8) + 4) + i % 8)) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_deser12_hi_mask_bytes (i / 8);
+  FStar.Math.Lemmas.small_mod (deser12_bytemap (i / 8) + 4) 16;
+  lemma_bv_bit_mm_shuffle_epi8_sel a deser12_hi_mask i (deser12_bytemap (i / 8) + 4)
+#pop-options
+
+(* ── deserialize_12: the unpack multipliers and the low-12 mask ─────────────
+   Lane l carries 2^(4 - 4*(l%2)); after the `srli 4` bit c of the result lane
+   reads bit 4*(l%2) + c of the shuffled lane. *)
+unfold let deser12_mults =
+  mm256_set_epi16 (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+                  (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+
+unfold let deser12_mask = mm256_set1_epi16 ((mk_i16 1 <<! mk_i32 12 <: i16) -! mk_i16 1 <: i16)
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+let lemma_deser12_consts ()
+  : Lemma ((v (mk_i16 1 <<! mk_i32 0 <: i16)) % pow2 16 == pow2 0 /\
+           (v (mk_i16 1 <<! mk_i32 4 <: i16)) % pow2 16 == pow2 4 /\
+           v ((mk_i16 1 <<! mk_i32 12 <: i16) -! mk_i16 1 <: i16) == pow2 12 - 1) =
+  assert_norm (pow2 0 == 1); assert_norm (pow2 4 == 16);
+  assert_norm (pow2 12 == 4096); assert_norm (pow2 16 == 65536)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always"
+let lemma_deser12_mult_lane (l: nat{l < 16})
+  : Lemma (ensures (v (get_lane deser12_mults l)) % pow2 16 == pow2 (4 - 4 * (l % 2))) =
+  lemma_deser12_consts ();
+  lemma_mm256_set_epi16_lanes
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16)
+    (mk_i16 1 <<! mk_i32 0 <: i16) (mk_i16 1 <<! mk_i32 4 <: i16);
+  (if l = 0       then assert (get_lane deser12_mults 0  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 1  then assert (get_lane deser12_mults 1  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 2  then assert (get_lane deser12_mults 2  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 3  then assert (get_lane deser12_mults 3  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 4  then assert (get_lane deser12_mults 4  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 5  then assert (get_lane deser12_mults 5  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 6  then assert (get_lane deser12_mults 6  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 7  then assert (get_lane deser12_mults 7  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 8  then assert (get_lane deser12_mults 8  == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 9  then assert (get_lane deser12_mults 9  == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 10 then assert (get_lane deser12_mults 10 == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 11 then assert (get_lane deser12_mults 11 == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 12 then assert (get_lane deser12_mults 12 == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else if l = 13 then assert (get_lane deser12_mults 13 == (mk_i16 1 <<! mk_i32 0 <: i16))
+   else if l = 14 then assert (get_lane deser12_mults 14 == (mk_i16 1 <<! mk_i32 4 <: i16))
+   else assert (get_lane deser12_mults 15 == (mk_i16 1 <<! mk_i32 0 <: i16)))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser12_unpack_bit (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (ensures
+      (let r = mm256_and_si256
+                 (mm256_srli_epi16 (mk_i32 4) (mm256_mullo_epi16 co deser12_mults)) deser12_mask in
+       bv_bit r i == (if i % 16 >= 12 then 0
+                      else bv_bit co ((i / 16) * 16 + 4 * ((i / 16) % 2) + i % 16)))) =
+  let msb = mm256_mullo_epi16 co deser12_mults in
+  let lsb = mm256_srli_epi16 (mk_i32 4) msb in
+  let r = mm256_and_si256 lsb deser12_mask in
+  let l = i / 16 in
+  let b = i % 16 in
+  lemma_deser12_consts ();
+  lemma_deser12_mult_lane l;
+  bit_vec_of_int_t_array_vec256_as_i16x16_lemma r 16 i;
+  assert (get_lane msb l == RI.mul_mod (get_lane co l) (get_lane deser12_mults l));
+  assert (get_lane lsb l == (cast ((cast (get_lane msb l) <: u16) >>! mk_i32 4 <: u16) <: i16));
+  assert (get_lane deser12_mask l == ((mk_i16 1 <<! mk_i32 12 <: i16) -! mk_i16 1 <: i16));
+  assert (get_lane r l == (get_lane lsb l &. get_lane deser12_mask l));
+  lemma_deser_lane (get_lane co l) (get_lane deser12_mults l)
+                   ((mk_i16 1 <<! mk_i32 12 <: i16) -! mk_i16 1 <: i16)
+                   (4 - 4 * (l % 2)) 4 12 b;
+  if b < 12 then bit_vec_of_int_t_array_vec256_as_i16x16_lemma co 16 (16 * l + 4 * (l % 2) + b)
+#pop-options
+
+(* the index identity: eight ground arms on l, each with the ONE b-split at the
+   point where (4*(l%2) + b) crosses a multiple of 8. *)
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser12_index (l: nat{l < 8}) (b: nat{b < 12})
+  : Lemma (ensures (let d = 16 * l + 4 * (l % 2) + b in
+                    8 * deser12_bytemap (d / 8) + d % 8 == 12 * l + b)) =
+  let d = 16 * l + 4 * (l % 2) + b in
+  FStar.Math.Lemmas.euclidean_division_definition d 8;
+  (if l = 0      then (if b < 8 then assert (d / 8 == 0)  else assert (d / 8 == 1))
+   else if l = 1 then (if b < 4 then assert (d / 8 == 2)  else assert (d / 8 == 3))
+   else if l = 2 then (if b < 8 then assert (d / 8 == 4)  else assert (d / 8 == 5))
+   else if l = 3 then (if b < 4 then assert (d / 8 == 6)  else assert (d / 8 == 7))
+   else if l = 4 then (if b < 8 then assert (d / 8 == 8)  else assert (d / 8 == 9))
+   else if l = 5 then (if b < 4 then assert (d / 8 == 10) else assert (d / 8 == 11))
+   else if l = 6 then (if b < 8 then assert (d / 8 == 12) else assert (d / 8 == 13))
+   else               (if b < 4 then assert (d / 8 == 14) else assert (d / 8 == 15)))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deser12_gather_bit (lo0 up0: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             (forall (k: nat{k < 256}).
+                bv_bit co k ==
+                (if k < 128 then bv_bit (mm_shuffle_epi8 lo0 deser12_lo_mask) k
+                 else bv_bit (mm_shuffle_epi8 up0 deser12_hi_mask) (k - 128))) /\
+             i % 16 < 12)
+          (ensures
+             bv_bit co ((i / 16) * 16 + 4 * ((i / 16) % 2) + i % 16) ==
+             (let j = (i / 16) * 12 + i % 16 in
+              if i < 128 then bv_bit lo0 j else bv_bit up0 (j - 64))) =
+  let l = i / 16 in
+  let b = i % 16 in
+  if i < 128 then begin
+    assert (l < 8);
+    let d = 16 * l + 4 * (l % 2) + b in
+    assert (d < 128);
+    lemma_deser12_index l b;
+    lemma_deser12_shuffle_lo_bit lo0 d
+  end
+  else begin
+    assert (l >= 8 /\ l < 16);
+    let l' = l - 8 in
+    FStar.Math.Lemmas.lemma_mod_plus l' 4 2;
+    assert (l % 2 == l' % 2);
+    let d' = 16 * l' + 4 * (l' % 2) + b in
+    assert (16 * l + 4 * (l % 2) + b == d' + 128);
+    assert (d' < 128);
+    lemma_deser12_index l' b;
+    lemma_deser12_shuffle_hi_bit up0 d'
+  end
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
+let lemma_deserialize_12_bits (lo0 up0: t_Vec128) (co: t_Vec256) (i: nat{i < 256})
+  : Lemma (requires
+             forall (k: nat{k < 256}).
+               bv_bit co k ==
+               (if k < 128 then bv_bit (mm_shuffle_epi8 lo0 deser12_lo_mask) k
+                else bv_bit (mm_shuffle_epi8 up0 deser12_hi_mask) (k - 128)))
+          (ensures
+             (let r = mm256_and_si256
+                        (mm256_srli_epi16 (mk_i32 4) (mm256_mullo_epi16 co deser12_mults))
+                        deser12_mask in
+              bv_bit r i == (if i % 16 >= 12 then 0
+                             else let j = (i / 16) * 12 + i % 16 in
+                                  if i < 128 then bv_bit lo0 j else bv_bit up0 (j - 64)))) =
+  lemma_deser12_unpack_bit co i;
+  if i % 16 < 12 then lemma_deser12_gather_bit lo0 up0 co i
+#pop-options
