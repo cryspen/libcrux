@@ -126,8 +126,9 @@ BitVecEq.bit_vec_equal_intro
 // That is stale -- there is no panic_free/lax attribute here and
 // `fstar_admits` reports no admit in this module beyond hax's generated
 // `Copy` instance, so the post below is genuinely proof obligation, not
-// an assumption.  The proof block itself is still pcm-era and is the
-// module's current failure frontier; see the session-11 status doc.
+// an assumption.  The proof block below has since been migrated off pcm
+// to core-models and is PROVEN (cold, rlimit 6.8/80) -- it is no longer
+// the module's frontier; `Vector.Avx2` verifies end to end.
 #[inline(always)]
 #[hax_lib::requires(bytes.len() >= 32)]
 #[hax_lib::ensures(|_| fstar!(r#"
@@ -140,23 +141,47 @@ BitVecEq.bit_vec_equal_intro
         (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${x}.f_elements) head))
 "#))]
 pub(super) fn to_bytes(x: SIMD256Vector, bytes: &mut [u8]) {
+    // Proof-only snapshot: the store rebinds `bytes`, so without this the
+    // store bridge has no way to name its pre-state operand.
+    #[cfg(hax)]
+    let bytes_pre: &[u8] = &*bytes;
+
     mm256_storeu_si256_u8(&mut bytes[0..32], x.elements);
-    // `update_at_range`'s post gives `head == stored bytes` and length
-    // preservation; the intrinsic gives `head`'s bit-vec == x.elements; and
-    // the i16x16 view of x.elements is bit-for-bit x.elements — so the i16
-    // and byte views share a bit vector (`to_le_bytes_post_N`).
+
+    // Mirror of `from_bytes`, plus the sub-slice framing.  `to_le_bytes_post_N`
+    // unfolds to an equality of two bit_vec FUNCTIONS, so it needs a pointwise
+    // intro.  Per index i < 256:
+    //   bit_vec_of_int_t_array (vec256_as_i16x16 elts) 16 i
+    //     == bv_bit elts i                    (readback lemma + euclidean at 16)
+    //     == bit_vec_of_int_t_array stored 8 i (the u8 store's bit lemma)
+    //     == bit_vec_of_int_t_array head_arr 8 i
+    // where `update_at_range`'s frame gives `Seq.slice bytes_future 0 32 == stored`.
     proof!(
         r#"
+let range = { Core_models.Ops.Range.f_start = mk_usize 0;
+              Core_models.Ops.Range.f_end = mk_usize 32 } in
+let src : t_Slice u8 = ${bytes_pre}.[ range ] in
+assert (Seq.length src == 32);
+let stored : t_Slice u8 = Libcrux_intrinsics.Avx2.mm256_storeu_si256_u8 src ${x}.f_elements in
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_storeu_si256_u8 src ${x}.f_elements;
+Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+    ${bytes_pre} range stored;
+assert (Seq.length ${bytes} == Seq.length ${bytes_pre});
+Seq.lemma_eq_intro (Seq.slice ${bytes} 0 32) stored;
+let head_arr : t_Array u8 (mk_usize 32) = Seq.slice ${bytes} 0 32 in
 introduce forall (i: nat{i < 256}).
     Rust_primitives.BitVectors.bit_vec_of_int_t_array
       (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${x}.f_elements) 16 i
-    == ${x}.f_elements i
-with Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
-       ${x}.f_elements 16 i;
+    == Rust_primitives.BitVectors.bit_vec_of_int_t_array head_arr 8 i
+with (
+  FStar.Math.Lemmas.euclidean_division_definition i 16;
+  Libcrux_intrinsics.Avx2_ml_kem_views.bit_vec_of_int_t_array_vec256_as_i16x16_lemma
+    ${x}.f_elements 16 i
+);
 BitVecEq.bit_vec_equal_intro
   (Rust_primitives.BitVectors.bit_vec_of_int_t_array
      (Libcrux_intrinsics.Avx2_ml_kem_views.vec256_as_i16x16 ${x}.f_elements) 16)
-  ${x}.f_elements"#
+  (Rust_primitives.BitVectors.bit_vec_of_int_t_array head_arr 8)"#
     );
 }
 
