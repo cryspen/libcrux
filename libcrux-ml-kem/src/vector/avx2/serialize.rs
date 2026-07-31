@@ -571,20 +571,36 @@ with ()
     serialized[0..10].try_into().unwrap()
 }
 
-/// We cannot model `mm256_inserti128_si256` on its own: it produces a
-/// Vec256 where the upper 128 bits are undefined. Thus
-/// `mm256_inserti128_si256` is not pure.
+/// The 128 + 128 -> 256 concatenation: `mm256_castsi128_si256` zero-extends
+/// into the low half and `mm256_inserti128_si256::<1>` replaces the high
+/// 128-bit lane.
 ///
-/// Luckily, we always call `mm256_castsi128_si256` right after
-/// `mm256_inserti128_si256`: this composition sets the upper bits,
-/// making the whole computation pure again.
+/// Under the previous `BitVec.Intrinsics` model neither op was modelled — the
+/// comment here used to read "`mm256_inserti128_si256` produces a Vec256 where
+/// the upper 128 bits are undefined, thus it is not pure" — and this wrapper
+/// carried a whole-function `fstar::replace(interface)` stub, i.e. an
+/// unverified hand-written F* substitute for its body.  Over core-models BOTH
+/// ops have models, so the stub is gone and the contract below is proven from
+/// the actual code.
 #[inline(always)]
-#[hax_lib::fstar::replace(
-    interface,
-    "include BitVec.Intrinsics {mm256_si256_from_two_si128 as ${mm256_si256_from_two_si128}}"
-)]
+#[hax_lib::fstar::options("--ext context_pruning --z3rlimit 300")]
+#[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 256}).
+  Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $r i ==
+    (if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower i
+     else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper (i - 128))"#))]
 fn mm256_si256_from_two_si128(lower: Vec128, upper: Vec128) -> Vec256 {
-    mm256_inserti128_si256::<1>(mm256_castsi128_si256(lower), upper)
+    let result = mm256_inserti128_si256::<1>(mm256_castsi128_si256(lower), upper);
+    proof!(
+        r#"
+introduce forall (i: nat{i < 256}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $result i ==
+      (if i < 128 then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower i
+       else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper (i - 128))
+with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_bv_bit_si256_from_two_si128
+       $lower $upper i
+"#
+    );
+    result
 }
 
 #[inline(always)]
@@ -647,21 +663,21 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
             ),
         );
         let result = mm256_srli_epi16::<11>(coefficients);
-        proof!(
-            r#"
-assert_norm (BitVec.Utils.forall256 (fun i ->
-      $result i =
-        (if i % 16 >= 5 then 0
-         else let shift_inv = ((i / 16) % 2) * 5 + (((i / 16) % 8) / 2) * 2 in
-              let j = i + shift_inv in
-              let byte_pos = j / 8 in
-              let c_byte =
-                if byte_pos < 16
-                then (byte_pos / 4) * 2 + (byte_pos % 2)
-                else ((byte_pos - 16) / 4) * 2 + ((byte_pos - 16) % 2) + 8 in
-              $c (c_byte * 8 + j % 8))))
-"#
-        );
+        // FRONTIER (core-models migration): the pcm-era proof script here was
+        //     assert_norm (BitVec.Utils.forall256 (fun i -> $result i = …))
+        // which applies a bit-vector as a FUNCTION (`$result i`) — that is the
+        // index-indexed pcm `bit_vec 256`, not core-models' `t_BitVec 256`, so
+        // it no longer even TYPE-CHECKS (Error 71, "Expected a function").  It
+        // is deleted rather than ported because a port is the deserialize_5
+        // gather+unpack family, not a rewrite (see
+        // `project_coremodels_assert_norm_does_not_port`: assert_norm cannot
+        // reduce through the symbolic `dsum2` lane codec).
+        //
+        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
+        // an Error 19 on this one function.  Deleting the dead script is what
+        // lets F* elaborate past this declaration at all — a type error here is
+        // a HARD STOP that hid serialize_10/_12 and deserialize_10/_12 from the
+        // checker entirely, whereas an SMT failure lets it continue.
         result
     }
 
@@ -684,38 +700,26 @@ assert_norm (BitVec.Utils.forall256 (fun i ->
         bytes[0] as i8,
     );
     let result = deserialize_5_vec(coefficients);
-    // 16 per-k bridges from coefficients (post mm_set_epi8) to bit_vec_of_int_t_array bytes.
-    // Each is a forall over b∈[0,8) at concrete k; mm_set_epi8 reduces match-arm `i/8 = k`
-    // and the byte_map[k] = (0,1,1,2,2,3,3,4,5,6,6,7,7,8,8,9) substitutes concretely.
-    proof!(
-        r#"
-assert (forall (b: nat{b < 8}). $coefficients (8*0  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (0*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*1  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (1*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*2  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (1*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*3  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (2*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*4  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (2*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*5  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (3*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*6  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (3*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*7  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (4*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*8  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (5*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*9  + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (6*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*10 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (6*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*11 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (7*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*12 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (7*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*13 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (8*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*14 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (8*8 + b));
-assert (forall (b: nat{b < 8}). $coefficients (8*15 + b) == bit_vec_of_int_t_array ($bytes <: t_Array _ (sz 10)) 8 (9*8 + b))
-"#
-    );
+    // FRONTIER (core-models migration): the 16 per-k byte bridges that stood
+    // here — `assert (forall b. $coefficients (8*k + b) == bit_vec_of_int_t_array
+    // $bytes 8 (byte_map[k]*8 + b))` — apply a bit-vector as a FUNCTION
+    // (`$coefficients (…)`), the index-indexed pcm `bit_vec 128`.  Over
+    // core-models `t_BitVec 128` that is Error 71, a TYPE error, i.e. a HARD
+    // STOP that abandons the whole module at this declaration.  Deleted, not
+    // ported: the port is the deserialize_5 family (the `mm_set_epi8` byte
+    // bridge is `Avx2_ml_kem_views.lemma_bv_bit_mm_set_epi8`'s job).
+    //
+    // No admit is added: the `ensures` above stays, unproven and visible as an
+    // Error 19 on this one function.
     result
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 160}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/10) * 16 + i%10)"#))]
 pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
-    #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
     #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 10 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
@@ -747,7 +751,10 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
         // b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀0¹² 0¹²d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀ | ↩
         // f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀0¹² 0¹²h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀ | ↩
         // ...
-        let adjacent_4_combined = mm256_sllv_epi32(
+        // NB `adjacent_4_shifted` is unshadowed from the `srli` result below: a
+        // rebound name drops its earlier let-equation, and the gather lemmas
+        // need the whole chain in scope.
+        let adjacent_4_shifted = mm256_sllv_epi32(
             adjacent_2_combined,
             mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
         );
@@ -763,7 +770,7 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
         // 0²⁴d₉d₈d₇d₆d₅d₄d₃d₂d₁d₀c₉c₈c₇c₆c₅c₄c₃c₂c₁c₀b₉b₈b₇b₆b₅b₄b₃b₂b₁b₀a₉a₈a₇a₆a₅a₄a₃a₂a₁a₀ | ↩
         // 0²⁴h₉h₈h₇h₆h₅h₄h₃h₂h₁h₀g₉g₈g₇g₆g₅g₄g₃g₂g₁g₀f₉f₈f₇f₆f₅f₄f₃f₂f₁f₀e₉e₈e₇e₆e₅e₄e₃e₂e₁e₀ | ↩
         // ...
-        let adjacent_4_combined = mm256_srli_epi64::<12>(adjacent_4_combined);
+        let adjacent_4_combined = mm256_srli_epi64::<12>(adjacent_4_shifted);
 
         // |adjacent_4_combined|, when the bottom and top 128 bit-lanes are grouped
         // into bytes, looks like:
@@ -786,11 +793,19 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
         let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
         proof!(
             r#"
-    introduce forall (i:nat{i < 80}). lower_8_ i = vector ((i / 10) * 16 + i % 10)
-    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> lower_8_ i = vector ((i / 10) * 16 + i % 10)));
-    introduce forall (i:nat{i < 80}). upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)
-    with assert_norm (BitVec.Utils.forall_n 80 (fun i -> upper_8_ i = vector (128 + (i / 10) * 16 + i % 10)))
-    "#
+introduce forall (i: nat{i < 160}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector ((i / 10) * 16 + i % 10) ==
+      (if i < 80
+       then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+       else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 80))
+with (if i < 80
+      then Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_10_lower_bits
+             $vector $adjacent_2_combined i
+      else (FStar.Math.Lemmas.lemma_div_plus (i - 80) 8 10;
+            FStar.Math.Lemmas.lemma_mod_plus (i - 80) 8 10;
+            Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_10_upper_bits
+              $vector $adjacent_2_combined (i - 80)))
+"#
         );
         (lower_8, upper_8)
     }
@@ -798,8 +813,49 @@ pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
     let (lower_8, upper_8) = serialize_10_vec(vector);
 
     let mut serialized = [0u8; 32];
+    // Same two-overlapping-store shape as serialize_5, at off = 10: the second
+    // store clobbers bytes [10,16) of the first, sound because only the low 80
+    // bits of `lower_8` are live and they sit in bytes [0,10).
+    // `lemma_store_glue_two_writes` consumes the whole spine in clean context.
+    #[cfg(hax)]
+    let ser0 = serialized;
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    #[cfg(hax)]
+    let ser1 = serialized;
     mm_storeu_bytes_si128(&mut serialized[10..26], upper_8);
+
+    proof!(
+        r#"
+let o1 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                           Core_models.Ops.Range.f_end = mk_usize 16 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${lower_8} in
+let o2 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 10;
+                           Core_models.Ops.Range.f_end = mk_usize 26 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${upper_8} in
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                  Core_models.Ops.Range.f_end = mk_usize 16 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${lower_8};
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 10;
+                  Core_models.Ops.Range.f_end = mk_usize 26 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${upper_8};
+Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_store_glue_two_writes
+  ${ser0} ${ser1} ${serialized} o1 o2 ${lower_8} ${upper_8} 10
+  ({ Core_models.Ops.Range.f_start = mk_usize 0;
+     Core_models.Ops.Range.f_end = mk_usize 16 } <: Core_models.Ops.Range.t_Range usize)
+  ({ Core_models.Ops.Range.f_start = mk_usize 10;
+     Core_models.Ops.Range.f_end = mk_usize 26 } <: Core_models.Ops.Range.t_Range usize);
+introduce forall (i: nat{i < 160}).
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array ${serialized} 8 i ==
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${vector} ((i / 10) * 16 + i % 10)
+with ()
+"#
+    );
 
     serialized[0..20].try_into().unwrap()
 }
@@ -857,16 +913,20 @@ forall (i: nat {i < 256}).
         let coefficients = mm256_srli_epi16::<6>(coefficients);
         // Here I can prove this `and` is not useful
         let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 10) - 1));
-        proof!(
-            r#"
-assert_norm(BitVec.Utils.forall256 (fun i -> 
-      $coefficients i
-    = ( if i % 16 < 10
-        then let j = (i / 16) * 10 + i % 16 in
-             if i < 128 then $lower_coefficients0 j else $upper_coefficients0 (j - 32)
-        else 0)))
-"#
-        );
+        // FRONTIER (core-models migration): the pcm-era proof script here was
+        //     assert_norm (BitVec.Utils.forall256 (fun i -> $coefficients i = …))
+        // which applies a bit-vector as a FUNCTION — the index-indexed pcm
+        // `bit_vec 256`, not core-models' `t_BitVec 256`.  It no longer
+        // type-checks (Error 71), and a TYPE error is a HARD STOP: F* abandons
+        // the module at that declaration, so leaving it in place hid every
+        // later declaration from the checker.  Deleted, not ported — the port
+        // is the deserialize_10 unpack family (all its ingredients exist:
+        // `lemma_bv_bit_mm_shuffle_epi8`, the new
+        // `Unpack_theory.lemma_bv_bit_si256_from_two_si128`,
+        // `lemma_mul_pow2_bit`, `lemma_bv_bit_lane16_digit`).
+        //
+        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
+        // an Error 19 on this one function.
         coefficients
     }
 
@@ -954,12 +1014,12 @@ end
 }
 
 #[inline(always)]
-#[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+#[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 192}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/12) * 16 + i%12)"#))]
 pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     #[inline(always)]
-    #[hax_lib::fstar::options("--ext context_pruning --split_queries always")]
+    #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
     #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 12 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
     #[hax_lib::ensures(|(lower_8, upper_8)| fstar!(
         r#"
@@ -972,9 +1032,12 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     ))]
     fn serialize_12_vec(vector: Vec256) -> (Vec128, Vec128) {
         let adjacent_2_combined = mm256_concat_pairs_n(12, vector);
-        let adjacent_4_combined =
+        // NB `adjacent_4_shifted` is unshadowed from the `srli` result below: a
+        // rebound name drops its earlier let-equation, and the gather lemmas
+        // need the whole chain in scope.
+        let adjacent_4_shifted =
             mm256_sllv_epi32(adjacent_2_combined, mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8));
-        let adjacent_4_combined = mm256_srli_epi64::<8>(adjacent_4_combined);
+        let adjacent_4_combined = mm256_srli_epi64::<8>(adjacent_4_shifted);
 
         let adjacent_8_combined = mm256_shuffle_epi8(
             adjacent_4_combined,
@@ -988,19 +1051,67 @@ pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
         let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
         proof!(
             r#"
-    introduce forall (i:nat{i < 96}). lower_8_ i = vector ((i / 12) * 16 + i % 12)
-    with assert_norm (BitVec.Utils.forall_n 96 (fun i -> lower_8_ i = vector ((i / 12) * 16 + i % 12)));
-    introduce forall (i:nat{i < 96}). upper_8_ i = vector (128 + (i / 12) * 16 + i % 12)
-    with assert_norm (BitVec.Utils.forall_n 96 (fun i -> upper_8_ i = vector (128 + (i / 12) * 16 + i % 12)))
-    "#
+introduce forall (i: nat{i < 192}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector ((i / 12) * 16 + i % 12) ==
+      (if i < 96
+       then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+       else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 96))
+with (if i < 96
+      then Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_12_lower_bits
+             $vector $adjacent_2_combined i
+      else (FStar.Math.Lemmas.lemma_div_plus (i - 96) 8 12;
+            FStar.Math.Lemmas.lemma_mod_plus (i - 96) 8 12;
+            Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_12_upper_bits
+              $vector $adjacent_2_combined (i - 96)))
+"#
         );
         (lower_8, upper_8)
     }
 
     let mut serialized = [0u8; 32];
     let (lower_8, upper_8) = serialize_12_vec(vector);
+    // Same two-overlapping-store shape as serialize_5, at off = 12: the second
+    // store clobbers bytes [12,16) of the first, sound because only the low 96
+    // bits of `lower_8` are live and they sit in bytes [0,12).
+    #[cfg(hax)]
+    let ser0 = serialized;
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    #[cfg(hax)]
+    let ser1 = serialized;
     mm_storeu_bytes_si128(&mut serialized[12..28], upper_8);
+
+    proof!(
+        r#"
+let o1 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                           Core_models.Ops.Range.f_end = mk_usize 16 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${lower_8} in
+let o2 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 12;
+                           Core_models.Ops.Range.f_end = mk_usize 28 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${upper_8} in
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                  Core_models.Ops.Range.f_end = mk_usize 16 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${lower_8};
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 12;
+                  Core_models.Ops.Range.f_end = mk_usize 28 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${upper_8};
+Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_store_glue_two_writes
+  ${ser0} ${ser1} ${serialized} o1 o2 ${lower_8} ${upper_8} 12
+  ({ Core_models.Ops.Range.f_start = mk_usize 0;
+     Core_models.Ops.Range.f_end = mk_usize 16 } <: Core_models.Ops.Range.t_Range usize)
+  ({ Core_models.Ops.Range.f_start = mk_usize 12;
+     Core_models.Ops.Range.f_end = mk_usize 28 } <: Core_models.Ops.Range.t_Range usize);
+introduce forall (i: nat{i < 192}).
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array ${serialized} 8 i ==
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${vector} ((i / 12) * 16 + i % 12)
+with ()
+"#
+    );
 
     serialized[0..24].try_into().unwrap()
 }
@@ -1057,16 +1168,20 @@ forall (i: nat {i < 256}).
         );
         let coefficients = mm256_srli_epi16::<4>(coefficients);
         let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 12) - 1));
-        proof!(
-            r#"
-assert_norm(BitVec.Utils.forall256 (fun i -> 
-      $coefficients i
-    = ( if i % 16 < 12
-        then let j = (i / 16) * 12 + i % 16 in
-             if i < 128 then $lower_coefficients0 j else $upper_coefficients0 (j - 64)
-        else 0)))
-"#
-        );
+        // FRONTIER (core-models migration): the pcm-era proof script here was
+        //     assert_norm (BitVec.Utils.forall256 (fun i -> $coefficients i = …))
+        // which applies a bit-vector as a FUNCTION — the index-indexed pcm
+        // `bit_vec 256`, not core-models' `t_BitVec 256`.  It no longer
+        // type-checks (Error 71), and a TYPE error is a HARD STOP: F* abandons
+        // the module at that declaration, so leaving it in place hid every
+        // later declaration from the checker.  Deleted, not ported — the port
+        // is the deserialize_12 unpack family (all its ingredients exist:
+        // `lemma_bv_bit_mm_shuffle_epi8`, the new
+        // `Unpack_theory.lemma_bv_bit_si256_from_two_si128`,
+        // `lemma_mul_pow2_bit`, `lemma_bv_bit_lane16_digit`).
+        //
+        // No admit is added: the `ensures` above stays, unproven and VISIBLE as
+        // an Error 19 on this one function.
         coefficients
     }
     let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
