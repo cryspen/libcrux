@@ -746,3 +746,60 @@ let lemma_store_glue_bits
     assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array o2 8 j == bv_bit hi j)
   end
 #pop-options
+
+(* ── the two-store SPINE, in clean context ─────────────────────────────────
+   `lemma_store_glue_bits` above consumes the per-byte frame facts.  Supplying
+   those in the CONSUMER drags `update_at_range`, the two slice reads and the
+   unbounded `forall (j: nat)` of `lemma_index_update_at_range` into the
+   consumer's WP — measured to saturate `serialize_5_` at 400.000 even with
+   `#restart-solver`, i.e. structural, not solver state.
+
+   This lemma swallows the whole spine instead.  The caller passes the two
+   array snapshots plus the two store results and discharges the two `==`
+   hypotheses from its own let-equations (ground congruence); everything
+   about `update_at_range` stays here, and what comes back is the finished
+   per-bit `forall`.  Shared verbatim by serialize_5 / _10 / _12, which differ
+   only in `off` (5 / 10 / 12) and hence in the returned prefix width. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_store_glue_two_writes
+      (ser0 ser1 fin: t_Array u8 (mk_usize 32))
+      (o1 o2: t_Array u8 (mk_usize 16))
+      (lo hi: t_Vec128)
+      (off: nat{1 <= off /\ off <= 16})
+      (r0:
+        Core_models.Ops.Range.t_Range usize
+          { v r0.Core_models.Ops.Range.f_start == 0 /\
+            v r0.Core_models.Ops.Range.f_end == 16 })
+      (r1:
+        Core_models.Ops.Range.t_Range usize
+          { v r1.Core_models.Ops.Range.f_start == off /\
+            v r1.Core_models.Ops.Range.f_end == off + 16 })
+  : Lemma
+      (requires
+        ser1 == Rust_primitives.Hax.Monomorphized_update_at.update_at_range
+                  (ser0 <: t_Slice u8) r0 (o1 <: t_Slice u8) /\
+        fin == Rust_primitives.Hax.Monomorphized_update_at.update_at_range
+                 (ser1 <: t_Slice u8) r1 (o2 <: t_Slice u8) /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array o1 8 j == bv_bit lo j) /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array o2 8 j == bv_bit hi j))
+      (ensures
+        forall (i: nat{i < 16 * off}).
+          Rust_primitives.BitVectors.bit_vec_of_int_t_array fin 8 i ==
+          (if i < 8 * off then bv_bit lo i else bv_bit hi (i - 8 * off))) =
+  Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+    (ser0 <: t_Slice u8) r0 (o1 <: t_Slice u8);
+  Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+    (ser1 <: t_Slice u8) r1 (o2 <: t_Slice u8);
+  assert (forall (k: nat{k < off}). Seq.index fin k == Seq.index o1 k);
+  assert (forall (k: nat{off <= k /\ k < off + 16}).
+            Seq.index fin k == Seq.index o2 (k - off));
+  let aux (i: nat{i < 16 * off})
+    : Lemma
+        (Rust_primitives.BitVectors.bit_vec_of_int_t_array fin 8 i ==
+         (if i < 8 * off then bv_bit lo i else bv_bit hi (i - 8 * off))) =
+    lemma_store_glue_bits fin o1 o2 lo hi off i
+  in
+  FStar.Classical.forall_intro aux
+#pop-options

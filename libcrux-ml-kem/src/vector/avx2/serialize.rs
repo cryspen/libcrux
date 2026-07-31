@@ -523,9 +523,11 @@ with (if i < 40
     let (lower_8, upper_8) = serialize_5_vec(vector);
     // The two stores OVERLAP: the second clobbers bytes [5,16) of the first.
     // That is sound because only the low 40 bits of `lower_8` are live, and
-    // they sit in bytes [0,5).  `lemma_store_glue_bits` discharges the gluing
-    // from the per-byte frame facts of the two `update_at_range` writes, so
-    // the slice reasoning never enters this function's context.
+    // they sit in bytes [0,5).  `lemma_store_glue_two_writes` consumes the
+    // whole store spine in clean context — supplying its per-byte frame facts
+    // HERE instead drags `update_at_range`, the two slice reads and the
+    // unbounded `forall (j: nat)` of `lemma_index_update_at_range` into this
+    // function's WP, which saturates at 400.000 even with `#restart-solver`.
     #[cfg(hax)]
     let ser0 = serialized;
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
@@ -553,21 +555,16 @@ Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
   ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 5;
                   Core_models.Ops.Range.f_end = mk_usize 21 }
                 <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${upper_8};
-Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
-  ((${ser0}) <: t_Slice u8)
+Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_store_glue_two_writes
+  ${ser0} ${ser1} ${serialized} o1 o2 ${lower_8} ${upper_8} 5
   ({ Core_models.Ops.Range.f_start = mk_usize 0;
      Core_models.Ops.Range.f_end = mk_usize 16 } <: Core_models.Ops.Range.t_Range usize)
-  (o1 <: t_Slice u8);
-Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
-  ((${ser1}) <: t_Slice u8)
   ({ Core_models.Ops.Range.f_start = mk_usize 5;
-     Core_models.Ops.Range.f_end = mk_usize 21 } <: Core_models.Ops.Range.t_Range usize)
-  (o2 <: t_Slice u8);
+     Core_models.Ops.Range.f_end = mk_usize 21 } <: Core_models.Ops.Range.t_Range usize);
 introduce forall (i: nat{i < 80}).
     Rust_primitives.BitVectors.bit_vec_of_int_t_array ${serialized} 8 i ==
       Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${vector} ((i / 5) * 16 + i % 5)
-with Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_store_glue_bits
-       ${serialized} o1 o2 ${lower_8} ${upper_8} 5 i
+with ()
 "#
     );
 
