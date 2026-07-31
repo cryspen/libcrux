@@ -29,6 +29,10 @@ pub struct SIMD256Vector {
 open Libcrux_intrinsics.Avx2_ml_kem_views"#
 )]
 fn vec_zero() -> SIMD256Vector {
+    // `mm256_setzero_si256 ()` is a fully ground core-models term, so its
+    // view lemma deliberately carries no SMTPat (an SMTPat on a ground term
+    // fires everywhere) — it has to be called explicitly, as Compress does.
+    proof!(r#"Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_setzero_si256 ()"#);
     SIMD256Vector {
         elements: mm256_setzero_si256(),
     }
@@ -38,9 +42,13 @@ fn vec_zero() -> SIMD256Vector {
 #[hax_lib::ensures(|result| fstar!(r#"${result} == repr ${v}"#))]
 fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     let mut output = [0i16; 16];
-    // `output` has length 16; surface that fact so the intrinsic's
-    // length-guarded `ensures` discharges `result == repr v`.
-    proof!(r#"assert (Core_models.Slice.impl__len #i16 output == mk_usize 16)"#);
+    // `output` has length 16; surface that fact, then call the store's view
+    // bridge explicitly (over core-models the store is a modeled per-lane
+    // spine, so the post no longer falls out of the intrinsic's own ensures).
+    proof!(
+        r#"assert (Core_models.Slice.impl__len #i16 output == mk_usize 16);
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_storeu_si256_i16 (output <: t_Slice i16) ${v}.f_elements"#
+    );
     mm256_storeu_si256_i16(&mut output, v.elements);
 
     output
@@ -50,6 +58,9 @@ fn vec_to_i16_array(v: SIMD256Vector) -> [i16; 16] {
 #[hax_lib::requires(array.len() == 16)]
 #[hax_lib::ensures(|result| fstar!(r#"repr ${result} == ${array}"#))]
 fn vec_from_i16_array(array: &[i16]) -> SIMD256Vector {
+    // Dual of `vec_to_i16_array`: the load's view bridge is a proven companion
+    // lemma over core-models and must be called explicitly.
+    proof!(r#"Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm256_loadu_si256_i16 ${array}"#);
     SIMD256Vector {
         elements: mm256_loadu_si256_i16(array),
     }
