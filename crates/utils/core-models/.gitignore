@@ -22,3 +22,5 @@ proofs/fstar/*
 !proofs/fstar/extraction
 proofs/fstar/extraction/*
 !proofs/fstar/extraction/Libcrux_core_models.Intrinsics_views.fst
+# THE trusted intrinsics axioms (hand-written; audit entry point).
+!proofs/fstar/extraction/Libcrux_core_models.Trusted.Intrinsics.fst

@@ -20,7 +20,7 @@ mm256_set_epi8,avx2,true,_mm256_set_epi8,true,true,true,false,true,true,false,L3
 mm256_set1_epi16,avx2,true,_mm256_set1_epi16,true,true,true,false,false,true,false,L3
 mm256_set_epi16,avx2,true,_mm256_set_epi16,true,true,true,false,true,true,false,L3
 mm_set1_epi16,avx2,true,_mm_set1_epi16,true,true,true,false,false,true,false,L3
-mm256_set1_epi32,avx2,true,_mm256_set1_epi32,true,true,false,false,true,true,false,L3
+mm256_set1_epi32,avx2,true,_mm256_set1_epi32,true,true,true,false,true,true,false,L3
 mm_set_epi32,avx2,true,_mm_set_epi32,true,true,false,false,true,true,false,L3
 mm256_set_epi32,avx2,true,_mm256_set_epi32,true,true,true,false,true,true,false,L3
 mm_add_epi16,avx2,true,_mm_add_epi16,true,true,true,false,false,true,false,L3
@@ -44,7 +44,7 @@ mm256_movemask_ps,avx2,true,_mm256_movemask_ps,true,true,false,false,true,,false
 mm_mulhi_epi16,avx2,true,_mm_mulhi_epi16,true,true,true,false,false,true,false,L3
 mm256_mullo_epi32,avx2,true,_mm256_mullo_epi32,true,true,true,false,true,true,false,L3
 mm256_mulhi_epi16,avx2,true,_mm256_mulhi_epi16,true,true,true,false,false,true,false,L3
-mm256_mul_epu32,avx2,true,_mm256_mul_epu32,true,true,false,false,false,,false,L2
+mm256_mul_epu32,avx2,true,_mm256_mul_epu32,true,true,true,false,false,,false,L2
 mm256_mul_epi32,avx2,true,_mm256_mul_epi32,true,true,false,false,true,true,false,L3
 mm256_and_si256,avx2,true,_mm256_and_si256,true,true,true,false,true,true,false,L3
 mm256_or_si256,avx2,true,_mm256_or_si256,true,true,true,false,true,,false,L2
@@ -52,9 +52,9 @@ mm256_testz_si256,avx2,true,_mm256_testz_si256,true,true,false,false,true,,false
 mm256_xor_si256,avx2,true,_mm256_xor_si256,true,true,true,false,true,true,false,L3
 mm_xor_si128,avx2,true,_mm_xor_si128,true,true,false,false,false,,false,L2
 mm256_srai_epi16,avx2,true,_mm256_srai_epi16,true,true,true,false,false,true,false,L3
-mm256_srai_epi32,avx2,true,_mm256_srai_epi32,true,true,false,false,true,true,false,L3
+mm256_srai_epi32,avx2,true,_mm256_srai_epi32,true,true,true,false,true,true,false,L3
 mm256_srli_epi16,avx2,true,_mm256_srli_epi16,true,true,true,false,false,,false,L2
-mm256_srli_epi32,avx2,true,_mm256_srli_epi32,true,true,false,false,false,,false,L2
+mm256_srli_epi32,avx2,true,_mm256_srli_epi32,true,true,true,false,false,,false,L2
 mm_srli_epi64,avx2,true,_mm_srli_epi64,true,true,false,false,true,true,false,L3
 mm256_srli_epi64,avx2,true,_mm256_srli_epi64,true,true,true,false,true,true,false,L3
 mm256_slli_epi16,avx2,true,_mm256_slli_epi16,true,true,true,false,false,,false,L2
@@ -68,13 +68,13 @@ mm_shuffle_epi32,avx2,true,_mm_shuffle_epi32,true,true,false,false,false,,false,
 mm256_permute4x64_epi64,avx2,true,_mm256_permute4x64_epi64,true,true,true,false,false,,false,L2
 mm256_unpackhi_epi64,avx2,true,_mm256_unpackhi_epi64,true,true,true,false,true,true,false,L3
 mm_unpackhi_epi64,avx2,true,_mm_unpackhi_epi64,true,true,false,false,false,,false,L2
-mm256_unpacklo_epi32,avx2,true,_mm256_unpacklo_epi32,true,true,false,false,false,true,false,L3
-mm256_unpackhi_epi32,avx2,true,_mm256_unpackhi_epi32,true,true,false,false,false,true,false,L3
+mm256_unpacklo_epi32,avx2,true,_mm256_unpacklo_epi32,true,true,true,false,false,true,false,L3
+mm256_unpackhi_epi32,avx2,true,_mm256_unpackhi_epi32,true,true,true,false,false,true,false,L3
 mm256_castsi256_si128,avx2,true,_mm256_castsi256_si128,true,true,true,false,true,true,false,L3
 mm256_castsi128_si256,avx2,true,_mm256_castsi128_si256,true,true,true,false,false,,false,L2
 mm256_cvtepi16_epi32,avx2,true,_mm256_cvtepi16_epi32,true,true,true,false,false,true,false,L3
 mm_packs_epi16,avx2,true,_mm_packs_epi16,true,true,true,false,false,,false,L2
-mm256_packs_epi32,avx2,true,_mm256_packs_epi32,true,true,false,false,false,true,false,L3
+mm256_packs_epi32,avx2,true,_mm256_packs_epi32,true,true,true,false,false,true,false,L3
 mm256_extracti128_si256,avx2,true,_mm256_extracti128_si256,true,true,true,false,true,true,false,L3
 mm256_inserti128_si256,avx2,true,_mm256_inserti128_si256,true,true,true,false,false,,false,L2
 mm256_blend_epi16,avx2,true,_mm256_blend_epi16,true,true,true,false,false,,false,L2
@@ -103,7 +103,7 @@ _vdupq_n_s16,arm64,true,vdupq_n_s16,true,true,true,false,false,true,false,L3
 _vdupq_n_u64,arm64,true,vdupq_n_u64,true,true,true,false,false,true,false,L3
 _vst1q_s16,arm64,true,vst1q_s16,true,true,true,false,false,,false,L2
 _vst1q_bytes,arm64,true,vreinterpretq_u8_s16;vst1q_u8,true,true,true,false,false,,false,L2
-_vld1q_bytes,arm64,true,vld1q_u8;vreinterpretq_s16_u8,true,true,false,false,false,,false,L2
+_vld1q_bytes,arm64,true,vld1q_u8;vreinterpretq_s16_u8,true,true,true,false,false,,false,L2
 _vld1q_s16,arm64,true,vld1q_s16,true,true,true,false,false,true,false,L3
 _vld1q_bytes_u64,arm64,true,vld1q_u64,true,true,true,false,false,,false,L2
 _vld1q_u64,arm64,true,vld1q_u64,true,true,true,false,false,true,false,L3

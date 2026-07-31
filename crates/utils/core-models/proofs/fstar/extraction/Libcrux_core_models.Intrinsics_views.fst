@@ -41,9 +41,13 @@ module Avx2   = Libcrux_core_models.Core_arch.X86.Avx2
 module Sse2   = Libcrux_core_models.Core_arch.X86.Sse2
 module Ssse3  = Libcrux_core_models.Core_arch.X86.Ssse3
 
-(* ── bit-vector widths ─────────────────────────────────────────────────────── *)
-let bv256 = BV.t_BitVec (mk_u64 256)
-let bv128 = BV.t_BitVec (mk_u64 128)
+(* ── THE AXIOMS THIS MODULE RESTS ON ────────────────────────────────────────
+   Every hand-written intrinsics AXIOM lives in `Libcrux_core_models.Trusted.
+   Intrinsics` (with its differential-test justification) and is re-exported
+   here, so THIS module contains only PROVEN lemmas.  `bv256` / `bv128` come
+   from there too.  Do not add an `assume` below — put it in the Trusted module.
+   ------------------------------------------------------------------------- *)
+include Libcrux_core_models.Trusted.Intrinsics
 
 (* ── the canonical lane views = core-models `to_iWxL` (re-export, no new axiom) ─ *)
 let to_i16x16  = IVi.e_ee_3__impl__to_i16x16
@@ -702,10 +706,7 @@ let lemma_and_i16x16_iv (a b: bv256) (i: nat{i < 16})
    (cf. `e_mm_xor_si128'`); it is validated by the core-models differential tests.
    The i16-VIEW commutation on top of it (`lemma_and_i16x16_iv`) is PROVEN, so this
    is a strict trust REDUCTION vs. the previous whole-op `admit ()`. *)
-[@@ IVL.v_LIFT_LEMMA]
-assume
-val lemma_and_si256_lift (a b: bv256)
-    : Lemma (Avx2.e_mm256_and_si256 a b == IV.e_mm256_and_si256 a b)
+(* AXIOM `lemma_and_si256_lift` MOVED to Libcrux_core_models.Trusted.Intrinsics. *)
 
 (* Gap-1 deliverable: i16-lane view of the (hardware) `and`. *)
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
@@ -879,20 +880,8 @@ let lemma_iv_slli32 (imm: i32) (arr: Funarr.t_FunArray (mk_u64 8) i32) (j: nat{j
    vs. the whole-op view `admit ()`s these replace.
    ============================================================================ *)
 
-[@@ IVL.v_LIFT_LEMMA]
-assume
-val lemma_xor_si256_lift (a b: bv256)
-    : Lemma (Avx2.e_mm256_xor_si256 a b == IV.e_mm256_xor_si256 a b)
-
-[@@ IVL.v_LIFT_LEMMA]
-assume
-val lemma_setzero_si256_lift (u: Prims.unit)
-    : Lemma (Avx.e_mm256_setzero_si256 () == IV.e_mm256_setzero_si256 ())
-
-[@@ IVL.v_LIFT_LEMMA]
-assume
-val lemma_castsi128_si256_lift (a: bv128)
-    : Lemma (Avx.e_mm256_castsi128_si256 a == IV.e_mm256_castsi128_si256 a)
+(* AXIOMS `lemma_xor_si256_lift` / `lemma_setzero_si256_lift` /
+   `lemma_castsi128_si256_lift` MOVED to Libcrux_core_models.Trusted.Intrinsics. *)
 
 (* bit `w * ii + bb` of a 256-bit vector built by `impl_9__from_fn f` is `f` at
    that flat index (the `on_domain` round-trip; SMT-reducible). *)

@@ -11,7 +11,7 @@ See `crates/utils/core-models/INTRINSICS-TRUST-PLAN.md` for the trust-ladder def
 |---|---:|---:|---:|---:|
 | **D6.1** Rust-model coverage | 92.8% (180/194) | 87.0% (87/100) | 98.9% (93/94) | 100% |
 | **D6.2** Test coverage | 92.8% (180/194) | 87.0% (87/100) | 98.9% (93/94) | 100% |
-| **D6.3** F\* spec coverage | 86.6% (168/194) | 81.0% (81/100) | 92.6% (87/94) | 100% |
+| **D6.3** F\* spec coverage | 89.7% (174/194) | 86.0% (86/100) | 93.6% (88/94) | 100% |
 | **D6.4** Audit consistency | 61.9% (120/194) | — | — | 100% |
 | **D6.5** F\* spec proven | 0.0% (0/194) | — | — | 0% (deferred) |
 
