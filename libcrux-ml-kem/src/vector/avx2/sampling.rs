@@ -63,6 +63,12 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let lower_shuffled = mm_shuffle_epi8(lower_coefficients, lower_shuffles_vec);
 
     // ... then write them out ...
+    // Proof-only snapshot of the buffer before the first store, so the store
+    // bridge lemma below can name its pre-state operand (the `mm_storeu_si128`
+    // call rebinds `output`).
+    #[cfg(hax)]
+    let output_before_lower: &[i16] = &*output;
+
     mm_storeu_si128(output, lower_shuffled);
 
     proof!(
@@ -82,9 +88,11 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         assert (${lower_shuffles} ==
             Seq.index Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE g0);
         lemma_half_done ${potential_coefficients} ${lower_coefficients} ${lower_shuffles_vec} ${lower_shuffled} ${lower_shuffles} 0 g0;
-        introduce forall (j: nat{j < 8}).
-            Seq.index ${output} j == Seq.index (Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8 ${lower_shuffled}) j
-        with FStar.Seq.lemma_index_slice ${output} 0 8 j;
+        (* The store bridge: lane j of the stored buffer IS lane j of the
+           shuffled vector's i16x8 view.  Over core-models the store is a
+           modeled per-lane spine, so this is a proven companion lemma rather
+           than the pcm-era `Seq.slice` reasoning. *)
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_si128 ${output_before_lower} ${lower_shuffled};
         assert (forall (j: nat{j < 8}).
             j < Hacspec_ml_kem.Commute.Rej_table.popcount8 g0 ==>
             (v (Seq.index ${output} j) >= 0 /\ v (Seq.index ${output} j) <= 3328))
@@ -146,18 +154,20 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         assert (${output} ==
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range ${output_after_lower} range s');
         assert (Seq.length ${output} == 16);
+        Hacspec_ml_kem.Commute.Rej_table.lemma_popcount8_le 8 g0;
+        Hacspec_ml_kem.Commute.Rej_table.lemma_popcount8_le 8 g1;
+        (* Frame the second store: below c0 the buffer is untouched, inside
+           [c0, c0+8) it is s'.  Then the store bridge turns s' into the
+           upper shuffled vector's i16x8 view, whose kept lanes lemma_half_done
+           has already bounded. *)
+        Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+            ${output_after_lower} range s';
+        Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_si128
+            ((${output_after_lower}.[ range ] <: t_Slice i16)) ${upper_shuffled};
         introduce forall (j: nat{j < v ${result}}).
             (v (Seq.index ${output} j) >= 0 /\ v (Seq.index ${output} j) <= 3328)
         with begin
-          if j < c0
-          then begin
-            FStar.Seq.lemma_index_slice ${output} 0 c0 j;
-            FStar.Seq.lemma_index_slice ${output_after_lower} 0 c0 j
-          end
-          else begin
-            FStar.Seq.lemma_index_slice ${output} c0 (c0 + 8) (j - c0);
-            FStar.Seq.lemma_index_slice s' 0 8 (j - c0)
-          end
+          if j < c0 then () else assert (j - c0 < c1)
         end
     "#
     );
