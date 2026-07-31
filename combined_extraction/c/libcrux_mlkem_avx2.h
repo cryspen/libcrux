@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2026 CE Labs
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
- * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
+ * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
+ * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
+ * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
 
@@ -39,68 +39,68 @@ typedef __m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
 __m256i libcrux_ml_kem_vector_avx2_vec_zero(void);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_ZERO_14(void);
+__m256i libcrux_ml_kem_vector_avx2_ZERO_f5(void);
 
 __m256i libcrux_ml_kem_vector_avx2_vec_from_i16_array(Eurydice_borrow_slice_i16 array);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_from_i16_array_14(Eurydice_borrow_slice_i16 array);
+__m256i libcrux_ml_kem_vector_avx2_from_i16_array_f5(Eurydice_borrow_slice_i16 array);
 
 Eurydice_arr_d6 libcrux_ml_kem_vector_avx2_vec_to_i16_array(__m256i v);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_arr_d6 libcrux_ml_kem_vector_avx2_to_i16_array_14(__m256i x);
+Eurydice_arr_d6 libcrux_ml_kem_vector_avx2_to_i16_array_f5(__m256i x);
 
 __m256i libcrux_ml_kem_vector_avx2_from_bytes(Eurydice_borrow_slice_u8 array);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_from_bytes_14(Eurydice_borrow_slice_u8 array);
+__m256i libcrux_ml_kem_vector_avx2_from_bytes_f5(Eurydice_borrow_slice_u8 array);
 
 void libcrux_ml_kem_vector_avx2_to_bytes(__m256i x, Eurydice_mut_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-void libcrux_ml_kem_vector_avx2_to_bytes_14(__m256i x, Eurydice_mut_borrow_slice_u8 bytes);
+void libcrux_ml_kem_vector_avx2_to_bytes_f5(__m256i x, Eurydice_mut_borrow_slice_u8 bytes);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_add(__m256i lhs, __m256i rhs);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_add_14(__m256i lhs, const __m256i *rhs);
+__m256i libcrux_ml_kem_vector_avx2_add_f5(__m256i lhs, const __m256i *rhs);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_sub(__m256i lhs, __m256i rhs);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_sub_14(__m256i lhs, const __m256i *rhs);
+__m256i libcrux_ml_kem_vector_avx2_sub_f5(__m256i lhs, const __m256i *rhs);
 
 __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_multiply_by_constant(__m256i vector, int16_t constant);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_14(__m256i vec, int16_t c);
+__m256i libcrux_ml_kem_vector_avx2_multiply_by_constant_f5(__m256i vec, int16_t c);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_cond_subtract_3329(__m256i vector);
 
 __m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329_14(__m256i vector);
+__m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329_f5(__m256i vector);
 
 #define LIBCRUX_ML_KEM_VECTOR_AVX2_ARITHMETIC_BARRETT_MULTIPLIER (20159)
 
@@ -111,9 +111,9 @@ __m256i libcrux_ml_kem_vector_avx2_cond_subtract_3329_14(__m256i vector);
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_barrett_reduce(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_barrett_reduce_14(__m256i vector);
+__m256i libcrux_ml_kem_vector_avx2_barrett_reduce_f5(__m256i vector);
 
 __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constant(
@@ -122,10 +122,10 @@ libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constant(
 );
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_14(__m256i vector, int16_t constant);
+libcrux_ml_kem_vector_avx2_montgomery_multiply_by_constant_f5(__m256i vector, int16_t constant);
 
 __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
@@ -136,27 +136,27 @@ libcrux_ml_kem_vector_avx2_arithmetic_bitwise_and_with_constant(
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_to_unsigned_representative(__m256i a);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_to_unsigned_representative_14(__m256i a);
+__m256i libcrux_ml_kem_vector_avx2_to_unsigned_representative_f5(__m256i a);
 
 __m256i libcrux_ml_kem_vector_avx2_compress_compress_message_coefficient(__m256i vector);
 
 __m256i libcrux_ml_kem_vector_avx2_compress_1(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_compress_1_14(__m256i vector);
+__m256i libcrux_ml_kem_vector_avx2_compress_1_f5(__m256i vector);
 
 __m256i libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(__m256i lhs, __m256i rhs);
 
 __m256i libcrux_ml_kem_vector_avx2_compress_decompress_1(__m256i a);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_decompress_1_14(__m256i a);
+__m256i libcrux_ml_kem_vector_avx2_decompress_1_f5(__m256i a);
 
 __m256i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_by_constants(
@@ -183,10 +183,10 @@ libcrux_ml_kem_vector_avx2_ntt_layer_1_step(
 );
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_ntt_layer_1_step_14(
+libcrux_ml_kem_vector_avx2_ntt_layer_1_step_f5(
   __m256i vector,
   int16_t zeta0,
   int16_t zeta1,
@@ -201,10 +201,10 @@ __m256i
 libcrux_ml_kem_vector_avx2_ntt_layer_2_step(__m256i vector, int16_t zeta0, int16_t zeta1);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_ntt_layer_2_step_14(__m256i vector, int16_t zeta0, int16_t zeta1);
+libcrux_ml_kem_vector_avx2_ntt_layer_2_step_f5(__m256i vector, int16_t zeta0, int16_t zeta1);
 
 __m128i
 libcrux_ml_kem_vector_avx2_arithmetic_montgomery_multiply_m128i_by_constants(
@@ -217,9 +217,9 @@ __m256i libcrux_ml_kem_vector_avx2_ntt_ntt_layer_3_step(__m256i vector, int16_t 
 __m256i libcrux_ml_kem_vector_avx2_ntt_layer_3_step(__m256i vector, int16_t zeta);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_ntt_layer_3_step_14(__m256i vector, int16_t zeta);
+__m256i libcrux_ml_kem_vector_avx2_ntt_layer_3_step_f5(__m256i vector, int16_t zeta);
 
 __m256i
 libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_1_step(
@@ -240,10 +240,10 @@ libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step(
 );
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_14(
+libcrux_ml_kem_vector_avx2_inv_ntt_layer_1_step_f5(
   __m256i vector,
   int16_t zeta0,
   int16_t zeta1,
@@ -262,10 +262,10 @@ __m256i
 libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step(__m256i vector, int16_t zeta0, int16_t zeta1);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_14(
+libcrux_ml_kem_vector_avx2_inv_ntt_layer_2_step_f5(
   __m256i vector,
   int16_t zeta0,
   int16_t zeta1
@@ -276,9 +276,9 @@ __m256i libcrux_ml_kem_vector_avx2_ntt_inv_ntt_layer_3_step(__m256i vector, int1
 __m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step(__m256i vector, int16_t zeta);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_14(__m256i vector, int16_t zeta);
+__m256i libcrux_ml_kem_vector_avx2_inv_ntt_layer_3_step_f5(__m256i vector, int16_t zeta);
 
 __m256i libcrux_ml_kem_vector_avx2_arithmetic_montgomery_reduce_i32s(__m256i vec);
 
@@ -303,10 +303,10 @@ libcrux_ml_kem_vector_avx2_ntt_multiply(
 );
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i
-libcrux_ml_kem_vector_avx2_ntt_multiply_14(
+libcrux_ml_kem_vector_avx2_ntt_multiply_f5(
   const __m256i *lhs,
   const __m256i *rhs,
   int16_t zeta0,
@@ -320,9 +320,9 @@ Eurydice_array_u8x2 libcrux_ml_kem_vector_avx2_serialize_serialize_1(__m256i vec
 Eurydice_array_u8x2 libcrux_ml_kem_vector_avx2_serialize_1(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_array_u8x2 libcrux_ml_kem_vector_avx2_serialize_1_14(__m256i vector);
+Eurydice_array_u8x2 libcrux_ml_kem_vector_avx2_serialize_1_f5(__m256i vector);
 
 __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s(int16_t a, int16_t b);
@@ -335,9 +335,9 @@ __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_borrow_slice
 __m256i libcrux_ml_kem_vector_avx2_deserialize_1(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_1_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_1_f5(Eurydice_borrow_slice_u8 bytes);
 
 /**
  `mm256_concat_pairs_n(n, x)` is then a sequence of 32 bits packets
@@ -352,9 +352,9 @@ Eurydice_array_u8x8 libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vec
 Eurydice_array_u8x8 libcrux_ml_kem_vector_avx2_serialize_4(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_array_u8x8 libcrux_ml_kem_vector_avx2_serialize_4_14(__m256i vector);
+Eurydice_array_u8x8 libcrux_ml_kem_vector_avx2_serialize_4_f5(__m256i vector);
 
 __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s(
@@ -385,16 +385,16 @@ __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_4(Eurydice_borrow_slice
 __m256i libcrux_ml_kem_vector_avx2_deserialize_4(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_4_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_4_f5(Eurydice_borrow_slice_u8 bytes);
 
 Eurydice_arr_6d libcrux_ml_kem_vector_avx2_serialize_serialize_5(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_arr_6d libcrux_ml_kem_vector_avx2_serialize_5_14(__m256i vector);
+Eurydice_arr_6d libcrux_ml_kem_vector_avx2_serialize_5_f5(__m256i vector);
 
 /**
  We cannot model `mm256_inserti128_si256` on its own: it produces a
@@ -411,9 +411,9 @@ libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(__m128i lower, _
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_5_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_5_f5(Eurydice_borrow_slice_u8 bytes);
 
 typedef struct core_core_arch_x86___m128i_x2_s
 {
@@ -430,9 +430,9 @@ Eurydice_arr_fc libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector
 Eurydice_arr_fc libcrux_ml_kem_vector_avx2_serialize_10(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_arr_fc libcrux_ml_kem_vector_avx2_serialize_10_14(__m256i vector);
+Eurydice_arr_fc libcrux_ml_kem_vector_avx2_serialize_10_f5(__m256i vector);
 
 __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(
@@ -445,23 +445,23 @@ __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_borrow_slic
 __m256i libcrux_ml_kem_vector_avx2_deserialize_10(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_10_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_10_f5(Eurydice_borrow_slice_u8 bytes);
 
 Eurydice_arr_80 libcrux_ml_kem_vector_avx2_serialize_serialize_11(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_arr_80 libcrux_ml_kem_vector_avx2_serialize_11_14(__m256i vector);
+Eurydice_arr_80 libcrux_ml_kem_vector_avx2_serialize_11_f5(__m256i vector);
 
 __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_11(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_11_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_11_f5(Eurydice_borrow_slice_u8 bytes);
 
 core_core_arch_x86___m128i_x2
 libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(__m256i vector);
@@ -471,9 +471,9 @@ Eurydice_arr_94 libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector
 Eurydice_arr_94 libcrux_ml_kem_vector_avx2_serialize_12(__m256i vector);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-Eurydice_arr_94 libcrux_ml_kem_vector_avx2_serialize_12_14(__m256i vector);
+Eurydice_arr_94 libcrux_ml_kem_vector_avx2_serialize_12_f5(__m256i vector);
 
 __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(
@@ -486,9 +486,9 @@ __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_12(Eurydice_borrow_slic
 __m256i libcrux_ml_kem_vector_avx2_deserialize_12(Eurydice_borrow_slice_u8 bytes);
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_deserialize_12_14(Eurydice_borrow_slice_u8 bytes);
+__m256i libcrux_ml_kem_vector_avx2_deserialize_12_f5(Eurydice_borrow_slice_u8 bytes);
 
 size_t
 libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
@@ -497,10 +497,10 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
 );
 
 /**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 size_t
-libcrux_ml_kem_vector_avx2_rej_sample_14(
+libcrux_ml_kem_vector_avx2_rej_sample_f5(
   Eurydice_borrow_slice_u8 input,
   Eurydice_mut_borrow_slice_i16 output
 );
@@ -508,9 +508,9 @@ libcrux_ml_kem_vector_avx2_rej_sample_14(
 #define LIBCRUX_ML_KEM_VECTOR_AVX2_NTT_NTT_MULTIPLY_PERMUTE_WITH (216)
 
 /**
-This function found in impl {impl core::clone::Clone for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+This function found in impl {core::clone::Clone for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
-__m256i libcrux_ml_kem_vector_avx2_clone_a4(const __m256i *self);
+__m256i libcrux_ml_kem_vector_avx2_clone_fd(const __m256i *self);
 
 /**
 A monomorphic instance of Eurydice.arr

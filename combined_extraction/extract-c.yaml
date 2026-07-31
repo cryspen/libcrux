@@ -65,32 +65,6 @@ files:
         - [libcrux_sha3, portable, "*"]
         - [libcrux_sha3, generic_keccak, xof, "*"]
         
-  # Public API header for SHA3
-  - name: libcrux_sha3
-    api:
-      exact:
-        - [libcrux_sha3, hash]
-        - [libcrux_sha3, sha224]
-        - [libcrux_sha3, sha256]
-        - [libcrux_sha3, sha384]
-        - [libcrux_sha3, sha44]
-        - [libcrux_sha3, keccakx1]
-        - [libcrux_sha3, shake128]
-        - [libcrux_sha3, shake256]
-        - [libcrux_sha3, shake128_ema]
-        - [libcrux_sha3, shake256_ema]
-        - [libcrux_sha3, sha224_ema]
-        - [libcrux_sha3, sha256_ema]
-        - [libcrux_sha3, sha384_ema]
-        - [libcrux_sha3, sha44_ema]
-        - [libcrux_sha3, portable, sha224]
-        - [libcrux_sha3, portable, sha256]
-        - [libcrux_sha3, portable, sha384]
-        - [libcrux_sha3, portable, sha44]
-        - [libcrux_sha3, portable, keccakx1]
-        - [libcrux_sha3, portable, shake128]
-        - [libcrux_sha3, portable, shake256]
-
   # Common parts of SHA3 (this catches stuff that hasn't matched above). Must
   # come after the (more precise) patterns above concerning platform-specific hash_functions
   - name: libcrux_sha3_internal

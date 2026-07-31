@@ -17,8 +17,6 @@ if(NOT MSVC)
     add_compile_options(
         -Wall
         -fstack-usage
-        -Wunused-function
-        # -Wno-unused-function
         -Wno-unused-variable
         -fdiagnostics-color=always
         -pedantic
@@ -48,7 +46,20 @@ if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0") OR
     (CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.1.6"))
-    # add_compile_options(-Werror -Wframe-larger-than=25344)
+    add_compile_options(
+        -Werror
+        # KRML_MUSTINLINE expands to `inline __attribute__((always_inline))`,
+        # which has external linkage, but some of these functions call
+        # internal-linkage `static inline` glue functions (e.g. in the
+        # glue code). That violates C11 6.7.4p3, but works today because the
+        # header declarations of these functions aren't themselves marked
+        # `inline` (adding that would likely cause linker errors). Only
+        # clang warns about it, not gcc.
+        -Wno-static-in-inline
+        # Eurydice emits some functions that end up unused in a given build
+        # configuration.
+        -Wno-unused-function
+    )
 endif()
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
@@ -164,67 +175,16 @@ target_link_libraries(sha3_test PRIVATE
     nlohmann_json::nlohmann_json
 )
 
-# add_executable(kyber_test
-#     ${PROJECT_SOURCE_DIR}/tests/kyber768.cc
-# )
-# target_link_libraries(kyber_test PRIVATE
-#     gtest_main
-#     nlohmann_json::nlohmann_json
-# )
+# --- CTest registration
 
-# add_executable(sha3_test
-#     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
-# )
-# target_link_libraries(sha3_test PRIVATE
-#     gtest_main
-#     nlohmann_json::nlohmann_json
-# )
-
-# # --- Benchmarks
-# if(DEFINED ENV{LIBCRUX_BENCHMARKS})
-#     FetchContent_Declare(benchmark
-#         GIT_REPOSITORY https://github.com/google/benchmark.git
-#         GIT_TAG v1.9.2
-#     )
-#     FetchContent_MakeAvailable(benchmark)
-
-#     add_executable(ml_dsa_bench
-#         ${PROJECT_SOURCE_DIR}/benches/mldsa768.cc
-#     )
-#     target_link_libraries(ml_dsa_bench PRIVATE
-#         benchmark::benchmark
-#     )
-
-#     if(DEFINED ENV{SYMCRYPT_PATH})
-#         message("Symcrypt path: $ENV{SYMCRYPT_PATH}")
-#         add_compile_definitions(LIBCRUX_SYMCRYPT)
-#         target_include_directories(ml_dsa_bench PRIVATE $ENV{SYMCRYPT_PATH})
-#         target_link_directories(ml_dsa_bench PRIVATE $ENV{SYMCRYPT_PATH}/bin/lib)
-#         target_link_libraries(ml_dsa_bench PRIVATE symcrypt)
-#     endif(DEFINED ENV{SYMCRYPT_PATH})
-
-#     add_executable(ml_dsa_keygen
-#         ${PROJECT_SOURCE_DIR}/benches/mldsa768_keygen.cc
-#     )
-#     target_link_libraries(ml_dsa_keygen PRIVATE
-#         benchmark::benchmark
-#     )
-
-#     add_executable(ml_dsa_encaps
-#         ${PROJECT_SOURCE_DIR}/benches/mldsa768_encaps.cc
-#     )
-#     target_link_libraries(ml_dsa_encaps PRIVATE
-#         benchmark::benchmark
-#     )
-
-#     if(NOT MSVC)
-#         # We benchmark internal functions here that are inlined and thus not available
-#         # in MSVC.
-#         add_executable(sha3_bench
-#             ${PROJECT_SOURCE_DIR}/benches/sha3.cc
-#         )
-#         target_link_libraries(sha3_bench PRIVATE
-#             benchmark::benchmark
-#         )
-#     endif(NOT MSVC)
-# endif(DEFINED ENV{LIBCRUX_BENCHMARKS})
+enable_testing()
+add_test(NAME ml_dsa_test44 COMMAND ml_dsa_test44)
+add_test(NAME ml_dsa_test65 COMMAND ml_dsa_test65)
+add_test(NAME ml_dsa_test87 COMMAND ml_dsa_test87)
+add_test(NAME ml_kem_test512 COMMAND ml_kem_test512)
+add_test(NAME ml_kem_test768 COMMAND ml_kem_test768)
+add_test(NAME ml_kem_test1024 COMMAND ml_kem_test1024)
+add_test(NAME sha3_test COMMAND sha3_test)
+if(DEFINED ENV{LIBCRUX_KYBER})
+    add_test(NAME kyber_test COMMAND kyber_test)
+endif(DEFINED ENV{LIBCRUX_KYBER})

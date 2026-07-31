@@ -1,0 +1,102 @@
+name: Combined Extraction - Build & Test C
+
+on:
+  merge_group:
+  push:
+    branches: ["main", "dev"]
+    paths:
+      - "combined_extraction/**"
+  pull_request:
+    branches: ["main", "dev"]
+    paths:
+      - "combined_extraction/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  combined-extraction-c-tests-status:
+    if: ${{ always() }}
+    needs:
+      - build-test
+      - build-test-sanitizers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ (contains(needs.*.result, 'failure')) }}
+        run: exit 1
+
+  # just build and run the checked-in C and C-header-only variants.
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - c
+          - c-header-only
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: combined_extraction/${{ matrix.variant }}
+        shell: bash
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Set CC and CXX to Clang on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ctest --test-dir build --output-on-failure
+        if: ${{ matrix.os != 'windows-latest' }}
+
+      - name: 🏃🏻‍♀️ Test
+        run: ctest --test-dir build -C Debug --output-on-failure
+        if: ${{ matrix.os == 'windows-latest' }}
+
+  # # ASan/UBSan leg, Linux + clang only. Note: gcc 14 + sanitizers on the
+  # # c-header-only variant has been observed to exhaust RAM during linking in
+  # # constrained environments (see PR #1554 review) - keep an eye on this job
+  # # if it turns out to be flaky on the runners.
+  # # XXX: This is disabled for now because it is slow.
+  # build-test-sanitizers:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       variant:
+  #         - c
+  #         - c-header-only
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: combined_extraction/${{ matrix.variant }}
+  #       shell: bash
+  #   env:
+  #     CC: clang
+  #     CXX: clang++
+  #   steps:
+  #     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+  #     - name: 🔨 Build (ASan + UBSan)
+  #       run: |
+  #         cmake -B build -DENABLE_SANITIZERS=ON
+  #         cmake --build build
+
+  #     - name: 🏃🏻‍♀️ Test
+  #       run: ctest --test-dir build --output-on-failure

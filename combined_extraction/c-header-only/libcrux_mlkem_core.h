@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2026 CE Labs
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
- * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
+ * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
+ * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
+ * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
 
@@ -49,21 +49,21 @@ static inline size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
-static KRML_MUSTINLINE uint8_t libcrux_secrets_int_as_u8_e5(int16_t self)
+static KRML_MUSTINLINE uint8_t libcrux_secrets_int_as_u8_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_90((uint8_t)libcrux_secrets_int_classify_public_declassify_22_39(self));
+    libcrux_secrets_int_classify_public_classify_27_90((uint8_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u8}
+This function found in impl {libcrux_secrets::int::CastOps for u8}
 */
-static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_c3(uint8_t self)
+static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_59(uint8_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_22_90(self));
+    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_90(self));
 }
 
 static KRML_MUSTINLINE int16_t libcrux_secrets_int_I16(int16_t v)
@@ -72,108 +72,108 @@ static KRML_MUSTINLINE int16_t libcrux_secrets_int_I16(int16_t v)
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
-static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_e5(int16_t self)
+static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_a8((int32_t)libcrux_secrets_int_classify_public_declassify_22_39(self));
+    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i32}
+This function found in impl {libcrux_secrets::int::CastOps for i32}
 */
-static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_06(int32_t self)
+static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_36(int32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_39((int16_t)libcrux_secrets_int_classify_public_declassify_22_a8(self));
+    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_a8(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+This function found in impl {libcrux_secrets::int::CastOps for u32}
 */
-static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_c6(uint32_t self)
+static KRML_MUSTINLINE int32_t libcrux_secrets_int_as_i32_b8(uint32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_a8((int32_t)libcrux_secrets_int_classify_public_declassify_22_df(self));
+    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
-static KRML_MUSTINLINE uint16_t libcrux_secrets_int_as_u16_e5(int16_t self)
+static KRML_MUSTINLINE uint16_t libcrux_secrets_int_as_u16_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_de((uint16_t)libcrux_secrets_int_classify_public_declassify_22_39(self));
+    libcrux_secrets_int_classify_public_classify_27_de((uint16_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+This function found in impl {libcrux_secrets::int::CastOps for u16}
 */
-static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_80(uint16_t self)
+static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_ca(uint16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_22_de(self));
+    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+This function found in impl {libcrux_secrets::int::CastOps for u16}
 */
-static KRML_MUSTINLINE uint64_t libcrux_secrets_int_as_u64_80(uint16_t self)
+static KRML_MUSTINLINE uint64_t libcrux_secrets_int_as_u64_ca(uint16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_49((uint64_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_22_de(self));
+    libcrux_secrets_int_classify_public_classify_27_49((uint64_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u64}
+This function found in impl {libcrux_secrets::int::CastOps for u64}
 */
-static KRML_MUSTINLINE uint32_t libcrux_secrets_int_as_u32_11(uint64_t self)
+static KRML_MUSTINLINE uint32_t libcrux_secrets_int_as_u32_a3(uint64_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_df((uint32_t)libcrux_secrets_int_classify_public_declassify_22_49(self));
+    libcrux_secrets_int_classify_public_classify_27_df((uint32_t)libcrux_secrets_int_classify_public_declassify_d8_49(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+This function found in impl {libcrux_secrets::int::CastOps for u32}
 */
-static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_c6(uint32_t self)
+static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_b8(uint32_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_39((int16_t)libcrux_secrets_int_classify_public_declassify_22_df(self));
+    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {libcrux_secrets::int::CastOps for i16}
 */
-static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_e5(int16_t self)
+static KRML_MUSTINLINE int16_t libcrux_secrets_int_as_i16_f5(int16_t self)
 {
   return
-    libcrux_secrets_int_classify_public_classify_f9_39(libcrux_secrets_int_classify_public_declassify_22_39(self));
+    libcrux_secrets_int_classify_public_classify_27_39(libcrux_secrets_int_classify_public_declassify_d8_39(self));
 }
 
 /**
-This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_43
+A monomorphic instance of libcrux_ml_kem.types.default_d3
 with const generics
 - SIZE= 3168
 */
-static inline Eurydice_arr_a8 libcrux_ml_kem_types_default_43_0e(void)
+static inline Eurydice_arr_a8 libcrux_ml_kem_types_default_d3_0e(void)
 {
   return (Eurydice_arr_a8{ { 0U } });
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_bd
+A monomorphic instance of libcrux_ml_kem.types.from_51
 with const generics
 - SIZE= 1568
 */
-static inline Eurydice_arr_d1 libcrux_ml_kem_types_from_bd_d9(Eurydice_arr_d1 value)
+static inline Eurydice_arr_d1 libcrux_ml_kem_types_from_51_d9(Eurydice_arr_d1 value)
 {
   return value;
 }
@@ -204,14 +204,14 @@ libcrux_ml_kem_types_from_17_70(Eurydice_arr_a8 sk, Eurydice_arr_d1 pk)
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_3b
+A monomorphic instance of libcrux_ml_kem.types.from_b2
 with const generics
 - SIZE= 3168
 */
-static inline Eurydice_arr_a8 libcrux_ml_kem_types_from_3b_0e(Eurydice_arr_a8 value)
+static inline Eurydice_arr_a8 libcrux_ml_kem_types_from_b2_0e(Eurydice_arr_a8 value)
 {
   return value;
 }
@@ -229,14 +229,14 @@ typedef struct tuple_25_s
 tuple_25;
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_63
+A monomorphic instance of libcrux_ml_kem.types.from_19
 with const generics
 - SIZE= 1568
 */
-static inline Eurydice_arr_d1 libcrux_ml_kem_types_from_63_d9(Eurydice_arr_d1 value)
+static inline Eurydice_arr_d1 libcrux_ml_kem_types_from_19_d9(Eurydice_arr_d1 value)
 {
   return value;
 }
@@ -283,7 +283,7 @@ with const generics
 - K= 4
 */
 static KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_utils_prf_input_inc_23(Eurydice_arr_d20 *prf_inputs, uint8_t domain_separator)
+libcrux_ml_kem_utils_prf_input_inc_23(Eurydice_arr_890 *prf_inputs, uint8_t domain_separator)
 {
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
@@ -296,15 +296,15 @@ libcrux_ml_kem_utils_prf_input_inc_23(Eurydice_arr_d20 *prf_inputs, uint8_t doma
 }
 
 /**
-This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_17
+A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
 with const generics
 - SIZE= 1568
 */
 static inline Eurydice_borrow_slice_u8
-libcrux_ml_kem_types_as_ref_17_d9(const Eurydice_arr_d1 *self)
+libcrux_ml_kem_types_as_ref_c1_d9(const Eurydice_arr_d1 *self)
 {
   return Eurydice_array_to_slice_shared_b50(self);
 }
@@ -394,27 +394,27 @@ libcrux_ml_kem_types_unpack_private_key_e3(Eurydice_borrow_slice_u8 private_key)
 }
 
 /**
-This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_43
+A monomorphic instance of libcrux_ml_kem.types.default_d3
 with const generics
 - SIZE= 2400
 */
-static inline Eurydice_arr_7d libcrux_ml_kem_types_default_43_79(void)
+static inline Eurydice_arr_7d libcrux_ml_kem_types_default_d3_79(void)
 {
   return (Eurydice_arr_7d{ { 0U } });
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_bd
+A monomorphic instance of libcrux_ml_kem.types.from_51
 with const generics
 - SIZE= 1184
 */
-static inline Eurydice_arr_5f libcrux_ml_kem_types_from_bd_3d(Eurydice_arr_5f value)
+static inline Eurydice_arr_5f libcrux_ml_kem_types_from_51_3d(Eurydice_arr_5f value)
 {
   return value;
 }
@@ -445,14 +445,14 @@ libcrux_ml_kem_types_from_17_bc(Eurydice_arr_7d sk, Eurydice_arr_5f pk)
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_3b
+A monomorphic instance of libcrux_ml_kem.types.from_b2
 with const generics
 - SIZE= 2400
 */
-static inline Eurydice_arr_7d libcrux_ml_kem_types_from_3b_79(Eurydice_arr_7d value)
+static inline Eurydice_arr_7d libcrux_ml_kem_types_from_b2_79(Eurydice_arr_7d value)
 {
   return value;
 }
@@ -470,14 +470,14 @@ typedef struct tuple_f4_s
 tuple_f4;
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_63
+A monomorphic instance of libcrux_ml_kem.types.from_19
 with const generics
 - SIZE= 1088
 */
-static inline Eurydice_arr_2b libcrux_ml_kem_types_from_63_52(Eurydice_arr_2b value)
+static inline Eurydice_arr_2b libcrux_ml_kem_types_from_19_52(Eurydice_arr_2b value)
 {
   return value;
 }
@@ -524,7 +524,7 @@ with const generics
 - K= 3
 */
 static KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_fd *prf_inputs, uint8_t domain_separator)
+libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_801 *prf_inputs, uint8_t domain_separator)
 {
   KRML_MAYBE_FOR3(i,
     (size_t)0U,
@@ -537,15 +537,15 @@ libcrux_ml_kem_utils_prf_input_inc_78(Eurydice_arr_fd *prf_inputs, uint8_t domai
 }
 
 /**
-This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_17
+A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
 with const generics
 - SIZE= 1088
 */
 static inline Eurydice_borrow_slice_u8
-libcrux_ml_kem_types_as_ref_17_52(const Eurydice_arr_2b *self)
+libcrux_ml_kem_types_as_ref_c1_52(const Eurydice_arr_2b *self)
 {
   return Eurydice_array_to_slice_shared_06(self);
 }
@@ -638,27 +638,27 @@ libcrux_ml_kem_utils_into_padded_array_ce(Eurydice_borrow_slice_u8 slice)
 }
 
 /**
-This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_43
+A monomorphic instance of libcrux_ml_kem.types.default_d3
 with const generics
 - SIZE= 1632
 */
-static inline Eurydice_arr_ab0 libcrux_ml_kem_types_default_43_be(void)
+static inline Eurydice_arr_ab0 libcrux_ml_kem_types_default_d3_be(void)
 {
   return (Eurydice_arr_ab0{ { 0U } });
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_bd
+A monomorphic instance of libcrux_ml_kem.types.from_51
 with const generics
 - SIZE= 800
 */
-static inline Eurydice_arr_03 libcrux_ml_kem_types_from_bd_df(Eurydice_arr_03 value)
+static inline Eurydice_arr_03 libcrux_ml_kem_types_from_51_df(Eurydice_arr_03 value)
 {
   return value;
 }
@@ -695,14 +695,14 @@ libcrux_ml_kem_types_from_17_d6(Eurydice_arr_ab0 sk, Eurydice_arr_03 pk)
 }
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_3b
+A monomorphic instance of libcrux_ml_kem.types.from_b2
 with const generics
 - SIZE= 1632
 */
-static inline Eurydice_arr_ab0 libcrux_ml_kem_types_from_3b_be(Eurydice_arr_ab0 value)
+static inline Eurydice_arr_ab0 libcrux_ml_kem_types_from_b2_be(Eurydice_arr_ab0 value)
 {
   return value;
 }
@@ -720,14 +720,14 @@ typedef struct tuple_ab_s
 tuple_ab;
 
 /**
-This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_63
+A monomorphic instance of libcrux_ml_kem.types.from_19
 with const generics
 - SIZE= 768
 */
-static inline Eurydice_arr_d2 libcrux_ml_kem_types_from_63_80(Eurydice_arr_d2 value)
+static inline Eurydice_arr_d2 libcrux_ml_kem_types_from_19_80(Eurydice_arr_d2 value)
 {
   return value;
 }
@@ -774,7 +774,7 @@ with const generics
 - K= 2
 */
 static KRML_MUSTINLINE uint8_t
-libcrux_ml_kem_utils_prf_input_inc_af(Eurydice_arr_1b0 *prf_inputs, uint8_t domain_separator)
+libcrux_ml_kem_utils_prf_input_inc_af(Eurydice_arr_4d0 *prf_inputs, uint8_t domain_separator)
 {
   KRML_MAYBE_FOR2(i,
     (size_t)0U,
@@ -794,10 +794,10 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
 */
-static KRML_MUSTINLINE Eurydice_arr_fa0
+static KRML_MUSTINLINE Eurydice_arr_fa
 libcrux_ml_kem_utils_into_padded_array_29(Eurydice_borrow_slice_u8 slice)
 {
-  Eurydice_arr_fa0 out = { { 0U } };
+  Eurydice_arr_fa out = { { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d412(&out,
       (core_ops_range_Range_87{ (size_t)0U, slice.meta })),
     slice,
@@ -825,15 +825,15 @@ libcrux_ml_kem_utils_into_padded_array_de(Eurydice_borrow_slice_u8 slice)
 }
 
 /**
-This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_17
+A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
 with const generics
 - SIZE= 768
 */
 static inline Eurydice_borrow_slice_u8
-libcrux_ml_kem_types_as_ref_17_80(const Eurydice_arr_d2 *self)
+libcrux_ml_kem_types_as_ref_c1_80(const Eurydice_arr_d2 *self)
 {
   return Eurydice_array_to_slice_shared_27(self);
 }

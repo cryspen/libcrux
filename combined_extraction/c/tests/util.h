@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <cassert>
 #include <fstream>
 #include <nlohmann/json.hpp>
 
@@ -86,5 +87,6 @@ vector<KAT> read_kats(string path) {
     });
   }
 
+  assert(!kats.empty() && "no test vectors loaded, check the KATs path");
   return kats;
 }

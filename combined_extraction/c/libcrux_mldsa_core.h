@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2026 CE Labs
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
- * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
+ * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
+ * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
+ * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
 
@@ -177,10 +177,10 @@ size_t libcrux_ml_dsa_constants_verification_key_size(size_t rows_in_a);
 #define LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_87_ROWS_IN_A ((size_t)8U)
 
 /**
-This function found in impl {impl core::clone::Clone for libcrux_ml_dsa::constants::Eta}
+This function found in impl {core::clone::Clone for libcrux_ml_dsa::constants::Eta}
 */
 libcrux_ml_dsa_constants_Eta
-libcrux_ml_dsa_constants_clone_b1(const libcrux_ml_dsa_constants_Eta *self);
+libcrux_ml_dsa_constants_clone_54(const libcrux_ml_dsa_constants_Eta *self);
 
 size_t libcrux_ml_dsa_encoding_error_chunk_size(libcrux_ml_dsa_constants_Eta eta);
 
@@ -312,9 +312,9 @@ libcrux_ml_dsa_sample_inside_out_shuffle(
 #define LIBCRUX_ML_DSA_PRE_HASH_SHAKE128_OID ((KRML_CLITERAL(Eurydice_arr_c9){ .data = { 6U, 9U, 96U, 134U, 72U, 1U, 101U, 3U, 4U, 2U, 11U } }))
 
 /**
-This function found in impl {impl libcrux_ml_dsa::pre_hash::PreHash for libcrux_ml_dsa::pre_hash::SHAKE128_PH}
+This function found in impl {libcrux_ml_dsa::pre_hash::PreHash for libcrux_ml_dsa::pre_hash::SHAKE128_PH}
 */
-Eurydice_arr_c9 libcrux_ml_dsa_pre_hash_oid_7a(void);
+Eurydice_arr_c9 libcrux_ml_dsa_pre_hash_oid_30(void);
 
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_44_VERIFICATION_KEY_SIZE (libcrux_ml_dsa_constants_verification_key_size(LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_44_ROWS_IN_A))
 
@@ -325,9 +325,9 @@ typedef Eurydice_arr_4d libcrux_ml_dsa_simd_portable_vector_type_Coefficients;
 Eurydice_arr_4d libcrux_ml_dsa_simd_portable_vector_type_zero(void);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-Eurydice_arr_4d libcrux_ml_dsa_simd_portable_zero_fb(void);
+Eurydice_arr_4d libcrux_ml_dsa_simd_portable_zero_65(void);
 
 void
 libcrux_ml_dsa_simd_portable_vector_type_from_coefficient_array(
@@ -336,10 +336,10 @@ libcrux_ml_dsa_simd_portable_vector_type_from_coefficient_array(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_from_coefficient_array_fb(
+libcrux_ml_dsa_simd_portable_from_coefficient_array_65(
   Eurydice_dst_ref_shared_83 array,
   Eurydice_arr_4d *out
 );
@@ -351,10 +351,10 @@ libcrux_ml_dsa_simd_portable_vector_type_to_coefficient_array(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_to_coefficient_array_fb(
+libcrux_ml_dsa_simd_portable_to_coefficient_array_65(
   const Eurydice_arr_4d *value,
   Eurydice_dst_ref_mut_83 out
 );
@@ -363,9 +363,9 @@ void
 libcrux_ml_dsa_simd_portable_arithmetic_add(Eurydice_arr_4d *lhs, const Eurydice_arr_4d *rhs);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-void libcrux_ml_dsa_simd_portable_add_fb(Eurydice_arr_4d *lhs, const Eurydice_arr_4d *rhs);
+void libcrux_ml_dsa_simd_portable_add_65(Eurydice_arr_4d *lhs, const Eurydice_arr_4d *rhs);
 
 void
 libcrux_ml_dsa_simd_portable_arithmetic_subtract(
@@ -374,10 +374,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_subtract(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_subtract_fb(Eurydice_arr_4d *lhs, const Eurydice_arr_4d *rhs);
+libcrux_ml_dsa_simd_portable_subtract_65(Eurydice_arr_4d *lhs, const Eurydice_arr_4d *rhs);
 
 bool
 libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
@@ -386,10 +386,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_infinity_norm_exceeds(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 bool
-libcrux_ml_dsa_simd_portable_infinity_norm_exceeds_fb(
+libcrux_ml_dsa_simd_portable_infinity_norm_exceeds_65(
   const Eurydice_arr_4d *simd_unit,
   int32_t bound
 );
@@ -406,10 +406,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_decompose(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_decompose_fb(
+libcrux_ml_dsa_simd_portable_decompose_65(
   int32_t gamma2,
   const Eurydice_arr_4d *simd_unit,
   Eurydice_arr_4d *low,
@@ -432,10 +432,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_compute_hint(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 size_t
-libcrux_ml_dsa_simd_portable_compute_hint_fb(
+libcrux_ml_dsa_simd_portable_compute_hint_65(
   const Eurydice_arr_4d *low,
   const Eurydice_arr_4d *high,
   int32_t gamma2,
@@ -453,10 +453,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_use_hint(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_use_hint_fb(
+libcrux_ml_dsa_simd_portable_use_hint_65(
   int32_t gamma2,
   const Eurydice_arr_4d *simd_unit,
   Eurydice_arr_4d *hint
@@ -476,10 +476,10 @@ libcrux_ml_dsa_simd_portable_arithmetic_montgomery_multiply(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_montgomery_multiply_fb(
+libcrux_ml_dsa_simd_portable_montgomery_multiply_65(
   Eurydice_arr_4d *lhs,
   const Eurydice_arr_4d *rhs
 );
@@ -495,9 +495,9 @@ void
 libcrux_ml_dsa_simd_portable_arithmetic_power2round(Eurydice_arr_4d *t0, Eurydice_arr_4d *t1);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-void libcrux_ml_dsa_simd_portable_power2round_fb(Eurydice_arr_4d *t0, Eurydice_arr_4d *t1);
+void libcrux_ml_dsa_simd_portable_power2round_65(Eurydice_arr_4d *t0, Eurydice_arr_4d *t1);
 
 size_t
 libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
@@ -506,10 +506,10 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_field_modulus(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 size_t
-libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_fb(
+libcrux_ml_dsa_simd_portable_rejection_sample_less_than_field_modulus_65(
   Eurydice_borrow_slice_u8 randomness,
   Eurydice_dst_ref_mut_83 out
 );
@@ -521,10 +521,10 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_2(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 size_t
-libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_fb(
+libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_2_65(
   Eurydice_borrow_slice_u8 randomness,
   Eurydice_dst_ref_mut_83 out
 );
@@ -536,10 +536,10 @@ libcrux_ml_dsa_simd_portable_sample_rejection_sample_less_than_eta_equals_4(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 size_t
-libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_fb(
+libcrux_ml_dsa_simd_portable_rejection_sample_less_than_eta_equals_4_65(
   Eurydice_borrow_slice_u8 randomness,
   Eurydice_dst_ref_mut_83 out
 );
@@ -568,10 +568,10 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_serialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_gamma1_serialize_fb(
+libcrux_ml_dsa_simd_portable_gamma1_serialize_65(
   const Eurydice_arr_4d *simd_unit,
   Eurydice_mut_borrow_slice_u8 serialized,
   size_t gamma1_exponent
@@ -605,10 +605,10 @@ libcrux_ml_dsa_simd_portable_encoding_gamma1_deserialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_gamma1_deserialize_fb(
+libcrux_ml_dsa_simd_portable_gamma1_deserialize_65(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_4d *out,
   size_t gamma1_exponent
@@ -633,10 +633,10 @@ libcrux_ml_dsa_simd_portable_encoding_commitment_serialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_commitment_serialize_fb(
+libcrux_ml_dsa_simd_portable_commitment_serialize_65(
   const Eurydice_arr_4d *simd_unit,
   Eurydice_mut_borrow_slice_u8 serialized
 );
@@ -665,10 +665,10 @@ libcrux_ml_dsa_simd_portable_encoding_error_serialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_error_serialize_fb(
+libcrux_ml_dsa_simd_portable_error_serialize_65(
   libcrux_ml_dsa_constants_Eta eta,
   const Eurydice_arr_4d *simd_unit,
   Eurydice_mut_borrow_slice_u8 serialized
@@ -698,10 +698,10 @@ libcrux_ml_dsa_simd_portable_encoding_error_deserialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_error_deserialize_fb(
+libcrux_ml_dsa_simd_portable_error_deserialize_65(
   libcrux_ml_dsa_constants_Eta eta,
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_4d *out
@@ -716,10 +716,10 @@ libcrux_ml_dsa_simd_portable_encoding_t0_serialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_t0_serialize_fb(
+libcrux_ml_dsa_simd_portable_t0_serialize_65(
   const Eurydice_arr_4d *simd_unit,
   Eurydice_mut_borrow_slice_u8 out
 );
@@ -733,10 +733,10 @@ libcrux_ml_dsa_simd_portable_encoding_t0_deserialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_t0_deserialize_fb(
+libcrux_ml_dsa_simd_portable_t0_deserialize_65(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_4d *out
 );
@@ -748,10 +748,10 @@ libcrux_ml_dsa_simd_portable_encoding_t1_serialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_t1_serialize_fb(
+libcrux_ml_dsa_simd_portable_t1_serialize_65(
   const Eurydice_arr_4d *simd_unit,
   Eurydice_mut_borrow_slice_u8 out
 );
@@ -763,10 +763,10 @@ libcrux_ml_dsa_simd_portable_encoding_t1_deserialize(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 void
-libcrux_ml_dsa_simd_portable_t1_deserialize_fb(
+libcrux_ml_dsa_simd_portable_t1_deserialize_65(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_4d *out
 );
@@ -1149,9 +1149,9 @@ void libcrux_ml_dsa_simd_portable_ntt_ntt_at_layer_0(Eurydice_arr_a3 *re);
 void libcrux_ml_dsa_simd_portable_ntt_ntt(Eurydice_arr_a3 *re);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-void libcrux_ml_dsa_simd_portable_ntt_fb(Eurydice_arr_a3 *simd_units);
+void libcrux_ml_dsa_simd_portable_ntt_65(Eurydice_arr_a3 *simd_units);
 
 void
 libcrux_ml_dsa_simd_portable_invntt_simd_unit_inv_ntt_step(
@@ -1506,14 +1506,14 @@ void libcrux_ml_dsa_simd_portable_invntt_invert_ntt_at_layer_7(Eurydice_arr_a3 *
 void libcrux_ml_dsa_simd_portable_invntt_invert_ntt_montgomery(Eurydice_arr_a3 *re);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_fb(Eurydice_arr_a3 *simd_units);
+void libcrux_ml_dsa_simd_portable_invert_ntt_montgomery_65(Eurydice_arr_a3 *simd_units);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-void libcrux_ml_dsa_simd_portable_barrett_reduce_simd_unit_fb(Eurydice_arr_4d *simd_unit);
+void libcrux_ml_dsa_simd_portable_barrett_reduce_simd_unit_65(Eurydice_arr_4d *simd_unit);
 
 #define LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_ERROR_RING_ELEMENT_SIZE (libcrux_ml_dsa_constants_error_ring_element_size(LIBCRUX_ML_DSA_CONSTANTS_ML_DSA_65_BITS_PER_ERROR_COEFFICIENT))
 
@@ -1624,16 +1624,16 @@ typedef Eurydice_arr_c9 libcrux_ml_dsa_pre_hash_PreHashOID;
 typedef core_result_Result_a8 libcrux_ml_dsa_pre_hash_PreHashResult;
 
 /**
-This function found in impl {impl core::convert::From<libcrux_ml_dsa::pre_hash::DomainSeparationError> for libcrux_ml_dsa::types::SigningError}
+This function found in impl {core::convert::From<libcrux_ml_dsa::pre_hash::DomainSeparationError> for libcrux_ml_dsa::types::SigningError}
 */
 libcrux_ml_dsa_types_SigningError
-libcrux_ml_dsa_pre_hash_from_3a(libcrux_ml_dsa_pre_hash_DomainSeparationError e);
+libcrux_ml_dsa_pre_hash_from_96(libcrux_ml_dsa_pre_hash_DomainSeparationError e);
 
 /**
-This function found in impl {impl core::convert::From<libcrux_ml_dsa::pre_hash::DomainSeparationError> for libcrux_ml_dsa::types::VerificationError}
+This function found in impl {core::convert::From<libcrux_ml_dsa::pre_hash::DomainSeparationError> for libcrux_ml_dsa::types::VerificationError}
 */
 libcrux_ml_dsa_types_VerificationError
-libcrux_ml_dsa_pre_hash_from_aa(libcrux_ml_dsa_pre_hash_DomainSeparationError e);
+libcrux_ml_dsa_pre_hash_from_bf(libcrux_ml_dsa_pre_hash_DomainSeparationError e);
 
 #define LIBCRUX_ML_DSA_SIMD_PORTABLE_INVNTT_INVERT_NTT_AT_LAYER_3_STEP ((size_t)8U)
 
@@ -1678,9 +1678,9 @@ libcrux_ml_dsa_pre_hash_from_aa(libcrux_ml_dsa_pre_hash_DomainSeparationError e)
 typedef int32_t libcrux_ml_dsa_simd_portable_vector_type_FieldElement;
 
 /**
-This function found in impl {impl core::clone::Clone for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {core::clone::Clone for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
-Eurydice_arr_4d libcrux_ml_dsa_simd_portable_vector_type_clone_0f(const Eurydice_arr_4d *self);
+Eurydice_arr_4d libcrux_ml_dsa_simd_portable_vector_type_clone_a5(const Eurydice_arr_4d *self);
 
 typedef int32_t libcrux_ml_dsa_simd_traits_FieldElementTimesMontgomeryR;
 
@@ -1975,27 +1975,27 @@ with const generics
 Eurydice_arr_0c libcrux_ml_dsa_types_zero_c5_5c(void);
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.zero_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.zero_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-Eurydice_arr_a3 libcrux_ml_dsa_polynomial_zero_e5_89(void);
+Eurydice_arr_a3 libcrux_ml_dsa_polynomial_zero_ff_37(void);
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.from_i32_array_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.from_i32_array_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
 void
-libcrux_ml_dsa_polynomial_from_i32_array_e5_89(
+libcrux_ml_dsa_polynomial_from_i32_array_ff_37(
   Eurydice_dst_ref_shared_83 array,
   Eurydice_arr_a3 *result
 );
@@ -2007,7 +2007,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_arithmetic_use_hint_89(
+libcrux_ml_dsa_arithmetic_use_hint_37(
   int32_t gamma2,
   Eurydice_dst_ref_shared_20 hint,
   Eurydice_dst_ref_mut_44 re_vector
@@ -2020,18 +2020,18 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_ntt_ntt_multiply_montgomery_89(Eurydice_arr_a3 *lhs, const Eurydice_arr_a3 *rhs);
+libcrux_ml_dsa_ntt_ntt_multiply_montgomery_37(Eurydice_arr_a3 *lhs, const Eurydice_arr_a3 *rhs);
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.add_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.add_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-void libcrux_ml_dsa_polynomial_add_e5_89(Eurydice_arr_a3 *self, const Eurydice_arr_a3 *rhs);
+void libcrux_ml_dsa_polynomial_add_ff_37(Eurydice_arr_a3 *self, const Eurydice_arr_a3 *rhs);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.simd.portable.arithmetic.shift_left_then_reduce
@@ -2042,14 +2042,14 @@ void
 libcrux_ml_dsa_simd_portable_arithmetic_shift_left_then_reduce_84(Eurydice_arr_4d *simd_unit);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
+This function found in impl {libcrux_ml_dsa::simd::traits::Operations for libcrux_ml_dsa::simd::portable::vector_type::Coefficients}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.simd.portable.shift_left_then_reduce_fb
+A monomorphic instance of libcrux_ml_dsa.simd.portable.shift_left_then_reduce_65
 with const generics
 - SHIFT_BY= 13
 */
-void libcrux_ml_dsa_simd_portable_shift_left_then_reduce_fb_84(Eurydice_arr_4d *simd_unit);
+void libcrux_ml_dsa_simd_portable_shift_left_then_reduce_65_84(Eurydice_arr_4d *simd_unit);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.arithmetic.shift_left_then_reduce
@@ -2065,30 +2065,30 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-void libcrux_ml_dsa_ntt_ntt_89(Eurydice_arr_a3 *re);
+void libcrux_ml_dsa_ntt_ntt_37(Eurydice_arr_a3 *re);
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.subtract_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.subtract_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
 void
-libcrux_ml_dsa_polynomial_subtract_e5_89(Eurydice_arr_a3 *self, const Eurydice_arr_a3 *rhs);
+libcrux_ml_dsa_polynomial_subtract_ff_37(Eurydice_arr_a3 *self, const Eurydice_arr_a3 *rhs);
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.barrett_reduce_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.barrett_reduce_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-void libcrux_ml_dsa_polynomial_barrett_reduce_e5_89(Eurydice_arr_a3 *self);
+void libcrux_ml_dsa_polynomial_barrett_reduce_ff_37(Eurydice_arr_a3 *self);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.ntt.invert_ntt_montgomery
@@ -2096,7 +2096,7 @@ with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-void libcrux_ml_dsa_ntt_invert_ntt_montgomery_89(Eurydice_arr_a3 *re);
+void libcrux_ml_dsa_ntt_invert_ntt_montgomery_37(Eurydice_arr_a3 *re);
 
 /**
  Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
@@ -2108,7 +2108,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_compute_w_approx_89(
+libcrux_ml_dsa_matrix_compute_w_approx_37(
   size_t rows_in_a,
   size_t columns_in_a,
   Eurydice_dst_ref_shared_44 matrix,
@@ -2136,7 +2136,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_gamma1_deserialize_89(
+libcrux_ml_dsa_encoding_gamma1_deserialize_37(
   size_t gamma1_exponent,
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_a3 *result
@@ -2149,7 +2149,7 @@ with const generics
 
 */
 core_result_Result_41
-libcrux_ml_dsa_encoding_signature_deserialize_89(
+libcrux_ml_dsa_encoding_signature_deserialize_37(
   size_t columns_in_a,
   size_t rows_in_a,
   size_t commitment_hash_size,
@@ -2170,7 +2170,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_t1_deserialize_89(
+libcrux_ml_dsa_encoding_t1_deserialize_37(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_a3 *result
 );
@@ -2182,7 +2182,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_verification_key_deserialize_89(
+libcrux_ml_dsa_encoding_verification_key_deserialize_37(
   size_t rows_in_a,
   size_t verification_key_size,
   Eurydice_borrow_slice_u8 serialized,
@@ -2224,7 +2224,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_gamma1_serialize_89(
+libcrux_ml_dsa_encoding_gamma1_serialize_37(
   const Eurydice_arr_a3 *re,
   Eurydice_mut_borrow_slice_u8 serialized,
   size_t gamma1_exponent
@@ -2237,7 +2237,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_signature_serialize_89(
+libcrux_ml_dsa_encoding_signature_serialize_37(
   Eurydice_borrow_slice_u8 commitment_hash,
   Eurydice_dst_ref_shared_44 signer_response,
   Eurydice_dst_ref_shared_20 hint,
@@ -2251,15 +2251,15 @@ libcrux_ml_dsa_encoding_signature_serialize_89(
 );
 
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.to_i32_array_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.to_i32_array_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
-Eurydice_arr_6c libcrux_ml_dsa_polynomial_to_i32_array_e5_89(const Eurydice_arr_a3 *self);
+Eurydice_arr_6c libcrux_ml_dsa_polynomial_to_i32_array_ff_37(const Eurydice_arr_a3 *self);
 
 /**
 A monomorphic instance of libcrux_ml_dsa.arithmetic.make_hint
@@ -2268,7 +2268,7 @@ with const generics
 
 */
 size_t
-libcrux_ml_dsa_arithmetic_make_hint_89(
+libcrux_ml_dsa_arithmetic_make_hint_37(
   Eurydice_dst_ref_shared_44 low,
   Eurydice_dst_ref_shared_44 high,
   int32_t gamma2,
@@ -2283,16 +2283,16 @@ libcrux_ml_dsa_arithmetic_make_hint_89(
  safe to leak the index of a violating coefficient.
 */
 /**
-This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_ml_dsa::polynomial::PolynomialRingElement<SIMDUnit>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.polynomial.infinity_norm_exceeds_e5
+A monomorphic instance of libcrux_ml_dsa.polynomial.infinity_norm_exceeds_ff
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
 bool
-libcrux_ml_dsa_polynomial_infinity_norm_exceeds_e5_89(
+libcrux_ml_dsa_polynomial_infinity_norm_exceeds_ff_37(
   const Eurydice_arr_a3 *self,
   int32_t bound
 );
@@ -2311,7 +2311,7 @@ with const generics
 
 */
 bool
-libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_89(
+libcrux_ml_dsa_arithmetic_vector_infinity_norm_exceeds_37(
   Eurydice_dst_ref_shared_44 vector,
   int32_t bound
 );
@@ -2323,7 +2323,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_subtract_vectors_89(
+libcrux_ml_dsa_matrix_subtract_vectors_37(
   size_t dimension,
   Eurydice_dst_ref_mut_44 lhs,
   Eurydice_dst_ref_shared_44 rhs
@@ -2336,7 +2336,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_add_vectors_89(
+libcrux_ml_dsa_matrix_add_vectors_37(
   size_t dimension,
   Eurydice_dst_ref_mut_44 lhs,
   Eurydice_dst_ref_shared_44 rhs
@@ -2349,7 +2349,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_vector_times_ring_element_89(
+libcrux_ml_dsa_matrix_vector_times_ring_element_37(
   Eurydice_dst_ref_mut_44 vector,
   const Eurydice_arr_a3 *ring_element
 );
@@ -2361,7 +2361,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_commitment_serialize_89(
+libcrux_ml_dsa_encoding_commitment_serialize_37(
   const Eurydice_arr_a3 *re,
   Eurydice_mut_borrow_slice_u8 serialized
 );
@@ -2373,7 +2373,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_commitment_serialize_vector_89(
+libcrux_ml_dsa_encoding_commitment_serialize_vector_37(
   size_t ring_element_size,
   Eurydice_dst_ref_shared_44 vector,
   Eurydice_mut_borrow_slice_u8 serialized
@@ -2386,7 +2386,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_arithmetic_decompose_vector_89(
+libcrux_ml_dsa_arithmetic_decompose_vector_37(
   size_t dimension,
   int32_t gamma2,
   Eurydice_dst_ref_shared_44 t,
@@ -2404,7 +2404,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_compute_matrix_x_mask_89(
+libcrux_ml_dsa_matrix_compute_matrix_x_mask_37(
   size_t rows_in_a,
   size_t columns_in_a,
   Eurydice_dst_ref_shared_44 matrix,
@@ -2431,7 +2431,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_t0_deserialize_89(
+libcrux_ml_dsa_encoding_t0_deserialize_37(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_a3 *result
 );
@@ -2443,7 +2443,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_t0_deserialize_to_vector_then_ntt_89(
+libcrux_ml_dsa_encoding_t0_deserialize_to_vector_then_ntt_37(
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_dst_ref_mut_44 ring_elements
 );
@@ -2455,7 +2455,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_error_deserialize_89(
+libcrux_ml_dsa_encoding_error_deserialize_37(
   libcrux_ml_dsa_constants_Eta eta,
   Eurydice_borrow_slice_u8 serialized,
   Eurydice_arr_a3 *result
@@ -2468,7 +2468,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_error_deserialize_to_vector_then_ntt_89(
+libcrux_ml_dsa_encoding_error_deserialize_to_vector_then_ntt_37(
   libcrux_ml_dsa_constants_Eta eta,
   size_t ring_element_size,
   Eurydice_borrow_slice_u8 serialized,
@@ -2495,7 +2495,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_t0_serialize_89(
+libcrux_ml_dsa_encoding_t0_serialize_37(
   const Eurydice_arr_a3 *re,
   Eurydice_mut_borrow_slice_u8 serialized
 );
@@ -2507,7 +2507,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_error_serialize_89(
+libcrux_ml_dsa_encoding_error_serialize_37(
   libcrux_ml_dsa_constants_Eta eta,
   const Eurydice_arr_a3 *re,
   Eurydice_mut_borrow_slice_u8 serialized
@@ -2520,7 +2520,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_t1_serialize_89(
+libcrux_ml_dsa_encoding_t1_serialize_37(
   const Eurydice_arr_a3 *re,
   Eurydice_mut_borrow_slice_u8 serialized
 );
@@ -2532,7 +2532,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_encoding_verification_key_generate_serialized_89(
+libcrux_ml_dsa_encoding_verification_key_generate_serialized_37(
   Eurydice_borrow_slice_u8 seed,
   Eurydice_dst_ref_shared_44 t1,
   Eurydice_mut_borrow_slice_u8 verification_key_serialized
@@ -2545,7 +2545,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_arithmetic_power2round_vector_89(
+libcrux_ml_dsa_arithmetic_power2round_vector_37(
   Eurydice_dst_ref_mut_44 t,
   Eurydice_dst_ref_mut_44 t1
 );
@@ -2560,7 +2560,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_matrix_compute_as1_plus_s2_89(
+libcrux_ml_dsa_matrix_compute_as1_plus_s2_37(
   size_t rows_in_a,
   size_t columns_in_a,
   Eurydice_dst_ref_mut_44 a_as_ntt,
@@ -2576,7 +2576,7 @@ with const generics
 
 */
 bool
-libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_89(
+libcrux_ml_dsa_sample_rejection_sample_less_than_field_modulus_37(
   Eurydice_borrow_slice_u8 randomness,
   size_t *sampled_coefficients,
   Eurydice_arr_d0 *out
@@ -2589,7 +2589,7 @@ with const generics
 
 */
 bool
-libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_89(
+libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_4_37(
   Eurydice_borrow_slice_u8 randomness,
   size_t *sampled_coefficients,
   Eurydice_arr_d0 *out
@@ -2602,7 +2602,7 @@ with const generics
 
 */
 bool
-libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_89(
+libcrux_ml_dsa_sample_rejection_sample_less_than_eta_equals_2_37(
   Eurydice_borrow_slice_u8 randomness,
   size_t *sampled_coefficients,
   Eurydice_arr_d0 *out
@@ -2615,7 +2615,7 @@ with const generics
 
 */
 bool
-libcrux_ml_dsa_sample_rejection_sample_less_than_eta_89(
+libcrux_ml_dsa_sample_rejection_sample_less_than_eta_37(
   libcrux_ml_dsa_constants_Eta eta,
   Eurydice_borrow_slice_u8 randomness,
   size_t *sampled,

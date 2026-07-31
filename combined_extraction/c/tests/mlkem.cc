@@ -145,20 +145,18 @@ TEST(MLKEM_SUITE(TestPortableUnpacked), ConsistencyTest) {
 
   memset(encaps_rand.data, 0x15, 32);
 
-  // We put this on the heap to avoid blowing the stack.
-  MLKEM_PORTABLE_UNPACKED_TYPE *key_pair = static_cast<
-      MLKEM_PORTABLE_UNPACKED_TYPE *>(malloc(sizeof(MLKEM_PORTABLE_UNPACKED_TYPE)));
-  MLKEM_SYM(_portable_unpacked_generate_key_pair_mut)(keygen_rand, key_pair);
+  MLKEM_PORTABLE_UNPACKED_TYPE key_pair =
+      MLKEM_SYM(_portable_unpacked_init_key_pair)();
+  MLKEM_SYM(_portable_unpacked_generate_key_pair_mut)(keygen_rand, &key_pair);
 
-  auto ctxt = MLKEM_SYM(_portable_unpacked_encapsulate)(&key_pair->public_key,
+  auto ctxt = MLKEM_SYM(_portable_unpacked_encapsulate)(&key_pair.public_key,
                                                         encaps_rand);
 
   auto sharedSecret2 =
-      MLKEM_SYM(_portable_unpacked_decapsulate)(key_pair, &ctxt.fst);
+      MLKEM_SYM(_portable_unpacked_decapsulate)(&key_pair, &ctxt.fst);
 
   EXPECT_EQ(0, memcmp(ctxt.snd.data, sharedSecret2.data,
                       LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
-  free(key_pair);
 }
 
 TEST(KYBER_SUITE(TestPortable), ModifiedCiphertextTest) {

@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2026 CE Labs
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
- * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
+ * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
+ * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
+ * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
 
@@ -30,7 +30,7 @@ with types libcrux_ml_dsa_polynomial_PolynomialRingElement_4b
 with const generics
 - $8size_t
 */
-typedef struct Eurydice_arr_fa_s { Eurydice_arr_60 data[8U]; } Eurydice_arr_fa;
+typedef struct Eurydice_arr_fa0_s { Eurydice_arr_60 data[8U]; } Eurydice_arr_fa0;
 
 /**
 A monomorphic instance of Eurydice.arr

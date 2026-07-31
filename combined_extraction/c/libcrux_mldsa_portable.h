@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2025 Cryspen Sarl <info@cryspen.com>
+ * SPDX-FileCopyrightText: 2026 CE Labs
  *
  * SPDX-License-Identifier: MIT or Apache-2.0
  *
  * This code was generated with the following revisions:
- * Charon: 6f058254eb741c12e9b388df07adaf7cc8aac8ed
- * Eurydice: fca2e9fbd728e49d677f3fc0da0054b55f3b9973
+ * Charon: e656e17bff6ca5efac8ab6919b9b74cb9a8dd8ad
+ * Eurydice: aaa9fa657fb6f09802edb890252040d94cd93982
  * Karamel: 8c19d41458ce5cbfea029ebc03334ba96d149039
  * F*: 70671ffb81fa30aba09b9d6e2af275dfbccaa8f8
- * Libcrux: 97ec9733b27531975cb58960a1a3049193a43e07
+ * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
 
@@ -107,19 +107,19 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake128::Xof for libcrux_ml_dsa::hash_functions::portable::Shake128}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake128::Xof for libcrux_ml_dsa::hash_functions::portable::Shake128}
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake128_0c(
+libcrux_ml_dsa_hash_functions_portable_shake128_7b(
   Eurydice_borrow_slice_u8 input,
   Eurydice_mut_borrow_slice_u8 out
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
 libcrux_ml_dsa_hash_functions_portable_Shake128X4
-libcrux_ml_dsa_hash_functions_portable_init_absorb_b6(
+libcrux_ml_dsa_hash_functions_portable_init_absorb_11(
   Eurydice_borrow_slice_u8 input0,
   Eurydice_borrow_slice_u8 input1,
   Eurydice_borrow_slice_u8 input2,
@@ -127,10 +127,10 @@ libcrux_ml_dsa_hash_functions_portable_init_absorb_b6(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
 void
-libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_b6(
+libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_11(
   libcrux_ml_dsa_hash_functions_portable_Shake128X4 *self,
   Eurydice_arr_d10 *out0,
   Eurydice_arr_d10 *out1,
@@ -139,69 +139,69 @@ libcrux_ml_dsa_hash_functions_portable_squeeze_first_five_blocks_b6(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake128::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake128X4}
 */
 Eurydice_arr_c5_x4
-libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_b6(
+libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_11(
   libcrux_ml_dsa_hash_functions_portable_Shake128X4 *self
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 Eurydice_arr_7c
-libcrux_ml_dsa_hash_functions_portable_init_absorb_final_fa(Eurydice_borrow_slice_u8 input);
+libcrux_ml_dsa_hash_functions_portable_init_absorb_final_61(Eurydice_borrow_slice_u8 input);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 Eurydice_arr_ff
-libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_fa(Eurydice_arr_7c *self);
+libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_61(Eurydice_arr_7c *self);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 Eurydice_arr_ff
-libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_fa(Eurydice_arr_7c *self);
+libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_61(Eurydice_arr_7c *self);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 void
-libcrux_ml_dsa_hash_functions_portable_absorb_f5(
+libcrux_ml_dsa_hash_functions_portable_absorb_26(
   libcrux_sha3_generic_keccak_xof_KeccakXofState_8d *self,
   Eurydice_borrow_slice_u8 input
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 void
-libcrux_ml_dsa_hash_functions_portable_absorb_final_f5(
+libcrux_ml_dsa_hash_functions_portable_absorb_final_26(
   libcrux_sha3_generic_keccak_xof_KeccakXofState_8d *self,
   Eurydice_borrow_slice_u8 input
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 libcrux_sha3_generic_keccak_xof_KeccakXofState_8d
-libcrux_ml_dsa_hash_functions_portable_init_f5(void);
+libcrux_ml_dsa_hash_functions_portable_init_26(void);
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::Xof for libcrux_ml_dsa::hash_functions::portable::Shake256Xof}
 */
 void
-libcrux_ml_dsa_hash_functions_portable_squeeze_f5(
+libcrux_ml_dsa_hash_functions_portable_squeeze_26(
   libcrux_sha3_generic_keccak_xof_KeccakXofState_8d *self,
   Eurydice_mut_borrow_slice_u8 out
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 libcrux_ml_dsa_hash_functions_portable_Shake256X4
-libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_c3(
+libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_9b(
   Eurydice_borrow_slice_u8 input0,
   Eurydice_borrow_slice_u8 input1,
   Eurydice_borrow_slice_u8 input2,
@@ -209,18 +209,18 @@ libcrux_ml_dsa_hash_functions_portable_init_absorb_x4_c3(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 Eurydice_arr_ff_x4
-libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4_c3(
+libcrux_ml_dsa_hash_functions_portable_squeeze_first_block_x4_9b(
   libcrux_ml_dsa_hash_functions_portable_Shake256X4 *self
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 Eurydice_arr_ff_x4
-libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_c3(
+libcrux_ml_dsa_hash_functions_portable_squeeze_next_block_x4_9b(
   libcrux_ml_dsa_hash_functions_portable_Shake256X4 *self
 );
 
@@ -295,16 +295,16 @@ libcrux_ml_dsa_samplex4_matrix_flat_63(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::samplex4::X4Sampler for libcrux_ml_dsa::samplex4::portable::PortableSampler}
+This function found in impl {libcrux_ml_dsa::samplex4::X4Sampler for libcrux_ml_dsa::samplex4::portable::PortableSampler}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.samplex4.portable.matrix_flat_27
+A monomorphic instance of libcrux_ml_dsa.samplex4.portable.matrix_flat_a8
 with types libcrux_ml_dsa_simd_portable_vector_type_Coefficients
 with const generics
 
 */
 void
-libcrux_ml_dsa_samplex4_portable_matrix_flat_27_89(
+libcrux_ml_dsa_samplex4_portable_matrix_flat_a8_37(
   size_t columns,
   Eurydice_borrow_slice_u8 seed,
   Eurydice_dst_ref_mut_44 matrix
@@ -322,15 +322,15 @@ libcrux_ml_dsa_hash_functions_portable_shake256_c9(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_fa
+A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_61
 with const generics
 - OUTPUT_LENGTH= 64
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake256_fa_c9(
+libcrux_ml_dsa_hash_functions_portable_shake256_61_c9(
   Eurydice_borrow_slice_u8 input,
   Eurydice_arr_c7 *out
 );
@@ -405,7 +405,7 @@ with const generics
 
 */
 void
-libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_0e(
+libcrux_ml_dsa_ml_dsa_generic_derive_message_representative_43(
   Eurydice_borrow_slice_u8 verification_key_hash,
   const core_option_Option_84 *domain_separation_context,
   Eurydice_borrow_slice_u8 message,
@@ -424,15 +424,15 @@ libcrux_ml_dsa_hash_functions_portable_shake256_5a(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_x4_c3
+A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_x4_9b
 with const generics
 - OUT_LEN= 576
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake256_x4_c3_5a(
+libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_5a(
   Eurydice_borrow_slice_u8 input0,
   Eurydice_borrow_slice_u8 input1,
   Eurydice_borrow_slice_u8 input2,
@@ -455,15 +455,15 @@ libcrux_ml_dsa_hash_functions_portable_shake256_0e(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::XofX4 for libcrux_ml_dsa::hash_functions::portable::Shake256X4}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_x4_c3
+A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_x4_9b
 with const generics
 - OUT_LEN= 640
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake256_x4_c3_0e(
+libcrux_ml_dsa_hash_functions_portable_shake256_x4_9b_0e(
   Eurydice_borrow_slice_u8 input0,
   Eurydice_borrow_slice_u8 input1,
   Eurydice_borrow_slice_u8 input2,
@@ -475,29 +475,29 @@ libcrux_ml_dsa_hash_functions_portable_shake256_x4_c3_0e(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_fa
+A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_61
 with const generics
 - OUTPUT_LENGTH= 640
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake256_fa_0e(
+libcrux_ml_dsa_hash_functions_portable_shake256_61_0e(
   Eurydice_borrow_slice_u8 input,
   Eurydice_arr_20 *out
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
+This function found in impl {libcrux_ml_dsa::hash_functions::shake256::DsaXof for libcrux_ml_dsa::hash_functions::portable::Shake256}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_fa
+A monomorphic instance of libcrux_ml_dsa.hash_functions.portable.shake256_61
 with const generics
 - OUTPUT_LENGTH= 576
 */
 void
-libcrux_ml_dsa_hash_functions_portable_shake256_fa_5a(
+libcrux_ml_dsa_hash_functions_portable_shake256_61_5a(
   Eurydice_borrow_slice_u8 input,
   Eurydice_arr_220 *out
 );
@@ -611,16 +611,16 @@ libcrux_ml_dsa_ml_dsa_generic_instantiations_portable_ml_dsa_44_sign_mut(
 );
 
 /**
-This function found in impl {impl libcrux_ml_dsa::pre_hash::PreHash for libcrux_ml_dsa::pre_hash::SHAKE128_PH}
+This function found in impl {libcrux_ml_dsa::pre_hash::PreHash for libcrux_ml_dsa::pre_hash::SHAKE128_PH}
 */
 /**
-A monomorphic instance of libcrux_ml_dsa.pre_hash.hash_7a
+A monomorphic instance of libcrux_ml_dsa.pre_hash.hash_30
 with types libcrux_ml_dsa_hash_functions_portable_Shake128
 with const generics
 
 */
 void
-libcrux_ml_dsa_pre_hash_hash_7a_95(
+libcrux_ml_dsa_pre_hash_hash_30_83(
   Eurydice_borrow_slice_u8 message,
   Eurydice_mut_borrow_slice_u8 output
 );

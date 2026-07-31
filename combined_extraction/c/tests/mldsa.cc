@@ -13,6 +13,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cassert>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -23,19 +24,28 @@
 
 #if MLDSA_VARIANT == 44
 #include "libcrux_mldsa44_portable.h"
-#define MLDSA_VERIFICATION_KEY_SIZE 1312U
-#define MLDSA_SIGNING_KEY_SIZE 2560U
-#define MLDSA_SIGNATURE_SIZE 2420U
+#define MLDSA_VERIFICATION_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_44_VERIFICATION_KEY_SIZE
+#define MLDSA_SIGNING_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_44_SIGNING_KEY_SIZE
+#define MLDSA_SIGNATURE_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_44_SIGNATURE_SIZE
 #elif MLDSA_VARIANT == 65
 #include "libcrux_mldsa65_portable.h"
-#define MLDSA_VERIFICATION_KEY_SIZE 1952U
-#define MLDSA_SIGNING_KEY_SIZE 4032U
-#define MLDSA_SIGNATURE_SIZE 3309U
+#define MLDSA_VERIFICATION_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_VERIFICATION_KEY_SIZE
+#define MLDSA_SIGNING_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNING_KEY_SIZE
+#define MLDSA_SIGNATURE_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_65_SIGNATURE_SIZE
 #elif MLDSA_VARIANT == 87
 #include "libcrux_mldsa87_portable.h"
-#define MLDSA_VERIFICATION_KEY_SIZE 2592U
-#define MLDSA_SIGNING_KEY_SIZE 4896U
-#define MLDSA_SIGNATURE_SIZE 4627U
+#define MLDSA_VERIFICATION_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_87_VERIFICATION_KEY_SIZE
+#define MLDSA_SIGNING_KEY_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_87_SIGNING_KEY_SIZE
+#define MLDSA_SIGNATURE_SIZE \
+  LIBCRUX_ML_DSA_ML_DSA_GENERIC_ML_DSA_87_SIGNATURE_SIZE
 #else
 #error "Unsupported MLDSA_VARIANT (expected 44, 65, or 87)"
 #endif
@@ -58,6 +68,9 @@ typedef vector<uint8_t> bytes;
 #define MLDSA_SUITE(suffix) MLDSA_CAT(MLDSA_CAT(MlDsa, MLDSA_VARIANT), suffix)
 // tests/nistkats-<VARIANT>.json
 #define MLDSA_KATS_PATH "tests/nistkats-" MLDSA_TOSTRING(MLDSA_VARIANT) ".json"
+// tests/nistkats_pre_hashed-<VARIANT>.json
+#define MLDSA_KATS_PRE_HASHED_PATH \
+  "tests/nistkats_pre_hashed-" MLDSA_TOSTRING(MLDSA_VARIANT) ".json"
 
 Eurydice_borrow_slice_u8 mk_borrow_slice_u8(const uint8_t *x, size_t len) {
   Eurydice_borrow_slice_u8 s = {0};
@@ -192,6 +205,7 @@ vector<KAT> read_kats(string path) {
     });
   }
 
+  assert(!kats.empty() && "no test vectors loaded, check the KATs path");
   return kats;
 }
 
@@ -241,6 +255,52 @@ TEST(MLDSA_SUITE(TestPortable), NISTKnownAnswerTest) {
   }
 }
 
+TEST(MLDSA_SUITE(TestPortable), NISTKnownAnswerTestPreHashed) {
+  // XXX: This should be done in a portable way.
+  auto kats = read_kats(MLDSA_KATS_PRE_HASHED_PATH);
+
+  Eurydice_arr_ec keygen_rand = {0};
+  Eurydice_arr_ec sign_rand = {0};
+
+  for (auto kat : kats) {
+    // Generate key pair
+    memcpy(keygen_rand.data, kat.key_generation_seed.data(), 32);
+
+    auto key_pair = MLDSA_SYM(_portable_generate_key_pair)(keygen_rand);
+
+    auto vk_hash = libcrux_sha3_sha256(mk_borrow_slice_u8(
+        key_pair.verification_key.data, MLDSA_VERIFICATION_KEY_SIZE));
+    EXPECT_EQ(0, memcmp(vk_hash.data,
+                        kat.sha3_256_hash_of_verification_key.data(), 32));
+
+    auto sk_hash = libcrux_sha3_sha256(
+        mk_borrow_slice_u8(key_pair.signing_key.data, MLDSA_SIGNING_KEY_SIZE));
+    EXPECT_EQ(
+        0, memcmp(sk_hash.data, kat.sha3_256_hash_of_signing_key.data(), 32));
+
+    // Sign
+    memcpy(sign_rand.data, kat.signing_randomness.data(), 32);
+    Eurydice_borrow_slice_u8 context = {0};
+
+    auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
+    auto signature_result = MLDSA_SYM(_portable_sign_pre_hashed_shake128)(
+        &key_pair.signing_key, msg_slice, context, sign_rand);
+    EXPECT_EQ(signature_result.tag, core_result_Ok);
+    auto signature = signature_result.val.case_Ok;
+
+    auto sig_hash =
+        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, MLDSA_SIGNATURE_SIZE));
+    EXPECT_EQ(0,
+              memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
+
+    // Verify
+    auto result = MLDSA_SYM(_portable_verify_pre_hashed_shake128)(
+        &key_pair.verification_key, msg_slice, context, &signature);
+
+    EXPECT_EQ(result.tag, core_result_Ok);
+  }
+}
+
 #ifdef LIBCRUX_X64
 TEST(MLDSA_SUITE(TestAvx2), NISTKnownAnswerTest) {
   // XXX: This should be done in a portable way.
@@ -282,6 +342,52 @@ TEST(MLDSA_SUITE(TestAvx2), NISTKnownAnswerTest) {
 
     // Verify
     auto result = MLDSA_SYM(_avx2_verify)(
+        &key_pair.verification_key, msg_slice, context, &signature);
+
+    EXPECT_EQ(result.tag, core_result_Ok);
+  }
+}
+
+TEST(MLDSA_SUITE(TestAvx2), NISTKnownAnswerTestPreHashed) {
+  // XXX: This should be done in a portable way.
+  auto kats = read_kats(MLDSA_KATS_PRE_HASHED_PATH);
+
+  Eurydice_arr_ec keygen_rand = {0};
+  Eurydice_arr_ec sign_rand = {0};
+
+  for (auto kat : kats) {
+    // Generate key pair
+    memcpy(keygen_rand.data, kat.key_generation_seed.data(), 32);
+
+    auto key_pair = MLDSA_SYM(_avx2_generate_key_pair)(keygen_rand);
+
+    auto vk_hash = libcrux_sha3_sha256(mk_borrow_slice_u8(
+        key_pair.verification_key.data, MLDSA_VERIFICATION_KEY_SIZE));
+    EXPECT_EQ(0, memcmp(vk_hash.data,
+                        kat.sha3_256_hash_of_verification_key.data(), 32));
+
+    auto sk_hash = libcrux_sha3_sha256(
+        mk_borrow_slice_u8(key_pair.signing_key.data, MLDSA_SIGNING_KEY_SIZE));
+    EXPECT_EQ(
+        0, memcmp(sk_hash.data, kat.sha3_256_hash_of_signing_key.data(), 32));
+
+    // Sign
+    memcpy(sign_rand.data, kat.signing_randomness.data(), 32);
+    Eurydice_borrow_slice_u8 context = {0};
+
+    auto msg_slice = mk_borrow_slice_u8(kat.message.data(), kat.message.size());
+    auto signature_result = MLDSA_SYM(_avx2_sign_pre_hashed_shake128)(
+        &key_pair.signing_key, msg_slice, context, sign_rand);
+    EXPECT_EQ(signature_result.tag, core_result_Ok);
+    auto signature = signature_result.val.case_Ok;
+
+    auto sig_hash =
+        libcrux_sha3_sha256(mk_borrow_slice_u8(signature.data, MLDSA_SIGNATURE_SIZE));
+    EXPECT_EQ(0,
+              memcmp(sig_hash.data, kat.sha3_256_hash_of_signature.data(), 32));
+
+    // Verify
+    auto result = MLDSA_SYM(_avx2_verify_pre_hashed_shake128)(
         &key_pair.verification_key, msg_slice, context, &signature);
 
     EXPECT_EQ(result.tag, core_result_Ok);
