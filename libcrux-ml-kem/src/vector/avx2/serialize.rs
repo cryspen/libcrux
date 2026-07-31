@@ -428,6 +428,10 @@ with Libcrux_ml_kem.Vector.Avx2.Unpack_theory.lemma_deserialize_4_bits $b0 $b1 $
 }
 
 #[inline(always)]
+// proof-residence: locked(clean-context) — the store-glue composition saturates
+// on this module's accumulated solver state; the restart is the documented
+// first probe for module-context-only saturation (skill 7 step 0.5).
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
 #[hax_lib::fstar::options("--ext context_pruning --split_queries always --z3rlimit 400")]
 #[hax_lib::requires(fstar!(r#"forall (i: nat{i < 256}). i % 16 < 5 || Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector i = 0"#))]
 #[hax_lib::ensures(|r| fstar!(r#"forall (i: nat{i < 80}). bit_vec_of_int_t_array r 8 i == Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit vector ((i/5) * 16 + i%5)"#))]
@@ -461,11 +465,14 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
 
         // Shifting up by 22, then back down by 22, viewing as 64-bit lanes,
         // packs adjacent 2-combined into adjacent 4-combined.
-        let adjacent_4_combined = mm256_sllv_epi32(
+        // NB the SIMD locals in this chain are unshadowed (`_shifted` /
+        // `_shuffled` / `_combined`): a rebound name drops its earlier
+        // let-equation, and the gather lemmas need the whole chain in scope.
+        let adjacent_4_shifted = mm256_sllv_epi32(
             adjacent_2_combined,
             mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22),
         );
-        let adjacent_4_combined = mm256_srli_epi64::<22>(adjacent_4_combined);
+        let adjacent_4_combined = mm256_srli_epi64::<22>(adjacent_4_shifted);
 
         // Shuffle to bring the bits into a contiguous form, then shift up
         // by 12 in 32-bit lanes, view as 64-bit lanes, shift down by 12 to
@@ -475,18 +482,18 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
         // usable by `assert_norm`.  In each 128-bit half, places 32-bit
         // lane 2 into lane 1; lanes 0/2/3 retain old lane 0 (will be
         // masked off by the next sllv/srli pair).
-        let adjacent_8_combined = mm256_shuffle_epi8(
+        let adjacent_8_shuffled = mm256_shuffle_epi8(
             adjacent_4_combined,
             mm256_set_epi8(
                 3, 2, 1, 0, 3, 2, 1, 0, 11, 10, 9, 8, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 11, 10,
                 9, 8, 3, 2, 1, 0,
             ),
         );
-        let adjacent_8_combined = mm256_sllv_epi32(
-            adjacent_8_combined,
+        let adjacent_8_shifted = mm256_sllv_epi32(
+            adjacent_8_shuffled,
             mm256_set_epi32(0, 0, 0, 12, 0, 0, 0, 12),
         );
-        let adjacent_8_combined = mm256_srli_epi64::<12>(adjacent_8_combined);
+        let adjacent_8_combined = mm256_srli_epi64::<12>(adjacent_8_shifted);
 
         // We now have 40 bits starting at position 0 in the lower 128-bit lane, ...
         let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
@@ -495,19 +502,74 @@ pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
 
         proof!(
             r#"
-    introduce forall (i:nat{i < 40}). lower_8_ i = vector ((i / 5) * 16 + i % 5)
-    with assert_norm (BitVec.Utils.forall_n 40 (fun i -> lower_8_ i = vector ((i / 5) * 16 + i % 5)));
-    introduce forall (i:nat{i < 40}). upper_8_ i = vector (128 + (i / 5) * 16 + i % 5)
-    with assert_norm (BitVec.Utils.forall_n 40 (fun i -> upper_8_ i = vector (128 + (i / 5) * 16 + i % 5)))
-    "#
+introduce forall (i: nat{i < 80}).
+    Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $vector ((i / 5) * 16 + i % 5) ==
+      (if i < 40
+       then Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $lower_8 i
+       else Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit $upper_8 (i - 40))
+with (if i < 40
+      then Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_5_lower_bits
+             $vector $adjacent_2_combined i
+      else (FStar.Math.Lemmas.lemma_div_plus (i - 40) 8 5;
+            FStar.Math.Lemmas.lemma_mod_plus (i - 40) 8 5;
+            Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_serialize_5_upper_bits
+              $vector $adjacent_2_combined (i - 40)))
+"#
         );
         (lower_8, upper_8)
     }
 
     let mut serialized = [0u8; 32];
     let (lower_8, upper_8) = serialize_5_vec(vector);
+    // The two stores OVERLAP: the second clobbers bytes [5,16) of the first.
+    // That is sound because only the low 40 bits of `lower_8` are live, and
+    // they sit in bytes [0,5).  `lemma_store_glue_bits` discharges the gluing
+    // from the per-byte frame facts of the two `update_at_range` writes, so
+    // the slice reasoning never enters this function's context.
+    #[cfg(hax)]
+    let ser0 = serialized;
     mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    #[cfg(hax)]
+    let ser1 = serialized;
     mm_storeu_bytes_si128(&mut serialized[5..21], upper_8);
+
+    proof!(
+        r#"
+let o1 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                           Core_models.Ops.Range.f_end = mk_usize 16 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${lower_8} in
+let o2 = Libcrux_intrinsics.Avx2.mm_storeu_bytes_si128
+           ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 5;
+                           Core_models.Ops.Range.f_end = mk_usize 21 }
+                         <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8)
+           ${upper_8} in
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser0}).[ ({ Core_models.Ops.Range.f_start = mk_usize 0;
+                  Core_models.Ops.Range.f_end = mk_usize 16 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${lower_8};
+Libcrux_intrinsics.Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128
+  ((${ser1}).[ ({ Core_models.Ops.Range.f_start = mk_usize 5;
+                  Core_models.Ops.Range.f_end = mk_usize 21 }
+                <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8) ${upper_8};
+Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+  ((${ser0}) <: t_Slice u8)
+  ({ Core_models.Ops.Range.f_start = mk_usize 0;
+     Core_models.Ops.Range.f_end = mk_usize 16 } <: Core_models.Ops.Range.t_Range usize)
+  (o1 <: t_Slice u8);
+Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range
+  ((${ser1}) <: t_Slice u8)
+  ({ Core_models.Ops.Range.f_start = mk_usize 5;
+     Core_models.Ops.Range.f_end = mk_usize 21 } <: Core_models.Ops.Range.t_Range usize)
+  (o2 <: t_Slice u8);
+introduce forall (i: nat{i < 80}).
+    Rust_primitives.BitVectors.bit_vec_of_int_t_array ${serialized} 8 i ==
+      Libcrux_intrinsics.Avx2_ml_kem_views.bv_bit ${vector} ((i / 5) * 16 + i % 5)
+with Libcrux_ml_kem.Vector.Avx2.Byteperm_theory.lemma_store_glue_bits
+       ${serialized} o1 o2 ${lower_8} ${upper_8} 5 i
+"#
+    );
 
     serialized[0..10].try_into().unwrap()
 }
