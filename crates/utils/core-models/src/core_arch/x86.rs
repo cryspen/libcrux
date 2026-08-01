@@ -648,14 +648,40 @@ pub mod avx2 {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srlv_epi64)
+    ///
+    /// Per-lane logical right shift by an UNSIGNED 64-bit count; a count `>= 64`
+    /// (which includes any lane that is negative when read as i64) zeroes the
+    /// destination lane. Mirrors the int-vec model `IV.e_mm256_srlv_epi64`.
     #[hax_lib::opaque]
-    pub fn _mm256_srlv_epi64(_: __m256i, _: __m256i) -> __m256i {
-        unimplemented!()
+    pub fn _mm256_srlv_epi64(vector: __m256i, counts: __m256i) -> __m256i {
+        let a = BitVec::to_i64x4(vector);
+        let b = BitVec::to_i64x4(counts);
+        BitVec::from_i64x4(FunArray::from_fn(|i| {
+            let bi = b[i];
+            if bi > 63 || bi < 0 {
+                0i64
+            } else {
+                ((a[i] as u64) >> (bi as u32)) as i64
+            }
+        }))
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sllv_epi32)
+    ///
+    /// Per-lane logical left shift by an UNSIGNED 32-bit count; a count `>= 32`
+    /// (which includes any lane that is negative when read as i32) zeroes the
+    /// destination lane. Mirrors the int-vec model `IV.e_mm_sllv_epi32`.
     #[hax_lib::opaque]
-    pub fn _mm_sllv_epi32(_: __m128i, _: __m128i) -> __m128i {
-        unimplemented!()
+    pub fn _mm_sllv_epi32(vector: __m128i, counts: __m128i) -> __m128i {
+        let a = BitVec::to_i32x4(vector);
+        let b = BitVec::to_i32x4(counts);
+        BitVec::from_i32x4(FunArray::from_fn(|i| {
+            let bi = b[i];
+            if bi > 31 || bi < 0 {
+                0i32
+            } else {
+                ((a[i] as u32) << (bi as u32)) as i32
+            }
+        }))
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi64)
     #[hax_lib::opaque]
@@ -674,8 +700,14 @@ pub mod avx2 {
     /// That bug was fixed in stdarch#1823 — the int-vec model now matches
     /// the fixed (Intel-spec) behaviour.
     #[hax_lib::opaque]
-    pub fn _mm256_bsrli_epi128<const IMM8: i32>(_: __m256i) -> __m256i {
-        unimplemented!()
+    pub fn _mm256_bsrli_epi128<const IMM8: i32>(vector: __m256i) -> __m256i {
+        // Byte-shift right within each 128-bit lane == a bit-level right shift by
+        // `(IMM8 % 256) * 8` bits per 128-bit chunk; a shift of >= 128 bits (i.e.
+        // IMM8 % 256 > 15) zeroes the lane. Implemented via chunked_shift (like
+        // srli_epi64) to avoid the runtime i128 lane reconstruction. Matches the
+        // int-vec model `IV.e_mm256_bsrli_epi128`.
+        let tmp = IMM8.rem_euclid(256);
+        vector.chunked_shift::<128, 2>(FunArray::from_fn(|_| -((tmp * 8) as i128)))
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_andnot_si256)
     #[hax_lib::opaque]
@@ -1564,6 +1596,64 @@ mod tests {
                 upstream::_mm256_permutevar8x32_epi32(vector.into(), counts.into()).into()
             });
         }
+    }
+
+    #[test]
+    fn mm256_srlv_epi64() {
+        for _ in 0..N {
+            let vector: BitVec<256> = BitVec::rand();
+            let counts: BitVec<256> = BitVec::rand();
+            assert_eq!(super::_mm256_srlv_epi64(vector, counts), unsafe {
+                upstream::_mm256_srlv_epi64(vector.into(), counts.into()).into()
+            });
+        }
+        // explicit in-range + boundary counts (random ones are almost always >= 64)
+        for &c in &[0i64, 1, 5, 31, 32, 63, 64, -1] {
+            let counts: BitVec<256> = BitVec::from_i64x4(FunArray::from_fn(|_| c));
+            for _ in 0..64 {
+                let vector: BitVec<256> = BitVec::rand();
+                assert_eq!(super::_mm256_srlv_epi64(vector, counts), unsafe {
+                    upstream::_mm256_srlv_epi64(vector.into(), counts.into()).into()
+                });
+            }
+        }
+    }
+
+    #[test]
+    fn mm_sllv_epi32() {
+        for _ in 0..N {
+            let vector: BitVec<128> = BitVec::rand();
+            let counts: BitVec<128> = BitVec::rand();
+            assert_eq!(super::_mm_sllv_epi32(vector, counts), unsafe {
+                upstream::_mm_sllv_epi32(vector.into(), counts.into()).into()
+            });
+        }
+        for &c in &[0i32, 1, 5, 31, 32, -1] {
+            let counts: BitVec<128> = BitVec::from_i32x4(FunArray::from_fn(|_| c));
+            for _ in 0..64 {
+                let vector: BitVec<128> = BitVec::rand();
+                assert_eq!(super::_mm_sllv_epi32(vector, counts), unsafe {
+                    upstream::_mm_sllv_epi32(vector.into(), counts.into()).into()
+                });
+            }
+        }
+    }
+
+    #[test]
+    fn mm256_bsrli_epi128() {
+        macro_rules! mk {
+            ($($imm: literal)*) => {
+                $(for _ in 0..N {
+                    let input = BitVec::<256>::rand();
+                    assert_eq!(
+                        super::_mm256_bsrli_epi128::<$imm>(input),
+                        unsafe { upstream::_mm256_bsrli_epi128::<$imm>(input.into()).into() }
+                    );
+                })*
+            };
+        }
+        // 0..15 shift within the 128-bit lane; 16 is the boundary that must zero
+        mk!(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16);
     }
 
     /// MEASURED HARDWARE EVIDENCE for the out-of-range variable-shift region.
