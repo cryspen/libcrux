@@ -358,10 +358,70 @@ let mm256_permutevar8x32_epi32_lemma vector control i =
   i32_to_bv_to_i32x8_inv (I.mm256_permutevar8x32_epi32 vector control) lane bit;
   i32_to_bv_to_i32x8_inv vector nth_block bit
 #pop-options
-let mm256_srlv_epi32_bv_lemma = admit ()
-let mm_sllv_epi32_bv_lemma = admit ()
-let mm256_sllv_epi32_bv_lemma = admit ()
-let mm256_srlv_epi64_bv_lemma = admit ()
+(* Variable per-lane shifts. With the (call-site-satisfied) precondition that every
+   shift lane is >= 0, the model's `b < 0 -> 0` branch is dead and the axiom's signed
+   shift equals the model's unsigned count; the bit is read off via the lift +
+   get_bit_shr/get_bit_cast (u32/u64 routed), exactly as the immediate shifts. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_srlv_epi32_bv_lemma vector shifts i =
+  reveal_opaque (`%I.mm256_srlv_epi32) I.mm256_srlv_epi32;
+  let chunk = i /! mk_u64 32 in
+  let bit = i %! mk_u64 32 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  Canon.lemma_mm256_srlv_epi32 vector shifts;
+  let r = I.mm256_srlv_epi32 vector shifts in
+  i32_to_bv_to_i32x8_inv r chunk bit;
+  bit_of_get_bit Ints.I32 (to_i32x8 r chunk) (v bit);
+  let sh : nat = v (to_i32x8 shifts chunk) in
+  if v bit + sh < 32
+  then (i32_to_bv_to_i32x8_inv vector chunk (mk_u64 (v bit + sh));
+        bit_of_get_bit Ints.I32 (to_i32x8 vector chunk) (v bit + sh))
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm_sllv_epi32_bv_lemma vector shifts i =
+  reveal_opaque (`%I.mm_sllv_epi32) I.mm_sllv_epi32;
+  let chunk = i /! mk_u64 32 in
+  let bit = i %! mk_u64 32 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  Canon.lemma_mm_sllv_epi32 vector shifts;
+  let r = I.mm_sllv_epi32 vector shifts in
+  bit_view_inv Ints.I32 (mk_u64 128) (mk_u64 4) r chunk bit;
+  bit_of_get_bit Ints.I32 (to_i32x4 r chunk) (v bit);
+  let sh : nat = v (to_i32x4 shifts chunk) in
+  if v bit >= sh
+  then (bit_view_inv Ints.I32 (mk_u64 128) (mk_u64 4) vector chunk (mk_u64 (v bit - sh));
+        bit_of_get_bit Ints.I32 (to_i32x4 vector chunk) (v bit - sh))
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_sllv_epi32_bv_lemma vector shifts i =
+  reveal_opaque (`%I.mm256_sllv_epi32) I.mm256_sllv_epi32;
+  let chunk = i /! mk_u64 32 in
+  let bit = i %! mk_u64 32 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  Canon.lemma_mm256_sllv_epi32 vector shifts;
+  let r = I.mm256_sllv_epi32 vector shifts in
+  i32_to_bv_to_i32x8_inv r chunk bit;
+  bit_of_get_bit Ints.I32 (to_i32x8 r chunk) (v bit);
+  let sh : nat = v (to_i32x8 shifts chunk) in
+  if v bit >= sh
+  then (i32_to_bv_to_i32x8_inv vector chunk (mk_u64 (v bit - sh));
+        bit_of_get_bit Ints.I32 (to_i32x8 vector chunk) (v bit - sh))
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_srlv_epi64_bv_lemma vector shifts i =
+  reveal_opaque (`%I.mm256_srlv_epi64) I.mm256_srlv_epi64;
+  let chunk = i /! mk_u64 64 in
+  let bit = i %! mk_u64 64 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 64;
+  Canon.lemma_mm256_srlv_epi64 vector shifts;
+  let r = I.mm256_srlv_epi64 vector shifts in
+  i64_to_bv_to_i64x4_inv r chunk bit;
+  bit_of_get_bit Ints.I64 (to_i64x4 r chunk) (v bit);
+  let sh : nat = v (to_i64x4 shifts chunk) in
+  if v bit + sh < 64
+  then (i64_to_bv_to_i64x4_inv vector chunk (mk_u64 (v bit + sh));
+        bit_of_get_bit Ints.I64 (to_i64x4 vector chunk) (v bit + sh))
+#pop-options
 (* The three 64-bit immediate shifts. All carry `0 < shift < 64` in the .fsti, so
    the model's `rem_euclid IMM8 256` is the identity and its `> 63` guard is dead:
    each lane is the LOGICAL (u64-routed) shift, whose bits are read off by the

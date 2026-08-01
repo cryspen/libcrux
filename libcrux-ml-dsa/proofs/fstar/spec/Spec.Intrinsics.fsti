@@ -222,6 +222,7 @@ val mm256_srlv_epi32_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 8}). v (to_i32x8 shifts c) >= 0)
     (ensures
       (I.mm256_srlv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -239,6 +240,7 @@ val mm256_srlv_epi32_bv_lemma
 
 val mm_sllv_epi32_bv_lemma vector shifts i
   : Lemma
+    (requires forall (c: u64 {v c < 4}). v (to_i32x4 shifts c) >= 0)
     (ensures
       (I.mm_sllv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -259,6 +261,7 @@ val mm256_sllv_epi32_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 8}). v (to_i32x8 shifts c) >= 0)
     (ensures
       (I.mm256_sllv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -279,6 +282,7 @@ val mm256_srlv_epi64_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 4}). v (to_i64x4 shifts c) >= 0)
     (ensures
       (I.mm256_srlv_epi64 vector shifts).(i) ==
        (let i:u64 = i in
