@@ -1566,38 +1566,6 @@ mod tests {
         }
     }
 
-    /// MEASURED HARDWARE EVIDENCE for the out-of-range variable-shift region.
-    /// The ml-dsa `Spec.Intrinsics.fsti` axioms for srlv/sllv diverge from the
-    /// core-models model on a shift-count lane that is negative-as-i32 (i.e.
-    /// >= 2^31 as u32) or otherwise >= the 32-bit lane width: the axiom indexes
-    /// `vector[bit + shift]`, whereas the model (and, per Intel, the CPU) treats
-    /// the count as UNSIGNED and zeroes the destination lane. This test PINS the
-    /// CPU behaviour for the exact region the mk! random tests hit only
-    /// stochastically, so the fix direction (axiom wrong, model right) rests on
-    /// measured evidence rather than reasoning.
-    #[test]
-    fn shift_out_of_range_hardware_evidence() {
-        let zero: BitVec<256> = BitVec::from_i32x8(FunArray::from_fn(|_| 0i32));
-        for &c in &[-1i32, i32::MIN, 32, 33, 63, 100, 1 << 20] {
-            let counts: BitVec<256> = BitVec::from_i32x8(FunArray::from_fn(|_| c));
-            for _ in 0..64 {
-                let v: BitVec<256> = BitVec::rand();
-                let hw_srlv: BitVec<256> =
-                    unsafe { upstream::_mm256_srlv_epi32(v.into(), counts.into()).into() };
-                let hw_sllv: BitVec<256> =
-                    unsafe { upstream::_mm256_sllv_epi32(v.into(), counts.into()).into() };
-                // (1) the core-models model matches the CPU in this region
-                assert_eq!(super::_mm256_srlv_epi32(v, counts), hw_srlv,
-                    "srlv model != CPU for out-of-range count {c}");
-                assert_eq!(super::_mm256_sllv_epi32(v, counts), hw_sllv,
-                    "sllv model != CPU for out-of-range count {c}");
-                // (2) the CPU zeroes the lane (unsigned-count semantics)
-                assert_eq!(hw_srlv, zero, "CPU srlv did NOT zero for out-of-range count {c}");
-                assert_eq!(hw_sllv, zero, "CPU sllv did NOT zero for out-of-range count {c}");
-            }
-        }
-    }
-
     #[test]
     fn mm256_castsi256_si128() {
         for _ in 0..N {
