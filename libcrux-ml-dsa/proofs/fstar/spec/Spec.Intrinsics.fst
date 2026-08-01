@@ -10,6 +10,7 @@ module Canon  = Libcrux_core_models.Intrinsics_views
 module IV     = Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec
 module IVi    = Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp
 module Avx2c  = Libcrux_core_models.Core_arch.X86.Avx2
+module Avxc   = Libcrux_core_models.Core_arch.X86.Avx
 module Funarr = Libcrux_core_models.Abstractions.Funarr
 module BV     = Libcrux_core_models.Abstractions.Bitvec
 module Ints   = Rust_primitives.Integers
@@ -633,8 +634,40 @@ let mm256_blend_epi32_lemma imm8 a b i =
   reveal_opaque (`%I.mm256_blend_epi32) I.mm256_blend_epi32;
   Canon.lemma_mm256_blend_epi32 imm8 a b
 #pop-options
-let mm256_set_m128i_bv_lemma = admit ()
-let mm256_set_m128i_lemma = admit ()
+(* set_m128i is a bit-level concat; its lift now lives in Trusted.Intrinsics. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 250"
+let mm256_set_m128i_bv_lemma hi lo i =
+  reveal_opaque (`%I.mm256_set_m128i) I.mm256_set_m128i;
+  Canon.lemma_set_m128i_lift hi lo;
+  let f : (k: u64{v k < 256}) -> t_Bit =
+    fun k -> (let k:u64 = k in
+              if k <. mk_u64 128 then lo.[ k ] <: t_Bit else hi.[ k -! mk_u64 128 <: u64 ] <: t_Bit) in
+  assert (IV.e_mm256_set_m128i hi lo ==
+          Libcrux_core_models.Abstractions.Bitvec.impl_9__from_fn (mk_u64 256) #(u64 -> t_Bit) f)
+    by (FStar.Tactics.norm [delta_only [`%IV.e_mm256_set_m128i]; iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  Canon.lemma_impl9_index f i;
+  if v i < 128 then Canon.lemma_bv_index_n #(mk_u64 128) lo i
+               else Canon.lemma_bv_index_n #(mk_u64 128) hi (i -! mk_u64 128)
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_set_m128i_lemma hi lo i =
+  let r = I.mm256_set_m128i hi lo in
+  let l : i32 = to_i32x8 r i in
+  let src : bv128 = if v i < 4 then lo else hi in
+  let sl  : u64   = if v i < 4 then i else i -! mk_u64 4 in
+  let rr : i32 = to_i32x4 src sl in
+  let aux (jj: Ints.usize{v jj < 32}) : Lemma (Ints.get_bit l jj == Ints.get_bit rr jj) =
+    let j = mk_u64 (v jj) in
+    mm256_set_m128i_bv_lemma hi lo (mk_u64 (v i * 32 + v jj));
+    i32_to_bv_to_i32x8_inv r i j;
+    bit_view_inv Ints.I32 (mk_u64 128) (mk_u64 4) src sl j;
+    ebit_is_get_bit Ints.I32 l (v jj);
+    ebit_is_get_bit Ints.I32 rr (v jj)
+  in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits l rr
+#pop-options
 #restart-solver
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_permute2x128_si256_lemma_i32x4 imm8 a b j =
@@ -789,13 +822,66 @@ let mm256_setzero_si256_lemma i =
   Ints.lemma_int_t_eq_via_bits r (mk_i32 0)
 #pop-options
 let mm256_loadu_si256_i32_lemma = admit ()
-let vec256_blendv_epi32_lemma = admit ()
+(* `vec256_blendv_epi32 a b m = castps_si256 (blendv_ps (castsi256_ps a) …)`, and
+   both casts are the IDENTITY on the bit vector (lifts in Trusted.Intrinsics), so
+   this reduces to `Canon.lemma_mm256_blendv_ps`, whose model is lane-wise
+   `if mask[i] < 0 then b[i] else a[i]` — exactly the .fsti statement. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let vec256_blendv_epi32_lemma a b mask i =
+  reveal_opaque (`%I.vec256_blendv_epi32) I.vec256_blendv_epi32;
+  Canon.lemma_castsi256_ps_lift a;
+  Canon.lemma_castsi256_ps_lift b;
+  Canon.lemma_castsi256_ps_lift mask;
+  Canon.lemma_castps_si256_lift (Avxc.e_mm256_blendv_ps a b mask);
+  Canon.lemma_mm256_blendv_ps a b mask
+#pop-options
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let mm256_cmpeq_epi32_lemma a b i =
   reveal_opaque (`%I.mm256_cmpeq_epi32) I.mm256_cmpeq_epi32;
   Canon.lemma_mm256_cmpeq_epi32 a b
 #pop-options
-let mm256_or_si256_lemma = admit ()
+(* raw-bit semantics of the hardware `or` (mirror of mm256_xor_bv), now that the
+   lift lives in Trusted.Intrinsics. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 250"
+let mm256_or_bv (a b: bv256) (k: u64{v k < 256})
+  : Lemma ((I.mm256_or_si256 a b).(k) ==
+           (match a.(k), b.(k) with
+            | Bit_Zero, Bit_Zero -> Bit_Zero
+            | _ -> Bit_One)) =
+  reveal_opaque (`%I.mm256_or_si256) I.mm256_or_si256;
+  Canon.lemma_or_si256_lift a b;
+  let f : (i: u64{v i < 256}) -> t_Bit =
+    fun i -> (let i:u64 = i in
+              match (a.[ i ] <: t_Bit), (b.[ i ] <: t_Bit) with
+              | Bit_Zero, Bit_Zero -> Bit_Zero
+              | _ -> Bit_One) in
+  assert (IV.e_mm256_or_si256 a b ==
+          Libcrux_core_models.Abstractions.Bitvec.impl_9__from_fn (mk_u64 256) #(u64 -> t_Bit) f)
+    by (FStar.Tactics.norm [delta_only [`%IV.e_mm256_or_si256]; iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  Canon.lemma_impl9_index f k;
+  Canon.lemma_bv_index a k;
+  Canon.lemma_bv_index b k
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_or_si256_lemma a b i =
+  let r = to_i32x8 (I.mm256_or_si256 a b) i in
+  let xa = to_i32x8 a i in
+  let xb = to_i32x8 b i in
+  let aux (jj: Ints.usize{v jj < 32}) : Lemma
+    (Ints.get_bit r jj == Ints.get_bit (xa |. xb) jj) =
+    let j = mk_u64 (v jj) in
+    mm256_or_bv a b (mk_u64 (v i * 32 + v jj));
+    i32_to_bv_to_i32x8_inv (I.mm256_or_si256 a b) i j;
+    i32_to_bv_to_i32x8_inv a i j;
+    i32_to_bv_to_i32x8_inv b i j;
+    ebit_is_get_bit Ints.I32 r (v jj);
+    ebit_is_get_bit Ints.I32 xa (v jj);
+    ebit_is_get_bit Ints.I32 xb (v jj)
+  in
+  FStar.Classical.forall_intro aux;
+  Ints.lemma_int_t_eq_via_bits r (xa |. xb)
+#pop-options
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let mm256_sign_epi32_lemma a b i =
   reveal_opaque (`%I.mm256_sign_epi32) I.mm256_sign_epi32;
