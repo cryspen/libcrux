@@ -759,7 +759,45 @@ let i32_to_bv_pow2_min_one_lemma n i =
   assert ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1 == Ints.mk_int #Ints.I32 (pow2 n - 1));
   bit_of_get_bit Ints.I32 ((mk_i32 1 <<! mk_i32 n <: i32) -! mk_i32 1 <: i32) (v i)
 #pop-options
-let i32_bit_zero_lemma_to_lt_pow2_n_weak = admit ()
+(* nat toolkit: if bits [lo,hi) of a value < 2^hi are all zero, the value < 2^lo.
+   Pure nat arithmetic; facts pruned to FStar/Prims so the module's SIMD/get_bit
+   cascade cannot enter this VC. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --using_facts_from 'Prims FStar'"
+let rec nat_high_zero_bound (rep lo hi: nat)
+  : Lemma (requires rep < pow2 hi /\ lo <= hi /\
+                    (forall (j:nat). lo <= j /\ j < hi ==> (rep / pow2 j) % 2 == 0))
+          (ensures rep < pow2 lo)
+          (decreases (hi - lo)) =
+  if hi = lo then ()
+  else (
+    FStar.Math.Lemmas.pow2_plus 1 (hi - 1);          (* pow2 hi == 2 * pow2 (hi-1) *)
+    FStar.Math.Lemmas.lemma_div_lt rep hi (hi - 1);  (* rep/2^(hi-1) < 2 *)
+    (* bit (hi-1) is 0 (forall at j=hi-1) and rep/2^(hi-1) < 2 ==> rep < 2^(hi-1) *)
+    nat_high_zero_bound rep lo (hi - 1)
+  )
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let i32_bit_zero_lemma_to_lt_pow2_n_weak n vec =
+  let aux (lane: u64{v lane < 8})
+    : Lemma (v (to_i32x8 vec lane) < pow2 n /\ (n <= 31 ==> v (to_i32x8 vec lane) >= 0)) =
+    let x = to_i32x8 vec lane in
+    if n >= 32 then FStar.Math.Lemmas.pow2_le_compat n 31
+    else (
+      assert_norm (pow2 31 == 2147483648);
+      assert_norm (pow2 32 == 4294967296);
+      reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32);
+      let rep : nat = if v x >= 0 then v x else pow2 32 + v x in
+      assert (rep < pow2 32);
+      let hbit (j: nat{n <= j /\ j < 32}) : Lemma ((rep / pow2 j) % 2 == 0) =
+        i32_to_bv_to_i32x8_inv vec lane (mk_u64 j);
+        ebit_is_get_bit Ints.I32 x j
+      in
+      FStar.Classical.forall_intro hbit;
+      nat_high_zero_bound rep n 32
+    )
+  in FStar.Classical.forall_intro aux
+#pop-options
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let i32_bit_zero_lemma_to_positive vec =
   let aux (lane: u64{v lane < 8}) : Lemma (v (to_i32x8 vec lane) >= 0) =
