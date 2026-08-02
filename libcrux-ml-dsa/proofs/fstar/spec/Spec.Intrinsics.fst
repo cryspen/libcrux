@@ -1437,7 +1437,18 @@ let mm256_loadu_si256_u8_lemma bytes i =
 #pop-options
 let mm_storeu_si128_i32_lemma = admit ()
 let mm_storeu_si128_i32_len_lemma out vec = ()
-let mm256_movemask_ps_lemma = admit ()
+(* ===== movemask_ps: 8-bit base-2 fold value == flat sign-bit sum ===== *)
+(* castsi256_ps is bit-identity; movemask model value = e_movemask_bit_sum_i32,
+   which fuel-8 unrolls to the flat sum of lane-sign bits weighted by 2^i. *)
+#push-options "--fuel 8 --ifuel 1 --z3rlimit 400"
+let mm256_movemask_ps_lemma a =
+  reveal_opaque (`%I.mm256_movemask_ps) I.mm256_movemask_ps;
+  reveal_opaque (`%I.mm256_castsi256_ps) I.mm256_castsi256_ps;
+  Canon.lemma_castsi256_ps_lift a;
+  Canon.lemma_mm256_movemask_ps a;
+  IV.e_movemask_bit_sum_i32_bound (Canon.to_i32x8 a) 0 8;
+  assert_norm (pow2 8 == 256)
+#pop-options
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let coeff_gather_bv_lemma a b c i =
   cast_u8_i32 a; cast_u8_i32 b; cast_u8_i32 c;
