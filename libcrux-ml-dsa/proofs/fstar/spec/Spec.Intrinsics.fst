@@ -346,7 +346,25 @@ let u8_to_bv_to_u8x16_inv vec i j =
 let i32_to_bv_to_i32x8_inv vec i j =
   bit_view_inv Ints.I32 (mk_u64 256) (mk_u64 8) vec i j
 #pop-options
-let mm256_bsrli_epi128_lemma = admit ()
+(* Byte-shift right within each 128-bit lane. With the (call-site-satisfied)
+   precondition `0 <= v shift < 256`, `rem_euclid v_IMM8 256 == v shift`, so the
+   model's `tmp > 15 -> 0` guard and its u128 `>> (tmp*8)` logical shift coincide
+   with the axiom's `j >= 128 -> Bit_Zero` byte-shift; the bit is read off via the
+   i128 lift + get_bit_shr/get_bit_cast, exactly as the immediate 64-bit shifts. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_bsrli_epi128_lemma shift vector i =
+  reveal_opaque (`%I.mm256_bsrli_epi128) I.mm256_bsrli_epi128;
+  Canon.lemma_rem_euclid256 shift;
+  let lane = i /! mk_u64 128 in
+  let bit  = i %! mk_u64 128 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 128;
+  Canon.lemma_mm256_bsrli_epi128 shift vector;
+  bit_view_inv Ints.I128 (mk_u64 256) (mk_u64 2) (I.mm256_bsrli_epi128 shift vector) lane bit;
+  bit_of_get_bit Ints.I128 (to_i128x2p (I.mm256_bsrli_epi128 shift vector) lane) (v bit);
+  if v shift <= 15 && v bit + v shift * 8 < 128
+  then (bit_view_inv Ints.I128 (mk_u64 256) (mk_u64 2) vector lane (mk_u64 (v bit + v shift * 8));
+        bit_of_get_bit Ints.I128 (to_i128x2p vector lane) (v bit + v shift * 8))
+#pop-options
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_permutevar8x32_epi32_lemma vector control i =
   reveal_opaque (`%I.mm256_permutevar8x32_epi32) I.mm256_permutevar8x32_epi32;
@@ -466,7 +484,76 @@ let mm_srli_epi64_bv_lemma shift vector i =
   then (i64_to_bv_to_i64x2_inv vector lane (mk_u64 (v bit + v shift));
         bit_of_get_bit Ints.I64 (to_i64x2p vector lane) (v bit + v shift))
 #pop-options
-let i16_mul_32extended_bv_lemma = admit ()
+(* ---- pure-nat core for the multiply-by-2^k bit fact (gated to Prims/FStar so
+   the module's get_bit / SIMD SMTPats cannot enter this nonlinear VC). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 300 --using_facts_from 'Prims FStar'"
+let lemma_mul_pow2_bit_nat (rep k n: nat)
+  : Lemma ((rep * pow2 k / pow2 n) % 2 == (if n >= k then (rep / pow2 (n - k)) % 2 else 0)) =
+  if n >= k then begin
+    FStar.Math.Lemmas.pow2_plus k (n - k);
+    assert (pow2 n == pow2 k * pow2 (n - k));
+    FStar.Math.Lemmas.division_multiplication_lemma (rep * pow2 k) (pow2 k) (pow2 (n - k));
+    FStar.Math.Lemmas.cancel_mul_div rep (pow2 k);
+    assert (rep * pow2 k / pow2 n == rep / pow2 (n - k))
+  end
+  else begin
+    FStar.Math.Lemmas.pow2_plus (k - n) n;
+    assert (pow2 k == pow2 (k - n) * pow2 n);
+    FStar.Math.Lemmas.paren_mul_right rep (pow2 (k - n)) (pow2 n);
+    assert (rep * pow2 k == (rep * pow2 (k - n)) * pow2 n);
+    FStar.Math.Lemmas.cancel_mul_div (rep * pow2 (k - n)) (pow2 n);
+    assert (rep * pow2 k / pow2 n == rep * pow2 (k - n));
+    FStar.Math.Lemmas.pow2_double_mult (k - n - 1);
+    assert (pow2 (k - n) == pow2 (k - n - 1) * 2);
+    FStar.Math.Lemmas.paren_mul_right rep (pow2 (k - n - 1)) 2;
+    FStar.Math.Lemmas.multiple_modulo_lemma (rep * pow2 (k - n - 1)) 2
+  end
+#pop-options
+(* v (1 << shift : i16) reduced mod 2^16 is exactly 2^shift, for shift < 16
+   (even shift=15, where 1<<15 wraps to -32768 == 32768 mod 2^16). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_i16_one_shl_mod (shift: i32 {v shift >= 0 && v shift < 16})
+  : Lemma (v (mk_i16 1 <<! shift) % pow2 16 == pow2 (v shift)) =
+  FStar.Math.Lemmas.pow2_lt_compat 16 (v shift);
+  Rust_primitives.Integers.shift_left_positive_lemma (mk_i16 1) shift;
+  assert_norm (pow2 16 == 65536);
+  FStar.Math.Lemmas.lemma_mod_plus (pow2 (v shift)) (-1) (pow2 16);
+  FStar.Math.Lemmas.small_mod (pow2 (v shift)) (pow2 16)
+#pop-options
+(* v (1 << shift : i16) == 2^shift EXACTLY, for shift < 15 (1<<shift positive). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_i16_one_shl_exact (shift: i32 {v shift >= 0 && v shift < 15})
+  : Lemma (v (mk_i16 1 <<! shift) == pow2 (v shift)) =
+  FStar.Math.Lemmas.pow2_lt_compat 15 (v shift);
+  assert_norm (pow2 15 == 32768); assert_norm (pow2 16 == 65536);
+  Rust_primitives.Integers.shift_left_positive_lemma (mk_i16 1) shift;
+  FStar.Math.Lemmas.small_mod (pow2 (v shift)) (pow2 16)
+#pop-options
+(* Untruncated (i32) multiply-by-2^shift = sign-extend(x) * 2^shift.  For x >= 0 and
+   shift < 15 (so 1<<shift is a POSITIVE i16) this is a clean left shift; the axiom is
+   FALSE for negative x (sign extension) or shift=15 (1<<15 wraps negative), hence the
+   .fsti `v x >= 0` + `v shift < 15`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let i16_mul_32extended_bv_lemma x shift i =
+  reveal_opaque (`%i16_mul_32extended) i16_mul_32extended;
+  assert_norm (pow2 15 == 32768); assert_norm (pow2 16 == 65536);
+  let m : i16 = mk_i16 1 <<! shift in
+  lemma_i16_one_shl_exact shift;                 (* v m == pow2 (v shift) *)
+  let prod : i32 = x `i16_mul_32extended` m in   (* v prod == v x * pow2 (v shift), >= 0 *)
+  let j : int = v i - v shift in
+  bit_of_get_bit Ints.I32 prod (v i);
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32);
+  lemma_mul_pow2_bit_nat (v x) (v shift) (v i);
+  if j >= 0 && j < 16 then begin
+    bit_of_get_bit Ints.I16 x j;
+    reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I16);
+    FStar.Math.Lemmas.small_mod (v x) (pow2 16)
+  end
+  else if j >= 16 then begin                     (* v x / 2^j == 0 since v x < 2^15 <= 2^j *)
+    FStar.Math.Lemmas.pow2_le_compat j 16;
+    FStar.Math.Lemmas.small_division_lemma_1 (v x) (pow2 j)
+  end
+#pop-options
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
 let i16_mul_32extended_bv_lemma1 x i =
   reveal_opaque (`%i16_mul_32extended) i16_mul_32extended;
@@ -474,7 +561,57 @@ let i16_mul_32extended_bv_lemma1 x i =
   bit_of_get_bit Ints.I32 (mk_i32 0) (v i);
   reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32)
 #pop-options
-let i16_mul_32extendedi16_bv_lemma = admit ()
+(* pure-nat core for the TRUNCATED (mod-2^16) multiply-by-2^k: bit ii of
+   ((xv*mv) mod 2^16) is bit (ii-sh) of (xv mod 2^16), for ii<16, given mv==2^sh
+   mod 2^16.  ALL nonlinear/mod arithmetic isolated here (gated to Prims/FStar). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400 --using_facts_from 'Prims FStar'"
+let lemma_trunc_mul_pow2 (xv mv: int) (sh ii: nat)
+  : Lemma (requires mv % pow2 16 == pow2 sh /\ sh < 16 /\ ii < 16)
+          (ensures (((xv * mv) % pow2 16) / pow2 ii) % 2
+                   == (if ii >= sh then ((xv % pow2 16) / pow2 (ii - sh)) % 2 else 0)) =
+  let n16 = pow2 16 in
+  let x16 : nat = xv % n16 in
+  FStar.Math.Lemmas.lemma_mod_mul_distr_r xv mv n16;
+  FStar.Math.Lemmas.lemma_mod_mul_distr_l xv (pow2 sh) n16;
+  assert ((xv * mv) % n16 == (x16 * pow2 sh) % n16);
+  FStar.Math.Lemmas.pow2_modulo_division_lemma_1 (x16 * pow2 sh) ii 16;
+  FStar.Math.Lemmas.pow2_double_mult (16 - ii - 1);
+  FStar.Math.Lemmas.modulo_modulo_lemma ((x16 * pow2 sh) / pow2 ii) 2 (pow2 (16 - ii - 1));
+  lemma_mul_pow2_bit_nat x16 sh ii
+#pop-options
+(* get_bit of an i16 as a pure-nat readout on its 2^16 representative (get_bit
+   reveal isolated to this small VC). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_get_bit_i16_nat (y: i16) (j: nat {j < 16})
+  : Lemma (Ints.get_bit y (Ints.mk_usize j) == get_bit_nat (v y % pow2 16) j) =
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I16);
+  if v y >= 0 then FStar.Math.Lemmas.small_mod (v y) (pow2 16)
+  else (FStar.Math.Lemmas.lemma_mod_plus (v y) 1 (pow2 16);
+        FStar.Math.Lemmas.small_mod (pow2 16 + v y) (pow2 16))
+#pop-options
+(* the i16 truncated product's value mod 2^16 (cast/reveal isolated). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_i16_mul_val (x m: i16)
+  : Lemma (v (i16_mul_32extended_i16 x m) % pow2 16 == (v x * v m) % pow2 16) =
+  reveal_opaque (`%i16_mul_32extended_i16) i16_mul_32extended_i16;
+  reveal_opaque (`%i16_mul_32extended) i16_mul_32extended
+#pop-options
+(* Truncated (i16) multiply-by-2^shift: bit i of (x *[i16] 2^shift) is bit (i-shift)
+   of x, or 0 below shift.  True for ALL x (the mod-2^16 truncation kills the sign). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let i16_mul_32extendedi16_bv_lemma x shift i =
+  let m : i16 = mk_i16 1 <<! shift in
+  let res : i16 = i16_mul_32extended_i16 x m in
+  lemma_i16_one_shl_mod shift;
+  lemma_trunc_mul_pow2 (v x) (v m) (v shift) (v i);
+  lemma_i16_mul_val x m;
+  lemma_get_bit_i16_nat res (v i);
+  bit_of_get_bit Ints.I16 res (v i);
+  if v i >= v shift then begin
+    lemma_get_bit_i16_nat x (v i - v shift);
+    bit_of_get_bit Ints.I16 x (v i - v shift)
+  end
+#pop-options
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
 let mm256_madd_epi16_lemma a b i =
   reveal_opaque (`%I.mm256_madd_epi16) I.mm256_madd_epi16;
@@ -799,7 +936,28 @@ let mm_loadu_si128_lemma bytes i =
   FStar.Math.Lemmas.lemma_div_mod (v i) 8;
   u8_to_bv_to_u8x16_inv (I.mm_loadu_si128 bytes) lane bit
 #pop-options
-let i32_lt_pow2_n_to_bit_zero_lemma = admit ()
+(* Non-negative lane whose value < 2^n has all bits >= n zero (the axiom is FALSE
+   for a NEGATIVE lane — its high bits are 1 — hence the `0 <= v lane` antecedent
+   added to the .fsti). Read off via i32 lift + Rust_primitives lemma_get_bit_bounded. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let i32_lt_pow2_n_to_bit_zero_lemma n vec =
+  let aux (i: u64{v i < 256}) : Lemma
+    (0 <= v (to_i32x8 vec (i /! mk_int 32))
+     ==> v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
+     ==> v i % 32 >= n
+     ==> vec.(i) == Bit_Zero) =
+    let lane = i /! mk_int 32 in
+    let b : nat = v i % 32 in
+    FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+    let x = to_i32x8 vec lane in
+    if 0 <= v x && v x <= pow2 n - 1 && b >= n then begin
+      i32_to_bv_to_i32x8_inv vec lane (mk_u64 b);
+      bit_of_get_bit Ints.I32 x b;
+      if n = 0 then reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32)
+      else Rust_primitives.BitVectors.lemma_get_bit_bounded #Ints.I32 x n (Ints.mk_usize b)
+    end
+  in FStar.Classical.forall_intro aux
+#pop-options
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let shl_casted_u8_bv_lemma a b i =
   cast_u8_i32 a; cast_u8_i32 b;

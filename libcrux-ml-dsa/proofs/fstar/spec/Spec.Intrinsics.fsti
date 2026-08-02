@@ -194,7 +194,7 @@ val i32_to_bv_to_i32x8_inv (vec: bv256) (i: u64 {v i < 8}) (j: u64 {v j < 32})
   : Lemma (i32_to_bv (to_i32x8 vec i) j == vec.(mk_int (v i * 32 + v j)))
          [SMTPat (i32_to_bv (to_i32x8 vec i) j)]
 
-val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0}) vector i
+val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0 /\ v shift < 256}) vector i
   : Lemma (  (I.mm256_bsrli_epi128 shift vector).(i)
           == (
                let lane = v i / 128 in
@@ -358,7 +358,7 @@ val mm_srli_epi64_bv_lemma
     )
       [SMTPat (I.mm_srli_epi64 shift vector).(i)]
 
-val i16_mul_32extended_bv_lemma (x: i16) (shift: i32 {v shift >= 0 && v shift < 16}) (i: u64 { v i < 32 })
+val i16_mul_32extended_bv_lemma (x: i16 {v x >= 0}) (shift: i32 {v shift >= 0 && v shift < 15}) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` (mk_i16 1 <<! shift)) i
          == ( let j = v i - v shift in
               if j >= 0 && j < 16 then i16_to_bv x (mk_int j) else Bit_Zero
@@ -369,7 +369,7 @@ val i16_mul_32extended_bv_lemma1 (x: i16) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` mk_i16 0) i == Bit_Zero)
   [SMTPat (i32_to_bv (x `i16_mul_32extended` mk_i16 0) i)]
 
-let i16_mul_32extended_bv_lemma0 (x: i16) (i: u64 { v i < 32 })
+let i16_mul_32extended_bv_lemma0 (x: i16 {v x >= 0}) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` mk_i16 1) i == (if v i < 16 then i16_to_bv x (mk_int (v i)) else Bit_Zero))
   [SMTPat (i32_to_bv (x `i16_mul_32extended` (mk_i16 1)) i)]
   = i16_mul_32extended_bv_lemma x (mk_int 0) i
@@ -764,7 +764,8 @@ val mm_loadu_si128_lemma (bytes: _{ Seq.length bytes = 16 }) i
   [SMTPat (((I.mm_loadu_si128 bytes).(i)))]
 
 val i32_lt_pow2_n_to_bit_zero_lemma n vec
-  : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
+  : Lemma (forall i. 0 <= v (to_i32x8 vec (i /! mk_int 32))
+                ==> v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
                 ==> v i % 32 >= n
                 ==> vec.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero)
 
