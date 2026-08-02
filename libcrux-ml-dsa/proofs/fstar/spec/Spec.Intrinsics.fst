@@ -625,7 +625,118 @@ let mm256_madd_epi16_lemma a b i =
 #pop-options
 let mm256_add_epi64_lemma = admit ()
 let mm256_madd_epi16_specialized_lemma = admit ()
-let i32_to_bv_add_bv_lemma = admit ()
+(* ---- carry-free addition of bit-disjoint values (pure nat, gated) ----
+   If for every position at least one operand's bit is 0, addition produces no
+   carries, so bit i of the sum is bit_i(x) + bit_i(y). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400 --using_facts_from 'Prims FStar'"
+(* split a modulus off its top bit *)
+let lemma_mod_pow2_split (bx: nat) (m: pos)
+  : Lemma (bx % pow2 m == (bx % pow2 (m - 1)) + ((bx / pow2 (m - 1)) % 2) * pow2 (m - 1)) =
+  assert_norm (pow2 1 == 2);
+  FStar.Math.Lemmas.pow2_double_mult (m - 1);
+  FStar.Math.Lemmas.modulo_modulo_lemma bx (pow2 (m - 1)) 2;
+  FStar.Math.Lemmas.pow2_modulo_division_lemma_1 bx (m - 1) m;
+  FStar.Math.Lemmas.euclidean_division_definition (bx % pow2 m) (pow2 (m - 1))
+(* disjoint low bits => the low-m-bit sums never overflow (no carry out of pos m).
+   Disjointness threaded as a per-index Lemma VALUE `pf` (NOT a `forall` requires):
+   a `forall (j). j<m ==> …pow2 j…` cascades badly (Z3 e-matches pow2 at every term),
+   and proving the j<m-1 subset at the recursive call is the worst offender. *)
+let rec lemma_carryfree_low (bx byv: nat) (m: nat)
+      (pf: (j:nat{j < m}) -> Lemma ((bx / pow2 j) % 2 == 0 \/ (byv / pow2 j) % 2 == 0))
+  : Lemma (ensures (bx % pow2 m) + (byv % pow2 m) < pow2 m)
+          (decreases m) =
+  if m = 0 then ()
+  else begin
+    lemma_carryfree_low bx byv (m - 1) (fun j -> pf j);
+    lemma_mod_pow2_split bx m;
+    lemma_mod_pow2_split byv m;
+    FStar.Math.Lemmas.pow2_double_mult (m - 1);
+    pf (m - 1)
+  end
+#pop-options
+(* the nonlinear div step over an ABSTRACT divisor d:pos — kept free of any `pow2`
+   nesting so Z3's nonlinear reasoning is minimal and context-independent. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 200 --using_facts_from 'Prims FStar'"
+let lemma_add_div_nocarry (a b: nat) (d: pos)
+  : Lemma (requires a % d + b % d < d)
+          (ensures (a + b) / d == a / d + b / d) =
+  let kk : nat = (a / d) + (b / d) in
+  FStar.Math.Lemmas.euclidean_division_definition a d;
+  FStar.Math.Lemmas.euclidean_division_definition b d;
+  FStar.Math.Lemmas.distributivity_add_left (a / d) (b / d) d;
+  assert (a + b == (a % d + b % d) + kk * d);
+  FStar.Math.Lemmas.lemma_div_plus (a % d + b % d) kk d;
+  FStar.Math.Lemmas.small_div (a % d + b % d) d
+#pop-options
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400 --using_facts_from 'Prims FStar'"
+(* bit i of a carry-free sum is the sum of the operand bits (disjointness as pf) *)
+let lemma_disjoint_add_bit (bx byv n i: nat)
+      (pf: (j:nat{j < n}) -> Lemma ((bx / pow2 j) % 2 == 0 \/ (byv / pow2 j) % 2 == 0))
+  : Lemma (requires i < n)
+          (ensures ((bx + byv) / pow2 i) % 2 == ((bx / pow2 i) % 2) + ((byv / pow2 i) % 2)) =
+  lemma_carryfree_low bx byv i (fun j -> pf j);     (* bx%2^i + byv%2^i < 2^i *)
+  lemma_add_div_nocarry bx byv (pow2 i);            (* (bx+byv)/2^i == bx/2^i + byv/2^i *)
+  FStar.Math.Lemmas.modulo_distributivity (bx / pow2 i) (byv / pow2 i) 2;
+  pf i
+#pop-options
+(* the signed wrap-around @%. is a mod-2^32 identity on the low 32 bits *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --using_facts_from 'Prims FStar Rust_primitives.Integers'"
+let lemma_atpct_mod32 (k: int)
+  : Lemma ((k @%. Ints.I32) % pow2 32 == k % pow2 32) =
+  assert_norm (Ints.modulus Ints.I32 == pow2 32);
+  let p = pow2 32 in
+  let m = k % p in
+  if m >= p / 2 then FStar.Math.Lemmas.lemma_mod_plus m (-1) p
+  else FStar.Math.Lemmas.small_mod m p
+#pop-options
+(* the wrapping add agrees with the true sum on the low 32 bits *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_wrapadd_rep (x y: i32)
+  : Lemma (v (x `i32_wrapping_add` y) % pow2 32 == (v x + v y) % pow2 32) =
+  reveal_opaque (`%i32_wrapping_add) i32_wrapping_add;
+  reveal_opaque_arithmetic_ops #i32_inttype;
+  lemma_atpct_mod32 (v x + v y)
+#pop-options
+(* get_bit of an i32 as a pure-nat readout on its 2^32 representative. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_get_bit_i32_nat (z: i32) (j: nat {j < 32})
+  : Lemma (Ints.get_bit z (Ints.mk_usize j) == get_bit_nat (v z % pow2 32) j) =
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32);
+  if v z >= 0 then FStar.Math.Lemmas.small_mod (v z) (pow2 32)
+  else (FStar.Math.Lemmas.lemma_mod_plus (v z) 1 (pow2 32);
+        FStar.Math.Lemmas.small_mod (pow2 32 + v z) (pow2 32))
+#pop-options
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let i32_to_bv_add_bv_lemma x y i =
+  reveal_opaque (`%i32_wrapping_add) i32_wrapping_add;
+  let z : i32 = x `i32_wrapping_add` y in
+  let bx : nat = v x % pow2 32 in
+  let byv : nat = v y % pow2 32 in
+  (* the requires forall (over i32_to_bv=encode_bit) => the nat-bit disjointness *)
+  let disj (j: nat{j < 32}) : Lemma ((bx / pow2 j) % 2 == 0 \/ (byv / pow2 j) % 2 == 0) =
+    let jj : u64 = mk_u64 j in
+    assert (Bit_Zero? (i32_to_bv x jj) \/ Bit_Zero? (i32_to_bv y jj));
+    assert (i32_to_bv x jj == IVi.encode_bit Ints.I32 x j);
+    assert (i32_to_bv y jj == IVi.encode_bit Ints.I32 y j);
+    bit_of_get_bit Ints.I32 x j;
+    bit_of_get_bit Ints.I32 y j;
+    lemma_get_bit_i32_nat x j;
+    lemma_get_bit_i32_nat y j
+  in
+  lemma_disjoint_add_bit bx byv 32 (v i) disj;
+  (* v z % 2^32 == (v x + v y) % 2^32 == (bx + byv) % 2^32 == bx + byv  (carry-free) *)
+  lemma_carryfree_low bx byv 32 disj;
+  lemma_wrapadd_rep x y;
+  FStar.Math.Lemmas.lemma_mod_plus_distr_l (v x) (v y) (pow2 32);
+  FStar.Math.Lemmas.lemma_mod_plus_distr_r bx (v y) (pow2 32);
+  FStar.Math.Lemmas.small_mod (bx + byv) (pow2 32);
+  lemma_get_bit_i32_nat z (v i);
+  lemma_get_bit_i32_nat x (v i);
+  lemma_get_bit_i32_nat y (v i);
+  bit_of_get_bit Ints.I32 z (v i);
+  bit_of_get_bit Ints.I32 x (v i);
+  bit_of_get_bit Ints.I32 y (v i)
+#pop-options
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
 let pow2_lemma shift i =
   bit_of_get_bit Ints.I32 (mk_i32 1 <<! shift <: i32) (v i)
