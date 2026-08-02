@@ -855,8 +855,47 @@ let mm256_set_epi16_lemma v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 
   Canon.lemma_mm256_set_epi16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15;
   Canon.lemma_iv_set_epi16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 (v i)
 #pop-options
-let mm256_shuffle_epi8_lemma = admit ()
-let mm_shuffle_epi8_lemma = admit ()
+(* ===== byte-granular PSHUFB (256-bit): raw-bit view via to_i8x32 sel/neg ===== *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_shuffle_epi8_lemma vec indexes i =
+  reveal_opaque (`%I.mm256_shuffle_epi8) I.mm256_shuffle_epi8;
+  let nth : u64 = i /! mk_u64 8 in
+  let bit : u64 = i %! mk_u64 8 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 8;
+  let result = I.mm256_shuffle_epi8 vec indexes in
+  Canon.lemma_mm256_shuffle_epi8 vec indexes;
+  bit_view_inv Ints.I8 (mk_u64 256) (mk_u64 32) result nth bit;
+  let index = to_i8x32 indexes nth in
+  if v index < 0 then begin
+    Canon.lemma_iv_shuffle_epi8_neg (Canon.to_i8x32 vec) (Canon.to_i8x32 indexes) (v nth);
+    bit_of_get_bit Ints.I8 (mk_i8 0) (v bit)
+  end else begin
+    Canon.lemma_iv_shuffle_epi8_sel (Canon.to_i8x32 vec) (Canon.to_i8x32 indexes) (v nth);
+    let sb : nat = 16 * (v nth / 16) + (v index % 16) in
+    bit_view_inv Ints.I8 (mk_u64 256) (mk_u64 32) vec (mk_u64 sb) bit;
+    FStar.Math.Lemmas.division_multiplication_lemma (v i) 8 16
+  end
+#pop-options
+(* ===== byte-granular PSHUFB (128-bit): raw-bit view via to_i8x16 sel/neg ===== *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm_shuffle_epi8_lemma vec indexes i =
+  reveal_opaque (`%I.mm_shuffle_epi8) I.mm_shuffle_epi8;
+  let nth : u64 = i /! mk_u64 8 in
+  let bit : u64 = i %! mk_u64 8 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 8;
+  let result = I.mm_shuffle_epi8 vec indexes in
+  Canon.lemma_mm_shuffle_epi8 vec indexes;
+  bit_view_inv Ints.I8 (mk_u64 128) (mk_u64 16) result nth bit;
+  let index = to_i8x16 indexes nth in
+  if v index < 0 then begin
+    Canon.lemma_iv_mm_shuffle_epi8_neg (Canon.to_i8x16 vec) (Canon.to_i8x16 indexes) (v nth);
+    bit_of_get_bit Ints.I8 (mk_i8 0) (v bit)
+  end else begin
+    Canon.lemma_iv_mm_shuffle_epi8_sel (Canon.to_i8x16 vec) (Canon.to_i8x16 indexes) (v nth);
+    let sb : nat = v index % 16 in
+    bit_view_inv Ints.I8 (mk_u64 128) (mk_u64 16) vec (mk_u64 sb) bit
+  end
+#pop-options
 (* proof-residence: locked(cold-gate) — this decl is the module's heaviest and is
    sensitive to accumulated solver state (it grinds without the restart). *)
 #restart-solver

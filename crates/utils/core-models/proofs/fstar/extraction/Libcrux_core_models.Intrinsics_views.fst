@@ -1950,3 +1950,21 @@ let lemma_iv_mm_shuffle_epi8_neg (a b: Funarr.t_FunArray (mk_u64 16) i8) (i: nat
                             iota; zeta; primops];
         FStar.Tactics.smt ())
 #pop-options
+
+(* PSHUFB, zeroing branch (256-bit): a negative index byte zeroes the output byte.
+   256-bit analogue of `lemma_iv_mm_shuffle_epi8_neg`, complement of the 256-bit
+   `lemma_iv_shuffle_epi8_sel`. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_iv_shuffle_epi8_neg (a b: Funarr.t_FunArray (mk_u64 32) i8) (i: nat{i < 32})
+    : Lemma (requires v (Funarr.impl_5__get (mk_u64 32) #i8 b (mk_u64 i)) < 0)
+            (ensures Funarr.impl_5__get (mk_u64 32) #i8 (IV.e_mm256_shuffle_epi8 a b) (mk_u64 i) ==
+                     mk_i8 0) =
+  let bi = Funarr.impl_5__get (mk_u64 32) #i8 b (mk_u64 i) in
+  let idx : u8 = cast bi <: u8 in
+  assert (v idx >= 128);
+  lemma_u8_high_bit_set idx;
+  assert (Funarr.impl_5__get (mk_u64 32) #i8 (IV.e_mm256_shuffle_epi8 a b) (mk_u64 i) == mk_i8 0)
+    by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_shuffle_epi8];
+                            iota; zeta; primops];
+        FStar.Tactics.smt ())
+#pop-options

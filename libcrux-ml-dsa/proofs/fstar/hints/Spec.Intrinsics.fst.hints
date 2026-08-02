@@ -1,5 +1,5 @@
 [
-  "adba081585cec20e56f2774296430db3",
+  "47740484597ac87ee4e7a72e535e365c",
   [
     [
       "Spec.Intrinsics.logand_lemma_forall",
@@ -8,7 +8,7 @@
       1,
       [ "@query" ],
       0,
-      "e112915fa60be3b829a14ab8c021e608"
+      "2d9035ba30a863bc561baf03e7630a5d"
     ],
     [
       "Spec.Intrinsics.logand_mask_lemma_forall",
@@ -42,7 +42,7 @@
         "refinement_interpretation_Tm_refine_c18d67983e49abd4a499a221391a3767"
       ],
       0,
-      "bcc0947e6b31cc2dac01da45959f1ff0"
+      "363adea6419d6f24a54c19cf31504b84"
     ],
     [
       "Spec.Intrinsics.logxor_lemma_forall",
@@ -51,7 +51,7 @@
       1,
       [ "@query" ],
       0,
-      "1ae87128b784bfdf1b437f4abba325a4"
+      "a319cfdc6e288f51477f260dde1a8c1d"
     ],
     [
       "Spec.Intrinsics.lognot_lemma_forall",
@@ -67,7 +67,7 @@
         "typing_Rust_primitives.Integers.size_bits"
       ],
       0,
-      "1e616114afe911a698cdcc85927b3893"
+      "7c7d4c327079ac5c5c6593914e377b7b"
     ],
     [
       "Spec.Intrinsics.reveal_opaque_arithmetic_ops",
@@ -76,7 +76,7 @@
       1,
       [ "@query" ],
       0,
-      "be63667ec3cb74be255822f87b49240e"
+      "b26ae84c7979f03ebda396372888f27c"
     ],
     [
       "Spec.Intrinsics.reveal_opaque_cast_ops",
@@ -85,7 +85,7 @@
       1,
       [ "@query" ],
       0,
-      "47d8fe993a25075b7eb744d3ad7559a1"
+      "d9fd34465fd40a6720df19bba8ee83c5"
     ],
     [
       "Spec.Intrinsics.eq_pointwise_to_eq",
@@ -109,7 +109,7 @@
         "token_correspondence_Libcrux_core_models.Abstractions.Funarr.__proj__FunArray__item___0"
       ],
       0,
-      "2fe352c2e919832f8f22235ad6a23d8a"
+      "48ecdd1cc7c0ca140a38e1dfbd62b356"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended",
@@ -168,7 +168,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "34e107acf43c751df33fdb98fb2d2a8a"
+      "35e61e5ea9bd17dd9c31ab0190da356b"
     ],
     [
       "Spec.Intrinsics.bv128",
@@ -196,7 +196,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b1d2f89bea4e0b497c6e3a7d52ab0afd"
+      "55d763b1dd6d7452ebdd5e0370e184fe"
     ],
     [
       "Spec.Intrinsics.bv256",
@@ -224,7 +224,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "f456457573a521c41a01c85b6af6bb9d"
+      "53ff6b65838a37f00d2140cc00445798"
     ],
     [
       "Spec.Intrinsics.u8x16",
@@ -252,7 +252,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "393311c1fdd75f2c7ace79e51f9113d5"
+      "df402d06f79907117d457d49bcdc7acc"
     ],
     [
       "Spec.Intrinsics.i8x16",
@@ -280,7 +280,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "993ef9e3538f3e80a5fec5b99fb94db3"
+      "87bb1fef9f3c3e2512b054ec78d19351"
     ],
     [
       "Spec.Intrinsics.i8x32",
@@ -308,7 +308,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6e8c674bdeb3d2255a900ac0c42bc4b9"
+      "5a0cf74a55ff02f9f63eae00783623f1"
     ],
     [
       "Spec.Intrinsics.i16x16",
@@ -336,7 +336,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "72e56e7f6fb8e2a35f321b955c458460"
+      "d93fe1cea4d8ce9420f0e7cc7e03ee35"
     ],
     [
       "Spec.Intrinsics.i32x4",
@@ -364,7 +364,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "99d337e1f04f0cd9338f2051b6e7a726"
+      "f3397d590839a652dc6cfd1266a1e979"
     ],
     [
       "Spec.Intrinsics.i32x8",
@@ -392,7 +392,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "a11bbf6f71541acb4bb99e555a205939"
+      "8a10e97dc2200cf763dc8e2fee31b4a3"
     ],
     [
       "Spec.Intrinsics.i64x4",
@@ -420,7 +420,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e4d463e7cf9b25afd3e0809dd6e82f64"
+      "d245c91b0fe6f2ece61fbe8ec1291ad4"
     ],
     [
       "Spec.Intrinsics.to_i8x32",
@@ -651,7 +651,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fb5046b8dfc1106f7bda4c000db7a038"
+      "eb20eb64f2bf8c107a48580c98b7452f"
     ],
     [
       "Spec.Intrinsics.i16_to_bv",
@@ -680,7 +680,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "526c9e7993905ecfb26763dffa0366f9"
+      "318b90fc9e198d6f94cac5f7044ebdae"
     ],
     [
       "Spec.Intrinsics.i16_to_bv",
@@ -710,7 +710,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "3464533f4857888da2bcd1609487fcee"
+      "e4fa7aac5ce6c1337dbad36991866870"
     ],
     [
       "Spec.Intrinsics.i32_to_bv",
@@ -739,7 +739,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1d654747b9272bf642a9f38a705992fd"
+      "2c0939585b68ddac2d306cb05b289d0b"
     ],
     [
       "Spec.Intrinsics.i32_to_bv",
@@ -767,7 +767,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "0b2a1aed1e4cf85f6858257a119679d3"
+      "46806b7a98170f90261f9c0a698618fa"
     ],
     [
       "Spec.Intrinsics.i64_to_bv",
@@ -796,7 +796,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "a48e60678ed30b0881d238909cb22382"
+      "3df25b686e811f6211cb13b82d7a55d9"
     ],
     [
       "Spec.Intrinsics.i64_to_bv",
@@ -835,7 +835,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "4531778035fb5b96822a8061cf8c578b"
+      "1d7aed33bdfe8ae08ab94ea54a903414"
     ],
     [
       "Spec.Intrinsics.u8_to_bv",
@@ -866,7 +866,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "17fe18250b4bd6c4134b0a99fad5b92d"
+      "4dc356419058ba322c3efc8cf724ba34"
     ],
     [
       "Spec.Intrinsics.u8_to_bv",
@@ -898,7 +898,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "c5389dac2f9f1517a4813a570b6973cb"
+      "20e9367bb134ad2706e6a4fdc7763884"
     ],
     [
       "Spec.Intrinsics.bval_inj",
@@ -912,7 +912,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "d6ec4e6918e6812a1206d3e772870d30"
+      "7177015f7c770aeddfd7697dd8bbd648"
     ],
     [
       "Spec.Intrinsics.tc_of_u_mod",
@@ -934,7 +934,7 @@
         "typing_Rust_primitives.Integers.size_bits"
       ],
       0,
-      "9a108e0cd3d3697ffcb122dfc22da47c"
+      "23b9f766bcf482af90aab432e82b7ebe"
     ],
     [
       "Spec.Intrinsics.tc_of_u_mod",
@@ -950,7 +950,7 @@
         "typing_Rust_primitives.Integers.size_bits"
       ],
       0,
-      "459df8bde90f6f3c2489bc7aa45d3bf4"
+      "ed9db354a097acde905d680fdbb74100"
     ],
     [
       "Spec.Intrinsics.lemma_encode_decode_bit",
@@ -977,7 +977,7 @@
         "typing_Rust_primitives.Integers.size_bits"
       ],
       0,
-      "db9a2f6fbc891ae07468ff63dfaa1c9d"
+      "af3c29e987ad9717f3cc8d9e2550709e"
     ],
     [
       "Spec.Intrinsics.lemma_lane_reader_raw",
@@ -1013,7 +1013,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b32db2f4edeaf043f6d3f34221284426"
+      "7ef9ae2c9eb812cfee035f31a649afb1"
     ],
     [
       "Spec.Intrinsics.bit_view_inv",
@@ -1078,7 +1078,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8d855c23db4ddc16b583eacc65253455"
+      "1b5e32f1ceedb554072989e28b32c1f5"
     ],
     [
       "Spec.Intrinsics.ebit_is_get_bit",
@@ -1133,7 +1133,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "091ebea7e852a711a6b97ea2a7a674db"
+      "776d6771088dc7b87f2b79efa4931712"
     ],
     [
       "Spec.Intrinsics.bit_of_get_bit",
@@ -1188,7 +1188,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "45fdfef38ab8c1f829eb1cfca8862f27"
+      "aaa707ec94b762fbd7358508311b40ba"
     ],
     [
       "Spec.Intrinsics.cast_u8_i32",
@@ -1210,7 +1210,7 @@
         "token_correspondence_Rust_primitives.cast"
       ],
       0,
-      "78fd06d8e6b0b9303a20b9146285a477"
+      "8506c2649d230bb64de8525ba0bc97f0"
     ],
     [
       "Spec.Intrinsics.cast_u8_i8",
@@ -1232,7 +1232,7 @@
         "token_correspondence_Rust_primitives.cast"
       ],
       0,
-      "fe73785b0539f5ce29b1d2ebac8e43e6"
+      "b49827e1844c34ed62d8d3ea6375b842"
     ],
     [
       "Spec.Intrinsics.to_u8x32p",
@@ -1331,7 +1331,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "25f0d95fa5705b784187bfb04f1cdc12"
+      "4106f5e81ee71c60686e8be2bf927494"
     ],
     [
       "Spec.Intrinsics.i64_to_bv_to_i64x4_inv",
@@ -1396,7 +1396,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "153d23e93ba314b5ce1efe84af719966"
+      "e4272d32b961f62d53a649e8c93fb715"
     ],
     [
       "Spec.Intrinsics.to_i64x2p",
@@ -1490,7 +1490,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9cdbd12e293fd81da7f70691dde972f9"
+      "0a4b58833fbd142268e5c827a9e83b7a"
     ],
     [
       "Spec.Intrinsics.lane32_bit_of_lane64",
@@ -1548,7 +1548,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "4c1e254c9a1124a681581d640e0cb16f"
+      "fb583b9165bad31ffe28462d90a0e8da"
     ],
     [
       "Spec.Intrinsics.lemma_i32_sub_lanes",
@@ -1631,7 +1631,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7c12010cad37f7336b2783b99789846b"
+      "1627428aa7d6a3be0f8b485a881055c4"
     ],
     [
       "Spec.Intrinsics.to_i128x2p",
@@ -1743,7 +1743,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1a7959d9275e43fe956bfab813f604fa"
+      "8c4fbf14055364334f49448f500b75d5"
     ],
     [
       "Spec.Intrinsics.lemma_i32_from_i128_transfer",
@@ -1870,7 +1870,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8b84917c74744d6bd7467e197909cab1"
+      "28df88dd280608aa6cc3608741ff8756"
     ],
     [
       "Spec.Intrinsics.lemma_i32_lane_transfer",
@@ -1960,7 +1960,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e7da26d9ed1cd66d30f2f75c6f3fdd76"
+      "07d0262dc114a7ef16f16ae1357ee83a"
     ],
     [
       "Spec.Intrinsics.i16_to_bv_to_i16x16_inv",
@@ -2006,7 +2006,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fcf64c9a7cbc8c6f5b4fc1edbc59e8f7"
+      "bf4505069ddde4f63948cd62d217efdd"
     ],
     [
       "Spec.Intrinsics.i16_to_bv_to_i16x16_inv",
@@ -2070,7 +2070,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0277dda1ef1930ac59d531478335aaf6"
+      "19e09af299965842103ab7414615a63f"
     ],
     [
       "Spec.Intrinsics.mm256_castsi256_si128_bv_lemma",
@@ -2099,7 +2099,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "87b27a05e617aeeba6ca56115e78267c"
+      "3f92769d959744adf2110004df96edad"
     ],
     [
       "Spec.Intrinsics.mm256_castsi256_si128_bv_lemma",
@@ -2162,7 +2162,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "78df7ee3cc10f302fb19142174eb919f"
+      "548aff762483479cadcd13a40ca2fb28"
     ],
     [
       "Spec.Intrinsics.mm256_castsi256_si128_bv_lemma",
@@ -2190,7 +2190,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "2e1b6fc7d7a2717b92784af5a068e97b"
+      "088bbd1568c2b70969b863c45f423d67"
     ],
     [
       "Spec.Intrinsics.mm256_extracti128_si256_bv_lemma",
@@ -2233,7 +2233,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "a733c09deb8e7162c321d654f8b31ece"
+      "ed792ccf9122b33addb24f8cd0503da9"
     ],
     [
       "Spec.Intrinsics.mm256_extracti128_si256_bv_lemma",
@@ -2339,7 +2339,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "ce58b4bda667248ca7a1efde7378e00d"
+      "01717116abb07a612f2a7cc793b0707e"
     ],
     [
       "Spec.Intrinsics.mm256_extracti128_si256_lemma",
@@ -2397,7 +2397,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6e0bb3b283af992292cc97986027d857"
+      "4ffdaa04d8f95f99023f66b8f0f82ee5"
     ],
     [
       "Spec.Intrinsics.mm256_extracti128_si256_lemma",
@@ -2469,7 +2469,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "da64831d3be37c88f2644b4f54585185"
+      "5680889952152db7f44196e312db518e"
     ],
     [
       "Spec.Intrinsics.mm256_extracti128_si256_lemma",
@@ -2498,7 +2498,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0cf0bc206b7242601e388b773c655b36"
+      "9f2946df6fbeed9ddd739817c9ef4826"
     ],
     [
       "Spec.Intrinsics.mm256_and_si256",
@@ -2526,7 +2526,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "08f7d4a94a1b5821735502e44a1db12c"
+      "9e69d218210140015cce99c307f43b76"
     ],
     [
       "Spec.Intrinsics.mm256_and_si256",
@@ -2559,7 +2559,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "5a3be614280291ab9d296487075d42f6"
+      "ca023cc4301940bb93d48a8125624fe9"
     ],
     [
       "Spec.Intrinsics.mm256_and_si256",
@@ -2587,7 +2587,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9cf77ef4f329a5dd034b8617a87efefb"
+      "024cdee0bfe2fcc426507faa04abccca"
     ],
     [
       "Spec.Intrinsics.store16",
@@ -2690,7 +2690,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c292d7ae7585de5081305fb1e703d710"
+      "edf7c88ffd28fc64f49c2e8a41012a3e"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -2705,7 +2705,7 @@
         "typing_Spec.Intrinsics.store16"
       ],
       0,
-      "e36faac461866a9ae4d891f1c028f196"
+      "f1664c9607bd09002a612a02b6f2e977"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -2737,7 +2737,7 @@
         "refinement_interpretation_Tm_refine_f4ec0a04344e7130939ebe4f31f6bd8f"
       ],
       0,
-      "16f38890d0910fd8642640d80f1272ec"
+      "d44afe9412a260eb529904aec411c14c"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -2755,7 +2755,7 @@
         "refinement_interpretation_Tm_refine_f4ec0a04344e7130939ebe4f31f6bd8f"
       ],
       0,
-      "144d6b0a8cf343298e104b9677e3258b"
+      "87960c65568ffa3607671118ceb34833"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -2936,7 +2936,7 @@
         "unit_typing"
       ],
       0,
-      "7cf72f4e5d7f0f8c155d187fdc1fd776"
+      "ded7d2530a9a61fa9dc11e82f35c7a02"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3027,7 +3027,7 @@
         "unit_typing"
       ],
       0,
-      "1276f31bc36a945bcb22a84ce77ea20c"
+      "4f05a465f96ca4e09bff5cc14a9dde00"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3117,7 +3117,7 @@
         "unit_typing"
       ],
       0,
-      "6ad2139083a8ddc0ff42e426de35ec6b"
+      "c101971fa5a5c3ba7640475db4d36a6b"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3206,7 +3206,7 @@
         "unit_typing"
       ],
       0,
-      "72707a3a6a21531d184c656937a67fae"
+      "323a92f7ec7fb23ffd2b3782d2d3345f"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3297,7 +3297,7 @@
         "unit_typing"
       ],
       0,
-      "1109e447e35265a7999ccc391c41ded8"
+      "804bf141417cb219f4af5d49ad67ad87"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3387,7 +3387,7 @@
         "unit_typing"
       ],
       0,
-      "690e392df4db85e485029a79c6a22359"
+      "0dea262d61b67745ab748361e8050f29"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3476,7 +3476,7 @@
         "unit_typing"
       ],
       0,
-      "4f26c6a79c2ec4f934f334f9afe96c9b"
+      "5982e2a0f3924ddff28c631c45f9ca4e"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3562,7 +3562,7 @@
         "unit_typing"
       ],
       0,
-      "137c32bec00c40aa52d7235c9b027e4d"
+      "3567ff2b3648baaf1286fdfa0e1e4a66"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3650,7 +3650,7 @@
         "unit_typing"
       ],
       0,
-      "a4b1bbb745623de46e4ee2c26959263f"
+      "be13e66e02113e40fe7b0857a36ca11b"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3737,7 +3737,7 @@
         "unit_typing"
       ],
       0,
-      "75f43c0ccd0129fc39ed07651b897ff4"
+      "85e3db0f2a85f3cc435ad67b9273f1da"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3824,7 +3824,7 @@
         "unit_typing"
       ],
       0,
-      "6aa1b7b59dd71ee5295ee5fb429e992f"
+      "de55039fe980d635e63b6e1792fb6221"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3911,7 +3911,7 @@
         "unit_typing"
       ],
       0,
-      "d584c0a37a495914c8a9b41aa196df7e"
+      "02d99c3af3ee6a2a40c8b916fcc8de5b"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -3998,7 +3998,7 @@
         "unit_typing"
       ],
       0,
-      "0b53e1519ae8c44ce56f13c2581970ba"
+      "cd49ce53546635273b6e078f6f2f6c5b"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -4083,7 +4083,7 @@
         "unit_typing"
       ],
       0,
-      "ef61d830882769714931fb809aa4ba96"
+      "5f46cd34dfdbb979fe54986230df2ee7"
     ],
     [
       "Spec.Intrinsics.store16_index",
@@ -4181,7 +4181,7 @@
         "unit_typing"
       ],
       0,
-      "0fbf30c6c366cfa48a0383ed7e75da30"
+      "12f3e7e286f8bf10f5a07f08a627dc72"
     ],
     [
       "Spec.Intrinsics.mm_storeu_bytes_si128_lemma",
@@ -4225,7 +4225,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "10ce450885182fc12fe38fba1d45f591"
+      "24675a0162405ea21744174159c45099"
     ],
     [
       "Spec.Intrinsics.mm_storeu_bytes_si128_lemma",
@@ -4273,7 +4273,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8f6960f5fa9672dda1cb1863e3aa7e12"
+      "85fb549f97ae2568c37e345ec8bb5eb1"
     ],
     [
       "Spec.Intrinsics.mm_storeu_bytes_si128_lemma",
@@ -4306,7 +4306,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "fe41ccf3af881a5aeec2e2f79f09d914"
+      "1c7742b214277911d4472709b8850539"
     ],
     [
       "Spec.Intrinsics.update_at_range_bv_lemma",
@@ -4365,7 +4365,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "37a0e89501e9de8d100405940861e2aa"
+      "26441c3312533f4801b68b29b8c3fc59"
     ],
     [
       "Spec.Intrinsics.update_at_range_bv_lemma",
@@ -4413,7 +4413,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "281cc12d2a598892d8a71c5129b400ae"
+      "a818037625f913337155a5fe9ccb71ac"
     ],
     [
       "Spec.Intrinsics.update_at_range_bv_lemma",
@@ -4466,7 +4466,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "637746fc72e4e4e62149cf70456b2443"
+      "afaeb92f6ac2a4f0b1e97ebaeb995188"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_to_u8x16_inv",
@@ -4514,7 +4514,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "9ecd3a7234b668007291971d9ba4b87c"
+      "f257d1496b4ed5edd396f9d8cab1c4ba"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_to_u8x16_inv",
@@ -4577,7 +4577,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1ef079056e9d4af94b275ff4dbc242b3"
+      "b5aa3253248995f0148c40b8ee7be126"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_to_i32x8_inv",
@@ -4626,7 +4626,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ac6010afb4c9b66690848e8d8a533198"
+      "766b67784e6cd9fc1c59242fa651afd5"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_to_i32x8_inv",
@@ -4690,7 +4690,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "484ff8e243077c0571db27868a701d9f"
+      "da87d2478db0d0018187b9719ac24353"
     ],
     [
       "Spec.Intrinsics.mm256_bsrli_epi128_lemma",
@@ -4732,7 +4732,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7e63bdd92b8d5b376a1f972464d4f95f"
+      "5d9bd17b7d55b4395f484218cd244f0e"
     ],
     [
       "Spec.Intrinsics.mm256_bsrli_epi128_lemma",
@@ -4871,7 +4871,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "99700103b4dba3f021f27d830484178a"
+      "180e5770f5f672261e194f9e99f84a62"
     ],
     [
       "Spec.Intrinsics.mm256_bsrli_epi128_lemma",
@@ -4898,7 +4898,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "830a24f107c433b563cae5c79c17616d"
+      "d8265bc31773b7a896aff74cddf42406"
     ],
     [
       "Spec.Intrinsics.mm256_permutevar8x32_epi32_lemma",
@@ -4938,7 +4938,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "256134fa60b14f025e99251f154f1e72"
+      "e3e2854c05b528ee68ffc68a19ea1c7f"
     ],
     [
       "Spec.Intrinsics.mm256_permutevar8x32_epi32_lemma",
@@ -5052,7 +5052,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "273b6d21c31e1ef6a822d05b0351592b"
+      "cfaaa9540d40f94533d1a62309b87d48"
     ],
     [
       "Spec.Intrinsics.mm256_permutevar8x32_epi32_lemma",
@@ -5080,7 +5080,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "54d9fee33b1070b1a8ac1923ba2869f0"
+      "2f904885b0d3e3cb77a7bc1feebb2dc1"
     ],
     [
       "Spec.Intrinsics.mm256_srlv_epi32_bv_lemma",
@@ -5128,7 +5128,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "cc2f1db6f8fdee9257df0a8ebfe2765a"
+      "b8d8dde46af0246a71562addc773756e"
     ],
     [
       "Spec.Intrinsics.mm256_srlv_epi32_bv_lemma",
@@ -5282,7 +5282,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d2d0ffbcc07dd56918f929817b8a72bf"
+      "bc824fed2d65048d7a02a9b5b3be0c93"
     ],
     [
       "Spec.Intrinsics.mm_sllv_epi32_bv_lemma",
@@ -5336,7 +5336,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "db12b645cd6cdfad2771451b6b2443dd"
+      "42826e1491f2bdea27d6a387815994f2"
     ],
     [
       "Spec.Intrinsics.mm_sllv_epi32_bv_lemma",
@@ -5480,7 +5480,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1311ebcfc925243ac59ce5f5fc9f3e56"
+      "bf513d496f75c2485b04b88f4fc09133"
     ],
     [
       "Spec.Intrinsics.mm_sllv_epi32_bv_lemma",
@@ -5508,7 +5508,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e9511162e194984c65d4603f933b5ae7"
+      "d9000476cd9b1be6c51a6588ba8f9b56"
     ],
     [
       "Spec.Intrinsics.mm256_sllv_epi32_bv_lemma",
@@ -5557,7 +5557,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "33d8cb16ea4dc9a135ab47832d447ae7"
+      "4f38421f20b76ee206a613a6c05b0355"
     ],
     [
       "Spec.Intrinsics.mm256_sllv_epi32_bv_lemma",
@@ -5732,7 +5732,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b7ad4733a33b94c2d6acb6ebbe539b0b"
+      "38f61ad8a2769fbfcb293bbd6f3d6c49"
     ],
     [
       "Spec.Intrinsics.mm256_srlv_epi64_bv_lemma",
@@ -5780,7 +5780,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0f49d97456e8091c176944b1a386eeed"
+      "960c934596386fd980bd1b13944ca9f3"
     ],
     [
       "Spec.Intrinsics.mm256_srlv_epi64_bv_lemma",
@@ -5943,7 +5943,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4256e823a7bf9c4d6cea80218879441c"
+      "1242ad3ad8baf0001b8ad68f4364fb7b"
     ],
     [
       "Spec.Intrinsics.mm256_srli_epi64_bv_lemma",
@@ -6003,7 +6003,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "d6bff23032b23cb30b8fcbb5de6a2b26"
+      "29269ac8844ae08b63f964e898c27000"
     ],
     [
       "Spec.Intrinsics.mm256_srli_epi64_bv_lemma",
@@ -6143,7 +6143,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "432b0ac2296d2581916f15f9772ce901"
+      "442f4867d2f4e0baf2405d9523827abd"
     ],
     [
       "Spec.Intrinsics.mm256_slli_epi64_bv_lemma",
@@ -6201,7 +6201,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "57ce7521bfb7b1824d4901cece20c083"
+      "c01bcf1c1769390d32bbe6fc2ec1d576"
     ],
     [
       "Spec.Intrinsics.mm256_slli_epi64_bv_lemma",
@@ -6339,7 +6339,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c0acd60d413d55ec37a72271c7715ba4"
+      "bd3418276ae7e4f998afa5704a39e95b"
     ],
     [
       "Spec.Intrinsics.mm_srli_epi64_bv_lemma",
@@ -6397,7 +6397,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "2b7a57920e3805d91be6b72c02fd3dd3"
+      "679f11ea702aff3f9e10f16f153662f4"
     ],
     [
       "Spec.Intrinsics.mm_srli_epi64_bv_lemma",
@@ -6550,7 +6550,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8d4664597d2597bf4fc9aa61e0144b0d"
+      "209e25a008130304954b22408e404d06"
     ],
     [
       "Spec.Intrinsics.lemma_mul_pow2_bit_nat",
@@ -6571,7 +6571,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "4f171ea31b2fe34a95ca28096d092dc0"
+      "51d9ffd4a1299dc6593e9e22977d2214"
     ],
     [
       "Spec.Intrinsics.lemma_i16_one_shl_mod",
@@ -6616,7 +6616,7 @@
         "typing_tok_Rust_primitives.Integers.I16@tok"
       ],
       0,
-      "ab52c4da0c9d3e64a241b3797b17d165"
+      "38540aa4a123b8e31e596b64db39c701"
     ],
     [
       "Spec.Intrinsics.lemma_i16_one_shl_exact",
@@ -6665,7 +6665,7 @@
         "typing_tok_Rust_primitives.Integers.I16@tok"
       ],
       0,
-      "f15eee2009da1a69c0f88480b4551451"
+      "22c0f2f705f9ea7930d67cf2b604a4e9"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended_bv_lemma",
@@ -6716,7 +6716,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "3b2eed00363f449c6b248fbde37341be"
+      "9449db09084ea10b6e8959c81ed9d3d7"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended_bv_lemma",
@@ -6829,7 +6829,7 @@
         "unit_typing"
       ],
       0,
-      "4b154afacbc27e4c9a45ae3b00922447"
+      "c0f231355faadc792f48ac8260974fa7"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended_bv_lemma1",
@@ -6865,7 +6865,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ef5ece32318ffb3ab45c8ee1745a5dfa"
+      "1ed443b2c67ab59c2a28b79b05984026"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended_bv_lemma1",
@@ -6974,7 +6974,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6673d6235aecf33edad409d5dccaf6e1"
+      "e6ac933cd4d03ac51fdb248aebdd38c5"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extended_bv_lemma0",
@@ -7052,7 +7052,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "5697c3926777aa301aa4d53932acc8e7"
+      "8106eccf8dd0fcb84d421764b44c8f53"
     ],
     [
       "Spec.Intrinsics.lemma_trunc_mul_pow2",
@@ -7075,7 +7075,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "1008e53763975549c2d59576355d64d9"
+      "3bb5ec663545373bb67b441097c449f4"
     ],
     [
       "Spec.Intrinsics.lemma_get_bit_i16_nat",
@@ -7130,7 +7130,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9a7c5ac3b6d60733f124697e9fa16ef1"
+      "5fe3576e64a67023a3427ab295a64a23"
     ],
     [
       "Spec.Intrinsics.lemma_i16_mul_val",
@@ -7198,7 +7198,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "bc6e0f8f70e89c95ed1b09c927788b2d"
+      "18de76f6ef431756d683b6a635f03780"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extendedi16_bv_lemma",
@@ -7252,7 +7252,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "523ef6386e9b3152b9374117241b5b67"
+      "bd89c5003d80c2422cfd5133fb480e7e"
     ],
     [
       "Spec.Intrinsics.i16_mul_32extendedi16_bv_lemma",
@@ -7324,7 +7324,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "bf78dd0118577c41a1fbd206f907be58"
+      "26165475af61ceca8ab4b394dbdd671b"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_lemma",
@@ -7363,7 +7363,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "dc50c2feb8edf316337e775da6b15c7a"
+      "824cc0bbbf883534f96537c19d76d416"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_lemma",
@@ -7477,7 +7477,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "d050b36e0764e0ddf7264dac83a003dc"
+      "1d4085a9863f3e7efe046d6fb2c7f19d"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_lemma",
@@ -7499,7 +7499,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "6ab32c2c0e5b1cb4094cfb06fa0e518e"
+      "9b6d84a7f041045bd94fcf074215778c"
     ],
     [
       "Spec.Intrinsics.lemma_mod_pow2_split",
@@ -7516,7 +7516,7 @@
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5"
       ],
       0,
-      "778fafff56b177eedb0b42aa4fc7c9c5"
+      "46ac9eaf1f73d7d10ffe3a52dfb75900"
     ],
     [
       "Spec.Intrinsics.lemma_carryfree_low",
@@ -7544,7 +7544,7 @@
         "typing_Prims.pow2", "well-founded-ordering-on-nat"
       ],
       0,
-      "8020cbb41013f96da3ade4c365fc561c"
+      "dcf15d8cc172c21d7cb252beff401e2c"
     ],
     [
       "Spec.Intrinsics.lemma_carryfree_low",
@@ -7553,7 +7553,7 @@
       0,
       [ "@query" ],
       0,
-      "4567fbea59d0062af46a3868979c6586"
+      "0f6bf4027a0868c89627b1728f51ced6"
     ],
     [
       "Spec.Intrinsics.lemma_add_div_nocarry",
@@ -7569,7 +7569,7 @@
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5"
       ],
       0,
-      "148cf22a79eef25a59aaf9e51a3d15e2"
+      "d6d7defce2d823bc09e3a81b2b2b27d5"
     ],
     [
       "Spec.Intrinsics.lemma_disjoint_add_bit",
@@ -7589,7 +7589,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "faa7f77e66d0a38bf65bcf7675e9cc52"
+      "d59f7a545e903ca3811b77865ee93783"
     ],
     [
       "Spec.Intrinsics.lemma_disjoint_add_bit",
@@ -7598,7 +7598,7 @@
       0,
       [ "@query" ],
       0,
-      "386bed5a52a8ecfd2eb42479eed211ef"
+      "97fdcc0d810293897cf321e9349cbbd0"
     ],
     [
       "Spec.Intrinsics.lemma_atpct_mod32",
@@ -7625,7 +7625,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "25dba03384b6a87ef5b2473dc4f424b1"
+      "1cf7c2576796c3694acf463b02f9d244"
     ],
     [
       "Spec.Intrinsics.lemma_wrapadd_rep",
@@ -7648,7 +7648,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "5ad784b5be175b8c9398cc73e1290562"
+      "7657fc1ce4c4420b54fbe4f596db9ba8"
     ],
     [
       "Spec.Intrinsics.lemma_get_bit_i32_nat",
@@ -7702,7 +7702,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d4afa29c98a76a7d81c82fbf0b33b3c5"
+      "91bff9f577e0caf10ce27aea5699b2a9"
     ],
     [
       "Spec.Intrinsics.lemma_bit_of_mod64",
@@ -7721,7 +7721,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "5f3dd353b0ed773aaffbd7374f334b6e"
+      "16fa91f07ea345507f0e2379801ef37a"
     ],
     [
       "Spec.Intrinsics.lemma_condadd_bit",
@@ -7741,7 +7741,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "faec9a17f854e6dfad84820820be0543"
+      "32a53176375aa0ff5a6dcf48ca1ffc3e"
     ],
     [
       "Spec.Intrinsics.lemma_condadd_bit",
@@ -7750,7 +7750,7 @@
       0,
       [ "@query" ],
       0,
-      "922d32e3c8a80dede04a7d528ba43c25"
+      "c47b12797291b59228b933e7eb1acc93"
     ],
     [
       "Spec.Intrinsics.lemma_get_bit_i64_nat",
@@ -7805,7 +7805,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ddd1c51119c24f612784dde18dc7586d"
+      "61ebaedb2ca929e2be270b3d83246f31"
     ],
     [
       "Spec.Intrinsics.lemma_atpct_mod64",
@@ -7844,7 +7844,7 @@
         "typing_tok_Rust_primitives.Integers.I64@tok"
       ],
       0,
-      "f6282849f9519ab945d50a4d6bf6b4a6"
+      "a879d9a16aff529e50635f2b03c8d152"
     ],
     [
       "Spec.Intrinsics.lemma_wrapadd_rep_i64",
@@ -7864,7 +7864,7 @@
         "typing_tok_Rust_primitives.Integers.I64@tok"
       ],
       0,
-      "c8ab65c01f537732bd95f718a1736933"
+      "a3c8139eb3f42d7bbc9912c10145dfc9"
     ],
     [
       "Spec.Intrinsics.lemma_add_epi64_lane",
@@ -7924,7 +7924,7 @@
         "typing_Tm_abs_dd06d1c3dd6f07948cf7acb3f2fdaac6"
       ],
       0,
-      "8717af6f33e2f99b3c718476025e411e"
+      "63133dc96d613eefbe173461022d6569"
     ],
     [
       "Spec.Intrinsics.mm256_add_epi64_lemma",
@@ -7967,7 +7967,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8e23789f6c11733c749eb2d4537f4dc3"
+      "67596f8ca0b35a0dacebade35e70706c"
     ],
     [
       "Spec.Intrinsics.mm256_add_epi64_lemma",
@@ -7986,6 +7986,7 @@
         "constructor_distinct_Libcrux_core_models.Abstractions.Bit.Bit_One",
         "constructor_distinct_Rust_primitives.Integers.I64",
         "constructor_distinct_Rust_primitives.Integers.U64",
+        "constructor_distinct_Rust_primitives.Integers.USIZE",
         "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
         "data_elim_Rust_primitives.Integers.MkInt",
         "disc_equation_Libcrux_core_models.Abstractions.Bit.Bit_Zero",
@@ -7997,6 +7998,7 @@
         "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.ebit",
         "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.encode_bit",
         "equation_Prims.nat", "equation_Prims.nonzero", "equation_Prims.pos",
+        "equation_Rust_primitives.Integers.bit",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
         "equation_Rust_primitives.Integers.get_bit_nat",
@@ -8034,16 +8036,19 @@
         "refinement_interpretation_Tm_refine_79791911dcfa02391d6c3b163ede26ad",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_c49c72d601ea6d4f11bacd7a16b661a2",
+        "refinement_interpretation_Tm_refine_e9d2acd716e976eddb0f03391caae2b5",
+        "refinement_interpretation_Tm_refine_fa7ff54c1a70547b04f2d315dea12f53",
         "refinement_kinding_Tm_refine_c49c72d601ea6d4f11bacd7a16b661a2",
         "token_correspondence_Spec.Intrinsics.i64_to_bv",
-        "typing_Prims.pow2", "typing_Rust_primitives.Integers.range",
+        "typing_Prims.pow2", "typing_Rust_primitives.Integers.get_bit_nat",
+        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.v",
         "typing_Tm_abs_070bbf5d8d82847964a0a8f204338e19",
         "typing_Tm_abs_734ea598bdfa9b083a73129e00752c67",
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "82a13161ba4343b9cc9a7ba63cb5c7b0"
+      "da8279328653ed622ffbd43a18bd3cab"
     ],
     [
       "Spec.Intrinsics.mm256_add_epi64_lemma",
@@ -8071,7 +8076,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "3b9ce68034cd2811181268522d199c07"
+      "1d01353b7687ecfbe3a38316c237d894"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_specialized_lemma",
@@ -8124,7 +8129,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "74c86c605df115dfe6ebde58f4e6f0a6"
+      "6c7df0ef7c96290b4eaa94128c0c25fc"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_specialized_lemma",
@@ -8176,7 +8181,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "61a37e751c81452037a3d9cc4cbecf9b"
+      "56158769eb40347a531bbf0a7d6d1ab4"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_add_bv_lemma",
@@ -8217,7 +8222,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "5b3d5b165e930b353694f409e1ba046a"
+      "30235d737766965dc7c124fc537b71b5"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_add_bv_lemma",
@@ -8293,7 +8298,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1d6f19f68edd28f5c259551c76ad5f91"
+      "7c49e8bc120938070754c36092ca6bfa"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_add_bv_lemma",
@@ -8329,7 +8334,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "602f85570604d2e21ea5984653830b7a"
+      "0b2d4e1681b594b5581148dbc383a5f5"
     ],
     [
       "Spec.Intrinsics.pow2_lemma",
@@ -8375,7 +8380,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ced6dd240a58061b7ca2a85bbde6f0d5"
+      "7794e525cfc63caf05311c150cdeca92"
     ],
     [
       "Spec.Intrinsics.pow2_lemma",
@@ -8463,7 +8468,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8e79a944d0cef71b3cd5f99a55326bbb"
+      "339c6f8089d1ed1fc6469e0770ce48e0"
     ],
     [
       "Spec.Intrinsics.pow2_lemma",
@@ -8493,7 +8498,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e32920ee50fc7562615c921ad8ec61ee"
+      "0261ba23a4ef9e9ac234f7c395fb7959"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi8_lemma",
@@ -8528,7 +8533,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8f35bad06c0a2e7ae3c41f11c74cda04"
+      "9bed44df56b10b27a0a9b8315a8174f0"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi8_lemma",
@@ -8599,7 +8604,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fa2565581b62413243375e260d8a69ec"
+      "433aa2a035f13657275c8087fb121a12"
     ],
     [
       "Spec.Intrinsics.mm_set_epi8_lemma",
@@ -8632,7 +8637,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "32fc8e6f41b31a459265126deae86e6b"
+      "8cfd34176a51c10177aa317077973bba"
     ],
     [
       "Spec.Intrinsics.mm_set_epi8_lemma",
@@ -8682,7 +8687,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "515eb84114ad0008f484f83b3b076d0c"
+      "6069f2a6fc3faedf030694c3d1a3946c"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi16_lemma",
@@ -8718,7 +8723,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "5c077de2a0a09d92d216084b6915f44b"
+      "ab5bacab8478a14461efc7f290e190f3"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi16_lemma",
@@ -8789,24 +8794,20 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b89f2ca5985a4b0ad5281da3db854bad"
+      "6d4a6da46e4f4c9be5515cc13d05a25f"
     ],
     [
       "Spec.Intrinsics.mm256_shuffle_epi8_lemma",
       1,
-      1,
-      1,
+      2,
+      2,
       [
-        "@MaxFuel_assumption", "@MaxIFuel_assumption",
-        "@fuel_correspondence_Prims.pow2.fuel_instrumented",
-        "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion", "bool_typing",
+        "@MaxIFuel_assumption", "@query", "bool_inversion", "bool_typing",
         "constructor_distinct_Rust_primitives.Integers.U64",
         "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
         "data_elim_Rust_primitives.Integers.MkInt",
         "equality_tok_Rust_primitives.Integers.I8@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
-        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
@@ -8820,89 +8821,141 @@
         "equation_Spec.Intrinsics.bv256",
         "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
         "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
-        "int_inversion", "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_Division", "primitive_Prims.op_LessThan",
         "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Modulus",
-        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_Multiply",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_3efa1bf4a88c1a63c3dc59a253f3abb0",
-        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.v",
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "844e12c8ebb4017d65a6f1ff9ab2aae2"
+      "65ac82d1d579b7c09b2a8ad72ff43430"
     ],
     [
       "Spec.Intrinsics.mm256_shuffle_epi8_lemma",
       2,
-      1,
-      1,
+      2,
+      2,
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented",
         "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion", "bool_typing",
+        "FStar.FunctionalExtensionality_interpretation_Tm_arrow_505f8adb466dc430d209c7de298af914",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "bool_inversion",
+        "bool_typing", "constructor_distinct_Rust_primitives.Integers.I8",
         "constructor_distinct_Rust_primitives.Integers.U64",
         "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Libcrux_core_models.Abstractions.Funarr.FunArray",
         "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.I8@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
-        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_FStar.FunctionalExtensionality.restricted_t",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_5__impl__to_i8x32",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.ebit",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.encode_bit",
+        "equation_Libcrux_core_models.Abstractions.Funarr.impl_5__from_fn",
+        "equation_Libcrux_core_models.Abstractions.Funarr.impl_5__get",
+        "equation_Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_shuffle_epi8",
+        "equation_Libcrux_core_models.Intrinsics_views.to_i8x32",
+        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
+        "equation_Rust_primitives.Integers.i8",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_i8",
         "equation_Rust_primitives.Integers.mk_int",
         "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.mod",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
         "equation_Rust_primitives.Integers.u64",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.v",
         "equation_Spec.Intrinsics.bv256",
+        "equation_Spec.Intrinsics.op_Array_Access",
+        "equation_Spec.Intrinsics.to_i8x32",
+        "equation_with_fuel_Prims.pow2.fuel_instrumented",
         "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
         "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
+        "function_token_typing_Libcrux_core_models.Abstractions.Funarr.__proj__FunArray__item___0",
+        "function_token_typing_Libcrux_intrinsics.Avx2.mm256_shuffle_epi8",
+        "function_token_typing_Prims.__cache_version_number__",
         "int_inversion", "int_typing",
+        "interpretation_Tm_abs_dd06d1c3dd6f07948cf7acb3f2fdaac6",
+        "interpretation_Tm_abs_f5ac4d8761316291cbeb5f6d413a308e",
         "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_Division", "primitive_Prims.op_LessThan",
-        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Modulus",
-        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_Division", "primitive_Prims.op_Equality",
+        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Modulus", "primitive_Prims.op_Multiply",
+        "primitive_Prims.op_Subtraction",
+        "proj_equation_Libcrux_core_models.Abstractions.Funarr.FunArray_@_0",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Libcrux_core_models.Abstractions.Funarr.FunArray_@_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_3efa1bf4a88c1a63c3dc59a253f3abb0",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.range",
+        "refinement_interpretation_Tm_refine_a94de11175d00fdbbdf07b37c09f231c",
+        "refinement_interpretation_Tm_refine_e04297a8f3fdbc2af972964a3c62e4ce",
+        "refinement_interpretation_Tm_refine_fa7ff54c1a70547b04f2d315dea12f53",
+        "token_correspondence_Libcrux_core_models.Abstractions.Funarr.__proj__FunArray__item___0",
+        "token_correspondence_Prims.pow2.fuel_instrumented",
+        "token_correspondence_Spec.Intrinsics.to_i8x32",
+        "typing_Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_shuffle_epi8",
+        "typing_Libcrux_core_models.Intrinsics_views.to_i8x32",
+        "typing_Prims.pow2", "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.v",
+        "typing_tok_Rust_primitives.Integers.I8@tok",
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "55c6c167a80e781545711357875cb095"
+      "7c42bdcc9f3a017d20f52fe333ab9725"
+    ],
+    [
+      "Spec.Intrinsics.mm256_shuffle_epi8_lemma",
+      3,
+      2,
+      2,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Spec.Intrinsics.bv256",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "0a19a369b2f93ffc299c415357baa778"
     ],
     [
       "Spec.Intrinsics.mm_shuffle_epi8_lemma",
       1,
-      1,
-      1,
+      2,
+      2,
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented",
         "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
         "bool_inversion", "bool_typing",
         "constructor_distinct_Rust_primitives.Integers.U64",
-        "data_elim_Rust_primitives.Integers.MkInt",
         "equality_tok_Rust_primitives.Integers.I8@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
@@ -8912,7 +8965,6 @@
         "equation_Rust_primitives.Integers.mk_int",
         "equation_Rust_primitives.Integers.mk_u64",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.v",
         "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
@@ -8928,52 +8980,120 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_5f482e0bf0fa2a9a2505303c0a63e5c1",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "typing_Rust_primitives.Integers.bits",
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9fcf6ab4f6a3f43b188eed59fa609013"
+      "b3986be9441dd6e5d214878bd33eb0a0"
     ],
     [
       "Spec.Intrinsics.mm_shuffle_epi8_lemma",
       2,
-      1,
-      1,
+      2,
+      2,
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented",
         "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion", "bool_typing",
+        "FStar.FunctionalExtensionality_interpretation_Tm_arrow_505f8adb466dc430d209c7de298af914",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "bool_inversion",
+        "bool_typing", "constructor_distinct_Rust_primitives.Integers.I8",
         "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Libcrux_core_models.Abstractions.Funarr.FunArray",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.I8@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
-        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_FStar.FunctionalExtensionality.restricted_t",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.e_ee_14__impl__to_i8x16",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.ebit",
+        "equation_Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp.encode_bit",
+        "equation_Libcrux_core_models.Abstractions.Funarr.impl_5__from_fn",
+        "equation_Libcrux_core_models.Abstractions.Funarr.impl_5__get",
+        "equation_Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_shuffle_epi8",
+        "equation_Libcrux_core_models.Intrinsics_views.to_i8x16",
+        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
+        "equation_Rust_primitives.Integers.i8",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_i8",
         "equation_Rust_primitives.Integers.mk_int",
         "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.mod",
         "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.v",
+        "equation_Spec.Intrinsics.op_Array_Access",
+        "equation_Spec.Intrinsics.to_i8x16",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
         "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
-        "int_inversion", "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
+        "function_token_typing_Libcrux_core_models.Abstractions.Funarr.__proj__FunArray__item___0",
+        "function_token_typing_Libcrux_intrinsics.Avx2.mm_shuffle_epi8",
+        "function_token_typing_Prims.__cache_version_number__",
+        "int_inversion", "int_typing",
+        "interpretation_Tm_abs_759442658e88b9a3c9e234f17384b1e6",
+        "interpretation_Tm_abs_dd06d1c3dd6f07948cf7acb3f2fdaac6",
+        "lemma_Rust_primitives.Integers.pow2_values",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_Division", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Division", "primitive_Prims.op_Equality",
+        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Modulus", "primitive_Prims.op_Multiply",
-        "primitive_Prims.op_Subtraction",
+        "proj_equation_Libcrux_core_models.Abstractions.Funarr.FunArray_@_0",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Libcrux_core_models.Abstractions.Funarr.FunArray_@_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_5f482e0bf0fa2a9a2505303c0a63e5c1",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_a94de11175d00fdbbdf07b37c09f231c",
+        "refinement_interpretation_Tm_refine_e04297a8f3fdbc2af972964a3c62e4ce",
+        "refinement_interpretation_Tm_refine_fa7ff54c1a70547b04f2d315dea12f53",
+        "token_correspondence_Libcrux_core_models.Abstractions.Funarr.__proj__FunArray__item___0",
+        "token_correspondence_Spec.Intrinsics.to_i8x16",
+        "typing_Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm_shuffle_epi8",
+        "typing_Libcrux_core_models.Intrinsics_views.to_i8x16",
+        "typing_Prims.pow2", "typing_Rust_primitives.Integers.range",
+        "typing_Rust_primitives.Integers.v",
+        "typing_tok_Rust_primitives.Integers.I8@tok",
+        "typing_tok_Rust_primitives.Integers.U64@tok"
+      ],
+      0,
+      "19918655ee25357a4a7f8f91c6a37f37"
+    ],
+    [
+      "Spec.Intrinsics.mm_shuffle_epi8_lemma",
+      3,
+      2,
+      2,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented",
+        "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.unsigned", "int_inversion",
+        "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "typing_Rust_primitives.Integers.bits",
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e26c43a7457bc51c377e8f190c25fae3"
+      "dd8ea78ca6ce25ea6a35698463595ee8"
     ],
     [
       "Spec.Intrinsics.mm256_mullo_epi16_bv_lemma",
@@ -9011,7 +9131,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "322ffad1e29b1fb1b465c0477a8279d3"
+      "1e8e052d9f1813aafe8607de23394f53"
     ],
     [
       "Spec.Intrinsics.mm256_mullo_epi16_bv_lemma",
@@ -9144,7 +9264,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "0763593e4680af823d2221135a59f287"
+      "a79781e78554c9c7aed646b4043335e6"
     ],
     [
       "Spec.Intrinsics.mm256_mullo_epi16_bv_lemma",
@@ -9172,7 +9292,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "de1549b5e9325ed8ffaf971cec03ea74"
+      "ca266ff8f2fee14b301ad6c2890598ce"
     ],
     [
       "Spec.Intrinsics.mm256_shuffle_epi32_index",
@@ -9226,7 +9346,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "c439e0ee131dcfa78a85437257962ff6"
+      "0a83b31ac9c7f8c18117918cd0221f91"
     ],
     [
       "Spec.Intrinsics.mm256_shuffle_epi32_lemma",
@@ -9311,7 +9431,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ea674527d9f3a075f529f19d7acc9c43"
+      "28b66e2818950e7ce3b858bb6864b176"
     ],
     [
       "Spec.Intrinsics.mm256_shuffle_epi32_lemma",
@@ -9412,7 +9532,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "3aa6852c023c3be5e68d51074e7f9828"
+      "c72e7ed74b6a3246e8dd5da66b0157f1"
     ],
     [
       "Spec.Intrinsics.mm256_sub_epi32_lemma",
@@ -9504,7 +9624,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "cc26c00331c3835150cf1d0c20bb1ca4"
+      "fba524937bef9bc0be88ad5c72d01255"
     ],
     [
       "Spec.Intrinsics.mm256_add_epi32_lemma",
@@ -9596,7 +9716,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "41bb705f16998eb9e31d57afbb167dcc"
+      "cda9d9b53db965db827ca72c0fd2e1b4"
     ],
     [
       "Spec.Intrinsics.mm256_mullo_epi32_lemma",
@@ -9729,7 +9849,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8f64db4fccb921459cbded30f6957619"
+      "33a4023a557cbc83e317f61bac66d1fc"
     ],
     [
       "Spec.Intrinsics.mm256_mul_epi32_lemma",
@@ -9872,7 +9992,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1d0fb1eadabe3521301cfdbfbc1777ce"
+      "981a390bc90f0f2cc798310957d49555"
     ],
     [
       "Spec.Intrinsics.mm256_srai_epi32_lemma",
@@ -9927,7 +10047,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7687e98c9f78fe145dc0e3d5ad07623b"
+      "e28573f0205fc5d0f728edb8af536292"
     ],
     [
       "Spec.Intrinsics.mm256_srai_epi32_lemma",
@@ -10054,7 +10174,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1b343a1542505bbf5cdbf6c7f3207b7e"
+      "3f3a8a8e7d965da38a368d5798312b52"
     ],
     [
       "Spec.Intrinsics.mm256_slli_epi32_lemma",
@@ -10168,7 +10288,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c057116f04f4b34f22bb00a57ddbae24"
+      "805d9cd68d2af2edf34c9b19aab704a9"
     ],
     [
       "Spec.Intrinsics.mm256_and_si256_lemma",
@@ -10186,7 +10306,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "5c5487168b896015b581152bc66a02b1"
+      "78a2eec97cd70d6c7c01d0fb024c4a3d"
     ],
     [
       "Spec.Intrinsics.mm256_and_si256_lemma",
@@ -10271,7 +10391,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b9482dd965c7e00053ff31d1214b396d"
+      "1c30dec97156d1afbb132cb1fa1157f2"
     ],
     [
       "Spec.Intrinsics.mm256_xor_bv",
@@ -10317,7 +10437,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "b694bc61c97a3df483d792fd5eb9a905"
+      "1c5dbe39a38192814e1c10d3a00c34d9"
     ],
     [
       "Spec.Intrinsics.mm256_xor_si256_lemma",
@@ -10335,7 +10455,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "614df554059cf83b5f2e54567c5705ac"
+      "5000391136038e55dabd092d514fdef3"
     ],
     [
       "Spec.Intrinsics.mm256_xor_si256_lemma",
@@ -10435,7 +10555,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f6ff62d91ab517b02c0cddd9e52c71e0"
+      "0d9de2b5da88a914a05d1e73b00e95c0"
     ],
     [
       "Spec.Intrinsics.mm256_abs_epi32_lemma",
@@ -10458,7 +10578,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "2ae5da60b3753f28133692f57615d303"
+      "295dd5168a9818f2344aa25ca20752aa"
     ],
     [
       "Spec.Intrinsics.mm256_abs_epi32_lemma",
@@ -10481,7 +10601,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "e201de06bfc9b99498d3a32e6409d921"
+      "43f3f7ce01dc12c661f8391b375a2111"
     ],
     [
       "Spec.Intrinsics.mm256_cmpgt_epi32_lemma",
@@ -10499,7 +10619,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "16236f0d45053242af7dbdcc6cd91f9f"
+      "76779ae652d8f7ae369592e127f3ab5d"
     ],
     [
       "Spec.Intrinsics.mm256_cmpgt_epi32_lemma",
@@ -10776,7 +10896,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fb58e8151faa74c6584e2ffea3405518"
+      "4b2b3635ec97db6a195dbe8ecd0b8018"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi64x_lemma",
@@ -10808,7 +10928,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ad515ab73d05a30005c7ce6c7b7354ba"
+      "f31bb3aa0b64d206573db8ff267523b7"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi64x_bv_lemma",
@@ -10851,7 +10971,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "110453c6baec106f2b90bd7dbc78f26e"
+      "129f0bda6b498810867841623248ea28"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi64x_bv_lemma",
@@ -10915,7 +11035,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "f9917f16aa6c5a469e232f123b31480b"
+      "39552ba670deed3bede8e26980f1da76"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi64x_bv_lemma",
@@ -10947,7 +11067,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "77c1d2dc05728daa94a07c1830598bd0"
+      "341360436ae563eb0efbd5de91af21de"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi32_lemma",
@@ -10985,7 +11105,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b813547fb53d4166b80a3a2adcf5d73b"
+      "7d95515684e2b2cdb4b5194309fa2784"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi32_lemma",
@@ -11052,7 +11172,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1c5f84bd0d42b72d63b4a11fb7f54398"
+      "6682c7b88ecfe478696c312092a67073"
     ],
     [
       "Spec.Intrinsics.mm256_set1_epi32_lemma",
@@ -11068,7 +11188,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "48b97986609e76e47323be0a61c79790"
+      "f6851288bbfdd7d703b9f282706e1caa"
     ],
     [
       "Spec.Intrinsics.mm256_set1_epi32_lemma",
@@ -11130,7 +11250,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "09a698c7dd2a3685170874c41b4308a9"
+      "33d9883519a515ba527605c90924f84a"
     ],
     [
       "Spec.Intrinsics.mm256_set1_epi32_bv_lemma",
@@ -11172,7 +11292,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7e20468841c44079e16f3308bb7de5d9"
+      "10bec7287dd3800be4ce8615a661b566"
     ],
     [
       "Spec.Intrinsics.mm256_set1_epi32_bv_lemma",
@@ -11218,7 +11338,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "2a4cace31f4ef8f54965a3db0463627b"
+      "b9b7d1131ddf853ffef6af48d1665447"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi32_bv_lemma",
@@ -11263,7 +11383,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "63cc5de2352d440097fb5e353498b5c4"
+      "7e855a6369203356402b0f016b4b11c3"
     ],
     [
       "Spec.Intrinsics.mm256_set_epi32_bv_lemma",
@@ -11327,7 +11447,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e43f18ff9733e0fc28995de6eb8626f3"
+      "565d0b859437609416c2d60c7a6fb435"
     ],
     [
       "Spec.Intrinsics.mm_set_epi32_lemma",
@@ -11360,7 +11480,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "23e5cc3d812299c3e9f785651da5f3bc"
+      "d49a625402c6c1d15ad6a404855637bc"
     ],
     [
       "Spec.Intrinsics.mm_set_epi32_lemma",
@@ -11427,7 +11547,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "316e0d9100fb16ab35b980b0c5cd6b9a"
+      "0cdb9239c57d1370f621f71537a5bdb6"
     ],
     [
       "Spec.Intrinsics.mm256_blend_epi32_lemma",
@@ -11456,7 +11576,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "8b56ebcc5ce0b4b6e16d6b60cdd71228"
+      "ae8e596f48bb2df2b6024c70a1b53571"
     ],
     [
       "Spec.Intrinsics.mm256_blend_epi32_lemma",
@@ -11585,7 +11705,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "80123bc073166ffa7cb19da5320d7b74"
+      "1c5ed46457d72407de98c03fe4b7146f"
     ],
     [
       "Spec.Intrinsics.mm256_set_m128i_bv_lemma",
@@ -11651,7 +11771,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9d9f1d0bc383b3247bc5db029820f001"
+      "a5cd4853932b3baf055dd77c4eeb3d0d"
     ],
     [
       "Spec.Intrinsics.mm256_set_m128i_lemma",
@@ -11694,7 +11814,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "2c5a2d962ab4c80ee8a98930cbc6acfc"
+      "f44e328a8231a2304ca4679834016134"
     ],
     [
       "Spec.Intrinsics.mm256_set_m128i_lemma",
@@ -11774,7 +11894,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "62369af9bb4b0ee025a6ead22b39ad64"
+      "bb36b4cfde2c6eb9c73422bdbdad3d9a"
     ],
     [
       "Spec.Intrinsics.mm256_permute2x128_si256_lemma_i32x4",
@@ -11836,7 +11956,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "39226c3909dcb583a385eee8f19f44e1"
+      "31ed8f1b14a2704e4d1bada975b62876"
     ],
     [
       "Spec.Intrinsics.mm256_permute2x128_si256_lemma_i32x4",
@@ -11933,7 +12053,7 @@
         "unit_typing"
       ],
       0,
-      "e36960b4c19b5c80fea48697eb70d077"
+      "2255d6282fab68aa1feabb36bc614ac8"
     ],
     [
       "Spec.Intrinsics.mm256_castsi256_si128_lemma",
@@ -11952,7 +12072,7 @@
         "refinement_interpretation_Tm_refine_f6d37d508bde7917d0acf21de8914920"
       ],
       0,
-      "839132410e8164a14046000b0f8e7133"
+      "7f4c5da06d57c2343ac424b4e0136a6f"
     ],
     [
       "Spec.Intrinsics.mm256_castsi256_si128_lemma",
@@ -12030,7 +12150,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5701ba17cc2b910f48a4d15bab3b36b4"
+      "4d9f1548e43515627b5c63b13c937d05"
     ],
     [
       "Spec.Intrinsics.mm256_unpacklo_epi64_lemma",
@@ -12068,7 +12188,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "86238b7062a1756e3121c81480be2252"
+      "7e5dba9986c71c04eaacfc1a91f80f78"
     ],
     [
       "Spec.Intrinsics.mm256_unpacklo_epi64_lemma",
@@ -12145,7 +12265,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e185efc88fdc8ffc2067e64b13c04bdd"
+      "98d13630a7538f0cb32c254faa41449b"
     ],
     [
       "Spec.Intrinsics.mm256_unpackhi_epi64_lemma",
@@ -12184,7 +12304,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6d0e9034af0c08661f265982b7548ffc"
+      "2b89912279787bbcdbe90013113876cf"
     ],
     [
       "Spec.Intrinsics.mm256_unpackhi_epi64_lemma",
@@ -12260,7 +12380,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "3f94115c6068e31a7900196d88eaaa96"
+      "def26569da5b09f05ea1da7b822ca724"
     ],
     [
       "Spec.Intrinsics.mm_loadu_si128_lemma",
@@ -12311,7 +12431,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "da802e002d3f024fb88da0057d502e46"
+      "03fe867d6f259ca72b29a0da4a9b95cf"
     ],
     [
       "Spec.Intrinsics.mm_loadu_si128_lemma",
@@ -12439,7 +12559,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0cd76e9ab9f4c9016bb401ca81107d8d"
+      "808d91fcbb0bab888b789cc0939a5ac5"
     ],
     [
       "Spec.Intrinsics.mm_loadu_si128_lemma",
@@ -12471,7 +12591,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9405c2b1f188a46b37df52549d6ba84d"
+      "456aeb136cdbe92aedc9f5bf6eba6d3c"
     ],
     [
       "Spec.Intrinsics.i32_lt_pow2_n_to_bit_zero_lemma",
@@ -12509,7 +12629,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7f36686f76368fd29093d36da76df66e"
+      "8523e462d88615602b4f534b69ebb242"
     ],
     [
       "Spec.Intrinsics.i32_lt_pow2_n_to_bit_zero_lemma",
@@ -12593,7 +12713,7 @@
         "unit_typing"
       ],
       0,
-      "bf73e26693c865a5d838ed6867dfb78b"
+      "074c3fe7bcfddfce2830927d733f69bb"
     ],
     [
       "Spec.Intrinsics.i32_lt_pow2_n_to_bit_zero_lemma",
@@ -12621,7 +12741,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "ed7e55f99b3b5ecf2fc61859bb41e256"
+      "85eadb820379c0e53d54c7d3fe83e16a"
     ],
     [
       "Spec.Intrinsics.shl_casted_u8_bv_lemma",
@@ -12671,7 +12791,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "8bd0c068833de127c8cfef39085ee157"
+      "f04f255fcdb7ad148ae7ed69225fd221"
     ],
     [
       "Spec.Intrinsics.shl_casted_u8_bv_lemma",
@@ -12781,7 +12901,7 @@
         "unit_typing"
       ],
       0,
-      "5715690982a505abdbfe91c054d92e84"
+      "0b19710f95caae0269f1dd9e4b594afa"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_cast_lemma",
@@ -12801,7 +12921,7 @@
         "refinement_interpretation_Tm_refine_ca8c88de331ea4b22a01790e7916be9f"
       ],
       0,
-      "ca629fda9d125f706f4501667cc75433"
+      "6925b3e2186cb886f932746e6d964bff"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_cast_lemma",
@@ -12887,7 +13007,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "64bd9c8206589e416c2371ddaf5b5217"
+      "18bc75d0cc1c294aa77b1e0acde9a8e3"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_pow2_min_one_lemma",
@@ -12948,7 +13068,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9c612fd84e0a0effdc3c5ae03459f59b"
+      "63536a9aef1691f4ac7d6ed6e5a5cb7b"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_pow2_min_one_lemma",
@@ -13030,7 +13150,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2be6cf9c1d8113ab0ecd2fc2c70bb189"
+      "32eb8a8bc6be1260f96f23903cc724af"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_pow2_min_one_lemma_fa",
@@ -13090,7 +13210,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "32f4214d23b67e1c19a2bc247e2c86d4"
+      "a98c92f4b349fc6d1e2982251cd1e55d"
     ],
     [
       "Spec.Intrinsics.nat_high_zero_bound",
@@ -13122,7 +13242,7 @@
         "well-founded-ordering-on-nat"
       ],
       0,
-      "7a1bce61bdf94267289bc8b9918486a0"
+      "7c8222c92d57b1df33dfc4ebec0b9c76"
     ],
     [
       "Spec.Intrinsics.nat_high_zero_bound",
@@ -13131,7 +13251,7 @@
       1,
       [ "@query" ],
       0,
-      "ab87fa39c343715324233f93edbfb527"
+      "4f9860692550baa871ec90ef0aa85fd7"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_lt_pow2_n_weak",
@@ -13165,7 +13285,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b86b09642a141f049e2f4a58941367f5"
+      "ed0b2a164fa7c59dac0f3ac2207b55a6"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_lt_pow2_n_weak",
@@ -13246,7 +13366,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "75deb224a83bdd9323def23aa8760ac1"
+      "862ca14eb57982286077272d4254a97c"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_lt_pow2_n_weak",
@@ -13274,7 +13394,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "7ed0aaa6f8f138901d686a637c07b5e5"
+      "fa0895bf6a5ee33b119e7b63b9688623"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_positive",
@@ -13303,7 +13423,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "949f8bc34147450336a5a4d6b7f2a6bb"
+      "ae1cdf4bda5cc3346d12ae941a763f4e"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_positive",
@@ -13380,7 +13500,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e3183e3dd99d0abc64c7fc68082b0cc1"
+      "5dd7eb759b1df67d1f2160652efb5668"
     ],
     [
       "Spec.Intrinsics.i32_bit_zero_lemma_to_positive",
@@ -13408,7 +13528,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e22710ce54257cf9bab44886617515ce"
+      "d6091c741ccc984ac73c156f27579ca8"
     ],
     [
       "Spec.Intrinsics.rewrite_eq_sub_mod",
@@ -13470,7 +13590,7 @@
         "typing_Rust_primitives.Integers.size_bits"
       ],
       0,
-      "a6c35072bdfbd1b657c0e0752e023646"
+      "8aaff32e2200f4a22262517c28b9770b"
     ],
     [
       "Spec.Intrinsics.to_i32x8_eq_to_bv_eq",
@@ -13572,7 +13692,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "1e1a514370e66a952527400d478ae58b"
+      "d644d192f286364c4aa7543a8e3e9d73"
     ],
     [
       "Spec.Intrinsics.lemma_from_i32x8_def_pt",
@@ -13601,7 +13721,7 @@
         "typing_Tm_abs_519e0705b0f422fcd69738adcc0e39f8"
       ],
       0,
-      "c4a3644281c4e68e0921f4c423142097"
+      "5daa9e3b152f77e6282631b273c2ae88"
     ],
     [
       "Spec.Intrinsics.mk_i32x8",
@@ -13724,7 +13844,7 @@
         "typing_Libcrux_intrinsics.Avx2.mm256_storeu_si256_i32_"
       ],
       0,
-      "63d4e9fd18ac8bbe54e2ebf877bb756f"
+      "66dbb3cb760401fbc5ae6555a65763f4"
     ],
     [
       "Spec.Intrinsics.setzero_bv",
@@ -13766,7 +13886,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "fe99a949d295ebdb5f6603b9e6acfd8d"
+      "8d13436e8d7efc4bcc7a0d625d303424"
     ],
     [
       "Spec.Intrinsics.mm256_setzero_si256_lemma",
@@ -13800,7 +13920,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a80069126b30f118cecf568e8e40a595"
+      "71d82db8095e85c412e126f271c52b2a"
     ],
     [
       "Spec.Intrinsics.mm256_setzero_si256_lemma",
@@ -13886,7 +14006,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f89a927493fa7ea510e4dacab25a2cd2"
+      "0277a840281877412cf93728a5da3235"
     ],
     [
       "Spec.Intrinsics.mm256_loadu_si256_i32_lemma",
@@ -13916,7 +14036,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "e23715420f76a3eb98b1c7140abf266b"
+      "8f00af506f5870952af6b58d792f275a"
     ],
     [
       "Spec.Intrinsics.mm256_loadu_si256_i32_lemma",
@@ -13946,7 +14066,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "52a48d14d208e3fae5db45062d880db8"
+      "82b14f1db2a79816dd468b64cc0284a8"
     ],
     [
       "Spec.Intrinsics.vec256_blendv_epi32_lemma",
@@ -13980,7 +14100,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "53f4faabb2e0643475a41b477a7eaff7"
+      "38a513d3132fc5879f3246eb29baba0d"
     ],
     [
       "Spec.Intrinsics.vec256_blendv_epi32_lemma",
@@ -14043,7 +14163,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "c85349c998ac663cca2254060b8cfffa"
+      "e31ffdceed2f8383931c5efc352d3c60"
     ],
     [
       "Spec.Intrinsics.mm256_cmpeq_epi32_lemma",
@@ -14065,7 +14185,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "fa4853825ea250fd6b19f63da69e2ab2"
+      "db3ee1f54256d534433cf6f03d64908b"
     ],
     [
       "Spec.Intrinsics.mm256_cmpeq_epi32_lemma",
@@ -14186,7 +14306,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "637b1161af47e7303207f95c225fb43a"
+      "7185001597019409fdd2f2b72c9e2e63"
     ],
     [
       "Spec.Intrinsics.mm256_or_si256_lemma",
@@ -14204,7 +14324,7 @@
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290"
       ],
       0,
-      "27222aad6ceb125d41697a9e6b5930f4"
+      "2b27ee6bdd0bf219c0068bc4d24f956e"
     ],
     [
       "Spec.Intrinsics.mm256_or_si256_lemma",
@@ -14289,7 +14409,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "93da5a9c01abe3a52637eac10d8ab658"
+      "d658de60efcc2bf0ac8950ba03c4f9ea"
     ],
     [
       "Spec.Intrinsics.mm256_sign_epi32_lemma",
@@ -14318,7 +14438,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "f71a63491da5c06d8a2a0cc90b4c1f09"
+      "b84df1d7a5c04e9e1aa167abe539cda0"
     ],
     [
       "Spec.Intrinsics.mm256_sign_epi32_lemma",
@@ -14426,7 +14546,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9b4e811a85279cd407525e38a3ec790d"
+      "0ad6099ceabf5b58a1cd0800f786085d"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_to_i32x4_inv",
@@ -14475,7 +14595,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "f6e23212122a5ce221cb2dd46b8ad04b"
+      "1858e29424c0c78f370441bebc0469de"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_to_i32x4_inv",
@@ -14539,7 +14659,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "85f8187d9a9541af5307b0734aca2fd8"
+      "7ddde62803aaee525f5f97119112aaee"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_ext",
@@ -14556,7 +14676,7 @@
         "refinement_interpretation_Tm_refine_b7c412a0bcc36b995b526c58f56105d6"
       ],
       0,
-      "0846559062538b04ec5c70195d0db909"
+      "65b825b276e40ac3fd2c91ef2c833900"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_ext",
@@ -14610,7 +14730,7 @@
         "typing_Tm_abs_b4e102713503f56c0e762c4b47182abd"
       ],
       0,
-      "9970583c08717bbbb68d11301ef30d19"
+      "a1970291d98d435a597d5706cbf8ed60"
     ],
     [
       "Spec.Intrinsics.to_i8x16_mm_loadu_si128_lemma",
@@ -14640,7 +14760,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "08fdcd132194c443f923ad04074a06a7"
+      "c998ea9e71558d457925a8e9fcdf2e21"
     ],
     [
       "Spec.Intrinsics.to_i8x16_mm_loadu_si128_lemma",
@@ -14774,7 +14894,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f5067ca25da0fd79d4577775751e0c2d"
+      "9878915f946f21fca811d904e0f1d04f"
     ],
     [
       "Spec.Intrinsics.mm256_loadu_si256_u8_lemma",
@@ -14824,7 +14944,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "50c028c40da256390c548f7f88ccf0bf"
+      "51bbab35db514b8fccfc968a50bcb25d"
     ],
     [
       "Spec.Intrinsics.mm256_loadu_si256_u8_lemma",
@@ -14958,7 +15078,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cf9a509e2fba6c33c401149d27115397"
+      "8c837f48d25b7f189854ef1b64ed7578"
     ],
     [
       "Spec.Intrinsics.mm_storeu_si128_i32_lemma",
@@ -15052,7 +15172,7 @@
         "typing_Libcrux_intrinsics.Avx2.mm_storeu_si128_i32_"
       ],
       0,
-      "0c41bc21e7125d777da1812db568c0dc"
+      "d75f37514f80012b992fc62807ba7608"
     ],
     [
       "Spec.Intrinsics.mm256_movemask_ps_lemma",
@@ -15185,7 +15305,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "61a80f142504f54833c420e59334b9a8"
+      "e2964a727596960e17f623053eeec1b6"
     ],
     [
       "Spec.Intrinsics.coeff_gather_bv_lemma",
@@ -15287,7 +15407,7 @@
         "unit_typing"
       ],
       0,
-      "595db5c71273c9aeb6b0b9fa3c6eda3a"
+      "8abf97634be312d83e4784fb6d0ef513"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_logand15_lemma",
@@ -15329,7 +15449,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "0bdb086e245314a18be411c523300aa1"
+      "18ef651242e2e0faf1c93f9c6ba9b88c"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_logand15_lemma",
@@ -15415,7 +15535,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "dbc91eff5db98cb838e20fbca0e3804c"
+      "87e42370393003e18f0d2c420c75f7bf"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_shr4_lemma",
@@ -15460,7 +15580,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "d87c346ff9d1be5f1cffaa97c8666a1e"
+      "60bb41888fcb30d048be34ee54c4c7df"
     ],
     [
       "Spec.Intrinsics.u8_to_bv_shr4_lemma",
@@ -15539,7 +15659,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ff9e1587a58d9ddf0d73ebfd441ef2d4"
+      "358773385b136ce834cc1a5a4658c7ea"
     ]
   ]
 ]
