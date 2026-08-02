@@ -623,8 +623,6 @@ let mm256_madd_epi16_lemma a b i =
   Canon.lemma_mm256_madd_epi16 a b;
   i32_to_bv_to_i32x8_inv (I.mm256_madd_epi16 a b) lane bit
 #pop-options
-let mm256_add_epi64_lemma = admit ()
-let mm256_madd_epi16_specialized_lemma = admit ()
 (* ---- carry-free addition of bit-disjoint values (pure nat, gated) ----
    If for every position at least one operand's bit is 0, addition produces no
    carries, so bit i of the sum is bit_i(x) + bit_i(y). *)
@@ -706,6 +704,108 @@ let lemma_get_bit_i32_nat (z: i32) (j: nat {j < 32})
   else (FStar.Math.Lemmas.lemma_mod_plus (v z) 1 (pow2 32);
         FStar.Math.Lemmas.small_mod (pow2 32 + v z) (pow2 32))
 #pop-options
+
+(* ===== (F) i64-lane carry-free bit addition — mm256_add_epi64 ===== *)
+
+(* a low bit `bit` of a nat is unaffected by an outer mod 2^64 (bit < 64) *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 200 --using_facts_from 'Prims FStar'"
+let lemma_bit_of_mod64 (a: nat) (bit: nat{bit < 64})
+  : Lemma (((a % pow2 64) / pow2 bit) % 2 == (a / pow2 bit) % 2) =
+  FStar.Math.Lemmas.pow2_modulo_division_lemma_1 a bit 64;
+  FStar.Math.Lemmas.pow2_double_mult (63 - bit);
+  FStar.Math.Lemmas.modulo_modulo_lemma (a / pow2 bit) 2 (pow2 (63 - bit))
+#pop-options
+
+(* bit `bit` of a carry-free (low-bit disjoint) sum, taken mod 2^64.
+   Disjointness threaded as a per-index Lemma VALUE `pf` (only j < bit). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400 --using_facts_from 'Prims FStar'"
+let lemma_condadd_bit (bx byv: nat) (bit: nat{bit < 64})
+      (pf: (j:nat{j < bit}) -> Lemma ((bx / pow2 j) % 2 == 0 \/ (byv / pow2 j) % 2 == 0))
+  : Lemma ((((bx + byv) % pow2 64) / pow2 bit) % 2 ==
+           ((bx / pow2 bit) % 2 + (byv / pow2 bit) % 2) % 2) =
+  lemma_carryfree_low bx byv bit pf;
+  lemma_add_div_nocarry bx byv (pow2 bit);
+  lemma_bit_of_mod64 (bx + byv) bit;
+  FStar.Math.Lemmas.modulo_distributivity (bx / pow2 bit) (byv / pow2 bit) 2
+#pop-options
+
+(* get_bit of an i64 as a pure-nat readout on its 2^64 representative *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_get_bit_i64_nat (z: i64) (j: nat {j < 64})
+  : Lemma (Ints.get_bit z (Ints.mk_usize j) == get_bit_nat (v z % pow2 64) j) =
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I64);
+  if v z >= 0 then FStar.Math.Lemmas.small_mod (v z) (pow2 64)
+  else (FStar.Math.Lemmas.lemma_mod_plus (v z) 1 (pow2 64);
+        FStar.Math.Lemmas.small_mod (pow2 64 + v z) (pow2 64))
+#pop-options
+
+(* the signed wrap-around @%. is a mod-2^64 identity on the low 64 bits *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --using_facts_from 'Prims FStar Rust_primitives.Integers'"
+let lemma_atpct_mod64 (k: int)
+  : Lemma ((k @%. Ints.I64) % pow2 64 == k % pow2 64) =
+  assert_norm (Ints.modulus Ints.I64 == pow2 64);
+  let p = pow2 64 in
+  let m = k % p in
+  if m >= p / 2 then FStar.Math.Lemmas.lemma_mod_plus m (-1) p
+  else FStar.Math.Lemmas.small_mod m p
+#pop-options
+
+(* the wrapping i64 add agrees with the true sum on the low 64 bits *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_wrapadd_rep_i64 (x y: i64)
+  : Lemma (v (x `add_mod` y) % pow2 64 == (v x + v y) % pow2 64) =
+  reveal_opaque_arithmetic_ops #Ints.I64;
+  lemma_atpct_mod64 (v x + v y)
+#pop-options
+
+(* the add_epi64 result's i64 lane = wrapping add of the two operand lanes *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 250"
+let lemma_add_epi64_lane (lhs rhs: bv256) (lane: u64{v lane < 4})
+  : Lemma (to_i64x4 (I.mm256_add_epi64 lhs rhs) lane ==
+           (to_i64x4 lhs lane) `add_mod` (to_i64x4 rhs lane)) =
+  reveal_opaque (`%I.mm256_add_epi64) I.mm256_add_epi64;
+  Canon.lemma_mm256_add_epi64 lhs rhs
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 400"
+let mm256_add_epi64_lemma lhs rhs i =
+  let lane : u64 = i /! mk_u64 64 in
+  let bit  : u64 = i %! mk_u64 64 in
+  FStar.Math.Lemmas.lemma_div_mod (v i) 64;
+  let add = I.mm256_add_epi64 lhs rhs in
+  i64_to_bv_to_i64x4_inv lhs lane bit;
+  i64_to_bv_to_i64x4_inv rhs lane bit;
+  i64_to_bv_to_i64x4_inv add lane bit;
+  let xl : i64 = to_i64x4 lhs lane in
+  let yl : i64 = to_i64x4 rhs lane in
+  let zl : i64 = to_i64x4 add lane in
+  lemma_add_epi64_lane lhs rhs lane;
+  let bx : nat = v xl % pow2 64 in
+  let byv : nat = v yl % pow2 64 in
+  let disj (j: nat{j < v bit}) : Lemma ((bx / pow2 j) % 2 == 0 \/ (byv / pow2 j) % 2 == 0) =
+    let jj : u64 = mk_u64 j in
+    i64_to_bv_to_i64x4_inv lhs lane jj;
+    i64_to_bv_to_i64x4_inv rhs lane jj;
+    assert (Bit_Zero? (i64_to_bv xl jj) \/ Bit_Zero? (i64_to_bv yl jj));
+    assert (i64_to_bv xl jj == IVi.encode_bit Ints.I64 xl j);
+    assert (i64_to_bv yl jj == IVi.encode_bit Ints.I64 yl j);
+    bit_of_get_bit Ints.I64 xl j;
+    bit_of_get_bit Ints.I64 yl j;
+    lemma_get_bit_i64_nat xl j;
+    lemma_get_bit_i64_nat yl j
+  in
+  lemma_condadd_bit bx byv (v bit) disj;
+  lemma_wrapadd_rep_i64 xl yl;
+  FStar.Math.Lemmas.lemma_mod_plus_distr_l (v xl) (v yl) (pow2 64);
+  FStar.Math.Lemmas.lemma_mod_plus_distr_r bx (v yl) (pow2 64);
+  lemma_get_bit_i64_nat zl (v bit);
+  lemma_get_bit_i64_nat xl (v bit);
+  lemma_get_bit_i64_nat yl (v bit);
+  bit_of_get_bit Ints.I64 zl (v bit);
+  bit_of_get_bit Ints.I64 xl (v bit);
+  bit_of_get_bit Ints.I64 yl (v bit)
+#pop-options
+let mm256_madd_epi16_specialized_lemma = admit ()
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let i32_to_bv_add_bv_lemma x y i =
   reveal_opaque (`%i32_wrapping_add) i32_wrapping_add;
