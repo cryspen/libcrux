@@ -365,7 +365,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     }
 
     /// Force-set the reseed counter (for testing error paths).
-    #[cfg(any(test, feature = "testing"))]
+    #[cfg(any(test, feature = "_testing-apis"))]
     pub fn set_reseed_counter(&mut self, v: u64) {
         self.reseed_counter = v;
     }

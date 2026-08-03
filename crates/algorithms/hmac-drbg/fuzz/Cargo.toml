@@ -13,7 +13,7 @@ rand = { version = "0.10", default-features = false, features = ["std_rng"]}
 
 [dependencies.libcrux-hmac-drbg]
 path = ".."
-features = ["testing", "rand"]
+features = ["_testing-apis", "rand"]
 
 [[bin]]
 name = "new"

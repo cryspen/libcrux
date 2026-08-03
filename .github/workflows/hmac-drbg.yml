@@ -55,11 +55,11 @@ jobs:
 
       - name: 🏃🏻‍♀️ Test
         run: |
-          cargo hack test --each-feature --exclude-features testing --verbose
+          cargo hack test --each-feature --exclude-features _testing-apis --verbose
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
-          cargo hack test --each-feature --exclude-features testing --verbose --release
+          cargo hack test --each-feature --exclude-features _testing-apis --verbose --release
 
   fuzz:
     strategy:

@@ -364,7 +364,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
     /// fuzz targets that need the reseed branch have to jump the counter there.
     ///
     /// [`RESEED_INTERVAL`]: crate::RESEED_INTERVAL
-    #[cfg(any(test, feature = "testing"))]
+    #[cfg(any(test, feature = "_testing-apis"))]
     pub fn set_reseed_counter(&mut self, v: u64) {
         self.drbg.set_reseed_counter(v);
     }
