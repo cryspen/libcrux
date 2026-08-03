@@ -44,7 +44,7 @@ use libcrux_hmac_drbg::{
     HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng, MAX_GENERATE_BYTES, RESEED_INTERVAL,
 };
 use libfuzzer_sys::fuzz_target;
-use rand::{Rng, SeedableRng, rngs::StdRng};
+use rand::{rngs::StdRng, Rng, SeedableRng};
 
 /// A cursor over the fuzz input that zero-pads once the data runs out.
 struct Cursor<'a> {
