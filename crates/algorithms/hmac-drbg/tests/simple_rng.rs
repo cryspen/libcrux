@@ -6,7 +6,9 @@
 //! ```
 #![cfg(all(feature = "rand", not(feature = "health-tests")))]
 
-use libcrux_hmac_drbg::{HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng};
+use libcrux_hmac_drbg::{
+    HmacSha256DrbgRng, HmacSha384DrbgRng, HmacSha512DrbgRng, MAX_GENERATE_BYTES,
+};
 use rand::{rand_core::UnwrapErr, rngs::SysRng, CryptoRng, Rng};
 
 type OsRng = UnwrapErr<SysRng>;
@@ -147,4 +149,45 @@ fn sha512_satisfies_crypto_rng() {
     }
     let mut rng = make_sha512();
     need_crypto(&mut rng);
+}
+
+/// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
+#[test]
+fn sha256_fill_bytes_succeeds_for_multiple_of_max_bytes() {
+    let mut rng = make_sha256();
+    for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
+        let mut output = vec![0xaa; len];
+        rng.fill_bytes(&mut output);
+        // assert for an empty vec would be true, but we still want to
+        // execute fill_bytes to check that it doesn't panic
+        if len != 0 {
+            assert!(!output.iter().all(|b| *b == 0xaa))
+        }
+    }
+}
+
+/// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
+#[test]
+fn sha384_fill_bytes_succeeds_for_multiple_of_max_bytes() {
+    let mut rng = make_sha384();
+    for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
+        let mut output = vec![0xaa; len];
+        rng.fill_bytes(&mut output);
+        if len != 0 {
+            assert!(!output.iter().all(|b| *b == 0xaa))
+        }
+    }
+}
+
+/// Regression test for <https://github.com/celabshq/libcrux/issues/1556>
+#[test]
+fn sha512_fill_bytes_succeeds_for_multiple_of_max_bytes() {
+    let mut rng = make_sha512();
+    for len in [0, MAX_GENERATE_BYTES, 2 * MAX_GENERATE_BYTES] {
+        let mut output = vec![0xaa; len];
+        rng.fill_bytes(&mut output);
+        if len != 0 {
+            assert!(!output.iter().all(|b| *b == 0xaa))
+        }
+    }
 }

@@ -14,7 +14,9 @@
 //!   - On success, `needs_reseed()` is false and `reseed_counter()` is 1.
 #![no_main]
 
-use libcrux_hmac_drbg::{HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, InstantiateError};
+use libcrux_hmac_drbg::{
+    HmacDrbgSha256, HmacDrbgSha384, HmacDrbgSha512, InstantiateError, MIN_ENTROPY_BYTES,
+};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {
@@ -54,6 +56,12 @@ fuzz_target!(|data: &[u8]| {
                         total > MAX_SEED,
                         "InputTooLarge returned but total={total} <= {MAX_SEED}"
                     );
+                }
+                Err(InstantiateError::InsufficientEntropy) => {
+                    assert!(
+                        entropy.len() < MIN_ENTROPY_BYTES,
+                        "InsufficientEntropy returned but entropy.len() >= MIN_ENTROPY_BYTES"
+                    )
                 }
                 // there are more variants if the rand feature is set on the drbg crate,
                 // so we need the exception here
