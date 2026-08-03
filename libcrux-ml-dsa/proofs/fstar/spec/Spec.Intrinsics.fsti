@@ -399,16 +399,27 @@ val mm256_add_epi64_lemma lhs rhs (i: u64 {v i < 256})
            /\ (Bit_Zero? rhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
 
 #push-options "--z3rlimit 80"
+// CORRECTED (soundness fix, session 16): the previous `requires` bound
+// `local_32 = i / 32` (a copy-paste bug for `i % 32`) and stated a degenerate
+// bit-disjointness that does NOT imply the ensures.  madd of the 6-bit-packing
+// const `set_epi16(..,2^6,1,..,2^6,1)` produces, in i32 lanes 0 and 4,
+// `x + y*2^6` where x = low i16-lane, y = high i16-lane.  For the bit layout
+// below to hold carry-free we need: the LOW lane is a 6-bit value (bits 6..15
+// zero -> non-negative and no overlap with y*2^6), and the HIGH lane is
+// non-negative (bit 15 zero, so y*2^6 < 2^21 and the sum stays < 2^22, capping
+// the high output bits at Bit_Zero).
 val mm256_madd_epi16_specialized_lemma vec i:
   Lemma
   (requires
     (forall (i: nat{i < 256}).
       let nth_32_block = i / 32 in
-      let local_32 = i / 32 in
+      let local_32 = i % 32 in
       match nth_32_block with
       | 0 | 4 ->
-         Bit_Zero? vec.(mk_int (nth_32_block * 32 + local_32))
-        \/ Bit_Zero? vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
+         ((6 <= local_32 /\ local_32 < 16) ==>
+            Bit_Zero? vec.(mk_int (nth_32_block * 32 + local_32)))
+         /\ (local_32 = 31 ==>
+            Bit_Zero? vec.(mk_int (nth_32_block * 32 + 31)))
       | _ -> True
     )
   )
@@ -423,7 +434,9 @@ val mm256_madd_epi16_specialized_lemma vec i:
       | 0 | 4 ->
         if local_32 < 6
         then vec.(mk_int (nth_32_block * 32 + local_32))
-        else vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
+        else if local_32 < 22
+        then vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
+        else Bit_Zero
       | _ -> Bit_Zero
     )
 

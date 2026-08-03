@@ -8129,7 +8129,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6c7df0ef7c96290b4eaa94128c0c25fc"
+      "49f2d9a16f063de4568717dd5345b36a"
     ],
     [
       "Spec.Intrinsics.mm256_madd_epi16_specialized_lemma",
@@ -8181,7 +8181,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "56158769eb40347a531bbf0a7d6d1ab4"
+      "ac704f9564d082467fb1d1b224b360b4"
     ],
     [
       "Spec.Intrinsics.i32_to_bv_add_bv_lemma",
