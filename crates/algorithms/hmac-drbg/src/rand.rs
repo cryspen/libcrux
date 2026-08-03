@@ -329,7 +329,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
     /// hax.
     ///
     ///
-    //hax: requires dst.len() < crate::MAX_GENERATE_BYTES
+    // #hax: requires dst.len() <= crate::MAX_GENERATE_BYTES
     fn safe_generate_small(&mut self, dst: &mut [u8]) {
         if self.drbg.needs_reseed() {
             match self.drbg.reseed_from_rng(&mut self.rng, &[]) {
