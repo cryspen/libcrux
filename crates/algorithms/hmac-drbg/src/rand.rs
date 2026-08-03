@@ -63,11 +63,8 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
     // #hax: requires self.reseed_counter + (dst.len() / MAX_GENERATE_BYTES) as u64 + 1 <= RESEED_INTERVAL
     // #hax: ensures result.is_ok() ==> dst is fully written
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        let mut written = 0;
-        while written < dst.len() {
-            let chunk = (dst.len() - written).min(MAX_GENERATE_BYTES);
-            self.generate(&mut dst[written..written + chunk], &[])?;
-            written += chunk;
+        for chunk in dst.chunks_mut(MAX_GENERATE_BYTES) {
+            self.generate(chunk, &[])?;
         }
         Ok(())
     }
@@ -392,11 +389,8 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> ran
     }
 
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        let mut written = 0;
-        while written < dst.len() {
-            let chunk = (dst.len() - written).min(MAX_GENERATE_BYTES);
-            self.safe_generate_small(&mut dst[written..written + chunk]);
-            written += chunk;
+        for chunk in dst.chunks_mut(MAX_GENERATE_BYTES) {
+            self.safe_generate_small(chunk);
         }
         Ok(())
     }
