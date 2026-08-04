@@ -222,6 +222,13 @@
         // leaving it to the GC finalizer.
         config?.free();
         config = new HpkeConfig(mode, kem, kdf, aead);
+
+        // Reset fields to avoid running ops with a wrong value.
+        document.receiver_form.enc.value = "";
+        document.receiver_form.ct.value = "";
+        document.receiver_form.payload.value = "";
+        document.receiver_form.pkR.value = "";
+        document.receiver_form.skR.value = "";
       }
       document.getElementById("suite").onchange = update_config;
       update_config();
@@ -231,9 +238,6 @@
         let aad = new TextEncoder().encode(document.sender_form.aad.value);
         let pt = new TextEncoder().encode(document.sender_form.payload.value);
         let pkR = hex_to_bytes(document.receiver_form.pkR.value);
-
-        let rand = new Uint8Array(32);
-        window.crypto.getRandomValues(rand);
 
         let result = hpke_seal(config, pkR, info, aad, pt);
         let enc = result.enc;
