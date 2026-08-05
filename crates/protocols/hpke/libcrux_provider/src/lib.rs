@@ -50,6 +50,20 @@ pub struct HpkeLibcruxPrng {
     rng: rand_chacha::ChaCha20Rng,
 }
 
+impl HpkeLibcruxPrng {
+    /// Construct a PRNG from a 32-byte seed.
+    ///
+    /// Useful on platforms without a system RNG (e.g. wasm), where the seed is
+    /// gathered by the caller and passed in explicitly.
+    pub fn from_seed(seed: [u8; 32]) -> Self {
+        Self {
+            #[cfg(feature = "deterministic-prng")]
+            fake_rng: alloc::vec![],
+            rng: rand_chacha::ChaCha20Rng::from_seed(seed),
+        }
+    }
+}
+
 impl Zeroize for HpkeLibcruxPrng {
     fn zeroize(&mut self) {
         // ChaCha20Rng doesn't implement zeroize and fake_rng is just for testing.
