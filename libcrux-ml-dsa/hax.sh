@@ -11,9 +11,18 @@ function extract_all() {
     # Extract intrinsics into ml-dsa's OWN dedicated intrinsics dir (--output-dir),
     # so the shared crates/utils/intrinsics tree is never clobbered by ml-dsa's
     # new-core-models mapping (non-pre_core_models => real `Libcrux_intrinsics.Avx2`,
-    # the cross-crate flip vs ml-kem's/sha3's `Avx2_extract` stub).  Transparent
-    # (no `--interfaces`): consumers use the `.fst` bodies (which route through the
-    # `Libcrux_core_models` crate extracted above).
+    # the cross-crate flip vs ml-kem's/sha3's `Avx2_extract` stub).
+    #
+    # `--interfaces` is SPLIT per module (mirror ml-kem hax.py):
+    #  * Avx2 (migrated to core-models) stays TRANSPARENT — consumers use the
+    #    `.fst` op BODIES (which route through the `Libcrux_core_models` crate
+    #    extracted above) so `reveal_opaque` can unfold `mm256_OP = e_mm256_OP`.
+    #  * Arm64_extract (still the hand-written bit_vec stub) MUST get a `.fsti`:
+    #    arm64_extract.rs uses `fstar::replace(interface, ...)` blocks; under
+    #    transparent extraction they have no `.fsti` to land in and flood the
+    #    `.fst` AFTER the impl blocks -> use-before-def (Error 72) + dup val
+    #    (Error 47).  (ml-dsa is AVX2-only so it never checks Arm64_extract, but
+    #    keep the config correct so a re-extract can't regenerate the defect.)
     #
     # Force a rebuild of the intrinsics crate (touch its sources) so the non-pcm
     # variant is regenerated even if a prior extraction in this working tree built
@@ -27,7 +36,8 @@ function extract_all() {
         -C --features simd128,simd256 ";" \
         into -i "-libcrux_core_models::**" \
         --output-dir "$ML_DSA_INTRINSICS_DIR" \
-        fstar --z3rlimit 80
+        fstar --z3rlimit 80 \
+        --interfaces "-** +libcrux_intrinsics::arm64_extract::**"
 
     # Uniform shared secrets dep via its canonical script (transparent
     # `--interfaces "-**"`; see feedback_postmerge_audit_order).

@@ -104,10 +104,28 @@ class extractAction(argparse.Action):
         # provided by the `dep_extract` above from the shared `../` dir — emitting
         # them here as roots would collide, Error 72).  Drop `--cfg pre_core_models`
         # so lib.rs routes avx2 -> the REAL `Libcrux_intrinsics.Avx2` (core-models),
-        # not the `Avx2_extract` bit_vec stub.  TRANSPARENT (no `--interfaces`): the
-        # consumers (Spec.Avx2Lanes companion) must see the `.fst` op BODIES so
-        # `reveal_opaque` can unfold `mm256_OP = e_mm256_OP`.
+        # not the `Avx2_extract` bit_vec stub.
+        #
+        # `--interfaces` is SPLIT per module (the one setting can't serve both):
+        #  * Avx2 (migrated to core-models) stays TRANSPARENT — its consumers (the
+        #    Spec.Avx2Lanes companion) must see the `.fst` op BODIES so
+        #    `reveal_opaque` can unfold `mm256_OP = e_mm256_OP`.  A `.fsti` would
+        #    hide those bodies and regress the (currently green) AVX2 cone.
+        #  * Arm64_extract (still the hand-written bit_vec stub, NOT yet migrated)
+        #    MUST get a `.fsti`: `arm64_extract.rs` uses `fstar::replace(interface,
+        #    ...)` blocks (the `unfold type t_e_* = bit_vec N` + `val vec*_as_*`
+        #    decls).  Under transparent extraction those interface blocks have no
+        #    `.fsti` to land in and get flattened INTO the `.fst` AFTER the impl
+        #    blocks (`assume val ..._axiom` + `let .. = ..._axiom`), giving
+        #    use-before-def (Error 72) + duplicate val (Error 47) — the exact
+        #    defect that blocked ml-kem's whole NEON cone.  sha3/kmac avoid this by
+        #    extracting the intrinsics with `--interfaces "+**"` (both modules
+        #    interfaced); ml-kem needs the interface for Arm64_extract ONLY.
+        #  Allowlist form (`-** +arm64_extract::**`) fails SAFE for Avx2: if the
+        #  arm64 glob ever stops matching, arm64 just won't get an interface
+        #  (visible failure) — Avx2 can never accidentally acquire one.
         include_str = "-libcrux_core_models::**"
+        interfaces_str = "-** +libcrux_intrinsics::arm64_extract::**"
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -123,6 +141,8 @@ class extractAction(argparse.Action):
             "fstar",
             "--z3rlimit",
             "80",
+            "--interfaces",
+            interfaces_str,
         ]
         hax_env = {}
         # Force a rebuild of the intrinsics crate (touch its sources) so the
