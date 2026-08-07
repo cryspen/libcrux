@@ -1968,3 +1968,130 @@ let lemma_iv_shuffle_epi8_neg (a b: Funarr.t_FunArray (mk_u64 32) i8) (i: nat{i 
                             iota; zeta; primops];
         FStar.Tactics.smt ())
 #pop-options
+
+(* ── Gap: `testz_si256` fold-all-zero characterization ──────────────────────
+   `IV.e_mm256_testz_si256 a b` folds `impl_10__fold` (= `impl_5__fold`) over the
+   256 AND-conjunct bits, returning 1 iff every conjunct bit is `Bit_Zero`.  The
+   two lemmas below give (1) a PROVEN characterization of `impl_5__fold` with the
+   AND-zero step function, and (2) the resulting testz spec that ml-dsa's
+   `mm256_testz_si256_lemma` consumes.  No new axiom. *)
+
+(* one-step unfold of the recursive `impl_5__fold` (delta/iota reduction). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let fold_unfold_eq (n: u64) (#t #a: Type0) (arr: Funarr.t_FunArray n t) (init: a) (f: (a -> t -> a))
+  : Lemma (Funarr.impl_5__fold n #t #a arr init f ==
+           (match n with
+            | MkInt 0 -> init
+            | MkInt m ->
+              let acc: a = f init (arr._0 (mk_u64 0)) in
+              let m1 = MkInt (m - 1) in
+              Funarr.impl_5__fold m1 #t #a
+                (Funarr.impl_5__from_fn m1 #t #(u64 -> t) (fun i -> arr._0 (i +. mk_u64 1)))
+                acc f))
+  = assert (Funarr.impl_5__fold n #t #a arr init f ==
+           (match n with
+            | MkInt 0 -> init
+            | MkInt m ->
+              let acc: a = f init (arr._0 (mk_u64 0)) in
+              let m1 = MkInt (m - 1) in
+              Funarr.impl_5__fold m1 #t #a
+                (Funarr.impl_5__from_fn m1 #t #(u64 -> t) (fun i -> arr._0 (i +. mk_u64 1)))
+                acc f))
+    by (FStar.Tactics.trefl ())
+#pop-options
+
+(* `impl_5__fold` with the AND-zero step `f acc b = acc && (b = Bit_Zero)` is
+   `true` iff `init` is `true` AND every array element is `Bit_Zero`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let rec lemma_fold_and_zero (nn: nat{nn < pow2 64})
+  : Lemma
+    (ensures forall (f: (bool -> Bit.t_Bit -> bool))
+               (arr: Funarr.t_FunArray (mk_u64 nn) Bit.t_Bit)
+               (init: bool).
+       (forall (acc: bool) (b: Bit.t_Bit). f acc b == (acc && (b = Bit.Bit_Zero))) ==>
+       (Funarr.impl_5__fold (mk_u64 nn) #Bit.t_Bit #bool arr init f == true <==>
+        (init == true /\ (forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero))))
+    (decreases nn)
+  = let aux (f: (bool -> Bit.t_Bit -> bool))
+            (arr: Funarr.t_FunArray (mk_u64 nn) Bit.t_Bit)
+            (init: bool)
+      : Lemma ((forall (acc: bool) (b: Bit.t_Bit). f acc b == (acc && (b = Bit.Bit_Zero))) ==>
+               (Funarr.impl_5__fold (mk_u64 nn) #Bit.t_Bit #bool arr init f == true <==>
+                (init == true /\ (forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero))))
+      = introduce (forall (acc: bool) (b: Bit.t_Bit). f acc b == (acc && (b = Bit.Bit_Zero))) ==>
+                  (Funarr.impl_5__fold (mk_u64 nn) #Bit.t_Bit #bool arr init f == true <==>
+                   (init == true /\ (forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero)))
+        with _. begin
+          fold_unfold_eq (mk_u64 nn) #Bit.t_Bit #bool arr init f;
+          if nn = 0 then ()
+          else begin
+            lemma_fold_and_zero (nn - 1);
+            assert (v (mk_u64 nn) == nn);
+            assert (mk_u64 (nn - 1) == MkInt #Rust_primitives.Integers.U64 (nn - 1));
+            introduce (Funarr.impl_5__fold (mk_u64 nn) #Bit.t_Bit #bool arr init f == true) ==>
+                      (init == true /\ (forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero))
+            with _. begin
+              introduce forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero
+              with introduce v i < nn ==> arr._0 i == Bit.Bit_Zero
+              with _. begin
+                if v i = 0 then assert (mk_u64 (v i) == i)
+                else begin
+                  let j : u64 = mk_u64 (v i - 1) in
+                  assert (j +. mk_u64 1 == i)
+                end
+              end
+            end;
+            introduce (init == true /\ (forall (i: u64). v i < nn ==> arr._0 i == Bit.Bit_Zero)) ==>
+                      (Funarr.impl_5__fold (mk_u64 nn) #Bit.t_Bit #bool arr init f == true)
+            with _. begin
+              assert (arr._0 (mk_u64 0) == Bit.Bit_Zero);
+              assert (f init (arr._0 (mk_u64 0)) == true)
+            end
+          end
+        end
+    in
+    Classical.forall_intro_3 aux
+#pop-options
+
+(* testz: the model returns 1 iff every bit of (a AND b) is zero. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
+let lemma_testz_funarr (a b: bv256)
+  : Lemma (let r = IV.e_mm256_testz_si256 a b in
+           (r == mk_i32 0 \/ r == mk_i32 1) /\
+           (r == mk_i32 1 <==>
+            (forall (k: u64). v k < 256 ==>
+               Funarr.impl_5__get (mk_u64 256) #Bit.t_Bit (IV.e_mm256_and_si256 a b)._0 k ==
+               Bit.Bit_Zero)))
+  = let f_c : (i: u64{v i < 256}) -> Bit.t_Bit =
+      fun i -> (let i:u64 = i in
+                match (a.[ i ] <: Bit.t_Bit), (b.[ i ] <: Bit.t_Bit) with
+                | Bit.Bit_One, Bit.Bit_One -> Bit.Bit_One
+                | _ -> Bit.Bit_Zero) in
+    let f_z : bool -> Bit.t_Bit -> bool =
+      fun acc bit -> (let acc:bool = acc in
+                      let bit:Bit.t_Bit = bit in
+                      acc && (bit =. Bit.Bit_Zero)) in
+    assert (IV.e_mm256_testz_si256 a b ==
+            (let c = BV.impl_9__from_fn (mk_u64 256) #(u64 -> Bit.t_Bit) f_c in
+             let all_zero = BV.impl_10__fold (mk_u64 256) #bool c true f_z in
+             if all_zero then mk_i32 1 else mk_i32 0))
+      by (FStar.Tactics.norm [delta_only [`%Libcrux_core_models.Core_arch.X86.Interpretations.Int_vec.e_mm256_testz_si256];
+                              iota; zeta; primops];
+          FStar.Tactics.trefl ());
+    let c = BV.impl_9__from_fn (mk_u64 256) #(u64 -> Bit.t_Bit) f_c in
+    assert (BV.impl_10__fold (mk_u64 256) #bool c true f_z ==
+            Funarr.impl_5__fold (mk_u64 256) #Bit.t_Bit #bool c._0 true f_z);
+    lemma_fold_and_zero 256;
+    introduce forall (k: u64). v k < 256 ==> c._0._0 k == f_c k
+    with introduce v k < 256 ==> c._0._0 k == f_c k
+    with _. lemma_impl9_index f_c k;
+    introduce forall (k: u64). v k < 256 ==>
+        Funarr.impl_5__get (mk_u64 256) #Bit.t_Bit (IV.e_mm256_and_si256 a b)._0 k == f_c k
+    with introduce v k < 256 ==>
+        Funarr.impl_5__get (mk_u64 256) #Bit.t_Bit (IV.e_mm256_and_si256 a b)._0 k == f_c k
+    with _. begin
+      lemma_and_funarr a b k;
+      lemma_bv_index a k;
+      lemma_bv_index b k
+    end
+#pop-options

@@ -1035,7 +1035,51 @@ let mm256_cmpgt_epi32_lemma a b i =
   reveal_opaque (`%I.mm256_cmpgt_epi32) I.mm256_cmpgt_epi32;
   Canon.lemma_mm256_cmpgt_epi32 a b
 #pop-options
-let mm256_testz_si256_lemma = admit ()
+(* bit (32i+j) of a bv256 is Bit_Zero iff bit j of its i-th i32 lane view is 0. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let testz_lane_bit (conjunct: bv256) (i: nat{i < 8}) (j: nat{j < 32})
+  : Lemma (conjunct.(mk_u64 (32 * i + j)) == Bit_Zero <==>
+           Ints.get_bit (to_i32x8 conjunct (mk_u64 i)) (mk_usize j) == 0) =
+  i32_to_bv_to_i32x8_inv conjunct (mk_u64 i) (mk_u64 j);
+  bit_of_get_bit Ints.I32 (to_i32x8 conjunct (mk_u64 i)) j
+#pop-options
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
+let mm256_testz_si256_lemma a b =
+  reveal_opaque (`%I.mm256_testz_si256) I.mm256_testz_si256;
+  Canon.lemma_testz_si256_lift a b;
+  reveal_opaque (`%I.mm256_and_si256) I.mm256_and_si256;
+  Canon.lemma_and_si256_lift a b;
+  Canon.lemma_testz_funarr a b;
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I32);
+  let conjunct = I.mm256_and_si256 a b in
+  (* forward: all conjunct bits zero  ==>  all i32 lanes zero *)
+  introduce (forall (k:u64). v k < 256 ==> conjunct.(k) == Bit_Zero) ==>
+            (forall (i:u64). v i < 8 ==> to_i32x8 conjunct i == mk_i32 0)
+  with _. introduce forall (i:u64). v i < 8 ==> to_i32x8 conjunct i == mk_i32 0
+       with introduce v i < 8 ==> to_i32x8 conjunct i == mk_i32 0
+       with _. begin
+         introduce forall (jj:Ints.usize). v jj < 32 ==>
+                     Ints.get_bit (to_i32x8 conjunct i) jj == Ints.get_bit (mk_i32 0) jj
+         with introduce v jj < 32 ==>
+                        Ints.get_bit (to_i32x8 conjunct i) jj == Ints.get_bit (mk_i32 0) jj
+         with _. begin
+           assert (32 * v i + v jj < 256);
+           testz_lane_bit conjunct (v i) (v jj)
+         end;
+         Ints.lemma_int_t_eq_via_bits (to_i32x8 conjunct i) (mk_i32 0)
+       end;
+  (* backward: all i32 lanes zero  ==>  all conjunct bits zero *)
+  introduce (forall (i:u64). v i < 8 ==> to_i32x8 conjunct i == mk_i32 0) ==>
+            (forall (k:u64). v k < 256 ==> conjunct.(k) == Bit_Zero)
+  with _. introduce forall (k:u64). v k < 256 ==> conjunct.(k) == Bit_Zero
+       with introduce v k < 256 ==> conjunct.(k) == Bit_Zero
+       with _. begin
+         let i = v k / 32 in
+         let j = v k % 32 in
+         FStar.Math.Lemmas.lemma_div_mod (v k) 32;
+         testz_lane_bit conjunct i j
+       end
+#pop-options
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let mm256_set_epi64x_lemma x0 x1 x2 x3 i =
   reveal_opaque (`%I.mm256_set_epi64x) I.mm256_set_epi64x;
