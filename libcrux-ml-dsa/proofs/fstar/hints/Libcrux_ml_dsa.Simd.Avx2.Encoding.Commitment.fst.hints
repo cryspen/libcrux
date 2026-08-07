@@ -120,7 +120,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b92de94d71528adeeae2fa339a192dba"
+      "84996cb6833c82b9ed908e487304dba1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_6_",
@@ -147,7 +147,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "d6f602862d808def2afa7d2a3ce56cb5"
+      "d1b4a2950d09403a413f7be3318cac90"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_4_",
@@ -250,7 +250,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "c817cc7c553f70b65a49b05229fbb733"
+      "2a82b590867f92c456518ed9496717d5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_4_",
@@ -277,7 +277,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "68eb81d176ca8d644574a9db5b9f49c3"
+      "69d6f483f12033b2d005b2e51d752b89"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -290,7 +290,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a45be0b32007aaec5b2691700eb307bb"
+      "2aa6c4ee63eb1cc2ad872e8e4f2aa446"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -330,7 +330,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f28c3c320f63598e025c260855bc8827"
+      "42ce7e1033e4e2c8deb40d79a4f20471"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -343,7 +343,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c0c0e207616a11cf0ad3027006b18de4"
+      "07090f62a51a150de845a13e877238d0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -383,7 +383,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "efefd9e2c025e5d21a999cf65d6c5917"
+      "79b65a3e461a412ab86d5d21934d0d31"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -396,7 +396,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "eb01aa9de4481caf1aeda7758746b9db"
+      "3342b4bb11c9b4ed945ac7a6c960819b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -436,7 +436,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "36044af3d594dc75f0b848350456c2cc"
+      "88577eca1f5176a159ead05a85a9bd78"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -449,7 +449,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c684be666704bb1b9e3e10435462d55b"
+      "4362f076733624e70bf0217a624ae929"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -489,7 +489,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5449ca476dc892f5135299a6a468ab82"
+      "25e8764a1186d753648274140381ca7a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -515,7 +515,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "865dfac7ef3cadb4a841539679f8528a"
+      "224602859e24dd5954f2d8254f4d76dc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -554,7 +554,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ab2f6aa1f8dfad8a39cb2c3f4f24effc"
+      "247fda82850748c03c4033f377f2fe13"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -582,7 +582,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a27e97e0d5a4dd20dbb5e255a3a75ef6"
+      "194f9466d88155ca0e935b5e0b435c39"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -598,7 +598,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "dccf7118679a41f62de17f4410664c57"
+      "716ed9e23b11af8bec775268a3162dce"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -619,7 +619,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9d7cc5690f80d774677f65b5e6cc6663"
+      "ba98a8a33cea59479d52f736318a3c40"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -633,7 +633,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "1b5fbd1f9485e65e30bc710f2b0c5b34"
+      "efe01ac6efe41f381505e5dc4cba4e90"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -647,7 +647,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "8bf4e1f60b6a305497e9f734ab6a27af"
+      "c9cafe5e473776524f71e7be4dc6a1b2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -713,7 +713,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b9f13d8aae6e7222a8bb9bcaa6796dcb"
+      "e47f9f7243b31d1a226bc62b6af5685f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -769,7 +769,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "37158d57d5e864001bc6d404c8ddbc80"
+      "4f824f6cc11af226ef361f72a79b1ee1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -809,7 +809,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f6735d493fd0d68733cacda7b8e98836"
+      "4a20f7ef6812ca6dd53b983bf968c378"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -836,7 +836,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "1c823eaf85adf5c39c3349068a38c8cf"
+      "ba652201f52d5d9262743e067eccf484"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -879,7 +879,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "59d426c87801ba7959783b39572bc589"
+      "fdedd07bf2d4192f971515f1d95204fa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -902,7 +902,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "b60f14d1f431f9a5856c13cf0c0d8e6b"
+      "15fd34ca26b9f8d5ece9f3eed1000776"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -925,7 +925,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "b60f14d1f431f9a5856c13cf0c0d8e6b"
+      "15fd34ca26b9f8d5ece9f3eed1000776"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -948,7 +948,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "eaa50d4b173463f17fd05a32fbe783cd"
+      "125d1c58db06340676b8e92fc3af525f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -976,7 +976,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d9d9a2bcb306dc93a7f83d09f4b70f1b"
+      "41b85f70e635c536c63524202ccc9a29"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1002,7 +1002,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "a9c9e8078755180d7b7f519d11584b1d"
+      "e586ebdd16594bd43988f273c32521b7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1036,7 +1036,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "91e551e1b509caac193f9066c34a660f"
+      "5eba28240ddaecf5b96e5ac7ac97c36f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1062,7 +1062,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "d7a7926774ee48cc7ec8239c5e582f92"
+      "cb3ed64b21a3a26a7441390b5515523f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1082,7 +1082,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "cbc51d3d34ac0014867669fb2467618e"
+      "a51ee78e08396102d309073004d246ec"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1102,7 +1102,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "1e471e0b4e54a5d5fd15a63e5c6c39a8"
+      "a5e4ef0759b86b421ab3957cbf69cbf6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1124,7 +1124,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "357eebd134fdfff61930fcc0f86ff49c"
+      "af0308a55ba463f15018faf90024f6c2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1146,7 +1146,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "c819f9f8e5ac97ebe97387ddfb2370ac"
+      "a2203bfdf6e551a4442c5c7841a5ecf1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1210,7 +1210,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "2cb3b76aefda5f69dabbbf45deceae98"
+      "0c7069031ba96957b3ed9df0f5ecd580"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1239,7 +1239,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8cdc2d240fc4faf1fb1b30304b71522a"
+      "cc249b7fa75ebff115627a018937551a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1260,7 +1260,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "ee86d7e0f545b075788186f47711fdd1"
+      "890be0cfba9bcabaa6e16c55f71e4485"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1288,7 +1288,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "27fd2502ea9b23a98e00348e28eeb699"
+      "cfdc3ae8eb03df1fb067ea65ae762f0b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1316,7 +1316,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "cc76152ee02ffd75d194bfbb9e6703b5"
+      "54dc09ad4307f6ed37ffc6913c8a9725"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1392,7 +1392,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1f54175dd7ab101132c0608f8526d2c1"
+      "a969ba2e060efe3d83e6735f9cfdb87b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1417,7 +1417,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "7c10fff51fb257f1d7a840db099096a7"
+      "8793688a9ce740aed84e971fba542e1b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1442,7 +1442,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "82ffe096478daabc480760b41b599447"
+      "5b795526349526a762ac818b5b6a857a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1512,7 +1512,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "1b965a3a0fb31e22b5bfe8c88dae566e"
+      "3d6181b3ea547b780eee4a33f2d6fd9d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1565,7 +1565,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6867c8fc71540b9ed78ee61e88409a33"
+      "d5e863a917ffb3cd891a0239b0718a97"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1632,7 +1632,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6cdad3303c7bfaa553230226e3297827"
+      "ef5df6d5bb722f24b2a2d8231215ae7e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1737,7 +1737,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ec7cef6ecd4587de01472abd675b981c"
+      "9bda2213302b447509c7dfc9c6cd2c3b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1985,7 +1985,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "654b17447420926f523c8b4629366c88"
+      "2dd8bfdf532bd3b20226b85f038fe95b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2006,7 +2006,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b9540b186a731fdc676cbe13e14874a0"
+      "ba9ba6dcc4778aa965f263cd35212773"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2035,7 +2035,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "f8b6c1a90c1050052c28dc695f8a8595"
+      "ad7c7cceee7788bf9771740d2d4a1ba3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2056,7 +2056,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "75f60a08900b94a977e9d3fc1cd6fd07"
+      "58bbc61a6903139502077eab36b49c3f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2088,7 +2088,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "22bae23360c0140362cc30186a970182"
+      "fa7570696bbf122b146b154dac34c6f8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2111,7 +2111,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "6a60c50d0f5d68c30a572825d3a09fa7"
+      "fad61f7138a22238615aabe11486e1d7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2139,7 +2139,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f0b7b4c1594abbf3dffd698d94ee9b4e"
+      "09202d31477762ee8cdbdab1de8d59e3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2165,7 +2165,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "bbddc186a4ef9f3d44f8f5c56ad3d9fd"
+      "ad757f0bcf3a4e237946007d739403dc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2199,7 +2199,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "3f081618d2d8057bc68c40b47f1595cc"
+      "564d4eec36e4f36a329f753b172937a6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2225,7 +2225,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "ae9291c61c216a2533727a0c5dbf28b9"
+      "d551ff1179a75e526d0cc9147fb2da3e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2245,7 +2245,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "67eafaa636fdccc95c09be0aebc8ab6a"
+      "41297373134e5670ec750870b0e45646"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2265,7 +2265,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "1410f075cb021b3f8a2e42eaad6bbfe7"
+      "1562c5d8eea62ac1ce747531184aa051"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2287,7 +2287,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4e98d977973e80cae274fb09d0acada4"
+      "e0b2a9ef58d867c70e166f3e255ea1f0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2309,7 +2309,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "1744cb9d9691d703a6600b0e18f6fa01"
+      "664c5c755b47adec87a3bed1c1b8ecee"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2373,7 +2373,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "ab54071938a8deeecb7fdf3fba772f76"
+      "ad6f32951b34396267a95edde312afe6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2394,7 +2394,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "1ec5370e91fecf3dcc3753d102444c27"
+      "6cbf15b725ca7456a29305665677266b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2422,7 +2422,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "d1f52af3ac9eb12f6f2b02986ee4954d"
+      "a96f33296cd2d2d11124dbf281eb48c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2450,7 +2450,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "d15a68c45bbb008be25056a2021f6240"
+      "c0081e7694512d5eeab880003e9b73a0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2526,7 +2526,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9daa42fbb4208901102c68bd119f0683"
+      "fe571648229d62515f25915af0be9e61"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2551,7 +2551,7 @@
         "refinement_interpretation_Tm_refine_d7225af994c42b49b6ce132857897ae1"
       ],
       0,
-      "0e168ab3d46835eb2b3ff8746d377376"
+      "29fbbbdad1184311f2ab451c67a98b50"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2605,7 +2605,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "16c969b60e581dac2260b5ddb8692430"
+      "57dd2700f36d958b79f4cf55415d8b4b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2642,7 +2642,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3c75ba95ce8ca927b583562ca3fad826"
+      "4f3046b4a0bee984959e9938b7093601"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2764,7 +2764,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4caf1a840bea0521ca59ac63477c4a5f"
+      "f623d0a350fae7eddc001b925a7797a5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2845,7 +2845,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "8c1dec92df2456f07eca81cb7c1f0c22"
+      "7f98a058d64e9d727957c969a6f85b52"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2867,7 +2867,7 @@
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488"
       ],
       0,
-      "0025e6ceb3311caa0b5c09466c1d7e93"
+      "680f020c22a0a0caec572bea1d27ed91"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2896,7 +2896,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "bf7e82b8c6e015f8e79479f22f78302e"
+      "a2a3414e996ee0f9330aa6e037e10e26"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2914,7 +2914,7 @@
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e"
       ],
       0,
-      "96bbafe5812c3e176835075d16c07fbe"
+      "40ed235f266143ae585a05f2d29cb385"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2992,7 +2992,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7d5341064aef791d2ae5bf59c9d965d2"
+      "f9ab99685e148fc79c4302fe551f7c57"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3011,7 +3011,7 @@
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53"
       ],
       0,
-      "22c84bf5cc480033ec15f050727b83bf"
+      "f1d2f8622a936486739f6c5b91ac72ab"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3040,7 +3040,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7a3773f4da4f27217d9ce18ebe1e76cf"
+      "737de01c4b49ac3f9b660b7b4a329105"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3069,7 +3069,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d9ba22edabd13e83f0f9098ee17071ef"
+      "71995e114a453e0b1e66a49c199ae5f2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3098,7 +3098,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2ed8b84b4f38605e13f9b9b4456bae1b"
+      "9e8d25b0319951e4a60f2c11c5be336c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3118,7 +3118,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "baf05a312c3a059d3a755e5bf6f7ff56"
+      "9eff3fec46481e50bae5766b2f923aab"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3169,7 +3169,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "fdd169c794e962d2836db61a707e0a34"
+      "a847510204ad154477d9f6abecd14fdd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3236,7 +3236,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ffb790cf5d039e778b30e9f4b80e78f8"
+      "cce6af5fd4304abecbbb003e677cd6be"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3351,7 +3351,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "177df59613f2b27fb2087d2c1257ed1a"
+      "166acf51365de800676e09773d408e4d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3380,7 +3380,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ebbb899f667bfeb67eb774338edc6887"
+      "e80d36aeb8d2db5b57c95ab99d32beb7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3409,7 +3409,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ebbb899f667bfeb67eb774338edc6887"
+      "e80d36aeb8d2db5b57c95ab99d32beb7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3600,7 +3600,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1e2a8909e606030637390cca30dc59fa"
+      "bcc8b0961dfb4aaaab731b08fdaa4374"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3623,7 +3623,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "56500df39b119bd07bdf7de22dfa550d"
+      "1d14fe11904a16d7a6622b410d5b1230"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3646,7 +3646,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "56500df39b119bd07bdf7de22dfa550d"
+      "1d14fe11904a16d7a6622b410d5b1230"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3715,7 +3715,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "27f59b65356905c5af33e9ad34a6bf5e"
+      "67e3d923628fa3eb12c793013da209cc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3742,7 +3742,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "c425319aceb2acdae39733ae35ba8176"
+      "3cecd482c7284ef4b84e810952573369"
     ]
   ]
 ]

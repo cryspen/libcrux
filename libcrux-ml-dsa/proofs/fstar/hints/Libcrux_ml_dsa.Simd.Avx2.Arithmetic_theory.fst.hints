@@ -20,7 +20,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "f4dc839aac55d5ceaf0ed82cd12a88bd"
+      "2cfe44949e1901ed613ef7406c9add1e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_and_one_binary",
@@ -63,7 +63,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "2922a0918f8326ce588fb868c0dc57b6"
+      "a7e84b1d1a2abaa08045cd9af95860c1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_or_and_mask_bit",
@@ -105,7 +105,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "de59cfadb8fbe7a4a495d01e5d4bd742"
+      "ebcd373abf1ac1dc059c2347079b13b6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_or_sign_and",
@@ -173,7 +173,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e7752361b0c297c0091a72e387f3898e"
+      "32605b5be2daf8532819cf85061ca162"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_compute_hint_8",
@@ -252,7 +252,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bd6d50ad5429c804c63e07929bfd98c9"
+      "3701dea34f150212c2313d000aa8ed13"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_compute_hint_8",
@@ -282,7 +282,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "89e42834f503b5f6c30596008cc83291"
+      "38609d87cf4957de2952c13b7a746c43"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_use_hint_value",
@@ -316,7 +316,7 @@
         "unit_typing"
       ],
       0,
-      "3724b91c4ddc2e225d077101b889fdac"
+      "b08883a85afbeb7c0cc01608c868a242"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Arithmetic_theory.lemma_use_one_hint_via_spec",
@@ -352,7 +352,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "745bc4fa08e0126f4ea9b4acee104aaa"
+      "580b1a7695598ee36c6fb06368d34cfc"
     ]
   ]
 ]

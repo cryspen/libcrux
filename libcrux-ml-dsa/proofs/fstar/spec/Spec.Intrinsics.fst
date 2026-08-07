@@ -805,7 +805,6 @@ let mm256_add_epi64_lemma lhs rhs i =
   bit_of_get_bit Ints.I64 xl (v bit);
   bit_of_get_bit Ints.I64 yl (v bit)
 #pop-options
-let mm256_madd_epi16_specialized_lemma = admit ()
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let i32_to_bv_add_bv_lemma x y i =
   reveal_opaque (`%i32_wrapping_add) i32_wrapping_add;
@@ -854,6 +853,132 @@ let mm256_set_epi16_lemma v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 
   reveal_opaque (`%I.mm256_set_epi16) I.mm256_set_epi16;
   Canon.lemma_mm256_set_epi16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15;
   Canon.lemma_iv_set_epi16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 (v i)
+#pop-options
+(* i16 with a zero sign bit (bit 15) is non-negative. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_i16_nonneg (x: i16)
+  : Lemma (requires Bit_Zero? (i16_to_bv x (mk_u64 15)))
+          (ensures v x >= 0) =
+  bit_of_get_bit Ints.I16 x 15;
+  reveal_opaque (`%Ints.get_bit) (Ints.get_bit #Ints.I16);
+  assert_norm (pow2 15 == 32768);
+  assert_norm (pow2 16 == 65536)
+#pop-options
+
+(* The 6-bit packing constant.  `unfold` so that every use below is syntactically
+   the SAME set_epi16 application the .fsti's ensures / SMTPat mention (a plain
+   `let` — or an `[@inline_let]` inside the lemma body — leaves an opaque binder
+   in the nested lemma's VC, which is what stopped the set_epi16 SMTPat firing). *)
+unfold let madd_pack_const : bv256 =
+  I.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
+    (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
+    (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1)
+
+(* Lane values of the packing constant, extracted in a CLEAN context: lanes 0/8
+   hold 1, lanes 1/9 hold 2^6, the rest 0.  mm256_set_epi16_lemma's SMTPat does
+   not fire on this term inside the specialized lemma's heavy context, so the
+   fact is discharged here and CALLED explicitly there. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_madd_pack_const_lane (k: nat{k < 16})
+  : Lemma (to_i16x16 madd_pack_const (mk_int k)
+           == (if k = 0 || k = 8 then mk_i16 1
+               else if k = 1 || k = 9 then (mk_i16 1 <<! mk_i32 6 <: i16)
+               else mk_i16 0)) = ()
+#pop-options
+
+(* ONE packed i32 block: i16 lanes (nb2, nb2+1) of `vec` against const lanes
+   (1, 2^6).  Everything block-specific — WHICH lane pair, and the raw-bit base
+   `base = nb2*16` — is supplied EQUATIONALLY by the caller, so this lemma is
+   generic in nb2 and proves in a CLEAN context.  (An earlier in-body version
+   parameterized by `nb2 = 2*nb /\ (nb = 0 \/ nb = 4)` starved: the disjunctive
+   block index left `nb2*16` and the requires' div/mod irreducible.)
+   Given the caller's requires — low lane is a 6-bit value (bits 6..15 zero) and
+   high lane is non-negative (bit 15 zero) — the sum lo + hi*2^6 is carry-free,
+   so its bits are lo's below 6, then hi's shifted up by 6, then nothing. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let lemma_madd_pack_block
+      (vec: bv256) (nb2: nat{nb2 + 1 < 16}) (base: nat{base == nb2 * 16})
+      (p: u64{v p < 32})
+  : Lemma
+    (requires
+      (forall (j: nat). 6 <= j /\ j < 16 ==> Bit_Zero? vec.(mk_int (base + j)))
+      /\ Bit_Zero? vec.(mk_int (base + 31))
+      /\ to_i16x16 madd_pack_const (mk_int nb2) == mk_i16 1
+      /\ to_i16x16 madd_pack_const (mk_int (nb2 + 1)) == (mk_i16 1 <<! mk_i32 6 <: i16))
+    (ensures
+      i32_to_bv ((to_i16x16 vec (mk_int nb2) `i16_mul_32extended`
+                    to_i16x16 madd_pack_const (mk_int nb2))
+                 `i32_wrapping_add`
+                 (to_i16x16 vec (mk_int (nb2 + 1)) `i16_mul_32extended`
+                    to_i16x16 madd_pack_const (mk_int (nb2 + 1)))) p
+      == (if v p < 6 then vec.(mk_int (base + v p))
+          else if v p < 22 then vec.(mk_int (base + 16 + v p - 6))
+          else Bit_Zero)) =
+  let lo : i16 = to_i16x16 vec (mk_int nb2) in
+  let hi : i16 = to_i16x16 vec (mk_int (nb2 + 1)) in
+  (* sign bits zero -> both lanes non-negative (the i16-mul bit lemmas need it) *)
+  i16_to_bv_to_i16x16_inv vec (mk_u64 nb2) (mk_u64 15);
+  i16_to_bv_to_i16x16_inv vec (mk_u64 (nb2 + 1)) (mk_u64 15);
+  lemma_i16_nonneg lo;
+  lemma_i16_nonneg hi;
+  (* bit-disjointness (the i32_to_bv_add_bv precondition): lo*1 occupies [0,6),
+     hi*2^6 occupies [6,22).  The guarded-binder shape is what that lemma wants. *)
+  let disj (j: u64{v j < 32}) : Lemma
+    (Bit_Zero? (i32_to_bv (lo `i16_mul_32extended` mk_i16 1) j)
+     \/ Bit_Zero? (i32_to_bv (hi `i16_mul_32extended` (mk_i16 1 <<! mk_i32 6)) j)) =
+    if v j < 6 then ()
+    else if v j < 16
+    then (i16_to_bv_to_i16x16_inv vec (mk_u64 nb2) j;
+          i16_to_bv_to_i16x16_inv vec (mk_u64 nb2) (mk_u64 (v j)))
+    else ()
+  in
+  FStar.Classical.forall_intro disj;
+  (* Called EXPLICITLY: its SMTPat does not deliver here, even though its
+     `requires` forall is exactly what forall_intro just established. *)
+  i32_to_bv_add_bv_lemma (lo `i16_mul_32extended` mk_i16 1)
+                         (hi `i16_mul_32extended` (mk_i16 1 <<! mk_i32 6)) p;
+  if v p < 6
+  then (i16_to_bv_to_i16x16_inv vec (mk_u64 nb2) p;
+        i16_to_bv_to_i16x16_inv vec (mk_u64 nb2) (mk_u64 (v p)))
+  else if v p < 22
+  then i16_to_bv_to_i16x16_inv vec (mk_u64 (nb2 + 1)) (mk_u64 (v p - 6))
+  else ()
+#pop-options
+
+(* madd against the 6-bit-packing const set_epi16(..,2^6,1,..,2^6,1): i32 lanes 0
+   and 4 hold `lo + hi*2^6` (lo = low i16 lane, hi = high i16 lane); the other six
+   have both const lanes 0, so their product bits — hence the sum's — are all zero. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 600"
+let mm256_madd_epi16_specialized_lemma vec i =
+  mm256_madd_epi16_lemma vec madd_pack_const i;
+  FStar.Math.Lemmas.lemma_div_mod (v i) 32;
+  let nb : nat = v i / 32 in
+  lemma_madd_pack_const_lane (nb * 2);
+  lemma_madd_pack_const_lane (nb * 2 + 1);
+  (* Dispatch on a LITERAL block index so the const-lane if-chain and the
+     requires' div/mod both reduce.  Each `aux` re-packages the module requires
+     (whose trigger is `vec.(mk_int i)`) into the block lemma's guarded shape. *)
+  if nb = 0 then begin
+    lemma_madd_pack_const_lane 0;
+    lemma_madd_pack_const_lane 1;
+    let aux (j: nat) : Lemma (6 <= j /\ j < 16 ==> Bit_Zero? vec.(mk_int (0 + j))) = () in
+    FStar.Classical.forall_intro aux;
+    lemma_madd_pack_block vec 0 0 (i %! mk_int 32)
+  end
+  else if nb = 1 then ()
+  else if nb = 2 then ()
+  else if nb = 3 then ()
+  else if nb = 4 then begin
+    lemma_madd_pack_const_lane 8;
+    lemma_madd_pack_const_lane 9;
+    let aux (j: nat) : Lemma (6 <= j /\ j < 16 ==> Bit_Zero? vec.(mk_int (128 + j))) = () in
+    FStar.Classical.forall_intro aux;
+    lemma_madd_pack_block vec 8 128 (i %! mk_int 32)
+  end
+  else if nb = 5 then ()
+  else if nb = 6 then ()
+  else if nb = 7 then ()
+  else ()
 #pop-options
 (* ===== byte-granular PSHUFB (256-bit): raw-bit view via to_i8x32 sel/neg ===== *)
 #push-options "--fuel 2 --ifuel 2 --z3rlimit 400"
