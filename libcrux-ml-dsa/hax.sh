@@ -32,12 +32,22 @@ function extract_all() {
     # `Avx2.fst` (the cross-crate cargo-freshness flip). Harmless in single-crate CI.
     touch "$REPO_ROOT/crates/utils/intrinsics/src/"*.rs
     clean_generated_fstar "$ML_DSA_INTRINSICS_DIR"
+    # ml-dsa is AVX2-only: nothing under proofs/fstar/{extraction,spec} references
+    # `Libcrux_intrinsics.Arm64_extract` (verified 2026-08-07 — removing both files
+    # left the stale set at 91 modules, unchanged, with no missing-module error).
+    # Extracting it anyway cost ml-dsa's trust ledger 18 unreferenced `assume val`
+    # obligations (9 `vecN_as_*_axiom` + 9 derive-`Copy` tc instances).  Excluding it
+    # here drops those at zero proof cost; the NEON consumers live in ml-kem
+    # (`Vector.Neon.*`) and sha3 (`Simd.Arm64.*`), which extract it themselves.
+    # With arm64_extract gone, the interface allowlist is vestigial -> plain "-**",
+    # which is what ml-dsa wants for Avx2 anyway (transparent .fst, bodies visible
+    # for reveal_opaque).
     extract crates/utils/intrinsics \
         -C --features simd128,simd256 ";" \
-        into -i "-libcrux_core_models::**" \
+        into -i "-libcrux_core_models::** -libcrux_intrinsics::arm64_extract::**" \
         --output-dir "$ML_DSA_INTRINSICS_DIR" \
         fstar --z3rlimit 80 \
-        --interfaces "-** +libcrux_intrinsics::arm64_extract::**"
+        --interfaces "-**"
 
     # Uniform shared secrets dep via its canonical script (transparent
     # `--interfaces "-**"`; see feedback_postmerge_audit_order).
