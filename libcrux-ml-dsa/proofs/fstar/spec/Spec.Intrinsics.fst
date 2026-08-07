@@ -1344,7 +1344,45 @@ let lemma_from_i32x8_def_pt f =
   in
   FStar.Classical.forall_intro aux
 #pop-options
-let mm256_storeu_si256_i32_lemma = admit ()
+(* 256-bit i32 store: 8-deep update_at_usize ladder (mirror of `store16`).
+   OPAQUE — its ladder inflates later decls' context; only the two consumers
+   below reveal it. *)
+[@@ "opaque_to_smt"]
+let store8_i32 (out: t_Slice i32 {Seq.length out >= 8}) (vec: bv256)
+  : (r: t_Slice i32 {Seq.length r == Seq.length out}) =
+  let upd = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize in
+  let s0 = upd out (mk_usize 0) (to_i32x8 vec (mk_u64 0)) in
+  let s1 = upd s0  (mk_usize 1) (to_i32x8 vec (mk_u64 1)) in
+  let s2 = upd s1  (mk_usize 2) (to_i32x8 vec (mk_u64 2)) in
+  let s3 = upd s2  (mk_usize 3) (to_i32x8 vec (mk_u64 3)) in
+  let s4 = upd s3  (mk_usize 4) (to_i32x8 vec (mk_u64 4)) in
+  let s5 = upd s4  (mk_usize 5) (to_i32x8 vec (mk_u64 5)) in
+  let s6 = upd s5  (mk_usize 6) (to_i32x8 vec (mk_u64 6)) in
+  upd s6 (mk_usize 7) (to_i32x8 vec (mk_u64 7))
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let store8_i32_unfold (out: t_Slice i32 {Seq.length out >= 8}) (vec: bv256)
+  : Lemma (I.mm256_storeu_si256_i32 out vec == store8_i32 out vec) =
+  reveal_opaque (`%store8_i32) store8_i32;
+  reveal_opaque (`%I.mm256_storeu_si256_i32) I.mm256_storeu_si256_i32;
+  reveal_opaque (`%Extra.mm256_storeu_si256_i32_model) Extra.mm256_storeu_si256_i32_model
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400 --split_queries always"
+let store8_i32_index (out: t_Slice i32 {Seq.length out >= 8}) (vec: bv256) (i: nat{i < 8})
+  : Lemma (Seq.index (store8_i32 out vec) i == to_i32x8 vec (mk_int i)) =
+  reveal_opaque (`%store8_i32) store8_i32;
+  match i with
+  | 0 -> () | 1 -> () | 2 -> () | 3 -> () | 4 -> () | 5 -> () | 6 -> () | _ -> ()
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let mm256_storeu_si256_i32_lemma out vec i =
+  store8_i32_unfold out vec;
+  store8_i32_index out vec i
+#pop-options
 let mm256_storeu_si256_i32_len_lemma out vec = ()
 #push-options "--fuel 1 --ifuel 2 --z3rlimit 250"
 (* every raw bit of setzero is 0 (mirror of Canon.lemma_setzero_raw, at bit level) *)
@@ -1371,7 +1409,16 @@ let mm256_setzero_si256_lemma i =
   FStar.Classical.forall_intro aux;
   Ints.lemma_int_t_eq_via_bits r (mk_i32 0)
 #pop-options
-let mm256_loadu_si256_i32_lemma = admit ()
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let mm256_loadu_si256_i32_lemma input i =
+  reveal_opaque (`%I.mm256_loadu_si256_i32) I.mm256_loadu_si256_i32;
+  reveal_opaque (`%Extra.mm256_loadu_si256_i32_model) Extra.mm256_loadu_si256_i32_model;
+  Canon.rt_i32x8 (Libcrux_core_models.Abstractions.Funarr.impl_5__from_fn (mk_u64 8) #i32 #(u64 -> i32)
+    (fun j -> let j:u64 = j in
+              if (cast (j <: u64) <: usize) <. (Core_models.Slice.impl__len #i32 input <: usize)
+              then input.[ cast (j <: u64) <: usize ] <: i32
+              else mk_i32 0))
+#pop-options
 (* `vec256_blendv_epi32 a b m = castps_si256 (blendv_ps (castsi256_ps a) …)`, and
    both casts are the IDENTITY on the bit vector (lifts in Trusted.Intrinsics), so
    this reduces to `Canon.lemma_mm256_blendv_ps`, whose model is lane-wise
@@ -1479,7 +1526,39 @@ let mm256_loadu_si256_u8_lemma bytes i =
   FStar.Math.Lemmas.lemma_div_mod (v i) 8;
   u8_to_bv_to_u8x32_inv (I.mm256_loadu_si256_u8 bytes) lane bit
 #pop-options
-let mm_storeu_si128_i32_lemma = admit ()
+(* 128-bit i32 store: 4-deep update_at_usize ladder (mirror of `store8_i32`). *)
+[@@ "opaque_to_smt"]
+let store4_i32 (out: t_Slice i32 {Seq.length out >= 4}) (vec: bv128)
+  : (r: t_Slice i32 {Seq.length r == Seq.length out}) =
+  let upd = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize in
+  let s0 = upd out (mk_usize 0) (to_i32x4 vec (mk_u64 0)) in
+  let s1 = upd s0  (mk_usize 1) (to_i32x4 vec (mk_u64 1)) in
+  let s2 = upd s1  (mk_usize 2) (to_i32x4 vec (mk_u64 2)) in
+  upd s2 (mk_usize 3) (to_i32x4 vec (mk_u64 3))
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let store4_i32_unfold (out: t_Slice i32 {Seq.length out >= 4}) (vec: bv128)
+  : Lemma (I.mm_storeu_si128_i32 out vec == store4_i32 out vec) =
+  reveal_opaque (`%store4_i32) store4_i32;
+  reveal_opaque (`%I.mm_storeu_si128_i32) I.mm_storeu_si128_i32;
+  reveal_opaque (`%Extra.mm_storeu_si128_i32_model) Extra.mm_storeu_si128_i32_model
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400 --split_queries always"
+let store4_i32_index (out: t_Slice i32 {Seq.length out >= 4}) (vec: bv128) (i: nat{i < 4})
+  : Lemma (Seq.index (store4_i32 out vec) i == to_i32x4 vec (mk_int i)) =
+  reveal_opaque (`%store4_i32) store4_i32;
+  match i with
+  | 0 -> () | 1 -> () | 2 -> () | _ -> ()
+#pop-options
+
+#restart-solver
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let mm_storeu_si128_i32_lemma out vec i =
+  store4_i32_unfold out vec;
+  store4_i32_index out vec i
+#pop-options
 let mm_storeu_si128_i32_len_lemma out vec = ()
 (* ===== movemask_ps: 8-bit base-2 fold value == flat sign-bit sum ===== *)
 (* castsi256_ps is bit-identity; movemask model value = e_movemask_bit_sum_i32,

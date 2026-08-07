@@ -1491,6 +1491,57 @@ pub mod extra {
             output[31] = lanes[31];
         }
     }
+
+    /// Model of `_mm256_loadu_si256` reading 8 i32 lanes.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_loadu_si256_i32_model(input: &[i32]) -> BitVec<256> {
+        BitVec::from_i32x8(FunArray::from_fn(|j| {
+            if (j as usize) < input.len() {
+                input[j as usize]
+            } else {
+                0
+            }
+        }))
+    }
+
+    /// Model of `_mm256_storeu_si256` on an i32 slice: writes the 8 lanes
+    /// to `output[0..8]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes; per-lane guards would make the extracted WP
+    /// split into 2^8 paths, which blows up F* elaboration).  Real callers
+    /// always pass slices of at least the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm256_storeu_si256_i32_model(output: &mut [i32], vector: BitVec<256>) {
+        let lanes = BitVec::to_i32x8(vector);
+        if output.len() >= 8 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+            output[4] = lanes[4];
+            output[5] = lanes[5];
+            output[6] = lanes[6];
+            output[7] = lanes[7];
+        }
+    }
+
+    /// Model of `_mm_storeu_si128` on an i32 slice: writes the 4 lanes
+    /// to `output[0..4]`, leaving any tail untouched.  Total: if the slice
+    /// is shorter than the vector, NO lanes are written (one top-level guard
+    /// + straight-line writes).  Real callers always pass slices of at least
+    /// the vector width.
+    #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_storeu_si128_i32_model(output: &mut [i32], vector: BitVec<128>) {
+        let lanes = BitVec::to_i32x4(vector);
+        if output.len() >= 4 {
+            output[0] = lanes[0];
+            output[1] = lanes[1];
+            output[2] = lanes[2];
+            output[3] = lanes[3];
+        }
+    }
 }
 
 /// Tests of equivalence between `safe::*` and `upstream::*`.

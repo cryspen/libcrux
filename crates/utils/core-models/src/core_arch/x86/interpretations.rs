@@ -1851,6 +1851,55 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 assert_eq!(&model_out[..], &hw_out[..]);
             }
         }
+
+        #[test]
+        fn mm256_loadu_si256_i32_model_diff() {
+            for _ in 0..1000 {
+                let data: Vec<i32> = (0..8).map(|_| rand::random::<i32>()).collect();
+                let hw = unsafe { upstream::_mm256_loadu_si256(data.as_ptr() as *const _) };
+                let mut hw_out = [0i32; 8];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let model_lanes: Vec<i32> = extra::mm256_loadu_si256_i32_model(&data).to_vec();
+                assert_eq!(&model_lanes[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm256_storeu_si256_i32_model_diff() {
+            for _ in 0..1000 {
+                let bv: BitVec<256> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm256_loadu_si256(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0i32; 8];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0i32; 8];
+                extra::mm256_storeu_si256_i32_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm_storeu_si128_i32_model_diff() {
+            // Store into a LONGER slice (6 lanes, sentinel-filled) so the
+            // "write 4 lanes, frame the tail" semantics is compared against
+            // hardware too, not just the exact-width case.
+            for _ in 0..1000 {
+                let bv: BitVec<128> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm_loadu_si128(bytes.as_ptr() as *const _) };
+                let mut hw_out = [0x7C7C7C7Ci32; 6];
+                unsafe {
+                    upstream::_mm_storeu_si128(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let mut model_out = [0x7C7C7C7Ci32; 6];
+                extra::mm_storeu_si128_i32_model(&mut model_out, bv);
+                assert_eq!(&model_out[..], &hw_out[..]);
+            }
+        }
     }
 }
 
