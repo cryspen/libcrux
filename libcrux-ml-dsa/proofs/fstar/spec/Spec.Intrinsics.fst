@@ -1154,7 +1154,7 @@ let mm256_xor_si256_lemma a b i =
    with no ensures anywhere in the hax proof-libs. Cannot bridge to abs_int
    (= mk_int (abs (v x))) without an axiom about abs_i32. Blocked by a missing
    primitive spec, not by the model. *)
-let mm256_abs_epi32_lemma = admit ()
+[@@ "trusted: pending-proof(hax#2107): needs a spec for Rust_primitives.Arithmetic.abs_i32; the 2-line proof is validated (cold, rlimit 1.134) against a locally-patched hax and lands when the pin advances"] let mm256_abs_epi32_lemma = admit ()
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
 let mm256_cmpgt_epi32_lemma a b i =
   reveal_opaque (`%I.mm256_cmpgt_epi32) I.mm256_cmpgt_epi32;

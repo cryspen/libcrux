@@ -2630,6 +2630,65 @@ mod track_i_axiom_transcription_tests {
         }
     }
 
+    /// F* axioms `lemma_count_ones_nibble` / `lemma_count_ones_byte`
+    /// (`libcrux-ml-dsa/proofs/fstar/spec/Libcrux_ml_dsa.Proof_utils.fst:15,21`):
+    ///   `0 <= v x < 16  ==> v (impl_i32__count_ones x) <= 4`
+    ///   `0 <= v x < 256 ==> v (impl_i32__count_ones x) <= 8`
+    /// Model anchor: Rust core's `i32::count_ones` — the operation that
+    /// `Rust_primitives.Arithmetic.count_ones_i32` models. That F* val is
+    /// UNINTERPRETED and carries only the trivial refinement `r:u32{v r <= 32}`,
+    /// so these tighter bounds are not derivable in F* and are genuine axioms.
+    /// Both domains are tiny, so we validate them exhaustively.
+    #[test]
+    fn count_ones_i32_nibble_and_byte_bounds() {
+        for x in 0..16i32 {
+            assert!(x.count_ones() <= 4, "nibble bound failed at x={x}");
+        }
+        for x in 0..256i32 {
+            assert!(x.count_ones() <= 8, "byte bound failed at x={x}");
+        }
+    }
+
+    /// F* axiom `lemma_count_ones_nibble_exact`
+    /// (`…Simd.Avx2.Rejection_sample.Proof_helpers.fst:812`):
+    ///   `0 <= v x < 16 ==> v (impl_i32__count_ones x) == popcount4 (v x)`
+    /// with (same file:146-147)
+    ///   `bitj m j   = match j with 0 -> m%2 | 1 -> (m/2)%2 | 2 -> (m/4)%2 | _ -> (m/8)%2`
+    ///   `popcount4 m = bitj m 0 + bitj m 1 + bitj m 2 + bitj m 3`
+    /// Exhaustive over all 16 inputs.
+    #[test]
+    fn count_ones_i32_popcount4_formula() {
+        fn bitj(m: u32, j: u32) -> u32 {
+            match j {
+                0 => m % 2,
+                1 => (m / 2) % 2,
+                2 => (m / 4) % 2,
+                _ => (m / 8) % 2,
+            }
+        }
+        fn popcount4(m: u32) -> u32 {
+            bitj(m, 0) + bitj(m, 1) + bitj(m, 2) + bitj(m, 3)
+        }
+        for x in 0..16i32 {
+            assert_eq!(x.count_ones(), popcount4(x as u32), "x={x}");
+        }
+    }
+
+    /// F* axiom `lemma_count_ones_byte_exact`
+    /// (`libcrux-ml-dsa/proofs/fstar/spec/Libcrux_ml_dsa.Proof_utils.fst:28`):
+    /// for `m` assembled from eight bools with weights 1,2,4,…,128,
+    /// `v (impl_i32__count_ones m)` equals the number of true bools.
+    /// Exhaustive over all 2^8 bool assignments.
+    #[test]
+    fn count_ones_i32_byte_exact_from_bools() {
+        for bits in 0..256u32 {
+            let b: [bool; 8] = core::array::from_fn(|k| (bits >> k) & 1 == 1);
+            let m: i32 = (0..8).map(|k| if b[k] { 1i32 << k } else { 0 }).sum();
+            let expected: u32 = b.iter().filter(|&&t| t).count() as u32;
+            assert_eq!(m.count_ones(), expected, "bits={bits:#010b}");
+        }
+    }
+
     /// F* axiom (`mm_shuffle_epi8_no_semantics_lemma`, ml-kem sampling.rs):
     ///   `result i == (let nth = i / 8 in
     ///                 let idx = sum_k b (8*nth+k) * 2^k in
