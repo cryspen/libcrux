@@ -1921,6 +1921,36 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 }
             }
         }
+
+        #[test]
+        fn mm_loadu_si128_u128_model_diff() {
+            for _ in 0..1000 {
+                let x: u128 = rand::random();
+                let hw = unsafe { upstream::_mm_loadu_si128(&x as *const u128 as *const _) };
+                let mut hw_out = [0u8; 16];
+                unsafe {
+                    upstream::_mm_storeu_si128(hw_out.as_mut_ptr() as *mut _, hw);
+                }
+                let model_bytes: Vec<u8> = extra::mm_loadu_si128_u128_model(&x).to_vec();
+                assert_eq!(&model_bytes[..], &hw_out[..]);
+            }
+        }
+
+        #[test]
+        fn mm_storeu_si128_u128_model_diff() {
+            for _ in 0..1000 {
+                let bv: BitVec<128> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm_loadu_si128(bytes.as_ptr() as *const _) };
+                let mut hw_out: u128 = 0;
+                unsafe {
+                    upstream::_mm_storeu_si128(&mut hw_out as *mut u128 as *mut _, hw);
+                }
+                let mut model_out: u128 = 0;
+                extra::mm_storeu_si128_u128_model(&mut model_out, bv);
+                assert_eq!(model_out, hw_out);
+            }
+        }
     }
 }
 

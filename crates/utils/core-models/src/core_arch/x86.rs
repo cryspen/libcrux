@@ -1559,6 +1559,25 @@ pub mod extra {
             0
         }
     }
+
+    /// Model of `mm_loadu_si128_u128`: read the 128-bit value pointed to by
+    /// `input` as a bit vector (LSB-first). Split into two u64 halves and build
+    /// via `from_u64x2` — avoids i128 arithmetic (whose 2^127 decomposition
+    /// overflows) and `u128::to_le_bytes`, using only shift + truncating cast.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_loadu_si128_u128_model(input: &u128) -> BitVec<128> {
+        let lo = *input as u64;
+        let hi = (*input >> 64) as u64;
+        BitVec::from_u64x2(FunArray::from_fn(|j| if j == 0 { lo } else { hi }))
+    }
+
+    /// Model of `mm_storeu_si128_u128`: write the 128-bit vector into the u128
+    /// at `output`. Reassemble from the two u64 lanes (LSB-first).
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn mm_storeu_si128_u128_model(output: &mut u128, vector: BitVec<128>) {
+        let lanes = BitVec::to_u64x2(vector);
+        *output = (lanes[0] as u128) | ((lanes[1] as u128) << 64);
+    }
 }
 
 /// Tests of equivalence between `safe::*` and `upstream::*`.

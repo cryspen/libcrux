@@ -82,23 +82,31 @@ pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     extra::mm_storeu_si128_i16_model(output, vector)
 }
 
-#[hax_lib::opaque]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_storeu_si128_u128(output: &mut u128, vector: Vec128) {
+    #[cfg(not(hax))]
     unsafe {
         _mm_storeu_si128(output as *mut u128 as *mut __m128i, vector);
     }
+    #[cfg(hax)]
+    extra::mm_storeu_si128_u128_model(output, vector)
 }
 
-#[hax_lib::opaque]
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_storeu_si128_u8(output: &mut [u8], vector: Vec128) {
     #[cfg(not(hax))]
-    debug_assert!(output.len() >= 8);
-    unsafe {
-        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+    {
+        debug_assert!(output.len() >= 8);
+        unsafe {
+            _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
+        }
     }
+    // Same 16-byte store as `mm_storeu_bytes_si128`; reuse its (total) model.
+    #[cfg(hax)]
+    extra::mm_storeu_bytes_si128_model(output, vector)
 }
 
 #[hax_lib::ensures(|_r| future(output).len() == output.len())]
@@ -143,10 +151,15 @@ pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     extra::mm_loadu_si128_model(input)
 }
 
-#[hax_lib::opaque]
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn mm_loadu_si128_u128(input: &u128) -> Vec128 {
-    unsafe { _mm_loadu_si128(input as *const u128 as *const __m128i) }
+    #[cfg(not(hax))]
+    {
+        unsafe { _mm_loadu_si128(input as *const u128 as *const __m128i) }
+    }
+    #[cfg(hax)]
+    extra::mm_loadu_si128_u128_model(input)
 }
 
 #[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
@@ -853,17 +866,23 @@ pub fn mm_aeskeygenassist_si128<const RCON: i32>(a: Vec128) -> Vec128 {
     unsafe { _mm_aeskeygenassist_si128(a, RCON) }
 }
 
-// Opaque to hax like the other raw-pointer store/load wrappers above: the body
-// reinterprets a `[u64; 4]` as `&mut [u8]` via `from_raw_parts_mut`, which hax
-// rejects (`reject_RawOrMutPointer`). Marking it opaque extracts it as an
-// uninterpreted `val` (consumers that need a spec use the `avx2_extract` model).
-#[hax_lib::opaque]
+// The non-hax body reinterprets a `[u64; 4]` as `&mut [u8]` via
+// `from_raw_parts_mut`, which hax rejects (`reject_RawOrMutPointer`), so under
+// the hax cfg it delegates to the extractable `extra::get_lane_u64_model`
+// (= `to_u64x4(vec)[lane]`, hardware-validated), matching the store-then-index
+// semantics. This replaces the former `#[hax_lib::opaque]` uninterpreted `val`.
+#[cfg_attr(hax, hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#))]
 #[inline(always)]
 pub fn get_lane_u64(vec: Vec256, lane: usize) -> u64 {
-    let mut tmp = [0u64; 4];
-    mm256_storeu_si256_u8(
-        unsafe { core::slice::from_raw_parts_mut(tmp.as_mut_ptr() as *mut u8, 32) },
-        vec,
-    );
-    tmp[lane]
+    #[cfg(not(hax))]
+    {
+        let mut tmp = [0u64; 4];
+        mm256_storeu_si256_u8(
+            unsafe { core::slice::from_raw_parts_mut(tmp.as_mut_ptr() as *mut u8, 32) },
+            vec,
+        );
+        tmp[lane]
+    }
+    #[cfg(hax)]
+    extra::get_lane_u64_model(vec, lane)
 }
