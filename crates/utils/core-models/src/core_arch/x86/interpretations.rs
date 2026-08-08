@@ -1903,6 +1903,24 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
                 assert_eq!(&model_out[..], &hw_out[..]);
             }
         }
+
+        #[test]
+        fn get_lane_u64_model_diff() {
+            // Compare the model against the wrapper's own semantics on hardware:
+            // load 256 bits, store to a [u64; 4], index each lane.
+            for _ in 0..1000 {
+                let bv: BitVec<256> = BitVec::random();
+                let bytes: Vec<u8> = bv.to_vec();
+                let hw = unsafe { upstream::_mm256_loadu_si256(bytes.as_ptr() as *const _) };
+                let mut hw_lanes = [0u64; 4];
+                unsafe {
+                    upstream::_mm256_storeu_si256(hw_lanes.as_mut_ptr() as *mut _, hw);
+                }
+                for lane in 0..4 {
+                    assert_eq!(extra::get_lane_u64_model(bv, lane), hw_lanes[lane]);
+                }
+            }
+        }
     }
 }
 

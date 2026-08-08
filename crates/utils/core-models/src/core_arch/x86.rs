@@ -1544,6 +1544,21 @@ pub mod extra {
             output[3] = lanes[3];
         }
     }
+
+    /// Model of `get_lane_u64`: the 64-bit lane at index `lane` (0..4) of a
+    /// 256-bit vector, matching the wrapper's `[u64; 4]` store-then-index
+    /// semantics. TOTAL: `lane >= 4` yields 0 (the wrapper would panic; real
+    /// callers always pass `lane < 4`), so no precondition leaks into the
+    /// wrapper's signature.
+    #[hax_lib::fstar::before(r#"[@@ "opaque_to_smt"]"#)]
+    pub fn get_lane_u64_model(vector: BitVec<256>, lane: usize) -> u64 {
+        let lanes = BitVec::to_u64x4(vector);
+        if lane < 4 {
+            lanes[lane as u64]
+        } else {
+            0
+        }
+    }
 }
 
 /// Tests of equivalence between `safe::*` and `upstream::*`.
