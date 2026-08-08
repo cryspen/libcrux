@@ -8,6 +8,7 @@ use hax_lib::prop::*;
 
 #[cfg(hax)]
 #[derive(Clone, Copy, Debug)]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -98,6 +99,7 @@ pub struct Vec256(u8);
 
 #[cfg(hax)]
 #[derive(Copy, Clone, Debug)]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -291,6 +293,7 @@ pub fn mm_storeu_si128_i32(output: &mut [i32], vector: Vec128) {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_storeu_bytes_si128}")]
 #[inline(always)]
 pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
@@ -298,6 +301,7 @@ pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_loadu_si128}")]
 #[inline(always)]
 pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
@@ -353,6 +357,7 @@ pub fn mm256_set_m128i(hi: Vec128, lo: Vec128) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_set_epi8}")]
 #[inline(always)]
 pub fn mm_set_epi8(
@@ -376,6 +381,7 @@ pub fn mm_set_epi8(
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi8}")]
 #[inline(always)]
 pub fn mm256_set_epi8(
@@ -417,6 +423,7 @@ pub fn mm256_set_epi8(
 
 #[hax_lib::ensures(|result| fstar!("vec256_as_i16x16 $result == 
                                     Spec.Utils.create (sz 16) $constant"))]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -433,6 +440,7 @@ pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -492,6 +500,7 @@ pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec12
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_set_epi32}")]
 #[inline(always)]
 pub fn mm256_set_epi32(
@@ -535,6 +544,7 @@ pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
 // trusted `admit()` lemma here — the proper B′ home — validated by the core-models
 // `_mm256_madd_epi16` differential test + the `madd_epi16_lane_formula`
 // transcription test in interpretations.rs.  Called explicitly (no SMTPat).
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -581,6 +591,7 @@ pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -688,6 +699,7 @@ pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -704,6 +716,7 @@ pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -731,6 +744,7 @@ pub fn mm256_testz_si256(lhs: Vec256, rhs: Vec256) -> i32 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -782,6 +796,7 @@ pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
 // NOTE (2026-06-30): ml-kem i16-view `lemma_mm256_srli_epi16` (SMTPat)
 // RELOCATED to Libcrux_intrinsics.Avx2_ml_kem_views. sha3 never uses
 // srli_epi16's i16-view.
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm256_srli_epi16 as ${mm256_srli_epi16::<0>}}"
@@ -810,6 +825,7 @@ pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -836,6 +852,7 @@ pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm256_slli_epi16 as ${mm256_slli_epi16::<0>}}"
@@ -862,10 +879,12 @@ pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm_shuffle_epi8}")]
 pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unimplemented!()
 }
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_shuffle_epi8}")]
 pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unimplemented!()
@@ -890,6 +909,7 @@ pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -941,6 +961,7 @@ pub fn mm256_unpackhi_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm256_castsi256_si128 as ${mm256_castsi256_si128}}"
@@ -972,6 +993,7 @@ pub fn mm256_cvtepi16_epi32(vector: Vec128) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm_packs_epi16 as ${mm_packs_epi16}}"
@@ -997,6 +1019,7 @@ pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm256_extracti128_si256 as ${mm256_extracti128_si256::<0>}}"
@@ -1044,6 +1067,7 @@ pub fn vec256_blendv_epi32(a: Vec256, b: Vec256, mask: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     "include BitVec.Intrinsics {mm_movemask_epi8 as ${mm_movemask_epi8}}"
@@ -1053,6 +1077,7 @@ pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_permutevar8x32_epi32}")]
 #[inline(always)]
 pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
@@ -1074,11 +1099,13 @@ pub fn mm_sllv_epi32(vector: Vec128, counts: Vec128) -> Vec128 {
 }
 
 #[inline(always)]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(interface, "include BitVec.Intrinsics {mm256_sllv_epi32}")]
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -1112,6 +1139,7 @@ pub fn mm256_bsrli_epi128<const SHIFT_BY: i32>(x: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -1135,6 +1163,7 @@ pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -1156,6 +1185,7 @@ let lemma_mm256_set1_epi64x_u64x4 (a: i64)
 pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unimplemented!()
 }
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -1183,6 +1213,7 @@ pub fn mm256_set_epi64x(input3: i64, input2: i64, input1: i64, input0: i64) -> V
     unimplemented!()
 }
 
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -1207,6 +1238,7 @@ pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
 }
 
 #[hax_lib::requires(IMM8 == 0x20 || IMM8 == 0x31)]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when avx2_extract.rs is deleted (WS B: sha3/aes off pre_core_models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"

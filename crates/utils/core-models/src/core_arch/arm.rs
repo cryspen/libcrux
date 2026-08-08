@@ -46,6 +46,7 @@ pub(crate) mod upstream {
     pub use core::arch::aarch64::*;
 }
 
+#[libcrux_macros::trusted(replace, "trusted-extern: NEON vector F* type aliases (hardware type model)")]
 #[hax_lib::fstar::replace(
     r#"
     unfold type t_int8x16_t = $:{int8x16_t}

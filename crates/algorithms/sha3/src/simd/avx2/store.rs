@@ -44,6 +44,7 @@ pub(crate) fn stored(
 /// the producer to carry the already-written prefix past the new
 /// window. Reveals both opaque predicates internally.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_frame
@@ -77,6 +78,7 @@ fn lemma_stored_frame(
 /// `stored` is additive over adjacent ranges: correct on `[lo,mid)`
 /// and `[mid,hi)` gives correct on `[lo,hi)`. Reveals `stored`.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_union
@@ -105,6 +107,7 @@ fn lemma_stored_union(
 /// `stored` over an empty range `[lo,lo)` holds vacuously. Seeds the
 /// loop-invariant base case. Reveals `stored`.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_empty
@@ -124,6 +127,7 @@ fn lemma_stored_empty(_s: &[Vec256; 25], _out: &[u8], _start: usize, _lane: usiz
 /// `reveal` of `stored` is confined HERE (verified once in clean
 /// context) so the caller's bridge sub-queries are never polluted.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 #push-options "--z3rlimit 400"
@@ -182,6 +186,7 @@ fn lemma_window_stored(
 /// equal lengths, concludes the opaque `modifies_range`. `reveal`
 /// confined here.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 let lemma_window_modifies (out_old out_new: t_Slice u8) (start i: usize)
@@ -208,6 +213,7 @@ fn lemma_window_modifies(_out_old: &[u8], _out_new: &[u8], _start: usize, _i: us
 /// tail's `store_chunk8x4` / `store_tail_ragged_avx2` leaves. Reveals
 /// `stored` here so those leaves never reveal in their own body.
 #[cfg(hax)]
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native proof lemma (store_block opaque-range machinery, no Rust equivalent)")]
 #[hax_lib::fstar::replace(
     r#"
 #push-options "--z3rlimit 400"

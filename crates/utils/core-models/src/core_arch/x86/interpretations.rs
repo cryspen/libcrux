@@ -19,6 +19,7 @@ pub mod int_vec {
     // recursion over which the `movemask_bit` companion is a trivial digit
     // extraction.  Self-contained (no `int_vec_interp` dependency, avoiding a
     // circular import).  Grandfathered-OK primitive-model shaping.
+    #[libcrux_macros::trusted(replace, "trusted-extern: e_movemask_bit_sum recursive F* model (interpretation)")]
     #[hax_lib::fstar::replace(
         r#"
 let rec e_movemask_bit_sum_i8
@@ -1062,6 +1063,7 @@ let e_mm256_movemask_ps (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (
         #[hax_lib::fstar::before("irreducible")]
         pub const LIFT_LEMMA: () = ();
 
+        #[libcrux_macros::trusted(replace, "validated-axiom: mk!-tested LIFT_LEMMA _mm256_set_epi32 interp")]
         #[hax_lib::fstar::replace(r#"
 [@@ v_LIFT_LEMMA ]
 assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> e3: i32 -> e2: i32 -> e1: i32 -> e0: i32 -> (i: u64 {v i < 8})
@@ -1280,6 +1282,7 @@ assume val _mm256_set_epi32_interp: e7: i32 -> e6: i32 -> e5: i32 -> e4: i32 -> 
         mk_lift_lemma!(_mm_shuffle_epi8(a: __m128i, b: __m128i) ==
 		       __m128i::from_i8x16(super::_mm_shuffle_epi8(BitVec::to_i8x16(a), BitVec::to_i8x16(b))));
 
+        #[libcrux_macros::trusted(replace, "hax-limitation: F*-native flatten_circuit tactic (proof machinery)")]
         #[hax_lib::fstar::replace(
             r#"
         let ${flatten_circuit} (): FStar.Tactics.Tac unit =

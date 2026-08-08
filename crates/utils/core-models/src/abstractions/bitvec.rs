@@ -88,6 +88,7 @@ fn int_from_bit_slice<T: TryFrom<i128> + MachineInteger + Copy>(bits: &[Bit]) ->
     n
 }
 
+#[libcrux_macros::trusted(replace, "trusted-extern: BitVec::from_fn F* model (bit-vector primitive)")]
 #[hax_lib::fstar::replace(
     r#"
 let ${BitVec::<0>::from_fn::<fn(u64)->Bit>}
@@ -160,6 +161,7 @@ impl<const N: u64> BitVec<N> {
     }
 }
 
+#[libcrux_macros::trusted(replace, "hax-limitation: F*-native functional-extensionality lemma (proof machinery)")]
 #[hax_lib::fstar::replace(
     r#"
 open FStar.FunctionalExtensionality
@@ -365,6 +367,7 @@ pub mod int_vec_interp {
     /// Concrete lane-view conversions (bit-slice + two's-complement) with a
     /// single generic round-trip lemma `lemma_conv_rt` (SMTPat). This replaces
     /// the (formerly `#[opaque]`) macro conversions with real F* definitions.
+    #[libcrux_macros::trusted(replace, "trusted-extern: BitVec concrete lane-view conversions (bit-vector primitive)")]
     #[hax_lib::fstar::replace(
         r#"
 (* ============================================================
@@ -771,6 +774,7 @@ let ${BitVec::<64>::to_u64x1} (bv: Libcrux_core_models.Abstractions.Bitvec.t_Bit
     }
 
     /// Normalize `from` calls that convert from one type to itself
+    #[libcrux_macros::trusted(replace, "hax-limitation: F*-native SIMPLIFICATION_LEMMA rewrite (proof machinery)")]
     #[hax_lib::fstar::replace(
         r#"
         [@@ $SIMPLIFICATION_LEMMA ]

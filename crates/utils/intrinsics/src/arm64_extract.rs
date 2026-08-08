@@ -8,6 +8,7 @@
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _uint16x4_t := BitVec 64")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -17,6 +18,7 @@ let get_lane_u16x4 (v: $:{_uint16x4_t}) (i: nat{i < 4}) : u16 =
   Seq.index (vec64_as_u16x4 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec64_as_u16x4_axiom (x: $:{_uint16x4_t}) : t_Array u16 (sz 4)
@@ -27,6 +29,7 @@ pub struct _uint16x4_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _int16x4_t := BitVec 64")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -36,6 +39,7 @@ let get_lane_i16x4 (v: $:{_int16x4_t}) (i: nat{i < 4}) : i16 =
   Seq.index (vec64_as_i16x4 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec64_as_i16x4_axiom (x: $:{_int16x4_t}) : t_Array i16 (sz 4)
@@ -46,6 +50,7 @@ pub struct _int16x4_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _int16x8_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -73,6 +78,7 @@ val bit_vec_of_int_t_array_vec128_as_i16x8_lemma
              == v ((i / d) * 16 + i % d))
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_i16x8_axiom (x: $:{_int16x8_t}) : t_Array i16 (sz 8)
@@ -83,6 +89,7 @@ pub struct _int16x8_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _uint8x16_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -92,6 +99,7 @@ let get_lane_u8x16 (v: $:{_uint8x16_t}) (i: nat{i < 16}) : u8 =
   Seq.index (vec128_as_u8x16 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_u8x16_axiom (x: $:{_uint8x16_t}) : t_Array u8 (sz 16)
@@ -102,6 +110,7 @@ pub struct _uint8x16_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _uint16x8_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -111,6 +120,7 @@ let get_lane_u16x8 (v: $:{_uint16x8_t}) (i: nat{i < 8}) : u16 =
   Seq.index (vec128_as_u16x8 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_u16x8_axiom (x: $:{_uint16x8_t}) : t_Array u16 (sz 8)
@@ -121,6 +131,7 @@ pub struct _uint16x8_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _uint32x4_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -130,6 +141,7 @@ let get_lane_u32x4 (v: $:{_uint32x4_t}) (i: nat{i < 4}) : u32 =
   Seq.index (vec128_as_u32x4 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_u32x4_axiom (x: $:{_uint32x4_t}) : t_Array u32 (sz 4)
@@ -140,6 +152,7 @@ pub struct _uint32x4_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _int32x4_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -149,6 +162,7 @@ let get_lane_i32x4 (v: $:{_int32x4_t}) (i: nat{i < 4}) : i32 =
   Seq.index (vec128_as_i32x4 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_i32x4_axiom (x: $:{_int32x4_t}) : t_Array i32 (sz 4)
@@ -159,6 +173,7 @@ pub struct _int32x4_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _uint64x2_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -168,6 +183,7 @@ let get_lane_u64x2 (v: $:{_uint64x2_t}) (i: nat{i < 2}) : u64 =
   Seq.index (vec128_as_u64x2 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_u64x2_axiom (x: $:{_uint64x2_t}) : t_Array u64 (sz 2)
@@ -178,6 +194,7 @@ pub struct _uint64x2_t(u8);
 
 #[derive(Clone, Copy)]
 #[hax_lib::lean::replace("abbrev _int64x2_t := BitVec 128")]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     interface,
     r#"
@@ -187,6 +204,7 @@ let get_lane_i64x2 (v: $:{_int64x2_t}) (i: nat{i < 2}) : i64 =
   Seq.index (vec128_as_i64x2 v) i
 "#
 )]
+#[libcrux_macros::trusted(replace, "pending-proof(cm-migration): retired when arm64_extract.rs is deleted (WS C: NEON onto core-models)")]
 #[hax_lib::fstar::replace(
     r#"
 assume val vec128_as_i64x2_axiom (x: $:{_int64x2_t}) : t_Array i64 (sz 2)

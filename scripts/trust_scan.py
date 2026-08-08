@@ -361,10 +361,22 @@ _TRUSTED_LABEL_RE = re.compile(
 # where <kind> emits the corresponding hax mechanism (see crates/utils/macros). The
 # `\b` (not a required comma) lets the scanner also catch a reason-less `#[trusted(opaque)]`
 # so V2 can flag the missing reason instead of silently ignoring it.
-_TRUSTED_ATTR_KINDS = ("lax", "panic_free", "opaque", "exclude")
+#
+# `replace` is a PURE marker (like inline-admit): it emits no mechanism, it sits
+# alongside a sibling `#[hax_lib::fstar::replace(...)]` attribute purely as the
+# declaration the V8 replace-bijection lint counts. It carries a `"<category>: <reason>"`
+# 2nd arg (validated by reason_ok), so it lives in the `attr` bucket with the G2 kinds
+# rather than the reason-less `labels` bucket.
+_TRUSTED_ATTR_KINDS = ("lax", "panic_free", "opaque", "exclude", "replace")
 _TRUSTED_ATTR_RE = re.compile(
-    r"#\[\s*libcrux_macros::trusted\s*\(\s*(lax|panic_free|opaque|exclude)\b"
+    r"#\[\s*libcrux_macros::trusted\s*\(\s*(lax|panic_free|opaque|exclude|replace)\b"
 )
+# `#[hax_lib::fstar::replace(...)]` / `#[fstar::replace_body(...)]` SITES — the OBSERVED
+# side of the replace trust surface. Match the attribute HEAD only (on comment-masked
+# text), so a `fstar::replace` mention inside a replacement string or a comment is never
+# miscounted. `replace_body` (body-only substitution) is the same class of trust surface
+# — F* verifies hand-written text, not the extracted body — and is counted the same.
+_FSTAR_REPLACE_SITE_RE = re.compile(r"#\[\s*(?:hax_lib::)?fstar::replace(?:_body)?\b")
 # Raw obligation-producing mechanisms that MUST now be wrapped (V3 ban).
 _RAW_ADMIT_RE = re.compile(r'\bproof!\s*\(\s*"admit \(\)"\s*\)')
 _RAW_ASSUME_RE = re.compile(r'\bproof!\s*\(\s*r?#*"?\s*assume\b')
@@ -555,6 +567,18 @@ def scan_file_trust_markers(path, repo_root):
 
     return {"body": body, "labels": labels, "attr": attr,
             "raw_admit": raw_admit, "raw_assume": raw_assume}
+
+
+def scan_file_replace_sites(path, repo_root):
+    """Return [{file, line}] for every `#[hax_lib::fstar::replace(...)]` /
+    `#[fstar::replace_body(...)]` attribute HEAD in one .rs file (comment-masked, so a
+    `fstar::replace` mention in a comment or inside a replacement string is ignored)."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    masked = mask_rust_comments(text)
+    rel = os.path.relpath(path, repo_root)
+    return [{"file": rel, "line": masked.count("\n", 0, m.start()) + 1}
+            for m in _FSTAR_REPLACE_SITE_RE.finditer(masked)]
 
 
 def scan_rust_trust_markers(src_root, repo_root):

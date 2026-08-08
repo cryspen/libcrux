@@ -147,6 +147,7 @@ mod conversions {
     }
 }
 
+#[libcrux_macros::trusted(replace, "trusted-extern: __m256i/__m128i F* type aliases (hardware type model)")]
 #[hax_lib::fstar::replace(
     r#"
     unfold type t_e_ee_m256i = $:{__m256i}
@@ -855,6 +856,7 @@ const _: () = {
     > {
     }
 
+    #[libcrux_macros::trusted(replace, "hax-limitation: F*-native REWRITE_RULE (proof machinery)")]
     #[hax_lib::fstar::replace(
         r#"
 [@@ Libcrux_core_models.Abstractions.Bitvec.v_REWRITE_RULE ]
