@@ -2155,3 +2155,18 @@ let lemma_e_vshlq_u16_lane (a: t_e_uint16x8_t) (b: t_e_int16x8_t) (i: nat{i < 8}
   NV.lemma_vshlq_u16 a b;
   lemma_arm_ushl_eq (get_lane_u16x8 a i) (get_lane_i16x8 b i)
 #pop-options
+
+(* ── vaddvq_s16 / vaddv_u16 (horizontal add) — CLIFF (session 7).  Model is a
+   `fold_range 0 N` LEFT fold of `+.` (== add_mod) from 0; consumer wants a
+   balanced tree.  `+.` is AC so the equality is unconditional AND there is NO
+   ensures wall (scalar result).  BUT: the naive fuel-unroll (fuel 10, rlimit 400)
+   SATURATES (used 400.000, canceled twice — measured, confirming rollup-6).  The
+   step-lemma peel and the upd_prefix-style recursive-sum both hit the fold_range
+   CLOSURE-INEQUALITY wall (Z3 won't equate `fold_range .. f_model` with a
+   re-written closure).  Forward path = the documented fold_range characterization
+   (`Proof_Utils.NatFold.lemma_fold_range_is_range_nat` pointwise-Lemma-argument
+   bridge — see [[feedback_closure_free_recursion_for_congruence]] and §7
+   "Characterizing a hax fold_range"): convert the fold to a nat-fold given the
+   body-equality as a Lemma VALUE (sidesteps closure inequality), then add_mod AC
+   on the ground left-fold.  NV foundation present: `NV.lemma_vaddvq_s16` /
+   `NV.lemma_vaddv_u16`.  Deferred — distinct machinery, not yet attempted. *)
