@@ -24,9 +24,10 @@ open Libcrux_intrinsics.Arm64
 
    STATUS (WIP — cm-migration, 2026-08-08).  This file currently carries the
    VALIDATED "arithmetic backbone": the structural i16x8 lane view + the pure
-   per-lane map2 arithmetic op-facts (`vadd/vsub/vmul/vmul_n_s16`), which prove
-   directly from the `Neon_views` codec op-lemmas (`ArmIV.OP` is a per-lane
-   FunArray op, so `map2 f (view a) (view b)` matches by `Seq.lemma_eq_intro`).
+   per-lane arithmetic/transpose op-facts (`vadd/vsub/vmul/vmul_n_s16`,
+   `vtrn1q/vtrn2q_s16`), which prove directly from the `Neon_views` codec
+   op-lemmas (`ArmIV.OP` is a per-lane FunArray op, so `Seq.init`/`map2 f
+   (view a) (view b)` matches by `Seq.lemma_eq_intro`).
 
    REMAINING (next sessions), by tier — each needs a companion op-fact and, where
    noted, a FOUNDATION lemma in `Neon_views` (width-128 analog of an existing
@@ -39,8 +40,9 @@ open Libcrux_intrinsics.Arm64
        to 128 in `Neon_views`).
      * Shifts (vshrq_n/vshlq_n_*): per-lane shift codec facts (ArmIV shift body).
      * Clamp (vqdmulhq_s16 / _n_s16 / _n_s32): saturating-clamp per-lane facts.
-     * trn (vtrn1q/vtrn2q_s16/s32/s64/u64): pure mirror (ArmIV.trn on codec) —
-       like the arithmetic ops; needs the i32x4/i64x2/u64x2 views added here.
+     * trn: s16 (vtrn1q/vtrn2q_s16) DONE; s32/s64/u64 remaining — pure mirror
+       (ArmIV.trn on codec), like the arithmetic ops; need the i32x4/i64x2/u64x2
+       views added here.
      * Reinterpret same-width (s16<->u16, s32<->u32): `result == a` (bit-identity
        `ArmIV.OP a == a`) + per-lane cast_mod codec-signedness fact.
      * Reinterpret cross-width (s32<->s16, s64<->s16, u32<->u8, u16<->u8): the
@@ -148,4 +150,32 @@ let lemma_e_vmulq_n_s16 (v: t_e_int16x8_t) (c: i16)
   NV.lemma_vmulq_n_s16 v c;
   Seq.lemma_eq_intro (vec128_as_i16x8 (e_vmulq_n_s16 v c))
                      (Seq.init 8 (fun i -> Seq.index (vec128_as_i16x8 v) i *. c))
+#pop-options
+
+(* ── i16x8 transpose op-facts (mirror pattern; used by the NEON NTT) ────────── *)
+(* ArmIV.vtrn1q_s16 = from_fn (if i even then a[i] else b[i-1]) (interleave lows);
+   vtrn2q_s16 = from_fn (if i even then a[i+1] else b[i]) (interleave highs). *)
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn1q_s16 (a b: t_e_int16x8_t)
+  : Lemma (vec128_as_i16x8 (e_vtrn1q_s16 a b)
+           == Seq.init 8 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i16x8 a) i
+                                              else Seq.index (vec128_as_i16x8 b) (i - 1)))
+          [SMTPat (vec128_as_i16x8 (e_vtrn1q_s16 a b))] =
+  NV.lemma_vtrn1q_s16 a b;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vtrn1q_s16 a b))
+                     (Seq.init 8 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i16x8 a) i
+                                                    else Seq.index (vec128_as_i16x8 b) (i - 1)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn2q_s16 (a b: t_e_int16x8_t)
+  : Lemma (vec128_as_i16x8 (e_vtrn2q_s16 a b)
+           == Seq.init 8 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i16x8 a) (i + 1)
+                                              else Seq.index (vec128_as_i16x8 b) i))
+          [SMTPat (vec128_as_i16x8 (e_vtrn2q_s16 a b))] =
+  NV.lemma_vtrn2q_s16 a b;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vtrn2q_s16 a b))
+                     (Seq.init 8 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i16x8 a) (i + 1)
+                                                    else Seq.index (vec128_as_i16x8 b) i))
 #pop-options
