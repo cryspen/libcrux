@@ -2032,3 +2032,45 @@ let lemma_e_vsliq_n_s32_lane (v_N: i32) (a b: t_e_int32x4_t) (i: nat{i < 4})
   lemma_vsli_mask_i32 v_N;
   lemma_vsli_shift_i32 (get_lane_i32x4 b i) v_N
 #pop-options
+
+(* ── vsliq_n_s64: 2-lane i64 analog.  Model mask has an extra v_N=63 special
+   case (i64_MAX); arm_low_mask_i64 63 == mk_i64 (2^63-1) == i64_MAX, so the
+   bridge splits on 63. ──────────────────────────────────────────────────────── *)
+let vsli_lane_i64 (a b: i64) (n: nat) : i64 =
+  if 0 < n && n < 64 then (a &. arm_low_mask_i64 n) |. (b <<! mk_i32 n) else b
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_vsli_shift_i64 (bv: i64) (v_N: i32) : Lemma
+  (requires v v_N >= 0 /\ v v_N < 64)
+  (ensures (cast ((cast (bv <: i64) <: u64) <<! (cast (v_N <: i32) <: u32) <: u64) <: i64)
+           == (bv <<! v_N)) =
+  let lhs : i64 = cast ((cast (bv <: i64) <: u64) <<! (cast (v_N <: i32) <: u32) <: u64) <: i64 in
+  let rhs : i64 = bv <<! v_N in
+  let aux (r: usize{v r < 64}) : Lemma (Int.get_bit lhs r == Int.get_bit rhs r) = () in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits lhs rhs
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_vsli_mask_i64 (v_N: i32) : Lemma
+  (requires v v_N > 0 /\ v v_N < 64)
+  (ensures ((if v_N =. mk_i32 63
+             then Core_models.Num.impl_i64__MAX
+             else (cast (Core_models.Num.impl_u64__wrapping_sub (mk_u64 1 <<! v_N <: u64) (mk_u64 1) <: u64) <: i64))
+            == arm_low_mask_i64 (v v_N))) =
+  if v_N =. mk_i32 63
+  then assert_norm (pow2 63 - 1 == 9223372036854775807)
+  else (FStar.Math.Lemmas.pow2_lt_compat 64 (v v_N);
+        assert (v (mk_u64 1 <<! v_N <: u64) == pow2 (v v_N)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vsliq_n_s64_lane (v_N: i32) (a b: t_e_int64x2_t) (i: nat{i < 2})
+  : Lemma (requires v v_N > 0 /\ v v_N < 64)
+          (ensures get_lane_i64x2 (e_vsliq_n_s64 v_N a b) i
+                   == vsli_lane_i64 (get_lane_i64x2 a i) (get_lane_i64x2 b i) (v v_N))
+          [SMTPat (get_lane_i64x2 (e_vsliq_n_s64 v_N a b) i)] =
+  NV.lemma_vsliq_n_s64 v_N a b;
+  lemma_vsli_mask_i64 v_N;
+  lemma_vsli_shift_i64 (get_lane_i64x2 b i) v_N
+#pop-options
