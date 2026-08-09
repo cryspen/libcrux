@@ -2074,3 +2074,84 @@ let lemma_e_vsliq_n_s64_lane (v_N: i32) (a b: t_e_int64x2_t) (i: nat{i < 2})
   lemma_vsli_mask_i64 v_N;
   lemma_vsli_shift_i64 (get_lane_i64x2 b i) v_N
 #pop-options
+
+(* ── vshlq_s16 byte-sign crux: the model's shift count s = sign-extend(low byte
+   of b) relates to arm_sshl's Euclidean byte v (b %! 256). ─────────────────── *)
+let arm_shl_count_i16 (b: i16) : i32 = cast (cast (cast (cast (b <: i16) <: u16) <: u8) <: i8) <: i32
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400"
+let lemma_arm_shl_count_i16 (b: i16) : Lemma
+  (ensures v (arm_shl_count_i16 b)
+           == (let su = v (b %! mk_i16 256) in if su < 128 then su else su - 256)) =
+  let su = v (b %! mk_i16 256) in
+  let byte : u8 = cast (cast (b <: i16) <: u16) <: u8 in
+  assert (v byte == su);
+  ()
+#pop-options
+
+(* left-shift-via-u16 equivalence (0<=s<16), mirrors lemma_vsli_shift. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_arm_sshl_left (a: i16) (s: i32) : Lemma
+  (requires v s >= 0 /\ v s < 16)
+  (ensures (cast ((cast (a <: i16) <: u16) <<! (cast (s <: i32) <: u32) <: u16) <: i16)
+           == (a <<! mk_i32 (v s))) =
+  let lhs : i16 = cast ((cast (a <: i16) <: u16) <<! (cast (s <: i32) <: u32) <: u16) <: i16 in
+  let rhs : i16 = a <<! mk_i32 (v s) in
+  let aux (r: usize{v r < 16}) : Lemma (Int.get_bit lhs r == Int.get_bit rhs r) = () in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits lhs rhs
+#pop-options
+
+(* arm_sshl_i16 (Euclidean byte-count form) == the model's per-lane vshlq_s16
+   (sign-extended low byte + 4 branches).  Case-split via the byte-sign crux. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let lemma_arm_sshl_eq (a b: i16) : Lemma
+  (ensures arm_sshl_i16 a b ==
+           (let s = arm_shl_count_i16 b in
+            if s >=. mk_i32 16 then mk_i16 0
+            else if s >=. mk_i32 0
+                 then cast ((cast (a <: i16) <: u16) <<! (cast (s <: i32) <: u32) <: u16) <: i16
+                 else if s <=. mk_i32 (-16)
+                      then (if a <. mk_i16 0 then mk_i16 (-1) else mk_i16 0)
+                      else a >>! (cast (Rust_primitives.Arithmetic.neg s <: i32) <: u32))) =
+  lemma_arm_shl_count_i16 b;
+  let s = arm_shl_count_i16 b in
+  let su = v (b %! mk_i16 256) in
+  if su < 16 then lemma_arm_sshl_left a s
+  else if su < 128 then ()
+  else ()
+#pop-options
+
+(* op-fact: per-lane e_vshlq_s16 == arm_sshl_i16 (NV foundation + arm_sshl_eq). *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vshlq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (ensures get_lane_i16x8 (e_vshlq_s16 a b) i
+                   == arm_sshl_i16 (get_lane_i16x8 a i) (get_lane_i16x8 b i))
+          [SMTPat (get_lane_i16x8 (e_vshlq_s16 a b) i)] =
+  NV.lemma_vshlq_s16 a b;
+  lemma_arm_sshl_eq (get_lane_i16x8 a i) (get_lane_i16x8 b i)
+#pop-options
+
+(* unsigned analog: arm_ushl_u16 == model vshlq_u16 per-lane (sign-fill -> 0,
+   logical right shift; no u16-cast-back on left since a is already u16). *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 400"
+let lemma_arm_ushl_eq (a: u16) (b: i16) : Lemma
+  (ensures arm_ushl_u16 a b ==
+           (let s = arm_shl_count_i16 b in
+            if s >=. mk_i32 16 then mk_u16 0
+            else if s >=. mk_i32 0
+                 then (a <<! (cast (s <: i32) <: u32) <: u16)
+                 else if s <=. mk_i32 (-16)
+                      then mk_u16 0
+                      else a >>! (cast (Rust_primitives.Arithmetic.neg s <: i32) <: u32))) =
+  lemma_arm_shl_count_i16 b
+#pop-options
+
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vshlq_u16_lane (a: t_e_uint16x8_t) (b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (ensures get_lane_u16x8 (e_vshlq_u16 a b) i
+                   == arm_ushl_u16 (get_lane_u16x8 a i) (get_lane_i16x8 b i))
+          [SMTPat (get_lane_u16x8 (e_vshlq_u16 a b) i)] =
+  NV.lemma_vshlq_u16 a b;
+  lemma_arm_ushl_eq (get_lane_u16x8 a i) (get_lane_i16x8 b i)
+#pop-options
