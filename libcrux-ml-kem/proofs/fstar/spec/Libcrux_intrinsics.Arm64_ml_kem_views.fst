@@ -638,8 +638,9 @@ let lemma_e_vmull_high_s16 (a b: t_e_int16x8_t)
 (* vaddvq_s16 / vaddv_u16 horizontal-reduction op-facts deferred: the core-models
    `ArmIV.vaddvq_s16` is a LEFT fold_range (wrapping_add accumulate), while the
    pcm/consumer form is the BALANCED sum tree `((a0+a1)+(a2+a3))+((a4+a5)+(a6+a7))`.
-   Equal only via AC-normalization of i16 add_mod + fold unfolding — a dedicated
-   reduction bridge lemma. *)
+   Equal by i16 add_mod AC + fold unfolding, but a naive `fuel 9` unroll SATURATES
+   (>75 s, killed).  Needs a dedicated reduction bridge lemma that unrolls the fold
+   step-by-step and applies add_mod associativity as discrete rewrites. *)
 
 (* ── u8x16 lane view ──────────────────────────────────────────────────────── *)
 [@@ "opaque_to_smt"]
