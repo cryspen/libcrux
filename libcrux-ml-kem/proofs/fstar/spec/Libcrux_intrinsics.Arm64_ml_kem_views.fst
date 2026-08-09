@@ -1911,3 +1911,62 @@ let bit_vec_of_int_t_array_vec128_as_i16x8_lemma
   Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 128) (mk_u64 8) vec
     (mk_u64 (i / d)) (i % d)
 #pop-options
+
+(* ── byte LOAD bit-readback: bit i of e_vld1q_bytes IS bit (i%8) of byte (i/8).
+   e_vld1q_bytes and e_vld1q_u8 share vld1q_bytes_model, so the u8-lane fact
+   supplies the byte value; Canon.lemma_readback + lemma_bv_bit_reader bridge the
+   bit.  Mirrors Avx2_ml_kem_views.lemma_bv_bit_mm_loadu_si128. ──────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_bv_bit_e_vld1q_bytes (input: t_Slice u8) (i: nat{i < 128})
+  : Lemma (requires Seq.length input == 16)
+          (ensures bv_bit (e_vld1q_bytes input) i
+                   == Rust_primitives.Integers.get_bit (Seq.index input (i / 8)) (sz (i % 8))) =
+  reveal_opaque (`%e_vld1q_bytes) e_vld1q_bytes;
+  reveal_opaque (`%e_vld1q_u8) e_vld1q_u8;
+  let bv = e_vld1q_bytes input in
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  lemma_bv_bit_reader #(mk_u64 128) 8 bv (i / 8) (i % 8);
+  Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) bv
+    (mk_u64 (i / 8)) (i % 8);
+  lemma_e_vld1q_u8_lane input (i / 8);
+  assert (NV.to_u8x16 bv == IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) bv)
+#pop-options
+
+(* ── byte STORE bit post: bit i of the stored byte array IS bit i of the vector.
+   Reuses upd_prefix_u8 (e_vst1q_bytes shares vst1q_bytes_model with e_vst1q_u8).
+   Mirrors Avx2_ml_kem_views.lemma_mm_storeu_bytes_si128. ────────────────────── *)
+#push-options "--fuel 20 --ifuel 2 --z3rlimit 200"
+let lemma_vst1q_bytes_model_eq (out: t_Slice u8) (vec: t_e_int16x8_t)
+  : Lemma (requires Seq.length out >= 16)
+          (ensures e_vst1q_bytes out vec == upd_prefix_u8 out (NV.to_u8x16 vec) 16) =
+  reveal_opaque (`%e_vst1q_bytes) e_vst1q_bytes;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
+let lemma_e_vst1q_bytes (out: t_Slice u8) (vec: t_e_int16x8_t)
+  : Lemma (requires Seq.length out == 16)
+          (ensures (let out' = e_vst1q_bytes out vec in
+                    Seq.length out' == 16 /\
+                    (forall (i: nat{i < 128}).
+                       Rust_primitives.BitVectors.bit_vec_of_int_t_array
+                         (out' <: t_Array u8 (sz 16)) 8 i == bv_bit vec i))) =
+  lemma_vst1q_bytes_model_eq out vec;
+  let out' = e_vst1q_bytes out vec in
+  assert (Seq.length out' == 16);
+  let aux (i: nat{i < 128})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array
+               (out' <: t_Array u8 (sz 16)) 8 i == bv_bit vec i) =
+    FStar.Math.Lemmas.euclidean_division_definition i 8;
+    lemma_upd_prefix_u8_index out (NV.to_u8x16 vec) 16 (i / 8);
+    Canon.lemma_readback Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vec
+      (mk_u64 (i / 8)) (i % 8);
+    lemma_bv_bit_reader #(mk_u64 128) 8 vec (i / 8) (i % 8);
+    assert (NV.to_u8x16 vec == IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vec);
+    assert (Seq.index out' (i / 8) ==
+            Funarr.impl_5__get (mk_u64 16) #u8
+              (IVi.to_iv Rust_primitives.Integers.U8 (mk_u64 128) (mk_u64 16) vec) (mk_u64 (i / 8)))
+  in
+  FStar.Classical.forall_intro aux
+#pop-options
