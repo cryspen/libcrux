@@ -24,3 +24,5 @@ proofs/fstar/extraction/*
 !proofs/fstar/extraction/Libcrux_core_models.Intrinsics_views.fst
 # THE trusted intrinsics axioms (hand-written; audit entry point).
 !proofs/fstar/extraction/Libcrux_core_models.Trusted.Intrinsics.fst
+# NEON op-lemma companion (hand-written; ARM analog of Intrinsics_views).
+!proofs/fstar/extraction/Libcrux_core_models.Neon_views.fst
