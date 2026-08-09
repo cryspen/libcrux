@@ -1970,3 +1970,65 @@ let lemma_e_vst1q_bytes (out: t_Slice u8) (vec: t_e_int16x8_t)
   in
   FStar.Classical.forall_intro aux
 #pop-options
+
+(* ============================================================================
+   Item-4 SHIFTS — vsliq_n_s32 / _s64 (shift-left-and-insert).  The pcm op-fact
+   ensures `(a[i] &. arm_low_mask (v v_N)) |. (b[i] <<! v_N)` fails to ELABORATE
+   in a `.fst` Lemma (the requires' `v v_N < 32` isn't in scope under the
+   refinement-carrying `arm_low_mask_i32 (v v_N)` / `<<! v_N`).  Dodge: an
+   UNREFINED guarded helper `vsli_lane` (refinements internal), so the ensures
+   carries no refinement obligation.  Consumers use concrete N (10/12/20/24) so
+   the helper unfolds to the pcm form.  Model = ArmIV.vsliq (per-lane FunArray
+   under NV foundation), else-branch = u32 mask + shift, bridged to the i32 form
+   by two scalar lemmas. ─────────────────────────────────────────────────────── *)
+
+(* low-N-bits mask 2^N-1 (copied from pcm Arm64_extract). *)
+let arm_low_mask_i32 (n: nat{n < 32}) : i32 =
+  FStar.Math.Lemmas.pow2_le_compat 31 n;
+  mk_i32 (pow2 n - 1)
+let arm_low_mask_i64 (n: nat{n < 64}) : i64 =
+  FStar.Math.Lemmas.pow2_le_compat 63 n;
+  mk_i64 (pow2 n - 1)
+
+(* unrefined guarded per-lane result (matches ArmIV.vsliq under 0<n<32). *)
+let vsli_lane_i32 (a b: i32) (n: nat) : i32 =
+  if 0 < n && n < 32 then (a &. arm_low_mask_i32 n) |. (b <<! mk_i32 n) else b
+
+(* scalar bridge: the model's u32 shift-left-then-cast == the i32 shift. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_vsli_shift_i32 (bv v_N: i32) : Lemma
+  (requires v v_N >= 0 /\ v v_N < 32)
+  (ensures (cast ((cast (bv <: i32) <: u32) <<! (cast (v_N <: i32) <: u32) <: u32) <: i32)
+           == (bv <<! v_N)) =
+  let lhs : i32 = cast ((cast (bv <: i32) <: u32) <<! (cast (v_N <: i32) <: u32) <: u32) <: i32 in
+  let rhs : i32 = bv <<! v_N in
+  let aux (r: usize{v r < 32}) : Lemma (Int.get_bit lhs r == Int.get_bit rhs r) = () in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits lhs rhs
+#pop-options
+
+(* scalar bridge: the model's u32 mask == arm_low_mask_i32. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_vsli_mask_i32 (v_N: i32) : Lemma
+  (requires v v_N > 0 /\ v v_N < 32)
+  (ensures (cast (Core_models.Num.impl_u32__wrapping_sub (mk_u32 1 <<! v_N <: u32) (mk_u32 1) <: u32) <: i32)
+           == arm_low_mask_i32 (v v_N)) =
+  FStar.Math.Lemmas.pow2_lt_compat 32 (v v_N);
+  assert (v (mk_u32 1 <<! v_N <: u32) == pow2 (v v_N))
+#pop-options
+
+(* op-fact: per-lane result of e_vsliq_n_s32 (transparent -> Neon.vsliq).  NV
+   foundation gives the ArmIV per-lane FunArray; under 0<v_N<32 the model's
+   else-branch (u32 mask + shift) bridges to vsli_lane_i32 by the two scalar
+   lemmas.  Consumers use concrete N in (0,32) so vsli_lane_i32 unfolds to the
+   pcm form (a[i] &. arm_low_mask (v v_N)) |. (b[i] <<! v_N). *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vsliq_n_s32_lane (v_N: i32) (a b: t_e_int32x4_t) (i: nat{i < 4})
+  : Lemma (requires v v_N > 0 /\ v v_N < 32)
+          (ensures get_lane_i32x4 (e_vsliq_n_s32 v_N a b) i
+                   == vsli_lane_i32 (get_lane_i32x4 a i) (get_lane_i32x4 b i) (v v_N))
+          [SMTPat (get_lane_i32x4 (e_vsliq_n_s32 v_N a b) i)] =
+  NV.lemma_vsliq_n_s32 v_N a b;
+  lemma_vsli_mask_i32 v_N;
+  lemma_vsli_shift_i32 (get_lane_i32x4 b i) v_N
+#pop-options
