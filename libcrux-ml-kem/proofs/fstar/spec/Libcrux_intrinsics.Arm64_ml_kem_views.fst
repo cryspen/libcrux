@@ -1702,3 +1702,36 @@ let lemma_e_vreinterpretq_u8_s64_lane (a: t_e_int64x2_t) (k: nat{k < 16})
   Classical.forall_intro aux;
   Rust_primitives.Integers.lemma_int_t_eq_via_bits w rhs
 #pop-options
+
+(* ============================================================================
+   TIER F (load) — vld1q_s16: read 8 i16 lanes from a slice.
+
+   `e_vld1q_s16 array` (transparent) == `Arm.Extra.vld1q_s16_model array`
+   (opaque) == `from_i16x8 (from_fn 8 (fun j -> let j=j in if j<len then array[j]
+   else 0))`.  Reveal the model, name the inner from_fn `y` (VERBATIM lambda so it
+   equals the model's), round-trip `to_i16x8 (from_i16x8 y) == y` (`Canon.rt_i16x8`),
+   read back lane i via `impl_5__from_fn`/`impl_5__get` reduction (`feq_on_domain`
+   SMTPat, needs fuel 2), then the guard (i < 8 <= len) selects `array[i]`.
+   Per-lane op-fact (i a param — no elaboration wall).
+   ========================================================================== *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vld1q_s16_lane (array: t_Slice i16) (i: nat{i < 8})
+  : Lemma (requires v (Core_models.Slice.impl__len #i16 array) >= 8)
+          (ensures get_lane_i16x8 (e_vld1q_s16 array) i == Seq.index array i)
+          [SMTPat (get_lane_i16x8 (e_vld1q_s16 array) i)] =
+  let f : (j:u64{v j < 8}) -> i16 =
+    (fun j -> let j:u64 = j in
+              if (cast (j <: u64) <: usize) <. (Core_models.Slice.impl__len #i16 array <: usize) <: bool
+              then array.[ cast (j <: u64) <: usize ] <: i16
+              else mk_i16 0) in
+  let y : Funarr.t_FunArray (mk_u64 8) i16 = Funarr.impl_5__from_fn (mk_u64 8) #i16 #(u64 -> i16) f in
+  (* model unfold + closure equality by normalization (like lemma_veorq_funarr_128) *)
+  assert (e_vld1q_s16 array == Canon.from_i16x8 y)
+    by (FStar.Tactics.norm [delta_only [`%e_vld1q_s16;
+                                        `%Libcrux_core_models.Core_arch.Arm.Extra.vld1q_s16_model];
+                            iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  Canon.rt_i16x8 y;                                             (* to_i16x8 (from_i16x8 y) == y *)
+  assert (Funarr.impl_5__get (mk_u64 8) #i16 y (mk_u64 i) == f (mk_u64 i));   (* feq_on_domain *)
+  assert (f (mk_u64 i) == Seq.index array i)
+#pop-options
