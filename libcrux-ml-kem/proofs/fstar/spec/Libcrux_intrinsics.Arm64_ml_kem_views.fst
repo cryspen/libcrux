@@ -72,6 +72,8 @@ module BV     = Libcrux_core_models.Abstractions.Bitvec
 module Canon  = Libcrux_core_models.Intrinsics_views
 module NV     = Libcrux_core_models.Neon_views
 module ArmIV  = Libcrux_core_models.Core_arch.Arm.Interpretations.Int_vec
+module IVi    = Libcrux_core_models.Abstractions.Bitvec.Int_vec_interp
+module Int    = Rust_primitives.Integers
 
 (* ── Lane-view types (mirror the pcm `t_e_*` abstract vector types) ────────── *)
 unfold type t_e_int16x8_t  = BV.t_BitVec (mk_u64 128)
@@ -731,4 +733,46 @@ let lemma_e_vreinterpretq_u16_u8 (a: t_e_uint8x16_t)
 let lemma_e_vreinterpretq_u8_s64 (a: t_e_int64x2_t)
   : Lemma (e_vreinterpretq_u8_s64 a == a) [SMTPat (e_vreinterpretq_u8_s64 a)] =
   NV.lemma_vreinterpretq_u8_s64 a
+#pop-options
+
+(* ============================================================================
+   TIER C (part 2) — codec-value foundation + the i32<->u32 signedness bridge.
+
+   Width-128 analogs of `Intrinsics_views.lemma_to_i32_val` (the shared codec
+   `to_iv` decodes lane k of a 128-bit reg as the two's-complement of the raw
+   32-bit slice value).  Both the i32 and u32 views read the SAME raw slice
+   `dsum2 (lane_reader 128 32 x k) 0 32`; they differ only by the tc decode.
+   ========================================================================== *)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_to_i32x4_val (x: t_e_int32x4_t) (k: nat{k < 4})
+  : Lemma (v (Funarr.impl_5__get (mk_u64 4) #i32 (Canon.to_i32x4 x) (mk_u64 k)) ==
+           IVi.tc_of_u Int.I32 (IVi.dsum2 (IVi.lane_reader (mk_u64 128) 32 x (mk_u64 k)) 0 32)) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 128) 32 x (mk_u64 k) in
+  IVi.dsum2_bound reader 0 32;
+  IVi.lemma_tc_range Int.I32 (IVi.dsum2 reader 0 32)
+
+let lemma_to_u32x4_val (x: t_e_uint32x4_t) (k: nat{k < 4})
+  : Lemma (v (Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 x) (mk_u64 k)) ==
+           IVi.dsum2 (IVi.lane_reader (mk_u64 128) 32 x (mk_u64 k)) 0 32) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 128) 32 x (mk_u64 k) in
+  IVi.dsum2_bound reader 0 32;
+  IVi.lemma_tc_range Int.U32 (IVi.dsum2 reader 0 32)
+#pop-options
+
+(* Per-lane signedness bridge between the i32x4 and u32x4 views of the same reg
+   (mirrors the pcm `e_vreinterpret_i32_u32_lane_bridge`; consumed by compress). *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
+let e_vreinterpret_i32_u32_lane_bridge (x: BV.t_BitVec (mk_u64 128)) (k: nat{k < 4})
+  : Lemma
+      (v (get_lane_i32x4 x k) ==
+         (let u = v (get_lane_u32x4 x k) in if u < pow2 31 then u else u - pow2 32) /\
+       v (get_lane_u32x4 x k) == (v (get_lane_i32x4 x k)) % pow2 32) =
+  lemma_to_i32x4_val x k;
+  lemma_to_u32x4_val x k;
+  let raw = IVi.dsum2 (IVi.lane_reader (mk_u64 128) 32 x (mk_u64 k)) 0 32 in
+  assert_norm (Int.bits Int.I32 == 32);
+  Canon.lemma_tc_mod Int.I32 raw
 #pop-options
