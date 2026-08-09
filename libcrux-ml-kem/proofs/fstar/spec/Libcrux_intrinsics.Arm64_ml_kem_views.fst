@@ -2236,3 +2236,36 @@ let lemma_e_vaddv_u16 (a: t_e_uint16x4_t)
   lemma_arm_vaddv_u16_unroll (NV.to_u16x4 a);
   lemma_add4_ac (get_lane_u16x4 a 0) (get_lane_u16x4 a 1) (get_lane_u16x4 a 2) (get_lane_u16x4 a 3)
 #pop-options
+
+(* ── vmlal_s16 / _high_s16 (widening multiply-accumulate) op-facts.  Foundation
+   NV.lemma_vmlal_s16 now lives in core-models Neon_views (proven twin of
+   NV.lemma_vmull_s16); the op-fact mirrors lemma_e_vmull_s16 exactly (pcm form,
+   direct Seq.lemma_eq_intro).  impl_i32__wrapping_add == (+.); cast b *! cast c ==
+   cast b *. cast c (i16*i16 fits i32) — the same bridges vmull's op-fact does. *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
+let lemma_e_vmlal_s16 (a: t_e_int32x4_t) (b c: t_e_int16x4_t)
+  : Lemma (vec128_as_i32x4 (e_vmlal_s16 a b c)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_i32x4 a) i +.
+                               ((cast (Seq.index (vec64_as_i16x4 b) i) <: i32)
+                             *. (cast (Seq.index (vec64_as_i16x4 c) i) <: i32))))
+          [SMTPat (vec128_as_i32x4 (e_vmlal_s16 a b c))] =
+  NV.lemma_vmlal_s16 a b c;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vmlal_s16 a b c))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_i32x4 a) i +.
+                                       ((cast (Seq.index (vec64_as_i16x4 b) i) <: i32)
+                                     *. (cast (Seq.index (vec64_as_i16x4 c) i) <: i32))))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
+let lemma_e_vmlal_high_s16 (a: t_e_int32x4_t) (b c: t_e_int16x8_t)
+  : Lemma (vec128_as_i32x4 (e_vmlal_high_s16 a b c)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_i32x4 a) i +.
+                               ((cast (Seq.index (vec128_as_i16x8 b) (i + 4)) <: i32)
+                             *. (cast (Seq.index (vec128_as_i16x8 c) (i + 4)) <: i32))))
+          [SMTPat (vec128_as_i32x4 (e_vmlal_high_s16 a b c))] =
+  NV.lemma_vmlal_high_s16 a b c;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vmlal_high_s16 a b c))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_i32x4 a) i +.
+                                       ((cast (Seq.index (vec128_as_i16x8 b) (i + 4)) <: i32)
+                                     *. (cast (Seq.index (vec128_as_i16x8 c) (i + 4)) <: i32))))
+#pop-options
