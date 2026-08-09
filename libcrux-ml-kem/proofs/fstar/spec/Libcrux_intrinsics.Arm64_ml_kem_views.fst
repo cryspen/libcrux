@@ -23,11 +23,13 @@ open Libcrux_intrinsics.Arm64
    surface here has strictly SHRUNK.  NO fact in this module is assumed.
 
    STATUS (WIP — cm-migration, 2026-08-08).  This file currently carries the
-   VALIDATED "arithmetic backbone": the structural i16x8 lane view + the pure
-   per-lane arithmetic/transpose op-facts (`vadd/vsub/vmul/vmul_n_s16`,
-   `vtrn1q/vtrn2q_s16`), which prove directly from the `Neon_views` codec
-   op-lemmas (`ArmIV.OP` is a per-lane FunArray op, so `Seq.init`/`map2 f
-   (view a) (view b)` matches by `Seq.lemma_eq_intro`).
+   VALIDATED i16x8 "per-lane-codec backbone" (8 op-facts): the structural i16x8
+   lane view + arithmetic (`vadd/vsub/vmul/vmul_n_s16`), transpose
+   (`vtrn1q/vtrn2q_s16`), broadcast (`vdupq_n_s16`) and right-shift
+   (`vshrq_n_s16`), which prove directly from the `Neon_views` codec op-lemmas
+   (`ArmIV.OP` is a per-lane FunArray op, so `Seq.init`/`map2 f (view a) (view b)`
+   matches by `Seq.lemma_eq_intro`).  All gated green via `make check/...` at
+   rlimit < 2.4.
 
    REMAINING (next sessions), by tier — each needs a companion op-fact and, where
    noted, a FOUNDATION lemma in `Neon_views` (width-128 analog of an existing
@@ -178,4 +180,34 @@ let lemma_e_vtrn2q_s16 (a b: t_e_int16x8_t)
   Seq.lemma_eq_intro (vec128_as_i16x8 (e_vtrn2q_s16 a b))
                      (Seq.init 8 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i16x8 a) (i + 1)
                                                     else Seq.index (vec128_as_i16x8 b) i))
+#pop-options
+
+(* ── i16x8 broadcast + right-shift op-facts (mirror pattern) ────────────────── *)
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vdupq_n_s16 (c: i16)
+  : Lemma (vec128_as_i16x8 (e_vdupq_n_s16 c) == Seq.create 8 c)
+          [SMTPat (vec128_as_i16x8 (e_vdupq_n_s16 c))] =
+  NV.lemma_vdupq_n_s16 c;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vdupq_n_s16 c)) (Seq.create 8 c)
+#pop-options
+
+(* Full ArmIV mirror (all shift ranges); consumers with 0<=SHIFT<16 reduce to
+   the `>>! SHIFT` branch. *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vshrq_n_s16 (v_SHIFT_BY: i32) (v: t_e_int16x8_t)
+  : Lemma (vec128_as_i16x8 (e_vshrq_n_s16 v_SHIFT_BY v)
+           == Seq.init 8 (fun i ->
+                let x = Seq.index (vec128_as_i16x8 v) i in
+                if v_SHIFT_BY >=. mk_i32 16 then (if x <. mk_i16 0 then mk_i16 (-1) else mk_i16 0)
+                else if v_SHIFT_BY <=. mk_i32 0 then x
+                else x >>! v_SHIFT_BY))
+          [SMTPat (vec128_as_i16x8 (e_vshrq_n_s16 v_SHIFT_BY v))] =
+  NV.lemma_vshrq_n_s16 v_SHIFT_BY v;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vshrq_n_s16 v_SHIFT_BY v))
+                     (Seq.init 8 (fun i ->
+                        let x = Seq.index (vec128_as_i16x8 v) i in
+                        if v_SHIFT_BY >=. mk_i32 16 then (if x <. mk_i16 0 then mk_i16 (-1) else mk_i16 0)
+                        else if v_SHIFT_BY <=. mk_i32 0 then x
+                        else x >>! v_SHIFT_BY))
 #pop-options
