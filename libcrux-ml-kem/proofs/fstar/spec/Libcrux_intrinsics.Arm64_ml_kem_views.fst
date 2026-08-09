@@ -211,3 +211,252 @@ let lemma_e_vshrq_n_s16 (v_SHIFT_BY: i32) (v: t_e_int16x8_t)
                         else if v_SHIFT_BY <=. mk_i32 0 then x
                         else x >>! v_SHIFT_BY))
 #pop-options
+
+(* ============================================================================
+   TIER A — other-width lane views + Shape-A per-lane-codec op-facts.
+
+   Same validated recipe as the i16x8 backbone: the real `Arm64.e_vOP`
+   delegates to `Neon.OP` (transparent), the canonical `NV.lemma_vOP` gives the
+   VIEW-level `to_WxL (Neon.OP ...) == ArmIV.OP (to_WxL a) ...`, `ArmIV.OP` is a
+   per-lane FunArray op, so `Seq.lemma_eq_intro` closes against `Spec.Utils.map2`
+   / `Seq.init` / `Seq.create`.  Signed views read `Canon.to_iWxL`; unsigned read
+   `NV.to_uWxL` (the exact codec each `NV.lemma_*` is stated over).
+   ========================================================================== *)
+
+(* ── i32x4 lane view ──────────────────────────────────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec128_as_i32x4 (x: t_e_int32x4_t) : t_Array i32 (sz 4) =
+  Seq.init 4 (fun i -> Funarr.impl_5__get (mk_u64 4) #i32 (Canon.to_i32x4 x) (mk_u64 i))
+let get_lane_i32x4 (v: t_e_int32x4_t) (i: nat{i < 4}) : i32 = Seq.index (vec128_as_i32x4 v) i
+
+let vec128_index_i32x4 (x: t_e_int32x4_t) (i: nat{i < 4})
+  : Lemma (Seq.index (vec128_as_i32x4 x) i
+           == Funarr.impl_5__get (mk_u64 4) #i32 (Canon.to_i32x4 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_i32x4 x) i)]
+  = reveal_opaque (`%vec128_as_i32x4) vec128_as_i32x4
+
+let vec128_as_i32x4_len (x: t_e_int32x4_t)
+  : Lemma (Seq.length (vec128_as_i32x4 x) == 4)
+          [SMTPat (Seq.length (vec128_as_i32x4 x))]
+  = ()
+
+let vec128_as_i32x4_slice_ok (x: t_e_int32x4_t)
+  : Lemma (Seq.length (vec128_as_i32x4 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_i32x4 x)]
+  = assert_norm (4 <= Rust_primitives.Integers.max_usize)
+
+(* ── i64x2 lane view ──────────────────────────────────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec128_as_i64x2 (x: t_e_int64x2_t) : t_Array i64 (sz 2) =
+  Seq.init 2 (fun i -> Funarr.impl_5__get (mk_u64 2) #i64 (Canon.to_i64x2 x) (mk_u64 i))
+let get_lane_i64x2 (v: t_e_int64x2_t) (i: nat{i < 2}) : i64 = Seq.index (vec128_as_i64x2 v) i
+
+let vec128_index_i64x2 (x: t_e_int64x2_t) (i: nat{i < 2})
+  : Lemma (Seq.index (vec128_as_i64x2 x) i
+           == Funarr.impl_5__get (mk_u64 2) #i64 (Canon.to_i64x2 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_i64x2 x) i)]
+  = reveal_opaque (`%vec128_as_i64x2) vec128_as_i64x2
+
+let vec128_as_i64x2_len (x: t_e_int64x2_t)
+  : Lemma (Seq.length (vec128_as_i64x2 x) == 2)
+          [SMTPat (Seq.length (vec128_as_i64x2 x))]
+  = ()
+
+let vec128_as_i64x2_slice_ok (x: t_e_int64x2_t)
+  : Lemma (Seq.length (vec128_as_i64x2 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_i64x2 x)]
+  = assert_norm (2 <= Rust_primitives.Integers.max_usize)
+
+(* ── u32x4 lane view ──────────────────────────────────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec128_as_u32x4 (x: t_e_uint32x4_t) : t_Array u32 (sz 4) =
+  Seq.init 4 (fun i -> Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 x) (mk_u64 i))
+let get_lane_u32x4 (v: t_e_uint32x4_t) (i: nat{i < 4}) : u32 = Seq.index (vec128_as_u32x4 v) i
+
+let vec128_index_u32x4 (x: t_e_uint32x4_t) (i: nat{i < 4})
+  : Lemma (Seq.index (vec128_as_u32x4 x) i
+           == Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_u32x4 x) i)]
+  = reveal_opaque (`%vec128_as_u32x4) vec128_as_u32x4
+
+let vec128_as_u32x4_len (x: t_e_uint32x4_t)
+  : Lemma (Seq.length (vec128_as_u32x4 x) == 4)
+          [SMTPat (Seq.length (vec128_as_u32x4 x))]
+  = ()
+
+let vec128_as_u32x4_slice_ok (x: t_e_uint32x4_t)
+  : Lemma (Seq.length (vec128_as_u32x4 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_u32x4 x)]
+  = assert_norm (4 <= Rust_primitives.Integers.max_usize)
+
+(* ── u16x8 lane view ──────────────────────────────────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec128_as_u16x8 (x: t_e_uint16x8_t) : t_Array u16 (sz 8) =
+  Seq.init 8 (fun i -> Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 x) (mk_u64 i))
+let get_lane_u16x8 (v: t_e_uint16x8_t) (i: nat{i < 8}) : u16 = Seq.index (vec128_as_u16x8 v) i
+
+let vec128_index_u16x8 (x: t_e_uint16x8_t) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_u16x8 x) i
+           == Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_u16x8 x) i)]
+  = reveal_opaque (`%vec128_as_u16x8) vec128_as_u16x8
+
+let vec128_as_u16x8_len (x: t_e_uint16x8_t)
+  : Lemma (Seq.length (vec128_as_u16x8 x) == 8)
+          [SMTPat (Seq.length (vec128_as_u16x8 x))]
+  = ()
+
+let vec128_as_u16x8_slice_ok (x: t_e_uint16x8_t)
+  : Lemma (Seq.length (vec128_as_u16x8 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_u16x8 x)]
+  = assert_norm (8 <= Rust_primitives.Integers.max_usize)
+
+(* ── i32x4 transpose (used by the NEON NTT butterfly interleave) ───────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn1q_s32 (a b: t_e_int32x4_t)
+  : Lemma (vec128_as_i32x4 (e_vtrn1q_s32 a b)
+           == Seq.init 4 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i32x4 a) i
+                                              else Seq.index (vec128_as_i32x4 b) (i - 1)))
+          [SMTPat (vec128_as_i32x4 (e_vtrn1q_s32 a b))] =
+  NV.lemma_vtrn1q_s32 a b;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vtrn1q_s32 a b))
+                     (Seq.init 4 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i32x4 a) i
+                                                    else Seq.index (vec128_as_i32x4 b) (i - 1)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn2q_s32 (a b: t_e_int32x4_t)
+  : Lemma (vec128_as_i32x4 (e_vtrn2q_s32 a b)
+           == Seq.init 4 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i32x4 a) (i + 1)
+                                              else Seq.index (vec128_as_i32x4 b) i))
+          [SMTPat (vec128_as_i32x4 (e_vtrn2q_s32 a b))] =
+  NV.lemma_vtrn2q_s32 a b;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vtrn2q_s32 a b))
+                     (Seq.init 4 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i32x4 a) (i + 1)
+                                                    else Seq.index (vec128_as_i32x4 b) i))
+#pop-options
+
+(* ── i64x2 transpose ──────────────────────────────────────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn1q_s64 (a b: t_e_int64x2_t)
+  : Lemma (vec128_as_i64x2 (e_vtrn1q_s64 a b)
+           == Seq.init 2 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i64x2 a) i
+                                              else Seq.index (vec128_as_i64x2 b) (i - 1)))
+          [SMTPat (vec128_as_i64x2 (e_vtrn1q_s64 a b))] =
+  NV.lemma_vtrn1q_s64 a b;
+  Seq.lemma_eq_intro (vec128_as_i64x2 (e_vtrn1q_s64 a b))
+                     (Seq.init 2 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i64x2 a) i
+                                                    else Seq.index (vec128_as_i64x2 b) (i - 1)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vtrn2q_s64 (a b: t_e_int64x2_t)
+  : Lemma (vec128_as_i64x2 (e_vtrn2q_s64 a b)
+           == Seq.init 2 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i64x2 a) (i + 1)
+                                              else Seq.index (vec128_as_i64x2 b) i))
+          [SMTPat (vec128_as_i64x2 (e_vtrn2q_s64 a b))] =
+  NV.lemma_vtrn2q_s64 a b;
+  Seq.lemma_eq_intro (vec128_as_i64x2 (e_vtrn2q_s64 a b))
+                     (Seq.init 2 (fun i -> if i % 2 = 0 then Seq.index (vec128_as_i64x2 a) (i + 1)
+                                                    else Seq.index (vec128_as_i64x2 b) i))
+#pop-options
+
+(* ── u32x4 arithmetic / shifts / broadcast ────────────────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vaddq_u32 (a b: t_e_uint32x4_t)
+  : Lemma (vec128_as_u32x4 (e_vaddq_u32 a b)
+           == Spec.Utils.map2 ( +. ) (vec128_as_u32x4 a) (vec128_as_u32x4 b))
+          [SMTPat (vec128_as_u32x4 (e_vaddq_u32 a b))] =
+  NV.lemma_vaddq_u32 a b;
+  Seq.lemma_eq_intro (vec128_as_u32x4 (e_vaddq_u32 a b))
+                     (Spec.Utils.map2 ( +. ) (vec128_as_u32x4 a) (vec128_as_u32x4 b))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vmulq_n_u32 (a: t_e_uint32x4_t) (c: u32)
+  : Lemma (vec128_as_u32x4 (e_vmulq_n_u32 a c)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_u32x4 a) i *. c))
+          [SMTPat (vec128_as_u32x4 (e_vmulq_n_u32 a c))] =
+  NV.lemma_vmulq_n_u32 a c;
+  Seq.lemma_eq_intro (vec128_as_u32x4 (e_vmulq_n_u32 a c))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_u32x4 a) i *. c))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vdupq_n_u32 (c: u32)
+  : Lemma (vec128_as_u32x4 (e_vdupq_n_u32 c) == Seq.create 4 c)
+          [SMTPat (vec128_as_u32x4 (e_vdupq_n_u32 c))] =
+  NV.lemma_vdupq_n_u32 c;
+  Seq.lemma_eq_intro (vec128_as_u32x4 (e_vdupq_n_u32 c)) (Seq.create 4 c)
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vshrq_n_u32 (v_N: i32) (a: t_e_uint32x4_t)
+  : Lemma (vec128_as_u32x4 (e_vshrq_n_u32 v_N a)
+           == Seq.init 4 (fun i ->
+                let x = Seq.index (vec128_as_u32x4 a) i in
+                if v_N >=. mk_i32 32 then mk_u32 0
+                else if v_N <=. mk_i32 0 then x
+                else x >>! (cast v_N <: u32)))
+          [SMTPat (vec128_as_u32x4 (e_vshrq_n_u32 v_N a))] =
+  NV.lemma_vshrq_n_u32 v_N a;
+  Seq.lemma_eq_intro (vec128_as_u32x4 (e_vshrq_n_u32 v_N a))
+                     (Seq.init 4 (fun i ->
+                        let x = Seq.index (vec128_as_u32x4 a) i in
+                        if v_N >=. mk_i32 32 then mk_u32 0
+                        else if v_N <=. mk_i32 0 then x
+                        else x >>! (cast v_N <: u32)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vshlq_n_u32 (v_SHIFT_BY: i32) (a: t_e_uint32x4_t)
+  : Lemma (vec128_as_u32x4 (e_vshlq_n_u32 v_SHIFT_BY a)
+           == Seq.init 4 (fun i ->
+                let x = Seq.index (vec128_as_u32x4 a) i in
+                if v_SHIFT_BY >=. mk_i32 32 || v_SHIFT_BY <. mk_i32 0 then mk_u32 0
+                else x <<! (cast v_SHIFT_BY <: u32)))
+          [SMTPat (vec128_as_u32x4 (e_vshlq_n_u32 v_SHIFT_BY a))] =
+  NV.lemma_vshlq_n_u32 v_SHIFT_BY a;
+  Seq.lemma_eq_intro (vec128_as_u32x4 (e_vshlq_n_u32 v_SHIFT_BY a))
+                     (Seq.init 4 (fun i ->
+                        let x = Seq.index (vec128_as_u32x4 a) i in
+                        if v_SHIFT_BY >=. mk_i32 32 || v_SHIFT_BY <. mk_i32 0 then mk_u32 0
+                        else x <<! (cast v_SHIFT_BY <: u32)))
+#pop-options
+
+(* ── u16x8 arithmetic / shift / broadcast ─────────────────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vmulq_n_u16 (a: t_e_uint16x8_t) (c: u16)
+  : Lemma (vec128_as_u16x8 (e_vmulq_n_u16 a c)
+           == Seq.init 8 (fun i -> Seq.index (vec128_as_u16x8 a) i *. c))
+          [SMTPat (vec128_as_u16x8 (e_vmulq_n_u16 a c))] =
+  NV.lemma_vmulq_n_u16 a c;
+  Seq.lemma_eq_intro (vec128_as_u16x8 (e_vmulq_n_u16 a c))
+                     (Seq.init 8 (fun i -> Seq.index (vec128_as_u16x8 a) i *. c))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vdupq_n_u16 (c: u16)
+  : Lemma (vec128_as_u16x8 (e_vdupq_n_u16 c) == Seq.create 8 c)
+          [SMTPat (vec128_as_u16x8 (e_vdupq_n_u16 c))] =
+  NV.lemma_vdupq_n_u16 c;
+  Seq.lemma_eq_intro (vec128_as_u16x8 (e_vdupq_n_u16 c)) (Seq.create 8 c)
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vshrq_n_u16 (v_SHIFT_BY: i32) (v: t_e_uint16x8_t)
+  : Lemma (vec128_as_u16x8 (e_vshrq_n_u16 v_SHIFT_BY v)
+           == Seq.init 8 (fun i ->
+                let x = Seq.index (vec128_as_u16x8 v) i in
+                if v_SHIFT_BY >=. mk_i32 16 then mk_u16 0
+                else if v_SHIFT_BY <=. mk_i32 0 then x
+                else x >>! v_SHIFT_BY))
+          [SMTPat (vec128_as_u16x8 (e_vshrq_n_u16 v_SHIFT_BY v))] =
+  NV.lemma_vshrq_n_u16 v_SHIFT_BY v;
+  Seq.lemma_eq_intro (vec128_as_u16x8 (e_vshrq_n_u16 v_SHIFT_BY v))
+                     (Seq.init 8 (fun i ->
+                        let x = Seq.index (vec128_as_u16x8 v) i in
+                        if v_SHIFT_BY >=. mk_i32 16 then mk_u16 0
+                        else if v_SHIFT_BY <=. mk_i32 0 then x
+                        else x >>! v_SHIFT_BY))
+#pop-options
