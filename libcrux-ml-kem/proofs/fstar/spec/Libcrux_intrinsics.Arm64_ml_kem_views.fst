@@ -1219,3 +1219,138 @@ let lemma_e_vreinterpretq_s16_s32_lane (a: t_e_int32x4_t) (i: nat{i < 4})
   lemma_i16x2_as_i32_lo lo hi;
   lemma_i16x2_as_i32_hi lo hi
 #pop-options
+
+(* ============================================================================
+   TIER D (part 3) — i16<->i64 cross-width reinterpret VALUE repacks.
+
+   Same bit-by-bit recipe as part 2, at the 64-bit lane:
+     s64_s16 (i16x8->i64x2): get_lane_i64x2 r i == i16x4_as_i64 (i16 4i..4i+3)
+     s16_s64 (i64x2->i16x8): get_lane_i16x8 r k == i64_i16lane (i64 k/4) (k%4)
+   `lemma_lane_i16i64_bit` (NEW) is the 64<->16 bit lane bridge (readback +
+   `lemma_reader_i64_i16_128`, the 4-subLane analog of reader_lo/hi_128).  The
+   pack/read helper lets + bit lemmas (`lemma_i16_bits_as_u64_bit`,
+   `lemma_i16x4_as_i64_{bit,lane}`) are ported from Arm64_extract.fsti /
+   Vector.Neon.Ntt_theory so repointed consumers see identical defs.
+   ========================================================================== *)
+
+(* ── i64 repack helper lets (verbatim from Arm64_extract.fsti 586-601) ─────── *)
+let i16_bits_as_u64 (x: i16) : u64 =
+  Rust_primitives.Integers.cast #Rust_primitives.Integers.u32_inttype #Rust_primitives.Integers.u64_inttype
+    (i16_bits_as_u32 x)
+let i16x4_as_i64 (a b c d: i16) : i64 =
+  Rust_primitives.Integers.cast_mod #Rust_primitives.Integers.u64_inttype #Rust_primitives.Integers.i64_inttype
+    (i16_bits_as_u64 a |. (i16_bits_as_u64 b <<! mk_u32 16) |.
+     (i16_bits_as_u64 c <<! mk_u32 32) |. (i16_bits_as_u64 d <<! mk_u32 48))
+let i64_i16lane (x: i64) (j: nat{j < 4}) : i16 =
+  Rust_primitives.Integers.cast_mod #Rust_primitives.Integers.u16_inttype #Rust_primitives.Integers.i16_inttype
+    (Rust_primitives.Integers.cast_mod #Rust_primitives.Integers.u64_inttype #Rust_primitives.Integers.u16_inttype
+       ((Rust_primitives.Integers.cast_mod #Rust_primitives.Integers.i64_inttype #Rust_primitives.Integers.u64_inttype x)
+        >>! mk_u32 (16 * j)))
+
+(* ── i64 repack bit lemmas (ported from Vector.Neon.Ntt_theory) ────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_i16_bits_as_u64_bit (a: i16) (i: usize {v i < 64}) : Lemma
+  (ensures Int.get_bit (i16_bits_as_u64 a) i ==
+           (if v i < 16 then Int.get_bit a i else 0))
+  = let w = i16_bits_as_u32 a in
+    FStar.Math.Lemmas.small_mod (v w) (pow2 64);
+    assert (i16_bits_as_u64 a ==
+            Rust_primitives.Integers.cast_mod #Rust_primitives.Integers.u32_inttype
+              #Rust_primitives.Integers.u64_inttype w);
+    if v i < 32 then lemma_i16_bits_as_u32_bit a i
+
+(* bit r (<64) of the packed i64 = bit (r mod 16) of the (r/16)-th of a,b,c,d *)
+let lemma_i16x4_as_i64_bit (a b c d: i16) (r: nat{r < 64})
+    : Lemma (Int.get_bit (i16x4_as_i64 a b c d) (sz r) ==
+             (if r < 16 then Int.get_bit a (sz r)
+              else if r < 32 then Int.get_bit b (sz (r - 16))
+              else if r < 48 then Int.get_bit c (sz (r - 32))
+              else Int.get_bit d (sz (r - 48)))) =
+  lemma_i16_bits_as_u64_bit a (sz r);
+  (if r >= 16 then lemma_i16_bits_as_u64_bit b (sz (r - 16)));
+  (if r >= 32 then lemma_i16_bits_as_u64_bit c (sz (r - 32)));
+  (if r >= 48 then lemma_i16_bits_as_u64_bit d (sz (r - 48)))
+
+(* i64->i16 read-back: lane j of the packed i64 is the original 16-bit half. *)
+let lemma_i16x4_as_i64_lane (a b c d: i16) (j: nat{j < 4}) : Lemma
+  (ensures i64_i16lane (i16x4_as_i64 a b c d) j ==
+           (match j with | 0 -> a | 1 -> b | 2 -> c | _ -> d))
+  = let target : i16 = (match j with | 0 -> a | 1 -> b | 2 -> c | _ -> d) in
+    let r = i64_i16lane (i16x4_as_i64 a b c d) j in
+    let aux (i: usize {v i < 16}) : Lemma (Int.get_bit r i == Int.get_bit target i) =
+      (match j with
+       | 0 -> lemma_i16_bits_as_u64_bit a i
+       | 1 -> lemma_i16_bits_as_u64_bit a (sz (v i + 16));
+              lemma_i16_bits_as_u64_bit b i
+       | 2 -> lemma_i16_bits_as_u64_bit a (sz (v i + 32));
+              lemma_i16_bits_as_u64_bit b (sz (v i + 16));
+              lemma_i16_bits_as_u64_bit c i
+       | _ -> lemma_i16_bits_as_u64_bit a (sz (v i + 48));
+              lemma_i16_bits_as_u64_bit b (sz (v i + 32));
+              lemma_i16_bits_as_u64_bit c (sz (v i + 16));
+              lemma_i16_bits_as_u64_bit d i) in
+    Classical.forall_intro aux;
+    Rust_primitives.Integers.lemma_int_t_eq_via_bits r target
+#pop-options
+
+(* ── 64<->16 reader agreement (4-subLane analog of reader_lo/hi_128) ───────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_reader_i64_i16_128 (x: BV.t_BitVec (mk_u64 128)) (i: nat{i < 2}) (s: nat{s < 4}) (k: nat{k < 16})
+    : Lemma (IVi.bval (IVi.lane_reader (mk_u64 128) 64 x (mk_u64 i) (16 * s + k)) ==
+             IVi.bval (IVi.lane_reader (mk_u64 128) 16 x (mk_u64 (4 * i + s)) k)) =
+  assert (64 * i + 16 * s + k < 128)
+#pop-options
+
+(* ── BIT-level i16<->i64 lane bridge: bit r of i64-lane i == bit (r%16) of
+      i16-lane (4i + r/16) of the SAME register. ──────────────────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_lane_i16i64_bit (x: BV.t_BitVec (mk_u64 128)) (i: nat{i < 2}) (r: nat{r < 64})
+    : Lemma (Int.get_bit #Int.I64 (Funarr.impl_5__get (mk_u64 2) #i64 (Canon.to_i64x2 x) (mk_u64 i)) (sz r) ==
+             Int.get_bit #Int.I16 (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 (4 * i + r / 16))) (sz (r % 16))) =
+  Canon.lemma_readback Int.I64 (mk_u64 128) (mk_u64 2) x (mk_u64 i) r;
+  let s = r / 16 in
+  let k = r % 16 in
+  assert (16 * s + k == r);
+  lemma_reader_i64_i16_128 x i s k;
+  Canon.lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) x (mk_u64 (4 * i + s)) k
+#pop-options
+
+(* ── the two i16<->i64 cross-width reinterpret VALUE op-facts ──────────────── *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_e_vreinterpretq_s64_s16_lane (a: t_e_int16x8_t) (i: nat{i < 2})
+  : Lemma (get_lane_i64x2 (e_vreinterpretq_s64_s16 a) i ==
+           i16x4_as_i64 (get_lane_i16x8 a (4 * i)) (get_lane_i16x8 a (4 * i + 1))
+                        (get_lane_i16x8 a (4 * i + 2)) (get_lane_i16x8 a (4 * i + 3)))
+          [SMTPat (get_lane_i64x2 (e_vreinterpretq_s64_s16 a) i)] =
+  lemma_e_vreinterpretq_s64_s16 a;
+  let w  = Funarr.impl_5__get (mk_u64 2) #i64 (Canon.to_i64x2 a) (mk_u64 i) in
+  let l0 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 (4 * i)) in
+  let l1 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 (4 * i + 1)) in
+  let l2 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 (4 * i + 2)) in
+  let l3 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 (4 * i + 3)) in
+  let rhs = i16x4_as_i64 l0 l1 l2 l3 in
+  let aux (r: usize{v r < 64}) : Lemma (Int.get_bit w r == Int.get_bit rhs r) =
+    lemma_lane_i16i64_bit a i (v r);
+    lemma_i16x4_as_i64_bit l0 l1 l2 l3 (v r)
+  in
+  Classical.forall_intro aux;
+  Rust_primitives.Integers.lemma_int_t_eq_via_bits w rhs
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_e_vreinterpretq_s16_s64_lane (a: t_e_int64x2_t) (k: nat{k < 8})
+  : Lemma (get_lane_i16x8 (e_vreinterpretq_s16_s64 a) k ==
+           i64_i16lane (get_lane_i64x2 a (k / 4)) (k % 4))
+          [SMTPat (get_lane_i16x8 (e_vreinterpretq_s16_s64 a) k)] =
+  lemma_e_vreinterpretq_s16_s64 a;
+  let i = k / 4 in
+  let s = k % 4 in
+  assert (4 * i + s == k);
+  let l0 = get_lane_i16x8 a (4 * i) in
+  let l1 = get_lane_i16x8 a (4 * i + 1) in
+  let l2 = get_lane_i16x8 a (4 * i + 2) in
+  let l3 = get_lane_i16x8 a (4 * i + 3) in
+  lemma_e_vreinterpretq_s64_s16 a;
+  lemma_e_vreinterpretq_s64_s16_lane a i;   (* get_lane_i64x2 a i == i16x4_as_i64 l0 l1 l2 l3 *)
+  lemma_i16x4_as_i64_lane l0 l1 l2 l3 s
+#pop-options
