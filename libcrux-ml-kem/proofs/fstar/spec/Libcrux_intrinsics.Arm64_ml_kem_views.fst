@@ -1872,3 +1872,42 @@ let lemma_e_vst1q_u8_frame (out: t_Slice u8) (vec: t_e_uint8x16_t) (i: nat)
   lemma_vst1q_u8_model_eq out vec;
   lemma_upd_prefix_u8_frame out (NV.to_u8x16 vec) 16 i
 #pop-options
+
+(* ============================================================================
+   Bit-level bridges for from_bytes / to_bytes (byte-serialization consumers).
+   The lane VIEW (`t_BitVec 128`) exposes bits via `bv_bit`; `bit_vec_of_int_t_
+   array` is the byte-array serialization.  The bridge relates the i16x8 view's
+   d-bit serialization to raw bit `(i/d)*16 + i%d`.  All PROVEN from the codec
+   read-back (`Canon.lemma_readback`) — no assumption.  Mirrors the x86
+   `Avx2_ml_kem_views` bit bridges. ─────────────────────────────────────────── *)
+
+(* bit `i` of a core-models `t_BitVec n`, as a Rust `bit`. *)
+let bv_bit (#n: u64) (bv: BV.t_BitVec n) (i: nat{i < v n}) : Rust_primitives.Integers.bit =
+  match bv.[ mk_u64 i ] <: Bit.t_Bit with
+  | Bit.Bit_One  -> 1
+  | Bit.Bit_Zero -> 0
+
+(* bv_bit <-> canonical lane_reader collapse (both read `bv._0` at index w*l+b). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_bv_bit_reader (#n: u64) (w: pos) (bv: BV.t_BitVec n)
+    (l: nat) (b: nat{b < w /\ w * l + b < v n})
+  : Lemma (IVi.bval (IVi.lane_reader n w bv (mk_u64 l) b) == bv_bit bv (w * l + b)) =
+  FStar.Math.Lemmas.lemma_mult_le_right l 1 w;
+  assert (l <= w * l)
+#pop-options
+
+(* the i16x8 view's d-bit serialization at bit i == raw bit (i/d)*16 + i%d. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 250"
+let bit_vec_of_int_t_array_vec128_as_i16x8_lemma
+      (vec: t_e_int16x8_t) (d: nat{d > 0 /\ d <= 16}) (i: nat{i < 8 * d})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array (vec128_as_i16x8 vec) d i
+             == bv_bit vec ((i / d) * 16 + i % d)) =
+  FStar.Math.Lemmas.euclidean_division_definition i d;
+  FStar.Math.Lemmas.cancel_mul_div 8 d;
+  FStar.Math.Lemmas.lemma_div_le i (8 * d) d;
+  assert (i / d <= 8);
+  assert (i / d < 8);
+  assert (i % d < 16);
+  Canon.lemma_readback Rust_primitives.Integers.I16 (mk_u64 128) (mk_u64 8) vec
+    (mk_u64 (i / d)) (i % d)
+#pop-options
