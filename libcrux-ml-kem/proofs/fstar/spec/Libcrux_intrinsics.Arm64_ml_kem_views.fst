@@ -1735,3 +1735,26 @@ let lemma_e_vld1q_s16_lane (array: t_Slice i16) (i: nat{i < 8})
   assert (Funarr.impl_5__get (mk_u64 8) #i16 y (mk_u64 i) == f (mk_u64 i));   (* feq_on_domain *)
   assert (f (mk_u64 i) == Seq.index array i)
 #pop-options
+
+(* vld1q_u8: read 16 u8 lanes.  e_vld1q_u8 delegates to Arm.Extra.vld1q_bytes_model
+   (u8x16 codec); same recipe as vld1q_s16 with NV.from_u8x16 / NV.rt_u8x16. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vld1q_u8_lane (ptr: t_Slice u8) (i: nat{i < 16})
+  : Lemma (requires v (Core_models.Slice.impl__len #u8 ptr) >= 16)
+          (ensures get_lane_u8x16 (e_vld1q_u8 ptr) i == Seq.index ptr i)
+          [SMTPat (get_lane_u8x16 (e_vld1q_u8 ptr) i)] =
+  let f : (j:u64{v j < 16}) -> u8 =
+    (fun j -> let j:u64 = j in
+              if (cast (j <: u64) <: usize) <. (Core_models.Slice.impl__len #u8 ptr <: usize) <: bool
+              then ptr.[ cast (j <: u64) <: usize ] <: u8
+              else mk_u8 0) in
+  let y : Funarr.t_FunArray (mk_u64 16) u8 = Funarr.impl_5__from_fn (mk_u64 16) #u8 #(u64 -> u8) f in
+  assert (e_vld1q_u8 ptr == NV.from_u8x16 y)
+    by (FStar.Tactics.norm [delta_only [`%e_vld1q_u8;
+                                        `%Libcrux_core_models.Core_arch.Arm.Extra.vld1q_bytes_model];
+                            iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  NV.rt_u8x16 y;
+  assert (Funarr.impl_5__get (mk_u64 16) #u8 y (mk_u64 i) == f (mk_u64 i));
+  assert (f (mk_u64 i) == Seq.index ptr i)
+#pop-options
