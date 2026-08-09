@@ -866,3 +866,165 @@ let lemma_e_vandq_s16 (a b: t_e_int16x8_t)
   Seq.lemma_eq_intro (vec128_as_i16x8 r)
     (Spec.Utils.map2 ( &. ) (vec128_as_i16x8 a) (vec128_as_i16x8 b))
 #pop-options
+
+(* vandq_u16 / vandq_u32 reuse the SAME bit-and funarr fact: ArmIV.vandq_u16 and
+   ArmIV.vandq_u32 both delegate to ArmIV.vandq_s16.  Only the lane VIEW (u16x8 /
+   u32x4) + lane width for the raw-bit fact change. *)
+
+(* 32-bit-lane raw-bit variant (for the u32x4 view) reusing lemma_vandq_funarr_128. *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
+let lemma_vandq_raw32_128 (a b: BV.t_BitVec (mk_u64 128)) (ii: u64{v ii < 4}) (bb: nat{bb < 32})
+    : Lemma (IVi.bval (IVi.lane_reader (mk_u64 128) 32 (ArmIV.vandq_s16 a b) ii bb) ==
+             Int.bit_and (IVi.bval (IVi.lane_reader (mk_u64 128) 32 a ii bb))
+                         (IVi.bval (IVi.lane_reader (mk_u64 128) 32 b ii bb))) =
+  assert (32 * v ii + bb < 128);
+  lemma_vandq_funarr_128 a b (mk_u64 (32 * v ii + bb))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_vandq_u16_u16x8_iv (a b: BV.t_BitVec (mk_u64 128)) (i: nat{i < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 (ArmIV.vandq_u16 a b)) (mk_u64 i) ==
+             ((Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 a) (mk_u64 i)) &.
+              (Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 b) (mk_u64 i)))) =
+  let r = ArmIV.vandq_u16 a b in
+  let ya : u16 = Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 a) (mk_u64 i) in
+  let yb : u16 = Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 b) (mk_u64 i) in
+  let yr : u16 = Funarr.impl_5__get (mk_u64 8) #u16 (NV.to_u16x8 r) (mk_u64 i) in
+  let aux (bb: usize{v bb < 16})
+      : Lemma (Int.get_bit #Int.U16 yr bb == Int.get_bit #Int.U16 (ya &. yb) bb) =
+    Canon.lemma_readback Int.U16 (mk_u64 128) (mk_u64 8) r (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.U16 (mk_u64 128) (mk_u64 8) a (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.U16 (mk_u64 128) (mk_u64 8) b (mk_u64 i) (v bb);
+    lemma_vandq_raw_128 a b (mk_u64 i) (v bb);
+    Int.get_bit_and #Int.U16 ya yb bb
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.U16 yr (ya &. yb)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_e_vandq_u16 (a b: t_e_uint16x8_t)
+  : Lemma (vec128_as_u16x8 (e_vandq_u16 a b)
+           == Spec.Utils.map2 ( &. ) (vec128_as_u16x8 a) (vec128_as_u16x8 b))
+          [SMTPat (vec128_as_u16x8 (e_vandq_u16 a b))] =
+  let r = e_vandq_u16 a b in
+  let aux (i: nat{i < 8})
+      : Lemma (Seq.index (vec128_as_u16x8 r) i ==
+               Seq.index (Spec.Utils.map2 ( &. ) (vec128_as_u16x8 a) (vec128_as_u16x8 b)) i) =
+    NV.lemma_vandq_u16 a b;
+    lemma_vandq_u16_u16x8_iv a b i
+  in
+  Classical.forall_intro aux;
+  Seq.lemma_eq_intro (vec128_as_u16x8 r)
+    (Spec.Utils.map2 ( &. ) (vec128_as_u16x8 a) (vec128_as_u16x8 b))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_vandq_u32_u32x4_iv (a b: BV.t_BitVec (mk_u64 128)) (i: nat{i < 4})
+    : Lemma (Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 (ArmIV.vandq_u32 a b)) (mk_u64 i) ==
+             ((Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 a) (mk_u64 i)) &.
+              (Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 b) (mk_u64 i)))) =
+  let r = ArmIV.vandq_u32 a b in
+  let ya : u32 = Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 a) (mk_u64 i) in
+  let yb : u32 = Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 b) (mk_u64 i) in
+  let yr : u32 = Funarr.impl_5__get (mk_u64 4) #u32 (NV.to_u32x4 r) (mk_u64 i) in
+  let aux (bb: usize{v bb < 32})
+      : Lemma (Int.get_bit #Int.U32 yr bb == Int.get_bit #Int.U32 (ya &. yb) bb) =
+    Canon.lemma_readback Int.U32 (mk_u64 128) (mk_u64 4) r (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.U32 (mk_u64 128) (mk_u64 4) a (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.U32 (mk_u64 128) (mk_u64 4) b (mk_u64 i) (v bb);
+    lemma_vandq_raw32_128 a b (mk_u64 i) (v bb);
+    Int.get_bit_and #Int.U32 ya yb bb
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.U32 yr (ya &. yb)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_e_vandq_u32 (a b: t_e_uint32x4_t)
+  : Lemma (vec128_as_u32x4 (e_vandq_u32 a b)
+           == Spec.Utils.map2 ( &. ) (vec128_as_u32x4 a) (vec128_as_u32x4 b))
+          [SMTPat (vec128_as_u32x4 (e_vandq_u32 a b))] =
+  let r = e_vandq_u32 a b in
+  let aux (i: nat{i < 4})
+      : Lemma (Seq.index (vec128_as_u32x4 r) i ==
+               Seq.index (Spec.Utils.map2 ( &. ) (vec128_as_u32x4 a) (vec128_as_u32x4 b)) i) =
+    NV.lemma_vandq_u32 a b;
+    lemma_vandq_u32_u32x4_iv a b i
+  in
+  Classical.forall_intro aux;
+  Seq.lemma_eq_intro (vec128_as_u32x4 r)
+    (Spec.Utils.map2 ( &. ) (vec128_as_u32x4 a) (vec128_as_u32x4 b))
+#pop-options
+
+(* ── veorq_s16 (XOR): own bit-level funarr/raw (Zero,Zero->Zero | One,One->Zero | _->One) *)
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
+let lemma_veorq_funarr_128 (a b: BV.t_BitVec (mk_u64 128)) (k: u64{v k < 128})
+    : Lemma (Funarr.impl_5__get (mk_u64 128) #Bit.t_Bit (ArmIV.veorq_s16 a b)._0 k ==
+             (match Funarr.impl_5__get (mk_u64 128) #Bit.t_Bit a._0 k,
+                    Funarr.impl_5__get (mk_u64 128) #Bit.t_Bit b._0 k
+              with
+              | Bit.Bit_Zero, Bit.Bit_Zero -> Bit.Bit_Zero
+              | Bit.Bit_One, Bit.Bit_One -> Bit.Bit_Zero
+              | _ -> Bit.Bit_One)) =
+  let f : (i: u64{v i < 128}) -> Bit.t_Bit =
+    fun i -> (let i:u64 = i in
+              match (a.[ i ] <: Bit.t_Bit), (b.[ i ] <: Bit.t_Bit) with
+              | Bit.Bit_Zero, Bit.Bit_Zero -> Bit.Bit_Zero
+              | Bit.Bit_One, Bit.Bit_One -> Bit.Bit_Zero
+              | _ -> Bit.Bit_One) in
+  assert (ArmIV.veorq_s16 a b ==
+          Libcrux_core_models.Abstractions.Bitvec.impl_9__from_fn (mk_u64 128) #(u64 -> Bit.t_Bit) f)
+    by (FStar.Tactics.norm [delta_only [`%ArmIV.veorq_s16]; iota; zeta; primops];
+        FStar.Tactics.trefl ());
+  lemma_impl9_index_128 f k;
+  Canon.lemma_bv_index_n #(mk_u64 128) a k;
+  Canon.lemma_bv_index_n #(mk_u64 128) b k
+#pop-options
+
+#push-options "--fuel 1 --ifuel 2 --z3rlimit 200"
+let lemma_veorq_raw_128 (a b: BV.t_BitVec (mk_u64 128)) (ii: u64{v ii < 8}) (bb: nat{bb < 16})
+    : Lemma (IVi.bval (IVi.lane_reader (mk_u64 128) 16 (ArmIV.veorq_s16 a b) ii bb) ==
+             Int.bit_xor (IVi.bval (IVi.lane_reader (mk_u64 128) 16 a ii bb))
+                         (IVi.bval (IVi.lane_reader (mk_u64 128) 16 b ii bb))) =
+  assert (16 * v ii + bb < 128);
+  lemma_veorq_funarr_128 a b (mk_u64 (16 * v ii + bb))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_veorq_s16_i16x8_iv (a b: BV.t_BitVec (mk_u64 128)) (i: nat{i < 8})
+    : Lemma (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 (ArmIV.veorq_s16 a b)) (mk_u64 i) ==
+             ((Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 i)) ^.
+              (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 b) (mk_u64 i)))) =
+  let aXORb = ArmIV.veorq_s16 a b in
+  let ya : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 a) (mk_u64 i) in
+  let yb : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 b) (mk_u64 i) in
+  let yr : i16 = Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 aXORb) (mk_u64 i) in
+  let aux (bb: usize{v bb < 16})
+      : Lemma (Int.get_bit #Int.I16 yr bb == Int.get_bit #Int.I16 (ya ^. yb) bb) =
+    Canon.lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) aXORb (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) a (mk_u64 i) (v bb);
+    Canon.lemma_readback Int.I16 (mk_u64 128) (mk_u64 8) b (mk_u64 i) (v bb);
+    lemma_veorq_raw_128 a b (mk_u64 i) (v bb);
+    Int.get_bit_xor #Int.I16 ya yb bb
+  in
+  Classical.forall_intro aux;
+  Int.lemma_int_t_eq_via_bits #Int.I16 yr (ya ^. yb)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 150"
+let lemma_e_veorq_s16 (a b: t_e_int16x8_t)
+  : Lemma (vec128_as_i16x8 (e_veorq_s16 a b)
+           == Spec.Utils.map2 ( ^. ) (vec128_as_i16x8 a) (vec128_as_i16x8 b))
+          [SMTPat (vec128_as_i16x8 (e_veorq_s16 a b))] =
+  let r = e_veorq_s16 a b in
+  let aux (i: nat{i < 8})
+      : Lemma (Seq.index (vec128_as_i16x8 r) i ==
+               Seq.index (Spec.Utils.map2 ( ^. ) (vec128_as_i16x8 a) (vec128_as_i16x8 b)) i) =
+    NV.lemma_veorq_s16 a b;
+    lemma_veorq_s16_i16x8_iv a b i
+  in
+  Classical.forall_intro aux;
+  Seq.lemma_eq_intro (vec128_as_i16x8 r)
+    (Spec.Utils.map2 ( ^. ) (vec128_as_i16x8 a) (vec128_as_i16x8 b))
+#pop-options
