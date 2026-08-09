@@ -532,3 +532,108 @@ let lemma_e_vcgeq_s16 (v c: t_e_int16x8_t)
    core-models `ArmIV.vshlq_s16` lane body (sign-extended low-byte + data-
    dependent shift) via a dedicated per-lane byte/shift bridge lemma; see the
    `lemma_arm_sshl_eq` work below. *)
+
+(* ── 64-bit half-vector lane views (i16x4 / u16x4) ────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec64_as_i16x4 (x: t_e_int16x4_t) : t_Array i16 (sz 4) =
+  Seq.init 4 (fun i -> Funarr.impl_5__get (mk_u64 4) #i16 (NV.to_i16x4 x) (mk_u64 i))
+let get_lane_i16x4 (v: t_e_int16x4_t) (i: nat{i < 4}) : i16 = Seq.index (vec64_as_i16x4 v) i
+
+let vec64_index_i16x4 (x: t_e_int16x4_t) (i: nat{i < 4})
+  : Lemma (Seq.index (vec64_as_i16x4 x) i
+           == Funarr.impl_5__get (mk_u64 4) #i16 (NV.to_i16x4 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec64_as_i16x4 x) i)]
+  = reveal_opaque (`%vec64_as_i16x4) vec64_as_i16x4
+
+let vec64_as_i16x4_len (x: t_e_int16x4_t)
+  : Lemma (Seq.length (vec64_as_i16x4 x) == 4)
+          [SMTPat (Seq.length (vec64_as_i16x4 x))]
+  = ()
+
+let vec64_as_i16x4_slice_ok (x: t_e_int16x4_t)
+  : Lemma (Seq.length (vec64_as_i16x4 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec64_as_i16x4 x)]
+  = assert_norm (4 <= Rust_primitives.Integers.max_usize)
+
+[@@ "opaque_to_smt"]
+let vec64_as_u16x4 (x: t_e_uint16x4_t) : t_Array u16 (sz 4) =
+  Seq.init 4 (fun i -> Funarr.impl_5__get (mk_u64 4) #u16 (NV.to_u16x4 x) (mk_u64 i))
+let get_lane_u16x4 (v: t_e_uint16x4_t) (i: nat{i < 4}) : u16 = Seq.index (vec64_as_u16x4 v) i
+
+let vec64_index_u16x4 (x: t_e_uint16x4_t) (i: nat{i < 4})
+  : Lemma (Seq.index (vec64_as_u16x4 x) i
+           == Funarr.impl_5__get (mk_u64 4) #u16 (NV.to_u16x4 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec64_as_u16x4 x) i)]
+  = reveal_opaque (`%vec64_as_u16x4) vec64_as_u16x4
+
+let vec64_as_u16x4_len (x: t_e_uint16x4_t)
+  : Lemma (Seq.length (vec64_as_u16x4 x) == 4)
+          [SMTPat (Seq.length (vec64_as_u16x4 x))]
+  = ()
+
+let vec64_as_u16x4_slice_ok (x: t_e_uint16x4_t)
+  : Lemma (Seq.length (vec64_as_u16x4 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec64_as_u16x4 x)]
+  = assert_norm (4 <= Rust_primitives.Integers.max_usize)
+
+(* ── get low / high half (128 -> 64) ──────────────────────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vget_low_s16 (a: t_e_int16x8_t)
+  : Lemma (vec64_as_i16x4 (e_vget_low_s16 a)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_i16x8 a) i))
+          [SMTPat (vec64_as_i16x4 (e_vget_low_s16 a))] =
+  NV.lemma_vget_low_s16 a;
+  Seq.lemma_eq_intro (vec64_as_i16x4 (e_vget_low_s16 a))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_i16x8 a) i))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vget_low_u16 (a: t_e_uint16x8_t)
+  : Lemma (vec64_as_u16x4 (e_vget_low_u16 a)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_u16x8 a) i))
+          [SMTPat (vec64_as_u16x4 (e_vget_low_u16 a))] =
+  NV.lemma_vget_low_u16 a;
+  Seq.lemma_eq_intro (vec64_as_u16x4 (e_vget_low_u16 a))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_u16x8 a) i))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vget_high_u16 (a: t_e_uint16x8_t)
+  : Lemma (vec64_as_u16x4 (e_vget_high_u16 a)
+           == Seq.init 4 (fun i -> Seq.index (vec128_as_u16x8 a) (i + 4)))
+          [SMTPat (vec64_as_u16x4 (e_vget_high_u16 a))] =
+  NV.lemma_vget_high_u16 a;
+  Seq.lemma_eq_intro (vec64_as_u16x4 (e_vget_high_u16 a))
+                     (Seq.init 4 (fun i -> Seq.index (vec128_as_u16x8 a) (i + 4)))
+#pop-options
+
+(* ── widening multiply (i16x4 / high halves -> i32x4) ─────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vmull_s16 (a b: t_e_int16x4_t)
+  : Lemma (vec128_as_i32x4 (e_vmull_s16 a b)
+           == Seq.init 4 (fun i -> (cast (Seq.index (vec64_as_i16x4 a) i) <: i32)
+                                *. (cast (Seq.index (vec64_as_i16x4 b) i) <: i32)))
+          [SMTPat (vec128_as_i32x4 (e_vmull_s16 a b))] =
+  NV.lemma_vmull_s16 a b;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vmull_s16 a b))
+                     (Seq.init 4 (fun i -> (cast (Seq.index (vec64_as_i16x4 a) i) <: i32)
+                                        *. (cast (Seq.index (vec64_as_i16x4 b) i) <: i32)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vmull_high_s16 (a b: t_e_int16x8_t)
+  : Lemma (vec128_as_i32x4 (e_vmull_high_s16 a b)
+           == Seq.init 4 (fun i -> (cast (Seq.index (vec128_as_i16x8 a) (i + 4)) <: i32)
+                                *. (cast (Seq.index (vec128_as_i16x8 b) (i + 4)) <: i32)))
+          [SMTPat (vec128_as_i32x4 (e_vmull_high_s16 a b))] =
+  NV.lemma_vmull_high_s16 a b;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vmull_high_s16 a b))
+                     (Seq.init 4 (fun i -> (cast (Seq.index (vec128_as_i16x8 a) (i + 4)) <: i32)
+                                        *. (cast (Seq.index (vec128_as_i16x8 b) (i + 4)) <: i32)))
+#pop-options
+
+(* vaddvq_s16 / vaddv_u16 horizontal-reduction op-facts deferred: the core-models
+   `ArmIV.vaddvq_s16` is a LEFT fold_range (wrapping_add accumulate), while the
+   pcm/consumer form is the BALANCED sum tree `((a0+a1)+(a2+a3))+((a4+a5)+(a6+a7))`.
+   Equal only via AC-normalization of i16 add_mod + fold unfolding — a dedicated
+   reduction bridge lemma. *)
