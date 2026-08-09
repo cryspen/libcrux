@@ -38,7 +38,7 @@ open Libcrux_intrinsics.Arm64
        analog of `Intrinsics_views.lemma_{and,xor}_i16x16_iv` (which rests on
        `lemma_from_fn_lane_reader`/`lemma_bv_index`, both hardcoded to 256; port
        to 128 in `Neon_views`).
-     * Shifts (vshrq_n/vshlq_n_*): per-lane shift codec facts (ArmIV shift body).
+     * Shifts (vshrq_n / vshlq_n family): per-lane shift codec facts (ArmIV shift body).
      * Clamp (vqdmulhq_s16 / _n_s16 / _n_s32): saturating-clamp per-lane facts.
      * trn: s16 (vtrn1q/vtrn2q_s16) DONE; s32/s64/u64 remaining — pure mirror
        (ArmIV.trn on codec), like the arithmetic ops; need the i32x4/i64x2/u64x2
@@ -50,7 +50,7 @@ open Libcrux_intrinsics.Arm64
        the same 128 bits (`i16x2_as_i32` / `i64_i16lane` / ...).  These are pure
        codec facts (independent of any op); prove via composed `Canon.lemma_readback`.
      * mull/mlal/get_low/high/addv (i16x4<->i32x4 halves): various.
-     * load/store/dup (vld1q_s16 / vst1q_* / vdupq_n_*): `Arm.Extra.*_model` facts.
+     * load/store/dup (vld1q / vst1q / vdupq_n family): `Arm.Extra` slice-model facts.
      * The bit bridge `bit_vec_of_int_t_array_vec128_as_i16x8_lemma` (used by
        from_bytes/to_bytes): mirror `Avx2_ml_kem_views.bit_vec_of_int_t_array_
        vec128_as_i16x8_lemma` (one `Canon.lemma_readback` call).
