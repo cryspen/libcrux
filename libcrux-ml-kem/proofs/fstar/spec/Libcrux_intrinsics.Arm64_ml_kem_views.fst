@@ -637,3 +637,40 @@ let lemma_e_vmull_high_s16 (a b: t_e_int16x8_t)
    pcm/consumer form is the BALANCED sum tree `((a0+a1)+(a2+a3))+((a4+a5)+(a6+a7))`.
    Equal only via AC-normalization of i16 add_mod + fold unfolding — a dedicated
    reduction bridge lemma. *)
+
+(* ── u8x16 lane view ──────────────────────────────────────────────────────── *)
+[@@ "opaque_to_smt"]
+let vec128_as_u8x16 (x: t_e_uint8x16_t) : t_Array u8 (sz 16) =
+  Seq.init 16 (fun i -> Funarr.impl_5__get (mk_u64 16) #u8 (NV.to_u8x16 x) (mk_u64 i))
+let get_lane_u8x16 (v: t_e_uint8x16_t) (i: nat{i < 16}) : u8 = Seq.index (vec128_as_u8x16 v) i
+
+let vec128_index_u8x16 (x: t_e_uint8x16_t) (i: nat{i < 16})
+  : Lemma (Seq.index (vec128_as_u8x16 x) i
+           == Funarr.impl_5__get (mk_u64 16) #u8 (NV.to_u8x16 x) (mk_u64 i))
+          [SMTPat (Seq.index (vec128_as_u8x16 x) i)]
+  = reveal_opaque (`%vec128_as_u8x16) vec128_as_u8x16
+
+let vec128_as_u8x16_len (x: t_e_uint8x16_t)
+  : Lemma (Seq.length (vec128_as_u8x16 x) == 16)
+          [SMTPat (Seq.length (vec128_as_u8x16 x))]
+  = ()
+
+let vec128_as_u8x16_slice_ok (x: t_e_uint8x16_t)
+  : Lemma (Seq.length (vec128_as_u8x16 x) <= Rust_primitives.Integers.max_usize)
+          [SMTPat (vec128_as_u8x16 x)]
+  = assert_norm (16 <= Rust_primitives.Integers.max_usize)
+
+(* ── table lookup (vqtbl1q_u8): data-dependent per-byte select ────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
+let lemma_e_vqtbl1q_u8 (t idx: t_e_uint8x16_t)
+  : Lemma (vec128_as_u8x16 (e_vqtbl1q_u8 t idx)
+           == Seq.init 16 (fun i ->
+                let ix = v (Seq.index (vec128_as_u8x16 idx) i) in
+                if ix < 16 then Seq.index (vec128_as_u8x16 t) ix else mk_u8 0))
+          [SMTPat (vec128_as_u8x16 (e_vqtbl1q_u8 t idx))] =
+  NV.lemma_vqtbl1q_u8 t idx;
+  Seq.lemma_eq_intro (vec128_as_u8x16 (e_vqtbl1q_u8 t idx))
+                     (Seq.init 16 (fun i ->
+                        let ix = v (Seq.index (vec128_as_u8x16 idx) i) in
+                        if ix < 16 then Seq.index (vec128_as_u8x16 t) ix else mk_u8 0))
+#pop-options
