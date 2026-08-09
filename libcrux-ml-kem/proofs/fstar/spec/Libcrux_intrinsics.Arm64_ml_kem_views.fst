@@ -780,6 +780,63 @@ let e_vreinterpret_i32_u32_lane_bridge (x: BV.t_BitVec (mk_u64 128)) (k: nat{k <
 #pop-options
 
 (* ============================================================================
+   TIER D foundation — width-128 i16<->i32 lane VALUE bridge (port of
+   `Intrinsics_views.lemma_lane32_bridge` from 256->128).  A 32-bit i32 lane `j`
+   is the little-endian concatenation of the two i16 lanes `2j` (low) / `2j+1`
+   (high): its two's-complement value decomposes as
+     (v(i16 2j) % 2^16) + 2^16 * v(i16 2j+1) == v(i32 j).
+   This is the reusable arithmetic core the s32_s16 / s16_s32 repack op-facts
+   rest on (the remaining step is the `i16x2_as_i32` cast-form pack lemma via
+   `logor_disjoint`, mirroring Spec.MLDSA.Math).  All pieces (dsum2_split/shift,
+   lemma_tc_mod, lemma_tc_pair) are PROVEN in `Intrinsics_views`.
+   ========================================================================== *)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
+let lemma_to_i16x8_val (x: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (v (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 i)) ==
+           IVi.tc_of_u Int.I16 (IVi.dsum2 (IVi.lane_reader (mk_u64 128) 16 x (mk_u64 i)) 0 16)) =
+  reveal_opaque (`%IVi.to_iv) (IVi.to_iv);
+  let reader = IVi.lane_reader (mk_u64 128) 16 x (mk_u64 i) in
+  IVi.dsum2_bound reader 0 16;
+  IVi.lemma_tc_range Int.I16 (IVi.dsum2 reader 0 16)
+#pop-options
+
+(* the i32-lane reader and its two i16 half-lane readers agree bit-for-bit. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_reader_lo_128 (x: BV.t_BitVec (mk_u64 128)) (j: nat{j < 4}) (k: nat{k < 16})
+    : Lemma (IVi.bval (IVi.lane_reader (mk_u64 128) 32 x (mk_u64 j) k) ==
+             IVi.bval (IVi.lane_reader (mk_u64 128) 16 x (mk_u64 (2 * j)) k)) =
+  assert (32 * j + k < 128)
+
+let lemma_reader_hi_128 (x: BV.t_BitVec (mk_u64 128)) (j: nat{j < 4}) (k: nat{k < 16})
+    : Lemma (IVi.bval (IVi.lane_reader (mk_u64 128) 32 x (mk_u64 j) (16 + k)) ==
+             IVi.bval (IVi.lane_reader (mk_u64 128) 16 x (mk_u64 (2 * j + 1)) k)) =
+  assert (32 * j + 16 + k < 128)
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_lane_i16i32_128 (x: BV.t_BitVec (mk_u64 128)) (j: nat{j < 4})
+    : Lemma ((v (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 (2 * j))) % pow2 16) +
+             pow2 16 * v (Funarr.impl_5__get (mk_u64 8) #i16 (Canon.to_i16x8 x) (mk_u64 (2 * j + 1))) ==
+             v (Funarr.impl_5__get (mk_u64 4) #i32 (Canon.to_i32x4 x) (mk_u64 j))) =
+  let reader16lo = IVi.lane_reader (mk_u64 128) 16 x (mk_u64 (2 * j)) in
+  let reader16hi = IVi.lane_reader (mk_u64 128) 16 x (mk_u64 (2 * j + 1)) in
+  let reader32 = IVi.lane_reader (mk_u64 128) 32 x (mk_u64 j) in
+  IVi.dsum2_bound reader16lo 0 16;
+  IVi.dsum2_bound reader16hi 0 16;
+  let u_lo = IVi.dsum2 reader16lo 0 16 in
+  let u_hi = IVi.dsum2 reader16hi 0 16 in
+  lemma_to_i16x8_val x (2 * j);
+  lemma_to_i16x8_val x (2 * j + 1);
+  lemma_to_i32x4_val x j;
+  Canon.dsum2_split reader32 0 16 16;
+  Canon.dsum2_shift reader32 reader16lo 0 0 16 (fun k -> lemma_reader_lo_128 x j k);
+  Canon.dsum2_shift reader32 reader16hi 16 0 16 (fun k -> lemma_reader_hi_128 x j k);
+  Canon.lemma_tc_mod Int.I16 u_lo;
+  Canon.lemma_tc_pair u_lo u_hi
+#pop-options
+
+(* ============================================================================
    TIER B — logical ops (vandq / veorq).  `ArmIV.vOPq_*` is a BIT-LEVEL
    `impl_9__from_fn 128`, so the codec-commute is proven bit-by-bit, mirroring
    `Intrinsics_views.lemma_and_i16x16_iv` at width 128:  per-bit readback (raw
