@@ -674,3 +674,61 @@ let lemma_e_vqtbl1q_u8 (t idx: t_e_uint8x16_t)
                         let ix = v (Seq.index (vec128_as_u8x16 idx) i) in
                         if ix < 16 then Seq.index (vec128_as_u8x16 t) ix else mk_u8 0))
 #pop-options
+
+(* ============================================================================
+   TIER C/D (part 1) — reinterpret BIT-IDENTITY.  Every NEON reinterpret is a
+   pure bit relabel: the real op delegates to `Neon.OP`, `NV.lemma_vreinterpretq_*`
+   gives `Neon.OP a == ArmIV.OP a`, and `ArmIV.vreinterpretq_* a == a`
+   (definitional `let OP a = a`).  So `result == a` for every reinterpret.  The
+   per-lane cross-/same-width repack (i16x2_as_i32 / i32_lo16_as_i16 / cast_mod /
+   ...) is a SEPARATE codec fact added on top (Tier C/D part 2) — this identity
+   is what lets a consumer carry a value across a reinterpret unchanged.
+   ========================================================================== *)
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 50"
+let lemma_e_vreinterpretq_s16_u16 (m0: t_e_uint16x8_t)
+  : Lemma (e_vreinterpretq_s16_u16 m0 == m0) [SMTPat (e_vreinterpretq_s16_u16 m0)] =
+  NV.lemma_vreinterpretq_s16_u16 m0
+let lemma_e_vreinterpretq_u16_s16 (m0: t_e_int16x8_t)
+  : Lemma (e_vreinterpretq_u16_s16 m0 == m0) [SMTPat (e_vreinterpretq_u16_s16 m0)] =
+  NV.lemma_vreinterpretq_u16_s16 m0
+let lemma_e_vreinterpretq_s32_u32 (a: t_e_uint32x4_t)
+  : Lemma (e_vreinterpretq_s32_u32 a == a) [SMTPat (e_vreinterpretq_s32_u32 a)] =
+  NV.lemma_vreinterpretq_s32_u32 a
+let lemma_e_vreinterpretq_u32_s32 (a: t_e_int32x4_t)
+  : Lemma (e_vreinterpretq_u32_s32 a == a) [SMTPat (e_vreinterpretq_u32_s32 a)] =
+  NV.lemma_vreinterpretq_u32_s32 a
+let lemma_e_vreinterpretq_s16_s32 (a: t_e_int32x4_t)
+  : Lemma (e_vreinterpretq_s16_s32 a == a) [SMTPat (e_vreinterpretq_s16_s32 a)] =
+  NV.lemma_vreinterpretq_s16_s32 a
+let lemma_e_vreinterpretq_s32_s16 (a: t_e_int16x8_t)
+  : Lemma (e_vreinterpretq_s32_s16 a == a) [SMTPat (e_vreinterpretq_s32_s16 a)] =
+  NV.lemma_vreinterpretq_s32_s16 a
+let lemma_e_vreinterpretq_s16_s64 (a: t_e_int64x2_t)
+  : Lemma (e_vreinterpretq_s16_s64 a == a) [SMTPat (e_vreinterpretq_s16_s64 a)] =
+  NV.lemma_vreinterpretq_s16_s64 a
+let lemma_e_vreinterpretq_s64_s16 (a: t_e_int16x8_t)
+  : Lemma (e_vreinterpretq_s64_s16 a == a) [SMTPat (e_vreinterpretq_s64_s16 a)] =
+  NV.lemma_vreinterpretq_s64_s16 a
+let lemma_e_vreinterpretq_s64_s32 (a: t_e_int32x4_t)
+  : Lemma (e_vreinterpretq_s64_s32 a == a) [SMTPat (e_vreinterpretq_s64_s32 a)] =
+  NV.lemma_vreinterpretq_s64_s32 a
+let lemma_e_vreinterpretq_u32_s16 (a: t_e_int16x8_t)
+  : Lemma (e_vreinterpretq_u32_s16 a == a) [SMTPat (e_vreinterpretq_u32_s16 a)] =
+  NV.lemma_vreinterpretq_u32_s16 a
+let lemma_e_vreinterpretq_s16_u32 (a: t_e_uint32x4_t)
+  : Lemma (e_vreinterpretq_s16_u32 a == a) [SMTPat (e_vreinterpretq_s16_u32 a)] =
+  NV.lemma_vreinterpretq_s16_u32 a
+let lemma_e_vreinterpretq_u8_s16 (a: t_e_int16x8_t)
+  : Lemma (e_vreinterpretq_u8_s16 a == a) [SMTPat (e_vreinterpretq_u8_s16 a)] =
+  NV.lemma_vreinterpretq_u8_s16 a
+let lemma_e_vreinterpretq_s16_u8 (a: t_e_uint8x16_t)
+  : Lemma (e_vreinterpretq_s16_u8 a == a) [SMTPat (e_vreinterpretq_s16_u8 a)] =
+  NV.lemma_vreinterpretq_s16_u8 a
+let lemma_e_vreinterpretq_u16_u8 (a: t_e_uint8x16_t)
+  : Lemma (e_vreinterpretq_u16_u8 a == a) [SMTPat (e_vreinterpretq_u16_u8 a)] =
+  NV.lemma_vreinterpretq_u16_u8 a
+let lemma_e_vreinterpretq_u8_s64 (a: t_e_int64x2_t)
+  : Lemma (e_vreinterpretq_u8_s64 a == a) [SMTPat (e_vreinterpretq_u8_s64 a)] =
+  NV.lemma_vreinterpretq_u8_s64 a
+#pop-options
