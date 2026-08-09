@@ -2156,17 +2156,83 @@ let lemma_e_vshlq_u16_lane (a: t_e_uint16x8_t) (b: t_e_int16x8_t) (i: nat{i < 8}
   lemma_arm_ushl_eq (get_lane_u16x8 a i) (get_lane_i16x8 b i)
 #pop-options
 
-(* ── vaddvq_s16 / vaddv_u16 (horizontal add) — CLIFF (session 7).  Model is a
-   `fold_range 0 N` LEFT fold of `+.` (== add_mod) from 0; consumer wants a
-   balanced tree.  `+.` is AC so the equality is unconditional AND there is NO
-   ensures wall (scalar result).  BUT: the naive fuel-unroll (fuel 10, rlimit 400)
-   SATURATES (used 400.000, canceled twice — measured, confirming rollup-6).  The
-   step-lemma peel and the upd_prefix-style recursive-sum both hit the fold_range
-   CLOSURE-INEQUALITY wall (Z3 won't equate `fold_range .. f_model` with a
-   re-written closure).  Forward path = the documented fold_range characterization
-   (`Proof_Utils.NatFold.lemma_fold_range_is_range_nat` pointwise-Lemma-argument
-   bridge — see [[feedback_closure_free_recursion_for_congruence]] and §7
-   "Characterizing a hax fold_range"): convert the fold to a nat-fold given the
-   body-equality as a Lemma VALUE (sidesteps closure inequality), then add_mod AC
-   on the ground left-fold.  NV foundation present: `NV.lemma_vaddvq_s16` /
-   `NV.lemma_vaddv_u16`.  Deferred — distinct machinery, not yet attempted. *)
+(* ── vaddvq_s16 / vaddv_u16 (horizontal add) — DONE (session 7).  Model is a
+   `fold_range 0 N` LEFT fold of `impl_iN__wrapping_add` (== `+.` == add_mod) from
+   0; consumer wants a balanced tree.  Three routes SATURATE (fuel-unroll, step
+   lemma, unroll-lemma — all hit the fold_range CLOSURE-INEQUALITY / heavy-context
+   wall).  ✅ CRACKED by the load-recipe `norm`/`trefl` closure-eq trick: reduce
+   the fold DEFINITIONALLY to a ground left-fold (`lemma_arm_vaddv*_unroll`), then
+   offload the add_mod AC into a CLEAN-context standalone lemma (`lemma_add{8,4}_ac`
+   — the fold/tactic-laden op-fact context saturates on the AC; isolated it proves).
+   NV foundation: `NV.lemma_vaddvq_s16` / `NV.lemma_vaddv_u16`. ────────────────── *)
+
+(* ── vaddvq_s16 via norm/trefl (the load-recipe closure-eq trick): reduce the
+   fold_range LEFT fold definitionally to a GROUND 8-term expression — sidesteps
+   the closure inequality that saturates the fuel-unroll and unroll-lemma routes.
+   Then add_mod AC on the ground expr (impl_i16__wrapping_add == (+.)). ────────── *)
+unfold let arm_vaddvq_s16_laf (a: Funarr.t_FunArray (mk_u64 8) i16) : i16 =
+  let wa = Core_models.Num.impl_i16__wrapping_add in
+  wa (wa (wa (wa (wa (wa (wa (wa (mk_i16 0) (a.[ mk_u64 0 ] <: i16)) (a.[ mk_u64 1 ] <: i16))
+    (a.[ mk_u64 2 ] <: i16)) (a.[ mk_u64 3 ] <: i16)) (a.[ mk_u64 4 ] <: i16))
+    (a.[ mk_u64 5 ] <: i16)) (a.[ mk_u64 6 ] <: i16)) (a.[ mk_u64 7 ] <: i16)
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 50"
+let lemma_arm_vaddvq_s16_unroll (a: Funarr.t_FunArray (mk_u64 8) i16)
+  : Lemma (ArmIV.vaddvq_s16 a == arm_vaddvq_s16_laf a) =
+  assert (ArmIV.vaddvq_s16 a == arm_vaddvq_s16_laf a)
+    by (FStar.Tactics.norm [delta_only [`%ArmIV.vaddvq_s16;
+                                        `%Rust_primitives.Hax.Folds.fold_range];
+                            iota; zeta; primops];
+        FStar.Tactics.trefl ())
+#pop-options
+
+(* 8-term add_mod AC (left-fold from 0 == balanced tree), in CLEAN context —
+   the fold/tactic-laden op-fact context saturates on this; isolated it proves. *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 400"
+let lemma_add8_ac (x0 x1 x2 x3 x4 x5 x6 x7: i16) : Lemma
+  (ensures ((((((((mk_i16 0 +. x0) +. x1) +. x2) +. x3) +. x4) +. x5) +. x6) +. x7)
+           == (((x0 +. x1) +. (x2 +. x3)) +. ((x4 +. x5) +. (x6 +. x7)))) = ()
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
+let lemma_e_vaddvq_s16 (a: t_e_int16x8_t)
+  : Lemma (ensures e_vaddvq_s16 a ==
+             (((get_lane_i16x8 a 0 +. get_lane_i16x8 a 1) +. (get_lane_i16x8 a 2 +. get_lane_i16x8 a 3)) +.
+              ((get_lane_i16x8 a 4 +. get_lane_i16x8 a 5) +. (get_lane_i16x8 a 6 +. get_lane_i16x8 a 7))))
+          [SMTPat (e_vaddvq_s16 a)] =
+  NV.lemma_vaddvq_s16 a;
+  lemma_arm_vaddvq_s16_unroll (Canon.to_i16x8 a);
+  lemma_add8_ac (get_lane_i16x8 a 0) (get_lane_i16x8 a 1) (get_lane_i16x8 a 2) (get_lane_i16x8 a 3)
+                (get_lane_i16x8 a 4) (get_lane_i16x8 a 5) (get_lane_i16x8 a 6) (get_lane_i16x8 a 7)
+#pop-options
+
+(* vaddv_u16 (4-lane) — same norm/trefl closure-eq + clean AC recipe as vaddvq_s16. *)
+unfold let arm_vaddv_u16_laf (a: Funarr.t_FunArray (mk_u64 4) u16) : u16 =
+  let wa = Core_models.Num.impl_u16__wrapping_add in
+  wa (wa (wa (wa (mk_u16 0) (a.[ mk_u64 0 ] <: u16)) (a.[ mk_u64 1 ] <: u16))
+    (a.[ mk_u64 2 ] <: u16)) (a.[ mk_u64 3 ] <: u16)
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 50"
+let lemma_arm_vaddv_u16_unroll (a: Funarr.t_FunArray (mk_u64 4) u16)
+  : Lemma (ArmIV.vaddv_u16 a == arm_vaddv_u16_laf a) =
+  assert (ArmIV.vaddv_u16 a == arm_vaddv_u16_laf a)
+    by (FStar.Tactics.norm [delta_only [`%ArmIV.vaddv_u16;
+                                        `%Rust_primitives.Hax.Folds.fold_range];
+                            iota; zeta; primops];
+        FStar.Tactics.trefl ())
+#pop-options
+
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 300"
+let lemma_add4_ac (x0 x1 x2 x3: u16) : Lemma
+  (ensures ((((mk_u16 0 +. x0) +. x1) +. x2) +. x3) == ((x0 +. x1) +. (x2 +. x3))) = ()
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
+let lemma_e_vaddv_u16 (a: t_e_uint16x4_t)
+  : Lemma (ensures e_vaddv_u16 a ==
+             ((get_lane_u16x4 a 0 +. get_lane_u16x4 a 1) +. (get_lane_u16x4 a 2 +. get_lane_u16x4 a 3)))
+          [SMTPat (e_vaddv_u16 a)] =
+  NV.lemma_vaddv_u16 a;
+  lemma_arm_vaddv_u16_unroll (NV.to_u16x4 a);
+  lemma_add4_ac (get_lane_u16x4 a 0) (get_lane_u16x4 a 1) (get_lane_u16x4 a 2) (get_lane_u16x4 a 3)
+#pop-options
