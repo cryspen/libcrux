@@ -460,3 +460,75 @@ let lemma_e_vshrq_n_u16 (v_SHIFT_BY: i32) (v: t_e_uint16x8_t)
                         else if v_SHIFT_BY <=. mk_i32 0 then x
                         else x >>! v_SHIFT_BY))
 #pop-options
+
+(* ── ARM variable-shift helper lets (copied verbatim from the pcm
+      `Arm64_extract.fsti` — referenced by the vshlq_s16/u16 op-facts and by
+      consumer proofs). ───────────────────────────────────────────────────── *)
+let arm_sshl_i16 (a b: i16) : i16 =
+  let s = v (b %! mk_i16 256) in
+  if s < 128 then (if s < 16 then a <<! mk_i32 s else mk_i16 0)
+  else (let r = 256 - s in
+        if r < 16 then a >>! mk_i32 r
+        else (if a <. mk_i16 0 then mk_i16 (-1) else mk_i16 0))
+
+let arm_ushl_u16 (a: u16) (b: i16) : u16 =
+  let s = v (b %! mk_i16 256) in
+  if s < 128 then (if s < 16 then a <<! mk_i32 s else mk_u16 0)
+  else (let r = 256 - s in
+        if r < 16 then a >>! mk_i32 r else mk_u16 0)
+
+(* ── i16x8 saturating doubling multiply-high (vqdmulh) ────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vqdmulhq_n_s16 (k: t_e_int16x8_t) (b: i16)
+  : Lemma (vec128_as_i16x8 (e_vqdmulhq_n_s16 k b)
+           == Seq.init 8 (fun i ->
+                let prod = ((cast (Seq.index (vec128_as_i16x8 k) i) <: i32) *. (cast b <: i32)) >>! (mk_i32 15) in
+                if prod >. mk_i32 32767 then mk_i16 32767
+                else if prod <. mk_i32 (- 32768) then mk_i16 (- 32768) else (cast prod <: i16)))
+          [SMTPat (vec128_as_i16x8 (e_vqdmulhq_n_s16 k b))] =
+  NV.lemma_vqdmulhq_n_s16 k b;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vqdmulhq_n_s16 k b))
+                     (Seq.init 8 (fun i ->
+                        let prod = ((cast (Seq.index (vec128_as_i16x8 k) i) <: i32) *. (cast b <: i32)) >>! (mk_i32 15) in
+                        if prod >. mk_i32 32767 then mk_i16 32767
+                        else if prod <. mk_i32 (- 32768) then mk_i16 (- 32768) else (cast prod <: i16)))
+#pop-options
+
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vqdmulhq_s16 (a c: t_e_int16x8_t)
+  : Lemma (vec128_as_i16x8 (e_vqdmulhq_s16 a c)
+           == Seq.init 8 (fun i ->
+                let prod = ((cast (Seq.index (vec128_as_i16x8 a) i) <: i32)
+                            *. (cast (Seq.index (vec128_as_i16x8 c) i) <: i32)) >>! (mk_i32 15) in
+                if prod >. mk_i32 32767 then mk_i16 32767
+                else if prod <. mk_i32 (- 32768) then mk_i16 (- 32768) else (cast prod <: i16)))
+          [SMTPat (vec128_as_i16x8 (e_vqdmulhq_s16 a c))] =
+  NV.lemma_vqdmulhq_s16 a c;
+  Seq.lemma_eq_intro (vec128_as_i16x8 (e_vqdmulhq_s16 a c))
+                     (Seq.init 8 (fun i ->
+                        let prod = ((cast (Seq.index (vec128_as_i16x8 a) i) <: i32)
+                                    *. (cast (Seq.index (vec128_as_i16x8 c) i) <: i32)) >>! (mk_i32 15) in
+                        if prod >. mk_i32 32767 then mk_i16 32767
+                        else if prod <. mk_i32 (- 32768) then mk_i16 (- 32768) else (cast prod <: i16)))
+#pop-options
+
+(* ── i16x8 comparison -> u16x8 mask ───────────────────────────────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 150"
+let lemma_e_vcgeq_s16 (v c: t_e_int16x8_t)
+  : Lemma (vec128_as_u16x8 (e_vcgeq_s16 v c)
+           == Seq.init 8 (fun i ->
+                if Seq.index (vec128_as_i16x8 v) i >=. Seq.index (vec128_as_i16x8 c) i
+                then mk_u16 0xFFFF else mk_u16 0))
+          [SMTPat (vec128_as_u16x8 (e_vcgeq_s16 v c))] =
+  NV.lemma_vcgeq_s16 v c;
+  Seq.lemma_eq_intro (vec128_as_u16x8 (e_vcgeq_s16 v c))
+                     (Seq.init 8 (fun i ->
+                        if Seq.index (vec128_as_i16x8 v) i >=. Seq.index (vec128_as_i16x8 c) i
+                        then mk_u16 0xFFFF else mk_u16 0))
+#pop-options
+
+(* vshlq_s16 / vshlq_u16 op-facts deferred: `arm_sshl_i16` / `arm_ushl_u16`
+   (pcm's `v (b %! 256)` split-at-128 encoding) are only PROVABLY equal to the
+   core-models `ArmIV.vshlq_s16` lane body (sign-extended low-byte + data-
+   dependent shift) via a dedicated per-lane byte/shift bridge lemma; see the
+   `lemma_arm_sshl_eq` work below. *)
