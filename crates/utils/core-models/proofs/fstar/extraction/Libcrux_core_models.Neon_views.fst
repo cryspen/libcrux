@@ -230,6 +230,18 @@ let lemma_vmull_high_s16 (a b: bv128)
   : Lemma (to_i32x4 (Neon.vmull_high_s16 a b) == ArmIV.vmull_high_s16 (to_i16x8 a) (to_i16x8 b)) =
   ArmL.vmull_high_s16 a b; rt_i32x4 (ArmIV.vmull_high_s16 (to_i16x8 a) (to_i16x8 b))
 
+(* ── widening multiply-ACCUMULATE (vmlal): a + b*c.  Same lift+round-trip recipe
+      as vmull; the accumulator `a` is the i32x4 first operand. ─────────────────── *)
+let lemma_vmlal_s16 (a: bv128) (b c: bv64)
+  : Lemma (to_i32x4 (Neon.vmlal_s16 a b c)
+           == ArmIV.vmlal_s16 (to_i32x4 a) (to_i16x4 b) (to_i16x4 c)) =
+  ArmL.vmlal_s16 a b c; rt_i32x4 (ArmIV.vmlal_s16 (to_i32x4 a) (to_i16x4 b) (to_i16x4 c))
+
+let lemma_vmlal_high_s16 (a b c: bv128)
+  : Lemma (to_i32x4 (Neon.vmlal_high_s16 a b c)
+           == ArmIV.vmlal_high_s16 (to_i32x4 a) (to_i16x8 b) (to_i16x8 c)) =
+  ArmL.vmlal_high_s16 a b c; rt_i32x4 (ArmIV.vmlal_high_s16 (to_i32x4 a) (to_i16x8 b) (to_i16x8 c))
+
 (* ── transpose (TRN1/TRN2) ────────────────────────────────────────────────── *)
 let lemma_vtrn1q_s16 (a b: bv128)
   : Lemma (to_i16x8 (Neon.vtrn1q_s16 a b) == ArmIV.vtrn1q_s16 (to_i16x8 a) (to_i16x8 b)) =
