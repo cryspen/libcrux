@@ -1758,3 +1758,117 @@ let lemma_e_vld1q_u8_lane (ptr: t_Slice u8) (i: nat{i < 16})
   assert (Funarr.impl_5__get (mk_u64 16) #u8 y (mk_u64 i) == f (mk_u64 i));
   assert (f (mk_u64 i) == Seq.index ptr i)
 #pop-options
+
+(* ============================================================================
+   Tier F STORES.  The store ops write N lanes of the vector `vec` into the
+   output slice via a straight chain of N `update_at_usize` (= `Seq.upd`) under
+   `if len >= N`.  The compound pcm post (length + per-lane write + frame) is
+   split into per-index SMTPat op-facts to dodge the `.fst`-ensures elaboration
+   wall (see [[feedback_fst_ensures_refinement_under_forall]]).
+
+   Recipe: reveal `e_vstX` (opaque) -> `Arm.Extra.vstX_model` (opaque) -> the
+   `Seq.upd` chain.  `update_at_usize s i x == Seq.upd s (v i) x` is TRANSPARENT
+   and `Seq.upd` carries index/length SMTPats, so length + framing are automatic;
+   the lane value `lanes.[mk_u64 k] == get_lane_i16x8 vec k` bridges through the
+   `vec128_index` SMTPat (`lanes == to_i16x8 vec` definitionally). ────────────── *)
+
+(* vst1q_s16: write 8 i16 lanes into `out` (needs len out >= 8). *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vst1q_s16_length (out: t_Slice i16) (vec: t_e_int16x8_t)
+  : Lemma (ensures Seq.length (e_vst1q_s16 out vec) == Seq.length out)
+          [SMTPat (Seq.length (e_vst1q_s16 out vec))] =
+  reveal_opaque (`%e_vst1q_s16) e_vst1q_s16;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model
+
+let lemma_e_vst1q_s16_lane (out: t_Slice i16) (vec: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (requires v (Core_models.Slice.impl__len #i16 out) >= 8)
+          (ensures Seq.index (e_vst1q_s16 out vec) i == get_lane_i16x8 vec i)
+          [SMTPat (Seq.index (e_vst1q_s16 out vec) i)] =
+  reveal_opaque (`%e_vst1q_s16) e_vst1q_s16;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model
+
+let lemma_e_vst1q_s16_frame (out: t_Slice i16) (vec: t_e_int16x8_t) (i: nat)
+  : Lemma (requires v (Core_models.Slice.impl__len #i16 out) >= 8 /\ i >= 8 /\ i < Seq.length out)
+          (ensures Seq.index (e_vst1q_s16 out vec) i == Seq.index out i)
+          [SMTPat (Seq.index (e_vst1q_s16 out vec) i)] =
+  reveal_opaque (`%e_vst1q_s16) e_vst1q_s16;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_s16_model
+#pop-options
+
+(* vst1q_u8: write 16 u8 lanes into `out` (via vst1q_bytes_model; needs len out
+   >= 16).  UNLIKE vst1q_s16 (8-deep), the 16-deep `Seq.upd` chain defeats Z3's
+   monolithic peel for the per-lane WRITE: frame-only (all upd2) and a shallow
+   lane (idx 15, upd1-first) prove, but the peel-to-written-lane at depth 16
+   (15 upd2 + upd1 + FunArray bridge) bails "incomplete quantifiers" even at
+   fuel/ifuel 6, rlimit 400.  This is the "long sequential update_at chain"
+   pattern (§7): factor the chain into a recursive prefix fn whose index lemma
+   proves ONE Seq.upd step per level — no monolithic deep peel. *)
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vst1q_u8_length (out: t_Slice u8) (vec: t_e_uint8x16_t)
+  : Lemma (ensures Seq.length (e_vst1q_u8 out vec) == Seq.length out)
+          [SMTPat (Seq.length (e_vst1q_u8 out vec))] =
+  reveal_opaque (`%e_vst1q_u8) e_vst1q_u8;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model
+#pop-options
+
+(* `out` with lanes[0..n) written, updates applied ascending (matches the model
+   chain: update 0 innermost, update 15 outermost).  fuel >= 1 for the one-level
+   unfold in the index lemma (module default is fuel 0). *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 100"
+let rec upd_prefix_u8 (out: t_Slice u8) (lanes: Funarr.t_FunArray (mk_u64 16) u8)
+                      (n: nat{n <= 16 /\ Seq.length out >= 16})
+  : Tot (r: t_Slice u8 {Seq.length r == Seq.length out}) (decreases n) =
+  if n = 0 then out
+  else Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
+         (upd_prefix_u8 out lanes (n - 1)) (mk_usize (n - 1)) (lanes.[ mk_u64 (n - 1) ])
+
+(* Index characterization: one Seq.upd step per recursion level. *)
+let rec lemma_upd_prefix_u8_index (out: t_Slice u8) (lanes: Funarr.t_FunArray (mk_u64 16) u8)
+                                  (n: nat{n <= 16 /\ Seq.length out >= 16}) (k: nat{k < 16})
+  : Lemma (ensures Seq.index (upd_prefix_u8 out lanes n) k
+                   == (if k < n then lanes.[ mk_u64 k ] else Seq.index out k))
+          (decreases n) =
+  if n = 0 then () else lemma_upd_prefix_u8_index out lanes (n - 1) k
+
+(* Frame (k >= 16): unwritten positions unchanged.  Separate from the index
+   lemma so `lanes.[mk_u64 k]` never appears for k >= 16 (out-of-range). *)
+let rec lemma_upd_prefix_u8_frame (out: t_Slice u8) (lanes: Funarr.t_FunArray (mk_u64 16) u8)
+                                  (n: nat{n <= 16 /\ Seq.length out >= 16})
+                                  (k: nat{16 <= k /\ k < Seq.length out})
+  : Lemma (ensures Seq.index (upd_prefix_u8 out lanes n) k == Seq.index out k)
+          (decreases n) =
+  if n = 0 then () else lemma_upd_prefix_u8_frame out lanes (n - 1) k
+#pop-options
+
+(* Connection: the revealed model chain (len >= 16 branch) IS upd_prefix_u8 16.
+   High fuel to unfold the 16-level recursion into the model's explicit chain. *)
+#push-options "--fuel 20 --ifuel 2 --z3rlimit 200"
+let lemma_vst1q_u8_model_eq (out: t_Slice u8) (vec: t_e_uint8x16_t)
+  : Lemma (requires Seq.length out >= 16)
+          (ensures e_vst1q_u8 out vec == upd_prefix_u8 out (NV.to_u8x16 vec) 16) =
+  reveal_opaque (`%e_vst1q_u8) e_vst1q_u8;
+  reveal_opaque (`%Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model)
+                Libcrux_core_models.Core_arch.Arm.Extra.vst1q_bytes_model
+#pop-options
+
+#push-options "--fuel 2 --ifuel 2 --z3rlimit 300"
+let lemma_e_vst1q_u8_lane (out: t_Slice u8) (vec: t_e_uint8x16_t) (i: nat{i < 16})
+  : Lemma (requires v (Core_models.Slice.impl__len #u8 out) >= 16)
+          (ensures Seq.index (e_vst1q_u8 out vec) i == get_lane_u8x16 vec i)
+          [SMTPat (Seq.index (e_vst1q_u8 out vec) i)] =
+  lemma_vst1q_u8_model_eq out vec;
+  lemma_upd_prefix_u8_index out (NV.to_u8x16 vec) 16 i
+  (* Seq.index result i == lanes.[mk_u64 i]; bridge to get_lane_u8x16 via
+     vec128_index_u8x16 SMTPat (shallow, no upd chain). *)
+
+let lemma_e_vst1q_u8_frame (out: t_Slice u8) (vec: t_e_uint8x16_t) (i: nat)
+  : Lemma (requires v (Core_models.Slice.impl__len #u8 out) >= 16 /\ i >= 16 /\ i < Seq.length out)
+          (ensures Seq.index (e_vst1q_u8 out vec) i == Seq.index out i)
+          [SMTPat (Seq.index (e_vst1q_u8 out vec) i)] =
+  lemma_vst1q_u8_model_eq out vec;
+  lemma_upd_prefix_u8_frame out (NV.to_u8x16 vec) 16 i
+#pop-options
