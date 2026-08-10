@@ -2186,12 +2186,92 @@ let lemma_arm_vaddvq_s16_unroll (a: Funarr.t_FunArray (mk_u64 8) i16)
         FStar.Tactics.trefl ())
 #pop-options
 
-(* 8-term add_mod AC (left-fold from 0 == balanced tree), in CLEAN context —
-   the fold/tactic-laden op-fact context saturates on this; isolated it proves. *)
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 400"
+(* ── add_mod (i16 `+.`) associativity, DETERMINISTIC ────────────────────────
+   The 8-term `+.` AC below used to prove by a bare `= ()` nonlinear/modular
+   SMT search (isolated: 123/400, ~29 s; in-module: 252/400, ~50 s) whose
+   recorded unsat-core does NOT replay (hint-poison: a slow/flaky query banks a
+   lucky Z3 path).  We restructure to fast-stable: prove `@%` add-distributivity
+   from FStar.Math.Lemmas once, lift to `add_mod` assoc / left-zero, then
+   re-associate the left fold into the balanced tree by a 5-step `calc` — pure
+   ground re-association, zero Z3 modular search. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 60"
+
+(* `@%` (wrap into [-p/2,p/2[) depends only on the residue mod p *)
+let lemma_atp_cong (a b: int) (p: pos{p % 2 = 0})
+  : Lemma (requires a % p == b % p) (ensures a @% p == b @% p) = ()
+
+(* `a @% p` is ≡ a  (mod p) *)
+let lemma_atp_mod (a: int) (p: pos{p % 2 = 0})
+  : Lemma ((a @% p) % p == a % p) =
+  let m = a % p in
+  FStar.Math.Lemmas.lemma_mod_twice a p;
+  if m >= p / 2 then FStar.Math.Lemmas.lemma_mod_plus m (-1) p else ()
+
+(* left / right `@%` add-distributivity *)
+let lemma_atp_add_l (a b: int) (p: pos{p % 2 = 0})
+  : Lemma (((a @% p) + b) @% p == (a + b) @% p) =
+  lemma_atp_mod a p;
+  FStar.Math.Lemmas.lemma_mod_plus_distr_l (a @% p) b p;
+  FStar.Math.Lemmas.lemma_mod_plus_distr_l a b p;
+  lemma_atp_cong ((a @% p) + b) (a + b) p
+
+let lemma_atp_add_r (a b: int) (p: pos{p % 2 = 0})
+  : Lemma ((a + (b @% p)) @% p == (a + b) @% p) =
+  lemma_atp_mod b p;
+  FStar.Math.Lemmas.lemma_mod_add_distr a (b @% p) p;
+  FStar.Math.Lemmas.lemma_mod_add_distr a b p;
+  lemma_atp_cong (a + (b @% p)) (a + b) p
+
+(* bridge the i16 wrap `@%. I16` to `@% (pow2 16)` *)
+let lemma_atpd_i16 (x: int) : Lemma ((x @%. I16) == x @% (pow2 16)) = ()
+
+(* `@% (pow2 16)` is the identity on the i16 range *)
+let lemma_atp_id_i16 (y: int{range y I16}) : Lemma ((y @% (pow2 16)) == y) =
+  assert_norm (pow2 16 == 65536);
+  assert_norm (pow2 15 == 32768);
+  if y >= 0 then FStar.Math.Lemmas.small_mod y (pow2 16)
+  else begin
+    FStar.Math.Lemmas.lemma_mod_sub_1 (- y) (pow2 16);
+    FStar.Math.Lemmas.small_mod (- y) (pow2 16)
+  end
+
+(* `add_mod` (i16 `+.`) left-zero and associativity *)
+let lemma_add_mod_zero_l (x: i16) : Lemma (mk_i16 0 +. x == x) =
+  let vx = v x in
+  lemma_atpd_i16 (v (mk_i16 0) + vx);
+  lemma_atpd_i16 vx;
+  lemma_atp_id_i16 vx
+
+let lemma_add_mod_assoc (a b c: i16) : Lemma ((a +. b) +. c == a +. (b +. c)) =
+  let va = v a in let vb = v b in let vc = v c in
+  lemma_atpd_i16 (va + vb);
+  lemma_atpd_i16 (vb + vc);
+  lemma_atpd_i16 (((va + vb) @%. I16) + vc);
+  lemma_atpd_i16 (va + ((vb + vc) @%. I16));
+  lemma_atp_add_l (va + vb) vc (pow2 16);
+  lemma_atp_add_r va (vb + vc) (pow2 16)
+#pop-options
+
+(* 8-term add_mod AC (left-fold from 0 == balanced tree), in CLEAN context.
+   Deterministic: drop the leading 0, then re-associate the left fold into the
+   balanced tree via `lemma_add_mod_assoc` (each step a ground congruence). *)
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 40"
 let lemma_add8_ac (x0 x1 x2 x3 x4 x5 x6 x7: i16) : Lemma
   (ensures ((((((((mk_i16 0 +. x0) +. x1) +. x2) +. x3) +. x4) +. x5) +. x6) +. x7)
-           == (((x0 +. x1) +. (x2 +. x3)) +. ((x4 +. x5) +. (x6 +. x7)))) = ()
+           == (((x0 +. x1) +. (x2 +. x3)) +. ((x4 +. x5) +. (x6 +. x7)))) =
+  calc (==) {
+    ((((((((mk_i16 0 +. x0) +. x1) +. x2) +. x3) +. x4) +. x5) +. x6) +. x7);
+    == { lemma_add_mod_zero_l x0 }
+    (((((((x0 +. x1) +. x2) +. x3) +. x4) +. x5) +. x6) +. x7);
+    == { lemma_add_mod_assoc (x0 +. x1) x2 x3 }
+    ((((((x0 +. x1) +. (x2 +. x3)) +. x4) +. x5) +. x6) +. x7);
+    == { lemma_add_mod_assoc ((x0 +. x1) +. (x2 +. x3)) x4 x5 }
+    (((((x0 +. x1) +. (x2 +. x3)) +. (x4 +. x5)) +. x6) +. x7);
+    == { lemma_add_mod_assoc (((x0 +. x1) +. (x2 +. x3)) +. (x4 +. x5)) x6 x7 }
+    ((((x0 +. x1) +. (x2 +. x3)) +. (x4 +. x5)) +. (x6 +. x7));
+    == { lemma_add_mod_assoc ((x0 +. x1) +. (x2 +. x3)) (x4 +. x5) (x6 +. x7) }
+    (((x0 +. x1) +. (x2 +. x3)) +. ((x4 +. x5) +. (x6 +. x7)));
+  }
 #pop-options
 
 #push-options "--fuel 2 --ifuel 1 --z3rlimit 300"
@@ -2417,6 +2497,49 @@ let lemma_e_vdupq_n_u32_lane (c: u32) (i: nat{i < 4})
    comes from `o1` (i<128) or `o2` (i>=128); the caller discharges the two `o_k`
    bit-facts with `lemma_e_vst1q_bytes`.  Factoring the per-byte cross-product
    into this clean-context lemma keeps it OUT of the consumer's WP. *)
+(* Per-byte bit fact for the two-write store, in CLEAN context — mirror of
+   `Avx2.Byteperm_theory.lemma_store_glue_bits`.  The caller supplies the four
+   frame foralls, so `update_at_range` and its unbounded forall never enter THIS
+   query; the heavy `bit_vec_of_int_t_array` unfold for a symbolic `i` is proven
+   here ONCE, keeping it OUT of the `forall_intro` spine below (which used to
+   swallow the whole per-byte cross-product and re-prove cold at ~45-59 s /
+   120 rlimit — a hint that would not replay). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300 --split_queries always"
+let lemma_store_glue_bits_neon
+      (fin: t_Slice u8) (head: t_Array u8 (sz 32))
+      (o1 o2: t_Slice u8)
+      (lo hi: t_e_int16x8_t)
+      (i: nat{i < 256})
+  : Lemma
+      (requires
+        Seq.length fin >= 32 /\ Seq.length o1 == 16 /\ Seq.length o2 == 16 /\
+        head == Seq.slice fin 0 32 /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array (o1 <: t_Array u8 (sz 16)) 8 j == bv_bit lo j) /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array (o2 <: t_Array u8 (sz 16)) 8 j == bv_bit hi j) /\
+        (forall (k: nat). k < 16 ==> Seq.index fin k == Seq.index o1 k) /\
+        (forall (k: nat). 16 <= k /\ k < 32 ==> Seq.index fin k == Seq.index o2 (k - 16)))
+      (ensures
+        Rust_primitives.BitVectors.bit_vec_of_int_t_array head 8 i ==
+        (if i < 128 then bv_bit lo i else bv_bit hi (i - 128))) =
+  FStar.Math.Lemmas.euclidean_division_definition i 8;
+  Seq.lemma_index_slice fin 0 32 (i / 8);
+  if i < 128 then begin
+    FStar.Math.Lemmas.lemma_div_lt_nat i 128 8;
+    assert (Seq.index head (i / 8) == Seq.index o1 (i / 8));
+    assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o1 <: t_Array u8 (sz 16)) 8 i == bv_bit lo i)
+  end
+  else begin
+    let j = i - 128 in
+    FStar.Math.Lemmas.lemma_div_plus j 16 8;
+    FStar.Math.Lemmas.lemma_mod_plus j 16 8;
+    FStar.Math.Lemmas.lemma_div_lt_nat j 128 8;
+    assert (Seq.index head (i / 8) == Seq.index o2 (j / 8));
+    assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o2 <: t_Array u8 (sz 16)) 8 j == bv_bit hi j)
+  end
+#pop-options
+
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
 let lemma_store_glue_two_writes_neon
       (ser0 ser1 fin: t_Slice u8)
@@ -2449,21 +2572,7 @@ let lemma_store_glue_two_writes_neon
   let aux (i: nat{i < 256})
     : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array head 8 i ==
              (if i < 128 then bv_bit lo i else bv_bit hi (i - 128))) =
-    FStar.Math.Lemmas.euclidean_division_definition i 8;
-    Seq.lemma_index_slice fin 0 32 (i / 8);
-    if i < 128 then begin
-      FStar.Math.Lemmas.lemma_div_lt_nat i 128 8;
-      assert (Seq.index head (i / 8) == Seq.index o1 (i / 8));
-      assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o1 <: t_Array u8 (sz 16)) 8 i == bv_bit lo i)
-    end
-    else begin
-      let j = i - 128 in
-      FStar.Math.Lemmas.lemma_div_plus j 16 8;
-      FStar.Math.Lemmas.lemma_mod_plus j 16 8;
-      FStar.Math.Lemmas.lemma_div_lt_nat j 128 8;
-      assert (Seq.index head (i / 8) == Seq.index o2 (j / 8));
-      assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o2 <: t_Array u8 (sz 16)) 8 j == bv_bit hi j)
-    end
+    lemma_store_glue_bits_neon fin head o1 o2 lo hi i
   in
   FStar.Classical.forall_intro aux
 #pop-options
