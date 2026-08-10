@@ -521,6 +521,11 @@ pub fn _veor3q_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
 }
 
 #[inline(always)]
+// The op's documented contract (`LEFT + RIGHT == 64`); stated over the integer
+// projection so the extracted `debug_assert!` `+!` is bounded. Uncalled by
+// ml-kem/ml-dsa (the not(pre_core_models) real-arm64 path); sha3/aes use the
+// `arm64_extract` model under pre_core_models, so no caller cascade.
+#[hax_lib::requires(fstar!(r#"Rust_primitives.Integers.v v_LEFT + Rust_primitives.Integers.v v_RIGHT == 64"#))]
 pub fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
     debug_assert!(LEFT + RIGHT == 64);
     #[cfg(all(

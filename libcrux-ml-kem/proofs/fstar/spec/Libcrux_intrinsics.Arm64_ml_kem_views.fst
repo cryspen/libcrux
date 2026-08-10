@@ -2269,3 +2269,234 @@ let lemma_e_vmlal_high_s16 (a: t_e_int32x4_t) (b c: t_e_int16x8_t)
                                        ((cast (Seq.index (vec128_as_i16x8 b) (i + 4)) <: i32)
                                      *. (cast (Seq.index (vec128_as_i16x8 c) (i + 4)) <: i32))))
 #pop-options
+
+(* ══ codec bridge: i16 <-> u16 same-width lane views (PROVEN, zero new axioms) ══
+   Reinstates the per-lane fact the pcm `Arm64_extract._vreinterpretq_s16_u16`
+   ensures carried (`get_lane_i16x8 result i == cast_mod (get_lane_u16x8 m0 i)`),
+   now proven from the shared codec: the signed (i16) and unsigned (u16) 16-bit
+   lane views of the SAME 128-bit vec share `lane_reader` (bits I16 = bits U16 =
+   16); only `decode_lane`'s signedness differs, so each i16 lane is the
+   two's-complement (`cast_mod`) reinterpret of the u16 lane.  Consumed by NEON
+   proofs that build a mask via `reinterpret_s16_u16 (vcgeq_s16 ..)` — e.g.
+   `Vector.Neon.Arithmetic.cond_subtract_3329_`. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_decode_i16_u16 (f: (nat -> Bit.t_Bit))
+  : Lemma (IVi.decode_lane Rust_primitives.Integers.I16 f
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.u16_inttype
+                #Rust_primitives.Integers.i16_inttype
+                (IVi.decode_lane Rust_primitives.Integers.U16 f)) =
+  IVi.dsum2_bound f 0 16
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_i16_u16_lane_cast (bv: BV.t_BitVec (mk_u64 128)) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_i16x8 bv) i
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.u16_inttype
+                #Rust_primitives.Integers.i16_inttype
+                (Seq.index (vec128_as_u16x8 bv) i)) =
+  reveal_opaque (`%IVi.to_iv) IVi.to_iv;
+  lemma_decode_i16_u16 (IVi.lane_reader (mk_u64 128) 16 bv (mk_u64 i))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_e_vreinterpretq_s16_u16_lane (m0: t_e_uint16x8_t) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_i16x8 (e_vreinterpretq_s16_u16 m0)) i
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.u16_inttype
+                #Rust_primitives.Integers.i16_inttype
+                (Seq.index (vec128_as_u16x8 m0) i))
+          [SMTPat (Seq.index (vec128_as_i16x8 (e_vreinterpretq_s16_u16 m0)) i)] =
+  lemma_e_vreinterpretq_s16_u16 m0;
+  lemma_i16_u16_lane_cast m0 i
+#pop-options
+
+(* the inverse direction (u16 view == cast_mod of i16 view), for consumers that
+   round-trip i16 -> u16 (`reinterpret_u16_s16`) — e.g. the montgomery-factor
+   compute in `montgomery_reduce_int16x8_t` (`reinterpret_s16_u16 (vmulq_n_u16
+   (reinterpret_u16_s16 low) c)`). *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_decode_u16_i16 (f: (nat -> Bit.t_Bit))
+  : Lemma (IVi.decode_lane Rust_primitives.Integers.U16 f
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.i16_inttype
+                #Rust_primitives.Integers.u16_inttype
+                (IVi.decode_lane Rust_primitives.Integers.I16 f)) =
+  IVi.dsum2_bound f 0 16
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_u16_i16_lane_cast (bv: BV.t_BitVec (mk_u64 128)) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_u16x8 bv) i
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.i16_inttype
+                #Rust_primitives.Integers.u16_inttype
+                (Seq.index (vec128_as_i16x8 bv) i)) =
+  reveal_opaque (`%IVi.to_iv) IVi.to_iv;
+  lemma_decode_u16_i16 (IVi.lane_reader (mk_u64 128) 16 bv (mk_u64 i))
+#pop-options
+
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_e_vreinterpretq_u16_s16_lane (m0: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (Seq.index (vec128_as_u16x8 (e_vreinterpretq_u16_s16 m0)) i
+           == Rust_primitives.Integers.cast_mod
+                #Rust_primitives.Integers.i16_inttype
+                #Rust_primitives.Integers.u16_inttype
+                (Seq.index (vec128_as_i16x8 m0) i))
+          [SMTPat (Seq.index (vec128_as_u16x8 (e_vreinterpretq_u16_s16 m0)) i)] =
+  lemma_e_vreinterpretq_u16_s16 m0;
+  lemma_u16_i16_lane_cast m0 i
+#pop-options
+
+(* ── per-lane get_lane facts for the whole-vector arith/logical/transpose ops ──
+   The pcm `Arm64_extract` ops carried PER-LANE `get_lane` ensures; the migrated
+   op-facts are WHOLE-vector (`vec128_as_* (op) == map2 OP ..`).  Per-lane consumers
+   (the hand-written NEON theory companions) index those at a symbolic lane.  These
+   lemmas expose the clean per-lane fact.  NO SMTPat — a global `get_lane (op) i`
+   pattern compounds with the whole-vector SMTPat + the `map2`/`createi` index into
+   an e-matching cascade (measured: 31-min grind on `Serialize_theory`).  Consumers
+   call these EXPLICITLY, scoped to the lane they need. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+let lemma_e_vaddq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vaddq_s16 a b) i == (get_lane_i16x8 a i +. get_lane_i16x8 b i))
+  = lemma_e_vaddq_s16 a b
+let lemma_e_vsubq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vsubq_s16 a b) i == (get_lane_i16x8 a i -. get_lane_i16x8 b i))
+  = lemma_e_vsubq_s16 a b
+let lemma_e_vmulq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vmulq_s16 a b) i == mul_mod (get_lane_i16x8 a i) (get_lane_i16x8 b i))
+  = lemma_e_vmulq_s16 a b
+let lemma_e_vmulq_n_s16_lane (vv: t_e_int16x8_t) (c: i16) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vmulq_n_s16 vv c) i == (get_lane_i16x8 vv i *. c))
+  = lemma_e_vmulq_n_s16 vv c
+let lemma_e_vandq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vandq_s16 a b) i == (get_lane_i16x8 a i &. get_lane_i16x8 b i))
+  = lemma_e_vandq_s16 a b
+let lemma_e_veorq_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_veorq_s16 a b) i == (get_lane_i16x8 a i ^. get_lane_i16x8 b i))
+  = lemma_e_veorq_s16 a b
+let lemma_e_vdupq_n_s16_lane (c: i16) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vdupq_n_s16 c) i == c)
+  = lemma_e_vdupq_n_s16 c
+let lemma_e_vtrn1q_s32_lane (a b: t_e_int32x4_t) (i: nat{i < 4})
+  : Lemma (get_lane_i32x4 (e_vtrn1q_s32 a b) i
+           == (if i % 2 = 0 then get_lane_i32x4 a i else get_lane_i32x4 b (i - 1)))
+  = lemma_e_vtrn1q_s32 a b
+let lemma_e_vtrn2q_s32_lane (a b: t_e_int32x4_t) (i: nat{i < 4})
+  : Lemma (get_lane_i32x4 (e_vtrn2q_s32 a b) i
+           == (if i % 2 = 0 then get_lane_i32x4 a (i + 1) else get_lane_i32x4 b i))
+  = lemma_e_vtrn2q_s32 a b
+let lemma_e_vtrn1q_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vtrn1q_s16 a b) i
+           == (if i % 2 = 0 then get_lane_i16x8 a i else get_lane_i16x8 b (i - 1)))
+  = lemma_e_vtrn1q_s16 a b
+let lemma_e_vtrn2q_s16_lane (a b: t_e_int16x8_t) (i: nat{i < 8})
+  : Lemma (get_lane_i16x8 (e_vtrn2q_s16 a b) i
+           == (if i % 2 = 0 then get_lane_i16x8 a (i + 1) else get_lane_i16x8 b i))
+  = lemma_e_vtrn2q_s16 a b
+let lemma_e_vandq_u32_lane (a b: t_e_uint32x4_t) (i: nat{i < 4})
+  : Lemma (get_lane_u32x4 (e_vandq_u32 a b) i == (get_lane_u32x4 a i &. get_lane_u32x4 b i))
+  = lemma_e_vandq_u32 a b
+let lemma_e_vaddq_u32_lane (a b: t_e_uint32x4_t) (i: nat{i < 4})
+  : Lemma (get_lane_u32x4 (e_vaddq_u32 a b) i == (get_lane_u32x4 a i +. get_lane_u32x4 b i))
+  = lemma_e_vaddq_u32 a b
+let lemma_e_vmulq_n_u32_lane (a: t_e_uint32x4_t) (c: u32) (i: nat{i < 4})
+  : Lemma (get_lane_u32x4 (e_vmulq_n_u32 a c) i == (get_lane_u32x4 a i *. c))
+  = lemma_e_vmulq_n_u32 a c
+let lemma_e_vdupq_n_u32_lane (c: u32) (i: nat{i < 4})
+  : Lemma (get_lane_u32x4 (e_vdupq_n_u32 c) i == c)
+  = lemma_e_vdupq_n_u32 c
+#pop-options
+
+(* ── TWO-WRITE byte-store framing glue (to_bytes) ────────────────────────────
+   NEON analog of `Avx2.Byteperm_theory.lemma_store_glue_two_writes`, specialised
+   to the two [0:16] / [16:32] writes of `to_bytes` and generalised to a `t_Slice
+   u8` target (length >= 32, vs the AVX2 fixed length-32 array).  Threads the two
+   `update_at_range` frames so the per-byte bit of `head = Seq.slice fin 0 32`
+   comes from `o1` (i<128) or `o2` (i>=128); the caller discharges the two `o_k`
+   bit-facts with `lemma_e_vst1q_bytes`.  Factoring the per-byte cross-product
+   into this clean-context lemma keeps it OUT of the consumer's WP. *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_store_glue_two_writes_neon
+      (ser0 ser1 fin: t_Slice u8)
+      (o1 o2: t_Slice u8)
+      (lo hi: t_e_int16x8_t)
+      (r0 r1: Core_models.Ops.Range.t_Range usize)
+  : Lemma
+      (requires
+        Seq.length ser0 >= 32 /\
+        v r0.Core_models.Ops.Range.f_start == 0  /\ v r0.Core_models.Ops.Range.f_end == 16 /\
+        v r1.Core_models.Ops.Range.f_start == 16 /\ v r1.Core_models.Ops.Range.f_end == 32 /\
+        Seq.length o1 == 16 /\ Seq.length o2 == 16 /\
+        ser1 == Rust_primitives.Hax.Monomorphized_update_at.update_at_range ser0 r0 o1 /\
+        fin  == Rust_primitives.Hax.Monomorphized_update_at.update_at_range ser1 r1 o2 /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array (o1 <: t_Array u8 (sz 16)) 8 j == bv_bit lo j) /\
+        (forall (j: nat{j < 128}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array (o2 <: t_Array u8 (sz 16)) 8 j == bv_bit hi j))
+      (ensures
+        (let head : t_Array u8 (sz 32) = Seq.slice fin 0 32 in
+         forall (i: nat{i < 256}).
+           Rust_primitives.BitVectors.bit_vec_of_int_t_array head 8 i ==
+           (if i < 128 then bv_bit lo i else bv_bit hi (i - 128)))) =
+  Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range ser0 r0 o1;
+  Rust_primitives.Hax.Monomorphized_update_at_Lemmas.lemma_index_update_at_range ser1 r1 o2;
+  assert (Seq.length fin == Seq.length ser0);
+  assert (forall (k: nat). k < 16 ==> Seq.index fin k == Seq.index o1 k);
+  assert (forall (k: nat). 16 <= k /\ k < 32 ==> Seq.index fin k == Seq.index o2 (k - 16));
+  let head : t_Array u8 (sz 32) = Seq.slice fin 0 32 in
+  let aux (i: nat{i < 256})
+    : Lemma (Rust_primitives.BitVectors.bit_vec_of_int_t_array head 8 i ==
+             (if i < 128 then bv_bit lo i else bv_bit hi (i - 128))) =
+    FStar.Math.Lemmas.euclidean_division_definition i 8;
+    Seq.lemma_index_slice fin 0 32 (i / 8);
+    if i < 128 then begin
+      FStar.Math.Lemmas.lemma_div_lt_nat i 128 8;
+      assert (Seq.index head (i / 8) == Seq.index o1 (i / 8));
+      assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o1 <: t_Array u8 (sz 16)) 8 i == bv_bit lo i)
+    end
+    else begin
+      let j = i - 128 in
+      FStar.Math.Lemmas.lemma_div_plus j 16 8;
+      FStar.Math.Lemmas.lemma_mod_plus j 16 8;
+      FStar.Math.Lemmas.lemma_div_lt_nat j 128 8;
+      assert (Seq.index head (i / 8) == Seq.index o2 (j / 8));
+      assert (Rust_primitives.BitVectors.bit_vec_of_int_t_array (o2 <: t_Array u8 (sz 16)) 8 j == bv_bit hi j)
+    end
+  in
+  FStar.Classical.forall_intro aux
+#pop-options
+
+(* ── i32x4 saturating doubling multiply-high (vqdmulh) — the s32 op-fact that the
+   pcm Arm64_extract `e_vqdmulhq_n_s32` ensures carried per-lane; MISSED in the
+   migration (only the s16 forms were ported).  Used by `Neon.Compress`
+   `cmp_compress_u32_lane`.  Mirrors `lemma_e_vqdmulhq_n_s16` at the i32x4 width
+   (i32 product widens to i64, shift 31, clamp to i32 MAX/MIN). ──────────────── *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
+let lemma_e_vqdmulhq_n_s32 (a: t_e_int32x4_t) (b: i32)
+  : Lemma (vec128_as_i32x4 (e_vqdmulhq_n_s32 a b)
+           == Seq.init 4 (fun i ->
+                let prod = ((cast (Seq.index (vec128_as_i32x4 a) i) <: i64) *. (cast b <: i64)) >>! (mk_i32 31) in
+                if prod >. mk_i64 2147483647 then mk_i32 2147483647
+                else if prod <. mk_i64 (- 2147483648) then mk_i32 (- 2147483648) else (cast prod <: i32))) =
+  NV.lemma_vqdmulhq_n_s32 a b;
+  Seq.lemma_eq_intro (vec128_as_i32x4 (e_vqdmulhq_n_s32 a b))
+                     (Seq.init 4 (fun i ->
+                        let prod = ((cast (Seq.index (vec128_as_i32x4 a) i) <: i64) *. (cast b <: i64)) >>! (mk_i32 31) in
+                        if prod >. mk_i64 2147483647 then mk_i32 2147483647
+                        else if prod <. mk_i64 (- 2147483648) then mk_i32 (- 2147483648) else (cast prod <: i32)))
+#pop-options
+
+(* per-lane form matching the pcm ensures (`get_lane_i32x4`); this is what
+   `cmp_compress_u32_lane` consumes.  SMTPat is narrow — `e_vqdmulhq_n_s32` is
+   used only in Compress. *)
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 200"
+let lemma_e_vqdmulhq_n_s32_lane (a: t_e_int32x4_t) (b: i32) (i: nat{i < 4})
+  : Lemma (get_lane_i32x4 (e_vqdmulhq_n_s32 a b) i ==
+           (let prod = ((cast (get_lane_i32x4 a i) <: i64) *. (cast b <: i64)) >>! (mk_i32 31) in
+            if prod >. mk_i64 2147483647 then mk_i32 2147483647
+            else if prod <. mk_i64 (- 2147483648) then mk_i32 (- 2147483648) else (cast prod <: i32)))
+          [SMTPat (get_lane_i32x4 (e_vqdmulhq_n_s32 a b) i)] =
+  lemma_e_vqdmulhq_n_s32 a b
+#pop-options
