@@ -523,6 +523,28 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         }
     }
 
+    /// Set up the configuration for HPKE with a caller-provided PRNG.
+    ///
+    /// This is like [`Hpke::new`] but stores the given PRNG instead of
+    /// constructing one via [`HpkeCrypto::prng`]. Use this on platforms without
+    /// a system RNG (e.g. wasm), where the caller has to construct the provider
+    /// PRNG itself.
+    pub fn new_with_rng(
+        mode: Mode,
+        kem_id: KemAlgorithm,
+        kdf_id: KdfAlgorithm,
+        aead_id: AeadAlgorithm,
+        prng: Crypto::HpkePrng,
+    ) -> Self {
+        Self {
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id,
+            prng,
+        }
+    }
+
     /// Set up an HPKE sender.
     ///
     /// For the base and PSK modes this encapsulates the public key `pk_r`
