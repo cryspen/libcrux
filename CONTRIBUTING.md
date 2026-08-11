@@ -110,6 +110,7 @@ It is a practical policy intended to focus our efforts on submissions that are s
 ## General Contribution Workflow
 When you are ready to contribute code or documentation:
 1. **Check Existing Issues**: Before starting work, check the issue tracker to see if someone is already working on the same problem.
+    - **Comment in the Issue**: If there is an existing issue that you want to work on, please first ask in the issue if this is suitable to work on and to discuss your proposal.
 2. **Open an Issue First**: For significant changes or new features, please open an issue to discuss your proposal with the maintainers before writing the code.
 3. **Drafting your Pull Request**:
     - Keep your PRs focused and as small as reasonably possible.
