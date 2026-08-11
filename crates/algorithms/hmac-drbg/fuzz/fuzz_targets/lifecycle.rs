@@ -129,8 +129,8 @@ macro_rules! run_lifecycle {
                             // Counter must not have changed.
                             assert_eq!(drbg.reseed_counter(), counter_before);
                         }
-                        Err(GenerateError::RequestInvalid) => {
-                            // output_len == 0 or > MAX_GENERATE_BYTES: counter unchanged.
+                        Err(GenerateError::OutputTooLarge) => {
+                            // output_len > MAX_GENERATE_BYTES: counter unchanged.
                             assert_eq!(drbg.reseed_counter(), counter_before);
                         }
                         Err(e) => panic!("unexpected generate error: {e:?}"),

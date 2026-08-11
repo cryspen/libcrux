@@ -82,7 +82,7 @@ fn try_fill_bytes_exact_max_generate() {
 #[test]
 fn try_fill_bytes_larger_than_max_generate() {
     // try_fill_bytes must split the request into chunks of MAX_GENERATE_BYTES
-    // and must NOT return RequestTooLarge.
+    // and must NOT return OutputTooLarge.
     let mut drbg = make_sha256();
     let mut buf = vec![0u8; libcrux_hmac_drbg::MAX_GENERATE_BYTES + 1];
     drbg.try_fill_bytes(&mut buf).unwrap();

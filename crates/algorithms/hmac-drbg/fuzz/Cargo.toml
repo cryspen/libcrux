@@ -9,10 +9,11 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
+rand = { version = "0.10", default-features = false, features = ["std_rng"]}
 
 [dependencies.libcrux-hmac-drbg]
 path = ".."
-features = ["testing"]
+features = ["_testing-apis", "rand"]
 
 [[bin]]
 name = "new"
@@ -33,6 +34,14 @@ harness = false
 [[bin]]
 name = "lifecycle"
 path = "fuzz_targets/lifecycle.rs"
+test = false
+doc = false
+bench = false
+harness = false
+
+[[bin]]
+name = "reseeding"
+path = "fuzz_targets/reseeding.rs"
 test = false
 doc = false
 bench = false

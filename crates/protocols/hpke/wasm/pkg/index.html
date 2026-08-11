@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Post-Quantum HPKE demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ce-ink: #0e2436;
+        --ce-ink-soft: #2a3f52;
+        --ce-teal: #16607a;
+        --ce-amber: #d2912f;
+        --ce-ochre: #9e631a;
+        --ce-slate: #51677a;
+        --ce-paper: #faf6ee;
+        --ce-paper-2: #f3ecdf;
+        --ce-line: #e4dbcb;
+        --ce-white: #ffffff;
+        --ce-danger: #a5331f;
+        --ce-sans: "IBM Plex Sans", system-ui, sans-serif;
+        --ce-mono: "IBM Plex Mono", ui-monospace, monospace;
+        --ce-r: 4px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 0;
+        padding: 4px;
+        background: transparent;
+        color: var(--ce-ink);
+        font-family: var(--ce-sans);
+        font-size: 15px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .demo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .panel {
+        background: var(--ce-paper-2);
+        border: 1px solid var(--ce-line);
+        border-radius: var(--ce-r);
+        padding: 20px;
+      }
+
+      .panel__title {
+        margin: 0 0 4px;
+        font-family: var(--ce-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ce-ochre);
+      }
+
+      .panel__note {
+        margin: 0 0 16px;
+        font-size: 0.82rem;
+        color: var(--ce-slate);
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        margin-top: 14px;
+        margin-bottom: 4px;
+        font-family: var(--ce-mono);
+        font-size: 0.68rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ce-ink-soft);
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--ce-line);
+        border-radius: var(--ce-r);
+        background: var(--ce-white);
+        color: var(--ce-ink);
+        font-family: var(--ce-mono);
+        font-size: 0.82rem;
+        line-height: 1.5;
+      }
+
+      input {
+        overflow-x: auto;
+        text-overflow: ellipsis;
+      }
+
+      textarea {
+        min-height: 80px;
+        resize: vertical;
+        font-family: var(--ce-sans);
+        font-size: 0.9rem;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--ce-teal);
+        box-shadow: 0 0 0 2px rgba(22, 96, 122, 0.2);
+      }
+
+      input[readonly],
+      textarea[readonly] {
+        background: var(--ce-paper);
+        color: var(--ce-slate);
+      }
+
+      hr {
+        width: 100%;
+        border: none;
+        border-top: 1px solid var(--ce-line);
+        margin: 18px 0 0;
+      }
+
+      button {
+        margin-top: 16px;
+        padding: 9px 16px;
+        border-radius: var(--ce-r);
+        font-family: var(--ce-sans);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.12s ease,
+          border-color 0.12s ease;
+      }
+
+      .btn-primary {
+        border: 1px solid var(--ce-teal);
+        background: var(--ce-teal);
+        color: var(--ce-white);
+      }
+
+      .btn-primary:hover {
+        background: #12506a;
+        border-color: #12506a;
+      }
+
+      .btn-outline {
+        border: 1px solid var(--ce-teal);
+        background: transparent;
+        color: var(--ce-teal);
+      }
+
+      .btn-outline:hover {
+        background: rgba(22, 96, 122, 0.08);
+      }
+
+      .is-error {
+        color: var(--ce-danger);
+        font-weight: 600;
+      }
+
+      @media (max-width: 640px) {
+        .demo {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      function hex_to_bytes(hex) {
+        var typedArray = new Uint8Array(
+          hex.match(/[\da-f]{2}/gi).map(function (h) {
+            return parseInt(h, 16);
+          }),
+        );
+        return typedArray;
+      }
+
+      function bytes_to_hex(bytes) {
+        return Array.from(bytes, function (byte) {
+          return ("0" + (byte & 0xff).toString(16)).slice(-2);
+        }).join("");
+      }
+
+      import init, {
+        HpkeConfig,
+        hpke_key_gen,
+        hpke_seal,
+        hpke_open,
+      } from "./hpke_rs_wasm.js";
+
+      await init();
+
+      // The ciphersuite in use. Built from the dropdown selection below, which
+      // defaults to Base / DHKEM(X25519, HKDF-SHA256) / HKDF-SHA256 / ChaCha20Poly1305.
+      let config;
+
+      function update_config() {
+        const suite = document.getElementById("suite");
+        const [mode, kem, kdf, aead] = suite.value.split(",").map(Number);
+        // Release the previous config's wasm allocation eagerly rather than
+        // leaving it to the GC finalizer.
+        config?.free();
+        config = new HpkeConfig(mode, kem, kdf, aead);
+
+        // Reset fields to avoid running ops with a wrong value.
+        document.receiver_form.enc.value = "";
+        document.receiver_form.ct.value = "";
+        document.receiver_form.payload.value = "";
+        document.receiver_form.pkR.value = "";
+        document.receiver_form.skR.value = "";
+      }
+      document.getElementById("suite").onchange = update_config;
+      update_config();
+
+      function seal() {
+        let info = new TextEncoder().encode(document.sender_form.info.value);
+        let aad = new TextEncoder().encode(document.sender_form.aad.value);
+        let pt = new TextEncoder().encode(document.sender_form.payload.value);
+        let pkR = hex_to_bytes(document.receiver_form.pkR.value);
+
+        let result = hpke_seal(config, pkR, info, aad, pt);
+        let enc = result.enc;
+        let ct = result.ct;
+
+        document.receiver_form.enc.value = bytes_to_hex(enc);
+        document.receiver_form.ct.value = bytes_to_hex(ct);
+      }
+      document.getElementById("hpke_seal").onclick = seal;
+
+      function open() {
+        try {
+          let skR = hex_to_bytes(document.receiver_form.skR.value);
+          let enc = hex_to_bytes(document.receiver_form.enc.value);
+          let ct = hex_to_bytes(document.receiver_form.ct.value);
+          let info = new TextEncoder().encode(document.sender_form.info.value);
+          let aad = new TextEncoder().encode(document.sender_form.aad.value);
+
+          let ptR = hpke_open(config, enc, skR, info, aad, ct);
+          let ptR_string = new TextDecoder().decode(ptR);
+          document.receiver_form.payload.value = ptR_string;
+          document.receiver_form.payload.classList.remove("is-error");
+        } catch {
+          document.receiver_form.payload.value = " ⚠️  Error";
+          document.receiver_form.payload.classList.add("is-error");
+        }
+      }
+      document.getElementById("hpke_open").onclick = open;
+
+      function gen_receiver_kp() {
+        const kp = hpke_key_gen(config);
+
+        let skR = kp.sk;
+        let pkR = kp.pk;
+        document.receiver_form.pkR.value = bytes_to_hex(pkR);
+        document.receiver_form.skR.value = bytes_to_hex(skR);
+      }
+      document.getElementById("gen_receiver_kp").onclick = gen_receiver_kp;
+    </script>
+
+    <div class="demo">
+      <div class="panel">
+        <h3 class="panel__title">Sender</h3>
+        <p class="panel__note">
+          Encrypts the payload to the receiver's public key.
+        </p>
+        <form
+          name="sender_form"
+          onsubmit="
+            hpke_seal();
+            return false;
+          "
+        >
+          <label for="info">Info</label>
+          <input name="info" id="info" />
+          <label for="aad">Additional data</label>
+          <input name="aad" id="aad" />
+          <label for="payload">Payload</label>
+          <textarea
+            name="payload"
+            id="payload"
+            placeholder="The payload…"
+          ></textarea>
+          <button type="button" id="hpke_seal" class="btn-primary">Seal</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel__title">Receiver</h3>
+        <p class="panel__note">
+          Generates a key pair and recovers the payload.
+        </p>
+        <form name="receiver_form" onsubmit="return false;">
+          <label for="suite">Ciphersuite</label>
+          <select name="suite" id="suite">
+            <option value="0,32,1,3" selected>
+              DHKEM(X25519, HKDF-SHA256) · HKDF-SHA256 · ChaCha20Poly1305
+            </option>
+            <option value="0,32,1,1">
+              DHKEM(X25519, HKDF-SHA256) · HKDF-SHA256 · AES-128-GCM
+            </option>
+            <option value="0,16,1,1">
+              DHKEM(P-256, HKDF-SHA256) · HKDF-SHA256 · AES-128-GCM
+            </option>
+            <option value="0,25722,17,3">
+              ML-KEM-768 + X25519 · SHAKE256 · ChaCha20Poly1305
+            </option>
+            <option value="0,65,1,3">
+              ML-KEM-768 · HKDF-SHA256 · ChaCha20Poly1305
+            </option>
+            <option value="0,80,17,2">
+              ML-KEM-768 + P-256 · SHAKE256 · AES-256-GCM
+            </option>
+          </select>
+          <button type="button" id="gen_receiver_kp" class="btn-primary">
+            Generate key pair
+          </button>
+          <label for="pkR">Public key (pk)</label>
+          <input name="pkR" id="pkR" />
+          <label for="skR">Private key (sk)</label>
+          <input name="skR" id="skR" />
+          <hr />
+          <label for="enc">Encapsulated key (enc)</label>
+          <input name="enc" id="enc" />
+          <label for="ct">Ciphertext (ct)</label>
+          <input name="ct" id="sct" />
+          <button type="button" id="hpke_open" class="btn-outline">Open</button>
+          <label for="payload">Decrypted payload</label>
+          <textarea
+            name="payload"
+            id="payload"
+            placeholder="The decrypted payload…"
+            readonly
+          ></textarea>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

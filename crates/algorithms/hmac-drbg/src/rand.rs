@@ -63,11 +63,8 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> rand::TryRng for HmacDrbg<
     // #hax: requires self.reseed_counter + (dst.len() / MAX_GENERATE_BYTES) as u64 + 1 <= RESEED_INTERVAL
     // #hax: ensures result.is_ok() ==> dst is fully written
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        let mut written = 0;
-        while written < dst.len() {
-            let chunk = (dst.len() - written).min(MAX_GENERATE_BYTES);
-            self.generate(&mut dst[written..written + chunk], &[])?;
-            written += chunk;
+        for chunk in dst.chunks_mut(MAX_GENERATE_BYTES) {
+            self.generate(chunk, &[])?;
         }
         Ok(())
     }
@@ -329,7 +326,7 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
     /// hax.
     ///
     ///
-    //hax: requires dst.len() < crate::MAX_GENERATE_BYTES
+    // #hax: requires dst.len() <= crate::MAX_GENERATE_BYTES
     fn safe_generate_small(&mut self, dst: &mut [u8]) {
         if self.drbg.needs_reseed() {
             match self.drbg.reseed_from_rng(&mut self.rng, &[]) {
@@ -347,10 +344,29 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng>
             // we just ensured that no reseed is required
             Err(crate::GenerateError::ReseedRequired) => unreachable!(),
             // We know how much data we request and it's fine
-            Err(crate::GenerateError::RequestInvalid) => unreachable!(),
+            Err(crate::GenerateError::OutputTooLarge) => unreachable!(),
             // Again, the input size is safe.
             Err(crate::GenerateError::InputTooLarge) => unreachable!(),
         }
+    }
+
+    /// Returns the inner DRBG's reseed counter.
+    ///
+    /// See [`HmacDrbg::reseed_counter`] for further information.
+    pub fn reseed_counter(&self) -> u64 {
+        self.drbg.reseed_counter()
+    }
+
+    /// Force-set the inner DRBG's reseed counter (for testing the auto-reseed
+    /// path).
+    ///
+    /// Reaching [`RESEED_INTERVAL`] by generating is not feasible, so tests and
+    /// fuzz targets that need the reseed branch have to jump the counter there.
+    ///
+    /// [`RESEED_INTERVAL`]: crate::RESEED_INTERVAL
+    #[cfg(any(test, feature = "_testing-apis"))]
+    pub fn set_reseed_counter(&mut self, v: u64) {
+        self.drbg.set_reseed_counter(v);
     }
 }
 
@@ -373,14 +389,9 @@ impl<const OUTLEN: usize, Hmac: HmacAlgorithm<OUTLEN>, ReseedRng: CryptoRng> ran
     }
 
     fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-        let (chunks, rest): (&mut [[u8; MAX_GENERATE_BYTES]], _) = dst.as_chunks_mut();
-
-        for chunk in chunks {
+        for chunk in dst.chunks_mut(MAX_GENERATE_BYTES) {
             self.safe_generate_small(chunk);
         }
-
-        self.safe_generate_small(rest);
-
         Ok(())
     }
 }

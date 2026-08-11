@@ -11,7 +11,7 @@
 //!
 //! Checks:
 //!   - No panic or undefined behaviour for any input.
-//!   - `RequestInvalid` iff output_len == 0 or output_len > MAX_GENERATE_BYTES.
+//!   - `OutputTooLarge` iff output_len > MAX_GENERATE_BYTES.
 //!   - On success the output buffer is fully written (no uninitialised bytes leak).
 #![no_main]
 
@@ -39,10 +39,10 @@ fuzz_target!(|data: &[u8]| {
             match drbg.generate(&mut out, additional_input) {
                 Ok(()) => {
                     // Success must only happen for valid lengths.
-                    assert!(output_len > 0 && output_len <= MAX_GENERATE_BYTES);
+                    assert!(output_len <= MAX_GENERATE_BYTES);
                 }
-                Err(GenerateError::RequestInvalid) => {
-                    assert!(output_len == 0 || output_len > MAX_GENERATE_BYTES);
+                Err(GenerateError::OutputTooLarge) => {
+                    assert!(output_len > MAX_GENERATE_BYTES);
                 }
                 Err(GenerateError::ReseedRequired) => {
                     // Cannot happen with a freshly instantiated DRBG (counter = 1).

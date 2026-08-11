@@ -227,10 +227,9 @@ fn generate_different_seeds_sha256() {
 }
 
 #[test]
-fn request_zero_bytes_rejected() {
+fn request_zero_bytes_succeeds() {
     let mut drbg = make_sha256();
-    let err = drbg.generate(&mut [], &[]).unwrap_err();
-    assert_eq!(err, GenerateError::RequestInvalid);
+    drbg.generate(&mut [], &[]).unwrap();
 }
 
 #[test]
@@ -238,7 +237,7 @@ fn request_too_large() {
     let mut drbg = make_sha256();
     let mut big = vec![0u8; MAX_GENERATE_BYTES + 1];
     let err = drbg.generate(&mut big, &[]).unwrap_err();
-    assert_eq!(err, GenerateError::RequestInvalid);
+    assert_eq!(err, GenerateError::OutputTooLarge);
 }
 
 #[test]
