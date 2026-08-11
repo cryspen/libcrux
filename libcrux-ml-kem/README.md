@@ -21,7 +21,7 @@ Each module provides the following API:
 
 ### Portable and Optimized Implementations
 The crate provides portable, as well as AVX2- and NEON-optimized
-implementations of the above API. By defautl, the crate's `build.rs`
+implementations of the above API. By default, the crate's `build.rs`
 will include the portable implementation and one of the optimized
 implementations in the build, according to the value of
 `CARGO_CFG_TARGET_ARCH`.
