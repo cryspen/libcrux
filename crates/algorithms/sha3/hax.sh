@@ -2,12 +2,12 @@
 set -ex
 
 function extract_all() {
-    # `--cfg pre_core_models` routes the AVX2 backend to
-    # `avx2_extract.rs` (the bit_vec stub), mirroring the arm64
-    # pattern.  Without it, hax pulls in the full
-    # `core_models::arch::x86::*` chain (Bitvec/Funarr) which we do
-    # not need for the SHA-3 proofs.
-    export RUSTFLAGS="${RUSTFLAGS:-} --cfg pre_core_models"
+    # `--cfg pre_core_models_avx2` routes ONLY the AVX2 backend to
+    # `avx2_extract.rs` (the bit_vec stub).  The arm64 (NEON) backend is NOT
+    # gated, so lib.rs routes it to the REAL core-models `Libcrux_intrinsics.Arm64`
+    # (differentially-tested), consumed via the `Arm64_sha3_views` companion.
+    # (Per-ISA flip: avx2 flips to core-models in a later phase.)
+    export RUSTFLAGS="${RUSTFLAGS:-} --cfg pre_core_models_avx2"
 
     # Uniform shared deps via their canonical scripts (single source of truth;
     # idempotent).  They are content-invariant to pre_core_models, so a canonical
@@ -18,24 +18,28 @@ function extract_all() {
     dep_extract crates/utils/core-models
 
     # Extract intrinsics into sha3's OWN dedicated intrinsics dir (--output-dir),
-    # so the shared crates/utils/intrinsics tree is never clobbered.  sha3 uses the
-    # pre_core_models mapping (avx2 -> Avx2_extract, the bit_vec stub) WITH
-    # interfaces (`--interfaces "+**"`), matching its committed config.
+    # so the shared crates/utils/intrinsics tree is never clobbered.  Under
+    # `pre_core_models_avx2` lib.rs routes avx2 -> `Avx2_extract` (bit_vec stub)
+    # and arm64 -> the REAL core-models `Arm64`.  `--interfaces` is SPLIT per
+    # module (mirror ml-kem's split, flipped): the STUB `Avx2_extract` MUST get a
+    # `.fsti` (its `fstar::replace(interface,...)` bit_vec blocks need an interface
+    # to land in, else Error 47/72), while the REAL `Arm64` stays TRANSPARENT so
+    # the `Arm64_sha3_views` op-facts can `reveal`/reduce `e_vOP` to `Neon.OP`.
+    # Allowlist form (`-** +avx2_extract::**`) fails SAFE for Arm64.
     #
     # Force a rebuild of the intrinsics crate (touch its sources) so the
-    # pre_core_models variant is regenerated even if a prior extraction in this
-    # working tree built it under a DIFFERENT config (e.g. ml-dsa's non-pcm real
-    # `Avx2`): hax reuses the cached THIR when cargo thinks the crate is fresh, so
-    # without this touch sha3 can silently pick up ml-dsa's `Avx2.fst` instead of
-    # its own `Avx2_extract.fst` (the cross-crate cargo-freshness flip). Harmless
-    # in single-crate CI (one extra intrinsics recompile).
+    # per-ISA variant is regenerated even if a prior extraction in this working
+    # tree built it under a DIFFERENT config: hax reuses the cached THIR when
+    # cargo thinks the crate is fresh, so without this touch sha3 can silently
+    # pick up another crate's `Arm64.fst`/`Avx2.fst` (cross-crate cargo-freshness
+    # flip). Harmless in single-crate CI (one extra intrinsics recompile).
     touch "$REPO_ROOT/crates/utils/intrinsics/src/"*.rs
     clean_generated_fstar "$SHA3_INTRINSICS_DIR"
     extract crates/utils/intrinsics \
         -C --features simd128,simd256 ";" \
         into -i "-libcrux_core_models::**" \
         --output-dir "$SHA3_INTRINSICS_DIR" \
-        fstar --z3rlimit 80 --interfaces "+**"
+        fstar --z3rlimit 80 --interfaces "-** +libcrux_intrinsics::avx2_extract::**"
 
     dep_extract crates/utils/secrets
 
@@ -188,6 +192,19 @@ function patch_fstar_extractions() {
     for f in Libcrux_sha3.Avx2.X4.Incremental.fst Libcrux_sha3.Neon.X2.Incremental.fst; do
         [ -f "$target_dir/$f" ] && $SED -i 's/^type t_KeccakState =/noeq type t_KeccakState =/' "$target_dir/$f"
     done
+
+    # core-models flip: the multi-block squeeze composers (impl__squeeze_first_three_blocks,
+    # impl__squeeze_first_five_blocks) saturate cold from the Arm64_sha3_views companion
+    # SMTPat cascade (composer pollution, same as the Store composers). `fstar::options`
+    # is illegal on an inherent-impl method (anon const) and is dropped on the impl block,
+    # so wrap the two decls (three_blocks .. five_blocks, the last decls) in a
+    # companion-excluding #push-options / #pop-options here.
+    local simd128f="$target_dir/Libcrux_sha3.Generic_keccak.Simd128.fst"
+    if [ -f "$simd128f" ] && grep -q '^let impl__squeeze_first_three_blocks' "$simd128f"; then
+        SQZ_OPTS="#push-options \"--fuel 0 --ifuel 1 --z3rlimit 400 --using_facts_from '* -Hacspec_sha3.Sponge.squeeze -EquivImplSpec.Keccakf.Generic.extract_lane -Libcrux_intrinsics.Arm64_sha3_views'\"" \
+            perl -i -pe 'print "$ENV{SQZ_OPTS}\n\n" if /^let impl__squeeze_first_three_blocks$/' "$simd128f"
+        printf '\n#pop-options\n' >> "$simd128f"
+    fi
 
     # Note: per-u64-lane SMTPat lemma admits (lemma_mm256_*_u64x4)
     # are now injected directly from avx2_extract.rs via

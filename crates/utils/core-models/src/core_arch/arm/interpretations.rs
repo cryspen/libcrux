@@ -540,8 +540,14 @@ pub mod int_vec {
     }
 
     /// VXAR: `r[i] = rot_right_N(a[i] XOR b[i])` per 64-bit lane.
+    ///
+    /// Expressed as the equivalent left rotation `rotate_left((64 - N%64)%64)`
+    /// (`rotate_right(x, k) == rotate_left(x, (64-k)%64)` for a 64-bit word).
+    /// Both compute the same value, so the differential lift/test still hold;
+    /// the left form is what the Keccak (rho) equivalence consumers need, and
+    /// it lets the whole NEON flip stay axiom-free (no rotate-symmetry lemma).
     pub fn vxarq_u64<const N: i32>(a: u64x2, b: u64x2) -> u64x2 {
-        u64x2::from_fn(|i| (a[i] ^ b[i]).rotate_right((N as u32) % 64))
+        u64x2::from_fn(|i| (a[i] ^ b[i]).rotate_left((64 - (N as u32) % 64) % 64))
     }
 
     /// AESE: `data XOR key`, ShiftRows, SubBytes (no MixColumns).

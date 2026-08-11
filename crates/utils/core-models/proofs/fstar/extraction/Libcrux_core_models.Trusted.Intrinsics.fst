@@ -124,3 +124,35 @@ val lemma_castps_si256_lift (a: bv256)
 assume
 val lemma_testz_si256_lift (a b: bv256)
     : Lemma (Avx.e_mm256_testz_si256 a b == IV.e_mm256_testz_si256 a b)
+
+(* ============================================================================
+   core::num u64 le_bytes SEMANTICS.  `Core_models.Num.impl_u64__{to,from}_le_bytes`
+   are abstract `assume val` (no body) in the hax proof-lib (`Core_models.Num.fst`).
+   The SHA3 reference spec (`Hacspec_sha3.Sponge.{squeeze_state,xor_block_into_state}`,
+   `specs/sha3/src/sponge.rs`) is defined in terms of them, while the core-models
+   SIMD byte load/store models (`Arm.Extra.{vst1q,vld1q}_bytes_model`, and the AVX2
+   analogs) produce the CODEC byte view (`to_u8x16` = bit-level shift/truncate).
+   These two axioms PIN the abstract functions to their standard little-endian
+   meaning, which lets the SIMD impl byte-I/O proofs reconnect to the to_le_bytes
+   /from_le_bytes-defined spec.  This REPLACES the (much larger, per-op) pcm
+   `Arm64_extract`/`Avx2_extract` byte op-ensures trust surface with two lines —
+   net trust drops.  Byte-endianness only; no arithmetic on the abstract functions.
+
+   DIFFERENTIAL TEST (standard, definitional): for every u64 x and every byte
+   index b<8, `x.to_le_bytes()[b] == (x >> (8*b)) as u8`; and for every [u8;8] bs
+   and bit k<64, `u64::from_le_bytes(bs)`'s bit k equals bit (k%8) of bs[k/8].
+   These hold by the definition of little-endian byte order on x86_64 and arm64.
+   TODO(core-models): add the `assert_eq!` witnesses in `helpers.rs::tests`.
+   ========================================================================== *)
+
+assume
+val lemma_u64_to_le_bytes_index (x: u64) (b: nat{b < 8})
+    : Lemma ((Core_models.Num.impl_u64__to_le_bytes x <: t_Array u8 (mk_usize 8)).[ mk_usize b ]
+             == (cast (x >>! mk_u32 (8 * b)) <: u8))
+
+assume
+val lemma_u64_from_le_bytes_bit (bs: t_Array u8 (mk_usize 8)) (k: nat{k < 64})
+    : Lemma (Rust_primitives.Integers.get_bit #Rust_primitives.Integers.U64
+               (Core_models.Num.impl_u64__from_le_bytes bs) (mk_usize k)
+             == Rust_primitives.Integers.get_bit #Rust_primitives.Integers.U8
+                  (bs.[ mk_usize (k / 8) ]) (mk_usize (k % 8)))

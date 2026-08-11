@@ -143,9 +143,16 @@ pub(crate) fn absorb2<const RATE: usize, const DELIM: u8>(
 // Splitting fragments the loop's shared machine-integer context, so each
 // sub-goal re-derives the `Rust_primitives.Integers` interpretation axioms
 // from scratch — a BoxInt/BoxBool projection cascade (~130k instances) that
-// maxes rlimit. Unsplit, the shared context closes the whole VC in <10
+// maxes rlimit. Unsplit, the shared context closes the whole VC in ~100
 // rlimit. (The N=4 `squeeze4_blocks` only survives split via a recorded hint.)
-#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --using_facts_from '* -Hacspec_sha3.Sponge.squeeze -EquivImplSpec.Keccakf.Generic.extract_lane'")]
+//
+// core-models flip: this is a COMPOSER (it sequences store_block, whose post
+// is stated over get_lane_u64/to_le_bytes ATOMS). Under the flip the companion
+// `Arm64_sha3_views`'s `lemma_get_lane_u64` SMTPat cascades every get_lane_u64
+// into concrete Funarr/NV codec machinery and saturates this VC cold — the SAME
+// composer pollution the Store composers hit. Exclude the companion (composed by
+// congruence, needs nothing from it); keep it UNSPLIT.
+#[hax_lib::fstar::options("--fuel 0 --ifuel 1 --z3rlimit 400 --using_facts_from '* -Hacspec_sha3.Sponge.squeeze -EquivImplSpec.Keccakf.Generic.extract_lane -Libcrux_intrinsics.Arm64_sha3_views'")]
 fn squeeze2_blocks<const RATE: usize>(
     s: &mut KeccakState<2, _uint64x2_t>,
     out0: &mut [u8],
@@ -386,6 +393,14 @@ pub(crate) fn keccak2<const RATE: usize, const DELIM: u8>(
     squeeze2::<RATE>(s, out0, out1);
 }
 
+// core-models flip: the multi-block squeeze composers here (squeeze_first_three_blocks,
+// squeeze_first_five_blocks) compose `squeeze2` (store post = get_lane_u64/to_le_bytes
+// atoms) with a length-only post. The companion `Arm64_sha3_views`'s SMTPats cascade
+// those atoms into codec machinery and saturate their shared-context VCs cold — same
+// pollution the Store composers hit. They need `--using_facts_from '* -...Arm64_sha3_views'`,
+// but `fstar::options` is illegal on an impl method (anonymous const) and is silently
+// dropped on an inherent-impl block, so the exclusion is applied post-extraction in
+// hax.sh `patch_fstar_extractions` (wraps these two decls in #push-options/#pop-options).
 #[hax_lib::attributes]
 impl KeccakState<2, _uint64x2_t> {
     #[inline(always)]

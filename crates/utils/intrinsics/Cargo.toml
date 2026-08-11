@@ -29,5 +29,7 @@ simd256 = []
 unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(hax)',
     'cfg(pre_core_models)',
+    'cfg(pre_core_models_arm64)',
+    'cfg(pre_core_models_avx2)',
     'cfg(eurydice)',
 ] }

@@ -3,7 +3,7 @@ module Libcrux_sha3.Simd.Arm64.StoreBlockHelpers
 open FStar.Mul
 open Core_models
 open Rust_primitives
-open Libcrux_intrinsics.Arm64_extract
+open Libcrux_intrinsics.Arm64_sha3_views
 
 /// Generic per-byte bridge for `update_at_range` composed with
 /// `e_vst1q_bytes_u64`. Given the abstract facts that
