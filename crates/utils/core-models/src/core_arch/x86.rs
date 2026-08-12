@@ -749,28 +749,49 @@ pub use other::*;
 pub mod other {
     use super::*;
 
+    // NOTE (WS1): these four remain `#[hax_lib::opaque]` — they stay
+    // uninterpreted `val`s in F* (the irreducible "the CPU" symbols). What is
+    // new is that each now has a real, executable body computing the u8x16
+    // model in `interpretations::int_vec`, so they run at cargo/test time, and
+    // a `mk_lift_lemma!` (in `interpretations::int_vec::lemmas`) pins the opaque
+    // symbol to that differentially-tested model. `imm8` is kept a runtime
+    // `i32` (not a const generic) so the extracted `val` signature is unchanged.
+
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aeskeygenassist_si128)
     #[hax_lib::opaque]
-    pub fn _mm_aeskeygenassist_si128(_: __m128i, _: i32) -> __m128i {
-        unimplemented!()
+    pub fn _mm_aeskeygenassist_si128(a: __m128i, imm8: i32) -> __m128i {
+        __m128i::from_u8x16(interpretations::int_vec::_mm_aeskeygenassist_si128(
+            BitVec::to_u8x16(a),
+            imm8,
+        ))
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenclast_si128)
     #[hax_lib::opaque]
-    pub fn _mm_aesenclast_si128(_: __m128i, _: __m128i) -> __m128i {
-        unimplemented!()
+    pub fn _mm_aesenclast_si128(a: __m128i, round_key: __m128i) -> __m128i {
+        __m128i::from_u8x16(interpretations::int_vec::_mm_aesenclast_si128(
+            BitVec::to_u8x16(a),
+            BitVec::to_u8x16(round_key),
+        ))
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenc_si128)
     #[hax_lib::opaque]
-    pub fn _mm_aesenc_si128(_: __m128i, _: __m128i) -> __m128i {
-        unimplemented!()
+    pub fn _mm_aesenc_si128(a: __m128i, round_key: __m128i) -> __m128i {
+        __m128i::from_u8x16(interpretations::int_vec::_mm_aesenc_si128(
+            BitVec::to_u8x16(a),
+            BitVec::to_u8x16(round_key),
+        ))
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_clmulepi64_si128)
     #[hax_lib::opaque]
-    pub fn _mm_clmulepi64_si128(_: __m128i, _: __m128i, _: i32) -> __m128i {
-        unimplemented!()
+    pub fn _mm_clmulepi64_si128(a: __m128i, b: __m128i, imm8: i32) -> __m128i {
+        __m128i::from_u8x16(interpretations::int_vec::_mm_clmulepi64_si128(
+            BitVec::to_u8x16(a),
+            BitVec::to_u8x16(b),
+            imm8,
+        ))
     }
 }
 /// Rewrite lemmas
