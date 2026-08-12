@@ -151,7 +151,8 @@ val lemma_testz_si256_lift (a b: bv256)
    index b<8, `x.to_le_bytes()[b] == (x >> (8*b)) as u8`; and for every [u8;8] bs
    and bit k<64, `u64::from_le_bytes(bs)`'s bit k equals bit (k%8) of bs[k/8].
    These hold by the definition of little-endian byte order on x86_64 and arm64.
-   TODO(core-models): add the `assert_eq!` witnesses in `helpers.rs::tests`.
+   Witnessed by `helpers.rs::le_bytes_witness` (arch-independent `assert_eq!`
+   tests: `to_le_bytes_index` / `from_le_bytes_bit`).
    ========================================================================== *)
 
 assume
