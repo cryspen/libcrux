@@ -15,4 +15,4 @@ rev = "v0.2.0"
 # TODO: point at a pushed cryspen/libcrux rev once the spec migration lands.
 [[require]]
 name = "HacspecSha3"
-path = "/workspace/libcrux/proofs-update/specs/sha3/proofs/lean"
+path = "../../../sha3/proofs/lean"
