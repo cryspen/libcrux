@@ -52,9 +52,24 @@ BA_RX = re.compile(
     r"#\[\s*(?:cfg_attr\s*\(\s*hax\s*,\s*)?hax_lib::fstar::(before|after)\s*\("
 )
 DEF_RX = re.compile(r"\blet\b|\bval\b|\bLemma\b")
+DEF_NAME_RX = re.compile(r"\b(?:let|val)\s+([A-Za-z_][A-Za-z0-9_']*)")
 TAG_RX = re.compile(
     r"proof-residence:\s*(locked|hint-keystone|cold-gate|spec-host|clean-context)"
 )
+
+# ---------------------------------------------------------------------------
+# V1 ratchet (see scripts/README-trust-ledger.md). `--strict` gates CI, but a few
+# inline `before/after` lemma blocks pre-date the convention and live in files a
+# different workstream owns (they cannot be relocated/tagged from here without
+# risking byte-identical extraction). Each is pinned by a STABLE signature
+# (relpath, first-F*-definition-name) so line drift never re-arms it and a NEW
+# untagged block in the same file still trips the gate. Non-increasing: shrink
+# only. Reasons documented so the owner can retire each entry.
+_V1_ALLOWLIST = {
+    # compress<>'s clean-context loop-maintenance lemma; relocation tracked with the
+    # post-merge Portable.Compress.compress work (MEMORY: mlkem-postmerge-compress).
+    ("libcrux-ml-kem/src/vector/portable/compress.rs", "compress_d_val"),
+}
 
 
 def raw_string_body(text, start, cap=30000):
@@ -90,8 +105,10 @@ def check_file(path, repo_root):
         context = "\n".join(text.split("\n")[max(0, lineno - 3) : lineno])
         if TAG_RX.search(context):
             continue
+        dm = DEF_NAME_RX.search(body)
+        sig = dm.group(1) if dm else "?"
         violations.append(
-            (os.path.relpath(path, repo_root), lineno + 1, n_lines)
+            (os.path.relpath(path, repo_root), lineno + 1, n_lines, sig)
         )
     return violations
 
@@ -150,13 +167,20 @@ def main():
         v4 += creg
         v5v6 += vreg
 
+    # V1 ratchet: split known-accepted (allowlisted) from active violations.
+    v1_active = [v for v in all_violations if (v[0], v[3]) not in _V1_ALLOWLIST]
+    v1_allowed = [v for v in all_violations if (v[0], v[3]) in _V1_ALLOWLIST]
     if all_violations:
         print(
-            f"V1: {len(all_violations)} untagged multi-line definition block(s) "
-            "in before/after attributes (see PROOF_CONVENTIONS.md):"
+            f"V1: {len(v1_active)} untagged multi-line definition block(s) "
+            "in before/after attributes (see PROOF_CONVENTIONS.md)"
+            + (f" [+{len(v1_allowed)} allowlisted, not gated]" if v1_allowed else "")
+            + ":"
         )
-        for path, line, n in sorted(all_violations):
-            print(f"  {path}:{line}  ({n} lines)")
+        for path, line, n, sig in sorted(v1_active):
+            print(f"  {path}:{line}  ({n} lines, first-def `{sig}`)")
+        for path, line, n, sig in sorted(v1_allowed):
+            print(f"  (allowlisted) {path}:{line}  ({n} lines, first-def `{sig}`)")
     if v2:
         print(f"V2: {len(v2)} trust reason(s) without a valid category prefix:")
         for path, line, kind, reason in sorted(v2):
@@ -178,11 +202,17 @@ def main():
         for msg in sorted(v5v6):
             print(f"  {msg}")
 
-    total = (len(all_violations) + len(v2) + len(v2b) + len(v3)
+    # Reported total counts every finding; the GATE counts only active (non-
+    # allowlisted) ones so a documented pre-existing block can't red-CI.
+    reported = (len(all_violations) + len(v2) + len(v2b) + len(v3)
+                + len(v4) + len(v5v6))
+    gated = (len(v1_active) + len(v2) + len(v2b) + len(v3)
              + len(v4) + len(v5v6))
-    if total == 0:
+    if reported == 0:
         print("annotation lint: clean")
-    sys.exit(1 if strict and total else 0)
+    elif gated == 0:
+        print(f"annotation lint: clean (gate) — {reported} allowlisted finding(s) only")
+    sys.exit(1 if strict and gated else 0)
 
 
 if __name__ == "__main__":

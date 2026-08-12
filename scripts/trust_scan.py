@@ -601,6 +601,99 @@ def reason_ok(reason):
     return bool(_REASON_RE.match(reason.strip()))
 
 
+# ===========================================================================
+# WS5 — core-models "silent surface" scanners (mk_lift_lemma! + opaque stubs)
+#
+# Two trust surfaces that a naive `assume`/`admit` grep MISSES because they say
+# neither word in Rust, yet each becomes an F* axiom on extraction:
+#
+#   * `mk_lift_lemma!(NAME(...) == ...)` expands (see core_arch/*/interpretations.rs)
+#     to an opaque `#[hax_lib::lemma]` carrying `[@@ LIFT_LEMMA]`, which hax extracts
+#     as a `[@@ v_LIFT_LEMMA] assume val NAME_interp : ... -> Lemma (...)` — an
+#     UNPROVEN (differentially mk!-tested) axiom relating the opaque hardware symbol
+#     to its int-vec model. ~150 of these, invisible to the F* `assume`-token plane
+#     until post-extraction (and even then they read as ordinary `assume val`s with
+#     no back-link to the Rust site).
+#
+#   * `#[hax_lib::opaque] fn NAME(..) { unimplemented!()/todo!() }` extracts to an
+#     UNINTERPRETED F* `val NAME : ty` (no body). If NO `mk_lift_lemma!` names it,
+#     F* knows *nothing* about it — a "no-spec" hardware symbol (e.g. x86 AES/CLMUL).
+#
+# These run on the git-tracked core-models Rust source, so they are visible on a
+# plain checkout even though the generated `.fst` tree is gitignored.
+# ===========================================================================
+
+# A `mk_lift_lemma!(NAME ...)` INVOCATION (not the `macro_rules! mk_lift_lemma {`
+# definition, which is followed by `{` not `!(`). Captures the intrinsic name.
+_MK_LIFT_LEMMA_RE = re.compile(r"\bmk_lift_lemma!\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)")
+# `#[hax_lib::opaque]` attribute head (tolerates inner whitespace).
+_HAX_OPAQUE_RE = re.compile(r"#\[\s*hax_lib::opaque\s*\]")
+# Empty-body markers that make an opaque fn a pure stub (no executable Rust model).
+_STUB_BODY_RE = re.compile(r"\b(?:unimplemented|todo)!\s*\(")
+
+
+def scan_file_mk_lift_lemmas(path, repo_root=None):
+    """Return [{file, line, name}] for every `mk_lift_lemma!(NAME ...)` invocation
+    in one .rs file (comment-masked, so the `macro_rules!` definition and the `//!`
+    guide examples in x86.rs are ignored). `name` is the lifted intrinsic."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    masked = mask_rust_comments(text)
+    rel = os.path.relpath(path, repo_root) if repo_root else path
+    out = []
+    for m in _MK_LIFT_LEMMA_RE.finditer(masked):
+        out.append({
+            "file": rel,
+            "line": masked.count("\n", 0, m.start()) + 1,
+            "name": m.group(1),
+        })
+    return out
+
+
+def scan_file_opaque_intrinsics(path, repo_root=None):
+    """Return [{file, line, name, stub_body}] for every `#[hax_lib::opaque]`-tagged
+    *function* in one .rs file. `stub_body` is True iff the body is an empty
+    `unimplemented!()`/`todo!()` (no executable Rust model — the worst no-spec form).
+    Comment-masked, so the `//!`-guide example in x86.rs is ignored. Opaque items
+    that are NOT functions (opaque structs/consts) are skipped."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+    masked = mask_rust_comments(text)
+    lines = masked.split("\n")
+    rel = os.path.relpath(path, repo_root) if repo_root else path
+    out = []
+    for i, line in enumerate(lines):
+        if not _HAX_OPAQUE_RE.search(line):
+            continue
+        # The fn may sit a few attribute/blank lines below the opaque attr.
+        for j in range(i + 1, min(i + 30, len(lines))):
+            m = _RUST_FN_RE.match(lines[j])
+            if m:
+                # Body window: from the fn line up to the next attribute block,
+                # capped — opaque intrinsic bodies are 1-3 lines.
+                window = "\n".join(lines[j:j + 40]).split("\n#")[0][:800]
+                out.append({
+                    "file": rel,
+                    "line": j + 1,
+                    "name": m.group(1),
+                    "stub_body": bool(_STUB_BODY_RE.search(window)),
+                })
+                break
+            # A non-fn item (struct/const/type/impl) directly under the attr:
+            # this opaque tag is not an intrinsic-fn axiom — stop looking.
+            if re.match(r"\s*(?:pub\s*(?:\([^)]*\)\s*)?)?"
+                        r"(?:struct|enum|const|static|type|impl|trait|mod)\b", lines[j]):
+                break
+    return out
+
+
+def file_sha256(path):
+    """Hex sha256 of a file's bytes (for content-hash dedup of byte-identical
+    F* modules extracted into more than one crate)."""
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
 def marker_soundness(markers):
     """Cross-check the CLAIMS side for internal soundness (shared by the V2b/V3
     lint and the ledger's marker reconciliation). Returns (missing, stale, raw):
