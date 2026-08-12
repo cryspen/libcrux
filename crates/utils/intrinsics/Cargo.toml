@@ -15,9 +15,6 @@ hax-lib.workspace = true
 
 [target.'cfg(hax)'.dependencies]
 libcrux-core-models = { path = "../core-models", version = "0.0.7" }
-# Trust markers (#[libcrux_macros::trusted(replace, …)]) on the cfg(hax)-only
-# *_extract.rs modules; extraction-neutral (expands to the item verbatim).
-libcrux-macros.workspace = true
 
 [features]
 simd128 = []
@@ -28,8 +25,5 @@ simd256 = []
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
     'cfg(hax)',
-    'cfg(pre_core_models)',
-    'cfg(pre_core_models_arm64)',
-    'cfg(pre_core_models_avx2)',
     'cfg(eurydice)',
 ] }
