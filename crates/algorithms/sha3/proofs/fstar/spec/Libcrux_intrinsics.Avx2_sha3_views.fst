@@ -50,6 +50,12 @@ module Avx2m  = Libcrux_core_models.Core_arch.X86.Avx2
 module Num    = Core_models.Num
 module Int    = Rust_primitives.Integers
 
+(* ── lane-view type (mirrors the pcm `t_Vec256`; the REAL `Avx2` wrappers take
+      `BV.t_BitVec (mk_u64 256)` inline and define no alias, so — exactly as the
+      NEON companion supplies `t_e_uint64x2_t` — this module supplies `t_Vec256`
+      for the repointed consumers (`I.t_Vec256`)). ───────────────────────────── *)
+unfold type t_Vec256 = BV.t_BitVec (mk_u64 256)
+
 (* ── u64x4 lane view (A-on-B adapter over canonical Canon.to_u64x4).  OPAQUE
       for the same reasons as ml-kem's `vec256_as_i16x16`: keeps pcm's
       abstraction (still PROVEN, not assumed); the only route to the codec is
@@ -166,7 +172,7 @@ let lemma_mm256_slli_epi64_u64x4 (v_LEFT: i32) (x: t_Vec256)
 #push-options "--fuel 1 --ifuel 2 --z3rlimit 300"
 let lemma_mm256_srli_epi64_u64x4 (v_SHIFT_BY: i32) (vector: t_Vec256)
   : Lemma
-      (requires Int.v v_SHIFT_BY >= 0 /\ Int.v v_SHIFT_BY < 64)
+      (requires Int.v v_SHIFT_BY > 0 /\ Int.v v_SHIFT_BY < 64)  (* real srli wrapper requires > 0 *)
       (ensures
         forall (i: nat{i < 4}).
           get_lane_u64x4 (mm256_srli_epi64 v_SHIFT_BY vector) i ==
@@ -516,6 +522,34 @@ let lemma_get_lane_u64x4_loadu_le (window: t_Slice u8) (lane: nat{lane < 4})
   in
   Classical.forall_intro aux;
   Int.lemma_int_t_eq_via_bits #Int.U64 y fromle
+#pop-options
+
+(* ── loadu window-lane bridge: lane `lane` of a vector loaded from the 32-byte
+      window `block[start, start+32)` == from_le_bytes of the 8 bytes at
+      `block[start+8*lane, start+8*lane+8)`.  Reduces the range-index to Seq.slice,
+      applies the codec loadu fact, and `slice_slice`-collapses the nested slice —
+      so the AVX2 `load_u64x4x4` leaf never spells out the window↔block split.
+      Consumes the exact hax Range-record indexing form the extraction produces. ─ *)
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 300"
+let lemma_loadu_window_lane (block: t_Slice u8) (start: usize) (lane: nat{lane < 4})
+  : Lemma (requires v start + 32 <= Seq.length block)
+          (ensures
+            get_lane_u64x4
+              (mm256_loadu_si256_u8
+                 (block.[ ({ Core_models.Ops.Range.f_start = start;
+                             Core_models.Ops.Range.f_end = start +! mk_usize 32 <: usize }
+                           <: Core_models.Ops.Range.t_Range usize) ] <: t_Slice u8))
+              lane
+            == Core_models.Num.impl_u64__from_le_bytes
+                 (Seq.slice block (v start + 8 * lane) (v start + 8 * lane + 8)
+                  <: t_Array u8 (mk_usize 8))) =
+  let window : t_Slice u8 =
+    block.[ ({ Core_models.Ops.Range.f_start = start;
+               Core_models.Ops.Range.f_end = start +! mk_usize 32 <: usize }
+             <: Core_models.Ops.Range.t_Range usize) ] in
+  assert (window == Seq.slice block (v start) (v start + 32));
+  lemma_get_lane_u64x4_loadu_le window lane;
+  FStar.Seq.Properties.slice_slice block (v start) (v start + 32) (8 * lane) (8 * lane + 8)
 #pop-options
 
 (* ============================================================================

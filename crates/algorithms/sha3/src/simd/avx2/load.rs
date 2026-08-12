@@ -152,6 +152,58 @@ fn load_u64x4x4(
     let v1 = mm256_loadu_si256_u8(&blocks[1][start..start + 32]);
     let v2 = mm256_loadu_si256_u8(&blocks[2][start..start + 32]);
     let v3 = mm256_loadu_si256_u8(&blocks[3][start..start + 32]);
+    // core-models flip: the pcm `mm256_loadu_si256_u8` wrapper carried a
+    // `from_le_bytes(input[i*8..i*8+8].try_into())`-form auto-post; the real op
+    // has none, so bridge each loaded vector's lane to the `load_lane_u64`
+    // byte-slice form via the companion (range-reduction + loadu codec fact +
+    // slice_slice) + the try_into<->Seq.slice reconcile. 4 blocks x 4 lanes.
+    // AVX2 analog of arm64::load_u64x2x2's per-lane byte bridge.
+    hax_lib::fstar!(
+        r#"
+        let w0:t_Slice u8 = blocks.[ mk_usize 0 ] in
+        let w1:t_Slice u8 = blocks.[ mk_usize 1 ] in
+        let w2:t_Slice u8 = blocks.[ mk_usize 2 ] in
+        let w3:t_Slice u8 = blocks.[ mk_usize 3 ] in
+        let idx (m: nat{m < 4}) : usize =
+          offset +! (mk_usize 8 *! ((mk_usize 4 *! i <: usize) +! mk_usize m <: usize) <: usize) in
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w0 start 0;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w0 start 1;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w0 start 2;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w0 start 3;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w1 start 0;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w1 start 1;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w1 start 2;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w1 start 3;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w2 start 0;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w2 start 1;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w2 start 2;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w2 start 3;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w3 start 0;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w3 start 1;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w3 start 2;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_loadu_window_lane w3 start 3;
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w0 (idx 0);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w0 (idx 1);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w0 (idx 2);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w0 (idx 3);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w1 (idx 0);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w1 (idx 1);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w1 (idx 2);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w1 (idx 3);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w2 (idx 0);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w2 (idx 1);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w2 (idx 2);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w2 (idx 3);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w3 (idx 0);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w3 (idx 1);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w3 (idx 2);
+        Libcrux_intrinsics.Avx2_sha3_views.lemma_slice8_as_array w3 (idx 3);
+        assert (v (idx 0) == v start + 8 * 0);
+        assert (v (idx 1) == v start + 8 * 1);
+        assert (v (idx 2) == v start + 8 * 2);
+        assert (v (idx 3) == v start + 8 * 3)
+        "#
+    );
 
     let v0l = mm256_unpacklo_epi64(v0, v1);
     let v1h = mm256_unpackhi_epi64(v0, v1);
