@@ -3,7 +3,7 @@ module Libcrux_sha3.Simd.Avx2.StoreBlockHelpers
 open FStar.Mul
 open Core_models
 open Rust_primitives
-open Libcrux_intrinsics.Avx2_extract
+open Libcrux_intrinsics.Avx2_sha3_views
 
 /// Generic per-byte bridge for `update_at_range` composed with
 /// `mm256_storeu_si256_u8`. Given the abstract facts that
@@ -163,7 +163,7 @@ let store_block_window_byte_of_storeu_call out out_new vec a j =
                 (Core_models.Num.impl_u64__to_le_bytes (get_lane_u64 vec (mk_usize (k / 8))))
                 (k % 8)
   with begin
-    Libcrux_intrinsics.Avx2_extract.lemma_mm256_storeu_si256_u8_byte
+    Libcrux_intrinsics.Avx2_sha3_views.lemma_mm256_storeu_si256_u8_byte
       (Seq.slice out a (a + 32)) vec k
   end;
   store_block_window_byte_of_storeu out out_new store_res vec a j
@@ -195,7 +195,7 @@ let mm256_storeu_si256_u8_byte_window init vec =
                 (Core_models.Num.impl_u64__to_le_bytes (get_lane_u64 vec (mk_usize (k / 8))))
                 (k % 8)
   with begin
-    Libcrux_intrinsics.Avx2_extract.lemma_mm256_storeu_si256_u8_byte init vec k
+    Libcrux_intrinsics.Avx2_sha3_views.lemma_mm256_storeu_si256_u8_byte init vec k
   end
 
 /// Layer 4 per-(j,lane) bridge: from `store_u64x4x4`'s 4-branch `s_k`

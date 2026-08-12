@@ -27,7 +27,7 @@ use crate::traits::{get_ij, set_ij, Absorb};
 val load_lane_u64_lane_extensionality
       (blocks: t_Array (t_Slice u8) (mk_usize 4))
       (offset i: usize)
-      (s1 s2: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (s1 s2: Libcrux_intrinsics.Avx2_sha3_views.t_Vec256)
       (lane: usize)
   : Lemma
     (requires
@@ -48,8 +48,8 @@ val load_lane_u64_lane_extensionality
              usize)
          <:
          Hax_lib.Int.t_Int)) /\
-      Libcrux_intrinsics.Avx2_extract.get_lane_u64 s1 lane ==
-      Libcrux_intrinsics.Avx2_extract.get_lane_u64 s2 lane)
+      Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s1 lane ==
+      Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s2 lane)
     (ensures
       load_lane_u64 blocks offset i s1 lane ==
       load_lane_u64 blocks offset i s2 lane)
@@ -62,7 +62,7 @@ val load_lane_u64_lane_extensionality
 let load_lane_u64_lane_extensionality
       (blocks: t_Array (t_Slice u8) (mk_usize 4))
       (offset i: usize)
-      (s1 s2: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (s1 s2: Libcrux_intrinsics.Avx2_sha3_views.t_Vec256)
       (lane: usize)
   : Lemma
     (requires
@@ -83,8 +83,8 @@ let load_lane_u64_lane_extensionality
              usize)
          <:
          Hax_lib.Int.t_Int)) /\
-      Libcrux_intrinsics.Avx2_extract.get_lane_u64 s1 lane ==
-      Libcrux_intrinsics.Avx2_extract.get_lane_u64 s2 lane)
+      Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s1 lane ==
+      Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s2 lane)
     (ensures
       load_lane_u64 blocks offset i s1 lane ==
       load_lane_u64 blocks offset i s2 lane)
@@ -224,7 +224,7 @@ fn load_u64x4(blocks: &[&[u8]; 4], offset: usize, i: usize, statei: Vec256) -> V
 fn lemma_rate_mod(rate: usize) {}
 
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid'")]
+#[hax_lib::fstar::options("--z3rlimit 400 --split_queries always --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid -Libcrux_intrinsics.Avx2_sha3_views'")]
 #[hax_lib::requires(valid_rate(RATE)
             && blocks[0].len() == blocks[1].len()
             && blocks[0].len() == blocks[2].len()

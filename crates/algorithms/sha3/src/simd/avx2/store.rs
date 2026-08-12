@@ -48,7 +48,7 @@ pub(crate) fn stored(
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_frame
-      (s: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (mk_usize 25))
+      (s: t_Array Libcrux_intrinsics.Avx2_sha3_views.t_Vec256 (mk_usize 25))
       (a b: t_Slice u8)
       (start lane lo hi mlo mhi: usize)
   : Lemma
@@ -82,7 +82,7 @@ fn lemma_stored_frame(
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_union
-      (s: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (mk_usize 25))
+      (s: t_Array Libcrux_intrinsics.Avx2_sha3_views.t_Vec256 (mk_usize 25))
       (out: t_Slice u8)
       (start lane lo mid hi: usize)
   : Lemma
@@ -111,7 +111,7 @@ fn lemma_stored_union(
 #[hax_lib::fstar::replace(
     r#"
 let lemma_stored_empty
-      (s: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (mk_usize 25))
+      (s: t_Array Libcrux_intrinsics.Avx2_sha3_views.t_Vec256 (mk_usize 25))
       (out: t_Slice u8)
       (start lane lo: usize)
   : Lemma (ensures stored s out start lane lo lo)
@@ -132,8 +132,8 @@ fn lemma_stored_empty(_s: &[Vec256; 25], _out: &[u8], _start: usize, _lane: usiz
     r#"
 #push-options "--z3rlimit 400"
 let lemma_window_stored
-      (s: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (mk_usize 25))
-      (s0 s1 s2 s3: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (s: t_Array Libcrux_intrinsics.Avx2_sha3_views.t_Vec256 (mk_usize 25))
+      (s0 s1 s2 s3: Libcrux_intrinsics.Avx2_sha3_views.t_Vec256)
       (start i: usize)
       (lane_m: nat{lane_m < 4})
       (out_m: t_Slice u8)
@@ -149,16 +149,16 @@ let lemma_window_stored
         (v start + 32 * v i <= j_n /\ j_n < v start + 32 * (v i + 1) /\ j_n < Seq.length out_m) ==>
         (if (j_n - v start) / 8 = 4 * v i then
            Seq.index out_m j_n == Seq.index
-             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_extract.get_lane_u64 s0 (mk_usize lane_m))) ((j_n - v start) % 8)
+             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s0 (mk_usize lane_m))) ((j_n - v start) % 8)
          else if (j_n - v start) / 8 = 4 * v i + 1 then
            Seq.index out_m j_n == Seq.index
-             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_extract.get_lane_u64 s1 (mk_usize lane_m))) ((j_n - v start) % 8)
+             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s1 (mk_usize lane_m))) ((j_n - v start) % 8)
          else if (j_n - v start) / 8 = 4 * v i + 2 then
            Seq.index out_m j_n == Seq.index
-             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_extract.get_lane_u64 s2 (mk_usize lane_m))) ((j_n - v start) % 8)
+             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s2 (mk_usize lane_m))) ((j_n - v start) % 8)
          else
            Seq.index out_m j_n == Seq.index
-             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_extract.get_lane_u64 s3 (mk_usize lane_m))) ((j_n - v start) % 8))))
+             (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 s3 (mk_usize lane_m))) ((j_n - v start) % 8))))
     (ensures
       stored s out_m start (mk_usize lane_m)
         (start +! (mk_usize 32 *! i)) (start +! (mk_usize 32 *! (i +! mk_usize 1))))
@@ -218,8 +218,8 @@ fn lemma_window_modifies(_out_old: &[u8], _out_new: &[u8], _start: usize, _i: us
     r#"
 #push-options "--z3rlimit 400"
 let lemma_window_stored_single
-      (s: t_Array Libcrux_intrinsics.Avx2_extract.t_Vec256 (mk_usize 25))
-      (vec: Libcrux_intrinsics.Avx2_extract.t_Vec256)
+      (s: t_Array Libcrux_intrinsics.Avx2_sha3_views.t_Vec256 (mk_usize 25))
+      (vec: Libcrux_intrinsics.Avx2_sha3_views.t_Vec256)
       (out_m: t_Slice u8)
       (start: usize)
       (lane_m: nat{lane_m < 4})
@@ -233,7 +233,7 @@ let lemma_window_stored_single
       (forall (j_n: nat).
         (v off <= j_n /\ j_n < v off + v w /\ j_n < Seq.length out_m) ==>
         Seq.index out_m j_n == Seq.index
-          (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize lane_m)))
+          (Core_models.Num.impl_u64__to_le_bytes (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize lane_m)))
           (j_n - v off)))
     (ensures stored s out_m start (mk_usize lane_m) off (off +! w))
   = reveal_opaque (`%stored) stored;
@@ -241,7 +241,7 @@ let lemma_window_stored_single
       Lemma ((v off <= j_n /\ j_n < v off + v w) ==>
         Seq.index out_m j_n == Seq.index
           (Core_models.Num.impl_u64__to_le_bytes
-            (Libcrux_intrinsics.Avx2_extract.get_lane_u64 (Seq.index s ((j_n - v start) / 8)) (mk_usize lane_m)))
+            (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 (Seq.index s ((j_n - v start) / 8)) (mk_usize lane_m)))
           ((j_n - v start) % 8))
       = if v off <= j_n && j_n < v off + v w then begin
           // off - start = 8 * base; j_n - start = (j_n - off) + 8 * base,
@@ -357,7 +357,7 @@ fn store_u64x4x4(
                 Seq.index out0 j_n ==
                   Seq.index
                     (Core_models.Num.impl_u64__to_le_bytes
-                       (Libcrux_intrinsics.Avx2_extract.get_lane_u64 v0 (mk_usize ((j_n - a_pos) / 8))))
+                       (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 v0 (mk_usize ((j_n - a_pos) / 8))))
                     ((j_n - a_pos) % 8)
               else
                 Seq.index out0 j_n == Seq.index old_out0 j_n)
@@ -372,7 +372,7 @@ fn store_u64x4x4(
                 Seq.index out1 j_n ==
                   Seq.index
                     (Core_models.Num.impl_u64__to_le_bytes
-                       (Libcrux_intrinsics.Avx2_extract.get_lane_u64 v1 (mk_usize ((j_n - a_pos) / 8))))
+                       (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 v1 (mk_usize ((j_n - a_pos) / 8))))
                     ((j_n - a_pos) % 8)
               else
                 Seq.index out1 j_n == Seq.index old_out1 j_n)
@@ -387,7 +387,7 @@ fn store_u64x4x4(
                 Seq.index out2 j_n ==
                   Seq.index
                     (Core_models.Num.impl_u64__to_le_bytes
-                       (Libcrux_intrinsics.Avx2_extract.get_lane_u64 v2 (mk_usize ((j_n - a_pos) / 8))))
+                       (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 v2 (mk_usize ((j_n - a_pos) / 8))))
                     ((j_n - a_pos) % 8)
               else
                 Seq.index out2 j_n == Seq.index old_out2 j_n)
@@ -402,7 +402,7 @@ fn store_u64x4x4(
                 Seq.index out3 j_n ==
                   Seq.index
                     (Core_models.Num.impl_u64__to_le_bytes
-                       (Libcrux_intrinsics.Avx2_extract.get_lane_u64 v3 (mk_usize ((j_n - a_pos) / 8))))
+                       (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 v3 (mk_usize ((j_n - a_pos) / 8))))
                     ((j_n - a_pos) % 8)
               else
                 Seq.index out3 j_n == Seq.index old_out3 j_n)
@@ -523,7 +523,7 @@ fn store_chunk8x4(
                    Seq.index out_new j_n ==
                      Seq.index
                        (Core_models.Num.impl_u64__to_le_bytes
-                          (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize m_lane)))
+                          (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize m_lane)))
                        (j_n - a_pos)
                  else
                    Seq.index out_new j_n == Seq.index out_old j_n))
@@ -551,7 +551,7 @@ fn store_chunk8x4(
               else if j_n < a_pos + 8 then
                 Seq.index out0 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 0))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 0))) (j_n - a_pos)
               else Seq.index out0 j_n == Seq.index old_out0 j_n)
           = bridge_out_m 0 old_out0 out0 j_n
         in
@@ -561,7 +561,7 @@ fn store_chunk8x4(
               else if j_n < a_pos + 8 then
                 Seq.index out1 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 1))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 1))) (j_n - a_pos)
               else Seq.index out1 j_n == Seq.index old_out1 j_n)
           = bridge_out_m 1 old_out1 out1 j_n
         in
@@ -571,7 +571,7 @@ fn store_chunk8x4(
               else if j_n < a_pos + 8 then
                 Seq.index out2 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 2))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 2))) (j_n - a_pos)
               else Seq.index out2 j_n == Seq.index old_out2 j_n)
           = bridge_out_m 2 old_out2 out2 j_n
         in
@@ -581,7 +581,7 @@ fn store_chunk8x4(
               else if j_n < a_pos + 8 then
                 Seq.index out3 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 3))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 3))) (j_n - a_pos)
               else Seq.index out3 j_n == Seq.index old_out3 j_n)
           = bridge_out_m 3 old_out3 out3 j_n
         in
@@ -690,7 +690,7 @@ fn store_tail_ragged_avx2(
                    Seq.index out_new j_n ==
                      Seq.index
                        (Core_models.Num.impl_u64__to_le_bytes
-                          (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize m_lane)))
+                          (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize m_lane)))
                        (j_n - a_pos)
                  else
                    Seq.index out_new j_n == Seq.index out_old j_n))
@@ -719,7 +719,7 @@ fn store_tail_ragged_avx2(
               else if j_n < a_pos + r then
                 Seq.index out0 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 0))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 0))) (j_n - a_pos)
               else Seq.index out0 j_n == Seq.index old_out0 j_n)
           = bridge_partial_out_m 0 old_out0 out0 j_n
         in
@@ -729,7 +729,7 @@ fn store_tail_ragged_avx2(
               else if j_n < a_pos + r then
                 Seq.index out1 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 1))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 1))) (j_n - a_pos)
               else Seq.index out1 j_n == Seq.index old_out1 j_n)
           = bridge_partial_out_m 1 old_out1 out1 j_n
         in
@@ -739,7 +739,7 @@ fn store_tail_ragged_avx2(
               else if j_n < a_pos + r then
                 Seq.index out2 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 2))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 2))) (j_n - a_pos)
               else Seq.index out2 j_n == Seq.index old_out2 j_n)
           = bridge_partial_out_m 2 old_out2 out2 j_n
         in
@@ -749,7 +749,7 @@ fn store_tail_ragged_avx2(
               else if j_n < a_pos + r then
                 Seq.index out3 j_n == Seq.index
                   (Core_models.Num.impl_u64__to_le_bytes
-                     (Libcrux_intrinsics.Avx2_extract.get_lane_u64 vec (mk_usize 3))) (j_n - a_pos)
+                     (Libcrux_intrinsics.Avx2_sha3_views.get_lane_u64 vec (mk_usize 3))) (j_n - a_pos)
               else Seq.index out3 j_n == Seq.index old_out3 j_n)
           = bridge_partial_out_m 3 old_out3 out3 j_n
         in
@@ -774,7 +774,7 @@ fn store_tail_ragged_avx2(
 /// Verified via an opaque-`stored`/`modifies_range` loop invariant with
 /// per-iteration frame/union carryover.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --split_queries no --z3refresh --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid'")]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries no --z3refresh --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid -Libcrux_intrinsics.Avx2_sha3_views'")]
 #[hax_lib::requires(
     out0.len() == out1.len()
     && out0.len() == out2.len()
@@ -913,7 +913,7 @@ fn store_block_full_avx2(
 /// loop (`store_chunk8x4`) and the ragged remainder
 /// (`store_tail_ragged_avx2`), composing their opaque posts.
 #[inline(always)]
-#[hax_lib::fstar::options("--z3rlimit 800 --split_queries no --z3refresh --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid'")]
+#[hax_lib::fstar::options("--z3rlimit 800 --split_queries no --z3refresh --using_facts_from '* -Rust_primitives.Slice.array_from_fn -Core_models.Num.impl_u64__rem_euclid -Core_models.Num.impl_u32__rem_euclid -Libcrux_intrinsics.Avx2_sha3_views'")]
 #[hax_lib::requires(
     out0.len() == out1.len()
     && out0.len() == out2.len()

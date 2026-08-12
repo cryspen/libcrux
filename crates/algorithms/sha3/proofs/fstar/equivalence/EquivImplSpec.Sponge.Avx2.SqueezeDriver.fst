@@ -36,11 +36,11 @@ module KA    = EquivImplSpec.Keccakf.Avx2
 module SA    = EquivImplSpec.Sponge.Avx2
 module Steps = EquivImplSpec.Sponge.Avx2.Steps
 module HS    = Hacspec_sha3.Sponge
-module I     = Libcrux_intrinsics.Avx2_extract
+module I     = Libcrux_intrinsics.Avx2_sha3_views
 
 (* Bring AVX2 typeclass instances into scope so t_Squeeze4 at N=4 resolves. *)
 let _ =
-  let open Libcrux_intrinsics.Avx2_extract in
+  let open Libcrux_intrinsics.Avx2_sha3_views in
   let open Libcrux_sha3.Traits in
   let open Libcrux_sha3.Simd.Avx2 in
   ()

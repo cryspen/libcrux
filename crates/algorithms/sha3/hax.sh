@@ -2,12 +2,12 @@
 set -ex
 
 function extract_all() {
-    # `--cfg pre_core_models_avx2` routes ONLY the AVX2 backend to
-    # `avx2_extract.rs` (the bit_vec stub).  The arm64 (NEON) backend is NOT
-    # gated, so lib.rs routes it to the REAL core-models `Libcrux_intrinsics.Arm64`
-    # (differentially-tested), consumed via the `Arm64_sha3_views` companion.
-    # (Per-ISA flip: avx2 flips to core-models in a later phase.)
-    export RUSTFLAGS="${RUSTFLAGS:-} --cfg pre_core_models_avx2"
+    # AVX2 flip COMPLETE: no `pre_core_models_*` RUSTFLAG.  lib.rs now routes
+    # BOTH backends to the REAL core-models intrinsics: arm64 ->
+    # `Libcrux_intrinsics.Arm64` (via the `Arm64_sha3_views` companion), avx2 ->
+    # `Libcrux_intrinsics.Avx2` (via the `Avx2_sha3_views` companion).  Both are
+    # differentially-tested; the hand-written `{arm64,avx2}_extract.rs` bit_vec
+    # stubs are no longer on sha3's path (retired once aes/ml-kem also flip).
 
     # Uniform shared deps via their canonical scripts (single source of truth;
     # idempotent).  They are content-invariant to pre_core_models, so a canonical
@@ -18,14 +18,11 @@ function extract_all() {
     dep_extract crates/utils/core-models
 
     # Extract intrinsics into sha3's OWN dedicated intrinsics dir (--output-dir),
-    # so the shared crates/utils/intrinsics tree is never clobbered.  Under
-    # `pre_core_models_avx2` lib.rs routes avx2 -> `Avx2_extract` (bit_vec stub)
-    # and arm64 -> the REAL core-models `Arm64`.  `--interfaces` is SPLIT per
-    # module (mirror ml-kem's split, flipped): the STUB `Avx2_extract` MUST get a
-    # `.fsti` (its `fstar::replace(interface,...)` bit_vec blocks need an interface
-    # to land in, else Error 47/72), while the REAL `Arm64` stays TRANSPARENT so
-    # the `Arm64_sha3_views` op-facts can `reveal`/reduce `e_vOP` to `Neon.OP`.
-    # Allowlist form (`-** +avx2_extract::**`) fails SAFE for Arm64.
+    # so the shared crates/utils/intrinsics tree is never clobbered.  Both
+    # backends now route to the REAL core-models `Libcrux_intrinsics.{Arm64,Avx2}`
+    # (no `pre_core_models_*` flag).  `--interfaces "-**"` keeps BOTH real modules
+    # TRANSPARENT (no `.fsti`) so the `{Arm64,Avx2}_sha3_views` op-facts can
+    # `reveal`/reduce each `e_*` wrapper to its `Neon.*` / `Avx2.*` model.
     #
     # Force a rebuild of the intrinsics crate (touch its sources) so the
     # per-ISA variant is regenerated even if a prior extraction in this working
@@ -39,7 +36,7 @@ function extract_all() {
         -C --features simd128,simd256 ";" \
         into -i "-libcrux_core_models::**" \
         --output-dir "$SHA3_INTRINSICS_DIR" \
-        fstar --z3rlimit 80 --interfaces "-** +libcrux_intrinsics::avx2_extract::**"
+        fstar --z3rlimit 80 --interfaces "-**"
 
     dep_extract crates/utils/secrets
 
@@ -204,6 +201,18 @@ function patch_fstar_extractions() {
         SQZ_OPTS="#push-options \"--fuel 0 --ifuel 1 --z3rlimit 400 --using_facts_from '* -Hacspec_sha3.Sponge.squeeze -EquivImplSpec.Keccakf.Generic.extract_lane -Libcrux_intrinsics.Arm64_sha3_views'\"" \
             perl -i -pe 'print "$ENV{SQZ_OPTS}\n\n" if /^let impl__squeeze_first_three_blocks$/' "$simd128f"
         printf '\n#pop-options\n' >> "$simd128f"
+    fi
+
+    # AVX2 flip analog: the Simd256 (X4) squeeze composers cascade the same way
+    # from the `Avx2_sha3_views` companion's `get_lane_u64_post` SMTPat.  The
+    # inner push inherits the impl-block's `--split_queries always` (from
+    # `_keccak_state_impl4_opts`) and just adds the companion exclusion; scoped
+    # to three_blocks..five_blocks (the last two decls -> pop at EOF).
+    local simd256f="$target_dir/Libcrux_sha3.Generic_keccak.Simd256.fst"
+    if [ -f "$simd256f" ] && grep -q '^let impl__squeeze_first_three_blocks' "$simd256f"; then
+        SQZ_OPTS="#push-options \"--fuel 0 --ifuel 1 --z3rlimit 400 --using_facts_from '* -Hacspec_sha3.Sponge.squeeze -EquivImplSpec.Keccakf.Generic.extract_lane -Libcrux_intrinsics.Avx2_sha3_views'\"" \
+            perl -i -pe 'print "$ENV{SQZ_OPTS}\n\n" if /^let impl__squeeze_first_three_blocks$/' "$simd256f"
+        printf '\n#pop-options\n' >> "$simd256f"
     fi
 
     # Note: per-u64-lane SMTPat lemma admits (lemma_mm256_*_u64x4)

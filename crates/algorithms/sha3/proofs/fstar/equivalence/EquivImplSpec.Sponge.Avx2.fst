@@ -24,11 +24,11 @@ module G  = EquivImplSpec.Keccakf.Generic
 module KA = EquivImplSpec.Keccakf.Avx2
 module SC = EquivImplSpec.Sponge.Generic.Core
 module SP = EquivImplSpec.Sponge.Portable
-module I  = Libcrux_intrinsics.Avx2_extract
+module I  = Libcrux_intrinsics.Avx2_sha3_views
 
 (* Bring AVX2 typeclass instances into scope. *)
 let _ =
-  let open Libcrux_intrinsics.Avx2_extract in
+  let open Libcrux_intrinsics.Avx2_sha3_views in
   let open Libcrux_sha3.Traits in
   let open Libcrux_sha3.Simd.Avx2 in
   ()
