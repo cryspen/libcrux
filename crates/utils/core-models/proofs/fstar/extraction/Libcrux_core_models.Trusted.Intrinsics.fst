@@ -84,6 +84,15 @@ assume
 val lemma_or_si256_lift (a b: bv256)
     : Lemma (Avx2.e_mm256_or_si256 a b == IV.e_mm256_or_si256 a b)
 
+(* ── andnot.  Test: `mk!(_mm256_andnot_si256(a: BitVec, b: BitVec))` in
+      `interpretations.rs::tests` (already present alongside and/or/xor).  Same
+      bitwise-op trust class as the three above; needed by the sha3 AVX2 Keccak
+      `and_not_xor` (`_vbcaxq_u64 = a ^ andnot(c, b)`). ──────────────────────── *)
+[@@ IVL.v_LIFT_LEMMA]
+assume
+val lemma_andnot_si256_lift (a b: bv256)
+    : Lemma (Avx2.e_mm256_andnot_si256 a b == IV.e_mm256_andnot_si256 a b)
+
 (* ── constructors / reinterpretations.  Test: `mk!(_mm256_setzero_si256())`,
       `mk!(_mm256_castsi128_si256(a: BitVec))`, `mk!(_mm256_set_m128i(..))`,
       `mk!(_mm256_castsi256_ps(..))`. ─────────────────────────────────────────── *)
