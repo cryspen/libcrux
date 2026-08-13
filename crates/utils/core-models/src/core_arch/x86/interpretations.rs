@@ -1154,6 +1154,7 @@ let e_mm256_movemask_ps (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (
     ///   `d1 = RotWord(SubWord(X1)) XOR RCON`,
     ///   `d2 = SubWord(X3)`,
     ///   `d3 = RotWord(SubWord(X3)) XOR RCON`.
+    #[hax_lib::fstar::options("--z3rlimit 200 --split_queries always")]
     pub fn _mm_aeskeygenassist_si128(a: u8x16, imm8: i32) -> u8x16 {
         let rcon = ((imm8 as u32) & 0xff) as u8;
         let x1 = [a[4], a[5], a[6], a[7]];
@@ -1199,6 +1200,9 @@ let e_mm256_movemask_ps (a: Libcrux_core_models.Abstractions.Funarr.t_FunArray (
     }
 
     /// Read a little-endian `u64` from 8 bytes of the view starting at `off`.
+    /// `off` selects a 64-bit half, so it is 0 or 8; the `off <= 8` bound makes
+    /// the `off + i` index (i < 8) provably in-bounds and overflow-free.
+    #[hax_lib::requires(off <= 8)]
     fn u64_from_u8x16_le(v: u8x16, off: u64) -> u64 {
         let mut acc: u64 = 0;
         for i in 0..8u64 {
