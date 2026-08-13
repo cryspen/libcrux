@@ -33,9 +33,6 @@ jobs:
           hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
           
-      - name: Use precise version of hax-lib
-        run: cargo update hax-lib --precise $HAX_LIB_VERSION
-
       - name: 🏃 Extract SHA3 crate (portable)
         working-directory: crates/algorithms/sha3
         run: ./hax.sh extract
@@ -60,9 +57,6 @@ jobs:
           hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
 
-      - name: Use precise version of hax-lib
-        run: cargo update hax-lib --precise $HAX_LIB_VERSION
-
       - uses: actions/download-artifact@v8
         with:
           name: fstar-extractions-portable
@@ -83,9 +77,6 @@ jobs:
         with:
           hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
-
-      - name: Use precise version of hax-lib
-        run: cargo update hax-lib --precise $HAX_LIB_VERSION
 
       - uses: actions/download-artifact@v8
         with:

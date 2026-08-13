@@ -33,9 +33,6 @@ jobs:
           hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
           
-      - name: Use precise version of hax-lib
-        run: cargo update hax-lib --precise $HAX_LIB_VERSION
-
       - name: 🏃 Extract ML-KEM crate
         working-directory: libcrux-ml-kem
         run: ./hax.py extract
@@ -61,9 +58,6 @@ jobs:
           hax_reference: hax-lib-v${{ env.HAX_LIB_VERSION }}
           fstar: ${{ env.FSTAR_REV }}
           
-      - name: Use precise version of hax-lib
-        run: cargo update hax-lib --precise $HAX_LIB_VERSION
-
       - uses: actions/download-artifact@v8
         with:
           name: fstar-extractions
