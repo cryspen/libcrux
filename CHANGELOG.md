@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- (libcrux-hmac-drbg) [#1558](https://github.com/celabshq/libcrux/pull/1558): fix panic in reseeding wrappers fill_bytes method
+
+### Changed
+
+- (libcrux-macros) [#1550](https://github.com/celabshq/libcrux/pull/1550): Update syn dependency to 3.0
+- (libcrux-secrets) [#1551](https://github.com/celabshq/libcrux/pull/1551) Update crabgrind to 0.3.1
+- (libcrux-hmac-drbg) [#1558](https://github.com/celabshq/libcrux/pull/1558): rename `GenerateError::RequestInvalid` to `GenerateError::OutputTooLarge
+
+### Added
+
+- (hpke-rs) [#1539](https://github.com/celabshq/libcrux/pull/1539): Support for the
+  post-quantum and PQ/T-hybrid algorithms of
+  [draft-ietf-hpke-pq](https://datatracker.ietf.org/doc/html/draft-ietf-hpke-pq-04),
+  in the **libcrux provider only**, behind the new `draft-ietf-hpke-pq` feature.
+
+
 ## [0.0.5] (2026-07-15)
 
 ### Fixed

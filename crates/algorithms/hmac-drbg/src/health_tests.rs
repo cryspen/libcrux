@@ -240,7 +240,7 @@ impl<const OUTLEN: usize, Alg: HmacAlgorithm<OUTLEN>> HmacDrbg<OUTLEN, Alg> {
     }
 
     /// Poison this instance directly (for testing error-path behaviour).
-    #[cfg(any(test, feature = "testing"))]
+    #[cfg(any(test, feature = "_testing-apis"))]
     pub fn poison_for_testing(&mut self) {
         self.health.set_poisoned();
     }

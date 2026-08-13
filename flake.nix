@@ -102,6 +102,19 @@
           export RUSTC=${rustNightlyWithMiri}/bin/rustc
           exec ${rustNightlyWithMiri}/bin/cargo-miri "$@"
         '';
+        # `cargo fuzz` needs nightly rustc (`-Zsanitizer=address`), so unlike
+        # miri above it can't be wrapped: `devShells.fuzz` ships this as the
+        # shell's only cargo/rustc. `llvm-tools-preview` is for
+        # `cargo fuzz coverage`, which needs an llvm-profdata matching rustc.
+        rustNightlyForFuzz = pkgs.rust-bin.selectLatestNightlyWith (
+          toolchain:
+          toolchain.default.override {
+            extensions = [
+              "rust-src"
+              "llvm-tools-preview"
+            ];
+          }
+        );
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         # Cargo.lock is gitignored, so it isn't part of the flake's source
         # tree. Read it from the invocation directory; requires `--impure`
@@ -472,6 +485,37 @@
             '';
           }
         );
+        # `nix develop --impure .#fuzz`, then e.g.
+        #   cd crates/algorithms/hmac-drbg && cargo fuzz run generate
+        # clangStdenv so that libfuzzer-sys builds its bundled libFuzzer C++
+        # sources with clang rather than the default gcc.
+        devShells.fuzz = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
+          packages = [
+            rustNightlyForFuzz
+            pkgs.cargo-fuzz
+            pkgs.pkg-config
+            pkgs.git
+          ];
+          RUST_SRC_PATH = "${rustNightlyForFuzz}/lib/rustlib/src/rust/library";
+          ASAN_SYMBOLIZER_PATH = "${pkgs.llvm_18}/bin/llvm-symbolizer";
+          # `cargo fuzz` builds with the release profile, whose workspace
+          # settings are hostile to fuzzing: fat LTO drops the sanitizer
+          # instrumentation, and stripping loses the symbols needed to read a
+          # crash report. (CI works around the former the same way, see
+          # CARGO_PROFILE_RELEASE_LTO in .github/workflows/aes.yml.)
+          # See https://github.com/rust-fuzz/cargo-fuzz/issues/384
+          CARGO_PROFILE_RELEASE_LTO = "false";
+          CARGO_PROFILE_RELEASE_STRIP = "false";
+          CARGO_PROFILE_RELEASE_DEBUG = "1";
+          shellHook = ''
+            root=$(git rev-parse --show-toplevel 2>/dev/null || echo .)
+            if [ ! -f "$root/Cargo.lock" ] && [ -f "$root/Cargo.toml" ]; then
+              echo "[flake] Cargo.lock missing — running 'cargo generate-lockfile'..."
+              (cd "$root" && cargo generate-lockfile)
+            fi
+            echo "[flake] fuzz shell: $(rustc --version), $(cargo fuzz --version)"
+          '';
+        };
       }
     );
 }
