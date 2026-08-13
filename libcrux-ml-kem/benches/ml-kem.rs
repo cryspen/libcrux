@@ -2,7 +2,7 @@ use std::hint::black_box;
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use rand::{rngs::OsRng, RngCore, TryRngCore};
+use rand::{rngs::SysRng, TryRng};
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
@@ -41,7 +41,7 @@ macro_rules! init {
 }
 
 pub fn key_generation(c: &mut Criterion) {
-    let mut rng = OsRng;
+    let mut rng = SysRng;
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
@@ -80,7 +80,7 @@ pub fn key_generation(c: &mut Criterion) {
 }
 
 pub fn pk_validation(c: &mut Criterion) {
-    let mut rng = OsRng;
+    let mut rng = SysRng;
 
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
@@ -117,7 +117,7 @@ pub fn pk_validation(c: &mut Criterion) {
 
                 b.iter_batched(
                     || {
-                        let mut rng = OsRng;
+                        let mut rng = SysRng;
                         KeyPairCompressedBytes::generate(&mut rng)
                     },
                     |keypair| {
@@ -140,9 +140,9 @@ pub fn encapsulation(c: &mut Criterion) {
             $group.bench_function(format!("platform={},api=external random", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.try_fill_bytes(&mut seed1).unwrap();
+                SysRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.try_fill_bytes(&mut seed2).unwrap();
+                SysRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || p::generate_key_pair(seed1),
                     |keypair| {
@@ -163,9 +163,9 @@ pub fn encapsulation(c: &mut Criterion) {
                     use $p as p;
 
                     let mut seed1 = [0; 64];
-                    ::rand::rng().fill_bytes(&mut seed1);
+                    ::rand::rng().try_fill_bytes(&mut seed1).unwrap();
                     let mut seed2 = [0; 32];
-                    ::rand::rng().fill_bytes(&mut seed2);
+                    ::rand::rng().try_fill_bytes(&mut seed2).unwrap();
 
                     b.iter_batched(
                         || {
@@ -193,9 +193,9 @@ pub fn encapsulation(c: &mut Criterion) {
                     use $p::*;
 
                     let mut seed1 = [0; 64];
-                    OsRng.fill_bytes(&mut seed1);
+                    SysRng.try_fill_bytes(&mut seed1).unwrap();
                     let mut seed2 = [0; 32];
-                    OsRng.fill_bytes(&mut seed2);
+                    SysRng.try_fill_bytes(&mut seed2).unwrap();
 
                     b.iter_batched(
                         || KeyPairCompressedBytes::from_seed(seed1),
@@ -223,11 +223,11 @@ pub fn encapsulation(c: &mut Criterion) {
 
                 b.iter_batched(
                     || {
-                        let mut rng = OsRng;
+                        let mut rng = SysRng;
                         KeyPairCompressedBytes::generate(&mut rng)
                     },
                     |keypair| {
-                        let mut rng = OsRng;
+                        let mut rng = SysRng;
                         let mut encaps_state = [0u8; encaps_state_len()];
                         let mut encaps_shared_secret = [0u8; shared_secret_size()];
 
@@ -258,9 +258,9 @@ pub fn decapsulation(c: &mut Criterion) {
             $group.bench_function(format!("platform={},", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.try_fill_bytes(&mut seed1).unwrap();
+                SysRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.try_fill_bytes(&mut seed2).unwrap();
+                SysRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || {
                         let keypair = p::generate_key_pair(seed1);
@@ -283,9 +283,9 @@ pub fn decapsulation(c: &mut Criterion) {
             $group.bench_function(format!("platform={},api=unpacked", $name), |b| {
                 use $p as p;
                 let mut seed1 = [0; 64];
-                OsRng.try_fill_bytes(&mut seed1).unwrap();
+                SysRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.try_fill_bytes(&mut seed2).unwrap();
+                SysRng.try_fill_bytes(&mut seed2).unwrap();
                 b.iter_batched(
                     || {
                         let mut keypair = p::init_key_pair();
@@ -310,9 +310,9 @@ pub fn decapsulation(c: &mut Criterion) {
                 use $p::*;
 
                 let mut seed1 = [0; 64];
-                OsRng.fill_bytes(&mut seed1);
+                SysRng.try_fill_bytes(&mut seed1).unwrap();
                 let mut seed2 = [0; 32];
-                OsRng.fill_bytes(&mut seed2);
+                SysRng.try_fill_bytes(&mut seed2).unwrap();
 
                 b.iter_batched(
                     || {

@@ -12,14 +12,14 @@ The portable and AVX2 code for field arithmetic, NTT polynomial arithmetic, and 
 ## Usage
 
 ```Rust
- use rand::{rngs::OsRng, RngCore};
+ use rand::{rngs::SysRng, TryRng};
 
  // Ensure you use good randomness.
- // It is not recommended to use OsRng directly!
+ // It is not recommended to use SysRng directly!
  // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
  // bad system entropy.
  fn random_array<const L: usize>() -> [u8; L] {
-     let mut rng = OsRng;
+     let mut rng = SysRng;
      let mut seed = [0; L];
      rng.try_fill_bytes(&mut seed).unwrap();
      seed

@@ -1,12 +1,11 @@
 use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
-
 use libcrux_sha3::shake256;
-use rand::{rng, rngs::OsRng, TryRngCore};
+use rand::{rng, rngs::SysRng, TryRng};
 
 const SHARED_SECRET_SIZE: usize = 32;
 
 fn random_array<const L: usize>() -> [u8; L] {
-    let mut rng = OsRng;
+    let mut rng = SysRng;
     let mut seed = [0; L];
     rng.try_fill_bytes(&mut seed).unwrap();
     seed
@@ -194,7 +193,7 @@ macro_rules! impl_consistency_incremental {
                 debug_assert_eq!(ct2.value.len(), Ciphertext2::len());
 
                 // encaps2 with serialized state
-                let ct22 = encapsulate2(&serialized_state, &pk2_bytes).unwrap();
+                let ct22 = encapsulate2(&serialized_state, &pk2_bytes);
                 assert_eq!(ct2.value, ct22.value);
 
                 assert_eq!(dyn_ss, shared_secret_serialized);

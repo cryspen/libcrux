@@ -383,7 +383,7 @@ macro_rules! impl_incr_key_size {
         #[cfg(feature = "rand")]
         pub mod rand {
             use super::*;
-            use ::rand::TryRngCore;
+            use ::rand::TryRng;
 
             /// Encapsulate the first part of the ciphertext.
             ///

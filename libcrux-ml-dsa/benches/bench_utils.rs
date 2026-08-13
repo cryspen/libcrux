@@ -1,8 +1,8 @@
-use rand::TryRngCore;
+use rand::TryRng;
 
 #[allow(unused)]
 pub(crate) fn random_array<const L: usize>() -> [u8; L] {
-    let mut rng = rand::rngs::OsRng;
+    let mut rng = rand::rngs::SysRng;
     let mut seed = [0; L];
     rng.try_fill_bytes(&mut seed).unwrap();
     seed
