@@ -174,7 +174,7 @@ pub type __m256 = __m256i;
 pub use ssse3::*;
 pub mod ssse3 {
     use super::*;
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_shuffle_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
         let indexes = indexes.to_vec().try_into().unwrap();
         extra::mm_shuffle_epi8_u8_array(vector, indexes)
@@ -190,13 +190,13 @@ pub mod sse2 {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_packs_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_packs_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_packs_epi16(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
 
     use super::*;
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_set_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_set_epi8(
         _e15: i8,
         _e14: i8,
@@ -219,87 +219,87 @@ pub mod sse2 {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set1_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_set1_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_set1_epi16(_: i16) -> __m128i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_set_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_set_epi32(_: i32, _: i32, _: i32, _: i32) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_add_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_add_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_add_epi16(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sub_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_sub_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_sub_epi16(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_mullo_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_mullo_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_mullo_epi16(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_mulhi_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_mulhi_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_mulhi_epi16(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_srli_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_srli_epi64<const IMM8: i32>(_: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_movemask_epi8)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_movemask_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_movemask_epi8(_: __m128i) -> i32 {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpacklo_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_unpacklo_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_unpacklo_epi64(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_unpackhi_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_unpackhi_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_unpackhi_epi64(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_shuffle_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_shuffle_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_shuffle_epi32<const IMM8: i32>(_: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_srli_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_srli_si128<const IMM8: i32>(_: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_slli_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_slli_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_slli_si128<const IMM8: i32>(_: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_xor_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_xor_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_xor_si128(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_setzero_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_setzero_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_setzero_si128() -> __m128i {
         unimplemented!()
     }
@@ -322,54 +322,54 @@ pub mod avx {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi64x)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set1_epi64x hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set1_epi64x(_: i64) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_epi64x)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi64x hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi64x(_: i64, _: i64, _: i64, _: i64) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blendv_ps)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_blendv_ps hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_blendv_ps(_: __m256, _: __m256, _: __m256) -> __m256 {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castsi128_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_castsi128_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_castsi128_si256(_: __m128i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_testz_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_testz_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_testz_si256(_: __m256i, _: __m256i) -> i32 {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castsi256_ps)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_castsi256_ps hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_castsi256_ps(_: __m256i) -> __m256 {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_castps_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_castps_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_castps_si256(_: __m256) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_movemask_ps)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_movemask_ps hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_movemask_ps(_: __m256) -> i32 {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_setzero_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_setzero_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_setzero_si256() -> __m256i {
         BitVec::from_fn(|_| Bit::Zero)
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_m128i)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_set_m128i hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_set_m128i(hi: __m128i, lo: __m128i) -> __m256i {
         BitVec::from_fn(|i| if i < 128 { lo[i] } else { hi[i - 128] })
     }
@@ -381,14 +381,14 @@ pub mod avx {
 
     /// This is opaque to Hax: it is defined only via the integer
     /// interpretation. See `interpretations::int_vec::_mm256_set1_epi32`.
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set1_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set1_epi32(_: i32) -> __m256i {
         unimplemented!()
     }
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_sllv_epi32`.
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi32(
         _e0: i32,
         _e1: i32,
@@ -404,7 +404,7 @@ pub mod avx {
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_mullo_epi16_shifts`.
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi16(
         _e00: i16,
         _e01: i16,
@@ -428,7 +428,7 @@ pub mod avx {
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_shuffle_epi8`.
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi8(
         _e00: i8,
         _e01: i8,
@@ -466,7 +466,7 @@ pub mod avx {
         todo!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set1_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set1_epi16(_: i16) -> __m256i {
         unimplemented!()
     }
@@ -476,190 +476,190 @@ pub mod avx2 {
     use super::*;
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blend_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_blend_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_blend_epi32<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_shuffle_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_shuffle_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_shuffle_epi32<const MASK: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sub_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_sub_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_sub_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mul_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_mul_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_mul_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_add_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_add_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_madd_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_madd_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_madd_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_add_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_add_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_add_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_add_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_add_epi64(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_abs_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_abs_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_abs_epi32(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sub_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_sub_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_sub_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpgt_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_cmpgt_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_cmpgt_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpgt_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_cmpgt_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_cmpgt_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cmpeq_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_cmpeq_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_cmpeq_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sign_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_sign_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_sign_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mullo_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_mullo_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_mullo_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mulhi_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_mulhi_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_mulhi_epi16(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mul_epu32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_mul_epu32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_mul_epu32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_and_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_and_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_and_si256(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_or_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_or_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_or_si256(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_xor_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_xor_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_xor_si256(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srai_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srai_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srai_epi16<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srai_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srai_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srai_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srli_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srli_epi16<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srli_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srli_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srli_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_slli_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_slli_epi32<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permute4x64_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_permute4x64_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_permute4x64_epi64<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpackhi_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_unpackhi_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_unpackhi_epi64(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpacklo_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_unpacklo_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_unpacklo_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpackhi_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_unpackhi_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_unpackhi_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_cvtepi16_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_cvtepi16_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_cvtepi16_epi32(_: __m128i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_packs_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_packs_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_packs_epi32(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_inserti128_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_inserti128_si256 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_inserti128_si256<const IMM8: i32>(_: __m256i, _: __m128i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_blend_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_blend_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_blend_epi16<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srlv_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srlv_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srlv_epi64(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sllv_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_sllv_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_sllv_epi32(_: __m128i, _: __m128i) -> __m128i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_slli_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_slli_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_slli_epi64<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
@@ -674,23 +674,23 @@ pub mod avx2 {
     /// instead of zeroing on out-of-range shifts (rust-lang/stdarch#1822).
     /// That bug was fixed in stdarch#1823 — the int-vec model now matches
     /// the fixed (Intel-spec) behaviour.
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_bsrli_epi128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_bsrli_epi128<const IMM8: i32>(_: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_andnot_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "nospec: _mm256_andnot_si256 hardware intrinsic; uninterpreted, no model/lift yet")]
     pub fn _mm256_andnot_si256(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_unpacklo_epi64)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_unpacklo_epi64 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_unpacklo_epi64(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permute2x128_si256)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_permute2x128_si256 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_permute2x128_si256<const IMM8: i32>(_: __m256i, _: __m256i) -> __m256i {
         unimplemented!()
     }
@@ -714,22 +714,22 @@ pub mod avx2 {
         vector.chunked_shift::<64, 4>(FunArray::from_fn(|_| -(SHIFT_BY as i128)))
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_mullo_epi16)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_mullo_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_mullo_epi16(_vector: __m256i, _shifts: __m256i) -> __m256i {
         todo!()
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_sllv_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_sllv_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
         extra::mm256_sllv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_srlv_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_srlv_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_srlv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
         extra::mm256_srlv_epi32_u32_array(vector, counts.to_vec().try_into().unwrap())
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_permutevar8x32_epi32)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_permutevar8x32_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_permutevar8x32_epi32(a: __m256i, b: __m256i) -> __m256i {
         extra::mm256_permutevar8x32_epi32_u32_array(a, b.to_vec().try_into().unwrap())
     }
@@ -738,7 +738,7 @@ pub mod avx2 {
         BitVec::from_fn(|i| vector[i + if IMM8 == 0 { 0 } else { 128 }])
     }
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_shuffle_epi8)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_shuffle_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_shuffle_epi8(vector: __m256i, indexes: __m256i) -> __m256i {
         let indexes = indexes.to_vec().try_into().unwrap();
         extra::mm256_shuffle_epi8_i8_array(vector, indexes)
@@ -758,7 +758,7 @@ pub mod other {
     // `i32` (not a const generic) so the extracted `val` signature is unchanged.
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aeskeygenassist_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_aeskeygenassist_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_aeskeygenassist_si128(a: __m128i, imm8: i32) -> __m128i {
         __m128i::from_u8x16(interpretations::int_vec::_mm_aeskeygenassist_si128(
             BitVec::to_u8x16(a),
@@ -767,7 +767,7 @@ pub mod other {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenclast_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_aesenclast_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_aesenclast_si128(a: __m128i, round_key: __m128i) -> __m128i {
         __m128i::from_u8x16(interpretations::int_vec::_mm_aesenclast_si128(
             BitVec::to_u8x16(a),
@@ -776,7 +776,7 @@ pub mod other {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_aesenc_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_aesenc_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_aesenc_si128(a: __m128i, round_key: __m128i) -> __m128i {
         __m128i::from_u8x16(interpretations::int_vec::_mm_aesenc_si128(
             BitVec::to_u8x16(a),
@@ -785,7 +785,7 @@ pub mod other {
     }
 
     /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_clmulepi64_si128)
-    #[hax_lib::opaque]
+    #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_clmulepi64_si128 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_clmulepi64_si128(a: __m128i, b: __m128i, imm8: i32) -> __m128i {
         __m128i::from_u8x16(interpretations::int_vec::_mm_clmulepi64_si128(
             BitVec::to_u8x16(a),
