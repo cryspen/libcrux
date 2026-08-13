@@ -174,6 +174,7 @@ pub type __m256 = __m256i;
 pub use ssse3::*;
 pub mod ssse3 {
     use super::*;
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_shuffle_epi8)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_shuffle_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_shuffle_epi8(vector: __m128i, indexes: __m128i) -> __m128i {
         let indexes = indexes.to_vec().try_into().unwrap();
@@ -196,6 +197,7 @@ pub mod sse2 {
     }
 
     use super::*;
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_set_epi8)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm_set_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm_set_epi8(
         _e15: i8,
@@ -381,6 +383,7 @@ pub mod avx {
 
     /// This is opaque to Hax: it is defined only via the integer
     /// interpretation. See `interpretations::int_vec::_mm256_set1_epi32`.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set1_epi32)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set1_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set1_epi32(_: i32) -> __m256i {
         unimplemented!()
@@ -388,6 +391,7 @@ pub mod avx {
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_sllv_epi32`.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_epi32)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi32 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi32(
         _e0: i32,
@@ -404,6 +408,7 @@ pub mod avx {
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_mullo_epi16_shifts`.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_epi16)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi16 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi16(
         _e00: i16,
@@ -428,6 +433,7 @@ pub mod avx {
 
     /// This is opaque to Hax: we have lemmas about this intrinsics
     /// composed with others. See e.g. `_rw_mm256_shuffle_epi8`.
+    /// [Intel Documentation](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm256_set_epi8)
     #[libcrux_macros::trusted(opaque, "validated-axiom: _mm256_set_epi8 hardware intrinsic; int-vec model + mk_lift_lemma! lift + mk! difftest")]
     pub fn _mm256_set_epi8(
         _e00: i8,
