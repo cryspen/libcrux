@@ -194,7 +194,7 @@ val i32_to_bv_to_i32x8_inv (vec: bv256) (i: u64 {v i < 8}) (j: u64 {v j < 32})
   : Lemma (i32_to_bv (to_i32x8 vec i) j == vec.(mk_int (v i * 32 + v j)))
          [SMTPat (i32_to_bv (to_i32x8 vec i) j)]
 
-val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0}) vector i
+val mm256_bsrli_epi128_lemma (shift: i32 {v shift >= 0 /\ v shift < 256}) vector i
   : Lemma (  (I.mm256_bsrli_epi128 shift vector).(i)
           == (
                let lane = v i / 128 in
@@ -222,6 +222,7 @@ val mm256_srlv_epi32_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 8}). v (to_i32x8 shifts c) >= 0)
     (ensures
       (I.mm256_srlv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -239,6 +240,7 @@ val mm256_srlv_epi32_bv_lemma
 
 val mm_sllv_epi32_bv_lemma vector shifts i
   : Lemma
+    (requires forall (c: u64 {v c < 4}). v (to_i32x4 shifts c) >= 0)
     (ensures
       (I.mm_sllv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -259,6 +261,7 @@ val mm256_sllv_epi32_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 8}). v (to_i32x8 shifts c) >= 0)
     (ensures
       (I.mm256_sllv_epi32 vector shifts).(i) ==
        (let i:u64 = i in
@@ -279,6 +282,7 @@ val mm256_srlv_epi64_bv_lemma
     (shifts: bv256)
     (i: u64 {v i < 256})
   : Lemma
+    (requires forall (c: u64 {v c < 4}). v (to_i64x4 shifts c) >= 0)
     (ensures
       (I.mm256_srlv_epi64 vector shifts).(i) ==
        (let i:u64 = i in
@@ -354,7 +358,7 @@ val mm_srli_epi64_bv_lemma
     )
       [SMTPat (I.mm_srli_epi64 shift vector).(i)]
 
-val i16_mul_32extended_bv_lemma (x: i16) (shift: i32 {v shift >= 0 && v shift < 16}) (i: u64 { v i < 32 })
+val i16_mul_32extended_bv_lemma (x: i16 {v x >= 0}) (shift: i32 {v shift >= 0 && v shift < 15}) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` (mk_i16 1 <<! shift)) i
          == ( let j = v i - v shift in
               if j >= 0 && j < 16 then i16_to_bv x (mk_int j) else Bit_Zero
@@ -365,7 +369,7 @@ val i16_mul_32extended_bv_lemma1 (x: i16) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` mk_i16 0) i == Bit_Zero)
   [SMTPat (i32_to_bv (x `i16_mul_32extended` mk_i16 0) i)]
 
-let i16_mul_32extended_bv_lemma0 (x: i16) (i: u64 { v i < 32 })
+let i16_mul_32extended_bv_lemma0 (x: i16 {v x >= 0}) (i: u64 { v i < 32 })
   : Lemma ( i32_to_bv (x `i16_mul_32extended` mk_i16 1) i == (if v i < 16 then i16_to_bv x (mk_int (v i)) else Bit_Zero))
   [SMTPat (i32_to_bv (x `i16_mul_32extended` (mk_i16 1)) i)]
   = i16_mul_32extended_bv_lemma x (mk_int 0) i
@@ -394,40 +398,6 @@ val mm256_add_epi64_lemma lhs rhs (i: u64 {v i < 256})
     (ensures (Bit_Zero? lhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == rhs.(i))
            /\ (Bit_Zero? rhs.(i) ==> (I.mm256_add_epi64 lhs rhs).(i) == lhs.(i)))
 
-#push-options "--z3rlimit 80"
-val mm256_madd_epi16_specialized_lemma vec i:
-  Lemma
-  (requires
-    (forall (i: nat{i < 256}).
-      let nth_32_block = i / 32 in
-      let local_32 = i / 32 in
-      match nth_32_block with
-      | 0 | 4 ->
-         Bit_Zero? vec.(mk_int (nth_32_block * 32 + local_32))
-        \/ Bit_Zero? vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
-      | _ -> True
-    )
-  )
-  (ensures
-    (I.mm256_madd_epi16 vec (I.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
-          (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
-          (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1))).(i)
-    == (
-      let nth_32_block = v i / 32 in
-      let local_32 = v i % 32 in
-      match nth_32_block with
-      | 0 | 4 ->
-        if local_32 < 6
-        then vec.(mk_int (nth_32_block * 32 + local_32))
-        else vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
-      | _ -> Bit_Zero
-    )
-
-  )
-  [SMTPat ((I.mm256_madd_epi16 vec (I.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
-          (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
-          (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1))).(i))]
-#pop-options
 
 val i32_to_bv_add_bv_lemma x y i
   : Lemma (requires forall j. Bit_Zero? (i32_to_bv x j) \/ Bit_Zero? (i32_to_bv y j))
@@ -479,6 +449,57 @@ val mm256_set_epi16_lemma
        )
   )
   [SMTPat (to_i16x16 (I.mm256_set_epi16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15) i)]
+
+#push-options "--z3rlimit 80"
+// CORRECTED (soundness fix, session 16): the previous `requires` bound
+// `local_32 = i / 32` (a copy-paste bug for `i % 32`) and stated a degenerate
+// bit-disjointness that does NOT imply the ensures.  madd of the 6-bit-packing
+// const `set_epi16(..,2^6,1,..,2^6,1)` produces, in i32 lanes 0 and 4,
+// `x + y*2^6` where x = low i16-lane, y = high i16-lane.  For the bit layout
+// below to hold carry-free we need: the LOW lane is a 6-bit value (bits 6..15
+// zero -> non-negative and no overlap with y*2^6), and the HIGH lane is
+// non-negative (bit 15 zero, so y*2^6 < 2^21 and the sum stays < 2^22, capping
+// the high output bits at Bit_Zero).
+val mm256_madd_epi16_specialized_lemma vec i:
+  Lemma
+  (requires
+    (* Trigger-rewrite (session 18): for i < 256, nth_32_block*32 + local_32 == i,
+       so both accesses are `vec.(mk_int i)` — LOGICALLY IDENTICAL to the prior
+       `vec.(mk_int (nth_32_block*32+local_32))` form, but with a literal-matchable
+       `{:pattern vec.(mk_int i)}` so a concrete `vec.(mk_int c)` in a consumer/the
+       proof fires it (the div/mod trigger pathology is defeated). *)
+    (forall (i: nat{i < 256}). {:pattern vec.(mk_int i)}
+      let nth_32_block = i / 32 in
+      let local_32 = i % 32 in
+      match nth_32_block with
+      | 0 | 4 ->
+         ((6 <= local_32 /\ local_32 < 16) ==> Bit_Zero? vec.(mk_int i))
+         /\ (local_32 = 31 ==> Bit_Zero? vec.(mk_int i))
+      | _ -> True
+    )
+  )
+  (ensures
+    (I.mm256_madd_epi16 vec (I.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
+          (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
+          (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1))).(i)
+    == (
+      let nth_32_block = v i / 32 in
+      let local_32 = v i % 32 in
+      match nth_32_block with
+      | 0 | 4 ->
+        if local_32 < 6
+        then vec.(mk_int (nth_32_block * 32 + local_32))
+        else if local_32 < 22
+        then vec.(mk_int (nth_32_block * 32 + 16 + local_32 - 6))
+        else Bit_Zero
+      | _ -> Bit_Zero
+    )
+
+  )
+  [SMTPat ((I.mm256_madd_epi16 vec (I.mm256_set_epi16 (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0)
+          (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1) (mk_i16 0) (mk_i16 0)
+          (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 0) (mk_i16 1 <<! mk_i32 6 <: i16) (mk_i16 1))).(i))]
+#pop-options
 
 val mm256_shuffle_epi8_lemma
   (vec: bv256) indexes i: Lemma (
@@ -565,8 +586,20 @@ val mm256_srai_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
          ))
          [SMTPat (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_srai_epi32 v_IMM8 a) i)]
 
+// CORRECTNESS FIX (2026-07-31): this was an UNPROVABLE axiom without the
+// `requires`.  For an out-of-[0,255] IMM8 the axiom and the CPU-differentially-
+// tested core-models model DIVERGE: the axiom returns 0 whenever `IMM8 < 0`,
+// while `e_mm256_slli_epi32` shifts by `IMM8.rem_euclid(256)` — so at e.g.
+// IMM8 = -256 the model returns `a` unchanged, not 0.  The two agree on ALL of
+// IMM8 in [0,255]; the divergent region is not CPU-differential-tested (`mk!`
+// covers <0>..<255>), is unreachable (every ml-dsa call site uses IMM8 in {1,13},
+// one of them behind `requires v SHIFT_BY == 13`), and is not expressible by the
+// hardware, whose IMM8 is an 8-bit immediate.  Adding the (already-satisfied)
+// range precondition turns a possibly-wrong trusted axiom into a PROVEN lemma.
+// The `ensures` is kept in its original `if` shape so consumers see the same fact.
 val mm256_slli_epi32_lemma (v_IMM8: i32) (a: bv256) (i:u64{v i < 8}):
-  Lemma (to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
+  Lemma (requires v v_IMM8 >= 0 /\ v v_IMM8 <= 31)
+        (ensures to_i32x8 (Libcrux_intrinsics.Avx2.mm256_slli_epi32 v_IMM8 a) i ==
          (
          if v_IMM8 <. mk_i32 0 || v_IMM8 >. mk_i32 31
          then mk_i32 0
@@ -748,7 +781,8 @@ val mm_loadu_si128_lemma (bytes: _{ Seq.length bytes = 16 }) i
   [SMTPat (((I.mm_loadu_si128 bytes).(i)))]
 
 val i32_lt_pow2_n_to_bit_zero_lemma n vec
-  : Lemma (forall i. v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
+  : Lemma (forall i. 0 <= v (to_i32x8 vec (i /! mk_int 32))
+                ==> v (to_i32x8 vec (i /! mk_int 32)) <= normalize_term (pow2 n - 1)
                 ==> v i % 32 >= n
                 ==> vec.(i) == Libcrux_core_models.Abstractions.Bit.Bit_Zero)
 

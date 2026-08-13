@@ -40,7 +40,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ae99e00a020578fc59572a02018b7355"
+      "95263a902570af12c95b64be159ca4b7"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized__v_VK_HASH_END",
@@ -81,7 +81,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7aea597c927e4b1dfc42fa941acbad09"
+      "d741704fdf7939ab82af70411b1d04d1"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -97,7 +97,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "de66d2ae16a8e1015bdd95fecf0ca11a"
+      "8c4a8397c41aa29177659faa32f03345"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -113,7 +113,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "d5202d863ba32521687650753933d54b"
+      "a46ead7afaf63123d989eebc2af69a91"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -145,7 +145,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "17b0eff2f7d00b84e4e0350945322d8b"
+      "f3d5795706ded1f21793fb63ef24c87e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -177,7 +177,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "e335646fe905726fe5eb3fa4f5f689f4"
+      "37e0e540612d7378207690df0e085836"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -221,7 +221,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ec49b9639ebd3e19897b663bf712b220"
+      "f62dde1db2596374d86da4b699a3d6f7"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -237,7 +237,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "7fa5cdf66fa7c70f23db0d6275282f17"
+      "9edfb5f510cacb56ed746e4238fa2053"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -253,7 +253,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "a459dbf6c05090f5579d543e40c151f5"
+      "2153f421d01adaaaa278a7ec93afb897"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -285,7 +285,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "e5dc8767094e67340e5a3582f9d38985"
+      "5731392168d7b89f84186f610018e1e4"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -317,7 +317,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "1add954d41ba76a8ad51c04d74f7c34f"
+      "6a75e3c011a1d5c54773701ab75fdcdd"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -361,7 +361,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f59cebd5868cd3389194a05008cbf4af"
+      "e32e320d39f9e86e5bb4bfb2b79000f5"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -385,7 +385,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "8c81af4031edd82d4e112a47c98ef9f4"
+      "f40b0e65949a75765b4674640f5cd763"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -407,7 +407,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4cda26f90e685a5745d0eced31366fc0"
+      "f0e3b4b1529e812782ca52f2d72fdede"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -466,7 +466,7 @@
         "typing_Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized__v_SEED_MATRIX_END"
       ],
       0,
-      "8de4dc5ca403e7ad9946558d81274b45"
+      "36c3795018cbdb5955786a3c703f2a4a"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -529,7 +529,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cef5c07d872d3fd30b96e034d8aaacfd"
+      "6aec889204c44f076a72b150e2f3f903"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -551,7 +551,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "8d27b9df3451c0aa78e64ded215604e4"
+      "a3d3d1291d55780359989cdd9d641bda"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -579,7 +579,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "a216dea141defc6f623bcf9f1be15169"
+      "db2cf31445d102621413596ade61d510"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -617,7 +617,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "d578680a9375588aab3c4e18379961da"
+      "9ead2ed258219524fb765632db25ca4a"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -651,7 +651,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "2d65a2b0afe73d4397709c0748b3ba6d"
+      "462618956ad3cd5b440af84687a824a3"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -674,7 +674,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "07ce20eb148caacabd5f300be1aec445"
+      "7a253976a2019984578d5682a8f54f27"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -730,7 +730,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "2c4a011c52b2b4f3fc87aee2c40f8234"
+      "5300fc8174e9344c4974e09b179127a5"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -805,7 +805,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0d0b6f30659451f2651bd7a1f674783b"
+      "7164bfed0e98f8fe05f0662e23155ba8"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -868,7 +868,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5ea9cd26401d54d5be2f8cbd95b88d48"
+      "b22cb3b69fd637e4bbb7bffec4403a21"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -907,7 +907,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "17779110a1c44e4a710ffe81380805dd"
+      "48304f296ce9bc22eb05706350a4e020"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -947,7 +947,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "6dfec79d3f0efa3d820cd73f9d748142"
+      "076147dc7abff678ece585701653f25c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -983,7 +983,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "315d45dacb5f61a3d6448f9cab4a2bf3"
+      "e27e9044ffc1e420b359c7322b04da60"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1007,7 +1007,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "d050263a0d014a1a6665f055452254a2"
+      "688a95c4dbcf22be43fd738145b513d1"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1071,7 +1071,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "fa7b1196d4b6a889e5a6e722895f094f"
+      "b7e8089504b134424f57b15c20b6175b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1156,7 +1156,7 @@
         "refinement_interpretation_Tm_refine_e1dbac4ed608803ee339af32736c8723"
       ],
       0,
-      "0c877d4299cbed32ecd7e141d26d9422"
+      "51f282fe65989639270860d52bae9ed8"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1181,7 +1181,7 @@
         "refinement_interpretation_Tm_refine_e1dbac4ed608803ee339af32736c8723"
       ],
       0,
-      "0c877d4299cbed32ecd7e141d26d9422"
+      "51f282fe65989639270860d52bae9ed8"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1200,7 +1200,7 @@
         "token_correspondence_Libcrux_ml_dsa.Hash_functions.Shake256.f_shake256_pre"
       ],
       0,
-      "2389a3cbed00d8ca361777d658dc57aa"
+      "edac17f07b479afe361ad4714bb5c404"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1265,7 +1265,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4d64eac3d4209fd156ce18bedd3ec913"
+      "70cde11dbf6e6de9957c93608815480a"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1323,7 +1323,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "65648449417a531e01095949d7e5e146"
+      "c996ae1230795cb71a903dd95be1059b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1401,7 +1401,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9698e8454d8563dd9ae7933ae4fe1a9f"
+      "009a022e778be40a8b0fcc9089f4cb71"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1432,7 +1432,7 @@
         "refinement_interpretation_Tm_refine_eb103a40d8deb755db624b14c6b35096"
       ],
       0,
-      "841595b2c9726e19035a1b23ed83afaf"
+      "2d491e7cd488c82de41e3e9ff62c8305"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1491,7 +1491,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "58c78642f697e8d8bd9698f68f4f6bdc"
+      "dd0086529e1cde82b83f650c6f058dac"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1536,7 +1536,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "31ece028137567367f7906b997fcb243"
+      "658354077447ccccb961519b57e6610c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1574,7 +1574,7 @@
         "refinement_interpretation_Tm_refine_e1dbac4ed608803ee339af32736c8723"
       ],
       0,
-      "4a0c30ed513bfe209cbc6e512ac614fd"
+      "e5c56e848e3f474a99ca3696fd3d51cd"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1601,7 +1601,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "8313f68b7b675371251d73478b8680a3"
+      "18e52136c28225d0bc4c5bffd381b23d"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1676,7 +1676,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2eb7e611e134326290af1fb9e3890e38"
+      "40d60035828d557b103eaef4c9a367c6"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1732,7 +1732,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ef92d17c0d0d7ca98ec103336fa6fc59"
+      "082c251eca8547262c30e4f68298235a"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1752,7 +1752,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "363dfc93b7fa43a98c8eaa43bbede384"
+      "7be6ab2c20ec1d80093e49a4f6cce859"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1772,7 +1772,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "595a08b8beb27c900af197f3db17b9df"
+      "09fe1e62a3ac9741e36ddd325d5e3548"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1830,7 +1830,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d0d577d0d78edb441723f08fd0efd74c"
+      "4f75db0af7eb0d124e80e1906b5e1eb6"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1842,7 +1842,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "28e13982e8fed6c9b7f57e63756b0964"
+      "9e4e36609843812e6197677b8d29730c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1858,7 +1858,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "b923299499575eb19cf8079514401fad"
+      "4b1844fb900116db59da82df667ce50d"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1874,7 +1874,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "19f787ea30251ed11d41c5de84c752b7"
+      "8a83a822cc67859b902f3bf5650b36c8"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1913,7 +1913,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "b55720cc591090440765839d715a02a3"
+      "b6c7f15e5c748c939c7b60d9acaec68e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1952,7 +1952,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "93693f54a4cc038bf0513150a1481b82"
+      "7a21307b1390bb6c15a5fdb7afd90fde"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1976,7 +1976,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "448694bc97d195aa2d70728cc5dedd52"
+      "b256207c2db64168c8c71ce61b8068a2"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -1988,7 +1988,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "8bb2fa3b2f229ff091f514c18a091272"
+      "180292b266f7a879e75578bfdfac2ca1"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2007,7 +2007,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "a6dfd44ad89ead1ce2b4fa2ed645c34f"
+      "24ec183acc6eff072bbe8d461918e801"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2021,7 +2021,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "e732ad985987b4e5ae7f96b53b9e0da7"
+      "e837c8133604e95146f3bd545bac59e7"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2047,7 +2047,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "be66982ce30b151ae42a7ff18a202001"
+      "91c85aa67e76ba6d1b067405f88e8ab7"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2059,7 +2059,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "f1b8cd25e9ae8948cfcdef581496a12a"
+      "82f4c9db9845e7427c2ebc7a3a8ada47"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2074,7 +2074,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "f218ddfb86734a15e9bf429294042456"
+      "4fa8eaf78cfe6787b36238d8340f5b7f"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2094,7 +2094,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "ba964d7aa04161726996279603f31cec"
+      "acaa38041aef7e7d885bf8582c3aed46"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2103,7 +2103,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "a618a24dee0963484f7a7171c1ddbf98"
+      "21e9bb8a2613e2576560dd37413c9980"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2115,7 +2115,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "0b59cc7f359db23b5600b007e76180a2"
+      "a8b03f8fe09e4c4d124bd6b1468a45ab"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2131,7 +2131,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "c9a3017a3df4aba36475c5fd1ef5d75b"
+      "3d4558b64c17b203762dcc513903aaaf"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2147,7 +2147,7 @@
         "refinement_interpretation_Tm_refine_5869a658f3e9d4fc11c86c31e0a72776"
       ],
       0,
-      "b5204715b1a4d2046e349bc60389eecd"
+      "ee32318b60a2f80511dfb9d5826267d4"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2186,7 +2186,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "060931b1b91f4a9989a909b1985b2209"
+      "601e8aa7ee7955d2e047eadd02c03591"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2225,7 +2225,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "cc8876a18d52e5171b5203c6645115f1"
+      "e0894c22bce41e1637dc93b1917134a1"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2237,7 +2237,7 @@
         "refinement_interpretation_Tm_refine_6e4084a02ad61da59eaadb472b12c38a"
       ],
       0,
-      "eaff61ff3091b888f419492212aa5a7f"
+      "57d8fc5b3820e94159e4c7f1c95829b3"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2254,7 +2254,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "eb001e5d207cab9ed4830e2b2935d9cf"
+      "740ad2e7215e538f862bb755f8f0de1e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2280,7 +2280,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "c452b1da3859f6fd7f9292408bee42cb"
+      "d861d869c8a379680861a64775d926a2"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2335,7 +2335,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "045648e29cb37747c15ece6fa2f427a6"
+      "3ef17f25a271b58a3d976a79a2351fc8"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2388,7 +2388,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "cd7dadbcfac8b40e03635f77aca0af11"
+      "a83fa2c7a216170581af1ee9079cd461"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2441,7 +2441,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ea47be80d2b246248d59d799dff8f9ed"
+      "6a6a893948026035217c0ec5b3446709"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2465,7 +2465,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "cf0293ddcc4be222a9b9589d52f5058a"
+      "00689df873a8ec349b695605199b3874"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2546,7 +2546,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f0712c3ecd02141b5ec2da1be861ae3c"
+      "8d977b9f2e0c862ba911c1f755e298eb"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2635,7 +2635,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "3b7538ccecb493caaf9f3d0a0710ea9b"
+      "8720fe02b2404764af12cae436d87f1b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2691,7 +2691,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9ac0bf78cca6384d89a18ae2b24b73bd"
+      "f569dc99dda026305a6273134d58aa77"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2721,7 +2721,7 @@
         "refinement_interpretation_Tm_refine_567fbc9992cfaa301d9a342bd17198f5"
       ],
       0,
-      "fd60a55f4bc73d6c15c3c8beb2613e42"
+      "ca7a1cd6cc434cb69af4ff059e0a9944"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2783,7 +2783,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "da20b5c815dd9c8e6b9e7b3ce47d3d23"
+      "464633f4366c439021d3037b00d3db2d"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2835,7 +2835,7 @@
         "typing_Rust_primitives.Arrays.t_Slice"
       ],
       0,
-      "755ed3f13631ea4cb009a4b3e697380f"
+      "150c6e186bec06d856fd8415142fef88"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2923,7 +2923,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a91f76fc2e97a9d0de9c6be7bbce9d8e"
+      "2bbd9494fa9289afe9ea163381f70796"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2945,7 +2945,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "6cd14ef97d3f9e35022e433f5115af33"
+      "8df117e2d051c7bbe3c9d9d23ad3cc14"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2963,7 +2963,7 @@
         "refinement_interpretation_Tm_refine_6e4084a02ad61da59eaadb472b12c38a"
       ],
       0,
-      "9beee70e8bfb15648bc803c0a66f852b"
+      "259465846ef4111068f2b4b4d3fde6e1"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2975,7 +2975,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "15d4a6b11fd2aa6bc6c4dd9d8f0e2cc9"
+      "f16ab8c5873976a23afab471bb2e48cd"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -2994,7 +2994,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "8164a6ddb16dca381e94dd47ada59f9f"
+      "13b6ad5364c10a0974c638629f1f965c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3006,7 +3006,7 @@
         "refinement_interpretation_Tm_refine_6e4084a02ad61da59eaadb472b12c38a"
       ],
       0,
-      "7fb0f7aa606a4c80b5c6bb882320f5c9"
+      "a2635d686d090130e34cd33c58b0069f"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3031,7 +3031,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "616a283a816ace6f1fd4c090e43bd860"
+      "dbda099b610f6e3f209fcbb8b3eec7d2"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3043,7 +3043,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "e1d2159f3d0718af27286b4ce3c90f4f"
+      "0b0d9c5b9acf0f819b7bdffaefe1b448"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3058,7 +3058,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "8d90e538cb356ebcb24ea3acf99dd625"
+      "f30f41b956ea346b03bf81cec93b26ca"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3078,7 +3078,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "ef14de9fae9ae056826e16035e07e4ff"
+      "b14f0d69f725c987df99563b5223fd54"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3098,7 +3098,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "7fe572c29b62242ff8abab97046ac22b"
+      "5fa8100fe3917c716f059507ca7da0a4"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3107,7 +3107,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "793709d1cd2a7eddc1e39ba0bf1c782e"
+      "f6500670272faa65453427ffab944803"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3119,7 +3119,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "4cf867d12b88cc3626768eafd52c8d78"
+      "31bcde9db7c1cbab0d32d096044cd407"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3198,7 +3198,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a01f5cd2712fd99ebf49a7a2ce069026"
+      "fa2d949e99a1cc3605a484fd16721c14"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3222,7 +3222,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "e585b9296c6d33747a886dd2bd8aa096"
+      "f37fe4c770cc5be7159928e866867548"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3234,7 +3234,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "949393dc88fdb5a70a24edb0b63f076f"
+      "0c46f362ecb5fd6bb1cc0d4b9cf48572"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3253,7 +3253,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "306ba9d64c9c8448f5914ea38fc96234"
+      "3bdfffe9c282f6bb5d9ccec60707f29e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3284,7 +3284,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "2c183c707519771a5cd40b2acdbceb2a"
+      "7ef7fb21879eaf937624c531fce653e3"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3323,7 +3323,7 @@
         "refinement_interpretation_Tm_refine_eb103a40d8deb755db624b14c6b35096"
       ],
       0,
-      "dd096db6b7cd9dc66a74ff4a907d2646"
+      "952a392184963f71771b9aec6355c749"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3364,7 +3364,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "7b993c0857dd15d43dcdb8dbdaf5a560"
+      "f6aa87fab51b2ca37d1cd8142f06ec05"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3413,7 +3413,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "f66f50dc8af444609fe27b1c7c059658"
+      "dabea6b55067c0e98a82294f56704a68"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3425,7 +3425,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "0e5c1bdc11b2b9af27866826df17db71"
+      "73b9e8cf7cab0ced81d5b60b8f43ec58"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3445,7 +3445,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "975294a560bdf7b775beb328e95cc3f3"
+      "dc4034bc12e361d0a1a81a21d6b7ea9c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3454,7 +3454,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "c10940053436fd84c939dc583f4dbf63"
+      "3ea30f71a3c863b0974da94031b816e2"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3466,7 +3466,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "6d88475e571880881a1789677561097f"
+      "964f9daa174d3455381d10431a294985"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3550,7 +3550,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5a241b9fcd6eccc98959ffd9e6f2f6a3"
+      "ee34867949859c80a0af393871d96738"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3618,7 +3618,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b0ecb60d8b975eaca3d1c78a75a28326"
+      "0d780e16c2218f5ad2a20bccee6b4e5b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3630,7 +3630,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "9a0232949d95b1e07215685c77bb7749"
+      "02d1ee0bc0d8864757405c9ef06961bd"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3644,7 +3644,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "ef985c2af8dd90fcb1d82d64a3d2b753"
+      "2fd994865f602a6efeb6c5d53c681548"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3657,7 +3657,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "b595032261168148f7541a61836e82f3"
+      "985ed8cca1518ab9fbb3c66870ae1c31"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3737,7 +3737,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bcc996b1c94b798e5923f433c0a56051"
+      "f6a281cee412d39bcc6fbbcbd22742e7"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3758,7 +3758,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "e23fea384d21c53cb6fa72c6d6b088e5"
+      "28b0b6b5d390eb9850b8b84c6840d876"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3770,7 +3770,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "531aac7e120f5d532bc7c0ff5be8687c"
+      "a645e3ecb46559d0600a418241013dae"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3782,7 +3782,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "1d157ae86491374523051176cca79e8c"
+      "5a1c718415879c6126b68c419d1af13c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3794,7 +3794,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "7a082be12b97b2cbf3d4b58c3a59cefc"
+      "ad77b5fd4248b9e370097281b19f2861"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3807,7 +3807,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "4a89add5bdafc67743dd52741b9175a6"
+      "e57beb14dec1dd618b2e90189d828258"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3819,7 +3819,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "2941f5faf8a115c0ed30bf5cd7b33a6c"
+      "ee2860cc80fadb798e17737dc923ed98"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3842,7 +3842,7 @@
         "refinement_interpretation_Tm_refine_da1b0dfb8283502ec162998a8bbb6431"
       ],
       0,
-      "3d64b05f7ad0d7393a5ff6286a6f412e"
+      "72c5bdb9f337c8e7b5a2de72811c4c31"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3863,7 +3863,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "b60c2322afd7a633045ba2f0a6f73d12"
+      "d8e51515a01160bce3d6753a5f3d153e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3886,7 +3886,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "3204a4058a93aab8e5ac92e4f2df5165"
+      "f7ea3d6898858194fa52ffc7ae63f97f"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3898,7 +3898,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "7a082be12b97b2cbf3d4b58c3a59cefc"
+      "ad77b5fd4248b9e370097281b19f2861"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3911,7 +3911,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "4a89add5bdafc67743dd52741b9175a6"
+      "e57beb14dec1dd618b2e90189d828258"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3923,7 +3923,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "2941f5faf8a115c0ed30bf5cd7b33a6c"
+      "ee2860cc80fadb798e17737dc923ed98"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3946,7 +3946,7 @@
         "refinement_interpretation_Tm_refine_da1b0dfb8283502ec162998a8bbb6431"
       ],
       0,
-      "3d64b05f7ad0d7393a5ff6286a6f412e"
+      "72c5bdb9f337c8e7b5a2de72811c4c31"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3967,7 +3967,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "b60c2322afd7a633045ba2f0a6f73d12"
+      "d8e51515a01160bce3d6753a5f3d153e"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -3990,7 +3990,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "3204a4058a93aab8e5ac92e4f2df5165"
+      "f7ea3d6898858194fa52ffc7ae63f97f"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4005,7 +4005,7 @@
         "refinement_interpretation_Tm_refine_fdf4024a57a512741a48b5bc7ee6466f"
       ],
       0,
-      "03d3529ec1b69abbb1b7c02f394a8376"
+      "20ae898d711a3f05ace956c243ed442b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4042,7 +4042,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "6bcf8d54c0f5683fa32569ed9dea640d"
+      "b1c03483d0749d6a04ef1864433dc2ae"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4066,7 +4066,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "8031258beb837df0a932b046e0427bb6"
+      "01b1ad96a86784b9c86396a31a3aed53"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4130,7 +4130,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8d4c9ab81ec75fef1b06b1aa607a11cc"
+      "b4cf5c31faf6f64f3247fc6a17949b12"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4149,7 +4149,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok", "unit_inversion"
       ],
       0,
-      "606dc54dafe03e79579af3b71e29dbda"
+      "9fb058ffd1ee686cfee6c14044d4fa55"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4161,7 +4161,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "d65ab2f8906678719536e69715cfdbcf"
+      "a9553a63c8266d49fff967eb610eb356"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4198,7 +4198,7 @@
         "refinement_interpretation_Tm_refine_b0a82badf9647f532e7b1b200165bca3"
       ],
       0,
-      "aa9b5bf4489a8f2bea2d09d6e8a4e44f"
+      "723d1d7e224655df52b5ccb60ebcbf18"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4224,7 +4224,7 @@
         "refinement_interpretation_Tm_refine_56e0327eb14ab61604173ad9dde51b49"
       ],
       0,
-      "267a789143417cf0b554a6b0284477b2"
+      "24517848ff76508e8dbacd958cf4be90"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4247,7 +4247,7 @@
         "refinement_interpretation_Tm_refine_da1b0dfb8283502ec162998a8bbb6431"
       ],
       0,
-      "19dd585bce15b8889615a830e40c3822"
+      "579baea6322e45e39a966e1ad054c167"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4268,7 +4268,7 @@
         "typing_Libcrux_ml_dsa.Simd.Traits.__proj__Mkt_Operations__item___super_i2"
       ],
       0,
-      "8e28c4abcad257f2417323e7ac5b56cc"
+      "9d6eb5ec1809438f0526a8c651c53133"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4291,7 +4291,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "5f860f4e44582e2859ff25368b2e8381"
+      "08d3e8356eb111be1853b53fe5aca206"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4346,7 +4346,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e876254ebac2a63b73ce34b456bcae97"
+      "9b595c6f6b2b523e6982a0d058ed347c"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4385,7 +4385,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "78d21fcbe2893efa403971000c63febe"
+      "e158bea7cfb8ad02e0618d6ee51f7864"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4441,7 +4441,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "636d66072d7bd20f781982bea2e7c2b3"
+      "445f757bcb488a4e21d146135e1a0938"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4465,7 +4465,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "6bb67810b5a95c55aa29d20434445b3d"
+      "1f2c1e7413f1e1188cc2b5d6f0d92b64"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4519,7 +4519,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a916840cd3a0ea1c01d99119d6d8ed5b"
+      "fad3361e5fbae09136f82edd415eaf90"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4612,7 +4612,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e2bec31f52a5944c8535a9420265f684"
+      "657c6784b26af05bbf4bd519b1c08b30"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4639,7 +4639,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index"
       ],
       0,
-      "2c968a7a9de82710f81b0809b94979c3"
+      "16db298a7e3cbe5f3efc8b269e3d19de"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4676,7 +4676,7 @@
         "refinement_interpretation_Tm_refine_b0a82badf9647f532e7b1b200165bca3"
       ],
       0,
-      "1c595674d222aecf5b4c8df641c882bf"
+      "7fd53a704cf0614c7636565961cb8ebf"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4702,7 +4702,7 @@
         "refinement_interpretation_Tm_refine_56e0327eb14ab61604173ad9dde51b49"
       ],
       0,
-      "4c0f50f2f7af1adcc8d60d51ad1aee81"
+      "7463a0be720a4db71b16338f86efc32b"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4729,7 +4729,7 @@
         "refinement_interpretation_Tm_refine_56e0327eb14ab61604173ad9dde51b49"
       ],
       0,
-      "ac8798d1156f4876cda72c74b73af7ab"
+      "492504933132f07fbfbbfe3cd331ef1a"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4821,7 +4821,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "b66493290407293dbb60ad7baf9a5b0a"
+      "6f3907dedcb62d61a051a4d9ee7a4888"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4843,7 +4843,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "6a025e84fe15180c31c9eae02382d715"
+      "e287d0d265bbb68b2024ebb51e21e918"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4861,7 +4861,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "a350ca962d1b79c66a46aa7104609149"
+      "23545a7f4e9d0f7b08f5d8781a11e110"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4873,7 +4873,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "8c9a6351b71479c477f63c50c1f06c3d"
+      "447cb6b60d2b1a9d80e9b5fbbc7d33cf"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4885,7 +4885,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "c2f0d56b79167d0f313f5f89568eb931"
+      "fad91e0e1a3840c2c09cf3e22684708d"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4897,7 +4897,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "f041fcca400679a2728295e014eac3c4"
+      "3b7ad052b813e57236027db46a3fc519"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4909,7 +4909,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "72a9f1bd25228591fd28fd3b412b0e5a"
+      "854d6bc9a407cba3c4c703b2774a10df"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4921,7 +4921,7 @@
         "refinement_interpretation_Tm_refine_47e7f133b879868e55e2389dbc95b9be"
       ],
       0,
-      "37bcc8b846649d963c5844f843753149"
+      "74c3a719fe5f3eb6d9216a3b050820c3"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4945,7 +4945,7 @@
         "refinement_interpretation_Tm_refine_9e4d9d986fba819bab6c0a489ed31960"
       ],
       0,
-      "ee3f15268f525d1e8703c32a2a0cfc1d"
+      "b08b7dea236ca8c5e3ffe4d6d483cb61"
     ],
     [
       "Libcrux_ml_dsa.Encoding.Signing_key.generate_serialized",
@@ -4957,7 +4957,7 @@
         "refinement_interpretation_Tm_refine_fce4cfad845a18cf133330bc479883b7"
       ],
       0,
-      "aa0fdec8caac97616ca7b879888e588a"
+      "4322e0b33151d4d874b8245e31f74862"
     ]
   ]
 ]

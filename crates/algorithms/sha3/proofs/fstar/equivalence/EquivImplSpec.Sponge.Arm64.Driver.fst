@@ -55,7 +55,7 @@ module EquivImplSpec.Sponge.Arm64.Driver
 open FStar.Mul
 open Core_models
 
-module I = Libcrux_intrinsics.Arm64_extract
+module I = Libcrux_intrinsics.Arm64_sha3_views
 module KA = EquivImplSpec.Keccakf.Arm64
 
 

@@ -29,11 +29,11 @@ module KA    = EquivImplSpec.Keccakf.Arm64
 module SA    = EquivImplSpec.Sponge.Arm64
 module Steps = EquivImplSpec.Sponge.Arm64.Steps
 module HS    = Hacspec_sha3.Sponge
-module I     = Libcrux_intrinsics.Arm64_extract
+module I     = Libcrux_intrinsics.Arm64_sha3_views
 
 (* Bring Arm64 typeclass instances into scope so t_Squeeze2 at N=2 resolves. *)
 let _ =
-  let open Libcrux_intrinsics.Arm64_extract in
+  let open Libcrux_intrinsics.Arm64_sha3_views in
   let open Libcrux_sha3.Traits in
   let open Libcrux_sha3.Simd.Arm64 in
   ()

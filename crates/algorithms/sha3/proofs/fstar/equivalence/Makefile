@@ -1,6 +1,16 @@
+# `../intrinsics` mirrors extraction/Makefile: since 2e913988a each algorithm
+# carries its OWN Libcrux_intrinsics.* copy in proofs/fstar/intrinsics (the
+# shared crates/utils/intrinsics tree is deliberately off the include path, to
+# avoid cross-crate flip-flop / stale-.fsti contamination).  That commit updated
+# extraction/Makefile but not this one, so the SIMD equivalence roots
+# (EquivImplSpec.Correctness.{Avx2,Neon}) failed to resolve
+# Libcrux_intrinsics.{Arm64,Avx2}_extract (Error 134/285).  The old
+# libcrux-intrinsics/proofs/fstar/extraction path below it no longer exists at
+# all — dropped.
 FSTAR_INCLUDE_DIRS_EXTRA += \
 	      $(shell git rev-parse --show-toplevel)/fstar-helpers/fstar-bitvec \
-	      $(shell git rev-parse --show-toplevel)/libcrux-intrinsics/proofs/fstar/extraction \
+	      $(shell pwd)/../intrinsics \
+	      $(shell pwd)/../spec \
 	      $(shell pwd)/../stubs \
 	      $(shell pwd)/../extraction
 

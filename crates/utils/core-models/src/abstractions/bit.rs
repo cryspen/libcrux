@@ -90,6 +90,7 @@ macro_rules! generate_machine_integer_impls {
 }
 generate_machine_integer_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
 
+#[libcrux_macros::trusted(replace, "trusted-extern: F* MachineInteger typeclass instance for int_t")]
 #[hax_lib::fstar::replace(
     r"
 instance impl_MachineInteger_poly (t: inttype): t_MachineInteger (int_t t) =

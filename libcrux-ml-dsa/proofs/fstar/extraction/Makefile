@@ -72,4 +72,5 @@ include $(shell git rev-parse --show-toplevel)/fstar-helpers/Makefile.base
 # =====================================================================
 verify: $(CACHE_DIR)/Avx2NttTheory.fst.checked $(CACHE_DIR)/Avx2NttCompose.fst.checked \
         $(CACHE_DIR)/Hacspec_ml_dsa.Commute.Chunk.fst.checked \
-        $(CACHE_DIR)/Spec.MLDSA.Math.fst.checked
+        $(CACHE_DIR)/Spec.MLDSA.Math.fst.checked \
+        $(CACHE_DIR)/Spec.Intrinsics.fst.checked

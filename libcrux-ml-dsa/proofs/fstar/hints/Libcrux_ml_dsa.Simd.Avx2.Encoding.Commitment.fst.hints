@@ -120,7 +120,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "d534ed300fa06a87ccb96bbc6092a118"
+      "84996cb6833c82b9ed908e487304dba1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_6_",
@@ -147,7 +147,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "3e4a69f6c703cbbc0a5c9c0e7369621a"
+      "d1b4a2950d09403a413f7be3318cac90"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_4_",
@@ -250,7 +250,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "6a9d82dc6228082401e8ce8f531721cb"
+      "2a82b590867f92c456518ed9496717d5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize_4_",
@@ -277,7 +277,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9fe2f6a6233b85eea8fe06c5405e0e9a"
+      "69d6f483f12033b2d005b2e51d752b89"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -290,7 +290,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "64029f1d5f77f58aa45f6efc7fdcd56d"
+      "2aa6c4ee63eb1cc2ad872e8e4f2aa446"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -330,7 +330,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "7b94e1f635288da1b1d4be24d4559696"
+      "42ce7e1033e4e2c8deb40d79a4f20471"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -343,7 +343,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8cf0f6168dabc788e6355610994a4867"
+      "07090f62a51a150de845a13e877238d0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -383,7 +383,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "97b3ed5a8348271649cc1965d21c9f18"
+      "79b65a3e461a412ab86d5d21934d0d31"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -396,7 +396,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "6ca99ac9b73635c7c42599b56cbe4c2c"
+      "3342b4bb11c9b4ed945ac7a6c960819b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -436,7 +436,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "661b740fd8c64c5f7c9b19f0847f6971"
+      "88577eca1f5176a159ead05a85a9bd78"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -449,7 +449,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "fd37832d119bb4797ff074abed953ad3"
+      "4362f076733624e70bf0217a624ae929"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -489,7 +489,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4c694d12093166868e04005044c23553"
+      "25e8764a1186d753648274140381ca7a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -515,7 +515,7 @@
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca"
       ],
       0,
-      "37bf23c91ff171f03798f36d8d5f7657"
+      "224602859e24dd5954f2d8254f4d76dc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -554,7 +554,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "86a9fe40c9ef1a62d62cdbf94ad23abf"
+      "247fda82850748c03c4033f377f2fe13"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -582,7 +582,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "29c7cc660bd7ef0c4cc869aa6bfcc3aa"
+      "194f9466d88155ca0e935b5e0b435c39"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -598,7 +598,7 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0"
       ],
       0,
-      "9f530dea8abd067bbf9802ac1d2bc771"
+      "716ed9e23b11af8bec775268a3162dce"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -619,7 +619,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "c5c2d814804ad04a0a421f8582456f36"
+      "ba98a8a33cea59479d52f736318a3c40"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -633,7 +633,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "e345b1b933c47f61935cf71cea4dbe6b"
+      "efe01ac6efe41f381505e5dc4cba4e90"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -647,7 +647,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "a2d6c05e8e4991759abe4e2e81156094"
+      "c9cafe5e473776524f71e7be4dc6a1b2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -713,7 +713,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "9f21d4c8eb002c9a2aefd4e94d5881f6"
+      "e47f9f7243b31d1a226bc62b6af5685f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -769,7 +769,7 @@
         "token_correspondence_Core_models.Ops.Index.f_index_pre"
       ],
       0,
-      "efe9a871c091c2bc21d9b638b63e455a"
+      "4f824f6cc11af226ef361f72a79b1ee1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -809,7 +809,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1ac3f9baa1d07a9bca41ea8db228a078"
+      "4a20f7ef6812ca6dd53b983bf968c378"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -836,7 +836,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "99e71787277cab0df02c395cf728ea3e"
+      "ba652201f52d5d9262743e067eccf484"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -879,7 +879,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "58a461a9a362b7500189f6b9afd9118a"
+      "fdedd07bf2d4192f971515f1d95204fa"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -902,7 +902,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "acfc2c6d3a1f2e2a51ba8496023a070e"
+      "15fd34ca26b9f8d5ece9f3eed1000776"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -925,7 +925,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "acfc2c6d3a1f2e2a51ba8496023a070e"
+      "15fd34ca26b9f8d5ece9f3eed1000776"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -948,7 +948,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "ad75d9b14c2e4c9db5f074909ac9041f"
+      "125d1c58db06340676b8e92fc3af525f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -976,7 +976,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "039c0aa83368ee4579e827f6773e9e5c"
+      "41b85f70e635c536c63524202ccc9a29"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1002,7 +1002,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "f12ab520100400c8a8c6bfd713ef7b68"
+      "e586ebdd16594bd43988f273c32521b7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1036,7 +1036,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "41384f7d38225dd549470fd8561d12c0"
+      "5eba28240ddaecf5b96e5ac7ac97c36f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1062,7 +1062,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "eba0f4fa48730742a2915957e8fb0963"
+      "cb3ed64b21a3a26a7441390b5515523f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1082,7 +1082,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "d1174282bdae97b13fc420481a93af20"
+      "a51ee78e08396102d309073004d246ec"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1102,7 +1102,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "dc2f0802c83a46fabb9ce120f306ed31"
+      "a5e4ef0759b86b421ab3957cbf69cbf6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1124,7 +1124,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4db9506f630f402f0a35903bffe9d071"
+      "af0308a55ba463f15018faf90024f6c2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1146,7 +1146,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "2d09aa7a9337084d1423c7fd4c252a86"
+      "a2203bfdf6e551a4442c5c7841a5ecf1"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1210,7 +1210,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "b593afb0dd09e4f2282d56e72c467fad"
+      "0c7069031ba96957b3ed9df0f5ecd580"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1239,7 +1239,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "6a62d829a53cff788d7150c278ad95df"
+      "cc249b7fa75ebff115627a018937551a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1260,7 +1260,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "42e14889b1024418e3fbd7f84aa5637e"
+      "890be0cfba9bcabaa6e16c55f71e4485"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1288,7 +1288,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "10d99bf738413ae39140c724e8c068e2"
+      "cfdc3ae8eb03df1fb067ea65ae762f0b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1316,7 +1316,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "810ffc5e8dbf6431f61e96a91441314d"
+      "54dc09ad4307f6ed37ffc6913c8a9725"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1374,9 +1374,9 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
+        "refinement_interpretation_Tm_refine_886e556131a322b781d8cd7856b93ca2",
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
-        "refinement_interpretation_Tm_refine_9d653b49f9bc77e9b36ef1c288333de5",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
@@ -1392,7 +1392,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "2e14e511713bb1da9e49d28da8e4dfbe"
+      "a969ba2e060efe3d83e6735f9cfdb87b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1411,13 +1411,13 @@
         "equation_Rust_primitives.Integers.v",
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_12ebe3ca08de18db48604af75c3b5b0e",
+        "refinement_interpretation_Tm_refine_0ef8bbb283b87478c0176e3d136b7cd7",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "3c3d10b5539fc2d74ef3f772928c18e1"
+      "8793688a9ce740aed84e971fba542e1b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1442,7 +1442,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "bdeea3be2a648666f877e0a6a726a37e"
+      "5b795526349526a762ac818b5b6a857a"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1467,7 +1467,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "529eb643b5ef4f20006d0154147416c2"
+      "aca180de0cf5e629754c03ee181bf5de"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1492,7 +1492,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "8d1692cecdaf3e42df3350073b92975b"
+      "4f74fce9fc53d9d313639fdae397ec44"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1512,7 +1512,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a7c5c63322a9517db050553ed419b473"
+      "3d6181b3ea547b780eee4a33f2d6fd9d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1565,7 +1565,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "f02f9c39d0ae8cf18888224bc83acf43"
+      "d5e863a917ffb3cd891a0239b0718a97"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1610,9 +1610,11 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_0074d42e33bdf6620ff34413f307d80a",
         "refinement_interpretation_Tm_refine_10d28bb6d8213c7c4ece31643f318282",
+        "refinement_interpretation_Tm_refine_17ae947fe321e69561d732841eae90e0",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_40c34aaaa5d7d4c5cff5a889589a0a5d",
+        "refinement_interpretation_Tm_refine_44a5e0ef8562c5bc61eb148aee78d656",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
         "refinement_interpretation_Tm_refine_8e275cfa492c73f52b5f32fd4e8a7155",
@@ -1620,11 +1622,9 @@
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
-        "refinement_interpretation_Tm_refine_b71c61ef2901ff8bd5ae7cf39c123407",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8",
         "refinement_interpretation_Tm_refine_f1d6e19b5d095f4909e6ab947169fb6b",
-        "refinement_interpretation_Tm_refine_f2618d1de5a50be00d86936db648df03",
         "refinement_interpretation_Tm_refine_fbcfaf0f669229787b01efabc2d23629",
         "token_correspondence_Core_models.Ops.Index.f_index_pre",
         "token_correspondence_Rust_primitives.Hax.super_index",
@@ -1632,7 +1632,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1d1ab5a7e51a77407deab57459de54d2"
+      "ef5df6d5bb722f24b2a2d8231215ae7e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1703,9 +1703,11 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_Rust_primitives.Mkcast_tc_@cast",
         "refinement_interpretation_Tm_refine_10d28bb6d8213c7c4ece31643f318282",
+        "refinement_interpretation_Tm_refine_17ae947fe321e69561d732841eae90e0",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_40c34aaaa5d7d4c5cff5a889589a0a5d",
+        "refinement_interpretation_Tm_refine_44a5e0ef8562c5bc61eb148aee78d656",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
@@ -1718,10 +1720,8 @@
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
-        "refinement_interpretation_Tm_refine_b71c61ef2901ff8bd5ae7cf39c123407",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
-        "refinement_interpretation_Tm_refine_f2618d1de5a50be00d86936db648df03",
-        "refinement_interpretation_Tm_refine_f7500d6a024ec7b277ae70e8ee6b4241",
+        "refinement_interpretation_Tm_refine_e387d809412ee99ca0789e1901f54971",
         "refinement_interpretation_Tm_refine_fbcfaf0f669229787b01efabc2d23629",
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca",
         "token_correspondence_Core_models.Ops.Index.f_index",
@@ -1737,7 +1737,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "470cf06747e7298846e497201a60fd98"
+      "9bda2213302b447509c7dfc9c6cd2c3b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1762,7 +1762,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "34d9603c467ec07ce8308f1e8406cb00"
+      "42df7769e0b5f694d8e97d829d7644cb"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1787,7 +1787,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "34d9603c467ec07ce8308f1e8406cb00"
+      "42df7769e0b5f694d8e97d829d7644cb"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1797,13 +1797,22 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "FStar.FunctionalExtensionality_interpretation_Tm_arrow_505f8adb466dc430d209c7de298af914",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565",
+        "Spec.Intrinsics_interpretation_Tm_arrow_3877578f51327d4757e8caf83738f867",
         "b2t_def", "bool_inversion", "bool_typing",
+        "constructor_distinct_Rust_primitives.Integers.I32",
         "constructor_distinct_Rust_primitives.Integers.I8",
         "constructor_distinct_Rust_primitives.Integers.U64",
         "constructor_distinct_Rust_primitives.Integers.U8",
         "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "constructor_distinct_Tm_unit",
         "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
         "data_elim_Rust_primitives.Integers.MkInt",
+        "data_typing_intro_Rust_primitives.Integers.I8@tok",
+        "data_typing_intro_Rust_primitives.Integers.MkInt@tok",
+        "equality_tok_Rust_primitives.Integers.I32@tok",
+        "equality_tok_Rust_primitives.Integers.I8@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
         "equality_tok_Rust_primitives.Integers.U8@tok",
         "equality_tok_Rust_primitives.Integers.USIZE@tok",
@@ -1812,8 +1821,10 @@
         "equation_Core_models.Ops.Index.f_index_pre",
         "equation_Core_models.Slice.impl_11",
         "equation_Core_models.Slice.impl__copy_from_slice",
-        "equation_Core_models.Slice.impl__len", "equation_Prims.nat",
-        "equation_Prims.pos", "equation_Rust_primitives.Arrays.length",
+        "equation_Core_models.Slice.impl__len",
+        "equation_FStar.FunctionalExtensionality.restricted_t",
+        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Hax.repeat",
@@ -1822,10 +1833,14 @@
         "equation_Rust_primitives.Hax.update_at_tc_array_range_super",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.cast_mod",
+        "equation_Rust_primitives.Integers.div",
+        "equation_Rust_primitives.Integers.i8",
         "equation_Rust_primitives.Integers.lte",
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_i32",
+        "equation_Rust_primitives.Integers.mk_i8",
         "equation_Rust_primitives.Integers.mk_int",
         "equation_Rust_primitives.Integers.mk_u64",
         "equation_Rust_primitives.Integers.mk_usize",
@@ -1847,32 +1862,39 @@
         "equation_Rust_primitives.Slice.slice_slice",
         "equation_Rust_primitives.cast",
         "equation_Rust_primitives.cast_tc_integers",
-        "equation_Spec.Intrinsics.bv128",
+        "equation_Spec.Intrinsics.bv128", "equation_Spec.Intrinsics.i8x16",
+        "equation_Spec.Intrinsics.t_FunArray",
         "fuel_guarded_inversion_Core_models.Ops.Range.t_Range",
         "fuel_guarded_inversion_FStar.Pervasives.Native.tuple2",
         "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
-        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
+        "fuel_guarded_inversion_Rust_primitives.Integers.int_t",
+        "function_token_typing_Prims.__cache_version_number__",
+        "function_token_typing_Rust_primitives.Integers.u8",
+        "function_token_typing_Spec.Intrinsics.to_i8x16", "int_inversion",
         "int_typing",
         "interpretation_Tm_abs_4ab552b3415220d2b607f7d57c958117",
         "interpretation_Tm_abs_4e41eaf5703de6128b17c2c81e94b989",
         "interpretation_Tm_abs_4e4fb4f1da82d1347bc902058b81f833",
         "interpretation_Tm_abs_56844a6a588223e03e0559cf4d1c8eea",
         "interpretation_Tm_abs_61251814636ed8a91b652d10d977a8a7",
+        "interpretation_Tm_abs_65ce211d9ab7b0659c09213f27bd6e05",
         "interpretation_Tm_abs_9b420abd7c3e11c07b133e6053abbd21",
         "interpretation_Tm_abs_cae63eba7e18c3a3d84075d3995a179a",
         "interpretation_Tm_abs_d175eeaaa95464a0d60f149dab3d969e",
         "lemma_FStar.Seq.Base.lemma_index_slice",
         "lemma_FStar.Seq.Base.lemma_len_slice",
+        "lemma_FStar.Seq.Properties.slice_is_empty",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
+        "lemma_Spec.Intrinsics.mm_set_epi8_lemma",
         "lemma_Spec.Intrinsics.u8_to_bv_to_u8x16_inv",
         "lemma_Spec.Intrinsics.update_at_range_bv_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_Division", "primitive_Prims.op_Equality",
         "primitive_Prims.op_GreaterThanOrEqual",
         "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Modulus", "primitive_Prims.op_Multiply",
-        "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_Minus", "primitive_Prims.op_Modulus",
+        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
         "proj_equation_Core_models.Ops.Index.Mkt_Index_@f_Output",
         "proj_equation_Core_models.Ops.Range.Mkt_Range_@f_end",
         "proj_equation_Core_models.Ops.Range.Mkt_Range_@f_start",
@@ -1890,66 +1912,80 @@
         "projection_inverse_Rust_primitives.Mkcast_tc_@cast",
         "refinement_interpretation_Tm_refine_0074d42e33bdf6620ff34413f307d80a",
         "refinement_interpretation_Tm_refine_05d7ff66cc1349757d5983520cb03600",
-        "refinement_interpretation_Tm_refine_0b12a79cb354798b5f941ab2093333eb",
+        "refinement_interpretation_Tm_refine_0ce91af3d6762ea7d913b870f9e33a01",
         "refinement_interpretation_Tm_refine_10d28bb6d8213c7c4ece31643f318282",
+        "refinement_interpretation_Tm_refine_1628fa8159c35bdaa68f121a383a6a00",
+        "refinement_interpretation_Tm_refine_17ae947fe321e69561d732841eae90e0",
         "refinement_interpretation_Tm_refine_17cde29420b7f49d0823cea814a1b253",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_2cbb060f0f654b4f470435fd94a59c53",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_355e8918c45af5d8a9f193221d21dcb0",
         "refinement_interpretation_Tm_refine_35a0739c434508f48d0bb1d5cd5df9e8",
+        "refinement_interpretation_Tm_refine_36f042ed0385a599ec122c94f009f365",
         "refinement_interpretation_Tm_refine_3bc88d4173ece482687334ae5b8a32bf",
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290",
         "refinement_interpretation_Tm_refine_40393aecedc285f0e40131c06a8034a5",
         "refinement_interpretation_Tm_refine_40c34aaaa5d7d4c5cff5a889589a0a5d",
+        "refinement_interpretation_Tm_refine_44a5e0ef8562c5bc61eb148aee78d656",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
         "refinement_interpretation_Tm_refine_57d3b7e0524ec19a862380e1a01acbac",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
         "refinement_interpretation_Tm_refine_61e6b2c612c49e2914a22006492d9849",
+        "refinement_interpretation_Tm_refine_6737f4f72c93a66fcb9a013bfaa10952",
         "refinement_interpretation_Tm_refine_6b337fa7df467e30c17ee3e486d93c5b",
         "refinement_interpretation_Tm_refine_6ef0056e13dd9699d2255af17c777e27",
+        "refinement_interpretation_Tm_refine_7123e30c153cebcf8b70322db719e150",
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_886e556131a322b781d8cd7856b93ca2",
         "refinement_interpretation_Tm_refine_8e275cfa492c73f52b5f32fd4e8a7155",
         "refinement_interpretation_Tm_refine_91a23e6aae4218edfb9fe1190c773166",
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
-        "refinement_interpretation_Tm_refine_9d653b49f9bc77e9b36ef1c288333de5",
-        "refinement_interpretation_Tm_refine_a2f4e36cb5218ad7e37d4a9976972d9b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_a94de11175d00fdbbdf07b37c09f231c",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
+        "refinement_interpretation_Tm_refine_aaca0fbf6decc6b599f36fa5c2fbf23b",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
-        "refinement_interpretation_Tm_refine_b71c61ef2901ff8bd5ae7cf39c123407",
+        "refinement_interpretation_Tm_refine_af1c43dec8a2008759d8078127a77533",
         "refinement_interpretation_Tm_refine_b9ca4cf05147d86d6eff56ccafdd09d0",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8",
+        "refinement_interpretation_Tm_refine_c93655d5f25cbb361e9f120c7c918333",
         "refinement_interpretation_Tm_refine_da1b0dfb8283502ec162998a8bbb6431",
-        "refinement_interpretation_Tm_refine_dee8c6d123c5783f49adeb34dc8795cf",
         "refinement_interpretation_Tm_refine_e283c1f0b9f4537094b48226dc1edbad",
-        "refinement_interpretation_Tm_refine_e303303700633e9b4f19b2481c562ca3",
+        "refinement_interpretation_Tm_refine_e387d809412ee99ca0789e1901f54971",
         "refinement_interpretation_Tm_refine_f1d6e19b5d095f4909e6ab947169fb6b",
-        "refinement_interpretation_Tm_refine_f2618d1de5a50be00d86936db648df03",
-        "refinement_interpretation_Tm_refine_f7500d6a024ec7b277ae70e8ee6b4241",
+        "refinement_interpretation_Tm_refine_fa7ff54c1a70547b04f2d315dea12f53",
         "refinement_interpretation_Tm_refine_fbcfaf0f669229787b01efabc2d23629",
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca",
         "token_correspondence_Core_models.Ops.Index.f_index",
         "token_correspondence_Core_models.Ops.Index.f_index_pre",
+        "token_correspondence_Prims.pow2.fuel_instrumented",
         "token_correspondence_Rust_primitives.Hax.super_index",
         "token_correspondence_Rust_primitives.Slice.array_slice",
         "token_correspondence_Rust_primitives.Slice.slice_slice",
         "token_correspondence_Rust_primitives.cast",
-        "typing_Core_models.Slice.impl__len", "typing_FStar.Seq.Base.length",
+        "token_correspondence_Spec.Intrinsics.to_i8x16",
+        "typing_Core_models.Slice.impl__len", "typing_FStar.Seq.Base.empty",
+        "typing_FStar.Seq.Base.length",
+        "typing_Libcrux_intrinsics.Avx2.mm_set_epi8", "typing_Prims.pow2",
+        "typing_Rust_primitives.Integers.div",
         "typing_Rust_primitives.Integers.lte",
+        "typing_Rust_primitives.Integers.mk_i8",
         "typing_Rust_primitives.Integers.mk_int",
+        "typing_Rust_primitives.Integers.mk_u64",
         "typing_Rust_primitives.Integers.modulus",
+        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.v",
+        "typing_tok_Rust_primitives.Integers.I8@tok",
         "typing_tok_Rust_primitives.Integers.U64@tok",
         "typing_tok_Rust_primitives.Integers.U8@tok",
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "1145ded7083de3572b4400aef5ec0a13"
+      "2dd8bfdf532bd3b20226b85f038fe95b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1970,7 +2006,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "950f05871936bb36a6d876c1f780d2df"
+      "ba9ba6dcc4778aa965f263cd35212773"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -1999,7 +2035,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "9015066dff25e0889fa612c1e879a5f1"
+      "ad7c7cceee7788bf9771740d2d4a1ba3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2020,7 +2056,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a441b1e0ce0e66ad301e0b087e3ddfce"
+      "58bbc61a6903139502077eab36b49c3f"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2052,7 +2088,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "c72d32bfa3c78b7d85b19384e07ac2f1"
+      "fa7570696bbf122b146b154dac34c6f8"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2075,7 +2111,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "183c9f6293d15e6e2deaf9328b7ae475"
+      "fad61f7138a22238615aabe11486e1d7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2103,7 +2139,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "acfc350c784081f5a2484c211069e37d"
+      "09202d31477762ee8cdbdab1de8d59e3"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2129,7 +2165,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "e03be8e6597d18015186da8e2aa055ea"
+      "ad757f0bcf3a4e237946007d739403dc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2163,7 +2199,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "3ee1aa0790dd79b73670ceeb72997caa"
+      "564d4eec36e4f36a329f753b172937a6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2189,7 +2225,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "d4871b5a368cdaf690cebd21afa4ed2b"
+      "d551ff1179a75e526d0cc9147fb2da3e"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2209,7 +2245,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "9f46098975f8e9314736b2ee24326921"
+      "41297373134e5670ec750870b0e45646"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2229,7 +2265,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "e39af963e027f183db1023c18854db74"
+      "1562c5d8eea62ac1ce747531184aa051"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2251,7 +2287,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "7ae959328661da6719b4c81fcf7cca2a"
+      "e0b2a9ef58d867c70e166f3e255ea1f0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2273,7 +2309,7 @@
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8"
       ],
       0,
-      "ec140af4a57f38fe8b5c848bc824dc03"
+      "664c5c755b47adec87a3bed1c1b8ecee"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2337,7 +2373,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "d96edf08f9813b3540141bce4dd8a0be"
+      "ad6f32951b34396267a95edde312afe6"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2358,7 +2394,7 @@
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3"
       ],
       0,
-      "02caf5670548bbc077c7b44b76718ae2"
+      "6cbf15b725ca7456a29305665677266b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2386,7 +2422,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "f06f1a643ab2ca98463f52d629f42e0b"
+      "a96f33296cd2d2d11124dbf281eb48c9"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2414,7 +2450,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "2958e9a7ebe492c07edd3fd5dc159798"
+      "c0081e7694512d5eeab880003e9b73a0"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2468,13 +2504,13 @@
         "refinement_interpretation_Tm_refine_0074d42e33bdf6620ff34413f307d80a",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
-        "refinement_interpretation_Tm_refine_37afe313ed19dfb58dc6ca1d05c91460",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
+        "refinement_interpretation_Tm_refine_a5f0762e9c8a6667ed7bccc5f2bc9e94",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
@@ -2490,7 +2526,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "072c3356a7b26519efabef01df3f2210"
+      "fe571648229d62515f25915af0be9e61"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2510,12 +2546,12 @@
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_23953af2994ab1a5df30cf7727b87a0b",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
-        "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
+        "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
+        "refinement_interpretation_Tm_refine_d7225af994c42b49b6ce132857897ae1"
       ],
       0,
-      "326e03c59bd25c939fe4d85fe111130c"
+      "29fbbbdad1184311f2ab451c67a98b50"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2540,7 +2576,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c0eb3688e3e4caac6fe81bc3b558a881"
+      "7dbec3d39f0fa0b1d455cb3b5324943b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2561,7 +2597,7 @@
         "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_113d0e1d162ef81131212a627beb9bd2",
+        "refinement_interpretation_Tm_refine_0578bee4a89a64714451bf345f70efd7",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
@@ -2569,7 +2605,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "c3e329db0cafc2fb34f18e7883737429"
+      "57dd2700f36d958b79f4cf55415d8b4b"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2606,7 +2642,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "34f79dc4150df34ae3435021c3f565ca"
+      "4f3046b4a0bee984959e9938b7093601"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2631,7 +2667,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "37a24a5114b0a170820d07380f605b86"
+      "d6190423a2eae2d5630913d05f233329"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2656,7 +2692,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "a1ee85bd47ec43c3d47be8f07e0e77b1"
+      "b30e50f090a176bf471f80c4d1d67e99"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2681,7 +2717,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "e3797f8f095db996d3c9af386b0e1e57"
+      "a22db5914d877e5d0b7682fec9b72cce"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2706,7 +2742,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4a1a071b166526596cf173db4440ce10"
+      "cf8dfbe332b8470c8e69f2447f95ea69"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2728,7 +2764,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "2fcd5058536c4bf15020c6cec4ea0472"
+      "f623d0a350fae7eddc001b925a7797a5"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2753,7 +2789,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "79277ad92116a7cfcc8a7058b4eb04f4"
+      "f63456468435fd9c5159241ef68d2126"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2795,12 +2831,12 @@
         "projection_inverse_Rust_primitives.Hax.Mkupdate_at_tc_@super_index",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_2fd392a99bd46ae62db4faec0004e505",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
         "refinement_interpretation_Tm_refine_78abff248667be6a3189adc754c1eb44",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
+        "refinement_interpretation_Tm_refine_a8bc03ca6a9a53422b33850500dfa461",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
@@ -2809,7 +2845,7 @@
         "token_correspondence_Rust_primitives.Hax.super_index"
       ],
       0,
-      "60529dd10d295ee59af35684e399cacd"
+      "7f98a058d64e9d727957c969a6f85b52"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2831,7 +2867,7 @@
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488"
       ],
       0,
-      "7917cd19e410c8783d63d64ee56dbe29"
+      "680f020c22a0a0caec572bea1d27ed91"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2853,14 +2889,14 @@
         "projection_inverse_Core_models.Ops.Range.Mkt_Range_@f_start",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "fb5682b97b2617380de3d318bbcf064c"
+      "a2a3414e996ee0f9330aa6e037e10e26"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2874,11 +2910,11 @@
         "equation_Rust_primitives.Integers.usize",
         "proj_equation_Core_models.Ops.Range.Mkt_Range_@f_end",
         "projection_inverse_Core_models.Ops.Range.Mkt_Range_@f_end",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c"
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e"
       ],
       0,
-      "607516a44a703b88d0a23e369a70501f"
+      "40ed235f266143ae585a05f2d29cb385"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2931,21 +2967,21 @@
         "projection_inverse_Rust_primitives.Hax.Mkupdate_at_tc_@super_index",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_2fd392a99bd46ae62db4faec0004e505",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
+        "refinement_interpretation_Tm_refine_468e4791dd731597ccfe6b9e18bf0efe",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
-        "refinement_interpretation_Tm_refine_65d1e0af50393294070ca584bbd4a7fe",
-        "refinement_interpretation_Tm_refine_6a2c0f800867e324036c710e9a244ae3",
         "refinement_interpretation_Tm_refine_78abff248667be6a3189adc754c1eb44",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
+        "refinement_interpretation_Tm_refine_a8bc03ca6a9a53422b33850500dfa461",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_d97bc05b3b224c4d1043d8ad56f6d814",
         "refinement_interpretation_Tm_refine_eb2a5348ed7b74a07349192b791ad2ac",
+        "refinement_interpretation_Tm_refine_f7fdd811f0bd0d082c9d2119c75b3482",
         "token_correspondence_Core_models.Ops.Index.f_index",
         "token_correspondence_Core_models.Ops.Index.f_index_pre",
         "token_correspondence_Rust_primitives.Hax.super_index",
@@ -2956,7 +2992,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "22fb65b4d86fc567d68b87ce4a31eaad"
+      "f9ab99685e148fc79c4302fe551f7c57"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -2968,14 +3004,14 @@
         "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Integers.u8",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_2fd392a99bd46ae62db4faec0004e505",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
-        "refinement_interpretation_Tm_refine_9dc0e83a67deb247e98be2e4ce93e180",
+        "refinement_interpretation_Tm_refine_99df57f1303e1d5de69b3cd491d1c406",
+        "refinement_interpretation_Tm_refine_a8bc03ca6a9a53422b33850500dfa461",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53"
       ],
       0,
-      "886b63695cb7769df71dc0f8d8feea8e"
+      "f1d2f8622a936486739f6c5b91ac72ab"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3004,7 +3040,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9687a9d432106dc2f2f8a823882a073e"
+      "737de01c4b49ac3f9b660b7b4a329105"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3033,7 +3069,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0baec5cbc5f671141c492534aba110c0"
+      "71995e114a453e0b1e66a49c199ae5f2"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3062,7 +3098,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "64750a77b2a029a1b2820095c94640b8"
+      "9e8d25b0319951e4a60f2c11c5be336c"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3082,7 +3118,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "bf3dc28a30fedc5e02f432e2b303f22f"
+      "9eff3fec46481e50bae5766b2f923aab"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3133,7 +3169,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "ff7ede8b6c3b06a438d307a991ac7ca3"
+      "a847510204ad154477d9f6abecd14fdd"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3175,21 +3211,21 @@
         "projection_inverse_Core_models.Ops.Range.Mkt_Range_@f_start",
         "projection_inverse_Rust_primitives.Hax.Mkupdate_at_tc_@super_index",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_12a46c90e4e0739c06cf309cfbf5d47e",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_399229f57092063c4f866e5ba3dd756f",
+        "refinement_interpretation_Tm_refine_468e4791dd731597ccfe6b9e18bf0efe",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
+        "refinement_interpretation_Tm_refine_5400a0dae7016c1797052105962f4b25",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
-        "refinement_interpretation_Tm_refine_5a07fbd640b30b460121e5dcb1c83e32",
-        "refinement_interpretation_Tm_refine_6a2c0f800867e324036c710e9a244ae3",
         "refinement_interpretation_Tm_refine_78abff248667be6a3189adc754c1eb44",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_9ee8dd4d8a856746c1c565da7758dee2",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1",
+        "refinement_interpretation_Tm_refine_bd974d514bf719b8d3c8c35e39710069",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_d97bc05b3b224c4d1043d8ad56f6d814",
         "refinement_interpretation_Tm_refine_eb2a5348ed7b74a07349192b791ad2ac",
@@ -3200,7 +3236,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "270a38f852102015d176c25ea1e065da"
+      "cce6af5fd4304abecbbb003e677cd6be"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3276,30 +3312,30 @@
         "projection_inverse_Rust_primitives.Hax.Mkupdate_at_tc_@super_index",
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_Rust_primitives.Mkcast_tc_@cast",
-        "refinement_interpretation_Tm_refine_12a46c90e4e0739c06cf309cfbf5d47e",
-        "refinement_interpretation_Tm_refine_15215611f67941d9a7bd04758d68bc45",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_399229f57092063c4f866e5ba3dd756f",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_524560514756cdb76e9308ae61528a7d",
+        "refinement_interpretation_Tm_refine_5400a0dae7016c1797052105962f4b25",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
-        "refinement_interpretation_Tm_refine_5a07fbd640b30b460121e5dcb1c83e32",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
         "refinement_interpretation_Tm_refine_61e6b2c612c49e2914a22006492d9849",
-        "refinement_interpretation_Tm_refine_708d708543091c18c18c632afeb49c09",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_9ee8dd4d8a856746c1c565da7758dee2",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1",
+        "refinement_interpretation_Tm_refine_bd974d514bf719b8d3c8c35e39710069",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15",
+        "refinement_interpretation_Tm_refine_ec36deb5b44f1bb6c8af359a3572ecb3",
         "refinement_interpretation_Tm_refine_ec7e4872a7f8ef422643f7b009601cdc",
         "refinement_interpretation_Tm_refine_fbcfaf0f669229787b01efabc2d23629",
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca",
+        "refinement_interpretation_Tm_refine_fe774f10b6089f8ed35522a766ba05aa",
         "token_correspondence_Core_models.Ops.Index.f_index",
         "token_correspondence_Core_models.Ops.Index.f_index_pre",
         "token_correspondence_Rust_primitives.Hax.super_index",
@@ -3315,7 +3351,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "96c0bbc9875e8eb48def42266b919cd7"
+      "166acf51365de800676e09773d408e4d"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3344,7 +3380,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9fc9874d15609e77eb8213172e3e967a"
+      "e80d36aeb8d2db5b57c95ab99d32beb7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3373,7 +3409,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "9fc9874d15609e77eb8213172e3e967a"
+      "e80d36aeb8d2db5b57c95ab99d32beb7"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3392,7 +3428,6 @@
         "constructor_distinct_Rust_primitives.Integers.USIZE",
         "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
         "data_elim_Rust_primitives.Integers.MkInt",
-        "data_typing_intro_Rust_primitives.Integers.MkInt@tok",
         "equality_tok_Rust_primitives.Integers.I32@tok",
         "equality_tok_Rust_primitives.Integers.U64@tok",
         "equality_tok_Rust_primitives.Integers.U8@tok",
@@ -3488,9 +3523,8 @@
         "refinement_interpretation_Tm_refine_0074d42e33bdf6620ff34413f307d80a",
         "refinement_interpretation_Tm_refine_045feaff96c939e73ccd5d7de8e4a488",
         "refinement_interpretation_Tm_refine_0996c1a3e3b0c5f6f2a55afe86530c01",
-        "refinement_interpretation_Tm_refine_12a46c90e4e0739c06cf309cfbf5d47e",
+        "refinement_interpretation_Tm_refine_0a7c538278cc80c226c709083038d9c2",
         "refinement_interpretation_Tm_refine_13801851cb1ad469c6b676eb087e16b5",
-        "refinement_interpretation_Tm_refine_15215611f67941d9a7bd04758d68bc45",
         "refinement_interpretation_Tm_refine_160fe7faad9a466b3cae8455bac5be60",
         "refinement_interpretation_Tm_refine_16cd5fa698eca50d0fa58b5bced3a2cf",
         "refinement_interpretation_Tm_refine_17cde29420b7f49d0823cea814a1b253",
@@ -3500,50 +3534,51 @@
         "refinement_interpretation_Tm_refine_33bdf52d0e177ae72fbcdff3efbc11d0",
         "refinement_interpretation_Tm_refine_355e8918c45af5d8a9f193221d21dcb0",
         "refinement_interpretation_Tm_refine_35a0739c434508f48d0bb1d5cd5df9e8",
+        "refinement_interpretation_Tm_refine_36f042ed0385a599ec122c94f009f365",
+        "refinement_interpretation_Tm_refine_38a77005910a28b03a20339aefa40e9a",
         "refinement_interpretation_Tm_refine_399229f57092063c4f866e5ba3dd756f",
         "refinement_interpretation_Tm_refine_3b411258a2dab850fa8928c1b0af8b82",
         "refinement_interpretation_Tm_refine_3bc88d4173ece482687334ae5b8a32bf",
         "refinement_interpretation_Tm_refine_3ea7b68acd26e275dba86c3d93e6f290",
         "refinement_interpretation_Tm_refine_40393aecedc285f0e40131c06a8034a5",
-        "refinement_interpretation_Tm_refine_430c07f9664c1f7372ede04705795a8d",
+        "refinement_interpretation_Tm_refine_424f5a4b0ffcaf5cae9931a4fd76409c",
+        "refinement_interpretation_Tm_refine_468e4791dd731597ccfe6b9e18bf0efe",
         "refinement_interpretation_Tm_refine_4bb8998fe69acc99b21e814adae749a3",
         "refinement_interpretation_Tm_refine_524560514756cdb76e9308ae61528a7d",
+        "refinement_interpretation_Tm_refine_5400a0dae7016c1797052105962f4b25",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_55cb77d236cf8608da148febbca8ce70",
-        "refinement_interpretation_Tm_refine_55ccc34f896d0c93c7539d30b49f334c",
         "refinement_interpretation_Tm_refine_57d3b7e0524ec19a862380e1a01acbac",
-        "refinement_interpretation_Tm_refine_5a07fbd640b30b460121e5dcb1c83e32",
         "refinement_interpretation_Tm_refine_5a92b6e4e7af9363bc35e43d9d7f3f13",
         "refinement_interpretation_Tm_refine_61e6b2c612c49e2914a22006492d9849",
-        "refinement_interpretation_Tm_refine_65d1e0af50393294070ca584bbd4a7fe",
-        "refinement_interpretation_Tm_refine_6a2c0f800867e324036c710e9a244ae3",
-        "refinement_interpretation_Tm_refine_708d708543091c18c18c632afeb49c09",
-        "refinement_interpretation_Tm_refine_720c29897ad8f1da61e19ea5ee3a6091",
+        "refinement_interpretation_Tm_refine_6737f4f72c93a66fcb9a013bfaa10952",
         "refinement_interpretation_Tm_refine_78abff248667be6a3189adc754c1eb44",
         "refinement_interpretation_Tm_refine_91a23e6aae4218edfb9fe1190c773166",
-        "refinement_interpretation_Tm_refine_94027d619d982b4d94bce22f3da84cf7",
         "refinement_interpretation_Tm_refine_94f5259a65e5fc3f6c895f576f2eb5b4",
         "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1",
         "refinement_interpretation_Tm_refine_9ba2ecdb2010331a44bac5d09c9ce5e9",
         "refinement_interpretation_Tm_refine_9ee8dd4d8a856746c1c565da7758dee2",
-        "refinement_interpretation_Tm_refine_a2f4e36cb5218ad7e37d4a9976972d9b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_aaa94774f23742fa7cc29a93cbbc0b53",
         "refinement_interpretation_Tm_refine_abc4d275d97a4b5a4387b42266fda031",
         "refinement_interpretation_Tm_refine_b9c6522e0affb239eed26941638cd164",
         "refinement_interpretation_Tm_refine_b9ca4cf05147d86d6eff56ccafdd09d0",
         "refinement_interpretation_Tm_refine_bcb4c74dd9c0210c7a566434f6c21fa1",
+        "refinement_interpretation_Tm_refine_bd974d514bf719b8d3c8c35e39710069",
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29",
         "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8",
         "refinement_interpretation_Tm_refine_d97bc05b3b224c4d1043d8ad56f6d814",
-        "refinement_interpretation_Tm_refine_dee8c6d123c5783f49adeb34dc8795cf",
+        "refinement_interpretation_Tm_refine_d9b3a33ecf0d9e6febd3e89cce7cac64",
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15",
         "refinement_interpretation_Tm_refine_eb2a5348ed7b74a07349192b791ad2ac",
+        "refinement_interpretation_Tm_refine_ec36deb5b44f1bb6c8af359a3572ecb3",
         "refinement_interpretation_Tm_refine_ec7e4872a7f8ef422643f7b009601cdc",
         "refinement_interpretation_Tm_refine_f02127c44d9b2b6c8814b3f9350a9928",
         "refinement_interpretation_Tm_refine_f1d6e19b5d095f4909e6ab947169fb6b",
+        "refinement_interpretation_Tm_refine_f7fdd811f0bd0d082c9d2119c75b3482",
         "refinement_interpretation_Tm_refine_fbcfaf0f669229787b01efabc2d23629",
         "refinement_interpretation_Tm_refine_fd980a4a94cc34052e6e36a3c682afca",
+        "refinement_interpretation_Tm_refine_fe774f10b6089f8ed35522a766ba05aa",
         "token_correspondence_Core_models.Ops.Index.f_index",
         "token_correspondence_Core_models.Ops.Index.f_index_pre",
         "token_correspondence_Rust_primitives.Hax.super_index",
@@ -3556,6 +3591,7 @@
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.lte",
         "typing_Rust_primitives.Integers.mk_int",
+        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.v",
         "typing_Tm_abs_9b420abd7c3e11c07b133e6053abbd21",
         "typing_tok_Rust_primitives.Integers.I32@tok",
@@ -3564,7 +3600,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "d55651b62ce1e285f35d5ecaf34ad9f7"
+      "bcc8b0961dfb4aaaab731b08fdaa4374"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3587,7 +3623,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "aff523613d625a2765d982cd4f12e802"
+      "1d14fe11904a16d7a6622b410d5b1230"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3610,7 +3646,7 @@
         "refinement_interpretation_Tm_refine_c2f0ef5a6b12944ebcbc54d683471f29"
       ],
       0,
-      "aff523613d625a2765d982cd4f12e802"
+      "1d14fe11904a16d7a6622b410d5b1230"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3679,7 +3715,7 @@
         "typing_tok_Rust_primitives.Integers.U8@tok"
       ],
       0,
-      "b2c8480dc0635dcaf0fe886200520a8c"
+      "67e3d923628fa3eb12c793013da209cc"
     ],
     [
       "Libcrux_ml_dsa.Simd.Avx2.Encoding.Commitment.serialize",
@@ -3706,7 +3742,7 @@
         "typing_tok_Rust_primitives.Integers.U64@tok"
       ],
       0,
-      "b00d7cf9094d148ff482048c84cf8a0f"
+      "3cecd482c7284ef4b84e810952573369"
     ]
   ]
 ]

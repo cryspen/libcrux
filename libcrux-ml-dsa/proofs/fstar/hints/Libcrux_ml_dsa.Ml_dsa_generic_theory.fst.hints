@@ -41,7 +41,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "390ba125ca90ee2706d529812191c989"
+      "c53d024b95fe231fc1e580187563d5ad"
     ],
     [
       "Libcrux_ml_dsa.Ml_dsa_generic_theory.hint_count_bounded",
@@ -70,7 +70,7 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "077e2a917779100de18e3bb51f52a9cc"
+      "2e890a6b0cc3035670d74eff89ee7191"
     ]
   ]
 ]

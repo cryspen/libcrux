@@ -220,7 +220,7 @@ pub mod int_vec {
     /// Duplicate a single 32-bit lane across all 4 lanes. The lane index
     /// is the low 2 bits of N (mod 4).
     pub fn vdupq_laneq_u32<const N: i32>(a: u32x4) -> u32x4 {
-        let idx = (N as u64) & 3;
+        let idx = (N as u64) % 4;
         u32x4::from_fn(|_| a[idx])
     }
 
@@ -308,7 +308,7 @@ pub mod int_vec {
             if N >= 16 || N < 0 {
                 0
             } else {
-                ((a[i] as u16).wrapping_shl(N as u32)) as i16
+                ((a[i] as u16) << (N as u32)) as i16
             }
         })
     }
@@ -317,7 +317,7 @@ pub mod int_vec {
             if N >= 32 || N < 0 {
                 0
             } else {
-                a[i].wrapping_shl(N as u32)
+                a[i] << (N as u32)
             }
         })
     }
@@ -326,7 +326,7 @@ pub mod int_vec {
             if N >= 64 || N < 0 {
                 0
             } else {
-                a[i].wrapping_shl(N as u32)
+                a[i] << (N as u32)
             }
         })
     }
@@ -343,7 +343,7 @@ pub mod int_vec {
             if s >= 16 {
                 0
             } else if s >= 0 {
-                ((a[i] as u16).wrapping_shl(s as u32)) as i16
+                ((a[i] as u16) << (s as u32)) as i16
             } else if s <= -16 {
                 if a[i] < 0 {
                     -1
@@ -351,7 +351,7 @@ pub mod int_vec {
                     0
                 }
             } else {
-                a[i].wrapping_shr((-s) as u32)
+                a[i] >> ((-s) as u32)
             }
         })
     }
@@ -363,11 +363,11 @@ pub mod int_vec {
             if s >= 16 {
                 0
             } else if s >= 0 {
-                a[i].wrapping_shl(s as u32)
+                a[i] << (s as u32)
             } else if s <= -16 {
                 0
             } else {
-                a[i].wrapping_shr((-s) as u32)
+                a[i] >> ((-s) as u32)
             }
         })
     }
@@ -438,9 +438,9 @@ pub mod int_vec {
                 // by gating const generics in [0, 31].
                 a[i]
             } else {
-                let mask: i32 = ((1i64 << N) - 1) as i32;
+                let mask: i32 = (1u32 << N).wrapping_sub(1) as i32;
                 let kept = a[i] & mask;
-                let shifted = ((b[i] as u32).wrapping_shl(N as u32)) as i32;
+                let shifted = ((b[i] as u32) << (N as u32)) as i32;
                 kept | shifted
             }
         })
@@ -452,9 +452,13 @@ pub mod int_vec {
             } else if N >= 64 || N < 0 {
                 a[i]
             } else {
-                let mask: i64 = if N == 63 { i64::MAX } else { (1i64 << N) - 1 };
+                let mask: i64 = if N == 63 {
+                    i64::MAX
+                } else {
+                    (1u64 << N).wrapping_sub(1) as i64
+                };
                 let kept = a[i] & mask;
-                let shifted = ((b[i] as u64).wrapping_shl(N as u32)) as i64;
+                let shifted = ((b[i] as u64) << (N as u32)) as i64;
                 kept | shifted
             }
         })
@@ -465,7 +469,7 @@ pub mod int_vec {
     /// VEXT.32: concatenate `a:b`, then take 4 32-bit lanes starting at `N`.
     pub fn vextq_u32<const N: i32>(a: u32x4, b: u32x4) -> u32x4 {
         u32x4::from_fn(|i| {
-            let idx = ((N as u64) & 3) + i;
+            let idx = ((N as u64) % 4) + i;
             if idx < 4 {
                 a[idx]
             } else {
@@ -536,8 +540,14 @@ pub mod int_vec {
     }
 
     /// VXAR: `r[i] = rot_right_N(a[i] XOR b[i])` per 64-bit lane.
+    ///
+    /// Expressed as the equivalent left rotation `rotate_left((64 - N%64)%64)`
+    /// (`rotate_right(x, k) == rotate_left(x, (64-k)%64)` for a 64-bit word).
+    /// Both compute the same value, so the differential lift/test still hold;
+    /// the left form is what the Keccak (rho) equivalence consumers need, and
+    /// it lets the whole NEON flip stay axiom-free (no rotate-symmetry lemma).
     pub fn vxarq_u64<const N: i32>(a: u64x2, b: u64x2) -> u64x2 {
-        u64x2::from_fn(|i| (a[i] ^ b[i]).rotate_right((N as u32) % 64))
+        u64x2::from_fn(|i| (a[i] ^ b[i]).rotate_left((64 - (N as u32) % 64) % 64))
     }
 
     /// AESE: `data XOR key`, ShiftRows, SubBytes (no MixColumns).
@@ -548,7 +558,7 @@ pub mod int_vec {
         // ShiftRows on a 4x4 byte matrix is equivalent to permuting the
         // 16 bytes as [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11].
         let shift_rows_perm: [u64; 16] = [0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11];
-        let after_sr = u8x16::from_fn(|i| after_xor[shift_rows_perm[i as usize]]);
+        let after_sr = u8x16::from_fn(|i| after_xor[shift_rows_perm[i as usize] % 16]);
         // Step 3: SubBytes.
         u8x16::from_fn(|i| AES_SBOX[after_sr[i] as usize])
     }
@@ -895,8 +905,8 @@ pub mod int_vec {
 
         // Reductions return a scalar; we use a `mk_scalar!` variant which
         // compares the scalar result directly. The macro name still starts
-        // with `mk!` so the audit script's regex (line 81 of intrinsics-audit.py)
-        // detects test coverage via the `mk!(name(...))` token.
+        // with `mk!` so a coverage scan keying off the `mk!(name(...))` token
+        // still records these reductions as differentially tested.
         macro_rules! mk_scalar {
             ($name:ident($($x:ident : $ty:ident),*)) => {
                 #[test]

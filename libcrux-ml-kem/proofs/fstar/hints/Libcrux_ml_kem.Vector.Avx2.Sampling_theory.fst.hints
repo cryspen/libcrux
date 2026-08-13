@@ -1,24 +1,6 @@
 [
-  "4f7130ce3a9a2adefb2c3e5f2ad2503a",
+  "b9b41b5fe6213d274d621532e6d4aefb",
   [
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.mm_shuffle_epi8_no_semantics_lemma",
-      1,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
-        "equation_Rust_primitives.Integers.bit", "int_inversion",
-        "primitive_Prims.op_Addition", "primitive_Prims.op_Division",
-        "primitive_Prims.op_Modulus", "primitive_Prims.op_Multiply",
-        "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_33c4f2300f1544e298b388900358a643",
-        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_e9d2acd716e976eddb0f03391caae2b5"
-      ],
-      0,
-      "3b6fa27a7ed09c45f16efabf0af0dcc3"
-    ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.count_ones_u8_popcount8",
       1,
@@ -35,7 +17,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "f23c6a8a8dc7382c2951cf4f904d03d3"
+      "71e9a8194e9d4cad9146be57a854e7b7"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_shuffle_semantics_of_axiom",
@@ -43,16 +25,28 @@
       0,
       1,
       [
-        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
-        "function_token_typing_BitVec.Intrinsics.mm_shuffle_epi8_no_semantics",
+        "@MaxIFuel_assumption", "@query",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
         "int_inversion", "primitive_Prims.op_Addition",
         "primitive_Prims.op_Division", "primitive_Prims.op_Modulus",
-        "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0",
+        "primitive_Prims.op_Multiply",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_33c4f2300f1544e298b388900358a643",
-        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "49d851626c3def1ad53afa593bcab2cb"
+      "da06f899b6c845ed94d9e0e851e7d5ad"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -60,21 +54,86 @@
       0,
       1,
       [
-        "@MaxFuel_assumption", "@MaxIFuel_assumption",
-        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "constructor_distinct_Rust_primitives.Integers.USIZE",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.bits",
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "c8c3309fa696e1154d738d332bafea26"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      2,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "79ecd14e689407352237cf69c56cdffc"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      3,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
         "equation_Rust_primitives.Integers.mk_usize",
         "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
         "equation_Rust_primitives.Integers.u8",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.v",
-        "function_token_typing_Rust_primitives.Integers.u8", "int_typing",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
         "lemma_Rust_primitives.Integers.pow2_values",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
@@ -84,62 +143,18 @@
         "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
         "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_570c3251f05f338dc9f28a2e907056ee",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_aa7440876140532d208e64864c5676e2",
         "refinement_interpretation_Tm_refine_b045b04f0bb15cd7c94a2ec78d3283ce",
         "typing_FStar.Seq.Base.length",
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.size_bits",
+        "typing_tok_Rust_primitives.Integers.U64@tok",
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "27ba59905d823acf62e3547ae91149a5"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      2,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.usize",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_986b3d1bb94bf57fa4d40e63127dc5c1",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_c64f2405b85ab7b11cd3469c849b05e8",
-        "typing_Rust_primitives.Integers.v",
-        "typing_tok_Rust_primitives.Integers.USIZE@tok"
-      ],
-      0,
-      "8948645221d8e37e45662ee1b3ac4273"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      3,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.u8",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_31c7d3d85d92cb942c95a78642e657c7",
-        "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
-      ],
-      0,
-      "cfe7e0f3aa378701f163c0a336d1f516"
+      "77c45bb2d209cd72d3626c3ac6ba71c1"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -149,27 +164,46 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion",
-        "constructor_distinct_Rust_primitives.Integers.I32",
-        "equality_tok_Rust_primitives.Integers.I32@tok",
-        "equation_Prims.nat", "equation_Prims.pos",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.mk_usize",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.unsigned", "int_typing",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.u8",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
         "lemma_Rust_primitives.Integers.pow2_values",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Minus", "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_Subtraction",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "typing_Prims.pow2", "typing_Rust_primitives.Integers.range",
-        "typing_tok_Rust_primitives.Integers.I32@tok"
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_b045b04f0bb15cd7c94a2ec78d3283ce",
+        "typing_FStar.Seq.Base.length",
+        "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.size_bits",
+        "typing_tok_Rust_primitives.Integers.U64@tok",
+        "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "0aa2540c1b15c4f511202a76aaad6e36"
+      "00fb9e34c47398f710219d9729d9f5ab"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -210,11 +244,303 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "4afc55106a9abf4192cb92192001258c"
+      "0f5f61bd34968f3147f5cec48d91706e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
       6,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE",
+        "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_usize",
+        "equation_Rust_primitives.Integers.u8",
+        "equation_Rust_primitives.Integers.v",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
+        "refinement_interpretation_Tm_refine_31c7d3d85d92cb942c95a78642e657c7",
+        "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
+      ],
+      0,
+      "1e114469059544f25fdd439ecc1e9420"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      7,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_0cc3b8bc4390a8152398abb544530a43",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "b8fb5c99e3f963863e0d40cd1b51a74e"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      8,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "8dd066c46c0113926df34d1887e3155c"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      9,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "bool_inversion",
+        "constructor_distinct_Rust_primitives.Integers.I32",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "equality_tok_Rust_primitives.Integers.I32@tok",
+        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.unsigned", "int_typing",
+        "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Minus", "primitive_Prims.op_Subtraction",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "typing_Prims.pow2", "typing_Rust_primitives.Integers.range",
+        "typing_tok_Rust_primitives.Integers.I32@tok"
+      ],
+      0,
+      "3ec519d4720b651117f98c36740dfa24"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      10,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "7382430f01ad9bc390cb29fa191a9cbb"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      11,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "3990da8a4c29c471a328fc8ade5b29a3"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      12,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "bool_inversion", "bool_typing",
+        "constructor_distinct_Rust_primitives.Integers.I32",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "constructor_distinct_Rust_primitives.Integers.U8",
+        "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.U8@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.mk_usize",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.u8",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
+        "int_typing", "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_570c3251f05f338dc9f28a2e907056ee",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_aa7440876140532d208e64864c5676e2",
+        "refinement_interpretation_Tm_refine_b045b04f0bb15cd7c94a2ec78d3283ce",
+        "typing_FStar.Seq.Base.length",
+        "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.range",
+        "typing_Rust_primitives.Integers.size_bits",
+        "typing_tok_Rust_primitives.Integers.U8@tok",
+        "typing_tok_Rust_primitives.Integers.USIZE@tok"
+      ],
+      0,
+      "557ad250115f4735a0ada7b325e707d7"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      13,
+      0,
+      1,
+      [
+        "@MaxFuel_assumption", "@MaxIFuel_assumption",
+        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.I32",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "constructor_distinct_Rust_primitives.Integers.U8",
+        "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.U8@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.mk_usize",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.u8",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
+        "lemma_Rust_primitives.Integers.pow2_values",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_b045b04f0bb15cd7c94a2ec78d3283ce",
+        "typing_FStar.Seq.Base.length",
+        "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.size_bits",
+        "typing_tok_Rust_primitives.Integers.U8@tok",
+        "typing_tok_Rust_primitives.Integers.USIZE@tok"
+      ],
+      0,
+      "9968994b5d2ca11a86e65180ebdf7c28"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      14,
       0,
       1,
       [
@@ -235,11 +561,11 @@
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "5949f8fe95e7a8ebb01444b333d1c86c"
+      "eafb81051ca0f5f393bdac235d3c720e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      7,
+      15,
       0,
       1,
       [
@@ -258,11 +584,76 @@
         "typing_Libcrux_ml_kem.Vector.Rej_sample_table.v_REJECTION_SAMPLE_SHUFFLE_TABLE"
       ],
       0,
-      "4403b308aeb034c5390f300ddf00d454"
+      "8c5ff549e821264f1b0251927c203750"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      8,
+      16,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_0cc3b8bc4390a8152398abb544530a43",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "baaccdf55da7d5878aa4325461035078"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      17,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
+        "equality_tok_Rust_primitives.Integers.USIZE@tok",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
+      ],
+      0,
+      "65535d37308a7789ccf9015f2220a774"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      18,
       0,
       1,
       [
@@ -270,6 +661,7 @@
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
         "bool_inversion",
         "constructor_distinct_Rust_primitives.Integers.I32",
+        "constructor_distinct_Rust_primitives.Integers.U64",
         "equality_tok_Rust_primitives.Integers.I32@tok",
         "equation_Prims.nat", "equation_Prims.pos",
         "equation_Rust_primitives.Integers.bits",
@@ -288,184 +680,7 @@
         "typing_tok_Rust_primitives.Integers.I32@tok"
       ],
       0,
-      "018a57c265d7c78f6ed3e4de61f1bd47"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      9,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
-      ],
-      0,
-      "efff67d456098648b61f3d046ffbaa7c"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      10,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
-      ],
-      0,
-      "f5813898002ba7116d56e44e5a12a597"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      11,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
-      ],
-      0,
-      "1e62d7bc5f9cb8fb3ee623cbf8b2a437"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      12,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
-      ],
-      0,
-      "8477daa4b2c6a22b9b530d8859dbd565"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      13,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
-      ],
-      0,
-      "524659ffb358b26cc70b68179da92a11"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      14,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_0cc3b8bc4390a8152398abb544530a43",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
-      ],
-      0,
-      "73ad7ff2dd0365853db3b77180647e52"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      15,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_493726b0caab6179254e314147227b49",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
-      ],
-      0,
-      "ffc6eb8ce2551e6ce299da2094b01b8a"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      16,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
-      ],
-      0,
-      "847a3f592c19b37fc2b6afb1b2380384"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      17,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
-      ],
-      0,
-      "fb33cb937d2a0ec19e8631934ab97ac0"
-    ],
-    [
-      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
-      18,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
-      ],
-      0,
-      "8d7184b44b2bbda566400d265760328a"
+      "a42aaad821a86e21273ced96f7d94105"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -474,21 +689,11 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "9d4309090246aeda5a44ba7e816e300e"
+      "7877249d6b6408d2fe0c63faccf0745f"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -497,21 +702,11 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "b52145647f7a14d0ffa1d409f435be73"
+      "43c7ee073fb9fba8bb328894c3bd37f6"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -520,21 +715,10 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "equality_tok_Rust_primitives.Integers.USIZE@tok",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.i16",
-        "equation_Rust_primitives.Integers.mk_int",
-        "equation_Rust_primitives.Integers.mk_usize",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.v",
-        "proj_equation_Rust_primitives.Integers.MkInt_@_0",
-        "projection_inverse_Rust_primitives.Integers.MkInt_@_0",
-        "refinement_interpretation_Tm_refine_21e0277b21b9413896fa7f0b23f8625e",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136",
-        "typing_Libcrux_intrinsics.Avx2_extract.vec128_as_i16x8"
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
       ],
       0,
-      "55dd671b34868ea1f7e9ebdfcf260416"
+      "2182611f7081d26dbbdf6d006fb34a7e"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -543,10 +727,10 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
       ],
       0,
-      "1ed0edbde0111327a0c2725374178ba7"
+      "b43e51884d5d9007ac20010afea91287"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -554,48 +738,63 @@
       0,
       1,
       [
-        "@MaxIFuel_assumption", "@query", "b2t_def", "equation_Prims.squash",
-        "primitive_Prims.op_LessThan", "projection_inverse_BoxBool_proj_0",
-        "refinement_interpretation_Tm_refine_2de20c066034c13bf76e9c0b94f4806c"
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
       ],
       0,
-      "ed26de6c0fe00e643220ae309c41c49e"
+      "1ac52e5d76dd711e7c1dc7eceeb95582"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
       24,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_0cc3b8bc4390a8152398abb544530a43",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
+      ],
       0,
-      "1b748c4e2ae50864749fc682b8925a6e"
+      "fa2c1e31cad9ec4b89d69969a9cb6f35"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
       25,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_493726b0caab6179254e314147227b49",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
+      ],
       0,
-      "58c6b770ad115b80f3ceb123e3a78ba5"
+      "b4e70ba98fdbc0e6a273bea941a72d19"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
       26,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query",
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
+      ],
       0,
-      "a31234b1cbd551ef8b106d22aa241494"
+      "f7a8051b9bc65ca9c4a15405181755cc"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
       27,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query",
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
+      ],
       0,
-      "8a0a66f115d78f79416c40bcf5a69264"
+      "5e20dd43f0b15f88f0195cc2defcea86"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -604,10 +803,11 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "cf0053ff1a3c307fcb41f74dbdcc6bae"
+      "9dd689b4e15b9b9b596042e9d4d1d3d3"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -616,10 +816,11 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a"
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "c5d2fc3fbba2424f8f6c5e7c3f6c5172"
+      "31b92548310076dfaf8a9a4d8b3a3706"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -628,13 +829,11 @@
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_1c5c4279a6adb05e6060a0e4cabee423",
-        "refinement_interpretation_Tm_refine_a5b9e43e92cf7e9b33acd9b50f9c3e2a",
-        "refinement_interpretation_Tm_refine_a64c36d4a75f114976d46870401a173b",
-        "unit_inversion"
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
       ],
       0,
-      "feed28a91307579601ad6e8c9183e74b"
+      "4c7c98917c6665814f5fc1fcfa3c657c"
     ],
     [
       "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
@@ -642,28 +841,151 @@
       0,
       1,
       [
+        "@MaxIFuel_assumption", "@query",
+        "lemma_Libcrux_intrinsics.Avx2_ml_kem_views.vec128_as_i16x8_len",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
+      ],
+      0,
+      "4aeced5a6bfe2efe2553f08862a89eac"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      32,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_26d768cc241c6628db9e0d45d45d9136"
+      ],
+      0,
+      "dfaba309466f1897180069488f27a851"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      33,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "b2t_def", "equation_Prims.squash",
+        "primitive_Prims.op_LessThan", "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_2de20c066034c13bf76e9c0b94f4806c"
+      ],
+      0,
+      "144fedb821e195c6a6d9764fead2c998"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      34,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "7d11527262745f4a8f0978f7838b01d6"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      35,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "d4e12ff06653b8ecdcc8aa01ef62f6b6"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      36,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "3ec1e20ef7081f990ab3014921ef3f4f"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      37,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "33e32806b937bcdfff0ad4890836ec47"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      38,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
+      ],
+      0,
+      "a5d842b9dbb07312c1ad6d1eb843615d"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      39,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd"
+      ],
+      0,
+      "629d00686248118b1d394b118cfb8a82"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      40,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_67cbc30e54f7770f8046a6179fb642ab",
+        "refinement_interpretation_Tm_refine_889668e34edae4df206ba1d5e3b22848",
+        "refinement_interpretation_Tm_refine_e5f643511fe7cb45ebc2d756c20bd4cd",
+        "unit_inversion"
+      ],
+      0,
+      "6f22d9817ba6c1644357a3d0646ae592"
+    ],
+    [
+      "Libcrux_ml_kem.Vector.Avx2.Sampling_theory.lemma_half_done",
+      41,
+      0,
+      1,
+      [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "constructor_distinct_Rust_primitives.Integers.U64",
         "constructor_distinct_Rust_primitives.Integers.USIZE",
+        "data_elim_Libcrux_core_models.Abstractions.Bitvec.BitVec",
+        "data_elim_Rust_primitives.Integers.MkInt",
+        "equality_tok_Rust_primitives.Integers.U64@tok",
         "equality_tok_Rust_primitives.Integers.USIZE@tok",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.mk_int",
+        "equation_Rust_primitives.Integers.mk_u64",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.unsigned", "int_inversion",
-        "int_typing", "lemma_Rust_primitives.Integers.pow2_values",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.u64",
+        "equation_Rust_primitives.Integers.unsigned",
+        "fuel_guarded_inversion_Libcrux_core_models.Abstractions.Bitvec.t_BitVec",
+        "int_inversion", "lemma_Rust_primitives.Integers.pow2_values",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_b045b04f0bb15cd7c94a2ec78d3283ce",
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.size_bits",
         "typing_tok_Rust_primitives.Integers.USIZE@tok"
       ],
       0,
-      "03902cec29e17d2c4b1be4ea71dd5360"
+      "5be07a3238cb33b9c01d25ec6c5aaf48"
     ]
   ]
 ]

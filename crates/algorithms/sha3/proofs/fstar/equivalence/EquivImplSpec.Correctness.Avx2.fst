@@ -49,7 +49,7 @@ module EquivImplSpec.Correctness.Avx2
 open FStar.Mul
 open Core_models
 
-module I = Libcrux_intrinsics.Avx2_extract
+module I = Libcrux_intrinsics.Avx2_sha3_views
 module KA = EquivImplSpec.Keccakf.Avx2
 
 
