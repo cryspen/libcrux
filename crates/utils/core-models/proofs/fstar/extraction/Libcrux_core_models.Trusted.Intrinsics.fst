@@ -31,7 +31,8 @@ open Core_models
                                                counterpart, i.e. lifts for ops
                                                whose `mk_lift_lemma!` was never
                                                declared.
-     4. `proofs/intrinsics-trust-index.{csv,md}` + the `mk!` / `assert_eq!`
+     4. `scripts/enumerate_trust.py` (the canonical trusted-base inventory)
+                                               + the `mk!` / `assert_eq!`
                                                differential tests in (2)
                                              — the EVIDENCE.  Nothing in the F*
                                                proof chain consumes these; they
