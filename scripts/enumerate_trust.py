@@ -34,7 +34,6 @@ Usage:
 """
 
 import argparse
-import csv
 import json
 import os
 import re
@@ -83,8 +82,6 @@ MODULE_PREFIX_SRC = {
 # (e.g. pre-relocation) name with no Rust definition behind it. `(?:^|_)` keeps
 # a camelCase word that merely ends in "extract" (no separator) from matching.
 _STALE_MODULE_RE = re.compile(r"(?:^|_)extract$", re.I)
-
-INTRINSICS_CSV = "crates/utils/core-models/proofs/intrinsics-trust-index.csv"
 
 
 def _abs(repo_root, *p):
@@ -147,24 +144,6 @@ def enumerate_core_models(repo_root):
     for r in result["opaque_intrinsics"]:
         r["has_lift"] = r["name"] in lifted_names
     return result
-
-
-def read_intrinsics_registry(repo_root):
-    """Cross-reference the core-models per-intrinsic registry
-    (intrinsics-trust-index.csv): total intrinsics + trust_level histogram +
-    the no-spec (L0*) tail. Returns None when the registry is absent."""
-    p = _abs(repo_root, INTRINSICS_CSV)
-    if not os.path.isfile(p):
-        return None
-    levels = {}
-    total = 0
-    with open(p, newline="") as f:
-        for row in csv.DictReader(f):
-            total += 1
-            lvl = (row.get("trust_level") or "").strip() or "?"
-            levels[lvl] = levels.get(lvl, 0) + 1
-    nospec = sum(v for k, v in levels.items() if k.startswith("L0"))
-    return {"total": total, "by_level": dict(sorted(levels.items())), "nospec": nospec}
 
 
 # ===========================================================================
@@ -343,7 +322,6 @@ def enumerate_fstar_observed(repo_root):
 
 def build_inventory(repo_root):
     cm = enumerate_core_models(repo_root)
-    reg = read_intrinsics_registry(repo_root)
     markers = enumerate_rust_markers(repo_root)
     fstar = enumerate_fstar_observed(repo_root)
 
@@ -352,6 +330,8 @@ def build_inventory(repo_root):
     hw_lifted = sum(1 for r in hw if r.get("has_lift"))
     hw_nospec = sum(1 for r in hw if not r.get("has_lift"))
     hw_nospec_stub = sum(1 for r in hw if not r.get("has_lift") and r["stub_body"])
+    hw_marked = sum(1 for r in hw if r.get("marked"))
+    hw_unmarked_names = sorted(r["name"] for r in hw if not r.get("marked"))
     n_foundation = len(cm["foundation_opaque"]) + len(cm["replace_sites"])
 
     # §2 decomposition (audit 2026-08-12). Source-side (always available, dedup-free).
@@ -383,6 +363,8 @@ def build_inventory(repo_root):
                 "nospec_by_arch": _arch_hist([r for r in hw if not r.get("has_lift")]),
                 "nospec_stub_body": hw_nospec_stub,
                 "nospec_names": sorted(r["name"] for r in hw if not r.get("has_lift")),
+                "marked": hw_marked,
+                "unmarked_names": hw_unmarked_names,
             },
             "generated_lifts": {
                 "total": n_lift,
@@ -391,7 +373,6 @@ def build_inventory(repo_root):
             },
             "handwritten_fstar_replace": len(cm["replace_sites"]),
             "foundation_opaque": len(cm["foundation_opaque"]),
-            "registry": reg,
         },
         "rust_markers": markers,
         "fstar_observed": fstar,
@@ -438,8 +419,10 @@ def render(inv):
     a("CORE-MODELS BASE  (Rust source; git-tracked, always visible)")
     a("-" * 78)
     hs = cm["hardware_symbols"]
-    a(f"  S3  hardware symbols  (#[hax_lib::opaque] intrinsic -> uninterpreted F* val)"
+    a(f"  S3  hardware symbols  (opaque intrinsic -> uninterpreted F* val)          "
       f"   {hs['total']:>4}   [{_fmt_hist(hs['by_arch'])}]")
+    a(f"          carry #[trusted(opaque,…)] loud marker                           "
+      f"   {hs['marked']:>4}   (rest = non-intrinsic opaque helpers)")
     a(f"          lifted  (a mk_lift_lemma! gives a tested int-vec model)          "
       f"   {hs['lifted']:>4}")
     a(f"          NO-SPEC (uninterpreted; NO F* semantics)                         "
@@ -457,10 +440,6 @@ def render(inv):
       f"   {cm['handwritten_fstar_replace']:>4}")
     a(f"      foundation opaque (abstractions/* trusted primitives)                 "
       f"   {cm['foundation_opaque']:>4}")
-    if cm["registry"]:
-        r = cm["registry"]
-        a(f"      registry x-ref (intrinsics-trust-index.csv): {r['total']} intrinsics; "
-          f"levels {r['by_level']}; no-spec(L0*) = {r['nospec']}")
     a("")
 
     # ---- rust markers -----------------------------------------------------

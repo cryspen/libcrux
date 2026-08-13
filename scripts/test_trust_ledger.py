@@ -261,10 +261,12 @@ def test_attr_markers(tmp):
 
 def test_reason_format():
     for good in ["hax-limitation: x", "pending-proof(E5): y", "validated-axiom: z",
-                 "  slow-proof: trimmed", "unprovable-termination: t", "trusted-extern: e"]:
+                 "  slow-proof: trimmed", "unprovable-termination: t", "trusted-extern: e",
+                 "nospec: _mm256_and_si256 hardware intrinsic; uninterpreted, no model/lift yet"]:
         check(ts.reason_ok(good), f"reason_ok True: {good!r}")
+    check("nospec" in ts.TRUST_CATEGORIES, "nospec registered as a trust category")
     for bad in ["pending-proof: missing ref", "random: z", "hax-limitation no colon",
-                "", "hax-limitation:no-space"]:
+                "", "hax-limitation:no-space", "nospec no colon", "nospec:no-space"]:
         check(not ts.reason_ok(bad), f"reason_ok False: {bad!r}")
 
 
@@ -395,6 +397,11 @@ pub fn _mm_real_model(a: __m128i) -> __m128i {
 pub fn _mm_set_epi8() -> __m128i {
     todo!()
 }
+// The LOUD trust-marker form must be recognised too (Part A of the sweep):
+#[libcrux_macros::trusted(opaque, "validated-axiom: _mm_marked hardware intrinsic; model + lift + difftest")]
+pub fn _mm_marked(_: __m128i) -> __m128i {
+    unimplemented!()
+}
 #[hax_lib::opaque]
 pub struct NotAFn { x: u8 }
 '''
@@ -405,11 +412,14 @@ def test_opaque_intrinsic_scan(tmp):
     open(p, "w").write(_OPAQUE_SRC)
     got = ts.scan_file_opaque_intrinsics(p, tmp)
     by = {r["name"]: r for r in got}
-    check(sorted(by) == ["_mm_packs_epi16", "_mm_real_model", "_mm_set_epi8"],
-          f"3 opaque FNs (doc example + opaque struct excluded): got {sorted(by)}")
+    check(sorted(by) == ["_mm_marked", "_mm_packs_epi16", "_mm_real_model", "_mm_set_epi8"],
+          f"4 opaque FNs incl. trusted(opaque) (doc example + opaque struct excluded): got {sorted(by)}")
     check(by["_mm_packs_epi16"]["stub_body"] is True, "unimplemented!() body -> stub")
     check(by["_mm_set_epi8"]["stub_body"] is True, "todo!() body -> stub")
     check(by["_mm_real_model"]["stub_body"] is False, "real body -> not a stub")
+    # `marked` distinguishes the loud #[trusted(opaque,…)] form from bare #[hax_lib::opaque].
+    check(by["_mm_marked"]["marked"] is True, "trusted(opaque,…) marker -> marked=True")
+    check(by["_mm_packs_epi16"]["marked"] is False, "bare hax_lib::opaque -> marked=False")
 
 
 # --------------------------------------------------------------------------

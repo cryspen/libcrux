@@ -343,12 +343,13 @@ TRUST_CATEGORIES = (
     "hax-limitation",
     "trusted-extern",
     "validated-axiom",
+    "nospec",  # uninterpreted intrinsic symbol: no int-vec model/lift yet
     "slow-proof",
     "pending-proof",  # requires a (<ref>) suffix — see _REASON_RE
 )
 _REASON_RE = re.compile(
     r"^(?:unprovable-termination|hax-limitation|trusted-extern|validated-axiom"
-    r"|slow-proof|pending-proof\([^)]+\)):\s"
+    r"|nospec|slow-proof|pending-proof\([^)]+\)):\s"
 )
 
 # The G1 body wrappers and the fn-level summary label.
@@ -626,8 +627,15 @@ def reason_ok(reason):
 # A `mk_lift_lemma!(NAME ...)` INVOCATION (not the `macro_rules! mk_lift_lemma {`
 # definition, which is followed by `{` not `!(`). Captures the intrinsic name.
 _MK_LIFT_LEMMA_RE = re.compile(r"\bmk_lift_lemma!\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)")
-# `#[hax_lib::opaque]` attribute head (tolerates inner whitespace).
+# The two source forms of an opaque hardware-symbol tag:
+#   (a) the bare `#[hax_lib::opaque]` attribute head, and
+#   (b) the LOUD `#[libcrux_macros::trusted(opaque, "…")]` marker introduced by the
+#       trust-hardening sweep, which emits the SAME `#[cfg_attr(hax, hax_lib::opaque)]`
+#       mechanism (byte-identical F* extraction) but is greppable and reason-tagged.
+# Both must be recognised so the enumerator does not lose sight of a symbol once it
+# is marked; the `marked` flag records which symbols carry the loud form.
 _HAX_OPAQUE_RE = re.compile(r"#\[\s*hax_lib::opaque\s*\]")
+_TRUSTED_OPAQUE_RE = re.compile(r"#\[\s*libcrux_macros::trusted\s*\(\s*opaque\b")
 # Empty-body markers that make an opaque fn a pure stub (no executable Rust model).
 _STUB_BODY_RE = re.compile(r"\b(?:unimplemented|todo)!\s*\(")
 
@@ -651,9 +659,12 @@ def scan_file_mk_lift_lemmas(path, repo_root=None):
 
 
 def scan_file_opaque_intrinsics(path, repo_root=None):
-    """Return [{file, line, name, stub_body}] for every `#[hax_lib::opaque]`-tagged
-    *function* in one .rs file. `stub_body` is True iff the body is an empty
-    `unimplemented!()`/`todo!()` (no executable Rust model — the worst no-spec form).
+    """Return [{file, line, name, stub_body, marked}] for every opaque-tagged
+    *function* in one .rs file, where "opaque-tagged" means either a bare
+    `#[hax_lib::opaque]` OR a `#[libcrux_macros::trusted(opaque, "…")]` marker.
+    `stub_body` is True iff the body is an empty `unimplemented!()`/`todo!()` (no
+    executable Rust model — the worst no-spec form). `marked` is True iff the loud
+    `trusted(opaque, …)` form is used (the trust-hardening sweep's greppable marker).
     Comment-masked, so the `//!`-guide example in x86.rs is ignored. Opaque items
     that are NOT functions (opaque structs/consts) are skipped."""
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -663,7 +674,8 @@ def scan_file_opaque_intrinsics(path, repo_root=None):
     rel = os.path.relpath(path, repo_root) if repo_root else path
     out = []
     for i, line in enumerate(lines):
-        if not _HAX_OPAQUE_RE.search(line):
+        marked = bool(_TRUSTED_OPAQUE_RE.search(line))
+        if not (marked or _HAX_OPAQUE_RE.search(line)):
             continue
         # The fn may sit a few attribute/blank lines below the opaque attr.
         for j in range(i + 1, min(i + 30, len(lines))):
@@ -677,6 +689,7 @@ def scan_file_opaque_intrinsics(path, repo_root=None):
                     "line": j + 1,
                     "name": m.group(1),
                     "stub_body": bool(_STUB_BODY_RE.search(window)),
+                    "marked": marked,
                 })
                 break
             # A non-fn item (struct/const/type/impl) directly under the attr:

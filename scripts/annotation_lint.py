@@ -32,6 +32,12 @@ Checks the hax-verified crates for convention violations:
   V6  A `-<crate>::…` hax extraction-exclusion (`-i` filter) without a
       `# trusted-module: <token> : <reason>` mirror in hax.py / hax.sh.
 
+  V7  A core-models hardware *intrinsic* symbol (`_mm*` / `v[a-z]*`) still tagged
+      with a bare `#[hax_lib::opaque]` instead of the loud, reason-carrying
+      `#[libcrux_macros::trusted(opaque, "…")]` marker. Enforces the trust-
+      hardening sweep's marking going forward. Non-intrinsic opaque (rewrite-lemma
+      helpers, foundation primitives) are NOT flagged.
+
 V4/V5/V6 share their implementation with `trust_ledger.py --check` (they are its
 CLAIMS-side lints) and run on the committed tree — no extraction needed.
 
@@ -48,6 +54,10 @@ import trust_scan as ts
 import trust_ledger as tl
 
 CRATES = ["libcrux-ml-kem/src", "libcrux-ml-dsa/src"]
+CORE_MODELS_SRC = "crates/utils/core-models/src"
+# A hardware intrinsic symbol name: x86 `_mm…` or ARM `v<lowercase>…` (matches the
+# marking sweep's transformation rule; excludes `_rw_*` rewrite lemmas & foundation).
+_INTRINSIC_NAME_RX = re.compile(r"^(?:_mm\w+|v[a-z]\w+)$")
 BA_RX = re.compile(
     r"#\[\s*(?:cfg_attr\s*\(\s*hax\s*,\s*)?hax_lib::fstar::(before|after)\s*\("
 )
@@ -145,6 +155,26 @@ def marker_violations(repo_root):
     return v2, v2b, v3
 
 
+def opaque_marker_violations(repo_root):
+    """V7 — a core-models hardware *intrinsic* symbol tagged with a bare
+    #[hax_lib::opaque] instead of the loud #[libcrux_macros::trusted(opaque, "…")]
+    marker. Returns [(file, line, name)]. Only intrinsic-named symbols are gated;
+    non-intrinsic opaque (rewrite-lemma Proof helpers, foundation primitives) pass."""
+    root = os.path.join(repo_root, CORE_MODELS_SRC)
+    out = []
+    if not os.path.isdir(root):
+        return out
+    for dp, dn, fns in os.walk(root):
+        dn[:] = [d for d in dn if d not in ts._SKIP_DIRS]
+        for fn in sorted(fns):
+            if not fn.endswith(".rs") or fn in ts._MARKER_SKIP_FILES:
+                continue
+            for r in ts.scan_file_opaque_intrinsics(os.path.join(dp, fn), repo_root):
+                if not r.get("marked") and _INTRINSIC_NAME_RX.match(r["name"]):
+                    out.append((r["file"], r["line"], r["name"]))
+    return out
+
+
 def main():
     strict = "--strict" in sys.argv
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -157,6 +187,7 @@ def main():
                         os.path.join(dirpath, f), repo_root
                     )
     v2, v2b, v3 = marker_violations(repo_root)
+    v7 = opaque_marker_violations(repo_root)
 
     # V4/V5/V6 — companion-axiom tags + module/config mirrors. Shared with
     # trust_ledger --check; scoped to the two hax-verified crates with companions.
@@ -201,13 +232,18 @@ def main():
         print(f"V5/V6: {len(v5v6)} module/config trust-mirror issue(s):")
         for msg in sorted(v5v6):
             print(f"  {msg}")
+    if v7:
+        print(f"V7: {len(v7)} core-models intrinsic(s) with a bare "
+              "#[hax_lib::opaque] (want #[libcrux_macros::trusted(opaque, \"…\")]):")
+        for path, line, name in sorted(v7):
+            print(f"  {path}:{line}  {name}")
 
     # Reported total counts every finding; the GATE counts only active (non-
     # allowlisted) ones so a documented pre-existing block can't red-CI.
     reported = (len(all_violations) + len(v2) + len(v2b) + len(v3)
-                + len(v4) + len(v5v6))
+                + len(v4) + len(v5v6) + len(v7))
     gated = (len(v1_active) + len(v2) + len(v2b) + len(v3)
-             + len(v4) + len(v5v6))
+             + len(v4) + len(v5v6) + len(v7))
     if reported == 0:
         print("annotation lint: clean")
     elif gated == 0:

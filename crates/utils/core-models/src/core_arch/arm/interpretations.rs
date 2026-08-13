@@ -905,8 +905,8 @@ pub mod int_vec {
 
         // Reductions return a scalar; we use a `mk_scalar!` variant which
         // compares the scalar result directly. The macro name still starts
-        // with `mk!` so the audit script's regex (line 81 of intrinsics-audit.py)
-        // detects test coverage via the `mk!(name(...))` token.
+        // with `mk!` so a coverage scan keying off the `mk!(name(...))` token
+        // still records these reductions as differentially tested.
         macro_rules! mk_scalar {
             ($name:ident($($x:ident : $ty:ident),*)) => {
                 #[test]
