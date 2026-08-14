@@ -38,14 +38,14 @@ Usage example:
 ```rust
  #[cfg(feature = "mlkem768")]
  {
-     use rand::{rngs::SysRng, TryRng};
+     use rand::{rngs::OsRng, TryRngCore};
 
      // Ensure you use good randomness.
-     // It is not recommended to use SysRng directly!
+     // It is not recommended to use OsRng directly!
      // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
      // bad system entropy.
      fn random_array<const L: usize>() -> [u8; L] {
-         let mut rng = SysRng;
+         let mut rng = OsRng;
          let mut seed = [0; L];
          rng.try_fill_bytes(&mut seed).unwrap();
          seed

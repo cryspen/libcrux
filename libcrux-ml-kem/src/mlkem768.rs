@@ -795,7 +795,7 @@ pub mod incremental {
 
 #[cfg(test)]
 mod tests {
-    use rand::{rngs::SysRng, TryRng};
+    use rand::{rngs::OsRng, TryRngCore};
 
     use super::{
         mlkem768::{generate_key_pair, validate_public_key},
@@ -805,7 +805,7 @@ mod tests {
     #[test]
     fn pk_validation() {
         let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
-        SysRng.try_fill_bytes(&mut randomness).unwrap();
+        OsRng.try_fill_bytes(&mut randomness).unwrap();
 
         let key_pair = generate_key_pair(randomness);
         assert!(validate_public_key(&key_pair.pk));

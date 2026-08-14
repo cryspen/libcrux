@@ -34,7 +34,7 @@ hax-lib.workspace = true
 tls_codec = { workspace = true, optional = true }
 
 [dev-dependencies]
-rand = { version = "0.10" }
+rand = { version = "0.9" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
@@ -45,7 +45,7 @@ libcrux-kats = { workspace = true, features = ["mldsa"] }
 # dev-dependencies; the actual test bodies are gated behind the
 # `cross-spec-tests` feature so default `cargo test` is unaffected.
 hacspec_ml_dsa = { path = "../specs/ml-dsa" }
-rand_chacha = "0.10"
+rand_chacha = "0.9"
 
 
 # This doesn't build on intel macos.

@@ -30,7 +30,7 @@ macro_rules! pqcp_api {
         /// Common APIs shared between PQCP implementations.
         ///
         /// ```
-        /// use rand::Rng;
+        /// use rand::RngCore;
         #[doc = $use_mod]
         ///
         /// // Key Generation
