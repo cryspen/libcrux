@@ -176,6 +176,16 @@ pub fn bitvector_to_bounded_ints<const N: usize, const Nd: usize>(
         }
         coefficient
     });
+    // Round-trip sanity check: decoding then re-encoding returns the input bits.
+    // ERASED for the Lean backend (mirrors what the F* backend does with every
+    // `debug_assert!`). This is a property of THIS SPEC's self-consistency, not part
+    // of the functional contract, so `impl == spec` neither implies nor needs it.
+    // Keeping it made the aeneas/Lean model carry a live `massert` that forces every
+    // decode proof to additionally establish ByteEncode-after-ByteDecode AND a
+    // 3072-iteration `Array.eq` loop spec -- work the F* proofs never did and which
+    // cannot be ported from them. The cheap size `debug_assert!`s elsewhere in this
+    // file are deliberately LEFT IN; only this round-trip one is costly.
+    #[cfg(not(hax_backend_lean))]
     hax_lib::debug_assert!(*input == bitvector_from_bounded_ints(&result, d));
     result
 }

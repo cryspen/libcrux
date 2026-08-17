@@ -52,7 +52,7 @@ structure parameters.MlKemParams where
 def sampling.BadRejectionSamplingRandomnessError := Unit
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 410:12-415:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
 @[reducible]
 def serialize.serialize_secret_key.closure (RANK : Std.Usize) (T_SIZE :
   Std.Usize) :=
@@ -135,12 +135,12 @@ def sampling.sample_poly_cbd.closure (ETA64 : Std.Usize) (ETA512 : Std.Usize)
   Std.Usize × Array Bool ETA512
 
 /-- [hacspec_ml_kem::serialize::vector_decode_12::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 230:12-234:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
 @[reducible]
 def serialize.vector_decode_12.closure (RANK : Std.Usize) := Slice Std.U8
 
 /-- [hacspec_ml_kem::serialize::byte_decode::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 206:12-206:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
 @[reducible]
 def serialize.byte_decode.closure (D32 : Std.Usize) (D256 : Std.Usize) :=
   Array Std.U16 256#usize
@@ -180,7 +180,7 @@ def matrix.transpose.closure (RANK : Std.Usize) :=
   Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 364:12-370:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
 def serialize.deserialize_then_decompress_u.closure (RANK : Std.Usize) :=
   Std.Usize × Slice Std.U8 × Std.Usize
 
@@ -191,7 +191,7 @@ def matrix.sub_polynomials.closure :=
   256#usize
 
 /-- [hacspec_ml_kem::serialize::serialize_public_key::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 428:12-437:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
 def serialize.serialize_public_key.closure (RANK : Std.Usize) (EK_SIZE :
   Std.Usize) :=
   Array (Array parameters.FieldElement 256#usize) RANK × Slice Std.U8
