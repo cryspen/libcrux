@@ -420,7 +420,8 @@ let lemma_rank_encrypt_facts (v_K: usize)
    randomness param via the identity post — the call site passes the shadowed
    randomness and F* bridges by congruence).
    ───────────────────────────────────────────────────────────────────────── *)
-#push-options "--fuel 2 --ifuel 1 --z3rlimit 400"
+#restart-solver
+#push-options "--fuel 2 --ifuel 1 --z3rlimit 800"
 let lemma_encapsulate_post
       (v_K v_PUBLIC_KEY_SIZE v_C1_SIZE v_C2_SIZE v_CIPHERTEXT_SIZE: usize)
       (pk_value: t_Array u8 v_PUBLIC_KEY_SIZE)
