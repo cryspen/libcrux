@@ -263,7 +263,8 @@ let pv_post_elim (#vV: Type0) {| iop: T.t_Operations vV |}
   = reveal_opaque (`%pv_post) (pv_post #vV cin cout len pvm m)
 #pop-options
 
-#push-options "--z3rlimit 300 --fuel 0 --ifuel 1"
+#restart-solver
+#push-options "--z3rlimit 300 --fuel 0 --ifuel 1 --split_queries always"
 let lemma_intra_vec_per_coeff
     (#vV: Type0) {| iop: T.t_Operations vV |}
     (cin cout: t_Array vV (mk_usize 16))
