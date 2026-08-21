@@ -658,7 +658,8 @@ let lemma_byte_decode_index_d (d: usize{v d > 0 /\ v d <= 12})
           FStar.Tactics.trefl ())
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#restart-solver
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let lemma_deserialize_coeff_eq_byte_decode_d (d: usize{v d > 0 /\ v d <= 12})
     (serialized: t_Array u8 (mk_usize (32 * v d)))
     (group: t_Array i16 (mk_usize 16))
@@ -786,6 +787,7 @@ let chunk_decompressed_d (d: usize{v d > 0 /\ v d < 12})
     == Seq.index (C.decompress (S.byte_decode (mk_usize (32 * v d)) (mk_usize (256 * v d)) serialized d) d) (16 * j + l))
 
 (* intro from the byte-bridge (grp <-> bytes) + the decompress value form (g <-> grp). *)
+#restart-solver
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 200 --split_queries always"
 let lemma_chunk_decompressed_intro_d
     (d: usize{v d > 0 /\ v d < 12})
