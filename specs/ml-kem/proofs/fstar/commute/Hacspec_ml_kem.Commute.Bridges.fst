@@ -1376,27 +1376,9 @@ let lemma_div_128_prod (x: nat)
 (* Flat per-vector requires predicate (no nested forall, NOT unfold so the
    requires forall stays compact — Z3 instantiates one flat quantifier at
    (i/16, i%16); the body is revealed only at the single instantiation site). *)
-[@@ "opaque_to_smt"]
-let cross_vec_hyp
-    (#vV: Type0) {| iop: T.t_Operations vV |}
-    (cin cout: t_Array vV (mk_usize 16)) (step_vec: pos) (zs: t_Slice P.t_FieldElement)
-    (m: nat) (l: nat) : prop =
-  (m < 16 /\ l < 16) ==>
-    (let block : nat = m / (2 * step_vec) in
-     let pos   : nat = m % (2 * step_vec) in
-     block < Seq.length zs /\
-     (pos < step_vec ==>
-        m + step_vec < 16 /\
-        mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cout m)) l) ==
-          (IN.inv_butterfly (Seq.index zs block)
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin m)) l))
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin (m + step_vec))) l)))._1) /\
-     (pos >= step_vec ==>
-        m >= step_vec /\
-        mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cout m)) l) ==
-          (IN.inv_butterfly (Seq.index zs block)
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin (m - step_vec))) l))
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin m)) l)))._2))
+(* cross_vec_hyp is now declared (as a transparent [@@ "opaque_to_smt"] def) in
+   the companion interface Hacspec_ml_kem.Commute.Bridges.fsti — the internal
+   lemmas below and external consumers reveal_opaque it from there. *)
 
 (* Standalone bridge lemma (skill "standalone bridge lemma" pattern): builds
    exactly Level A's per-coefficient hypothesis from the per-vector cross_vec_hyp.
@@ -1498,19 +1480,16 @@ let lemma_layer_4_plus_cross_vector
     lemma_ntt_inverse_layer_n_256_compose p q len zs
 #pop-options
 
-(* === USER-14 zeta correspondence axiom (user-approved Option B, 2026-05-30) ===
-   The impl Montgomery zeta `Libcrux_ml_kem.Polynomial.zeta` is exposed to clients
-   as an `assume val` with a BOUND-ONLY postcondition (result in [-1664,1664]); its
-   concrete value is opaque cross-module.  This axiom records its correspondence to
-   the spec plain zeta table `N.v_ZETAS`, which is validated at runtime by
-   `ntt_matches_spec` / `full_ntt_multiply_chain_matches_spec` in `src/ntt.rs`.
-   Needed by the table-form posts of `invert_ntt_at_layer_4_plus` and (downstream)
-   `invert_ntt_montgomery` (USER-15), since `IN.ntt_inverse_layer` consumes concrete
-   `v_ZETAS` whereas the impl butterflies use `mont_i16_to_spec_fe (zeta …)`. *)
-assume
-val lemma_zeta_eq_vzetas (k: usize)
+(* lemma_zeta_eq_vzetas — the user-approved Option B zeta-correspondence axiom
+   (full justification in the .fsti).  Declared `val` in Bridges.fsti; here it is
+   discharged by `admit ()` — F* forbids `assume val` in an interface, so the
+   axiom moves to this `= admit ()` body.  Trust is UNCHANGED from the prior
+   `assume val` form (one relocated axiom, no new trust); the correspondence is
+   validated at runtime by `ntt_matches_spec` in `src/ntt.rs`. *)
+let lemma_zeta_eq_vzetas (k: usize)
   : Lemma (requires v k < 128)
           (ensures mont_i16_to_spec_fe (Libcrux_ml_kem.Polynomial.zeta k) == N.v_ZETAS.[ k ])
+  = admit ()
 
 (* === USER-14 unfold lemma: table-building `IN.ntt_inverse_layer` -> explicit
    `IN.ntt_inverse_layer_n` for layers 4..7, against a caller-supplied zeta slice
