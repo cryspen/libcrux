@@ -265,7 +265,8 @@ let lemma_ntt_layer_n_16_lane
 #pop-options
 
 (* === LEVEL A: array-level createi composition for ntt_layer_n 256 === *)
-#push-options "--z3rlimit 200 --fuel 0 --ifuel 1"
+#restart-solver
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1 --split_queries always"
 let lemma_ntt_layer_n_256_compose
     (p q: t_Array P.t_FieldElement (mk_usize 256))
     (len: usize)
@@ -468,7 +469,8 @@ let pv_post_elim (#vV: Type0) {| iop: T.t_Operations vV |}
    `per_coeff` consumes the MONT pv_post and produces the PLAIN per-coefficient
    butterfly relations (mont->plain reconciliation, per element).
    ===================================================================== *)
-#push-options "--z3rlimit 300 --fuel 0 --ifuel 1"
+#restart-solver
+#push-options "--z3rlimit 300 --fuel 0 --ifuel 1 --split_queries always"
 let lemma_intra_vec_per_coeff
     (#vV: Type0) {| iop: T.t_Operations vV |}
     (cin cout: t_Array vV (mk_usize 16))
