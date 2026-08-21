@@ -285,31 +285,28 @@ val lemma_zeta_eq_vzetas (k: usize)
   : Lemma (requires v k < 128)
           (ensures mont_i16_to_spec_fe (Libcrux_ml_kem.Polynomial.zeta k) == N.v_ZETAS.[ k ])
 
-(* The ensures references `IN.ntt_inverse_layer_n … (mk_usize 1 <<! layer) …`, whose
-   Pure precondition is `2 * len(zs) * v(1<<!layer) == 256` — i.e. pow2(layer) | 128
-   for layer in {4..7}.  Discharging that TYPE well-formedness needs body-level
-   `assert_norm (pow2 4 == 16 /\ …)` reasoning (the `.fst` lemma does exactly that):
-   fuel 0 can't compute pow2, fuel 1 over-unfolds the createi/ntt_inverse_layer
-   recursion and saturates cold.  The ensures IS a well-formed proposition (proven in
-   the `.fst`, which is currently an admitted cliff); admit ONLY this val's
-   well-formedness VC so the interface stays cheap.  Remove when Bridges.fst is
-   cold-hardened out of ADMIT_MODULES. *)
-#push-options "--admit_smt_queries true"
+(* `len` explicit (= pow2 layer in {16,32,64,128}) with the ntt_inverse_layer_n
+   precondition (`((Seq.length zs)*2)*v len == 256`) in `requires`, so the ensures
+   TYPE is well-formed directly — no signature-time pow2/product cascade over the
+   disjunctive `layer`, hence NO firewall (dropped the former
+   `--admit_smt_queries true` interim).  Matches the cold-verified siblings
+   `Invert_ntt_bridge.lemma_ntt_inverse_layer_unfold_lo` and `Ntt_bridge.lemma_ntt_layer_unfold`. *)
 val lemma_ntt_inverse_layer_unfold
     (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
+    (layer len: usize)
     (zs: t_Slice P.t_FieldElement)
   : Lemma
     (requires
       (v layer == 4 \/ v layer == 5 \/ v layer == 6 \/ v layer == 7) /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
+      (v len == 16 \/ v len == 32 \/ v len == 64 \/ v len == 128) /\
+      v len == pow2 (v layer) /\
+      Seq.length zs == 128 / v len /\
+      ((Seq.length zs) * 2) * v len == 256 /\
+      (let groups = 128 / v len in
        forall (round: nat). round < groups ==>
          Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
     (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-#pop-options
+      IN.ntt_inverse_layer p layer == IN.ntt_inverse_layer_n (mk_usize 256) p len zs)
 
 val lemma_layer_4_plus_post_from_cross_vec
     (#vV: Type0) {| iop: T.t_Operations vV |}

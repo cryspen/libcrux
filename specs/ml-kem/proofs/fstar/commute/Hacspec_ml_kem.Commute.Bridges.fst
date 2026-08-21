@@ -1988,280 +1988,76 @@ let lemma_zeta_eq_vzetas (k: usize)
    Purely structural (no zeta correspondence inside): unfolds the table-building
    definition and shows its internal slice equals `zs` point-wise (createi_lemma +
    lemma_index_slice), then concludes by congruence of `ntt_inverse_layer_n`. *)
-(* Ground-literal per-branch dispatch for the layer-unfold transport lemma.
-   The monolithic lemma over the disjunction `v layer ∈ {4,5,6,7}` cold-saturates
-   because `pow2 (v layer)`, `groups = 128/pow2`, and `2*groups-1-round` stay
-   symbolic (the integer/usize refinement-interpretation cascade the qi.profile
-   named — NOT createi).  Mirroring the lane-bridge fix, each concrete-`layer`
-   helper grounds `pow2`/`len`/`groups` to literals so the cascade cannot form;
-   the thin dispatcher preserves the original signature (consumers untouched). *)
-
+(* Take `len` explicitly (= pow2 layer in {16,32,64,128}) with the
+   ntt_inverse_layer_n precondition in `requires`, so the ensures TYPE is well-formed
+   directly (the precond `((Seq.length zs)*2)*v len == 256` is a hypothesis) -- no
+   from-scratch nonlinear pow2/product reasoning at signature time, which cold-saturates
+   over the disjunctive `layer` (the cliff the old `1<<layer`-in-ensures form + the
+   .fsti `--admit_smt_queries true` firewall existed for).  Mirrors the cold-verified
+   siblings `Invert_ntt_bridge.lemma_ntt_inverse_layer_unfold_lo` (layers 1..3) and the
+   forward `Ntt_bridge.lemma_ntt_layer_unfold` (layers 4..7).  Cold-provable, no firewall.
+   `--split_queries always` + `#restart-solver`: the createi/FACT2 congruence auto-splits
+   (Warning 349) — make it explicit so each lane sub-query is fast-stable, and clear
+   solver state accumulated by earlier Bridges decls. *)
 #restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --split_queries always"
-let lemma_ntt_inverse_layer_unfold_4
-    (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
-    (zs: t_Slice P.t_FieldElement)
-  : Lemma
-    (requires
-      v layer == 4 /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
-       forall (round: nat). round < groups ==>
-         Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
-    (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-  = assert_norm (pow2 4 == 16);
-    let len : usize = mk_usize 1 <<! layer in
-    let groups : usize = mk_usize 128 /! len in
-    assert (v len == pow2 (v layer));
-    assert (v len == 16);
-    assert (v groups == 128 / pow2 (v layer));
-    assert (v groups == 8);
-    let zetas_tbl : t_Array P.t_FieldElement (mk_usize 128) =
-      P.createi #P.t_FieldElement (mk_usize 128)
-        #(usize -> P.t_FieldElement)
-        (fun round ->
-          if round <. groups
-          then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-          else P.impl_FieldElement__new (mk_u16 0))
-    in
-    let tbl_slice : t_Slice P.t_FieldElement =
-      zetas_tbl.[ { Core_models.Ops.Range.f_start = mk_usize 0;
-                    Core_models.Ops.Range.f_end = groups } ] in
-    assert (IN.ntt_inverse_layer p layer ==
-            IN.ntt_inverse_layer_n (mk_usize 256) p len tbl_slice)
-      by (FStar.Tactics.norm [delta_only [`%IN.ntt_inverse_layer]; iota; zeta; primops];
-          FStar.Tactics.trefl ());
-    assert (Seq.length tbl_slice == v groups);
-    let aux (i: nat) : Lemma (i < v groups ==> Seq.index tbl_slice i == Seq.index zs i)
-      = if i < v groups then begin
-          FStar.Seq.Base.lemma_index_slice zetas_tbl 0 (v groups) i;
-          assert (sz i <. groups);
-          P.createi_lemma #P.t_FieldElement (mk_usize 128)
-            #(usize -> P.t_FieldElement)
-            (fun round ->
-              ((if round <. groups
-                then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-                else P.impl_FieldElement__new (mk_u16 0)) <: P.t_FieldElement))
-            (sz i);
-          assert (v ((mk_usize 2 *! groups -! mk_usize 1) -! sz i) == 2 * v groups - 1 - i)
-        end
-    in
-    Classical.forall_intro aux;
-    Seq.lemma_eq_intro tbl_slice zs
-#pop-options
-
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --split_queries always"
-let lemma_ntt_inverse_layer_unfold_5
-    (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
-    (zs: t_Slice P.t_FieldElement)
-  : Lemma
-    (requires
-      v layer == 5 /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
-       forall (round: nat). round < groups ==>
-         Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
-    (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-  = assert_norm (pow2 5 == 32);
-    let len : usize = mk_usize 1 <<! layer in
-    let groups : usize = mk_usize 128 /! len in
-    assert (v len == pow2 (v layer));
-    assert (v len == 32);
-    assert (v groups == 128 / pow2 (v layer));
-    assert (v groups == 4);
-    let zetas_tbl : t_Array P.t_FieldElement (mk_usize 128) =
-      P.createi #P.t_FieldElement (mk_usize 128)
-        #(usize -> P.t_FieldElement)
-        (fun round ->
-          if round <. groups
-          then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-          else P.impl_FieldElement__new (mk_u16 0))
-    in
-    let tbl_slice : t_Slice P.t_FieldElement =
-      zetas_tbl.[ { Core_models.Ops.Range.f_start = mk_usize 0;
-                    Core_models.Ops.Range.f_end = groups } ] in
-    assert (IN.ntt_inverse_layer p layer ==
-            IN.ntt_inverse_layer_n (mk_usize 256) p len tbl_slice)
-      by (FStar.Tactics.norm [delta_only [`%IN.ntt_inverse_layer]; iota; zeta; primops];
-          FStar.Tactics.trefl ());
-    assert (Seq.length tbl_slice == v groups);
-    let aux (i: nat) : Lemma (i < v groups ==> Seq.index tbl_slice i == Seq.index zs i)
-      = if i < v groups then begin
-          FStar.Seq.Base.lemma_index_slice zetas_tbl 0 (v groups) i;
-          assert (sz i <. groups);
-          P.createi_lemma #P.t_FieldElement (mk_usize 128)
-            #(usize -> P.t_FieldElement)
-            (fun round ->
-              ((if round <. groups
-                then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-                else P.impl_FieldElement__new (mk_u16 0)) <: P.t_FieldElement))
-            (sz i);
-          assert (v ((mk_usize 2 *! groups -! mk_usize 1) -! sz i) == 2 * v groups - 1 - i)
-        end
-    in
-    Classical.forall_intro aux;
-    Seq.lemma_eq_intro tbl_slice zs
-#pop-options
-
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --split_queries always"
-let lemma_ntt_inverse_layer_unfold_6
-    (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
-    (zs: t_Slice P.t_FieldElement)
-  : Lemma
-    (requires
-      v layer == 6 /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
-       forall (round: nat). round < groups ==>
-         Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
-    (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-  = assert_norm (pow2 6 == 64);
-    let len : usize = mk_usize 1 <<! layer in
-    let groups : usize = mk_usize 128 /! len in
-    assert (v len == pow2 (v layer));
-    assert (v len == 64);
-    assert (v groups == 128 / pow2 (v layer));
-    assert (v groups == 2);
-    let zetas_tbl : t_Array P.t_FieldElement (mk_usize 128) =
-      P.createi #P.t_FieldElement (mk_usize 128)
-        #(usize -> P.t_FieldElement)
-        (fun round ->
-          if round <. groups
-          then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-          else P.impl_FieldElement__new (mk_u16 0))
-    in
-    let tbl_slice : t_Slice P.t_FieldElement =
-      zetas_tbl.[ { Core_models.Ops.Range.f_start = mk_usize 0;
-                    Core_models.Ops.Range.f_end = groups } ] in
-    assert (IN.ntt_inverse_layer p layer ==
-            IN.ntt_inverse_layer_n (mk_usize 256) p len tbl_slice)
-      by (FStar.Tactics.norm [delta_only [`%IN.ntt_inverse_layer]; iota; zeta; primops];
-          FStar.Tactics.trefl ());
-    assert (Seq.length tbl_slice == v groups);
-    let aux (i: nat) : Lemma (i < v groups ==> Seq.index tbl_slice i == Seq.index zs i)
-      = if i < v groups then begin
-          FStar.Seq.Base.lemma_index_slice zetas_tbl 0 (v groups) i;
-          assert (sz i <. groups);
-          P.createi_lemma #P.t_FieldElement (mk_usize 128)
-            #(usize -> P.t_FieldElement)
-            (fun round ->
-              ((if round <. groups
-                then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-                else P.impl_FieldElement__new (mk_u16 0)) <: P.t_FieldElement))
-            (sz i);
-          assert (v ((mk_usize 2 *! groups -! mk_usize 1) -! sz i) == 2 * v groups - 1 - i)
-        end
-    in
-    Classical.forall_intro aux;
-    Seq.lemma_eq_intro tbl_slice zs
-#pop-options
-
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --split_queries always"
-let lemma_ntt_inverse_layer_unfold_7
-    (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
-    (zs: t_Slice P.t_FieldElement)
-  : Lemma
-    (requires
-      v layer == 7 /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
-       forall (round: nat). round < groups ==>
-         Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
-    (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-  = assert_norm (pow2 7 == 128);
-    let len : usize = mk_usize 1 <<! layer in
-    let groups : usize = mk_usize 128 /! len in
-    assert (v len == pow2 (v layer));
-    assert (v len == 128);
-    assert (v groups == 128 / pow2 (v layer));
-    assert (v groups == 1);
-    let zetas_tbl : t_Array P.t_FieldElement (mk_usize 128) =
-      P.createi #P.t_FieldElement (mk_usize 128)
-        #(usize -> P.t_FieldElement)
-        (fun round ->
-          if round <. groups
-          then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-          else P.impl_FieldElement__new (mk_u16 0))
-    in
-    let tbl_slice : t_Slice P.t_FieldElement =
-      zetas_tbl.[ { Core_models.Ops.Range.f_start = mk_usize 0;
-                    Core_models.Ops.Range.f_end = groups } ] in
-    assert (IN.ntt_inverse_layer p layer ==
-            IN.ntt_inverse_layer_n (mk_usize 256) p len tbl_slice)
-      by (FStar.Tactics.norm [delta_only [`%IN.ntt_inverse_layer]; iota; zeta; primops];
-          FStar.Tactics.trefl ());
-    assert (Seq.length tbl_slice == v groups);
-    let aux (i: nat) : Lemma (i < v groups ==> Seq.index tbl_slice i == Seq.index zs i)
-      = if i < v groups then begin
-          FStar.Seq.Base.lemma_index_slice zetas_tbl 0 (v groups) i;
-          assert (sz i <. groups);
-          P.createi_lemma #P.t_FieldElement (mk_usize 128)
-            #(usize -> P.t_FieldElement)
-            (fun round ->
-              ((if round <. groups
-                then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
-                else P.impl_FieldElement__new (mk_u16 0)) <: P.t_FieldElement))
-            (sz i);
-          assert (v ((mk_usize 2 *! groups -! mk_usize 1) -! sz i) == 2 * v groups - 1 - i)
-        end
-    in
-    Classical.forall_intro aux;
-    Seq.lemma_eq_intro tbl_slice zs
-#pop-options
-
-(* Thin dispatcher — original signature preserved (the `.fsti` val is unchanged),
-   so every consumer of `lemma_ntt_inverse_layer_unfold` is untouched.  Each branch's
-   goal (the ensures, at a concrete `v layer`) is discharged by the corresponding
-   grounded helper above.
-
-   ⚠️ COLD-FRAGILE RESIDUAL (firewall-dependent — do NOT remove the `.fsti`
-   `--admit_smt_queries true` on this val yet).  The ensures references
-   `ntt_inverse_layer_n (1<<layer) zs`, whose Pure PRECONDITION
-   (`impl__len zs < 1024 /\ (impl__len zs)*2*(1<<layer) == 256 /\ 1 <= 1<<layer < 1024`)
-   is a TYPE well-formedness obligation F* checks at SIGNATURE time, in the DISJUNCTION
-   requires context (NOT the body) — confirmed: neither per-branch nor unconditional
-   body-level grounding (`assert_norm (pow2 N)` + `lemma_div_128_prod` + the impl__len
-   bridge) reaches it; F* re-errors at the ensures clause regardless.  Discharging it
-   cold over the disjunctive `layer` is the same `pow2`-enumeration cliff the `.fsti`
-   firewall was created for.  The HELPER BODIES (the profiled createi-congruence
-   cascade) ARE now cold-provable; only this signature-level precond WF remains and
-   needs a dedicated precond-discharge lemma (SMTPat over the disjunction), not a rote
-   template.  See notes: mlkem-transport-family-2026-08-21.md. *)
-#restart-solver
-#push-options "--fuel 1 --ifuel 1 --z3rlimit 200 --split_queries always"
+#push-options "--fuel 1 --ifuel 1 --z3rlimit 400 --split_queries always"
 let lemma_ntt_inverse_layer_unfold
     (p: t_Array P.t_FieldElement (mk_usize 256))
-    (layer: usize)
+    (layer len: usize)
     (zs: t_Slice P.t_FieldElement)
   : Lemma
     (requires
       (v layer == 4 \/ v layer == 5 \/ v layer == 6 \/ v layer == 7) /\
-      Seq.length zs == 128 / (pow2 (v layer)) /\
-      (let groups = 128 / pow2 (v layer) in
+      (v len == 16 \/ v len == 32 \/ v len == 64 \/ v len == 128) /\
+      v len == pow2 (v layer) /\
+      Seq.length zs == 128 / v len /\
+      ((Seq.length zs) * 2) * v len == 256 /\
+      (let groups = 128 / v len in
        forall (round: nat). round < groups ==>
          Seq.index zs round == N.v_ZETAS.[ sz (2 * groups - 1 - round) ]))
     (ensures
-      IN.ntt_inverse_layer p layer ==
-        IN.ntt_inverse_layer_n (mk_usize 256) p (mk_usize 1 <<! layer) zs)
-  = if v layer = 4 then lemma_ntt_inverse_layer_unfold_4 p layer zs
-    else if v layer = 5 then lemma_ntt_inverse_layer_unfold_5 p layer zs
-    else if v layer = 6 then lemma_ntt_inverse_layer_unfold_6 p layer zs
-    else lemma_ntt_inverse_layer_unfold_7 p layer zs
+      IN.ntt_inverse_layer p layer == IN.ntt_inverse_layer_n (mk_usize 256) p len zs)
+  = (if v layer = 4 then assert_norm (v (mk_usize 1 <<! mk_usize 4) == pow2 4)
+     else if v layer = 5 then assert_norm (v (mk_usize 1 <<! mk_usize 5) == pow2 5)
+     else if v layer = 6 then assert_norm (v (mk_usize 1 <<! mk_usize 6) == pow2 6)
+     else assert_norm (v (mk_usize 1 <<! mk_usize 7) == pow2 7));
+    let len' : usize = mk_usize 1 <<! layer in
+    assert (v len' == v len);
+    assert (len' == len);
+    let groups : usize = mk_usize 128 /! len' in
+    assert (v groups == 128 / v len);
+    let zetas_tbl : t_Array P.t_FieldElement (mk_usize 128) =
+      P.createi #P.t_FieldElement (mk_usize 128)
+        #(usize -> P.t_FieldElement)
+        (fun round ->
+          if round <. groups
+          then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
+          else P.impl_FieldElement__new (mk_u16 0))
+    in
+    let tbl_slice : t_Slice P.t_FieldElement =
+      zetas_tbl.[ { Core_models.Ops.Range.f_start = mk_usize 0;
+                    Core_models.Ops.Range.f_end = groups } ] in
+    assert (IN.ntt_inverse_layer p layer ==
+            IN.ntt_inverse_layer_n (mk_usize 256) p len' tbl_slice)
+      by (FStar.Tactics.norm [delta_only [`%IN.ntt_inverse_layer]; iota; zeta; primops];
+          FStar.Tactics.trefl ());
+    assert (Seq.length tbl_slice == v groups);
+    let aux (i: nat) : Lemma (i < v groups ==> Seq.index tbl_slice i == Seq.index zs i)
+      = if i < v groups then begin
+          FStar.Seq.Base.lemma_index_slice zetas_tbl 0 (v groups) i;
+          assert (sz i <. groups);
+          P.createi_lemma #P.t_FieldElement (mk_usize 128)
+            #(usize -> P.t_FieldElement)
+            (fun round ->
+              ((if round <. groups
+                then N.v_ZETAS.[ (mk_usize 2 *! groups -! mk_usize 1) -! round ]
+                else P.impl_FieldElement__new (mk_u16 0)) <: P.t_FieldElement))
+            (sz i);
+          assert (v ((mk_usize 2 *! groups -! mk_usize 1) -! sz i) == 2 * v groups - 1 - i)
+        end
+    in
+    Classical.forall_intro aux;
+    Seq.lemma_eq_intro tbl_slice zs
 #pop-options
 
 (* === USER-14 end-to-end chain test (validates Option B): assuming the loop
@@ -2298,7 +2094,10 @@ let lemma_layer_4_plus_post_from_cross_vec
     lemma_to_spec_poly_mont_unfold #vV re_out;
     lemma_to_spec_poly_mont_unfold #vV re_in;
     lemma_layer_4_plus_cross_vector #vV re_in.VV.f_coefficients re_out.VV.f_coefficients len zs;
-    lemma_ntt_inverse_layer_unfold (to_spec_poly_mont_arr #vV re_in.VV.f_coefficients) layer zs
+    assert (Seq.length zs == 128 / v len);
+    lemma_div_128_prod (v len);
+    assert (128 / v len == 128 / pow2 (v layer));
+    lemma_ntt_inverse_layer_unfold (to_spec_poly_mont_arr #vV re_in.VV.f_coefficients) layer len zs
 #pop-options
 
 (* === USER-14 keystone: from one inv_ntt_layer_int_vec_step_reduce step (vectors
