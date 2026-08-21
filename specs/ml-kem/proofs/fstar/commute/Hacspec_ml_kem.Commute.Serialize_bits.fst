@@ -322,6 +322,7 @@ let lemma_coeff_value
 #pop-options
 
 (* byte_decode[k] == FE.new (decoded[k] % q)  (createi tactic, no bit-reasoning) *)
+#restart-solver
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 200"
 let lemma_byte_decode_index_12 (serialized: t_Array u8 (mk_usize 384)) (k: nat {k < 256})
   : Lemma
