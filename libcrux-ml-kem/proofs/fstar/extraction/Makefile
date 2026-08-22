@@ -33,12 +33,15 @@ ADMIT_MODULES =
 # for the commute-dir build).
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Chunk.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Bridges.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Ntt_bridge.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_ntt_bridge.fst
+# DROPPED 2026-08-22 — cold-hardened (family-i per-coeff two-knob, commit b8bdb4f7e); cold-verifies e2e.
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Ntt_bridge.fst
+# DROPPED 2026-08-22 — cold-hardened (family-i per-coeff two-knob, commit cb05479f2); cold-verifies e2e.
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_ntt_bridge.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_scale.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Rej_table.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_bits.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_compress.fst
+# DROPPED 2026-08-22 — cold-hardened (family-iii, commits 53b7abddf/b69e4e8c8); cold-verify e2e.
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_bits.fst
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_compress.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_dot_bridge.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_u_bridge.fst
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Matrix_bilin.fst
