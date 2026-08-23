@@ -15,7 +15,7 @@ path = "src/kmac.rs"
 
 [dependencies]
 hax-lib.workspace = true
-libcrux-sha3.workspace = true
+libcrux-sha3 = { workspace = true, features = ["incremental"] }
 
 [dev-dependencies]
 libcrux-kats = { workspace = true, features = ["kmac"] }

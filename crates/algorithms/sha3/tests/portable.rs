@@ -2,8 +2,10 @@ mod test_vectors;
 
 // Portable implementation tests
 use crate::test_vectors::{DIGEST_LEN, DIGEST_LEN_SHAKE256, STRING_LEN, STRING_LEN_SHAKE256};
-use libcrux_sha3::portable::incremental::Xof;
-use libcrux_sha3::portable::{incremental, sha224, sha256, sha384, sha512, shake128, shake256};
+use libcrux_sha3::portable::{sha224, sha256, sha384, sha512, shake128, shake256};
+
+#[cfg(feature = "incremental")]
+use libcrux_sha3::portable::incremental::{self, Shake128Xof, Shake256Xof, Xof};
 
 #[test]
 fn sha3_224() {
@@ -110,6 +112,7 @@ fn sha3_shake256() {
     );
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn sha3_shake128_incremental() {
     // Test squeezing 1 block (168 bytes)
@@ -151,6 +154,7 @@ fn sha3_shake128_incremental() {
     );
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn sha3_shake256_incremental() {
     // Test squeezing 1 block (136 bytes for SHAKE256, not 168)
@@ -173,6 +177,7 @@ fn sha3_shake256_incremental() {
     );
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn sha3_shake128_absorb() {
     let mut state = incremental::Shake128Xof::new();
@@ -205,6 +210,7 @@ fn sha3_shake128_absorb() {
     assert_eq!(hex::encode(digest), expected);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn sha3_shake256_absorb() {
     let mut state = incremental::Shake256Xof::new();
@@ -244,6 +250,7 @@ fn sha3_shake256_absorb() {
 /// keccakf1600() call before the first extraction. This test requests 200 bytes
 /// (> SHAKE128 RATE of 168) in a single squeeze call and compares against the
 /// known one-shot output.
+#[cfg(feature = "incremental")]
 #[test]
 fn bug1_xof_squeeze_skips_first_block_shake128() {
     // One-shot: known correct output
@@ -260,6 +267,7 @@ fn bug1_xof_squeeze_skips_first_block_shake128() {
 }
 
 /// Same regression test for SHAKE256 (RATE = 136).
+#[cfg(feature = "incremental")]
 #[test]
 fn bug1_xof_squeeze_skips_first_block_shake256() {
     let mut expected = [0u8; 200];
@@ -275,6 +283,7 @@ fn bug1_xof_squeeze_skips_first_block_shake256() {
 
 /// Regression test: multiple squeeze calls should produce the same output as
 /// a single large squeeze (i.e., streaming squeeze is consistent).
+#[cfg(feature = "incremental")]
 #[test]
 fn bug1_xof_squeeze_multi_call_consistency() {
     // Single large squeeze
@@ -299,6 +308,7 @@ fn bug1_xof_squeeze_multi_call_consistency() {
 /// as a single large squeeze. Previously, the XOF only supported RATE-aligned
 /// chunks because it had no internal buffering for the leftover bytes of a
 /// partially-consumed squeeze block.
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_streaming_squeeze_partial_chunks_shake128() {
     let mut single = [0u8; 600];
@@ -318,6 +328,7 @@ fn issue_1362_xof_streaming_squeeze_partial_chunks_shake128() {
 }
 
 /// Same as the SHAKE128 test, but for SHAKE256 (RATE = 136).
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_streaming_squeeze_partial_chunks_shake256() {
     let mut single = [0u8; 500];
@@ -337,6 +348,7 @@ fn issue_1362_xof_streaming_squeeze_partial_chunks_shake256() {
 
 /// Single-byte streaming squeeze: stresses the internal buffering by
 /// forcing a buffer drain on every call.
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake128() {
     let mut single = [0u8; 350]; // > 2 * RATE so we cross block boundaries
@@ -352,6 +364,7 @@ fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake128() {
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake256() {
     let mut single = [0u8; 350]; // > 2 * RATE so we cross block boundaries
@@ -369,6 +382,7 @@ fn issue_1362_xof_streaming_squeeze_byte_at_a_time_shake256() {
 
 /// Squeeze that crosses a block boundary inside one call after a previous
 /// partial squeeze: drain leftover, then extract more than one further block.
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake128() {
     let mut single = [0u8; 400];
@@ -386,6 +400,7 @@ fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake128() 
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake256() {
     let mut single = [0u8; 400];
@@ -400,6 +415,7 @@ fn issue_1362_xof_squeeze_crosses_block_boundary_after_partial_drain_shake256() 
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_squeeze_empty_outputs_shake128() {
     let mut single = [0u8; 400];
@@ -416,6 +432,7 @@ fn issue_1362_xof_squeeze_empty_outputs_shake128() {
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_squeeze_empty_outputs_shake256() {
     let mut single = [0u8; 400];
@@ -432,6 +449,7 @@ fn issue_1362_xof_squeeze_empty_outputs_shake256() {
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_start_with_empty_squeeze_shake128() {
     let mut single = [0u8; 400];
@@ -448,6 +466,7 @@ fn issue_1362_xof_start_with_empty_squeeze_shake128() {
     assert_eq!(single, multi);
 }
 
+#[cfg(feature = "incremental")]
 #[test]
 fn issue_1362_xof_start_with_empty_squeeze_shake256() {
     let mut single = [0u8; 400];

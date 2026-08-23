@@ -115,8 +115,14 @@ jobs:
       - name: 🏃🏻‍♀️ Test
         run: cargo test --verbose $RUST_TARGET_FLAG
 
+      - name: 🏃🏻‍♀️ Test SHA3 Incremental
+        run: cargo test -p libcrux-sha3 --features incremental --verbose $RUST_TARGET_FLAG
+
       - name: 🏃🏻‍♀️ Test Release
         run: cargo test --verbose --release $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test SHA3 Incremental Release
+        run: cargo test -p libcrux-sha3 --features incremental --verbose --release $RUST_TARGET_FLAG
 
   libcrux-build-test-status:
     if: ${{ always() }}

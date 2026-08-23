@@ -49,6 +49,7 @@ pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
 }
 
 /// Performing 2 operations in parallel
+#[cfg(feature = "incremental")]
 pub mod x2 {
     use super::*;
 

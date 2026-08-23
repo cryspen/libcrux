@@ -1,3 +1,4 @@
+#![cfg(feature = "incremental")]
 #![allow(non_snake_case)]
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 use libcrux_sha3::{portable::incremental::Xof, *};

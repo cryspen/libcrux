@@ -153,14 +153,14 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
             // ghost variables for F* proof
             #[cfg(hax)]
-            let self_buf_len = self.buf_len;
+            let _self_buf_len = self.buf_len;
             #[cfg(hax)]
-            let self_squeeze_pos = self.squeeze_pos;
+            let _self_squeeze_pos = self.squeeze_pos;
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
                 hax_lib::loop_invariant!(|_: usize| {
-                    self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
+                    self.buf_len == _self_buf_len && self.squeeze_pos == _self_squeeze_pos
                 });
 
                 self.buf[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed]);
@@ -218,7 +218,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
         let remainder = input_to_consume % RATE;
 
         #[cfg(hax)]
-        let (self_buf_len, self_squeeze_pos, end) = {
+        let (_self_buf_len, _self_squeeze_pos, end) = {
             let end = consumed + num_blocks * RATE;
             hax_lib::assert!(end <= inputs[0].len());
             (self.buf_len, self.squeeze_pos, end)
@@ -226,7 +226,7 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
 
         for i in 0..num_blocks {
             hax_lib::loop_invariant!(
-                |_: usize| self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
+                |_: usize| self.buf_len == _self_buf_len && self.squeeze_pos == _self_squeeze_pos
             );
             #[cfg(hax)]
             crate::proof_utils::lemma_mul_succ_le(i, num_blocks, RATE);
@@ -278,15 +278,14 @@ impl<const PARALLEL_LANES: usize, const RATE: usize, STATE: KeccakItem<PARALLEL_
             let input_len = inputs[0].len();
 
             #[cfg(hax)]
-            let self_buf_len = self.buf_len;
+            let _self_buf_len = self.buf_len;
             #[cfg(hax)]
-            let self_squeeze_pos = self.squeeze_pos;
+            let _self_squeeze_pos = self.squeeze_pos;
 
             #[allow(clippy::needless_range_loop)]
             for i in 0..PARALLEL_LANES {
-                hax_lib::loop_invariant!(
-                    |_: usize| self.buf_len == self_buf_len && self.squeeze_pos == self_squeeze_pos
-                );
+                hax_lib::loop_invariant!(|_: usize| self.buf_len == _self_buf_len
+                    && self.squeeze_pos == _self_squeeze_pos);
 
                 self.buf[i][self.buf_len..self.buf_len + remainder]
                     .copy_from_slice(&inputs[i][input_len - remainder..input_len]);
@@ -398,15 +397,15 @@ impl<const RATE: usize, STATE: KeccakItem<1>> KeccakXofState<1, RATE, STATE> {
             self.inner.squeeze::<RATE>(out, out_offset, RATE);
 
             #[cfg(hax)]
-            let self_buf_len = self.buf_len;
+            let _self_buf_len = self.buf_len;
             #[cfg(hax)]
-            let self_squeeze_pos = self.squeeze_pos;
+            let _self_squeeze_pos = self.squeeze_pos;
 
             // Apply f then extract for each subsequent full block.
             for i in 1..blocks {
                 hax_lib::loop_invariant!(|_: usize| out.len() == out_len
-                    && self_buf_len == self.buf_len
-                    && self_squeeze_pos == self.squeeze_pos);
+                    && _self_buf_len == self.buf_len
+                    && _self_squeeze_pos == self.squeeze_pos);
                 #[cfg(hax)]
                 hax_lib::assert!(
                     out_offset.to_int() + i.to_int() * RATE.to_int() <= out.len().to_int()

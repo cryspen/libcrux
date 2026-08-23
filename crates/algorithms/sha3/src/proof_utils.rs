@@ -12,6 +12,7 @@ pub(crate) fn valid_rate(rate: usize) -> bool {
     rate != 0 && rate <= 200 && rate % 8 == 0 && (rate % 32 == 8 || rate % 32 == 16)
 }
 
+#[allow(unused_imports)]
 pub(crate) use lemmas::{lemma_div_mul_mod, lemma_mul_succ_le};
 
 mod lemmas {
@@ -37,6 +38,7 @@ let lemma_div_mul_mod (a b: usize)
     = ()
 "#
     )]
+    #[allow(dead_code)]
     pub(crate) fn lemma_div_mul_mod(_a: usize, _b: usize) {}
 
     /// Lemma proving multiplication bounds for successive elements.

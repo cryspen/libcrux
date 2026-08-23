@@ -24,7 +24,7 @@ bench = false # so libtest doesn't eat the arguments to criterion
 [dependencies]
 rand = { version = "0.10", optional = true, default-features = false }
 libcrux-platform.workspace = true
-libcrux-sha3.workspace = true
+libcrux-sha3 = { workspace = true, features = ["incremental"] }
 libcrux-intrinsics.workspace = true
 libcrux-secrets.workspace = true
 libcrux-traits.workspace = true

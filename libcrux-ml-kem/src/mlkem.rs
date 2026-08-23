@@ -158,7 +158,7 @@ macro_rules! impl_incr_key_size {
         }
 
         #[cfg(all(not(eurydice), feature = "rand"))]
-        use ::rand::{CryptoRng, RngCore};
+        use ::rand::{CryptoRng, Rng};
 
         impl KeyPairBytes {
             /// Generate a new key pair.
@@ -174,7 +174,7 @@ macro_rules! impl_incr_key_size {
             /// Generate a new key pair.
             /// This uses unpacked keys and does not compress the keys.
             #[cfg(all(not(eurydice), feature = "rand"))]
-            pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+            pub fn generate(rng: &mut (impl Rng + CryptoRng)) -> Self {
                 let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
                 rng.fill_bytes(&mut randomness);
                 let mut out = Self {
@@ -248,7 +248,7 @@ macro_rules! impl_incr_key_size {
             /// Generate a new key pair.
             /// This uses unpacked keys and does not compress the keys.
             #[cfg(all(not(eurydice), feature = "rand"))]
-            pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
+            pub fn generate(rng: &mut (impl Rng + CryptoRng)) -> Self {
                 let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
                 rng.fill_bytes(&mut randomness);
                 let mut out = Self {
@@ -369,7 +369,6 @@ macro_rules! impl_incr_key_size {
         #[cfg(feature = "rand")]
         pub mod rand {
             use super::*;
-            use ::rand::TryRngCore;
 
             /// Encapsulate the first part of the ciphertext.
             ///

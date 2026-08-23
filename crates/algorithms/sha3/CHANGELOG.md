@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+- (libcrux-sha3) [#1532](https://github.com/celabshq/libcrux/issues/1532): Put ML-KEM/ML-DSA specific SHA3 APIs behind optional features
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

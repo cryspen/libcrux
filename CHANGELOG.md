@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- (libcrux-sha3) [#1532](https://github.com/celabshq/libcrux/issues/1532): Put ML-KEM/ML-DSA specific SHA3 APIs behind optional features
 - [#1534](https://github.com/celabshq/libcrux/pull/XYZ): Update dependencies: `libcrux-blake2`, `libcrux-sha3`, `libcrux-sha2`, `libcrux-curve25519`, `libcrux-aes`, `libcrux-chacha20poly1305`, `libcrux-ml-dsa`, `libcrux-ml-kem`, `libcrux-rsa`, `libcrux-ed25519`, `libcrux-digest`, `libcrux-hmac`, `libcrux-p256`, `libcrux-aead`, `libcrux-hkdf`, `libcrux-ecdsa`, `libcrux-ecdh`, `libcrux-kem`, `libcrux-psq`, `hpke-rs`
 - [#1505](https://github.com/celabshq/libcrux/pull/1505): Update dependency: `hpke-rs`
 - (libcrux-traits, libcrux-sha3, libcrux-sha2, libcrux-blake2) [#1493](https://github.com/celabshq/libcrux/pull/1493): `finish` methods on digest traits consume the hasher

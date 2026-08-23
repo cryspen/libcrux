@@ -22,6 +22,7 @@ hax-lib.workspace = true
 [features]
 simd128 = ["libcrux-intrinsics/simd128"]
 simd256 = ["libcrux-intrinsics/simd256"]
+incremental = []
 
 [[bench]]
 name = "sha3"

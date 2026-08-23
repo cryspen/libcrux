@@ -1,4 +1,5 @@
 /// Performing 4 operations in parallel
+#[cfg(feature = "incremental")]
 pub mod x4 {
     use crate::generic_keccak::simd256::keccak4;
 
