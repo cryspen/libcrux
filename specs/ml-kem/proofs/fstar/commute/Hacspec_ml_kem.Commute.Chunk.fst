@@ -1244,7 +1244,7 @@ let lemma_inv_ntt_layer_1_butterfly_to_fe
    `op_ntt_layer_1_step` / `op_inv_ntt_layer_1_step` close the per-vector
    `forall4` post by calling these four and conjoining the opaque atoms. *)
 
-#push-options "--z3rlimit 100 --fuel 0 --ifuel 1"
+#push-options "--z3rlimit 100 --fuel 0 --ifuel 1 --split_queries always"
 
 let lemma_ntt_layer_1_step_branch_0
     (vec result: t_Array i16 (mk_usize 16)) (zeta0 zeta1 zeta2 zeta3: i16) :
@@ -1405,6 +1405,7 @@ let lemma_inv_ntt_layer_3_step_chunk_commutes
    Mirrors `lemma_ntt_layer_1_step_branch_*`: one concrete `b` per
    lemma.  The `is_i16b 1664` bound makes `neg_i16` the true negation. *)
 
+#push-options "--z3rlimit 200 --fuel 0 --ifuel 1 --split_queries always"
 let lemma_ntt_multiply_branch_0
     (lhs rhs result: t_Array i16 (mk_usize 16)) (zeta0 zeta1 zeta2 zeta3: i16) :
   Lemma (requires Spec.Utils.is_i16b 1664 zeta0 /\
@@ -1452,6 +1453,7 @@ let lemma_ntt_multiply_branch_3
     assert (v (Spec.Utils.neg_i16 zeta3) == - (v zeta3));
     lemma_base_case_mult_pair_commute lhs rhs result zeta3 6;
     lemma_base_case_mult_pair_commute lhs rhs result (Spec.Utils.neg_i16 zeta3) 7
+#pop-options
 
 (*** Phase 7a Tier-1 commute lemmas — Polynomial ***)
 
@@ -3254,7 +3256,7 @@ let lemma_mont_fe_neg (z: i16) :
     L.lemma_mod_plus ((- (v z)) * 169) 1 3329
     (*  (−vz·169 + 3329) % q == (−vz·169) % q  *)
 
-#push-options "--z3rlimit 400 --fuel 0 --ifuel 1"
+#push-options "--z3rlimit 400 --fuel 0 --ifuel 1 --split_queries always"
 
 (* Per-lane bridge for `f_ntt_multiply`: produces the per-lane FE
    equation from the trait branch post and the per-lane unfold of
