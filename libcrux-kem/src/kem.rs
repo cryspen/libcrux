@@ -156,13 +156,13 @@ pub struct X25519MlKem768Draft00PrivateKey {
 
 impl X25519MlKem768Draft00PrivateKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+        let key: &[u8; MlKem768PrivateKey::len() + 32] =
+            bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
+        let (mlkem, x25519) = key.split_at(MlKem768PrivateKey::len());
+
         Ok(Self {
-            mlkem: bytes[..2400]
-                .try_into()
-                .map_err(|_| Error::InvalidPrivateKey)?,
-            x25519: bytes[2400..]
-                .try_into()
-                .map_err(|_| Error::InvalidPrivateKey)?,
+            mlkem: mlkem.try_into().map_err(|_| Error::InvalidPrivateKey)?,
+            x25519: x25519.try_into().map_err(|_| Error::InvalidPrivateKey)?,
         })
     }
 
@@ -210,18 +210,20 @@ pub struct X25519MlKem768Draft00PublicKey {
 
 impl X25519MlKem768Draft00PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+        let key: &[u8; MlKem768PublicKey::len() + 32] =
+            bytes.try_into().map_err(|_| Error::InvalidPublicKey)?;
+        let (mlkem, x25519) = key.split_at(MlKem768PublicKey::len());
+
         Ok(Self {
             mlkem: {
-                let key = MlKem768PublicKey::try_from(&bytes[..1184])
-                    .map_err(|_| Error::InvalidPublicKey)?;
+                let key =
+                    MlKem768PublicKey::try_from(mlkem).map_err(|_| Error::InvalidPublicKey)?;
                 if !mlkem768::validate_public_key(&key) {
                     return Err(Error::InvalidPublicKey);
                 }
                 key
             },
-            x25519: bytes[1184..]
-                .try_into()
-                .map_err(|_| Error::InvalidPublicKey)?,
+            x25519: x25519.try_into().map_err(|_| Error::InvalidPublicKey)?,
         })
     }
 
@@ -241,18 +243,19 @@ pub struct XWingKemDraft06PublicKey {
 
 impl XWingKemDraft06PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+        let key: &[u8; MlKem768PublicKey::len() + 32] =
+            bytes.try_into().map_err(|_| Error::InvalidPublicKey)?;
+        let (pk_m, pk_x) = key.split_at(MlKem768PublicKey::len());
+
         Ok(Self {
             pk_m: {
-                let key = MlKem768PublicKey::try_from(&bytes[0..1184])
-                    .map_err(|_| Error::InvalidPublicKey)?;
+                let key = MlKem768PublicKey::try_from(pk_m).map_err(|_| Error::InvalidPublicKey)?;
                 if !mlkem768::validate_public_key(&key) {
                     return Err(Error::InvalidPublicKey);
                 }
                 key
             },
-            pk_x: bytes[1184..]
-                .try_into()
-                .map_err(|_| Error::InvalidPublicKey)?,
+            pk_x: pk_x.try_into().map_err(|_| Error::InvalidPublicKey)?,
         })
     }
 
