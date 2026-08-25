@@ -823,28 +823,12 @@ let lemma_layer1_to_poly_step (#vV: Type0) {| iop: T.t_Operations vV |}
    ===================================================================== *)
 
 (* Flat per-vector forward butterfly relation (MONT), cross-vector partners
-   m and m +/- step_vec.  Mirror of Bridges.cross_vec_hyp with N.butterfly. *)
-[@@ "opaque_to_smt"]
-let cross_vec_hyp_fwd
-    (#vV: Type0) {| iop: T.t_Operations vV |}
-    (cin cout: t_Array vV (mk_usize 16)) (step_vec: pos) (zs: t_Slice P.t_FieldElement)
-    (m: nat) (l: nat) : prop =
-  (m < 16 /\ l < 16) ==>
-    (let block : nat = m / (2 * step_vec) in
-     let pos   : nat = m % (2 * step_vec) in
-     block < Seq.length zs /\
-     (pos < step_vec ==>
-        m + step_vec < 16 /\
-        mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cout m)) l) ==
-          (N.butterfly (Seq.index zs block)
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin m)) l))
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin (m + step_vec))) l)))._1) /\
-     (pos >= step_vec ==>
-        m >= step_vec /\
-        mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cout m)) l) ==
-          (N.butterfly (Seq.index zs block)
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin (m - step_vec))) l))
-             (mont_i16_to_spec_fe (Seq.index (T.f_repr (Seq.index cin m)) l)))._2))
+   m and m +/- step_vec.  Mirror of Bridges.cross_vec_hyp with N.butterfly.
+   DEFINITION MOVED to Ntt_bridge.fsti as a TRANSPARENT opaque_to_smt let: the
+   Ntt consumer's lemma_postloop_cross_vec_fwd does `reveal_opaque cross_vec_hyp_fwd`
+   directly, which needs the body visible through the interface (an abstract val
+   breaks it, Error 19 incomplete quantifiers).  Kept opaque_to_smt so it stays an
+   atom unless revealed. *)
 
 (* PLAIN per-coefficient bridge: cross_vec_hyp_fwd forall -> Level-A (PLAIN)
    per-coefficient butterfly relations against to_spec_poly_plain_arr.
