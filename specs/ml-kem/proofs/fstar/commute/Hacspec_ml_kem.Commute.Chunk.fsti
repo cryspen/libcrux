@@ -3,10 +3,17 @@ module Hacspec_ml_kem.Commute.Chunk
 open FStar.Mul
 open Core_models
 open Libcrux_ml_kem.Vector.Traits.Spec
+open Hacspec_ml_kem.ModQ
 
 module P  = Hacspec_ml_kem.Parameters
+module L  = FStar.Math.Lemmas
 module T  = Libcrux_ml_kem.Vector.Traits
 module TS = Libcrux_ml_kem.Vector.Traits.Spec
+module N  = Hacspec_ml_kem.Ntt
+module IN = Hacspec_ml_kem.Invert_ntt
+module CP = Hacspec_ml_kem.Compress
+module MQ = Hacspec_ml_kem.ModQ
+module HP = Hacspec_ml_kem.Polynomial
 module V  = Libcrux_ml_kem.Vector
 
 
@@ -481,88 +488,9 @@ val lemma_ntt_layer_n_16_2_lane
                         (Seq.index p (i - 2))
                         (Seq.index p i))._2))
 
-val lemma_ntt_layer_1_step_branch_0_lane_bridge
-    (in_arr out_arr: t_Array i16 (mk_usize 16))
-    (zeta0 zeta1 zeta2 zeta3: i16) :
-  Lemma
-    (requires
-      TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
-    (ensures
-      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
-       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
-       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
-                               (Rust_primitives.unsize zs) in
-       Seq.index r_fe 0 == Seq.index rhs 0 /\
-       Seq.index r_fe 1 == Seq.index rhs 1 /\
-       Seq.index r_fe 2 == Seq.index rhs 2 /\
-       Seq.index r_fe 3 == Seq.index rhs 3))
-
-val lemma_ntt_layer_1_step_branch_1_lane_bridge
-    (in_arr out_arr: t_Array i16 (mk_usize 16))
-    (zeta0 zeta1 zeta2 zeta3: i16) :
-  Lemma
-    (requires
-      TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
-    (ensures
-      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
-       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
-       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
-                               (Rust_primitives.unsize zs) in
-       Seq.index r_fe 4 == Seq.index rhs 4 /\
-       Seq.index r_fe 5 == Seq.index rhs 5 /\
-       Seq.index r_fe 6 == Seq.index rhs 6 /\
-       Seq.index r_fe 7 == Seq.index rhs 7))
-
-val lemma_ntt_layer_1_step_branch_2_lane_bridge
-    (in_arr out_arr: t_Array i16 (mk_usize 16))
-    (zeta0 zeta1 zeta2 zeta3: i16) :
-  Lemma
-    (requires
-      TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
-    (ensures
-      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
-       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
-       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
-                               (Rust_primitives.unsize zs) in
-       Seq.index r_fe 8 == Seq.index rhs 8 /\
-       Seq.index r_fe 9 == Seq.index rhs 9 /\
-       Seq.index r_fe 10 == Seq.index rhs 10 /\
-       Seq.index r_fe 11 == Seq.index rhs 11))
-
-val lemma_ntt_layer_1_step_branch_3_lane_bridge
-    (in_arr out_arr: t_Array i16 (mk_usize 16))
-    (zeta0 zeta1 zeta2 zeta3: i16) :
-  Lemma
-    (requires
-      TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
-    (ensures
-      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
-       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
-       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
-                               (Rust_primitives.unsize zs) in
-       Seq.index r_fe 12 == Seq.index rhs 12 /\
-       Seq.index r_fe 13 == Seq.index rhs 13 /\
-       Seq.index r_fe 14 == Seq.index rhs 14 /\
-       Seq.index r_fe 15 == Seq.index rhs 15))
-
-val lemma_ntt_layer_1_step_lane_bridge
-    (in_arr out_arr: t_Array i16 (mk_usize 16))
-    (zeta0 zeta1 zeta2 zeta3: i16)
-    (i: nat {i < 16}) :
-  Lemma
-    (requires
-      TS.ntt_layer_1_step_post in_arr zeta0 zeta1 zeta2 zeta3 out_arr)
-    (ensures
-      (let zs = zetas_4_ zeta0 zeta1 zeta2 zeta3 in
-       let p_fe = mont_i16_to_spec_array (sz 16) in_arr in
-       let r_fe = mont_i16_to_spec_array (sz 16) out_arr in
-       let rhs = N.ntt_layer_n (mk_usize 16) p_fe (mk_usize 2)
-                               (Rust_primitives.unsize zs) in
-       Seq.index r_fe i == Seq.index rhs i))
+(* 5 private lane-bridge lemmas (lemma_ntt_layer_1_step_branch_{0..3}_lane_bridge,
+   lemma_ntt_layer_1_step_lane_bridge) stay module-private in Chunk.fst --
+   not exposed. *)
 
 val lemma_ntt_layer_1_step_to_hacspec
     (#vV: Type0) {| i: T.t_Operations vV |}
