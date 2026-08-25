@@ -1473,31 +1473,7 @@ module V  = Libcrux_ml_kem.Vector
 
 (* Plain-domain poly lift: each i16 lane is reduced mod q via the
    `i16_to_spec_fe` refinement. *)
-let to_spec_poly_plain
-    (#vV: Type0) {| i: T.t_Operations vV |}
-    (p: V.t_PolynomialRingElement vV)
-    : t_Array P.t_FieldElement (mk_usize 256)
-  = P.createi #P.t_FieldElement (mk_usize 256)
-        #(usize -> P.t_FieldElement)
-        (fun (j: usize { j <. mk_usize 256 }) ->
-          (i16_to_spec_fe
-            (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v j / 16)))
-                       (v j % 16))
-           <: P.t_FieldElement))
-
-(* Mont-domain poly lift: each i16 lane is interpreted as `a*R mod q`
-   with R = 2^16; `mont_i16_to_spec_fe` strips the R factor. *)
-let to_spec_poly_mont
-    (#vV: Type0) {| i: T.t_Operations vV |}
-    (p: V.t_PolynomialRingElement vV)
-    : t_Array P.t_FieldElement (mk_usize 256)
-  = P.createi #P.t_FieldElement (mk_usize 256)
-        #(usize -> P.t_FieldElement)
-        (fun (j: usize { j <. mk_usize 256 }) ->
-          (mont_i16_to_spec_fe
-            (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (v j / 16)))
-                       (v j % 16))
-           <: P.t_FieldElement))
+(* to_spec_poly_plain / to_spec_poly_mont: transparent interface defs moved to Chunk.fsti *)
 
 (* Per-lane index helper for `to_spec_poly_plain`.  Wraps `createi_lemma`
    to accept a `nat` index, mirroring `lane_plain` for the per-vector
@@ -1858,7 +1834,7 @@ let lemma_intt_mont_finalize_fe
    `add_message_error_reduce`, `add_error_reduce` after composing 256
    lanes via `Seq.lemma_eq_intro`. *)
 
-let fe_1441 : P.t_FieldElement = P.impl_FieldElement__new (mk_u16 1441)
+(* fe_1441: transparent interface def moved to Chunk.fsti *)
 
 (* Opaque per-vector wrapper for the per-lane FE finalize relation.  Bundles
    16 per-lane equations into a single opaque atom; without opacity the
@@ -3963,29 +3939,7 @@ let lemma_ntt_multiply_chunk_commutes
 
    See MLKEM_STATUS.md USER-7 hypothesis (b). *)
 
-let to_spec_poly_mont_arr
-    (#vV: Type0) {| i: T.t_Operations vV |}
-    (a: t_Array vV (mk_usize 16))
-    : t_Array P.t_FieldElement (mk_usize 256)
-  = P.createi #P.t_FieldElement (mk_usize 256)
-        #(usize -> P.t_FieldElement)
-        (fun (j: usize { j <. mk_usize 256 }) ->
-          (mont_i16_to_spec_fe
-            (Seq.index (T.f_repr (Seq.index a (v j / 16)))
-                       (v j % 16))
-           <: P.t_FieldElement))
-
-let to_spec_poly_plain_arr
-    (#vV: Type0) {| i: T.t_Operations vV |}
-    (a: t_Array vV (mk_usize 16))
-    : t_Array P.t_FieldElement (mk_usize 256)
-  = P.createi #P.t_FieldElement (mk_usize 256)
-        #(usize -> P.t_FieldElement)
-        (fun (j: usize { j <. mk_usize 256 }) ->
-          (i16_to_spec_fe
-            (Seq.index (T.f_repr (Seq.index a (v j / 16)))
-                       (v j % 16))
-           <: P.t_FieldElement))
+(* to_spec_poly_mont_arr / to_spec_poly_plain_arr: transparent interface defs moved to Chunk.fsti *)
 
 (* Unfold lemma: `to_spec_poly_mont` only consumes `p.f_coefficients`,
    so it must equal `to_spec_poly_mont_arr p.f_coefficients`.  The

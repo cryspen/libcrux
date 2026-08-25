@@ -31,21 +31,26 @@ ADMIT_MODULES =
 # hanging X.fst.checked (Bridges.fsti landed 2026-08-21; Bridges.fst is
 # therefore no longer a dep of the extraction graph, but stays listed
 # for the commute-dir build).
+# CONFIRM-TEST 2026-08-24: Chunk temporarily re-admitted to confirm the Chunk-DROP is what breaks the consumer cone (Ntt) via context inflation -> needs a Chunk.fsti firewall.
 ADMIT_MODULES += Hacspec_ml_kem.Commute.Chunk.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Bridges.fst
+# DROPPED 2026-08-24 — cold-verifies fast-stable as-is (helpers already carry split); NOT in the extraction graph (consumers use Bridges.fsti).
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Bridges.fst
 # DROPPED 2026-08-22 — cold-hardened (family-i per-coeff two-knob, commit b8bdb4f7e); cold-verifies e2e.
 # ADMIT_MODULES += Hacspec_ml_kem.Commute.Ntt_bridge.fst
 # DROPPED 2026-08-22 — cold-hardened (family-i per-coeff two-knob, commit cb05479f2); cold-verifies e2e.
 # ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_ntt_bridge.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_scale.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Rej_table.fst
+# DROPPED 2026-08-24 — cold-verifies green as-is (no lane bridges; batch-admitted defensively @85c712f3e).
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Invert_scale.fst
+# DROPPED 2026-08-24 — cold-verifies as-is, non-saturating (SLOW normalizer-heavy shuffle-table; rides committed hint).
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Rej_table.fst
 # DROPPED 2026-08-22 — cold-hardened (family-iii, commits 53b7abddf/b69e4e8c8); cold-verify e2e.
 # ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_bits.fst
 # ADMIT_MODULES += Hacspec_ml_kem.Commute.Serialize_compress.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_dot_bridge.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_u_bridge.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Matrix_bilin.fst
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Matrix_bridge.fst
+# DROPPED 2026-08-24 — cold-verify green as-is (no lane bridges; batch-admitted defensively @85c712f3e).
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_dot_bridge.fst
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Compute_u_bridge.fst
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Matrix_bilin.fst
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Matrix_bridge.fst
 # NOTE: ALL incremental modules are now VERIFIED (removed from ADMIT_MODULES):
 # Ind_cca.Incremental{,.Types,.Avx2,.Portable,.Multiplexing} and
 # Mlkem{512,768,1024}.Incremental.  The Types/Incremental closure (2026-06-03)
