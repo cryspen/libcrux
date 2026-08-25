@@ -31,8 +31,12 @@ ADMIT_MODULES =
 # hanging X.fst.checked (Bridges.fsti landed 2026-08-21; Bridges.fst is
 # therefore no longer a dep of the extraction graph, but stays listed
 # for the commute-dir build).
-# CONFIRM-TEST 2026-08-24: Chunk temporarily re-admitted to confirm the Chunk-DROP is what breaks the consumer cone (Ntt) via context inflation -> needs a Chunk.fsti firewall.
-ADMIT_MODULES += Hacspec_ml_kem.Commute.Chunk.fst
+# DROPPED 2026-08-25 — Chunk.fsti firewall landed (3bc8d94f3): consumers (Ntt/Invert_ntt/Polynomial/
+#   Vector.*) depend on the stable Chunk.fsti, so dropping Chunk from ADMIT re-proves ONLY Chunk.fst
+#   itself (cold-green as-is: --split_queries always on the 6 saturating helper blocks, commit
+#   00d3743af; 202KB, heavy but non-saturating).  Ntt's layer_7 cold gap is closed by #restart-solver
+#   (d664a1110).  Supersedes the 2026-08-24 CONFIRM-TEST that re-admitted Chunk to confirm this.
+# ADMIT_MODULES += Hacspec_ml_kem.Commute.Chunk.fst
 # DROPPED 2026-08-24 — cold-verifies fast-stable as-is (helpers already carry split); NOT in the extraction graph (consumers use Bridges.fsti).
 # ADMIT_MODULES += Hacspec_ml_kem.Commute.Bridges.fst
 # DROPPED 2026-08-22 — cold-hardened (family-i per-coeff two-knob, commit b8bdb4f7e); cold-verifies e2e.
