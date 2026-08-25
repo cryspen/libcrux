@@ -1440,6 +1440,22 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
               Hacspec_ml_kem.Commute.Bridges.lemma_zeta_eq_vzetas (mk_usize 0 +! mk_usize 1 +! mk_usize round);
               assert (v (mk_usize 0 +! mk_usize 1 +! mk_usize round) == v (mk_usize 1) + round)
             end in Classical.forall_intro aux);
+           lemma_offset_vec_fwd (v (mk_usize 1)) (v (mk_usize 128))
+             (v (mk_usize 1) * v (mk_usize 128) * 2)
+             ((v (mk_usize 1) * v (mk_usize 128) * 2) / 16) (v (mk_usize 8));
+           (let auxb (i: nat)
+              : Lemma (i < 16 ==>
+                  Libcrux_ml_kem.Polynomial.Spec.is_bounded_vector #$:Vector
+                    (mk_usize 1475 +! mk_usize 3328) (${re}.f_coefficients.[ sz i ])) =
+            if i < 16 then
+              lemma_outer_inv_fwd_lookup #$:Vector ${_re_init} ${re}.f_coefficients 8
+                (zs_of_fwd (mk_usize 1) (mk_usize 0)) (mk_usize 1475) (mk_usize 1) (mk_usize 128) (sz i)
+          in Classical.forall_intro auxb);
+           FStar.Seq.Base.lemma_init_len (v (mk_usize 1))
+             (fun (r: nat{r < v (mk_usize 1)}) ->
+                Libcrux_ml_kem.Vector.Traits.Spec.mont_i16_to_spec_fe
+                  (Libcrux_ml_kem.Polynomial.zeta (mk_usize 0 +! mk_usize 1 +! mk_usize r)));
+           lemma_groups_len_256 (v (mk_usize 1)) (v (mk_usize 128)) (v (mk_usize 128) / 16);
            Hacspec_ml_kem.Commute.Ntt_bridge.lemma_layer_4_plus_to_poly_step #$:Vector
              ${_re0} ${re} (mk_usize 7) (mk_usize 128) 8 (zs_of_fwd (mk_usize 1) (mk_usize 0))"#
     );
