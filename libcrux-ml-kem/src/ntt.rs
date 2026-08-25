@@ -1332,6 +1332,13 @@ let lemma_layer7_step_post
     Classical.forall_intro aux1;
     reveal_opaque (`%ntt_step_post) (ntt_step_post #v_Vector a b x y zeta_r)
 #pop-options
+
+(* ntt_at_layer_7_ verifies in isolation (admit_except, rlimit <=191) but 6 of its
+   split-subqueries fail COLD in the full module (rlimit 48-165 < 300) from Z3
+   solver-state pollution accumulated by the earlier layer/keystone proofs — NOT a
+   logic gap.  Restart the solver so layer_7 runs on clean state.  Verified: full
+   check/Libcrux_ml_kem.Ntt.fst is GREEN with this line, RED without it. *)
+#restart-solver
 "#
     )
 )]
