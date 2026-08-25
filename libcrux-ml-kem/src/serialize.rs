@@ -449,6 +449,12 @@ pub(super) fn deserialize_ring_elements_reduced_out<const K: usize, Vector: Oper
 
 /// See [deserialize_ring_elements_reduced_out].
 #[inline(always)]
+// deserialize_ring_elements_reduced verifies in isolation (admit_except, rlimit <=173) but its
+// fold-body split-subquery saturates COLD in the full module (rlimit 400.0) from Z3 solver-state
+// pollution accumulated by earlier Serialize decls whose committed hints the Serialize_bits /
+// Serialize_compress .fsti firewalls invalidated — NOT a logic gap.  #restart-solver runs it on
+// clean state (verified: full check/Libcrux_ml_kem.Serialize.fst GREEN with this line).
+#[hax_lib::fstar::before(r#"#restart-solver"#)]
 #[hax_lib::fstar::options("--z3rlimit 400 --ext context_pruning --split_queries always")]
 #[hax_lib::requires(
     fstar!(r#"Hacspec_ml_kem.Parameters.is_rank v_K /\

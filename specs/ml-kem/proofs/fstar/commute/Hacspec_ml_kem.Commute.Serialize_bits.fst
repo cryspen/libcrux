@@ -16,11 +16,8 @@ module F  = Rust_primitives.Hax.Folds
 
 (* ------------------------------------------------------------------ *)
 (* bitsum: value reconstructed from the low d bits given by predicate f *)
+(* (definition TRANSPARENT in the .fsti firewall — inherited here)      *)
 (* ------------------------------------------------------------------ *)
-
-let rec bitsum (f: nat -> bool) (d: nat) : Tot nat (decreases d) =
-  if d = 0 then 0
-  else bitsum f (d - 1) + (if f (d - 1) then pow2 (d - 1) else 0)
 
 let rec bitsum_cong (f g: nat -> bool) (d: nat)
   : Lemma (requires forall (j: nat). j < d ==> f j == g j)
@@ -474,9 +471,13 @@ let lemma_bitvec_from_bounded_index
 
 (* cast (b:bool) <: u8 == (if b then mk_u8 1 else mk_u8 0); its bits *)
 #push-options "--fuel 1 --ifuel 1 --z3rlimit 100"
+(* Exposed as a no-SMTPat val in the .fsti firewall (mandate: 0 exposed SMTPats).
+   The former [SMTPat (get_bit (cast #bool #u8 b) j)] is dropped — the interface
+   is authoritative, so it would not fire anyway; both consumers (this module's
+   lemma_bits_to_bytes_bit and Serialize_compress.lemma_bits_to_bytes_bit_d) now
+   re-inject the fact via FStar.Classical.forall_intro_2. *)
 let lemma_get_bit_cast_bool (b: bool) (j: usize{v j < 8})
   : Lemma (get_bit (Rust_primitives.cast #bool #u8 b) j == (if b && v j = 0 then 1 else 0))
-          [SMTPat (get_bit (Rust_primitives.cast #bool #u8 b) j)]
   = let c : u8 = Rust_primitives.cast #bool #u8 b in
     assert (v c == (if b then 1 else 0));
     assert_norm (pow2 1 == 2);
@@ -496,6 +497,10 @@ let lemma_bits_to_bytes_bit
            == (if Seq.index bv (8 * m + t) then 1 else 0))
   = let mm = mk_usize m in
     assert (m == v mm);
+    (* lemma_get_bit_cast_bool is exposed as a no-SMTPat val in the .fsti firewall,
+       so its [SMTPat] no longer auto-fires (interface is authoritative) — re-inject
+       the fact explicitly here, mirroring the cross-module consumer fix. *)
+    FStar.Classical.forall_intro_2 lemma_get_bit_cast_bool;
     assert (Seq.index (S.bits_to_bytes (mk_usize 384) (mk_usize 3072) bv) (v mm)
             == ((((((((Rust_primitives.cast #bool #u8 (bv.[ mk_usize 8 *! mm <: usize ] <: bool) <: u8) |.
                       ((Rust_primitives.cast #bool #u8 (bv.[ (mk_usize 8 *! mm <: usize) +! mk_usize 1 <: usize ] <: bool) <: u8) <<! mk_i32 1 <: u8) <: u8) |.

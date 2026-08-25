@@ -46,6 +46,9 @@ let lemma_bits_to_bytes_bit_d
            == (if Seq.index bv (8 * m + t) then 1 else 0))
   = let mm = mk_usize m in
     assert (m == v mm);
+    (* Serialize_bits is now firewalled; re-inject its get_bit_cast_bool fact
+       explicitly (its [SMTPat] no longer crosses the .fsti boundary). *)
+    FStar.Classical.forall_intro_2 SB.lemma_get_bit_cast_bool;
     assert (Seq.index (S.bits_to_bytes (mk_usize (32 * v d)) (mk_usize (256 * v d)) bv) (v mm)
             == ((((((((Rust_primitives.cast #bool #u8 (bv.[ mk_usize 8 *! mm <: usize ] <: bool) <: u8) |.
                       ((Rust_primitives.cast #bool #u8 (bv.[ (mk_usize 8 *! mm <: usize) +! mk_usize 1 <: usize ] <: bool) <: u8) <<! mk_i32 1 <: u8) <: u8) |.
