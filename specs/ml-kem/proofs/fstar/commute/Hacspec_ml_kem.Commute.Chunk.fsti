@@ -310,6 +310,10 @@ val lemma_subtract_reduce_iter
       (ensures
         subtract_reduce_finalize_chunk myself_chunk red_chunk b_chunk_in)
 
+val subtract_reduce_helper
+    (a b: t_Array P.t_FieldElement (mk_usize 256))
+    : t_Array P.t_FieldElement (mk_usize 256)
+
 val lemma_subtract_reduce_eq_helper
     (a b: t_Array P.t_FieldElement (mk_usize 256)) :
     Lemma (HP.subtract_reduce a b == subtract_reduce_helper a b)
@@ -347,6 +351,10 @@ val lemma_add_error_reduce_iter
         TS.barrett_reduce_post sum_chunk red_chunk)
       (ensures
         add_error_reduce_finalize_chunk myself_chunk red_chunk error_chunk)
+
+val add_error_reduce_helper
+    (a b: t_Array P.t_FieldElement (mk_usize 256))
+    : t_Array P.t_FieldElement (mk_usize 256)
 
 val lemma_add_error_reduce_eq_helper
     (a b: t_Array P.t_FieldElement (mk_usize 256)) :
@@ -388,6 +396,10 @@ val lemma_add_message_error_reduce_iter
       (ensures
         add_message_error_reduce_finalize_chunk
           myself_chunk message_chunk red_chunk result_chunk)
+
+val add_message_error_reduce_helper
+    (a b c: t_Array P.t_FieldElement (mk_usize 256))
+    : t_Array P.t_FieldElement (mk_usize 256)
 
 val lemma_add_message_error_reduce_eq_helper
     (a b c: t_Array P.t_FieldElement (mk_usize 256)) :
