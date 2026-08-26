@@ -486,7 +486,7 @@ Eurydice_arr_d6 libcrux_ml_kem_vector_portable_barrett_reduce_b8(Eurydice_arr_d6
  And, if `|value| ≤ pow2 16 * FIELD_MODULUS-1`, then `|o| <= FIELD_MODULUS + 1664
 
 */
-int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(int32_t value)
+KRML_MUSTINLINE int16_t libcrux_ml_kem_vector_portable_arithmetic_montgomery_reduce_element(int32_t value)
 {
   int32_t
   k =

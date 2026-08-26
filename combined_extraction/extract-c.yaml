@@ -77,7 +77,21 @@ files:
         - [libcrux_sha3, "*"]
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
+  #
+  # inline_static: the libcrux_secrets classify/declassify/cast-op functions
+  # claimed here via the `patterns: [libcrux_secrets, "*"]` entry below (the
+  # CastOps as_*/I16 helpers -- non-generic, so bundle `patterns` matching
+  # claims them directly) must be force-inlined to be free at runtime (see
+  # libcrux-secrets: these are all #[inline(always)] no-ops in the default,
+  # non-check-secret-independence build). Without inline_static, Karamel only
+  # keeps the C `inline` keyword for calls within the same bundle/.c file --
+  # any call crossing a bundle boundary (there are many, e.g. from
+  # libcrux_mlkem_portable) becomes a real, non-inlinable-without-LTO extern
+  # call regardless of the Rust attribute. inline_static emits these as
+  # `static inline` directly in this bundle's header instead, so every
+  # including .c file gets its own inlinable copy.
   - name: libcrux_mlkem_core
+    inline_static: true
     api:
       - [libcrux_ml_kem, constants ]
       - [libcrux_sha3, generic_keccak, constants ]
@@ -336,6 +350,27 @@ files:
         - [libcrux_ml_dsa, "*"]
       monomorphizations_using:
         - [libcrux_ml_dsa, "*"]
+
+  # libcrux_secrets: catch-all for the generic classify/declassify/secret
+  # monomorphizations (Classify/Declassify/*Ref/*RefMut impls, secret()) not
+  # already claimed by libcrux_mlkem_core above or by the exact carve-out in
+  # libcrux_mldsa_avx2 (ct_declassify_17). Unlike the CastOps helpers, these
+  # come from generic impls (`impl<T: Scalar> Classify for T`), so they need
+  # monomorphizations_of/using, not just `patterns`, to be claimed here
+  # instead of falling through to the combined_core catch-all below -- which
+  # is what happened before this bundle existed, defeating the
+  # #[inline(always)] on these functions the same way described above for
+  # libcrux_mlkem_core. Placed last (before combined_core) so it only picks
+  # up what nothing more specific already claimed.
+  - name: libcrux_secrets
+    inline_static: true
+    private:
+      patterns:
+        - [libcrux_secrets, "*"]
+      monomorphizations_of:
+        - [libcrux_secrets, "*"]
+      monomorphizations_using:
+        - [libcrux_secrets, "*"]
 
   # MLDSA: catch-all for things that have not matched earlier
   - name: combined_core

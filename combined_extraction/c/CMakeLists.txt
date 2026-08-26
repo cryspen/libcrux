@@ -244,3 +244,73 @@ foreach(test ${LIBCRUX_TESTS})
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 endforeach()
+
+# --- Benchmarks
+
+# benches/mlkem.cc and benches/mldsa.cc are single, variant-parameterized
+# source files (see MLKEM_VARIANT / MLDSA_VARIANT in the files themselves),
+# following the same pattern as tests/mlkem.cc and tests/mldsa.cc. Gated
+# behind LIBCRUX_BENCHMARKS since they pull in Google Benchmark via
+# FetchContent. See scripts/flamegraph.sh to profile a benchmark.
+if(DEFINED ENV{LIBCRUX_BENCHMARKS})
+    FetchContent_Declare(benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.9.2
+    )
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+
+    add_executable(ml_kem_bench512
+        ${PROJECT_SOURCE_DIR}/benches/mlkem.cc
+    )
+    target_compile_definitions(ml_kem_bench512 PRIVATE MLKEM_VARIANT=512)
+    target_link_libraries(ml_kem_bench512 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_kem_bench768
+        ${PROJECT_SOURCE_DIR}/benches/mlkem.cc
+    )
+    target_compile_definitions(ml_kem_bench768 PRIVATE MLKEM_VARIANT=768)
+    target_link_libraries(ml_kem_bench768 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_kem_bench1024
+        ${PROJECT_SOURCE_DIR}/benches/mlkem.cc
+    )
+    target_compile_definitions(ml_kem_bench1024 PRIVATE MLKEM_VARIANT=1024)
+    target_link_libraries(ml_kem_bench1024 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_dsa_bench44
+        ${PROJECT_SOURCE_DIR}/benches/mldsa.cc
+    )
+    target_compile_definitions(ml_dsa_bench44 PRIVATE MLDSA_VARIANT=44)
+    target_link_libraries(ml_dsa_bench44 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_dsa_bench65
+        ${PROJECT_SOURCE_DIR}/benches/mldsa.cc
+    )
+    target_compile_definitions(ml_dsa_bench65 PRIVATE MLDSA_VARIANT=65)
+    target_link_libraries(ml_dsa_bench65 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+
+    add_executable(ml_dsa_bench87
+        ${PROJECT_SOURCE_DIR}/benches/mldsa.cc
+    )
+    target_compile_definitions(ml_dsa_bench87 PRIVATE MLDSA_VARIANT=87)
+    target_link_libraries(ml_dsa_bench87 PRIVATE
+        combined_static
+        benchmark::benchmark
+    )
+endif(DEFINED ENV{LIBCRUX_BENCHMARKS})

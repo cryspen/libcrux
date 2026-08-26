@@ -1815,7 +1815,10 @@ with types uint8_t
 with const generics
 - N= 24
 */
-Eurydice_arr_94 libcrux_secrets_int_classify_public_declassify_91_ed(Eurydice_arr_94 self);
+static inline Eurydice_arr_94 libcrux_secrets_int_classify_public_declassify_91_ed(Eurydice_arr_94 self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1826,7 +1829,10 @@ with types uint8_t
 with const generics
 - N= 20
 */
-Eurydice_arr_fc libcrux_secrets_int_classify_public_declassify_91_8f(Eurydice_arr_fc self);
+static inline Eurydice_arr_fc libcrux_secrets_int_classify_public_declassify_91_8f(Eurydice_arr_fc self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1837,7 +1843,10 @@ with types uint8_t
 with const generics
 - N= 10
 */
-Eurydice_arr_6d libcrux_secrets_int_classify_public_declassify_91_30(Eurydice_arr_6d self);
+static inline Eurydice_arr_6d libcrux_secrets_int_classify_public_declassify_91_30(Eurydice_arr_6d self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1848,8 +1857,11 @@ with types uint8_t
 with const generics
 - N= 8
 */
-Eurydice_array_u8x8
-libcrux_secrets_int_classify_public_declassify_91_6e(Eurydice_array_u8x8 self);
+static inline Eurydice_array_u8x8
+libcrux_secrets_int_classify_public_declassify_91_6e(Eurydice_array_u8x8 self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1860,8 +1872,11 @@ with types uint8_t
 with const generics
 - N= 2
 */
-Eurydice_array_u8x2
-libcrux_secrets_int_classify_public_declassify_91_82(Eurydice_array_u8x2 self);
+static inline Eurydice_array_u8x2
+libcrux_secrets_int_classify_public_declassify_91_82(Eurydice_array_u8x2 self)
+{
+  return self;
+}
 
 /**
  Classify a mutable reference to a slice
@@ -1875,8 +1890,11 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_mut_slice
 with types Eurydice_dst_ref_mut uint8_t size_t
 
 */
-Eurydice_mut_borrow_slice_u8
-libcrux_secrets_int_classify_public_classify_mut_slice_75(Eurydice_mut_borrow_slice_u8 x);
+static inline Eurydice_mut_borrow_slice_u8
+libcrux_secrets_int_classify_public_classify_mut_slice_75(Eurydice_mut_borrow_slice_u8 x)
+{
+  return x;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<[T; N]> for [T; N]}
@@ -1887,7 +1905,10 @@ with types int16_t
 with const generics
 - N= 16
 */
-Eurydice_arr_d6 libcrux_secrets_int_classify_public_classify_fa_8a(Eurydice_arr_d6 self);
+static inline Eurydice_arr_d6 libcrux_secrets_int_classify_public_classify_fa_8a(Eurydice_arr_d6 self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1898,7 +1919,10 @@ with types int16_t
 with const generics
 - N= 16
 */
-Eurydice_arr_d6 libcrux_secrets_int_classify_public_declassify_91_8a(Eurydice_arr_d6 self);
+static inline Eurydice_arr_d6 libcrux_secrets_int_classify_public_declassify_91_8a(Eurydice_arr_d6 self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a ([T])> for &'a ([T])}
@@ -1908,8 +1932,11 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
 with types uint8_t
 
 */
-Eurydice_borrow_slice_u8
-libcrux_secrets_int_classify_public_classify_ref_6d_90(Eurydice_borrow_slice_u8 self);
+static inline Eurydice_borrow_slice_u8
+libcrux_secrets_int_classify_public_classify_ref_6d_90(Eurydice_borrow_slice_u8 self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<[T; N]> for [T; N]}
@@ -1920,7 +1947,10 @@ with types uint8_t
 with const generics
 - N= 22
 */
-Eurydice_arr_80 libcrux_secrets_int_classify_public_declassify_91_98(Eurydice_arr_80 self);
+static inline Eurydice_arr_80 libcrux_secrets_int_classify_public_declassify_91_98(Eurydice_arr_80 self)
+{
+  return self;
+}
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_shared
@@ -1939,8 +1969,11 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
 with types int16_t
 
 */
-Eurydice_borrow_slice_i16
-libcrux_secrets_int_classify_public_classify_ref_6d_39(Eurydice_borrow_slice_i16 self);
+static inline Eurydice_borrow_slice_i16
+libcrux_secrets_int_classify_public_classify_ref_6d_39(Eurydice_borrow_slice_i16 self)
+{
+  return self;
+}
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_shared
@@ -2013,7 +2046,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types uint64_t
 
 */
-uint64_t libcrux_secrets_int_classify_public_declassify_d8_49(uint64_t self);
+static inline uint64_t libcrux_secrets_int_classify_public_declassify_d8_49(uint64_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2023,7 +2059,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types uint32_t
 
 */
-uint32_t libcrux_secrets_int_classify_public_classify_27_df(uint32_t self);
+static inline uint32_t libcrux_secrets_int_classify_public_classify_27_df(uint32_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2033,7 +2072,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types uint64_t
 
 */
-uint64_t libcrux_secrets_int_classify_public_classify_27_49(uint64_t self);
+static inline uint64_t libcrux_secrets_int_classify_public_classify_27_49(uint64_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -2043,7 +2085,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types uint16_t
 
 */
-uint16_t libcrux_secrets_int_classify_public_declassify_d8_de(uint16_t self);
+static inline uint16_t libcrux_secrets_int_classify_public_declassify_d8_de(uint16_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2053,7 +2098,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types uint16_t
 
 */
-uint16_t libcrux_secrets_int_classify_public_classify_27_de(uint16_t self);
+static inline uint16_t libcrux_secrets_int_classify_public_classify_27_de(uint16_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -2063,7 +2111,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types uint32_t
 
 */
-uint32_t libcrux_secrets_int_classify_public_declassify_d8_df(uint32_t self);
+static inline uint32_t libcrux_secrets_int_classify_public_declassify_d8_df(uint32_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -2073,7 +2124,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types int32_t
 
 */
-int32_t libcrux_secrets_int_classify_public_declassify_d8_a8(int32_t self);
+static inline int32_t libcrux_secrets_int_classify_public_declassify_d8_a8(int32_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2083,7 +2137,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types int32_t
 
 */
-int32_t libcrux_secrets_int_classify_public_classify_27_a8(int32_t self);
+static inline int32_t libcrux_secrets_int_classify_public_classify_27_a8(int32_t self)
+{
+  return self;
+}
 
 /**
  Construct a public integer (identity)
@@ -2093,7 +2150,10 @@ A monomorphic instance of libcrux_secrets.int.public_integers.secret
 with types int16_t
 
 */
-int16_t libcrux_secrets_int_public_integers_secret_39(int16_t x);
+static inline int16_t libcrux_secrets_int_public_integers_secret_39(int16_t x)
+{
+  return x;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -2103,7 +2163,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types uint8_t
 
 */
-uint8_t libcrux_secrets_int_classify_public_declassify_d8_90(uint8_t self);
+static inline uint8_t libcrux_secrets_int_classify_public_declassify_d8_90(uint8_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2113,7 +2176,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types int16_t
 
 */
-int16_t libcrux_secrets_int_classify_public_classify_27_39(int16_t self);
+static inline int16_t libcrux_secrets_int_classify_public_classify_27_39(int16_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -2123,7 +2189,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.declassify_d8
 with types int16_t
 
 */
-int16_t libcrux_secrets_int_classify_public_declassify_d8_39(int16_t self);
+static inline int16_t libcrux_secrets_int_classify_public_declassify_d8_39(int16_t self)
+{
+  return self;
+}
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -2133,7 +2202,10 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_27
 with types uint8_t
 
 */
-uint8_t libcrux_secrets_int_classify_public_classify_27_90(uint8_t self);
+static inline uint8_t libcrux_secrets_int_classify_public_classify_27_90(uint8_t self)
+{
+  return self;
+}
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_shared

@@ -91,3 +91,51 @@ off by default:
 cmake -B build -DENABLE_SANITIZERS=ON
 cmake --build build
 ```
+
+## Benchmarking
+
+`c/` (not `c-header-only/`) ships Google Benchmark-based benchmarks in
+`c/benches/`, gated behind the `LIBCRUX_BENCHMARKS` environment variable so
+the dependency is only fetched when needed:
+
+```bash
+cd c
+LIBCRUX_BENCHMARKS=1 cmake -B build -G "Ninja Multi-Config"
+LIBCRUX_BENCHMARKS=1 cmake --build build --config Release
+
+./build/Release/ml_kem_bench768
+./build/Release/ml_dsa_bench65
+```
+
+With a single-config generator (plain Ninja/Makefiles,
+`-DCMAKE_BUILD_TYPE=Release` instead of `-G "Ninja Multi-Config"`), the
+binaries land directly in `build/` rather than `build/Release/`.
+
+Like the tests, `benches/mlkem.cc` and `benches/mldsa.cc` are single,
+variant-parameterized source files (`MLKEM_VARIANT`/`MLDSA_VARIANT`); each of
+the six binaries — `ml_kem_bench512/768/1024` and `ml_dsa_bench44/65/87` —
+compiles the same source for its variant. Each binary benchmarks key
+generation, encapsulation/decapsulation (ML-KEM) or sign/verify (ML-DSA), for
+the portable backend and, on x86_64, the AVX2 backend.
+
+Pass standard Google Benchmark flags to filter or tune a run, e.g.:
+
+```bash
+./build/Release/ml_kem_bench768 --benchmark_filter=avx2 --benchmark_min_time=2s
+```
+
+### Flamegraphs
+
+`c/scripts/flamegraph.sh` builds (if needed) and profiles a benchmark binary
+with [`samply`](https://github.com/mstange/samply) (`cargo install samply`),
+opening the recording directly in the [Firefox
+Profiler](https://profiler.firefox.com):
+
+```bash
+cd c
+scripts/flamegraph.sh ml_kem_bench768              # profile everything
+scripts/flamegraph.sh ml_kem_bench768 key_generation  # filter to one benchmark
+```
+
+Set `LIBCRUX_BENCHMARK_MIN_TIME` (default `5s`) to control how long the
+benchmark runs, giving the profiler more samples to work with.

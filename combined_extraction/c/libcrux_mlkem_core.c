@@ -11,7 +11,6 @@
  * Libcrux: 10066f256cec8d50d6111a4cf33ab920cfdb96cb
  */
 
-
 #include "internal/libcrux_mlkem_core.h"
 
 #include "combined_core.h"
@@ -23,113 +22,9 @@
  [eurydice] Note that we can't use const generics here because that breaks
             C extraction with eurydice.
 */
-size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank)
+KRML_MUSTINLINE size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank)
 {
   return rank * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U;
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
-*/
-uint8_t libcrux_secrets_int_as_u8_f5(int16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_90((uint8_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u8}
-*/
-int16_t libcrux_secrets_int_as_i16_59(uint8_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_90(self));
-}
-
-int16_t libcrux_secrets_int_I16(int16_t v)
-{
-  return libcrux_secrets_int_public_integers_secret_39(v);
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
-*/
-int32_t libcrux_secrets_int_as_i32_f5(int16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for i32}
-*/
-int16_t libcrux_secrets_int_as_i16_36(int32_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_a8(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u32}
-*/
-int32_t libcrux_secrets_int_as_i32_b8(uint32_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_a8((int32_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
-*/
-uint16_t libcrux_secrets_int_as_u16_f5(int16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_de((uint16_t)libcrux_secrets_int_classify_public_declassify_d8_39(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u16}
-*/
-int16_t libcrux_secrets_int_as_i16_ca(uint16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u16}
-*/
-uint64_t libcrux_secrets_int_as_u64_ca(uint16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_49((uint64_t)(uint32_t)libcrux_secrets_int_classify_public_declassify_d8_de(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u64}
-*/
-uint32_t libcrux_secrets_int_as_u32_a3(uint64_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_df((uint32_t)libcrux_secrets_int_classify_public_declassify_d8_49(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for u32}
-*/
-int16_t libcrux_secrets_int_as_i16_b8(uint32_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_39((int16_t)libcrux_secrets_int_classify_public_declassify_d8_df(self));
-}
-
-/**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
-*/
-int16_t libcrux_secrets_int_as_i16_f5(int16_t self)
-{
-  return
-    libcrux_secrets_int_classify_public_classify_27_39(libcrux_secrets_int_classify_public_declassify_d8_39(self));
 }
 
 /**
