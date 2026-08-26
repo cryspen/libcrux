@@ -16,16 +16,17 @@ axioms in `Libcrux_intrinsics.{Arm64,Avx2}_extract` (the only external assumptio
 ## Where the main theorems live
 
 The top-level correctness theorems — one per algorithm, per backend — are in three clearly-named
-files under `fstar/equivalence/`. Start here:
+files under [`fstar/equivalence/`](fstar/equivalence/). Start here:
 
 | File | Backend | Theorems | Guarantee (per algorithm) |
 | --- | --- | --- | --- |
-| `EquivImplSpec.Correctness.Portable.fst` | Portable (N=1) | `lemma_{sha224,sha256,sha384,sha512,shake128,shake256}_portable` | `Libcrux_sha3.Portable.<algo> digest data == Hacspec_sha3.Sha3.<algo> data` |
-| `EquivImplSpec.Correctness.Neon.fst` | Neon / Arm64 (N=2) | `lemma_{sha224,sha256,sha384,sha512,shake128,shake256}_arm64` | `Libcrux_sha3.Neon.<algo> digest data == Hacspec_sha3.Sha3.<algo> data` (lane-0 of the 2-way driver) |
-| `EquivImplSpec.Correctness.Avx2.fst` | AVX2 x4 (N=4) | `lemma_shake256_x4_avx2` | `Libcrux_sha3.Avx2.X4.shake256` output lane `l` `== Hacspec_sha3.Sha3.shake256 (data[l])` |
+| [`EquivImplSpec.Correctness.Portable.fst`](fstar/equivalence/EquivImplSpec.Correctness.Portable.fst) | Portable (N=1) | `lemma_{sha224,sha256,sha384,sha512,shake128,shake256}_portable` | `Libcrux_sha3.Portable.<algo> digest data == Hacspec_sha3.Sha3.<algo> data` |
+| [`EquivImplSpec.Correctness.Neon.fst`](fstar/equivalence/EquivImplSpec.Correctness.Neon.fst) | Neon / Arm64 (N=2) | `lemma_{sha224,sha256,sha384,sha512,shake128,shake256}_arm64` | `Libcrux_sha3.Neon.<algo> digest data == Hacspec_sha3.Sha3.<algo> data` (lane-0 of the 2-way driver) |
+| [`EquivImplSpec.Correctness.Avx2.fst`](fstar/equivalence/EquivImplSpec.Correctness.Avx2.fst) | AVX2 x4 (N=4) | `lemma_shake256_x4_avx2` | `Libcrux_sha3.Avx2.X4.shake256` output lane `l` `== Hacspec_sha3.Sha3.shake256 (data[l])` |
 
 The spec hashers (`sha3_224_/256_/384_/512_`, `shake128/256`) are defined in
-`Hacspec_sha3.Sha3` (in the `hacspec_sha3` crate, `specs/sha3/`).
+[`Hacspec_sha3.Sha3`](../../../../specs/sha3/proofs/fstar/extraction/Hacspec_sha3.Sha3.fst) (in the
+`hacspec_sha3` crate, [`specs/sha3/`](../../../../specs/sha3/)).
 
 ### Why the backends don't have identical theorem sets
 
