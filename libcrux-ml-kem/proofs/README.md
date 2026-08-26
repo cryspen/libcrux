@@ -64,18 +64,19 @@ out of scope for this tree).
 
 The authoritative, auto-generated tally lives in
 [`ml_kem_verification_status.md`](./ml_kem_verification_status.md) (regenerate
-with `generate_verification_status.py`). Headline as of the last run:
+with `generate_verification_status.py`) — the counts live there, not hand-typed here. In summary:
+essentially the whole API is at least panic-free, and the one-shot KEM API plus the arithmetic core
+are functionally correct against `hacspec_ml_kem` (theorems 1–4 above). Three boundaries:
 
-| Metric | Count | % |
-| --- | --- | --- |
-| Total functions | 963 | |
-| **Panic-safe** (panic-free + spec-bearing) | 957 | **99.4%** |
-| &nbsp;&nbsp;— cites high-level hacspec | 212 | 22.0% |
-| &nbsp;&nbsp;— interval/bounds ensures | 54 | 5.6% |
-| &nbsp;&nbsp;— other non-trivial ensures | 274 | 28.5% |
-| &nbsp;&nbsp;— panic-free only | 417 | 43.3% |
-| Lax (admitted) | 3 | 0.3% |
-| Unverified (not extracted) | 3 | 0.3% |
+- **Incremental API — panic-free, not functionally correct.** The `ind_cca::incremental` key/encaps
+  paths are proven panic-free and precondition-respecting (theorem 2), but carry no
+  `Hacspec_ml_kem` spec-equivalence (unlike the one-shot API) — an incremental ≡ one-shot
+  refinement is the remaining FC work.
+- **Lax (admitted):** `sampling::sample_from_xof` (its rejection-sampling loop has no decreasing
+  measure, so not provably terminating) and two incremental-API `From`-instance bodies (a hax
+  limitation) — see below.
+- **Unverified — not extracted:** `src/lib.rs` top-level module glue, filtered out of hax
+  extraction (`-i -…::**`).
 
 The NIST/PQCP C-ABI shim (`src/pqcp/`, the `crypto_kem_*` boundary functions)
 is **excluded** from this tally as out-of-scope FFI/boundary code; see

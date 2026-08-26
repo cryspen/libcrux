@@ -1,13 +1,17 @@
 # SHA-3 proofs
 
 Machine-checked **functional-correctness** proofs (F*, via [hax](https://github.com/hacspec/hax))
-for this crate's SHA-3 / SHAKE implementations. Every public hashing API is proven to compute
-exactly what the Hacspec specification (the `hacspec_sha3` crate) says it should.
+for this crate's SHA-3 / SHAKE implementations. The one-shot hashing APIs (all backends) are proven
+to compute exactly what the Hacspec specification (the `hacspec_sha3` crate) says; the incremental
+APIs are proven panic-free (see the coverage note below).
 
-**Status:** zero admits, 0 unverified functions, 269 / 269 functions panic-safe — see
-[`verification_status.md`](verification_status.md). Trust reduces to the F* toolchain plus the
-per-lane SIMD intrinsic axioms in `Libcrux_intrinsics.{Arm64,Avx2}_extract` (the only external
-assumptions; noted at the relevant lemmas).
+**Status:** zero admits; all three backends (Portable, Neon, AVX2) fully verified. The per-function
+proof-tier tally is auto-generated in [`verification_status.md`](verification_status.md) — the
+authoritative counts live there, not hand-typed here. Two coverage boundaries: the RustCrypto
+`Digest`-trait glue in `src/impl_digest_trait.rs` (`new`/`reset`/`update`/`finish`/`hash`) is not
+extracted to F\*, and the incremental APIs are panic-free only, not yet spec-equivalent (see
+"Known coverage gap" below). Trust reduces to the F\* toolchain plus the per-lane SIMD intrinsic
+axioms in `Libcrux_intrinsics.{Arm64,Avx2}_extract` (the only external assumptions).
 
 ## Where the main theorems live
 

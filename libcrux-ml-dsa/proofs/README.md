@@ -32,10 +32,11 @@ SIMD backends (Portable, AVX2). The current state:
    `Libcrux_ml_dsa.Simd.Traits.t_Operations` trait contract, so these
    per-operation specs hold uniformly across both.
 
-2. **Memory & panic safety.** **96.9%** of functions (599 / 618) are proven
-   **free of panics and arithmetic overflow** and to respect every callee
-   precondition — this includes essentially all serialization/encoding and
-   support code, much of it additionally carrying interval/bounds `ensures`.
+2. **Memory & panic safety.** Essentially all functions (the exact per-tier tally is
+   auto-generated in [`verification_status.md`](./verification_status.md) — not hand-typed
+   here) are proven **free of panics and arithmetic overflow** and to respect every callee
+   precondition — including essentially all serialization/encoding and support code, much of
+   it additionally carrying interval/bounds `ensures`.
 
 3. **Serialization bounds.** The (de)serialization of commitments, errors,
    `gamma1`, `t0`/`t1`, signatures, and keys is verified for the coefficient
@@ -49,11 +50,12 @@ SIMD backends (Portable, AVX2). The current state:
   end-to-end "the signature scheme computes exactly the FIPS-204 reference"
   theorem is not yet closed. The admitted sites are listed under *Body-admit
   sites* in the status document.
-- **Rejection sampling (accepted carve-outs).** A handful of `lax` markers wrap
-  unbounded rejection-sampling loops (`while !done { … }`) whose termination is
-  only probabilistic, so F\* cannot discharge termination without a statistical
+- **Rejection sampling (accepted carve-outs).** A small number of `lax` markers
+  (in `sample`; the exact set is in the status doc) wrap unbounded
+  rejection-sampling loops (`while !done { … }`) whose termination is only
+  probabilistic, so F\* cannot discharge termination without a statistical
   argument. These are trusted by design, mirroring ML-KEM's `sample_from_xof`
-  carve-out (the 3 loops in `sample` and the 2 X4-XOF markers in `samplex4`).
+  carve-out.
 - **Not extracted.** `src/simd/tests.rs` (6 test functions) is filtered out of
   extraction.
 

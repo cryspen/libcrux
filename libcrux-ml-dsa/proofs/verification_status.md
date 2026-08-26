@@ -106,6 +106,21 @@ These Rust modules have no corresponding F\* file in the extraction directory �
 
 # Appendix (hand-written; appended by generate_verification_status.py)
 
+## Coverage boundaries
+
+ML-DSA is a work in progress. The arithmetic core (NTT/inverse-NTT, Montgomery/Barrett,
+decompose/`make_hint`/`use_hint`) and the (de)serialization bounds are functionally correct against
+`Hacspec_ml_dsa`, and essentially the whole API is panic-free. Not yet covered by functional
+correctness (per-function tiers are in the tables above):
+
+- **Top-level API — panic-free, FC admitted.** The public `sign`/`verify`/`generate_key_pair`
+  (`ml_dsa_generic`) are proven panic-free, but their functional-correctness `ensures` are
+  **admitted** — the end-to-end FIPS-204 equivalence theorem is not yet closed. The admitted sites
+  are the *Body-admit sites* in the body above.
+- **Lax and Unverified:** the `sample` rejection-sampling `lax` markers (unbounded loops,
+  probabilistic termination — trusted by design) and `src/simd/tests.rs` test functions (not
+  extracted), both listed in the body above.
+
 ## Proof times
 
 The ml-dsa proof sources (src annotations, `proofs/fstar/spec/` companions,

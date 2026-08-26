@@ -107,6 +107,20 @@ These Rust modules have no corresponding F\* file in the extraction directory �
 
 # Appendix (hand-written; appended by generate_verification_status.py)
 
+## Coverage boundaries
+
+All three backends are functionally correct for the one-shot KEM API and the arithmetic core, and
+essentially the whole API is at least panic-free (per-function tiers in the tables above).
+Boundaries not covered by functional correctness:
+
+- **Incremental API — panic-free, not spec-equivalent.** The `ind_cca::incremental` key/encaps
+  paths are proven panic-free and precondition-respecting, but carry no `Hacspec_ml_kem`
+  equivalence (unlike the one-shot API); an incremental ≡ one-shot refinement is the remaining FC
+  work.
+- **Lax and Unverified:** listed in the body above — `sampling::sample_from_xof` and two
+  incremental-API `From`-instance bodies (lax; hax-limited), plus `src/lib.rs` top-level glue
+  (unverified, not extracted).
+
 ## Proof times
 
 The ml-kem proof sources (src annotations, `proofs/fstar/spec/` companions,
