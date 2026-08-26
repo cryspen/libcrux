@@ -70,8 +70,8 @@ are functionally correct against `hacspec_ml_kem` (theorems 1–4 above). Three 
 
 - **Incremental API — panic-free, not functionally correct.** The `ind_cca::incremental` key/encaps
   paths are proven panic-free and precondition-respecting (theorem 2), but carry no
-  `Hacspec_ml_kem` spec-equivalence (unlike the one-shot API) — an incremental ≡ one-shot
-  refinement is the remaining FC work.
+  `Hacspec_ml_kem` spec-equivalence (unlike the one-shot API); an incremental ≡ one-shot
+  refinement would extend functional correctness to these paths.
 - **Lax (admitted):** `sampling::sample_from_xof` (its rejection-sampling loop has no decreasing
   measure, so not provably terminating) and two incremental-API `From`-instance bodies (a hax
   limitation) — see below.

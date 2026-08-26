@@ -44,12 +44,12 @@ SIMD backends (Portable, AVX2). The current state:
 
 ### What is *not* yet proven
 
-- **Top-level API (admitted).** The public `sign`, `verify`, and
-  `generate_key_pair` (the `ml_dsa_generic` layer) are currently proven
-  panic-free but their **functional-correctness `ensures` are admitted** — the
-  end-to-end "the signature scheme computes exactly the FIPS-204 reference"
-  theorem is not yet closed. The admitted sites are listed under *Body-admit
-  sites* in the status document.
+- **Top-level API (FC admitted).** The public `sign`, `verify`, and
+  `generate_key_pair` (the `ml_dsa_generic` layer, per parameter set) are proven
+  panic-free, but their **functional-correctness `ensures` are admitted**
+  (`trusted(inline-admit)`) — the end-to-end "the signature scheme computes
+  exactly the FIPS-204 reference" theorem is not yet closed. These sites appear in
+  the `Lax` column and the *Body-admit sites (audit)* section of the status file.
 - **Rejection sampling (accepted carve-outs).** A small number of `lax` markers
   (in `sample`; the exact set is in the status doc) wrap unbounded
   rejection-sampling loops (`while !done { … }`) whose termination is only
@@ -69,23 +69,32 @@ this tree.
 
 The authoritative, auto-generated tally lives in
 [`verification_status.md`](./verification_status.md) (regenerate with
-`generate_verification_status.py`). Headline as of the last run:
+`generate_verification_status.py`) — the exact counts live there, not hand-typed here. Snapshot of
+the last run (620 functions, Portable + AVX2):
 
 | Metric | Count | % |
 | --- | --- | --- |
-| Total functions | 618 | |
-| **Panic-safe** (panic-free + spec-bearing) | 599 | **96.9%** |
-| &nbsp;&nbsp;— cites high-level hacspec | 91 | 14.7% |
-| &nbsp;&nbsp;— interval/bounds ensures | 86 | 13.9% |
-| &nbsp;&nbsp;— other non-trivial ensures | 152 | 24.6% |
-| &nbsp;&nbsp;— panic-free only | 270 | 43.7% |
-| Lax (admitted) | 13 | 2.1% |
+| **Panic-safe** (panic-free + spec-bearing) | 603 | **97.3%** |
+| &nbsp;&nbsp;— cites high-level hacspec (FC) | 91 | 14.7% |
+| &nbsp;&nbsp;— interval/bounds ensures | 89 | 14.4% |
+| &nbsp;&nbsp;— other non-trivial ensures | 155 | 25.0% |
+| &nbsp;&nbsp;— panic-free only | 268 | 43.2% |
+| Lax (admitted) | 11 | 1.8% |
 | Unverified (not extracted) | 6 | 1.0% |
 
-Of the 13 `lax`, ~5 are the accepted rejection-sampling carve-outs above; the
-rest (top-level `sign`/`verify`/`keygen` bodies) are the actionable work-list.
-The 6 unverified are the `src/simd/tests.rs` test helpers. See
-`_excluded_modules` in `verification_status.config.json` for out-of-scope code.
+The **11 lax** split two ways: **9** are the actionable work-list — the top-level
+`sign`/`verify`/`generate_key_pair` and the signature/key encoding, whose functional-correctness
+`ensures` are admitted pending proof (`trusted(inline-admit | inline-assume)`; enumerated in the
+*Body-admit sites (audit)* section of the status file) — and **2** are the rejection-sampling
+carve-outs in `sample` (probabilistic termination, trusted by design). The **91 hacspec-citing
+functions — the arithmetic core and serialization — are the genuinely functionally-correct set.**
+The **6** unverified are the `src/simd/tests.rs` test helpers.
+
+Two further trust notes: the SHA-3/SHAKE hash functions are modeled at the **interface**
+(`assume val`, ~49 of them in `Hash_functions.*`) — a trust boundary shared with ML-KEM, not a proof
+of the hash code here; and a few `trusted(replace)` sites carry hand-written F\* bodies (F\*-checked,
+but a distinct trust class from the extracted code, tracked separately). See `_excluded_modules` in
+`verification_status.config.json` for out-of-scope code.
 
 ## Reproducing the results
 
