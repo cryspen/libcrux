@@ -1484,6 +1484,38 @@ let lemma_add_std_chunk_done_elim
    `lemma_add_standard_error_reduce_lane`; the `plain` value is fixed to
    `std_i16_to_spec_fe (myself_chunk.[l])` so it matches
    `to_spec_poly_standard` lane-for-lane.  Produces the OPAQUE chunk atom. *)
+(* Clean-context per-lane finalize, modeled on the working
+   `lemma_subtract_reduce_iter` / `lemma_subtract_reduce_finalize_fe` pair:
+   absorb the `plain`/`mont_form_lane` reveal+assert machinery here so the
+   iter's forall_intro sub-query stays minimal (2 mod_q_eq unfolds + this
+   call), matching the exemplar and avoiding the incomplete-quantifiers
+   starvation of doing it inline under `--split_queries`. *)
+#push-options "--z3rlimit 200"
+let lemma_add_std_finalize_fe (myself_lane normal_lane error_lane sum_lane red_lane: i16)
+    : Lemma
+      (requires
+        v normal_lane % 3329 == (v myself_lane * 1353 * 169) % 3329 /\
+        v sum_lane == v normal_lane + v error_lane /\
+        v red_lane % 3329 == v sum_lane % 3329)
+      (ensures
+        Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe red_lane
+          == Hacspec_ml_kem.Parameters.impl_FieldElement__add
+               (std_i16_to_spec_fe myself_lane)
+               (Libcrux_ml_kem.Vector.Traits.Spec.i16_to_spec_fe error_lane))
+  = let plain = std_i16_to_spec_fe myself_lane in
+    (* Establish mont_form_lane via the intro helper (keeps it an OPAQUE atom for
+       the lane lemma below — revealing it makes Z3 re-prove the body through
+       std_i16_to_spec_fe and saturate).  std_i16_to_spec_fe's Pure-ensures gives
+       v plain.f_val == (v myself * 2285) % 3329; mod-idempotence lifts it to the
+       `% 3329`-on-both-sides form the intro needs. *)
+    assert (v plain.Hacspec_ml_kem.Parameters.f_val == (v myself_lane * 2285) % 3329);
+    FStar.Math.Lemmas.lemma_mod_mod (v plain.Hacspec_ml_kem.Parameters.f_val)
+      (v myself_lane * 2285) 3329;
+    Hacspec_ml_kem.Commute.Chunk.lemma_mont_form_lane_intro myself_lane plain;
+    Hacspec_ml_kem.Commute.Chunk.lemma_add_standard_error_reduce_lane
+      myself_lane normal_lane error_lane sum_lane red_lane plain
+#pop-options
+
 #push-options "--z3rlimit 300 --split_queries always --fuel 0 --ifuel 1"
 let lemma_add_std_err_iter
     (#vV: Type0) {| iop: Libcrux_ml_kem.Vector.Traits.t_Operations vV |}
@@ -1506,12 +1538,6 @@ let lemma_add_std_err_iter
                (std_i16_to_spec_fe (Seq.index myself_chunk l))
                (i16_to_spec_fe (Seq.index error_chunk l)))
       = if l < 16 then begin
-          let plain = std_i16_to_spec_fe (Seq.index myself_chunk l) in
-          (* mont_form_lane (myself.[l]) plain : (v myself * 2285) % q == v plain.f_val % q. *)
-          reveal_opaque (`%Hacspec_ml_kem.Commute.Chunk.mont_form_lane)
-            (Hacspec_ml_kem.Commute.Chunk.mont_form_lane (Seq.index myself_chunk l) plain);
-          assert (v plain.Hacspec_ml_kem.Parameters.f_val
-                  == (v (Seq.index myself_chunk l) * 2285) % 3329);
           (* unfold the mod_q_eq trait posts into raw `% 3329`. *)
           Hacspec_ml_kem.ModQ.lemma_mod_q_eq_unfold
             (v (Seq.index normal_chunk l))
@@ -1519,13 +1545,12 @@ let lemma_add_std_err_iter
           Hacspec_ml_kem.ModQ.lemma_mod_q_eq_unfold
             (v (Seq.index red_chunk l))
             (v (Seq.index sum_chunk l));
-          Hacspec_ml_kem.Commute.Chunk.lemma_add_standard_error_reduce_lane
+          lemma_add_std_finalize_fe
             (Seq.index myself_chunk l)
             (Seq.index normal_chunk l)
             (Seq.index error_chunk l)
             (Seq.index sum_chunk l)
             (Seq.index red_chunk l)
-            plain
         end
     in
     Classical.forall_intro aux;

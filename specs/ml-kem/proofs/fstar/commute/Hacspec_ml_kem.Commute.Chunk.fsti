@@ -257,6 +257,16 @@ val poly_lane_plain
                 (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (j / 16)))
                            (j % 16)))
 
+(* Mont-domain twin of poly_lane_plain (consumed by Polynomial / Compute_u_bridge /
+   Matrix_bilin2; was missing from the firewall surface). *)
+val poly_lane_mont
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (p: V.t_PolynomialRingElement vV) (j: nat {j < 256}) :
+    Lemma (Seq.index (to_spec_poly_mont p) j
+           == mont_i16_to_spec_fe
+                (Seq.index (T.f_repr (Seq.index p.V.f_coefficients (j / 16)))
+                           (j % 16)))
+
 val lemma_poly_barrett_reduce_id
     (p: t_Array P.t_FieldElement (mk_usize 256)) :
     Lemma (HP.poly_barrett_reduce p == p)
@@ -431,6 +441,16 @@ val lemma_add_message_error_reduce_commute
 val mont_form_lane
     (input_lane: i16) (plain_lane: P.t_FieldElement) : prop
 
+(* Intro for the opaque `mont_form_lane`: given the raw mod-q equality,
+   establish the atom (consumers that build `plain` from `std_i16_to_spec_fe`
+   use this instead of a local reveal, which would re-prove the body and
+   saturate). *)
+val lemma_mont_form_lane_intro
+    (input_lane: i16) (plain_lane: P.t_FieldElement) :
+    Lemma (requires
+            (v input_lane * 2285) % 3329 == v plain_lane.P.f_val % 3329)
+          (ensures mont_form_lane input_lane plain_lane)
+
 val lemma_add_standard_error_reduce_lane
     (myself_lane normal_lane error_lane sum_lane red_lane: i16)
     (plain: P.t_FieldElement) :
@@ -540,6 +560,44 @@ let to_spec_poly_plain_arr
             (Seq.index (T.f_repr (Seq.index a (v j / 16)))
                        (v j % 16))
            <: P.t_FieldElement))
+
+(* ntt_multiply per-lane + chunk-commute lemmas (consumed by Polynomial;
+   were missing from the firewall surface). *)
+val lemma_ntt_multiply_n_16_lane
+    (p1 p2: t_Array P.t_FieldElement (mk_usize 16))
+    (zs: t_Array P.t_FieldElement (mk_usize 4))
+    (i: nat {i < 16}) :
+    Lemma
+      (let result = N.ntt_multiply_n (mk_usize 16) p1 p2
+                                     (Rust_primitives.unsize zs) in
+       let group : nat = i / 4 in
+       let zeta = (if i % 4 < 2 then Seq.index zs group
+                   else P.impl_FieldElement__neg (Seq.index zs group)) in
+       (i % 2 = 0 ==>
+         i + 1 < 16 /\
+         Seq.index result i ==
+           N.base_case_multiply_even (Seq.index p1 i) (Seq.index p1 (i + 1))
+                                     (Seq.index p2 i) (Seq.index p2 (i + 1))
+                                     zeta) /\
+       (i % 2 = 1 ==>
+         i >= 1 /\
+         Seq.index result i ==
+           N.base_case_multiply_odd (Seq.index p1 (i - 1)) (Seq.index p1 i)
+                                    (Seq.index p2 (i - 1)) (Seq.index p2 i)))
+
+val lemma_ntt_multiply_chunk_commutes
+    (#vV: Type0) {| i: T.t_Operations vV |}
+    (lhs rhs: vV) (zeta0 zeta1 zeta2 zeta3: i16) :
+  Lemma
+    (requires TS.ntt_multiply_pre (T.f_repr lhs) (T.f_repr rhs)
+                                  zeta0 zeta1 zeta2 zeta3)
+    (ensures
+       (let r = T.f_ntt_multiply lhs rhs zeta0 zeta1 zeta2 zeta3 in
+        mont_i16_to_spec_array (sz 16) (T.f_repr r)
+          == N.ntt_multiply_n (mk_usize 16)
+               (mont_i16_to_spec_array (sz 16) (T.f_repr lhs))
+               (mont_i16_to_spec_array (sz 16) (T.f_repr rhs))
+               (zetas_4_ zeta0 zeta1 zeta2 zeta3)))
 
 (* Unfold lemma: `to_spec_poly_mont` only consumes `p.f_coefficients`,
    so it must equal `to_spec_poly_mont_arr p.f_coefficients`.  The
