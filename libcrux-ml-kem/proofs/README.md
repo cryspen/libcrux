@@ -34,7 +34,12 @@ The verification establishes the following for the optimized implementation
    encapsulate, decapsulate}` layer (proven once, generic over the SIMD
    backend) and the unpacked key-API variants. The reference returns a
    `Result`; equality is asserted on the `Ok` case (the negligible
-   rejection-sampling failure branch is unconstrained).
+   rejection-sampling failure branch is unconstrained). *Source:* the F\*
+   contracts live on the generic [`src/ind_cca.rs`](../src/ind_cca.rs)
+   `{generate_keypair, encapsulate, decapsulate}`, surfaced through the public
+   per-set wrappers [`src/mlkem768.rs`](../src/mlkem768.rs) (and
+   `mlkem512`/`mlkem1024`); the reference specification is the
+   [`specs/ml-kem/`](../../specs/ml-kem/) crate.
 
 2. **Memory & panic safety.** The full public API (incl. the incremental API)
    and essentially all internal functions are proven **free of panics and

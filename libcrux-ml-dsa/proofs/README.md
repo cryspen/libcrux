@@ -27,8 +27,10 @@ SIMD backends (Portable, AVX2). The current state:
    transform (forward and inverse, every layer), Montgomery and Barrett
    reduction, and the coefficient decompose/`make_hint`/`use_hint` machinery
    carry F\* postconditions that tie the SIMD bit-twiddling to the mathematical
-   reference spec (`Hacspec_ml_dsa.*`, `Spec.MLDSA.*`) **modulo
-   q = 8380417**. Both the Portable and AVX2 SIMD backends implement the same
+   reference spec (`Hacspec_ml_dsa.*`, `Spec.MLDSA.*`, the
+   [`specs/ml-dsa/`](../../specs/ml-dsa/) crate) **modulo q = 8380417** — the
+   annotated Rust is [`src/ntt.rs`](../src/ntt.rs) and
+   [`src/arithmetic.rs`](../src/arithmetic.rs). Both the Portable and AVX2 SIMD backends implement the same
    `Libcrux_ml_dsa.Simd.Traits.t_Operations` trait contract, so these
    per-operation specs hold uniformly across both.
 
@@ -45,7 +47,7 @@ SIMD backends (Portable, AVX2). The current state:
 ### What is *not* yet proven
 
 - **Top-level API (FC admitted).** The public `sign`, `verify`, and
-  `generate_key_pair` (the `ml_dsa_generic` layer, per parameter set) are proven
+  `generate_key_pair` (the [`ml_dsa_generic`](../src/ml_dsa_generic.rs) layer, per parameter set) are proven
   panic-free, but their **functional-correctness `ensures` are admitted**
   (`trusted(inline-admit)`) — the end-to-end "the signature scheme computes
   exactly the FIPS-204 reference" theorem is not yet closed. These sites appear in
