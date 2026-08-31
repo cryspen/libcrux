@@ -7,8 +7,8 @@ from pathlib import Path
 
 import os
 
-HAX_VERSION = "2fedcb2b196f5adea55975d0a023596ec6383ff2"
-AENEAS_VERSION = "52fd438"
+HAX_VERSION = "4c9e2b7c75ab1e2b645a4a8361ae86c4504f9800"
+AENEAS_VERSION = "f8a0eb8"
 
 
 def check_version(cmd: list[str], name: str, expected: str) -> None:
@@ -20,7 +20,11 @@ def check_version(cmd: list[str], name: str, expected: str) -> None:
 
 
 check_version(["cargo", "hax", "--version"], "hax", HAX_VERSION)
-check_version(["aeneas", "-version"], "aeneas", AENEAS_VERSION)
+# As of cargo-hax 0.4, aeneas and charon are downloaded and checksum-verified
+# by cargo-hax itself into a machine-wide cache and are not put on PATH, so
+# ask cargo-hax which version the project resolves to instead of running the
+# binary. `cargo hax tools install` fetches them if they are missing.
+check_version(["cargo", "hax", "tools", "show"], "aeneas", AENEAS_VERSION)
 
 result = subprocess.run(
     ["cargo", "hax", "into", "lean"],

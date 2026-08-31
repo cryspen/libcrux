@@ -8,4 +8,4 @@ name = "HacspecSha3"
 [[require]]
 name = "Hax"
 git = "https://github.com/cryspen/hax-lean"
-rev = "v0.2.0"
+rev = "v0.3.12"

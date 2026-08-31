@@ -3,4 +3,4 @@ members = ["hacspec-lib", "kyber", "sha3", "ml-dsa", "ml-kem"]
 resolver = "2"
 
 [workspace.dependencies]
-hax-lib = { git = "https://github.com/cryspen/hax", rev = "2fedcb2b196f5adea55975d0a023596ec6383ff2" }
+hax-lib = { git = "https://github.com/cryspen/hax", rev = "4c9e2b7c75ab1e2b645a4a8361ae86c4504f9800" }

@@ -8,7 +8,7 @@ name = "HacspecMlDsa"
 [[require]]
 name = "Hax"
 git = "https://github.com/cryspen/hax-lean"
-rev = "v0.2.0"
+rev = "v0.3.12"
 
 # HacspecMlDsa's spec references `hacspec_sha3.sha3.{shake128,shake256}`, so it
 # depends on the HacspecSha3 spec. Local worktree path for now (same as ml-kem);
