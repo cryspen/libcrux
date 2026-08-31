@@ -38,11 +38,10 @@ if result.returncode != 0:
 funs_lean = Path("proofs/lean/HacspecMlDsa/Extraction/Funs.lean")
 content = funs_lean.read_text()
 
-# 1. `core.cmp.PartialEq` has no `ne` field in hax-lean v0.2.0 (it is a default
-#    method, not a struct field). Drop the generated `ne := …default …` field.
-content = re.sub(
-    r"\n[ \t]*ne := core\.cmp\.PartialEq\.ne\.default\n[ \t]*[^\n]+\n(\s*})",
-    r"\n\1", content)
+# NOTE: a pass here used to strip the generated `ne := core.cmp.PartialEq.ne.default`
+# field, because hax-lean v0.2.0 had no `ne` field on `core.cmp.PartialEq` (it was a
+# default method). v0.3.12 does have it, so stripping it now breaks the extraction
+# with "Fields missing: `ne`". Removed.
 
 # 2. Inside `matrix.matrix_vector_ntt` the `matrix` parameter shadows the
 #    `matrix` sub-namespace, so the closure-instance reference passed to

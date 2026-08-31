@@ -7,7 +7,7 @@ import HacspecMlDsa.Extraction.Types
 import HacspecMlDsa.Extraction.Funs
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -28,7 +28,7 @@ namespace hacspec_ml_dsa
 /-- [hacspec_ml_dsa::arithmetic::mod_pm::pre]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 20:0-20:27 -/
 @[reducible]
-def arithmetic.mod_pm.pre (a : Std.I32) (m : Std.I32) : Result Bool := do
+def arithmetic.mod_pm.pre (a : Std.I32) (m : Std.I32) : RustM Bool := do
   ok (m > 0#i32)
 
 def arithmetic.mod_pm.spec (a : Std.I32) (m : Std.I32) : Prop :=
@@ -41,7 +41,7 @@ def arithmetic.mod_pm.spec (a : Std.I32) (m : Std.I32) : Prop :=
 /-- [hacspec_ml_dsa::arithmetic::power2round::pre]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 36:0-36:37 -/
 @[reducible]
-def arithmetic.power2round.pre (r : Std.I32) : Result Bool := do
+def arithmetic.power2round.pre (r : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then ok (r < parameters.Q)
   else ok false
@@ -57,7 +57,7 @@ def arithmetic.power2round.spec (r : Std.I32) : Prop :=
     Source: 'ml-dsa/src/arithmetic.rs', lines 52:0-52:69 -/
 @[reducible]
 def arithmetic.decompose.pre
-  (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+  (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then
     if r < parameters.Q
@@ -80,7 +80,7 @@ def arithmetic.decompose.spec (r : Std.I32) (gamma2 : Std.I32) : Prop :=
     Source: 'ml-dsa/src/arithmetic.rs', lines 69:0-69:69 -/
 @[reducible]
 def arithmetic.high_bits.pre
-  (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+  (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then
     if r < parameters.Q
@@ -102,8 +102,7 @@ def arithmetic.high_bits.spec (r : Std.I32) (gamma2 : Std.I32) : Prop :=
 /-- [hacspec_ml_dsa::arithmetic::low_bits::pre]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 77:0-77:69 -/
 @[reducible]
-def arithmetic.low_bits.pre
-  (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+def arithmetic.low_bits.pre (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then
     if r < parameters.Q
@@ -126,7 +125,7 @@ def arithmetic.low_bits.spec (r : Std.I32) (gamma2 : Std.I32) : Prop :=
     Source: 'ml-dsa/src/arithmetic.rs', lines 85:0-85:69 -/
 @[reducible]
 def arithmetic.make_hint.pre
-  (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+  (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then
     if r < parameters.Q
@@ -150,7 +149,7 @@ def arithmetic.make_hint.spec (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32)
     Source: 'ml-dsa/src/arithmetic.rs', lines 96:0-96:69 -/
 @[reducible]
 def arithmetic.use_hint.pre
-  (hint : Bool) (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+  (hint : Bool) (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   if r >= 0#i32
   then
     if r < parameters.Q
@@ -175,7 +174,7 @@ def arithmetic.use_hint.spec (hint : Bool) (r : Std.I32) (gamma2 : Std.I32)
 @[reducible]
 def encoding.simple_bit_pack.pre
   (BYTES : Std.Usize) (w : Array Std.I32 256#usize) (b : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   let i ← parameters.bitlen b
   let i1 ← 32#usize * i
@@ -197,7 +196,7 @@ def encoding.simple_bit_pack.spec (BYTES : Std.Usize)
 def encoding.bit_pack.pre
   (BYTES : Std.Usize) (w : Array Std.I32 256#usize) (a : Std.Usize)
   (b : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   let i ← hax_lib.Usize.Insts.Hax_libIntToInt.to_int a
   let i1 ← hax_lib.Usize.Insts.Hax_libIntToInt.to_int b
@@ -229,7 +228,7 @@ def encoding.bit_pack.spec (BYTES : Std.Usize) (w : Array Std.I32 256#usize)
     Source: 'ml-dsa/src/encoding.rs', lines 91:0-91:71 -/
 @[reducible]
 def encoding.bit_unpack.pre
-  (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize) : Result Bool := do
+  (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize) : RustM Bool := do
   let i ← hax_lib.Usize.Insts.Hax_libIntToInt.to_int a
   let i1 ← hax_lib.Usize.Insts.Hax_libIntToInt.to_int b
   let i2 ← hax_lib.int.Int.Insts.CoreOpsArithAddIntInt.add i i1
@@ -251,7 +250,7 @@ def encoding.bit_unpack.spec (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize)
 def encoding.hint_bit_pack.pre
   {K : Std.Usize} (HINT_BYTES : Std.Usize) (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then
@@ -273,7 +272,7 @@ def encoding.hint_bit_pack.spec {K : Std.Usize} (HINT_BYTES : Std.Usize)
     Source: 'ml-dsa/src/encoding.rs', lines 146:0-146:68 -/
 @[reducible]
 def encoding.hint_bit_unpack.pre
-  (K : Std.Usize) (y : Slice Std.U8) (omega : Std.Usize) : Result Bool := do
+  (K : Std.Usize) (y : Slice Std.U8) (omega : Std.Usize) : RustM Bool := do
   if K <= 8#usize
   then
     if omega <= 256#usize
@@ -292,12 +291,12 @@ def encoding.hint_bit_unpack.spec (K : Std.Usize) (y : Slice Std.U8)
 
 
 /-- [hacspec_ml_dsa::encoding::pk_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 192:0-192:55 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 197:0-197:55 -/
 @[reducible]
 def encoding.pk_encode.pre
   {K : Std.Usize} (PK_SIZE : Std.Usize) (rho : Array Std.U8 32#usize)
   (t1 : Array (Array Std.I32 256#usize) K) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then let i ← 320#usize * K
@@ -315,10 +314,10 @@ def encoding.pk_encode.spec {K : Std.Usize} (PK_SIZE : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::encoding::pk_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 209:0-209:56 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 214:0-214:56 -/
 @[reducible]
 def encoding.pk_decode.pre
-  (K : Std.Usize) (pk : Slice Std.U8) : Result Bool := do
+  (K : Std.Usize) (pk : Slice Std.U8) : RustM Bool := do
   if K <= 8#usize
   then
     let i ← core.slice.Slice.len pk
@@ -335,7 +334,7 @@ def encoding.pk_decode.spec (K : Std.Usize) (pk : Slice Std.U8) : Prop :=
 
 
 /-- [hacspec_ml_dsa::encoding::sk_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 222:0-222:121 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 227:0-227:121 -/
 @[reducible]
 def encoding.sk_encode.pre
   {K : Std.Usize} {L : Std.Usize} (SK_SIZE : Std.Usize)
@@ -343,7 +342,7 @@ def encoding.sk_encode.pre
   (tr : Array Std.U8 64#usize) (s1 : Array (Array Std.I32 256#usize) L)
   (s2 : Array (Array Std.I32 256#usize) K)
   (t0 : Array (Array Std.I32 256#usize) K) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then
@@ -376,12 +375,12 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 286:0-286:122 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 291:0-291:122 -/
 @[reducible]
 def encoding.sk_decode.pre
   (K : Std.Usize) (L : Std.Usize) (sk : Slice Std.U8)
   (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then
@@ -410,13 +409,13 @@ def encoding.sk_decode.spec (K : Std.Usize) (L : Std.Usize) (sk : Slice Std.U8)
 
 
 /-- [hacspec_ml_dsa::encoding::sig_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 339:0-348:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 344:0-353:2 -/
 @[reducible]
 def encoding.sig_encode.pre
   {K : Std.Usize} {L : Std.Usize} (SIG_SIZE : Std.Usize)
   (c_tilde : Slice Std.U8) (z : Array (Array Std.I32 256#usize) L)
   (h : Array (Array Bool 256#usize) K) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if L <= 8#usize
   then
@@ -689,12 +688,12 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::sig_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 401:0-404:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 406:0-409:2 -/
 @[reducible]
 def encoding.sig_decode.pre
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize)
   (sigma : Slice Std.U8) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then
@@ -728,12 +727,12 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::w1_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 429:0-431:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 434:0-436:2 -/
 @[reducible]
 def encoding.w1_encode.pre
   {K : Std.Usize} (W1_BYTES : Std.Usize)
   (w1 : Array (Array Std.I32 256#usize) K) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then
@@ -762,7 +761,7 @@ def encoding.w1_encode.spec {K : Std.Usize} (W1_BYTES : Std.Usize)
 def ml_dsa.keygen_internal.pre
   (K : Std.Usize) (L : Std.Usize) (PK_SIZE : Std.Usize) (SK_SIZE : Std.Usize)
   (xi : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K = params.k
   then
@@ -808,7 +807,7 @@ def ml_dsa.try_sign_iteration.pre
   (t0_hat : Array (Array Std.I32 256#usize) K) (mu : Array Std.U8 64#usize)
   (rho_pp : Array Std.U8 64#usize) (kappa : Std.Usize)
   (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K = params.k
   then
@@ -1122,7 +1121,7 @@ def ml_dsa.sign_internal.pre
   (K : Std.Usize) (L : Std.Usize) (SIG_SIZE : Std.Usize) (W1_BYTES : Std.Usize)
   (C_TILDE_LEN : Std.Usize) (sk : Slice Std.U8) (m_prime : Slice Std.U8)
   (rnd : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K = params.k
   then
@@ -1442,7 +1441,7 @@ def ml_dsa.verify_internal.pre
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize) (W1_BYTES :
   Std.Usize) (pk : Slice Std.U8) (m_prime : Slice Std.U8)
   (sigma : Slice Std.U8) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K = params.k
   then
@@ -1507,7 +1506,7 @@ def
     Source: 'ml-dsa/src/ml_dsa.rs', lines 423:0-423:63 -/
 @[reducible]
 def ml_dsa.format_m_prime.pre
-  (message : Slice Std.U8) (ctx : Slice Std.U8) : Result Bool := do
+  (message : Slice Std.U8) (ctx : Slice Std.U8) : RustM Bool := do
   let i ← core.slice.Slice.len ctx
   if i <= 255#usize
   then let i1 ← core.slice.Slice.len message
@@ -1528,7 +1527,7 @@ def ml_dsa.format_m_prime.spec (message : Slice Std.U8) (ctx : Slice Std.U8)
 def ml_dsa.keygen.pre
   (K : Std.Usize) (L : Std.Usize) (PK_SIZE : Std.Usize) (SK_SIZE : Std.Usize)
   (xi : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   if K = params.k
   then
@@ -1570,7 +1569,7 @@ def ml_dsa.sign.pre
   (C_TILDE_LEN : Std.Usize) (sk : Slice Std.U8) (message : Slice Std.U8)
   (ctx : Slice Std.U8) (rnd : Array Std.U8 32#usize)
   (params : parameters.MlDsaParams) :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len ctx
   if i <= 255#usize
@@ -1898,7 +1897,7 @@ def ml_dsa.verify.pre
   Std.Usize) (pk : Slice Std.U8) (message : Slice Std.U8)
   (sigma : Slice Std.U8) (ctx : Slice Std.U8) (params : parameters.MlDsaParams)
   :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len ctx
   if i <= 255#usize
@@ -1970,7 +1969,7 @@ def
 /-- [hacspec_ml_dsa::ntt::bit_rev_8::pre]:
     Source: 'ml-dsa/src/ntt.rs', lines 43:0-43:29 -/
 @[reducible]
-def ntt.bit_rev_8.pre (m : Std.Usize) : Result Bool := do
+def ntt.bit_rev_8.pre (m : Std.Usize) : RustM Bool := do
   ok (m < 256#usize)
 
 def ntt.bit_rev_8.spec (m : Std.Usize) : Prop :=
@@ -1984,7 +1983,7 @@ def ntt.bit_rev_8.spec (m : Std.Usize) : Prop :=
     Source: 'ml-dsa/src/ntt.rs', lines 60:0-60:32 -/
 @[reducible]
 def ntt.ntt_layer.pre
-  (p : Array Std.I32 256#usize) (layer : Std.Usize) : Result Bool := do
+  (p : Array Std.I32 256#usize) (layer : Std.Usize) : RustM Bool := do
   ok (layer <= 7#usize)
 
 def ntt.ntt_layer.spec (p : Array Std.I32 256#usize) (layer : Std.Usize)
@@ -1999,7 +1998,7 @@ def ntt.ntt_layer.spec (p : Array Std.I32 256#usize) (layer : Std.Usize)
     Source: 'ml-dsa/src/ntt.rs', lines 99:0-99:32 -/
 @[reducible]
 def ntt.intt_layer.pre
-  (p : Array Std.I32 256#usize) (layer : Std.Usize) : Result Bool := do
+  (p : Array Std.I32 256#usize) (layer : Std.Usize) : RustM Bool := do
   ok (layer <= 7#usize)
 
 def ntt.intt_layer.spec (p : Array Std.I32 256#usize) (layer : Std.Usize)
@@ -2013,8 +2012,7 @@ def ntt.intt_layer.spec (p : Array Std.I32 256#usize) (layer : Std.Usize)
 /-- [hacspec_ml_dsa::parameters::pk_size::pre]:
     Source: 'ml-dsa/src/parameters.rs', lines 62:0-62:36 -/
 @[reducible]
-def parameters.pk_size.pre
-  (params : parameters.MlDsaParams) : Result Bool := do
+def parameters.pk_size.pre (params : parameters.MlDsaParams) : RustM Bool := do
   ok (params.k <= 16#usize)
 
 def parameters.pk_size.spec (params : parameters.MlDsaParams) : Prop :=
@@ -2027,8 +2025,7 @@ def parameters.pk_size.spec (params : parameters.MlDsaParams) : Prop :=
 /-- [hacspec_ml_dsa::parameters::sk_size::pre]:
     Source: 'ml-dsa/src/parameters.rs', lines 68:0-68:73 -/
 @[reducible]
-def parameters.sk_size.pre
-  (params : parameters.MlDsaParams) : Result Bool := do
+def parameters.sk_size.pre (params : parameters.MlDsaParams) : RustM Bool := do
   if params.k <= 16#usize
   then if params.l <= 16#usize
        then ok (params.eta <= 8#usize)
@@ -2046,7 +2043,7 @@ def parameters.sk_size.spec (params : parameters.MlDsaParams) : Prop :=
     Source: 'ml-dsa/src/parameters.rs', lines 75:0-75:102 -/
 @[reducible]
 def parameters.sig_size.pre
-  (params : parameters.MlDsaParams) : Result Bool := do
+  (params : parameters.MlDsaParams) : RustM Bool := do
   if params.k <= 16#usize
   then
     if params.l <= 16#usize
@@ -2068,7 +2065,7 @@ def parameters.sig_size.spec (params : parameters.MlDsaParams) : Prop :=
     Source: 'ml-dsa/src/parameters.rs', lines 146:0-146:47 -/
 @[reducible]
 def parameters.bitlen.post
-  (n : Std.Usize) (result : Std.Usize) : Result Bool := do
+  (n : Std.Usize) (result : Std.Usize) : RustM Bool := do
   ok (result <= 64#usize)
 
 def parameters.bitlen.spec (n : Std.Usize) : Prop :=
@@ -2082,7 +2079,7 @@ def parameters.bitlen.spec (n : Std.Usize) : Prop :=
 @[reducible]
 def polynomial.vector_power2round.pre
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2099,7 +2096,7 @@ def polynomial.vector_power2round.spec {N : Std.Usize}
 @[reducible]
 def polynomial.vector_high_bits.pre
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2116,7 +2113,7 @@ def polynomial.vector_high_bits.spec {N : Std.Usize}
 @[reducible]
 def polynomial.vector_low_bits.pre
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2133,7 +2130,7 @@ def polynomial.vector_low_bits.spec {N : Std.Usize}
 @[reducible]
 def polynomial.count_hints.pre
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2151,7 +2148,7 @@ def polynomial.count_hints.spec {N : Std.Usize}
 def polynomial.vector_make_hint.pre
   {N : Std.Usize} (z : Array (Array Std.I32 256#usize) N)
   (r : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2170,7 +2167,7 @@ def polynomial.vector_make_hint.spec {N : Std.Usize}
 def polynomial.vector_use_hint.pre
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N)
   (r : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result hax_lib.prop.Prop
+  RustM hax_lib.prop.Prop
   := do
   hax_lib.prop.Prop.from_bool true
 
@@ -2187,7 +2184,7 @@ def polynomial.vector_use_hint.spec {N : Std.Usize}
     Source: 'ml-dsa/src/sampling.rs', lines 57:0-57:31 -/
 @[reducible]
 def sampling.sample_in_ball.pre
-  (rho : Slice Std.U8) (tau : Std.Usize) : Result Bool := do
+  (rho : Slice Std.U8) (tau : Std.Usize) : RustM Bool := do
   ok (tau <= 64#usize)
 
 def sampling.sample_in_ball.spec (rho : Slice Std.U8) (tau : Std.Usize)
@@ -2203,7 +2200,7 @@ def sampling.sample_in_ball.spec (rho : Slice Std.U8) (tau : Std.Usize)
 @[reducible]
 def sampling.expand_a.pre
   (K : Std.Usize) (L : Std.Usize) (rho : Array Std.U8 32#usize) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then ok (L <= 8#usize)
@@ -2223,7 +2220,7 @@ def sampling.expand_a.spec (K : Std.Usize) (L : Std.Usize)
 def sampling.expand_s.pre
   (K : Std.Usize) (L : Std.Usize) (rho_prime : Array Std.U8 64#usize)
   (eta : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if K <= 8#usize
   then ok (L <= 8#usize)
@@ -2243,7 +2240,7 @@ def sampling.expand_s.spec (K : Std.Usize) (L : Std.Usize)
 def sampling.expand_mask.pre
   (L : Std.Usize) (rho_pp : Array Std.U8 64#usize) (kappa : Std.Usize)
   (gamma1 : Std.I32) :
-  Result Bool
+  RustM Bool
   := do
   if L <= 256#usize
   then

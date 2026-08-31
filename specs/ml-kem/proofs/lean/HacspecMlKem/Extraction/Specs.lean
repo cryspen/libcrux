@@ -7,7 +7,7 @@ import HacspecMlKem.Extraction.Types
 import HacspecMlKem.Extraction.Funs
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -28,7 +28,7 @@ namespace hacspec_ml_kem
 /-- [hacspec_ml_kem::parameters::cpa_ciphertext_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 119:0-119:57 -/
 @[reducible]
-def parameters.cpa_ciphertext_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.cpa_ciphertext_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -45,7 +45,7 @@ def parameters.cpa_ciphertext_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::rank_to_params::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 136:0-136:57 -/
 @[reducible]
-def parameters.rank_to_params.pre (rank : Std.Usize) : Result Bool := do
+def parameters.rank_to_params.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -62,7 +62,7 @@ def parameters.rank_to_params.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::t_as_ntt_encoded_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 173:0-173:57 -/
 @[reducible]
-def parameters.t_as_ntt_encoded_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.t_as_ntt_encoded_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -80,7 +80,7 @@ def parameters.t_as_ntt_encoded_size.spec (rank : Std.Usize) : Prop :=
     Source: 'ml-kem/src/parameters.rs', lines 180:0-180:57 -/
 @[reducible]
 def parameters.ranked_bytes_per_ring_element.pre
-  (rank : Std.Usize) : Result Bool := do
+  (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -97,7 +97,7 @@ def parameters.ranked_bytes_per_ring_element.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::cpa_public_key_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 186:0-186:57 -/
 @[reducible]
-def parameters.cpa_public_key_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.cpa_public_key_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -114,7 +114,7 @@ def parameters.cpa_public_key_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::cpa_private_key_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 192:0-192:57 -/
 @[reducible]
-def parameters.cpa_private_key_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.cpa_private_key_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -131,7 +131,7 @@ def parameters.cpa_private_key_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::cca_private_key_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 198:0-198:57 -/
 @[reducible]
-def parameters.cca_private_key_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.cca_private_key_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -149,7 +149,7 @@ def parameters.cca_private_key_size.spec (rank : Std.Usize) : Prop :=
     Source: 'ml-kem/src/parameters.rs', lines 204:0-204:57 -/
 @[reducible]
 def parameters.vector_u_compression_factor.pre
-  (rank : Std.Usize) : Result Bool := do
+  (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -167,7 +167,7 @@ def parameters.vector_u_compression_factor.spec (rank : Std.Usize) : Prop :=
     Source: 'ml-kem/src/parameters.rs', lines 214:0-214:57 -/
 @[reducible]
 def parameters.vector_v_compression_factor.pre
-  (rank : Std.Usize) : Result Bool := do
+  (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -184,7 +184,7 @@ def parameters.vector_v_compression_factor.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::c1_block_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 224:0-224:57 -/
 @[reducible]
-def parameters.c1_block_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.c1_block_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -201,7 +201,7 @@ def parameters.c1_block_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::c1_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 230:0-230:57 -/
 @[reducible]
-def parameters.c1_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.c1_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -218,7 +218,7 @@ def parameters.c1_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::c2_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 236:0-236:57 -/
 @[reducible]
-def parameters.c2_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.c2_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -235,7 +235,7 @@ def parameters.c2_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::eta1::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 242:0-242:57 -/
 @[reducible]
-def parameters.eta1.pre (rank : Std.Usize) : Result Bool := do
+def parameters.eta1.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -252,7 +252,7 @@ def parameters.eta1.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::eta2::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 252:0-252:57 -/
 @[reducible]
-def parameters.eta2.pre (rank : Std.Usize) : Result Bool := do
+def parameters.eta2.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -269,7 +269,7 @@ def parameters.eta2.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::eta1_randomness_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 259:0-259:57 -/
 @[reducible]
-def parameters.eta1_randomness_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.eta1_randomness_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -286,7 +286,7 @@ def parameters.eta1_randomness_size.spec (rank : Std.Usize) : Prop :=
 /-- [hacspec_ml_kem::parameters::eta2_randomness_size::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 265:0-265:57 -/
 @[reducible]
-def parameters.eta2_randomness_size.pre (rank : Std.Usize) : Result Bool := do
+def parameters.eta2_randomness_size.pre (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -304,7 +304,7 @@ def parameters.eta2_randomness_size.spec (rank : Std.Usize) : Prop :=
     Source: 'ml-kem/src/parameters.rs', lines 271:0-271:57 -/
 @[reducible]
 def parameters.implicit_rejection_hash_input_size.pre
-  (rank : Std.Usize) : Result Bool := do
+  (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -325,7 +325,7 @@ def parameters.implicit_rejection_hash_input_size.spec (rank : Std.Usize)
 def compress.compress.pre
   (re : Array parameters.FieldElement 256#usize)
   (bits_per_compressed_coefficient : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   ok (bits_per_compressed_coefficient < 12#usize)
 
@@ -337,11 +337,39 @@ def compress.compress.spec (re : Array parameters.FieldElement 256#usize)
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 
+/-- [hacspec_ml_kem::compress::decompress::pre]:
+    Source: 'ml-kem/src/compress.rs', lines 23:0-25:96 -/
+@[reducible]
+def compress.decompress.pre
+  (re : Array parameters.FieldElement 256#usize)
+  (bits_per_compressed_coefficient : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let p ←
+    hax_lib.Bool.Insts.Hax_libPropToProp.to_prop
+      (bits_per_compressed_coefficient < 12#usize)
+  let p1 ←
+    hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
+      hax_lib.prop.Prop))
+      compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (re,
+      bits_per_compressed_coefficient)
+  hax_lib.prop.Prop.Insts.CoreOpsBitBitAndTProp.bitand
+    (core.convert.Into.Blanket (core.convert.From.Blanket hax_lib.prop.Prop)) p
+    p1
+
+def compress.decompress.spec (re : Array parameters.FieldElement 256#usize)
+  (bits_per_compressed_coefficient : Std.Usize) : Prop :=
+  (compress.decompress.pre re bits_per_compressed_coefficient).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  compress.decompress re bits_per_compressed_coefficient
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+
+
 /-- [hacspec_ml_kem::compress::compress_d::pre]:
     Source: 'ml-kem/src/compress.rs', lines 51:0-51:38 -/
 @[reducible]
 def compress.compress_d.pre
-  (fe : parameters.FieldElement) (to_bit_size : Std.Usize) : Result Bool := do
+  (fe : parameters.FieldElement) (to_bit_size : Std.Usize) : RustM Bool := do
   ok (to_bit_size < 12#usize)
 
 def compress.compress_d.spec (fe : parameters.FieldElement)
@@ -356,7 +384,7 @@ def compress.compress_d.spec (fe : parameters.FieldElement)
     Source: 'ml-kem/src/compress.rs', lines 83:0-83:72 -/
 @[reducible]
 def compress.decompress_d.pre
-  (fe : parameters.FieldElement) (to_bit_size : Std.Usize) : Result Bool := do
+  (fe : parameters.FieldElement) (to_bit_size : Std.Usize) : RustM Bool := do
   if to_bit_size < 12#usize
   then let i ← 1#u16 <<< to_bit_size
        ok (fe.val < i)
@@ -377,7 +405,7 @@ def ind_cca.keygen_internal.pre
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_PKE_SIZE : Std.Usize) (DK_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (d : Array Std.U8 32#usize)
   (z : Array Std.U8 32#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -424,7 +452,7 @@ def ind_cca.encaps_internal.pre
   (RANK : Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) (CT_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (ek : Slice Std.U8)
   (m : Array Std.U8 32#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -487,7 +515,7 @@ def ind_cca.decaps_internal.pre
   Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) {CT_SIZE : Std.Usize}
   (J_INPUT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (dk : Array Std.U8 DK_SIZE) (c : Array Std.U8 CT_SIZE) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -565,7 +593,7 @@ def ind_cca.generate_keypair.pre
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_SIZE : Std.Usize) (DK_PKE_SIZE :
   Std.Usize) (params : parameters.MlKemParams)
   (randomness : Array Std.U8 64#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -611,7 +639,7 @@ def
 def ind_cca.public_key_modulus_check.pre
   {EK_SIZE : Std.Usize} (params : parameters.MlKemParams)
   (ek : Array Std.U8 EK_SIZE) :
-  Result Bool
+  RustM Bool
   := do
   if params.rank <= 4#usize
   then
@@ -636,7 +664,7 @@ def ind_cca.encapsulate.pre
   (RANK : Std.Usize) {EK_SIZE : Std.Usize} (U_SIZE : Std.Usize) (V_SIZE :
   Std.Usize) (CT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (ek : Array Std.U8 EK_SIZE) (m : Array Std.U8 32#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -697,7 +725,7 @@ def ind_cca.decapsulate.pre
   Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) {CT_SIZE : Std.Usize}
   (J_INPUT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (dk : Array Std.U8 DK_SIZE) (c : Array Std.U8 CT_SIZE) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -774,7 +802,7 @@ def
 def ind_cca.ind_cca_unpack_generate_keypair.pre
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (randomness : Array Std.U8 64#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -814,7 +842,7 @@ def ind_cca.ind_cca_unpack_encapsulate.pre
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (m_A : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   (randomness : Array Std.U8 32#usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -878,7 +906,7 @@ def ind_cca.ind_cca_unpack_decapsulate.pre
   (secret_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (m_A : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -944,7 +972,7 @@ def
     Source: 'ml-kem/src/ind_cpa.rs', lines 18:0-18:42 -/
 @[reducible]
 def ind_cpa.sample_secret.pre
-  (eta : Std.Usize) (prf_input : Array Std.U8 33#usize) : Result Bool := do
+  (eta : Std.Usize) (prf_input : Array Std.U8 33#usize) : RustM Bool := do
   if eta = 2#usize
   then ok true
   else ok (eta = 3#usize)
@@ -962,7 +990,7 @@ def ind_cpa.sample_secret.spec (eta : Std.Usize)
 @[reducible]
 def ind_cpa.concat_byte.pre
   {N : Std.Usize} (N1 : Std.Usize) (a : Array Std.U8 N) (b : Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if N1 > 0#usize
   then let i ← N1 - 1#usize
@@ -983,7 +1011,7 @@ def ind_cpa.concat_byte.spec {N : Std.Usize} (N1 : Std.Usize)
 def ind_cpa.sample_vector_cbd.pre
   (RANK : Std.Usize) (eta : Std.Usize) (seed : Slice Std.U8)
   (domain_separator : Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len seed
   if i = 32#usize
@@ -1022,7 +1050,7 @@ def ind_cpa.sample_vector_cbd.spec (RANK : Std.Usize) (eta : Std.Usize)
 def ind_cpa.sample_vector_cbd_then_ntt.pre
   (RANK : Std.Usize) (eta : Std.Usize) (seed : Slice Std.U8)
   (domain_separator : Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len seed
   if i = 32#usize
@@ -1062,7 +1090,7 @@ def ind_cpa.sample_vector_cbd_then_ntt.spec (RANK : Std.Usize)
 def ind_cpa.generate_keypair_unpacked.pre
   (RANK : Std.Usize) (params : parameters.MlKemParams)
   (key_generation_seed : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1096,7 +1124,7 @@ def ind_cpa.generate_keypair_unpacked.spec (RANK : Std.Usize)
 def ind_cpa.generate_keypair.pre
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_PKE_SIZE : Std.Usize)
   (params : parameters.MlKemParams) (key_generation_seed : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1144,7 +1172,7 @@ def ind_cpa.encrypt.pre
   (RANK : Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) (CT_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (ek : Slice Std.U8)
   (message : Array Std.U8 32#usize) (randomness : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1222,7 +1250,7 @@ def ind_cpa.encrypt_unpacked.pre
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (A_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (message : Array Std.U8 32#usize) (randomness : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1293,7 +1321,7 @@ def
 def ind_cpa.decrypt.pre
   (RANK : Std.Usize) (params : parameters.MlKemParams) (dk : Slice Std.U8)
   (ciphertext : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1330,7 +1358,7 @@ def ind_cpa.decrypt_unpacked.pre
   {RANK : Std.Usize} (params : parameters.MlKemParams)
   (secret_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (ciphertext : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1362,7 +1390,7 @@ def ind_cpa.decrypt_unpacked.spec {RANK : Std.Usize}
 def invert_ntt.ntt_inverse_layer_n.pre
   {N : Std.Usize} (p : Array parameters.FieldElement N) (len : Std.Usize)
   (zetas : Slice parameters.FieldElement) :
-  Result Bool
+  RustM Bool
   := do
   if len >= 1#usize
   then
@@ -1391,7 +1419,7 @@ def invert_ntt.ntt_inverse_layer_n.spec {N : Std.Usize}
 @[reducible]
 def invert_ntt.ntt_inverse_layer.pre
   (p : Array parameters.FieldElement 256#usize) (layer : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if layer >= 1#usize
   then ok (layer <= 7#usize)
@@ -1410,7 +1438,7 @@ def invert_ntt.ntt_inverse_layer.spec
 @[reducible]
 def matrix.sample_matrix_A.pre
   (RANK : Std.Usize) (seed_for_A : Slice Std.U8) (transpose : Bool) :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len seed_for_A
   if i = 32#usize
@@ -1428,7 +1456,7 @@ def matrix.sample_matrix_A.spec (RANK : Std.Usize) (seed_for_A : Slice Std.U8)
 /-- [hacspec_ml_kem::ntt::get_zeta::pre]:
     Source: 'ml-kem/src/ntt.rs', lines 225:0-225:29 -/
 @[reducible]
-def ntt.get_zeta.pre (i : Std.Usize) : Result Bool := do
+def ntt.get_zeta.pre (i : Std.Usize) : RustM Bool := do
   ok (i < 128#usize)
 
 def ntt.get_zeta.spec (i : Std.Usize) : Prop :=
@@ -1444,7 +1472,7 @@ def ntt.get_zeta.spec (i : Std.Usize) : Prop :=
 def ntt.ntt_layer_n.pre
   {N : Std.Usize} (p : Array parameters.FieldElement N) (len : Std.Usize)
   (zetas : Slice parameters.FieldElement) :
-  Result Bool
+  RustM Bool
   := do
   if len >= 1#usize
   then
@@ -1472,7 +1500,7 @@ def ntt.ntt_layer_n.spec {N : Std.Usize} (p : Array parameters.FieldElement N)
 @[reducible]
 def ntt.ntt_layer.pre
   (p : Array parameters.FieldElement 256#usize) (layer : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if layer >= 1#usize
   then ok (layer <= 7#usize)
@@ -1493,7 +1521,7 @@ def ntt.ntt_multiply_n.pre
   {N : Std.Usize} (p1 : Array parameters.FieldElement N)
   (p2 : Array parameters.FieldElement N)
   (zetas : Slice parameters.FieldElement) :
-  Result Bool
+  RustM Bool
   := do
   let i ← core.slice.Slice.len zetas
   if i < 1024#usize
@@ -1516,7 +1544,7 @@ def ntt.ntt_multiply_n.spec {N : Std.Usize}
 def sampling.sample_ntt.pre
   (N : Std.Usize) (N8 : Std.Usize) {N12 : Std.Usize} (N96 : Std.Usize)
   (bytes : Array Std.U8 N12) :
-  Result Bool
+  RustM Bool
   := do
   let i ← serialize.MAX_BYTES / 96#usize
   if N <= i
@@ -1546,17 +1574,27 @@ def
     Source: 'ml-kem/src/sampling.rs', lines 96:0-96:52 -/
 @[reducible]
 def sampling.sum_coins.pre
-  (eta : Std.Usize) (coins : Slice Bool) : Result Bool := do
+  (eta : Std.Usize) (coins : Slice Bool) : RustM Bool := do
   if eta <= 4#usize
   then let i ← core.slice.Slice.len coins
        ok (i = eta)
   else ok false
 
+/-- [hacspec_ml_kem::sampling::sum_coins::post]:
+    Source: 'ml-kem/src/sampling.rs', lines 97:0-97:59 -/
+@[reducible]
+def sampling.sum_coins.post
+  (eta : Std.Usize) (coins : Slice Bool) (r : parameters.FieldElement) :
+  RustM Bool
+  := do
+  let i ← lift (UScalar.cast .U16 eta)
+  ok (r.val <= i)
+
 def sampling.sum_coins.spec (eta : Std.Usize) (coins : Slice Bool) : Prop :=
   (sampling.sum_coins.pre eta coins).holds →
   ⦃ ⌜ True ⌝ ⦄
   sampling.sum_coins eta coins
-  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+  ⦃ ⇓ res => ⌜ (sampling.sum_coins.post eta coins res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd::pre]:
@@ -1565,7 +1603,7 @@ def sampling.sum_coins.spec (eta : Std.Usize) (coins : Slice Bool) : Prop :=
 def sampling.sample_poly_cbd.pre
   {ETA64 : Std.Usize} (ETA512 : Std.Usize) (eta : Std.Usize)
   (bytes : Array Std.U8 ETA64) :
-  Result Bool
+  RustM Bool
   := do
   if eta <= 4#usize
   then
@@ -1588,7 +1626,7 @@ def sampling.sample_poly_cbd.spec {ETA64 : Std.Usize} (ETA512 : Std.Usize)
     Source: 'ml-kem/src/serialize.rs', lines 27:0-27:46 -/
 @[reducible]
 def serialize.bytes_to_bits.pre
-  {N : Std.Usize} (N8 : Std.Usize) (bytes : Array Std.U8 N) : Result Bool := do
+  {N : Std.Usize} (N8 : Std.Usize) (bytes : Array Std.U8 N) : RustM Bool := do
   if N < 16384#usize
   then let i ← N * 8#usize
        ok (N8 = i)
@@ -1606,7 +1644,7 @@ def serialize.bytes_to_bits.spec {N : Std.Usize} (N8 : Std.Usize)
     Source: 'ml-kem/src/serialize.rs', lines 53:0-53:46 -/
 @[reducible]
 def serialize.bits_to_bytes.pre
-  (N : Std.Usize) {N8 : Std.Usize} (bv : Array Bool N8) : Result Bool := do
+  (N : Std.Usize) {N8 : Std.Usize} (bv : Array Bool N8) : RustM Bool := do
   if N < 16384#usize
   then let i ← N * 8#usize
        ok (N8 = i)
@@ -1625,7 +1663,7 @@ def serialize.bits_to_bytes.spec (N : Std.Usize) {N8 : Std.Usize}
 @[reducible]
 def serialize.bitvector_from_bounded_ints.pre
   {N : Std.Usize} (Nd : Std.Usize) (input : Array Std.U16 N) (d : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if N < 16384#usize
   then
@@ -1649,7 +1687,7 @@ def serialize.bitvector_from_bounded_ints.spec {N : Std.Usize} (Nd : Std.Usize)
 def serialize.byte_encode.pre
   (D32 : Std.Usize) (D256 : Std.Usize)
   (p : Array parameters.FieldElement 256#usize) (d : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if d <= parameters.BITS_PER_COEFFICIENT
   then
@@ -1673,7 +1711,7 @@ def serialize.byte_encode.spec (D32 : Std.Usize) (D256 : Std.Usize)
 @[reducible]
 def serialize.bitvector_to_bounded_ints.pre
   (N : Std.Usize) {Nd : Std.Usize} (input : Array Bool Nd) (d : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if N < 16384#usize
   then
@@ -1683,12 +1721,26 @@ def serialize.bitvector_to_bounded_ints.pre
     else ok false
   else ok false
 
+/-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::post]:
+    Source: 'ml-kem/src/serialize.rs', lines 156:0-157:83 -/
+@[reducible]
+def serialize.bitvector_to_bounded_ints.post
+  {N : Std.Usize} {Nd : Std.Usize} (input : Array Bool Nd) (d : Std.Usize)
+  (result : Array Std.U16 N) :
+  RustM hax_lib.prop.Prop
+  := do
+  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
+    hax_lib.prop.Prop))
+    (serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp N Nd)
+    (result, d)
+
 def serialize.bitvector_to_bounded_ints.spec (N : Std.Usize) {Nd : Std.Usize}
   (input : Array Bool Nd) (d : Std.Usize) : Prop :=
   (serialize.bitvector_to_bounded_ints.pre N input d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.bitvector_to_bounded_ints N input d
-  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+  ⦃ ⇓ res =>
+  ⌜ (serialize.bitvector_to_bounded_ints.post N input d res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode_generic::pre]:
@@ -1697,7 +1749,7 @@ def serialize.bitvector_to_bounded_ints.spec (N : Std.Usize) {Nd : Std.Usize}
 def serialize.byte_decode_generic.pre
   (N : Std.Usize) (N8 : Std.Usize) {Nd : Std.Usize} (Nd8 : Std.Usize)
   (b : Array Std.U8 Nd) (d : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if d > 0#usize
   then
@@ -1723,6 +1775,19 @@ def serialize.byte_decode_generic.pre
     else ok false
   else ok false
 
+/-- [hacspec_ml_kem::serialize::byte_decode_generic::post]:
+    Source: 'ml-kem/src/serialize.rs', lines 195:0-196:84 -/
+@[reducible]
+def serialize.byte_decode_generic.post
+  (N : Std.Usize) {N8 : Std.Usize} {Nd : Std.Usize} (Nd8 : Std.Usize)
+  (b : Array Std.U8 Nd) (d : Std.Usize) (result : Array Std.U16 N8) :
+  RustM hax_lib.prop.Prop
+  := do
+  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
+    hax_lib.prop.Prop))
+    (serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp N N8
+    Nd Nd8) (result, d)
+
 def
   serialize.byte_decode_generic.spec (N : Std.Usize) (N8 : Std.Usize) {Nd :
                                     Std.Usize} (Nd8 : Std.Usize)
@@ -1730,7 +1795,8 @@ def
   (serialize.byte_decode_generic.pre N N8 Nd8 b d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.byte_decode_generic N N8 Nd8 b d
-  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+  ⦃ ⇓ res =>
+  ⌜ (serialize.byte_decode_generic.post N N8 Nd8 b d res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode::pre]:
@@ -1738,7 +1804,7 @@ def
 @[reducible]
 def serialize.byte_decode.pre
   {D32 : Std.Usize} (D256 : Std.Usize) (b : Array Std.U8 D32) (d : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if d > 0#usize
   then
@@ -1757,12 +1823,25 @@ def serialize.byte_decode.pre
     else ok false
   else ok false
 
+/-- [hacspec_ml_kem::serialize::byte_decode::post]:
+    Source: 'ml-kem/src/serialize.rs', lines 210:0-210:127 -/
+@[reducible]
+def serialize.byte_decode.post
+  {D32 : Std.Usize} (D256 : Std.Usize) (b : Array Std.U8 D32) (d : Std.Usize)
+  (result : Array parameters.FieldElement 256#usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
+    hax_lib.prop.Prop))
+    (serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp D32
+    D256) (result, d)
+
 def serialize.byte_decode.spec {D32 : Std.Usize} (D256 : Std.Usize)
   (b : Array Std.U8 D32) (d : Std.Usize) : Prop :=
   (serialize.byte_decode.pre D256 b d).holds →
   ⦃ ⌜ True ⌝ ⦄
   serialize.byte_decode D256 b d
-  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+  ⦃ ⇓ res => ⌜ (serialize.byte_decode.post D256 b d res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into::pre]:
@@ -1772,7 +1851,7 @@ def serialize.serialize_secret_key_into.pre
   {RANK : Std.Usize}
   (vector : Array (Array parameters.FieldElement 256#usize) RANK)
   (out : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1795,7 +1874,7 @@ def serialize.serialize_secret_key_into.spec {RANK : Std.Usize}
     Source: 'ml-kem/src/serialize.rs', lines 237:0-237:81 -/
 @[reducible]
 def serialize.vector_decode_12.pre
-  (RANK : Std.Usize) (encoded : Slice Std.U8) : Result Bool := do
+  (RANK : Std.Usize) (encoded : Slice Std.U8) : RustM Bool := do
   if RANK <= 4#usize
   then
     let i ← core.slice.Slice.len encoded
@@ -1818,7 +1897,7 @@ def serialize.vector_decode_12.spec (RANK : Std.Usize) (encoded : Slice Std.U8)
 def serialize.byte_encode_into.pre
   (p : Array parameters.FieldElement 256#usize) (d : Std.Usize)
   (out : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if d = 1#usize
   then let i ← core.slice.Slice.len out
@@ -1868,7 +1947,7 @@ def serialize.byte_encode_into.spec
     Source: 'ml-kem/src/serialize.rs', lines 263:0-263:104 -/
 @[reducible]
 def serialize.byte_decode_dyn.pre
-  (b : Slice Std.U8) (d : Std.Usize) : Result Bool := do
+  (b : Slice Std.U8) (d : Std.Usize) : RustM Bool := do
   if d = 1#usize
   then let i ← core.slice.Slice.len b
        let i1 ← 32#usize * d
@@ -1916,7 +1995,7 @@ def serialize.byte_decode_dyn.spec (b : Slice Std.U8) (d : Std.Usize) : Prop :=
 def serialize.compress_then_serialize_u_into.pre
   {RANK : Std.Usize} (u : Array (Array parameters.FieldElement 256#usize) RANK)
   (du : Std.Usize) (out : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1953,7 +2032,7 @@ def serialize.compress_then_serialize_u_into.spec {RANK : Std.Usize}
 def serialize.compress_then_serialize_u.pre
   {RANK : Std.Usize} (U_SIZE : Std.Usize)
   (u : Array (Array parameters.FieldElement 256#usize) RANK) (du : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -1990,7 +2069,7 @@ def
 def serialize.compress_then_serialize_v.pre
   (V_SIZE : Std.Usize) (v : Array parameters.FieldElement 256#usize)
   (dv : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if dv = 4#usize
   then
@@ -2018,7 +2097,7 @@ def serialize.compress_then_serialize_v.spec (V_SIZE : Std.Usize)
 @[reducible]
 def serialize.deserialize_then_decompress_u.pre
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -2053,7 +2132,7 @@ def serialize.deserialize_then_decompress_u.spec (RANK : Std.Usize)
 @[reducible]
 def serialize.deserialize_then_decompress_u_then_ntt.pre
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -2088,7 +2167,7 @@ def serialize.deserialize_then_decompress_u_then_ntt.spec (RANK : Std.Usize)
     Source: 'ml-kem/src/serialize.rs', lines 400:0-400:105 -/
 @[reducible]
 def serialize.deserialize_then_decompress_v.pre
-  (serialized : Slice Std.U8) (dv : Std.Usize) : Result Bool := do
+  (serialized : Slice Std.U8) (dv : Std.Usize) : RustM Bool := do
   if dv = 4#usize
   then
     let i ← core.slice.Slice.len serialized
@@ -2116,7 +2195,7 @@ def serialize.deserialize_then_decompress_v.spec (serialized : Slice Std.U8)
     Source: 'ml-kem/src/serialize.rs', lines 409:0-409:81 -/
 @[reducible]
 def serialize.deserialize_ring_elements_reduced.pre
-  (RANK : Std.Usize) (encoded : Slice Std.U8) : Result Bool := do
+  (RANK : Std.Usize) (encoded : Slice Std.U8) : RustM Bool := do
   if RANK <= 4#usize
   then
     let i ← core.slice.Slice.len encoded
@@ -2139,7 +2218,7 @@ def serialize.deserialize_ring_elements_reduced.spec (RANK : Std.Usize)
 def serialize.serialize_secret_key.pre
   {RANK : Std.Usize} (T_SIZE : Std.Usize)
   (vector : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -2163,7 +2242,7 @@ def serialize.serialize_public_key.pre
   {RANK : Std.Usize} (EK_SIZE : Std.Usize)
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (seed_for_A : Slice Std.U8) :
-  Result Bool
+  RustM Bool
   := do
   if RANK <= 4#usize
   then
@@ -2189,7 +2268,7 @@ def
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::new::pre]:
     Source: 'ml-kem/src/parameters.rs', lines 321:4-321:45 -/
 @[reducible]
-def parameters.FieldElement.new.pre (val : Std.U16) : Result Bool := do
+def parameters.FieldElement.new.pre (val : Std.U16) : RustM Bool := do
   ok (val < parameters.FIELD_MODULUS)
 
 def parameters.FieldElement.new.spec (val : Std.U16) : Prop :=

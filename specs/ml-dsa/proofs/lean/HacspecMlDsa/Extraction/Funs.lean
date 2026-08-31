@@ -6,7 +6,7 @@ import HacspecMlDsa.Extraction.Types
 import HacspecMlDsa.Extraction.FunsExternal
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -29,7 +29,7 @@ namespace hacspec_ml_dsa
 
 /-- [hacspec_ml_dsa::arithmetic::mod_q]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 8:0-15:1 -/
-def arithmetic.mod_q (a : Std.I64) : Result Std.I32 := do
+def arithmetic.mod_q (a : Std.I64) : RustM Std.I32 := do
   let i ← lift (IScalar.cast .I64 parameters.Q)
   let i1 ← a % i
   let r ← lift (IScalar.cast .I32 i1)
@@ -39,7 +39,7 @@ def arithmetic.mod_q (a : Std.I64) : Result Std.I32 := do
 
 /-- [hacspec_ml_dsa::arithmetic::mod_pm]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 21:0-31:1 -/
-def arithmetic.mod_pm (a : Std.I32) (m : Std.I32) : Result Std.I32 := do
+def arithmetic.mod_pm (a : Std.I32) (m : Std.I32) : RustM Std.I32 := do
   let a64 ← lift (IScalar.cast .I64 a)
   let m64 ← lift (IScalar.cast .I64 m)
   let i ← a64 % m64
@@ -57,7 +57,7 @@ def arithmetic.mod_pm (a : Std.I32) (m : Std.I32) : Result Std.I32 := do
 
 /-- [hacspec_ml_dsa::arithmetic::power2round]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 37:0-44:1 -/
-def arithmetic.power2round (r : Std.I32) : Result (Std.I32 × Std.I32) := do
+def arithmetic.power2round (r : Std.I32) : RustM (Std.I32 × Std.I32) := do
   let r_plus ← r % parameters.Q
   let r_plus1 ← if r_plus < 0#i32
                   then r_plus + parameters.Q
@@ -71,7 +71,7 @@ def arithmetic.power2round (r : Std.I32) : Result (Std.I32 × Std.I32) := do
 /-- [hacspec_ml_dsa::arithmetic::decompose]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 53:0-64:1 -/
 def arithmetic.decompose
-  (r : Std.I32) (gamma2 : Std.I32) : Result (Std.I32 × Std.I32) := do
+  (r : Std.I32) (gamma2 : Std.I32) : RustM (Std.I32 × Std.I32) := do
   let r_plus ← r % parameters.Q
   let r_plus1 ← if r_plus < 0#i32
                   then r_plus + parameters.Q
@@ -88,21 +88,20 @@ def arithmetic.decompose
 
 /-- [hacspec_ml_dsa::arithmetic::high_bits]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 70:0-72:1 -/
-def arithmetic.high_bits
-  (r : Std.I32) (gamma2 : Std.I32) : Result Std.I32 := do
+def arithmetic.high_bits (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let (i, _) ← arithmetic.decompose r gamma2
   ok i
 
 /-- [hacspec_ml_dsa::arithmetic::low_bits]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 78:0-80:1 -/
-def arithmetic.low_bits (r : Std.I32) (gamma2 : Std.I32) : Result Std.I32 := do
+def arithmetic.low_bits (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let (_, i) ← arithmetic.decompose r gamma2
   ok i
 
 /-- [hacspec_ml_dsa::arithmetic::make_hint]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 86:0-90:1 -/
 def arithmetic.make_hint
-  (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32) : Result Bool := do
+  (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   let r1 ← arithmetic.high_bits r gamma2
   let i ← lift (IScalar.cast .I64 r)
   let i1 ← lift (IScalar.cast .I64 z)
@@ -114,7 +113,7 @@ def arithmetic.make_hint
 /-- [hacspec_ml_dsa::arithmetic::use_hint]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 97:0-107:1 -/
 def arithmetic.use_hint
-  (hint : Bool) (r : Std.I32) (gamma2 : Std.I32) : Result Std.I32 := do
+  (hint : Bool) (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let i ← parameters.Q - 1#i32
   let i1 ← 2#i32 * gamma2
   let m ← i / i1
@@ -135,7 +134,7 @@ def arithmetic.use_hint
 
 /-- [hacspec_ml_dsa::arithmetic::coeff_norm]:
     Source: 'ml-dsa/src/arithmetic.rs', lines 112:0-119:1 -/
-def arithmetic.coeff_norm (a : Std.I32) : Result Std.I32 := do
+def arithmetic.coeff_norm (a : Std.I32) : RustM Std.I32 := do
   let i ← lift (IScalar.cast .I64 a)
   let i1 ← lift (IScalar.cast .I64 parameters.Q)
   let i2 ← i % i1
@@ -149,12 +148,28 @@ def arithmetic.coeff_norm (a : Std.I32) : Result Std.I32 := do
   then parameters.Q - a_mod
   else ok a_mod
 
+/-- [hacspec_ml_dsa::parameters::bitlen::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::parameters::bitlen::closure<'_0>}::call_once]:
+    Source: 'ml-dsa/src/parameters.rs', lines 152:33-152:55 -/
+def
+  parameters.bitlen.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : parameters.bitlen.closure) (tupled_args : Std.Usize) : RustM Bool := do
+  ok (c <= tupled_args)
+
+/-- Trait implementation: [hacspec_ml_dsa::parameters::bitlen::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::parameters::bitlen::closure<'_0>}]
+    Source: 'ml-dsa/src/parameters.rs', lines 152:33-152:55 -/
+@[reducible]
+def parameters.bitlen.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
+  core.ops.function.FnOnce parameters.bitlen.closure Std.Usize Bool := {
+  call_once :=
+    parameters.bitlen.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::parameters::bitlen]: loop body 0:
     Source: 'ml-dsa/src/parameters.rs', lines 150:4-157:5 -/
 @[rust_loop_body]
 def parameters.bitlen_loop.body
   (iter : core.ops.range.Range Std.Usize) (bits : Std.Usize) (v : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize ×
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize ×
     Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
@@ -163,6 +178,9 @@ def parameters.bitlen_loop.body
   match o with
   | core.option.Option.None => ok (done bits)
   | core.option.Option.Some _ =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      parameters.bitlen.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool bits
     if v > 0#usize
     then
       let bits1 ← bits + 1#usize
@@ -175,7 +193,7 @@ def parameters.bitlen_loop.body
 @[rust_loop]
 def parameters.bitlen_loop
   (iter : core.ops.range.Range Std.Usize) (bits : Std.Usize) (v : Std.Usize) :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun (iter1, bits1, v1) => parameters.bitlen_loop.body iter1 bits1 v1)
@@ -184,8 +202,49 @@ def parameters.bitlen_loop
 /-- [hacspec_ml_dsa::parameters::bitlen]:
     Source: 'ml-dsa/src/parameters.rs', lines 147:0-159:1 -/
 @[reducible]
-def parameters.bitlen (n : Std.Usize) : Result Std.Usize := do
+def parameters.bitlen (n : Std.Usize) : RustM Std.Usize := do
   parameters.bitlen_loop { start := 0#usize, «end» := 64#usize } 0#usize n
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_pack::closure#1<'_0, BYTES>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 25:37-25:61 -/
+def
+  encoding.simple_bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {BYTES : Std.Usize} (c : encoding.simple_bit_pack.closure_1 BYTES)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= c)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::simple_bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_pack::closure#1<'_0, BYTES>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 25:37-25:61 -/
+@[reducible]
+def
+  encoding.simple_bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (BYTES : Std.Usize) : core.ops.function.FnOnce
+  (encoding.simple_bit_pack.closure_1 BYTES) Std.Usize Bool := {
+  call_once :=
+    encoding.simple_bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_pack::closure<BYTES>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 21:33-21:57 -/
+def
+  encoding.simple_bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {BYTES : Std.Usize} (c : encoding.simple_bit_pack.closure BYTES)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 256#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::simple_bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_pack::closure<BYTES>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 21:33-21:57 -/
+@[reducible]
+def encoding.simple_bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (BYTES : Std.Usize) : core.ops.function.FnOnce
+  (encoding.simple_bit_pack.closure BYTES) Std.Usize Bool := {
+  call_once :=
+    encoding.simple_bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_dsa::encoding::simple_bit_pack]: loop body 1:
     Source: 'ml-dsa/src/encoding.rs', lines 23:8-30:9 -/
@@ -193,8 +252,8 @@ def parameters.bitlen (n : Std.Usize) : Result Std.Usize := do
 def encoding.simple_bit_pack_loop0_loop0.body
   {BYTES : Std.Usize} (bits : Std.Usize) (i : Std.Usize) (val : Std.U32)
   (iter : core.ops.range.Range Std.Usize) (out : Array Std.U8 BYTES) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
-    BYTES)) (Array Std.U8 BYTES))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8 BYTES))
+    (Array Std.U8 BYTES))
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -202,6 +261,10 @@ def encoding.simple_bit_pack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some bit =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.simple_bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      BYTES) bits
     let i1 ← i * bits
     let pos ← i1 + bit
     let i2 ← val >>> bit
@@ -224,7 +287,7 @@ def encoding.simple_bit_pack_loop0_loop0
   {BYTES : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (bits : Std.Usize) (out : Array Std.U8 BYTES) (i : Std.Usize) (val : Std.U32)
   :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   loop
     (fun (iter1, out1) => encoding.simple_bit_pack_loop0_loop0.body bits i val
@@ -237,8 +300,8 @@ def encoding.simple_bit_pack_loop0_loop0
 def encoding.simple_bit_pack_loop0.body
   {BYTES : Std.Usize} (w : Array Std.I32 256#usize) (bits : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (out : Array Std.U8 BYTES) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
-    BYTES)) (Array Std.U8 BYTES))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8 BYTES))
+    (Array Std.U8 BYTES))
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -246,6 +309,10 @@ def encoding.simple_bit_pack_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.simple_bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      BYTES) ()
     let i1 ← Array.index_usize w i
     let val ← lift (IScalar.hcast .U32 i1)
     let out1 ←
@@ -259,7 +326,7 @@ def encoding.simple_bit_pack_loop0.body
 def encoding.simple_bit_pack_loop0
   {BYTES : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (w : Array Std.I32 256#usize) (bits : Std.Usize) (out : Array Std.U8 BYTES) :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   loop
     (fun (iter1, out1) => encoding.simple_bit_pack_loop0.body w bits iter1
@@ -270,12 +337,52 @@ def encoding.simple_bit_pack_loop0
     Source: 'ml-dsa/src/encoding.rs', lines 16:0-33:1 -/
 def encoding.simple_bit_pack
   (BYTES : Std.Usize) (w : Array Std.I32 256#usize) (b : Std.Usize) :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   let bits ← parameters.bitlen b
   let out := Array.repeat BYTES 0#u8
   encoding.simple_bit_pack_loop0 { start := 0#usize, «end» := 256#usize } w
     bits out
+
+/-- [hacspec_ml_dsa::encoding::bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_pack::closure#1<'_0, BYTES>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 50:37-50:61 -/
+def
+  encoding.bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {BYTES : Std.Usize} (c : encoding.bit_pack.closure_1 BYTES)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= c)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_pack::closure#1<'_0, BYTES>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 50:37-50:61 -/
+@[reducible]
+def encoding.bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (BYTES : Std.Usize) : core.ops.function.FnOnce (encoding.bit_pack.closure_1
+  BYTES) Std.Usize Bool := {
+  call_once :=
+    encoding.bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_pack::closure<BYTES>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 46:33-46:57 -/
+def
+  encoding.bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {BYTES : Std.Usize} (c : encoding.bit_pack.closure BYTES)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 256#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::bit_pack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_pack::closure<BYTES>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 46:33-46:57 -/
+@[reducible]
+def encoding.bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (BYTES
+  : Std.Usize) : core.ops.function.FnOnce (encoding.bit_pack.closure BYTES)
+  Std.Usize Bool := {
+  call_once :=
+    encoding.bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_dsa::encoding::bit_pack]: loop body 1:
     Source: 'ml-dsa/src/encoding.rs', lines 48:8-55:9 -/
@@ -283,8 +390,8 @@ def encoding.simple_bit_pack
 def encoding.bit_pack_loop0_loop0.body
   {BYTES : Std.Usize} (bits : Std.Usize) (i : Std.Usize) (val : Std.U32)
   (iter : core.ops.range.Range Std.Usize) (out : Array Std.U8 BYTES) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
-    BYTES)) (Array Std.U8 BYTES))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8 BYTES))
+    (Array Std.U8 BYTES))
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -292,6 +399,10 @@ def encoding.bit_pack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some bit =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      BYTES) bits
     let i1 ← i * bits
     let pos ← i1 + bit
     let i2 ← val >>> bit
@@ -314,7 +425,7 @@ def encoding.bit_pack_loop0_loop0
   {BYTES : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (bits : Std.Usize) (out : Array Std.U8 BYTES) (i : Std.Usize) (val : Std.U32)
   :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   loop
     (fun (iter1, out1) => encoding.bit_pack_loop0_loop0.body bits i val iter1
@@ -328,8 +439,8 @@ def encoding.bit_pack_loop0.body
   {BYTES : Std.Usize} (w : Array Std.I32 256#usize) (b : Std.Usize)
   (bits : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   (out : Array Std.U8 BYTES) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
-    BYTES)) (Array Std.U8 BYTES))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8 BYTES))
+    (Array Std.U8 BYTES))
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -337,6 +448,10 @@ def encoding.bit_pack_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      BYTES) ()
     let i1 ← lift (UScalar.hcast .I64 b)
     let i2 ← Array.index_usize w i
     let i3 ← lift (IScalar.cast .I64 i2)
@@ -354,7 +469,7 @@ def encoding.bit_pack_loop0
   {BYTES : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (w : Array Std.I32 256#usize) (b : Std.Usize) (bits : Std.Usize)
   (out : Array Std.U8 BYTES) :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   loop
     (fun (iter1, out1) => encoding.bit_pack_loop0.body w b bits iter1 out1)
@@ -365,7 +480,7 @@ def encoding.bit_pack_loop0
 def encoding.bit_pack
   (BYTES : Std.Usize) (w : Array Std.I32 256#usize) (a : Std.Usize)
   (b : Std.Usize) :
-  Result (Array Std.U8 BYTES)
+  RustM (Array Std.U8 BYTES)
   := do
   let i ← a + b
   let bits ← parameters.bitlen i
@@ -379,13 +494,53 @@ def encoding.bit_pack
 def parameters.ZERO_POLY : Array Std.I32 256#usize :=
   Array.repeat 256#usize 0#i32
 
+/-- [hacspec_ml_dsa::encoding::simple_bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_unpack::closure#1}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 73:37-73:64 -/
+def
+  encoding.simple_bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : encoding.simple_bit_unpack.closure_1) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 24#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::simple_bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_unpack::closure#1}]
+    Source: 'ml-dsa/src/encoding.rs', lines 73:37-73:64 -/
+@[reducible]
+def
+  encoding.simple_bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  : core.ops.function.FnOnce encoding.simple_bit_unpack.closure_1 Std.Usize
+  Bool := {
+  call_once :=
+    encoding.simple_bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_unpack::closure}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 69:33-69:57 -/
+def
+  encoding.simple_bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : encoding.simple_bit_unpack.closure) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 256#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::simple_bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::simple_bit_unpack::closure}]
+    Source: 'ml-dsa/src/encoding.rs', lines 69:33-69:57 -/
+@[reducible]
+def
+  encoding.simple_bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  : core.ops.function.FnOnce encoding.simple_bit_unpack.closure Std.Usize Bool
+  := {
+  call_once :=
+    encoding.simple_bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::encoding::simple_bit_unpack]: loop body 1:
     Source: 'ml-dsa/src/encoding.rs', lines 71:8-80:9 -/
 @[rust_loop_body]
 def encoding.simple_bit_unpack_loop0_loop0.body
   (v : Slice Std.U8) (bits : Std.Usize) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (val : Std.U32) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U32) Std.U32)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -393,6 +548,10 @@ def encoding.simple_bit_unpack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done val)
   | core.option.Option.Some bit =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      encoding.simple_bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      ()
     if bit < bits
     then
       let i1 ← i * bits
@@ -420,7 +579,7 @@ def encoding.simple_bit_unpack_loop0_loop0.body
 def encoding.simple_bit_unpack_loop0_loop0
   (iter : core.ops.range.Range Std.Usize) (v : Slice Std.U8) (bits : Std.Usize)
   (i : Std.Usize) (val : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, val1) => encoding.simple_bit_unpack_loop0_loop0.body v bits i
@@ -433,7 +592,7 @@ def encoding.simple_bit_unpack_loop0_loop0
 def encoding.simple_bit_unpack_loop0.body
   (v : Slice Std.U8) (bits : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   (w : Array Std.I32 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize)) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -442,6 +601,10 @@ def encoding.simple_bit_unpack_loop0.body
   match o with
   | core.option.Option.None => ok (done w)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      encoding.simple_bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      ()
     let val ←
       encoding.simple_bit_unpack_loop0_loop0
         { start := 0#usize, «end» := 24#usize } v bits i 0#u32
@@ -455,7 +618,7 @@ def encoding.simple_bit_unpack_loop0.body
 def encoding.simple_bit_unpack_loop0
   (iter : core.ops.range.Range Std.Usize) (v : Slice Std.U8) (bits : Std.Usize)
   (w : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, w1) => encoding.simple_bit_unpack_loop0.body v bits iter1 w1)
@@ -464,10 +627,46 @@ def encoding.simple_bit_unpack_loop0
 /-- [hacspec_ml_dsa::encoding::simple_bit_unpack]:
     Source: 'ml-dsa/src/encoding.rs', lines 64:0-84:1 -/
 def encoding.simple_bit_unpack
-  (v : Slice Std.U8) (b : Std.Usize) : Result (Array Std.I32 256#usize) := do
+  (v : Slice Std.U8) (b : Std.Usize) : RustM (Array Std.I32 256#usize) := do
   let bits ← parameters.bitlen b
   encoding.simple_bit_unpack_loop0 { start := 0#usize, «end» := 256#usize } v
     bits parameters.ZERO_POLY
+
+/-- [hacspec_ml_dsa::encoding::bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_unpack::closure#1}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 101:37-101:64 -/
+def
+  encoding.bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : encoding.bit_unpack.closure_1) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 24#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_unpack::closure#1}]
+    Source: 'ml-dsa/src/encoding.rs', lines 101:37-101:64 -/
+@[reducible]
+def encoding.bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
+  core.ops.function.FnOnce encoding.bit_unpack.closure_1 Std.Usize Bool := {
+  call_once :=
+    encoding.bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_unpack::closure}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 97:33-97:57 -/
+def
+  encoding.bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : encoding.bit_unpack.closure) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= 256#usize)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::bit_unpack::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::bit_unpack::closure}]
+    Source: 'ml-dsa/src/encoding.rs', lines 97:33-97:57 -/
+@[reducible]
+def encoding.bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
+  core.ops.function.FnOnce encoding.bit_unpack.closure Std.Usize Bool := {
+  call_once :=
+    encoding.bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_dsa::encoding::bit_unpack]: loop body 1:
     Source: 'ml-dsa/src/encoding.rs', lines 99:8-108:9 -/
@@ -475,7 +674,7 @@ def encoding.simple_bit_unpack
 def encoding.bit_unpack_loop0_loop0.body
   (v : Slice Std.U8) (bits : Std.Usize) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (val : Std.U32) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U32) Std.U32)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -483,6 +682,10 @@ def encoding.bit_unpack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done val)
   | core.option.Option.Some bit =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      encoding.bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      ()
     if bit < bits
     then
       let i1 ← i * bits
@@ -510,7 +713,7 @@ def encoding.bit_unpack_loop0_loop0.body
 def encoding.bit_unpack_loop0_loop0
   (iter : core.ops.range.Range Std.Usize) (v : Slice Std.U8) (bits : Std.Usize)
   (i : Std.Usize) (val : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, val1) => encoding.bit_unpack_loop0_loop0.body v bits i iter1
@@ -523,7 +726,7 @@ def encoding.bit_unpack_loop0_loop0
 def encoding.bit_unpack_loop0.body
   (v : Slice Std.U8) (b : Std.Usize) (bits : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (w : Array Std.I32 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize)) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -532,6 +735,9 @@ def encoding.bit_unpack_loop0.body
   match o with
   | core.option.Option.None => ok (done w)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      encoding.bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool ()
     let val ←
       encoding.bit_unpack_loop0_loop0 { start := 0#usize, «end» := 24#usize }
         v bits i 0#u32
@@ -548,7 +754,7 @@ def encoding.bit_unpack_loop0.body
 def encoding.bit_unpack_loop0
   (iter : core.ops.range.Range Std.Usize) (v : Slice Std.U8) (b : Std.Usize)
   (bits : Std.Usize) (w : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, w1) => encoding.bit_unpack_loop0.body v b bits iter1 w1)
@@ -558,7 +764,7 @@ def encoding.bit_unpack_loop0
     Source: 'ml-dsa/src/encoding.rs', lines 92:0-112:1 -/
 def encoding.bit_unpack
   (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let i ← a + b
   let bits ← parameters.bitlen i
@@ -572,7 +778,7 @@ def encoding.hint_bit_pack_loop0_loop0.body
   {K : Std.Usize} {HINT_BYTES : Std.Usize} (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) (i : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   (y : Array Std.U8 HINT_BYTES) (index : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     HINT_BYTES) × Std.Usize) ((Array Std.U8 HINT_BYTES) × Std.Usize))
   := do
   let (o, iter1) ←
@@ -602,7 +808,7 @@ def encoding.hint_bit_pack_loop0_loop0
   (iter : core.ops.range.Range Std.Usize) (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) (y : Array Std.U8 HINT_BYTES) (index : Std.Usize)
   (i : Std.Usize) :
-  Result ((Array Std.U8 HINT_BYTES) × Std.Usize)
+  RustM ((Array Std.U8 HINT_BYTES) × Std.Usize)
   := do
   loop
     (fun (iter1, y1, index1) => encoding.hint_bit_pack_loop0_loop0.body h omega
@@ -616,7 +822,7 @@ def encoding.hint_bit_pack_loop0.body
   {K : Std.Usize} {HINT_BYTES : Std.Usize} (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   (y : Array Std.U8 HINT_BYTES) (index : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     HINT_BYTES) × Std.Usize) (Array Std.U8 HINT_BYTES))
   := do
   let (o, iter1) ←
@@ -640,7 +846,7 @@ def encoding.hint_bit_pack_loop0
   {K : Std.Usize} {HINT_BYTES : Std.Usize}
   (iter : core.ops.range.Range Std.Usize) (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) (y : Array Std.U8 HINT_BYTES) (index : Std.Usize) :
-  Result (Array Std.U8 HINT_BYTES)
+  RustM (Array Std.U8 HINT_BYTES)
   := do
   loop
     (fun (iter1, y1, index1) => encoding.hint_bit_pack_loop0.body h omega iter1
@@ -652,20 +858,20 @@ def encoding.hint_bit_pack_loop0
 def encoding.hint_bit_pack
   {K : Std.Usize} (HINT_BYTES : Std.Usize) (h : Array (Array Bool 256#usize) K)
   (omega : Std.Usize) :
-  Result (Array Std.U8 HINT_BYTES)
+  RustM (Array Std.U8 HINT_BYTES)
   := do
   let y := Array.repeat HINT_BYTES 0#u8
   encoding.hint_bit_pack_loop0 { start := 0#usize, «end» := K } h omega y
     0#usize
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop body 1:
-    Source: 'ml-dsa/src/encoding.rs', lines 158:16-167:17 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 163:16-172:17 -/
 @[rust_loop_body]
 def encoding.hint_bit_unpack_loop0_loop0.body
-  {K : Std.Usize} (y : Slice Std.U8) (i : Std.Usize) (end1 : Std.Usize)
+  {K : Std.Usize} (y : Slice Std.U8) (i : Std.Usize) (end_index : Std.Usize)
   (first : Std.Usize) (iter : core.ops.range.Range Std.I32)
   (h : Array (Array Bool 256#usize) K) (index : Std.Usize) (valid : Bool) :
-  Result (ControlFlow ((core.ops.range.Range Std.I32) × (Array (Array Bool
+  RustM (ControlFlow ((core.ops.range.Range Std.I32) × (Array (Array Bool
     256#usize) K) × Std.Usize × Bool) ((Array (Array Bool 256#usize) K) ×
     Std.Usize × Bool))
   := do
@@ -677,7 +883,7 @@ def encoding.hint_bit_unpack_loop0_loop0.body
   | core.option.Option.Some _ =>
     if valid
     then
-      if index < end1
+      if index < end_index
       then
         if index > first
         then
@@ -688,6 +894,7 @@ def encoding.hint_bit_unpack_loop0_loop0.body
           then ok (cont (iter1, h, index, false))
           else
             let i4 ← lift (UScalar.cast .Usize i3)
+            let _ ← Array.index_usize h i
             let (a, index_mut_back) ← Array.index_mut_usize h i
             let a1 ← Array.update a i4 true
             let index1 ← index + 1#usize
@@ -696,6 +903,7 @@ def encoding.hint_bit_unpack_loop0_loop0.body
         else
           let i1 ← Slice.index_usize y index
           let i2 ← lift (UScalar.cast .Usize i1)
+          let _ ← Array.index_usize h i
           let (a, index_mut_back) ← Array.index_mut_usize h i
           let a1 ← Array.update a i2 true
           let index1 ← index + 1#usize
@@ -705,28 +913,28 @@ def encoding.hint_bit_unpack_loop0_loop0.body
     else ok (cont (iter1, h, index, false))
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop 1:
-    Source: 'ml-dsa/src/encoding.rs', lines 158:16-167:17 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 163:16-172:17 -/
 @[rust_loop]
 def encoding.hint_bit_unpack_loop0_loop0
   {K : Std.Usize} (iter : core.ops.range.Range Std.I32) (y : Slice Std.U8)
   (h : Array (Array Bool 256#usize) K) (index : Std.Usize) (valid : Bool)
-  (i : Std.Usize) (end1 : Std.Usize) (first : Std.Usize) :
-  Result ((Array (Array Bool 256#usize) K) × Std.Usize × Bool)
+  (i : Std.Usize) (end_index : Std.Usize) (first : Std.Usize) :
+  RustM ((Array (Array Bool 256#usize) K) × Std.Usize × Bool)
   := do
   loop
     (fun (iter1, h1, index1, valid1) =>
-      encoding.hint_bit_unpack_loop0_loop0.body y i end1 first iter1 h1 index1
-      valid1)
+      encoding.hint_bit_unpack_loop0_loop0.body y i end_index first iter1 h1
+      index1 valid1)
     (iter, h, index, valid)
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop body 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 151:4-170:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 151:4-175:5 -/
 @[rust_loop_body]
 def encoding.hint_bit_unpack_loop0.body
   {K : Std.Usize} (y : Slice Std.U8) (omega : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (h : Array (Array Bool 256#usize) K)
   (index : Std.Usize) (valid : Bool) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array (Array Bool
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array (Array Bool
     256#usize) K) × Std.Usize × Bool) ((Array (Array Bool 256#usize) K) ×
     Std.Usize × Bool))
   := do
@@ -740,28 +948,28 @@ def encoding.hint_bit_unpack_loop0.body
     then
       let i1 ← omega + i
       let i2 ← Slice.index_usize y i1
-      let end1 ← lift (UScalar.cast .Usize i2)
-      if end1 < index
+      let end_index ← lift (UScalar.cast .Usize i2)
+      if end_index < index
       then ok (cont (iter1, h, index, false))
       else
-        if end1 > omega
+        if end_index > omega
         then ok (cont (iter1, h, index, false))
         else
           let (h1, index1, valid1) ←
             encoding.hint_bit_unpack_loop0_loop0
-              { start := 0#i32, «end» := 256#i32 } y h index true i end1
+              { start := 0#i32, «end» := 256#i32 } y h index true i end_index
               index
           ok (cont (iter1, h1, index1, valid1))
     else ok (cont (iter1, h, index, false))
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 151:4-170:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 151:4-175:5 -/
 @[rust_loop]
 def encoding.hint_bit_unpack_loop0
   {K : Std.Usize} (iter : core.ops.range.Range Std.Usize) (y : Slice Std.U8)
   (omega : Std.Usize) (h : Array (Array Bool 256#usize) K) (index : Std.Usize)
   (valid : Bool) :
-  Result ((Array (Array Bool 256#usize) K) × Std.Usize × Bool)
+  RustM ((Array (Array Bool 256#usize) K) × Std.Usize × Bool)
   := do
   loop
     (fun (iter1, h1, index1, valid1) => encoding.hint_bit_unpack_loop0.body y
@@ -769,12 +977,12 @@ def encoding.hint_bit_unpack_loop0
     (iter, h, index, valid)
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop body 2:
-    Source: 'ml-dsa/src/encoding.rs', lines 172:4-178:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 177:4-183:5 -/
 @[rust_loop_body]
 def encoding.hint_bit_unpack_loop1.body
   (y : Slice Std.U8) (omega : Std.Usize) (index : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (valid : Bool) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Bool) Bool)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Bool) Bool)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -797,12 +1005,12 @@ def encoding.hint_bit_unpack_loop1.body
     else ok (cont (iter1, false))
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]: loop 2:
-    Source: 'ml-dsa/src/encoding.rs', lines 172:4-178:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 177:4-183:5 -/
 @[rust_loop]
 def encoding.hint_bit_unpack_loop1
   (iter : core.ops.range.Range Std.Usize) (y : Slice Std.U8)
   (omega : Std.Usize) (index : Std.Usize) (valid : Bool) :
-  Result Bool
+  RustM Bool
   := do
   loop
     (fun (iter1, valid1) => encoding.hint_bit_unpack_loop1.body y omega index
@@ -810,10 +1018,10 @@ def encoding.hint_bit_unpack_loop1
     (iter, valid)
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack]:
-    Source: 'ml-dsa/src/encoding.rs', lines 147:0-184:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 147:0-189:1 -/
 def encoding.hint_bit_unpack
   (K : Std.Usize) (y : Slice Std.U8) (omega : Std.Usize) :
-  Result (core.option.Option (Array (Array Bool 256#usize) K))
+  RustM (core.option.Option (Array (Array Bool 256#usize) K))
   := do
   let a := Array.repeat 256#usize false
   let h := Array.repeat K a
@@ -828,13 +1036,13 @@ def encoding.hint_bit_unpack
   else ok core.option.Option.None
 
 /-- [hacspec_ml_dsa::encoding::pk_encode]: loop body 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 199:4-203:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 204:4-208:5 -/
 @[rust_loop_body]
 def encoding.pk_encode_loop.body
   {K : Std.Usize} {PK_SIZE : Std.Usize}
   (t1 : Array (Array Std.I32 256#usize) K)
   (iter : core.ops.range.Range Std.Usize) (pk : Array Std.U8 PK_SIZE) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     PK_SIZE)) (Array Std.U8 PK_SIZE))
   := do
   let (o, iter1) ←
@@ -862,23 +1070,23 @@ def encoding.pk_encode_loop.body
     ok (cont (iter1, pk1))
 
 /-- [hacspec_ml_dsa::encoding::pk_encode]: loop 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 199:4-203:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 204:4-208:5 -/
 @[rust_loop]
 def encoding.pk_encode_loop
   {K : Std.Usize} {PK_SIZE : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (t1 : Array (Array Std.I32 256#usize) K) (pk : Array Std.U8 PK_SIZE) :
-  Result (Array Std.U8 PK_SIZE)
+  RustM (Array Std.U8 PK_SIZE)
   := do
   loop
     (fun (iter1, pk1) => encoding.pk_encode_loop.body t1 iter1 pk1)
     (iter, pk)
 
 /-- [hacspec_ml_dsa::encoding::pk_encode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 193:0-205:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 198:0-210:1 -/
 def encoding.pk_encode
   {K : Std.Usize} (PK_SIZE : Std.Usize) (rho : Array Std.U8 32#usize)
   (t1 : Array (Array Std.I32 256#usize) K) :
-  Result (Array Std.U8 PK_SIZE)
+  RustM (Array Std.U8 PK_SIZE)
   := do
   let pk := Array.repeat PK_SIZE 0#u8
   let (s, index_mut_back) ←
@@ -896,17 +1104,17 @@ def encoding.pk_encode
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
-  Result (Array T N)
+  RustM (Array T N)
   := do
   core.array.from_fn N coreopsfunctionFnMutFTupleUsizeTInst f
 
 /-- [hacspec_ml_dsa::encoding::pk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::pk_decode::closure<'_0, K>}::call_mut]:
-    Source: 'ml-dsa/src/encoding.rs', lines 213:38-216:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 218:38-221:5 -/
 def
   encoding.pk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} (c : encoding.pk_decode.closure K) (tupled_args : Std.Usize)
   :
-  Result ((Array Std.I32 256#usize) × (encoding.pk_decode.closure K))
+  RustM ((Array Std.I32 256#usize) × (encoding.pk_decode.closure K))
   := do
   let i ← tupled_args * 320#usize
   let start ← 32#usize + i
@@ -919,11 +1127,11 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_dsa::encoding::pk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::pk_decode::closure<'_0, K>}::call_once]:
-    Source: 'ml-dsa/src/encoding.rs', lines 213:38-216:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 218:38-221:5 -/
 def
   encoding.pk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} (c : encoding.pk_decode.closure K) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     encoding.pk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -931,7 +1139,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::pk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::pk_decode::closure<'_0, K>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 213:38-216:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 218:38-221:5 -/
 @[reducible]
 def encoding.pk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
   (K : Std.Usize) : core.ops.function.FnOnce (encoding.pk_decode.closure K)
@@ -941,7 +1149,7 @@ def encoding.pk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::pk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::pk_decode::closure<'_0, K>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 213:38-216:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 218:38-221:5 -/
 @[reducible]
 def encoding.pk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
   (K : Std.Usize) : core.ops.function.FnMut (encoding.pk_decode.closure K)
@@ -954,10 +1162,10 @@ def encoding.pk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
 }
 
 /-- [hacspec_ml_dsa::encoding::pk_decode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 210:0-218:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 215:0-223:1 -/
 def encoding.pk_decode
   (K : Std.Usize) (pk : Slice Std.U8) :
-  Result ((Array Std.U8 32#usize) × (Array (Array Std.I32 256#usize) K))
+  RustM ((Array Std.U8 32#usize) × (Array (Array Std.I32 256#usize) K))
   := do
   let rho := Array.repeat 32#usize 0#u8
   let (s, to_slice_mut_back) ← lift (Array.to_slice_mut rho)
@@ -973,15 +1181,100 @@ def encoding.pk_decode
   let rho1 := to_slice_mut_back s2
   ok (rho1, t1)
 
+/-- [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure#2<'_0, '_1, K, L, SK_SIZE>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 280:12-280:81 -/
+def
+  encoding.sk_encode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {K : Std.Usize} {L : Std.Usize} {SK_SIZE : Std.Usize}
+  (c : encoding.sk_encode.closure_2 K L SK_SIZE) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (i, i1) := c
+  let i2 ← L + K
+  let i3 ← 2#usize * i1
+  let i4 ← parameters.bitlen i3
+  let i5 ← i4 * 32#usize
+  let i6 ← i2 * i5
+  let i7 ← 128#usize + i6
+  let i8 ← tupled_args * 416#usize
+  let i9 ← i7 + i8
+  ok (i = i9)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure#2<'_0, '_1, K, L, SK_SIZE>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 280:12-280:81 -/
+@[reducible]
+def encoding.sk_encode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (K :
+  Std.Usize) (L : Std.Usize) (SK_SIZE : Std.Usize) : core.ops.function.FnOnce
+  (encoding.sk_encode.closure_2 K L SK_SIZE) Std.Usize Bool := {
+  call_once :=
+    encoding.sk_encode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure#1<'_0, '_1, K, L, SK_SIZE>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 262:12-262:94 -/
+def
+  encoding.sk_encode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {K : Std.Usize} {L : Std.Usize} {SK_SIZE : Std.Usize}
+  (c : encoding.sk_encode.closure_1 K L SK_SIZE) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (i, i1) := c
+  let i2 ← 2#usize * i1
+  let i3 ← parameters.bitlen i2
+  let i4 ← i3 * 32#usize
+  let i5 ← L * i4
+  let i6 ← 128#usize + i5
+  let i7 ← parameters.bitlen i2
+  let i8 ← i7 * 32#usize
+  let i9 ← tupled_args * i8
+  let i10 ← i6 + i9
+  ok (i = i10)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure#1<'_0, '_1, K, L, SK_SIZE>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 262:12-262:94 -/
+@[reducible]
+def encoding.sk_encode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (K :
+  Std.Usize) (L : Std.Usize) (SK_SIZE : Std.Usize) : core.ops.function.FnOnce
+  (encoding.sk_encode.closure_1 K L SK_SIZE) Std.Usize Bool := {
+  call_once :=
+    encoding.sk_encode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure<'_0, '_1, K, L, SK_SIZE>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 248:33-248:86 -/
+def
+  encoding.sk_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {K : Std.Usize} {L : Std.Usize} {SK_SIZE : Std.Usize}
+  (c : encoding.sk_encode.closure K L SK_SIZE) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (i, i1) := c
+  let i2 ← 2#usize * i1
+  let i3 ← parameters.bitlen i2
+  let i4 ← i3 * 32#usize
+  let i5 ← tupled_args * i4
+  let i6 ← 128#usize + i5
+  ok (i = i6)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::sk_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sk_encode::closure<'_0, '_1, K, L, SK_SIZE>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 248:33-248:86 -/
+@[reducible]
+def encoding.sk_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (K :
+  Std.Usize) (L : Std.Usize) (SK_SIZE : Std.Usize) : core.ops.function.FnOnce
+  (encoding.sk_encode.closure K L SK_SIZE) Std.Usize Bool := {
+  call_once :=
+    encoding.sk_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop body 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 241:4-253:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 246:4-258:5 -/
 @[rust_loop_body]
 def encoding.sk_encode_loop0.body
-  {L : Std.Usize} {SK_SIZE : Std.Usize} (params : parameters.MlDsaParams)
-  (s1 : Array (Array Std.I32 256#usize) L)
+  (K : Std.Usize) {L : Std.Usize} {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (s1 : Array (Array Std.I32 256#usize) L)
   (iter : core.ops.range.Range Std.Usize) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     SK_SIZE) × Std.Usize) ((Array Std.U8 SK_SIZE) × Std.Usize))
   := do
   let (o, iter1) ←
@@ -990,6 +1283,10 @@ def encoding.sk_encode_loop0.body
   match o with
   | core.option.Option.None => ok (done (sk, offset))
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.sk_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K L
+      SK_SIZE) (offset, params.eta)
     if params.eta = 2#usize
     then
       let a ← Array.index_usize s1 i
@@ -1021,29 +1318,29 @@ def encoding.sk_encode_loop0.body
       ok (cont (iter1, sk1, i1))
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 241:4-253:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 246:4-258:5 -/
 @[rust_loop]
 def encoding.sk_encode_loop0
-  {L : Std.Usize} {SK_SIZE : Std.Usize} (params : parameters.MlDsaParams)
-  (iter : core.ops.range.Range Std.Usize)
+  (K : Std.Usize) {L : Std.Usize} {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (iter : core.ops.range.Range Std.Usize)
   (s1 : Array (Array Std.I32 256#usize) L) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result ((Array Std.U8 SK_SIZE) × Std.Usize)
+  RustM ((Array Std.U8 SK_SIZE) × Std.Usize)
   := do
   loop
-    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop0.body params s1 iter1
-      sk1 offset1)
+    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop0.body K params s1
+      iter1 sk1 offset1)
     (iter, sk, offset)
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop body 1:
-    Source: 'ml-dsa/src/encoding.rs', lines 254:4-268:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 259:4-273:5 -/
 @[rust_loop_body]
 def encoding.sk_encode_loop1.body
-  {K : Std.Usize} {SK_SIZE : Std.Usize} (params : parameters.MlDsaParams)
-  (s2 : Array (Array Std.I32 256#usize) K)
+  {K : Std.Usize} (L : Std.Usize) {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (s2 : Array (Array Std.I32 256#usize) K)
   (iter : core.ops.range.Range Std.Usize) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     SK_SIZE) × Std.Usize) ((Array Std.U8 SK_SIZE) × Std.Usize))
   := do
   let (o, iter1) ←
@@ -1052,6 +1349,10 @@ def encoding.sk_encode_loop1.body
   match o with
   | core.option.Option.None => ok (done (sk, offset))
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.sk_encode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
+      L SK_SIZE) (offset, params.eta)
     if params.eta = 2#usize
     then
       let a ← Array.index_usize s2 i
@@ -1083,29 +1384,29 @@ def encoding.sk_encode_loop1.body
       ok (cont (iter1, sk1, i1))
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop 1:
-    Source: 'ml-dsa/src/encoding.rs', lines 254:4-268:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 259:4-273:5 -/
 @[rust_loop]
 def encoding.sk_encode_loop1
-  {K : Std.Usize} {SK_SIZE : Std.Usize} (params : parameters.MlDsaParams)
-  (iter : core.ops.range.Range Std.Usize)
+  {K : Std.Usize} (L : Std.Usize) {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (iter : core.ops.range.Range Std.Usize)
   (s2 : Array (Array Std.I32 256#usize) K) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result ((Array Std.U8 SK_SIZE) × Std.Usize)
+  RustM ((Array Std.U8 SK_SIZE) × Std.Usize)
   := do
   loop
-    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop1.body params s2 iter1
-      sk1 offset1)
+    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop1.body L params s2
+      iter1 sk1 offset1)
     (iter, sk, offset)
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop body 2:
-    Source: 'ml-dsa/src/encoding.rs', lines 272:4-280:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 277:4-285:5 -/
 @[rust_loop_body]
 def encoding.sk_encode_loop2.body
-  {K : Std.Usize} {SK_SIZE : Std.Usize}
-  (t0 : Array (Array Std.I32 256#usize) K)
+  {K : Std.Usize} (L : Std.Usize) {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (t0 : Array (Array Std.I32 256#usize) K)
   (iter : core.ops.range.Range Std.Usize) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     SK_SIZE) × Std.Usize) (Array Std.U8 SK_SIZE))
   := do
   let (o, iter1) ←
@@ -1114,6 +1415,10 @@ def encoding.sk_encode_loop2.body
   match o with
   | core.option.Option.None => ok (done sk)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.sk_encode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
+      L SK_SIZE) (offset, params.eta)
     let a ← Array.index_usize t0 i
     let i1 ← parameters.D - 1#usize
     let i2 ← 1#usize <<< i1
@@ -1133,28 +1438,29 @@ def encoding.sk_encode_loop2.body
     ok (cont (iter1, sk1, i5))
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]: loop 2:
-    Source: 'ml-dsa/src/encoding.rs', lines 272:4-280:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 277:4-285:5 -/
 @[rust_loop]
 def encoding.sk_encode_loop2
-  {K : Std.Usize} {SK_SIZE : Std.Usize} (iter : core.ops.range.Range Std.Usize)
+  {K : Std.Usize} (L : Std.Usize) {SK_SIZE : Std.Usize}
+  (params : parameters.MlDsaParams) (iter : core.ops.range.Range Std.Usize)
   (t0 : Array (Array Std.I32 256#usize) K) (sk : Array Std.U8 SK_SIZE)
   (offset : Std.Usize) :
-  Result (Array Std.U8 SK_SIZE)
+  RustM (Array Std.U8 SK_SIZE)
   := do
   loop
-    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop2.body t0 iter1 sk1
-      offset1)
+    (fun (iter1, sk1, offset1) => encoding.sk_encode_loop2.body L params t0
+      iter1 sk1 offset1)
     (iter, sk, offset)
 
 /-- [hacspec_ml_dsa::encoding::sk_encode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 223:0-282:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 228:0-287:1 -/
 def encoding.sk_encode
   {K : Std.Usize} {L : Std.Usize} (SK_SIZE : Std.Usize)
   (rho : Array Std.U8 32#usize) (key : Array Std.U8 32#usize)
   (tr : Array Std.U8 64#usize) (s1 : Array (Array Std.I32 256#usize) L)
   (s2 : Array (Array Std.I32 256#usize) K)
   (t0 : Array (Array Std.I32 256#usize) K) (params : parameters.MlDsaParams) :
-  Result (Array Std.U8 SK_SIZE)
+  RustM (Array Std.U8 SK_SIZE)
   := do
   let sk := Array.repeat SK_SIZE 0#u8
   let (s, index_mut_back) ←
@@ -1184,20 +1490,21 @@ def encoding.sk_encode
     core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s8 s9
   let sk3 := index_mut_back2 s10
   let (sk4, offset) ←
-    encoding.sk_encode_loop0 params { start := 0#usize, «end» := L } s1 sk3
+    encoding.sk_encode_loop0 K params { start := 0#usize, «end» := L } s1 sk3
       128#usize
   let (sk5, offset1) ←
-    encoding.sk_encode_loop1 params { start := 0#usize, «end» := K } s2 sk4
+    encoding.sk_encode_loop1 L params { start := 0#usize, «end» := K } s2 sk4
       offset
-  encoding.sk_encode_loop2 { start := 0#usize, «end» := K } t0 sk5 offset1
+  encoding.sk_encode_loop2 L params { start := 0#usize, «end» := K } t0 sk5
+    offset1
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#2<'_0, '_1, '_2, '_3, K, L>}::call_mut]:
-    Source: 'ml-dsa/src/encoding.rs', lines 322:38-329:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 327:38-334:5 -/
 def
   encoding.sk_decode.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure_2 K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (encoding.sk_decode.closure_2 K L))
+  RustM ((Array Std.I32 256#usize) × (encoding.sk_decode.closure_2 K L))
   := do
   let (i, i1, s, i2) := c
   let i3 ← L + K
@@ -1216,12 +1523,12 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#2<'_0, '_1, '_2, '_3, K, L>}::call_once]:
-    Source: 'ml-dsa/src/encoding.rs', lines 322:38-329:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 327:38-334:5 -/
 def
   encoding.sk_decode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure_2 K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     encoding.sk_decode.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -1229,7 +1536,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#2<'_0, '_1, '_2, '_3, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 322:38-329:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 327:38-334:5 -/
 @[reducible]
 def
   encoding.sk_decode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
@@ -1240,7 +1547,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#2<'_0, '_1, '_2, '_3, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 322:38-329:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 327:38-334:5 -/
 @[reducible]
 def
   encoding.sk_decode.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -1254,12 +1561,12 @@ def
 }
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#1<'_0, '_1, '_2, K, L>}::call_mut]:
-    Source: 'ml-dsa/src/encoding.rs', lines 314:38-317:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 319:38-322:5 -/
 def
   encoding.sk_decode.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure_1 K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (encoding.sk_decode.closure_1 K L))
+  RustM ((Array Std.I32 256#usize) × (encoding.sk_decode.closure_1 K L))
   := do
   let (i, s, i1) := c
   let i2 ← L * i
@@ -1275,12 +1582,12 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#1<'_0, '_1, '_2, K, L>}::call_once]:
-    Source: 'ml-dsa/src/encoding.rs', lines 314:38-317:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 319:38-322:5 -/
 def
   encoding.sk_decode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure_1 K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     encoding.sk_decode.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -1288,7 +1595,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#1<'_0, '_1, '_2, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 314:38-317:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 319:38-322:5 -/
 @[reducible]
 def
   encoding.sk_decode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
@@ -1299,7 +1606,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure#1<'_0, '_1, '_2, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 314:38-317:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 319:38-322:5 -/
 @[reducible]
 def
   encoding.sk_decode.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -1313,12 +1620,12 @@ def
 }
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure<'_0, '_1, '_2, K, L>}::call_mut]:
-    Source: 'ml-dsa/src/encoding.rs', lines 310:38-313:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 315:38-318:5 -/
 def
   encoding.sk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (encoding.sk_decode.closure K L))
+  RustM ((Array Std.I32 256#usize) × (encoding.sk_decode.closure K L))
   := do
   let (i, s, i1) := c
   let i2 ← tupled_args * i
@@ -1332,12 +1639,12 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure<'_0, '_1, '_2, K, L>}::call_once]:
-    Source: 'ml-dsa/src/encoding.rs', lines 310:38-313:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 315:38-318:5 -/
 def
   encoding.sk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : encoding.sk_decode.closure K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     encoding.sk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -1345,7 +1652,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure<'_0, '_1, '_2, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 310:38-313:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 315:38-318:5 -/
 @[reducible]
 def encoding.sk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
   (K : Std.Usize) (L : Std.Usize) : core.ops.function.FnOnce
@@ -1355,7 +1662,7 @@ def encoding.sk_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sk_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sk_decode::closure<'_0, '_1, '_2, K, L>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 310:38-313:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 315:38-318:5 -/
 @[reducible]
 def encoding.sk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
   (K : Std.Usize) (L : Std.Usize) : core.ops.function.FnMut
@@ -1368,11 +1675,11 @@ def encoding.sk_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
 }
 
 /-- [hacspec_ml_dsa::encoding::sk_decode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 287:0-331:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 292:0-336:1 -/
 def encoding.sk_decode
   (K : Std.Usize) (L : Std.Usize) (sk : Slice Std.U8)
   (params : parameters.MlDsaParams) :
-  Result ((Array Std.U8 32#usize) × (Array Std.U8 32#usize) × (Array Std.U8
+  RustM ((Array Std.U8 32#usize) × (Array Std.U8 32#usize) × (Array Std.U8
     64#usize) × (Array (Array Std.I32 256#usize) L) × (Array (Array Std.I32
     256#usize) K) × (Array (Array Std.I32 256#usize) K))
   := do
@@ -1425,15 +1732,42 @@ def encoding.sk_decode
   let tr1 := to_slice_mut_back2 s8
   ok (rho1, key1, tr1, s11, s21, t0)
 
+/-- [hacspec_ml_dsa::encoding::sig_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sig_encode::closure<'_0, '_1, '_2, K, L, SIG_SIZE>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 372:12-372:85 -/
+def
+  encoding.sig_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {K : Std.Usize} {L : Std.Usize} {SIG_SIZE : Std.Usize}
+  (c : encoding.sig_encode.closure K L SIG_SIZE) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (i, i1, i2) := c
+  let i3 ← i2 - 1#usize
+  let i4 ← i3 + i2
+  let i5 ← parameters.bitlen i4
+  let i6 ← i5 * 32#usize
+  let i7 ← tupled_args * i6
+  let i8 ← i1 + i7
+  ok (i = i8)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::sig_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::sig_encode::closure<'_0, '_1, '_2, K, L, SIG_SIZE>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 372:12-372:85 -/
+@[reducible]
+def encoding.sig_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (K :
+  Std.Usize) (L : Std.Usize) (SIG_SIZE : Std.Usize) : core.ops.function.FnOnce
+  (encoding.sig_encode.closure K L SIG_SIZE) Std.Usize Bool := {
+  call_once :=
+    encoding.sig_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::encoding::sig_encode]: loop body 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 364:4-378:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 369:4-383:5 -/
 @[rust_loop_body]
 def encoding.sig_encode_loop.body
-  {L : Std.Usize} {SIG_SIZE : Std.Usize}
+  (K : Std.Usize) {L : Std.Usize} {SIG_SIZE : Std.Usize}
   (z : Array (Array Std.I32 256#usize) L) (gamma1 : Std.Usize)
-  (iter : core.ops.range.Range Std.Usize) (sigma : Array Std.U8 SIG_SIZE)
-  (offset : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  (c_tilde_len : Std.Usize) (iter : core.ops.range.Range Std.Usize)
+  (sigma : Array Std.U8 SIG_SIZE) (offset : Std.Usize) :
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     SIG_SIZE) × Std.Usize) ((Array Std.U8 SIG_SIZE) × Std.Usize))
   := do
   let (o, iter1) ←
@@ -1442,6 +1776,10 @@ def encoding.sig_encode_loop.body
   match o with
   | core.option.Option.None => ok (done (sigma, offset))
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.sig_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
+      L SIG_SIZE) (offset, c_tilde_len, gamma1)
     let i1 ← 1#usize <<< 17#i32
     if gamma1 = i1
     then
@@ -1476,27 +1814,28 @@ def encoding.sig_encode_loop.body
       ok (cont (iter1, sigma1, i3))
 
 /-- [hacspec_ml_dsa::encoding::sig_encode]: loop 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 364:4-378:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 369:4-383:5 -/
 @[rust_loop]
 def encoding.sig_encode_loop
-  {L : Std.Usize} {SIG_SIZE : Std.Usize}
+  (K : Std.Usize) {L : Std.Usize} {SIG_SIZE : Std.Usize}
   (iter : core.ops.range.Range Std.Usize)
   (z : Array (Array Std.I32 256#usize) L) (gamma1 : Std.Usize)
-  (sigma : Array Std.U8 SIG_SIZE) (offset : Std.Usize) :
-  Result ((Array Std.U8 SIG_SIZE) × Std.Usize)
+  (c_tilde_len : Std.Usize) (sigma : Array Std.U8 SIG_SIZE)
+  (offset : Std.Usize) :
+  RustM ((Array Std.U8 SIG_SIZE) × Std.Usize)
   := do
   loop
-    (fun (iter1, sigma1, offset1) => encoding.sig_encode_loop.body z gamma1
-      iter1 sigma1 offset1)
+    (fun (iter1, sigma1, offset1) => encoding.sig_encode_loop.body K z gamma1
+      c_tilde_len iter1 sigma1 offset1)
     (iter, sigma, offset)
 
 /-- [hacspec_ml_dsa::encoding::sig_encode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 349:0-395:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 354:0-400:1 -/
 def encoding.sig_encode
   {K : Std.Usize} {L : Std.Usize} (SIG_SIZE : Std.Usize)
   (c_tilde : Slice Std.U8) (z : Array (Array Std.I32 256#usize) L)
   (h : Array (Array Bool 256#usize) K) (params : parameters.MlDsaParams) :
-  Result (Array Std.U8 SIG_SIZE)
+  RustM (Array Std.U8 SIG_SIZE)
   := do
   let gamma1 ← lift (IScalar.hcast .Usize params.gamma1)
   let c_tilde_len ← params.lambda / 4#usize
@@ -1513,8 +1852,8 @@ def encoding.sig_encode
   let s2 ← core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s s1
   let sigma1 := index_mut_back s2
   let (sigma2, offset) ←
-    encoding.sig_encode_loop { start := 0#usize, «end» := L } z gamma1 sigma1
-      c_tilde_len
+    encoding.sig_encode_loop K { start := 0#usize, «end» := L } z gamma1
+      c_tilde_len sigma1 c_tilde_len
   let hint_bytes ← params.omega + K
   let i ← 1#usize <<< 17#i32
   if gamma1 = i
@@ -1570,12 +1909,12 @@ def encoding.sig_encode
       ok (index_mut_back1 s5)
 
 /-- [hacspec_ml_dsa::encoding::sig_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sig_decode::closure<'_0, '_1, '_2, K, L, C_TILDE_LEN>}::call_mut]:
-    Source: 'ml-dsa/src/encoding.rs', lines 416:37-419:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 421:37-424:5 -/
 def
   encoding.sig_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize}
   (c : encoding.sig_decode.closure K L C_TILDE_LEN) (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (encoding.sig_decode.closure K L
+  RustM ((Array Std.I32 256#usize) × (encoding.sig_decode.closure K L
     C_TILDE_LEN))
   := do
   let (i, s, i1) := c
@@ -1591,12 +1930,12 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_dsa::encoding::sig_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sig_decode::closure<'_0, '_1, '_2, K, L, C_TILDE_LEN>}::call_once]:
-    Source: 'ml-dsa/src/encoding.rs', lines 416:37-419:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 421:37-424:5 -/
 def
   encoding.sig_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize}
   (c : encoding.sig_decode.closure K L C_TILDE_LEN) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     encoding.sig_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -1604,7 +1943,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sig_decode::{impl core::ops::function::FnOnce<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sig_decode::closure<'_0, '_1, '_2, K, L, C_TILDE_LEN>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 416:37-419:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 421:37-424:5 -/
 @[reducible]
 def
   encoding.sig_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256
@@ -1616,7 +1955,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::encoding::sig_decode::{impl core::ops::function::FnMut<(usize,), [i32; 256usize]> for hacspec_ml_dsa::encoding::sig_decode::closure<'_0, '_1, '_2, K, L, C_TILDE_LEN>}]
-    Source: 'ml-dsa/src/encoding.rs', lines 416:37-419:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 421:37-424:5 -/
 @[reducible]
 def encoding.sig_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize) :
@@ -1630,11 +1969,11 @@ def encoding.sig_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
 }
 
 /-- [hacspec_ml_dsa::encoding::sig_decode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 405:0-423:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 410:0-428:1 -/
 def encoding.sig_decode
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize)
   (sigma : Slice Std.U8) (params : parameters.MlDsaParams) :
-  Result (core.option.Option ((Array Std.U8 C_TILDE_LEN) × (Array (Array
+  RustM (core.option.Option ((Array Std.U8 C_TILDE_LEN) × (Array (Array
     Std.I32 256#usize) L) × (Array (Array Bool 256#usize) K)))
   := do
   let gamma1 ← lift (IScalar.hcast .Usize params.gamma1)
@@ -1670,15 +2009,35 @@ def encoding.sig_decode
       ((Array Std.U8 C_TILDE_LEN) × (Array (Array Std.I32 256#usize) L) ×
       (Array (Array Bool 256#usize) K)) residual
 
+/-- [hacspec_ml_dsa::encoding::w1_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::w1_encode::closure<K, W1_BYTES>}::call_once]:
+    Source: 'ml-dsa/src/encoding.rs', lines 450:33-450:50 -/
+def
+  encoding.w1_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {K : Std.Usize} {W1_BYTES : Std.Usize}
+  (c : encoding.w1_encode.closure K W1_BYTES) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (tupled_args <= K)
+
+/-- Trait implementation: [hacspec_ml_dsa::encoding::w1_encode::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::encoding::w1_encode::closure<K, W1_BYTES>}]
+    Source: 'ml-dsa/src/encoding.rs', lines 450:33-450:50 -/
+@[reducible]
+def encoding.w1_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (K :
+  Std.Usize) (W1_BYTES : Std.Usize) : core.ops.function.FnOnce
+  (encoding.w1_encode.closure K W1_BYTES) Std.Usize Bool := {
+  call_once :=
+    encoding.w1_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::encoding::w1_encode]: loop body 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 443:4-453:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 448:4-458:5 -/
 @[rust_loop_body]
 def encoding.w1_encode_loop.body
   {K : Std.Usize} {W1_BYTES : Std.Usize} (i : Std.I32)
   (w1 : Array (Array Std.I32 256#usize) K) (i1 : Std.I32) (w1_max : Std.Usize)
   (bytes_per_poly : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   (encoded : Array Std.U8 W1_BYTES) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U8
     W1_BYTES)) (Array Std.U8 W1_BYTES))
   := do
   let (o, iter1) ←
@@ -1687,6 +2046,10 @@ def encoding.w1_encode_loop.body
   match o with
   | core.option.Option.None => ok (done encoded)
   | core.option.Option.Some i2 =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (encoding.w1_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
+      W1_BYTES) ()
     let i3 ← i / 88#i32
     if i1 = i3
     then
@@ -1723,7 +2086,7 @@ def encoding.w1_encode_loop.body
       ok (cont (iter1, encoded1))
 
 /-- [hacspec_ml_dsa::encoding::w1_encode]: loop 0:
-    Source: 'ml-dsa/src/encoding.rs', lines 443:4-453:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 448:4-458:5 -/
 @[rust_loop]
 def encoding.w1_encode_loop
   {K : Std.Usize} {W1_BYTES : Std.Usize} (i : Std.I32)
@@ -1731,7 +2094,7 @@ def encoding.w1_encode_loop
   (w1 : Array (Array Std.I32 256#usize) K) (i1 : Std.I32)
   (encoded : Array Std.U8 W1_BYTES) (w1_max : Std.Usize)
   (bytes_per_poly : Std.Usize) :
-  Result (Array Std.U8 W1_BYTES)
+  RustM (Array Std.U8 W1_BYTES)
   := do
   loop
     (fun (iter1, encoded1) => encoding.w1_encode_loop.body i w1 i1 w1_max
@@ -1739,11 +2102,11 @@ def encoding.w1_encode_loop
     (iter, encoded)
 
 /-- [hacspec_ml_dsa::encoding::w1_encode]:
-    Source: 'ml-dsa/src/encoding.rs', lines 432:0-455:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 437:0-460:1 -/
 def encoding.w1_encode
   {K : Std.Usize} (W1_BYTES : Std.Usize)
   (w1 : Array (Array Std.I32 256#usize) K) (params : parameters.MlDsaParams) :
-  Result (Array Std.U8 W1_BYTES)
+  RustM (Array Std.U8 W1_BYTES)
   := do
   let encoded := Array.repeat W1_BYTES 0#u8
   let i ← parameters.Q - 1#i32
@@ -1757,10 +2120,10 @@ def encoding.w1_encode
     encoded w1_max bytes_per_poly
 
 /-- [hacspec_ml_dsa::encoding::coeff_from_three_bytes]:
-    Source: 'ml-dsa/src/encoding.rs', lines 464:0-472:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 469:0-477:1 -/
 def encoding.coeff_from_three_bytes
   (b0 : Std.U8) (b1 : Std.U8) (b2 : Std.U8) :
-  Result (core.option.Option Std.I32)
+  RustM (core.option.Option Std.I32)
   := do
   let b2p ← if b2 > 127#u8
               then b2 - 128#u8
@@ -1777,9 +2140,9 @@ def encoding.coeff_from_three_bytes
   else ok core.option.Option.None
 
 /-- [hacspec_ml_dsa::encoding::coeff_from_half_byte]:
-    Source: 'ml-dsa/src/encoding.rs', lines 477:0-485:1 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 482:0-490:1 -/
 def encoding.coeff_from_half_byte
-  (b : Std.U8) (eta : Std.Usize) : Result (core.option.Option Std.I32) := do
+  (b : Std.U8) (eta : Std.Usize) : RustM (core.option.Option Std.I32) := do
   if eta = 2#usize
   then
     let i ← lift (UScalar.cast .Usize b)
@@ -1823,7 +2186,7 @@ def error.MlDsaError.Insts.CoreMarkerStructuralPartialEq :
     Source: 'ml-dsa/src/error.rs', lines 6:36-6:45
     Visibility: public -/
 def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
-  (self : error.MlDsaError) (other : error.MlDsaError) : Result Bool := do
+  (self : error.MlDsaError) (other : error.MlDsaError) : RustM Bool := do
   let self1 := read_discriminant self
   let other1 := read_discriminant other
   ok (self1 = other1)
@@ -1834,6 +2197,8 @@ def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
 impl_def error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError : core.cmp.PartialEq
   error.MlDsaError error.MlDsaError := {
   eq := error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError.eq
+  ne := core.cmp.PartialEq.ne.default
+    error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError
 }
 
 /-- Trait implementation: [hacspec_ml_dsa::error::{impl core::cmp::Eq for hacspec_ml_dsa::error::MlDsaError}]
@@ -1843,36 +2208,12 @@ def error.MlDsaError.Insts.CoreCmpEq : core.cmp.Eq error.MlDsaError := {
   PartialEqInst := error.MlDsaError.Insts.CoreCmpPartialEqMlDsaError
 }
 
-/-- [hacspec_ml_dsa::hash_functions::h]:
-    Source: 'ml-dsa/src/hash_functions.rs', lines 9:0-11:1 -/
-def hash_functions.h
-  (N : Std.Usize) (input : Slice Std.U8) : Result (Array Std.U8 N) := do
-  hacspec_sha3.sha3.shake256 N input
-
-/-- [hacspec_ml_dsa::hash_functions::g]:
-    Source: 'ml-dsa/src/hash_functions.rs', lines 16:0-18:1 -/
-def hash_functions.g
-  (N : Std.Usize) (input : Slice Std.U8) : Result (Array Std.U8 N) := do
-  hacspec_sha3.sha3.shake128 N input
-
-/-- [hacspec_ml_dsa::hash_functions::h2]:
-    Source: 'ml-dsa/src/hash_functions.rs', lines 23:0-27:1 -/
-def hash_functions.h2
-  (N : Std.Usize) (a : Slice Std.U8) (b : Slice Std.U8) :
-  Result (Array Std.U8 N)
-  := do
-  let input ← alloc.slice.Slice.to_vec core.U8.Insts.CoreCloneClone a
-  let input1 ←
-    alloc.vec.Vec.extend_from_slice core.U8.Insts.CoreCloneClone input b
-  let s ← alloc.vec.Vec.Insts.CoreOpsDerefDerefSlice.deref input1
-  hacspec_sha3.sha3.shake256 N s
-
 /-- [hacspec_ml_dsa::hash_functions::h3]:
     Source: 'ml-dsa/src/hash_functions.rs', lines 30:0-36:1 -/
 def hash_functions.h3
   (N : Std.Usize) (a : Array Std.U8 32#usize) (b : Array Std.U8 32#usize)
   (c : Array Std.U8 64#usize) :
-  Result (Array Std.U8 N)
+  RustM (Array Std.U8 N)
   := do
   let input := Array.repeat 128#usize 0#u8
   let (s, index_mut_back) ←
@@ -1909,7 +2250,7 @@ def hash_functions.h3
 def
   polynomial.poly_pointwise_mul.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : polynomial.poly_pointwise_mul.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × polynomial.poly_pointwise_mul.closure)
+  RustM (Std.I32 × polynomial.poly_pointwise_mul.closure)
   := do
   let (a, a1) := c
   let i ← Array.index_usize a tupled_args
@@ -1925,7 +2266,7 @@ def
 def
   polynomial.poly_pointwise_mul.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   (c : polynomial.poly_pointwise_mul.closure) (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.poly_pointwise_mul.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -1960,7 +2301,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 21:0-23:1 -/
 def polynomial.poly_pointwise_mul
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   createi 256#usize
     polynomial.poly_pointwise_mul.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32
@@ -1971,7 +2312,7 @@ def polynomial.poly_pointwise_mul
 def
   polynomial.poly_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : polynomial.poly_add.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × polynomial.poly_add.closure)
+  RustM (Std.I32 × polynomial.poly_add.closure)
   := do
   let (a, a1) := c
   let i ← Array.index_usize a tupled_args
@@ -1986,7 +2327,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 12:12-12:48 -/
 def
   polynomial.poly_add.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : polynomial.poly_add.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : polynomial.poly_add.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     polynomial.poly_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
       c i
@@ -2016,7 +2357,7 @@ def polynomial.poly_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
     Source: 'ml-dsa/src/polynomial.rs', lines 11:0-13:1 -/
 def polynomial.poly_add
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   createi 256#usize
     polynomial.poly_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 (a, b)
@@ -2030,7 +2371,7 @@ def
   (a : Array (Array (Array Std.I32 256#usize) L) K)
   (a1 : Array (Array Std.I32 256#usize) L) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (acc : Array Std.I32 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize)) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -2055,7 +2396,7 @@ def
   (a : Array (Array (Array Std.I32 256#usize) L) K)
   (a1 : Array (Array Std.I32 256#usize) L) (i : Std.Usize)
   (acc : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, acc1) =>
@@ -2069,7 +2410,7 @@ def
   matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : matrix.matrix_vector_ntt.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure K L))
+  RustM ((Array Std.I32 256#usize) × (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure K L))
   := do
   let (a, a1) := c
   let acc ←
@@ -2083,7 +2424,7 @@ def
   matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : matrix.matrix_vector_ntt.closure K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2123,7 +2464,7 @@ def matrix.matrix_vector_ntt
   {K : Std.Usize} {L : Std.Usize}
   (a_hat : Array (Array (Array Std.I32 256#usize) L) K)
   (v_hat : Array (Array Std.I32 256#usize) L) :
-  Result (Array (Array Std.I32 256#usize) K)
+  RustM (Array (Array Std.I32 256#usize) K)
   := do
   createi K
     (_root_.hacspec_ml_dsa.matrix.matrix_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -2136,7 +2477,7 @@ def sampling.rej_bounded_poly_loop.body
   (eta : Std.Usize) (buf : Array Std.U8 512#usize)
   (iter : core.ops.range.Range Std.Usize) (a : Array Std.I32 256#usize)
   (j : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize) × Std.Usize) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -2182,7 +2523,7 @@ def sampling.rej_bounded_poly_loop
   (iter : core.ops.range.Range Std.Usize) (eta : Std.Usize)
   (buf : Array Std.U8 512#usize) (a : Array Std.I32 256#usize) (j : Std.Usize)
   :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, a1, j1) => sampling.rej_bounded_poly_loop.body eta buf iter1
@@ -2193,7 +2534,7 @@ def sampling.rej_bounded_poly_loop
     Source: 'ml-dsa/src/sampling.rs', lines 136:0-157:1 -/
 def sampling.rej_bounded_poly
   (seed : Slice Std.U8) (eta : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let buf ← hash_functions.h 512#usize seed
   sampling.rej_bounded_poly_loop { start := 0#usize, «end» := 512#usize } eta
@@ -2203,7 +2544,7 @@ def sampling.rej_bounded_poly
     Source: 'ml-dsa/src/sampling.rs', lines 17:0-23:1 -/
 def sampling.concat_u16_le
   (a : Array Std.U8 64#usize) (val : Std.U16) :
-  Result (Array Std.U8 66#usize)
+  RustM (Array Std.U8 66#usize)
   := do
   let result := Array.repeat 66#usize 0#u8
   let (s, index_mut_back) ←
@@ -2226,7 +2567,7 @@ def
   sampling.expand_s.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_s.closure_1 K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (sampling.expand_s.closure_1 K L))
+  RustM ((Array Std.I32 256#usize) × (sampling.expand_s.closure_1 K L))
   := do
   let (a, i) := c
   let i1 ← tupled_args + L
@@ -2242,7 +2583,7 @@ def
   sampling.expand_s.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_s.closure_1 K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     sampling.expand_s.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2279,7 +2620,7 @@ def
   sampling.expand_s.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_s.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (sampling.expand_s.closure K L))
+  RustM ((Array Std.I32 256#usize) × (sampling.expand_s.closure K L))
   := do
   let (a, i) := c
   let i1 ← lift (UScalar.cast .U16 tupled_args)
@@ -2294,7 +2635,7 @@ def
   sampling.expand_s.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_s.closure K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     sampling.expand_s.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2329,7 +2670,7 @@ def sampling.expand_s.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
 def sampling.expand_s
   (K : Std.Usize) (L : Std.Usize) (rho_prime : Array Std.U8 64#usize)
   (eta : Std.Usize) :
-  Result ((Array (Array Std.I32 256#usize) L) × (Array (Array Std.I32
+  RustM ((Array (Array Std.I32 256#usize) L) × (Array (Array Std.I32
     256#usize) K))
   := do
   let s1 ←
@@ -2348,7 +2689,7 @@ def sampling.expand_s
 def sampling.rej_ntt_poly_loop.body
   (buf : Array Std.U8 1024#usize) (iter : core.ops.range.Range Std.Usize)
   (a : Array Std.I32 256#usize) (j : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize) × Std.Usize) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -2380,7 +2721,7 @@ def sampling.rej_ntt_poly_loop.body
 def sampling.rej_ntt_poly_loop
   (iter : core.ops.range.Range Std.Usize) (buf : Array Std.U8 1024#usize)
   (a : Array Std.I32 256#usize) (j : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, a1, j1) => sampling.rej_ntt_poly_loop.body buf iter1 a1 j1)
@@ -2389,7 +2730,7 @@ def sampling.rej_ntt_poly_loop
 /-- [hacspec_ml_dsa::sampling::rej_ntt_poly]:
     Source: 'ml-dsa/src/sampling.rs', lines 115:0-129:1 -/
 def sampling.rej_ntt_poly
-  (seed : Slice Std.U8) : Result (Array Std.I32 256#usize) := do
+  (seed : Slice Std.U8) : RustM (Array Std.I32 256#usize) := do
   let buf ← hash_functions.g 1024#usize seed
   let i ← 1024#usize / 3#usize
   sampling.rej_ntt_poly_loop { start := 0#usize, «end» := i } buf
@@ -2399,7 +2740,7 @@ def sampling.rej_ntt_poly
     Source: 'ml-dsa/src/sampling.rs', lines 8:0-14:1 -/
 def sampling.concat_2bytes
   (a : Array Std.U8 32#usize) (b : Std.U8) (c : Std.U8) :
-  Result (Array Std.U8 34#usize)
+  RustM (Array Std.U8 34#usize)
   := do
   let result := Array.repeat 34#usize 0#u8
   let (s, index_mut_back) ←
@@ -2419,7 +2760,7 @@ def
   sampling.expand_a.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_a.closure.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (sampling.expand_a.closure.closure K L))
+  RustM ((Array Std.I32 256#usize) × (sampling.expand_a.closure.closure K L))
   := do
   let (a, i) := c
   let i1 ← lift (UScalar.cast .U8 tupled_args)
@@ -2435,7 +2776,7 @@ def
   sampling.expand_a.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_a.closure.closure K L)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     sampling.expand_a.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2475,7 +2816,7 @@ def
   sampling.expand_a.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayI32256L.call_mut
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_a.closure K L)
   (tupled_args : Std.Usize) :
-  Result ((Array (Array Std.I32 256#usize) L) × (sampling.expand_a.closure K
+  RustM ((Array (Array Std.I32 256#usize) L) × (sampling.expand_a.closure K
     L))
   := do
   let a ←
@@ -2490,7 +2831,7 @@ def
   sampling.expand_a.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayI32256L.call_once
   {K : Std.Usize} {L : Std.Usize} (c : sampling.expand_a.closure K L)
   (i : Std.Usize) :
-  Result (Array (Array Std.I32 256#usize) L)
+  RustM (Array (Array Std.I32 256#usize) L)
   := do
   let (a, _) ←
     sampling.expand_a.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayI32256L.call_mut
@@ -2528,7 +2869,7 @@ def
     Source: 'ml-dsa/src/sampling.rs', lines 164:0-171:1 -/
 def sampling.expand_a
   (K : Std.Usize) (L : Std.Usize) (rho : Array Std.U8 32#usize) :
-  Result (Array (Array (Array Std.I32 256#usize) L) K)
+  RustM (Array (Array (Array Std.I32 256#usize) L) K)
   := do
   createi K
     (sampling.expand_a.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayI32256L
@@ -2540,7 +2881,7 @@ def
   polynomial.vector_power2round.closure_1.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   {N : Std.Usize} (c : polynomial.vector_power2round.closure_1.closure N)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (polynomial.vector_power2round.closure_1.closure N))
+  RustM (Std.I32 × (polynomial.vector_power2round.closure_1.closure N))
   := do
   let (a, i) := c
   let a1 ← Array.index_usize a i
@@ -2554,7 +2895,7 @@ def
   polynomial.vector_power2round.closure_1.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   {N : Std.Usize} (c : polynomial.vector_power2round.closure_1.closure N)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.vector_power2round.closure_1.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -2592,7 +2933,7 @@ def
   polynomial.vector_power2round.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_power2round.closure_1 N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_power2round.closure_1
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_power2round.closure_1
     N))
   := do
   let a ←
@@ -2607,7 +2948,7 @@ def
   polynomial.vector_power2round.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_power2round.closure_1 N)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_power2round.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2647,7 +2988,7 @@ def
   polynomial.vector_power2round.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   {N : Std.Usize} (c : polynomial.vector_power2round.closure.closure N)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (polynomial.vector_power2round.closure.closure N))
+  RustM (Std.I32 × (polynomial.vector_power2round.closure.closure N))
   := do
   let (a, i) := c
   let a1 ← Array.index_usize a i
@@ -2661,7 +3002,7 @@ def
   polynomial.vector_power2round.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   {N : Std.Usize} (c : polynomial.vector_power2round.closure.closure N)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.vector_power2round.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -2699,7 +3040,7 @@ def
   polynomial.vector_power2round.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_power2round.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_power2round.closure
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_power2round.closure
     N))
   := do
   let a ←
@@ -2714,7 +3055,7 @@ def
   polynomial.vector_power2round.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_power2round.closure N) (i : Std.Usize)
   :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_power2round.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2752,7 +3093,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 85:0-101:1 -/
 def polynomial.vector_power2round
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) :
-  Result ((Array (Array Std.I32 256#usize) N) × (Array (Array Std.I32
+  RustM ((Array (Array Std.I32 256#usize) N) × (Array (Array Std.I32
     256#usize) N))
   := do
   let v1 ←
@@ -2771,7 +3112,7 @@ def
   polynomial.vector_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_add.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_add.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_add.closure N))
   := do
   let (a, a1) := c
   let a2 ← Array.index_usize a tupled_args
@@ -2784,7 +3125,7 @@ def
 def
   polynomial.vector_add.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_add.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -2821,7 +3162,7 @@ def
 def polynomial.vector_add
   {N : Std.Usize} (a : Array (Array Std.I32 256#usize) N)
   (b : Array (Array Std.I32 256#usize) N) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -2832,7 +3173,7 @@ def polynomial.vector_add
 def
   ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : ntt.reduce_polynomial.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × ntt.reduce_polynomial.closure)
+  RustM (Std.I32 × ntt.reduce_polynomial.closure)
   := do
   let (i, a) := c
   let i1 ← Array.index_usize a tupled_args
@@ -2845,7 +3186,7 @@ def
     Source: 'ml-dsa/src/ntt.rs', lines 119:12-119:38 -/
 def
   ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : ntt.reduce_polynomial.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : ntt.reduce_polynomial.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
       c i
@@ -2874,7 +3215,7 @@ def ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
 /-- [hacspec_ml_dsa::ntt::reduce_polynomial]:
     Source: 'ml-dsa/src/ntt.rs', lines 117:0-120:1 -/
 def ntt.reduce_polynomial
-  (p : Array Std.I32 256#usize) : Result (Array Std.I32 256#usize) := do
+  (p : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   createi 256#usize
     ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32
     (8347681#i64, p)
@@ -2940,7 +3281,7 @@ def ntt.ZETAS : Array Std.I32 256#usize :=
     Source: 'ml-dsa/src/ntt.rs', lines 103:12-113:5 -/
 def ntt.intt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : ntt.intt_layer.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × ntt.intt_layer.closure)
+  RustM (Std.I32 × ntt.intt_layer.closure)
   := do
   let (i, a, i1) := c
   let i2 ← 2#usize * i
@@ -2977,7 +3318,7 @@ def ntt.intt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
 /-- [hacspec_ml_dsa::ntt::intt_layer::{impl core::ops::function::FnOnce<(usize,), i32> for hacspec_ml_dsa::ntt::intt_layer::closure<'_0, '_1, '_2>}::call_once]:
     Source: 'ml-dsa/src/ntt.rs', lines 103:12-113:5 -/
 def ntt.intt_layer.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : ntt.intt_layer.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : ntt.intt_layer.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     ntt.intt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut c i
   ok i1
@@ -3005,7 +3346,7 @@ def ntt.intt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
     Source: 'ml-dsa/src/ntt.rs', lines 100:0-114:1 -/
 def ntt.intt_layer
   (p : Array Std.I32 256#usize) (layer : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let len ← 1#usize <<< layer
   let i ← 256#usize / len
@@ -3016,7 +3357,7 @@ def ntt.intt_layer
 /-- [hacspec_ml_dsa::ntt::intt]:
     Source: 'ml-dsa/src/ntt.rs', lines 125:0-135:1 -/
 def ntt.intt
-  (w_hat : Array Std.I32 256#usize) : Result (Array Std.I32 256#usize) := do
+  (w_hat : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   let p ← ntt.intt_layer w_hat 0#usize
   let p1 ← ntt.intt_layer p 1#usize
   let p2 ← ntt.intt_layer p1 2#usize
@@ -3033,7 +3374,7 @@ def
   polynomial.vector_intt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_intt.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_intt.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_intt.closure N))
   := do
   let a ← Array.index_usize c tupled_args
   let a1 ← ntt.intt a
@@ -3044,7 +3385,7 @@ def
 def
   polynomial.vector_intt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_intt.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_intt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -3080,7 +3421,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 31:0-33:1 -/
 def polynomial.vector_intt
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_intt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -3090,7 +3431,7 @@ def polynomial.vector_intt
     Source: 'ml-dsa/src/ntt.rs', lines 64:12-75:5 -/
 def ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : ntt.ntt_layer.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × ntt.ntt_layer.closure)
+  RustM (Std.I32 × ntt.ntt_layer.closure)
   := do
   let (i, i1, a) := c
   let i2 ← 2#usize * i
@@ -3128,7 +3469,7 @@ def ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
 /-- [hacspec_ml_dsa::ntt::ntt_layer::{impl core::ops::function::FnOnce<(usize,), i32> for hacspec_ml_dsa::ntt::ntt_layer::closure<'_0, '_1, '_2>}::call_once]:
     Source: 'ml-dsa/src/ntt.rs', lines 64:12-75:5 -/
 def ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : ntt.ntt_layer.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : ntt.ntt_layer.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut c i
   ok i1
@@ -3156,7 +3497,7 @@ def ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
     Source: 'ml-dsa/src/ntt.rs', lines 61:0-76:1 -/
 def ntt.ntt_layer
   (p : Array Std.I32 256#usize) (layer : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let len ← 1#usize <<< layer
   let k ← 128#usize / len
@@ -3166,7 +3507,7 @@ def ntt.ntt_layer
 /-- [hacspec_ml_dsa::ntt::ntt]:
     Source: 'ml-dsa/src/ntt.rs', lines 81:0-91:1 -/
 def ntt.ntt
-  (w : Array Std.I32 256#usize) : Result (Array Std.I32 256#usize) := do
+  (w : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   let p ← ntt.ntt_layer w 7#usize
   let p1 ← ntt.ntt_layer p 6#usize
   let p2 ← ntt.ntt_layer p1 5#usize
@@ -3182,7 +3523,7 @@ def
   polynomial.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_ntt.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_ntt.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_ntt.closure N))
   := do
   let a ← Array.index_usize c tupled_args
   let a1 ← ntt.ntt a
@@ -3193,7 +3534,7 @@ def
 def
   polynomial.vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_ntt.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -3229,7 +3570,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 26:0-28:1 -/
 def polynomial.vector_ntt
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -3241,7 +3582,7 @@ def polynomial.vector_ntt
 def ml_dsa.keygen_internal
   (K : Std.Usize) (L : Std.Usize) (PK_SIZE : Std.Usize) (SK_SIZE : Std.Usize)
   (xi : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result ((Array Std.U8 PK_SIZE) × (Array Std.U8 SK_SIZE))
+  RustM ((Array Std.U8 PK_SIZE) × (Array Std.U8 SK_SIZE))
   := do
   let seed_input := Array.repeat 34#usize 0#u8
   let (s, index_mut_back) ←
@@ -3307,7 +3648,7 @@ def
   sampling.expand_mask.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {L : Std.Usize} (c : sampling.expand_mask.closure L)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (sampling.expand_mask.closure L))
+  RustM ((Array Std.I32 256#usize) × (sampling.expand_mask.closure L))
   := do
   let (i, a, i1) := c
   let i2 ← i + tupled_args
@@ -3339,7 +3680,7 @@ def
 def
   sampling.expand_mask.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {L : Std.Usize} (c : sampling.expand_mask.closure L) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     sampling.expand_mask.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -3376,11 +3717,32 @@ def
 def sampling.expand_mask
   (L : Std.Usize) (rho_pp : Array Std.U8 64#usize) (kappa : Std.Usize)
   (gamma1 : Std.I32) :
-  Result (Array (Array Std.I32 256#usize) L)
+  RustM (Array (Array Std.I32 256#usize) L)
   := do
   createi L
     (sampling.expand_mask.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
     L) (kappa, rho_pp, gamma1)
+
+/-- [hacspec_ml_dsa::sampling::sample_in_ball::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::sampling::sample_in_ball::closure<'_0, '_1, '_2>}::call_once]:
+    Source: 'ml-dsa/src/sampling.rs', lines 82:41-82:72 -/
+def
+  sampling.sample_in_ball.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : sampling.sample_in_ball.closure) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (b, i, i1) := c
+  if b
+  then ok (i <= i1)
+  else ok true
+
+/-- Trait implementation: [hacspec_ml_dsa::sampling::sample_in_ball::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::sampling::sample_in_ball::closure<'_0, '_1, '_2>}]
+    Source: 'ml-dsa/src/sampling.rs', lines 82:41-82:72 -/
+@[reducible]
+def sampling.sample_in_ball.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
+  core.ops.function.FnOnce sampling.sample_in_ball.closure Std.Usize Bool := {
+  call_once :=
+    sampling.sample_in_ball.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_dsa::sampling::SAMPLE_IN_BALL_BUDGET]
     Source: 'ml-dsa/src/sampling.rs', lines 48:0-48:46
@@ -3395,7 +3757,7 @@ def sampling.sample_in_ball_loop0_loop0.body
   (buf : Array Std.U8 1024#usize) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (byte_offset : Std.Usize)
   (j : Std.Usize) (found : Bool) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize ×
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize ×
     Std.Usize × Bool) (Std.Usize × Std.Usize × Bool))
   := do
   let (o, iter1) ←
@@ -3404,6 +3766,10 @@ def sampling.sample_in_ball_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done (byte_offset, j, found))
   | core.option.Option.Some _ =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      sampling.sample_in_ball.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      (found, j, i)
     if found
     then ok (cont (iter1, byte_offset, j, true))
     else
@@ -3423,7 +3789,7 @@ def sampling.sample_in_ball_loop0_loop0.body
 def sampling.sample_in_ball_loop0_loop0
   (iter : core.ops.range.Range Std.Usize) (buf : Array Std.U8 1024#usize)
   (byte_offset : Std.Usize) (i : Std.Usize) (j : Std.Usize) (found : Bool) :
-  Result (Std.Usize × Std.Usize × Bool)
+  RustM (Std.Usize × Std.Usize × Bool)
   := do
   loop
     (fun (iter1, byte_offset1, j1, found1) =>
@@ -3438,7 +3804,7 @@ def sampling.sample_in_ball_loop0.body
   (tau : Std.Usize) (buf : Array Std.U8 1024#usize) (signs : Std.U64)
   (iter : core.ops.range.Range Std.Usize) (c : Array Std.I32 256#usize)
   (byte_offset : Std.Usize) (exhausted : Bool) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize) × Std.Usize × Bool) ((Array Std.I32 256#usize) × Bool))
   := do
   let (o, iter1) ←
@@ -3476,7 +3842,7 @@ def sampling.sample_in_ball_loop0
   (iter : core.ops.range.Range Std.Usize) (tau : Std.Usize)
   (buf : Array Std.U8 1024#usize) (c : Array Std.I32 256#usize)
   (signs : Std.U64) (byte_offset : Std.Usize) (exhausted : Bool) :
-  Result ((Array Std.I32 256#usize) × Bool)
+  RustM ((Array Std.I32 256#usize) × Bool)
   := do
   loop
     (fun (iter1, c1, byte_offset1, exhausted1) =>
@@ -3488,7 +3854,7 @@ def sampling.sample_in_ball_loop0
     Source: 'ml-dsa/src/sampling.rs', lines 58:0-108:1 -/
 def sampling.sample_in_ball
   (rho : Slice Std.U8) (tau : Std.Usize) :
-  Result (core.result.Result (Array Std.I32 256#usize) error.MlDsaError)
+  RustM (core.result.Result (Array Std.I32 256#usize) error.MlDsaError)
   := do
   let buf ← hash_functions.h 1024#usize rho
   let i ← Array.index_usize buf 0#usize
@@ -3515,7 +3881,7 @@ def
   polynomial.vector_make_hint.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool.call_mut
   {N : Std.Usize} (c : polynomial.vector_make_hint.closure.closure N)
   (tupled_args : Std.Usize) :
-  Result (Bool × (polynomial.vector_make_hint.closure.closure N))
+  RustM (Bool × (polynomial.vector_make_hint.closure.closure N))
   := do
   let (a, i, a1, i1) := c
   let a2 ← Array.index_usize a i
@@ -3531,7 +3897,7 @@ def
   polynomial.vector_make_hint.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
   {N : Std.Usize} (c : polynomial.vector_make_hint.closure.closure N)
   (i : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   let (b, _) ←
     polynomial.vector_make_hint.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool.call_mut
@@ -3569,7 +3935,7 @@ def
   polynomial.vector_make_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayBool256.call_mut
   {N : Std.Usize} (c : polynomial.vector_make_hint.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Bool 256#usize) × (polynomial.vector_make_hint.closure N))
+  RustM ((Array Bool 256#usize) × (polynomial.vector_make_hint.closure N))
   := do
   let (a, a1, i) := c
   let a2 ←
@@ -3583,7 +3949,7 @@ def
 def
   polynomial.vector_make_hint.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayBool256.call_once
   {N : Std.Usize} (c : polynomial.vector_make_hint.closure N) (i : Std.Usize) :
-  Result (Array Bool 256#usize)
+  RustM (Array Bool 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_make_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayBool256.call_mut
@@ -3615,14 +3981,57 @@ def
     polynomial.vector_make_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayBool256.call_mut
 }
 
+/-- [hacspec_ml_dsa::polynomial::count_hints::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::polynomial::count_hints::closure#1<'_0, '_1, N>}::call_once]:
+    Source: 'ml-dsa/src/polynomial.rs', lines 128:37-128:68 -/
+def
+  polynomial.count_hints.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {N : Std.Usize} (c : polynomial.count_hints.closure_1 N)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (i, i1) := c
+  let i2 ← i1 * 256#usize
+  let i3 ← i2 + tupled_args
+  ok (i <= i3)
+
+/-- Trait implementation: [hacspec_ml_dsa::polynomial::count_hints::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::polynomial::count_hints::closure#1<'_0, '_1, N>}]
+    Source: 'ml-dsa/src/polynomial.rs', lines 128:37-128:68 -/
+@[reducible]
+def polynomial.count_hints.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (N : Std.Usize) : core.ops.function.FnOnce (polynomial.count_hints.closure_1
+  N) Std.Usize Bool := {
+  call_once :=
+    polynomial.count_hints.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
+/-- [hacspec_ml_dsa::polynomial::count_hints::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::polynomial::count_hints::closure<'_0, N>}::call_once]:
+    Source: 'ml-dsa/src/polynomial.rs', lines 125:33-125:60 -/
+def
+  polynomial.count_hints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {N : Std.Usize} (c : polynomial.count_hints.closure N)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← tupled_args * 256#usize
+  ok (c <= i)
+
+/-- Trait implementation: [hacspec_ml_dsa::polynomial::count_hints::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_dsa::polynomial::count_hints::closure<'_0, N>}]
+    Source: 'ml-dsa/src/polynomial.rs', lines 125:33-125:60 -/
+@[reducible]
+def polynomial.count_hints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool (N
+  : Std.Usize) : core.ops.function.FnOnce (polynomial.count_hints.closure N)
+  Std.Usize Bool := {
+  call_once :=
+    polynomial.count_hints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_dsa::polynomial::count_hints]: loop body 1:
     Source: 'ml-dsa/src/polynomial.rs', lines 126:8-132:9 -/
 @[rust_loop_body]
 def polynomial.count_hints_loop0_loop0.body
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (total : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize)
-    Std.Usize)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -3630,6 +4039,10 @@ def polynomial.count_hints_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done total)
   | core.option.Option.Some j =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (polynomial.count_hints.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      N) (total, i)
     let a ← Array.index_usize h i
     let b ← Array.index_usize a j
     if b
@@ -3643,7 +4056,7 @@ def polynomial.count_hints_loop0_loop0.body
 def polynomial.count_hints_loop0_loop0
   {N : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (h : Array (Array Bool 256#usize) N) (total : Std.Usize) (i : Std.Usize) :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun (iter1, total1) => polynomial.count_hints_loop0_loop0.body h i iter1
@@ -3656,8 +4069,7 @@ def polynomial.count_hints_loop0_loop0
 def polynomial.count_hints_loop0.body
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N)
   (iter : core.ops.range.Range Std.Usize) (total : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize)
-    Std.Usize)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -3665,6 +4077,10 @@ def polynomial.count_hints_loop0.body
   match o with
   | core.option.Option.None => ok (done total)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (polynomial.count_hints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      N) total
     let total1 ←
       polynomial.count_hints_loop0_loop0
         { start := 0#usize, «end» := 256#usize } h total i
@@ -3676,7 +4092,7 @@ def polynomial.count_hints_loop0.body
 def polynomial.count_hints_loop0
   {N : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (h : Array (Array Bool 256#usize) N) (total : Std.Usize) :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun (iter1, total1) => polynomial.count_hints_loop0.body h iter1 total1)
@@ -3686,7 +4102,7 @@ def polynomial.count_hints_loop0
     Source: 'ml-dsa/src/polynomial.rs', lines 121:0-135:1 -/
 @[reducible]
 def polynomial.count_hints
-  {N : Std.Usize} (h : Array (Array Bool 256#usize) N) : Result Std.Usize := do
+  {N : Std.Usize} (h : Array (Array Bool 256#usize) N) : RustM Std.Usize := do
   polynomial.count_hints_loop0 { start := 0#usize, «end» := N } h 0#usize
 
 /-- [hacspec_ml_dsa::polynomial::vector_make_hint]:
@@ -3694,7 +4110,7 @@ def polynomial.count_hints
 def polynomial.vector_make_hint
   {N : Std.Usize} (z : Array (Array Std.I32 256#usize) N)
   (r : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result ((Array (Array Bool 256#usize) N) × Std.Usize)
+  RustM ((Array (Array Bool 256#usize) N) × Std.Usize)
   := do
   let h ←
     createi N
@@ -3709,7 +4125,7 @@ def
   polynomial.vector_low_bits.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   {N : Std.Usize} (c : polynomial.vector_low_bits.closure.closure N)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (polynomial.vector_low_bits.closure.closure N))
+  RustM (Std.I32 × (polynomial.vector_low_bits.closure.closure N))
   := do
   let (a, i, i1) := c
   let a1 ← Array.index_usize a i
@@ -3723,7 +4139,7 @@ def
   polynomial.vector_low_bits.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   {N : Std.Usize} (c : polynomial.vector_low_bits.closure.closure N)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.vector_low_bits.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -3761,7 +4177,7 @@ def
   polynomial.vector_low_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_low_bits.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_low_bits.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_low_bits.closure N))
   := do
   let (a, i) := c
   let a1 ←
@@ -3775,7 +4191,7 @@ def
 def
   polynomial.vector_low_bits.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_low_bits.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_low_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -3812,7 +4228,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 114:0-116:1 -/
 def polynomial.vector_low_bits
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_low_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -3824,7 +4240,7 @@ def
   polynomial.vector_high_bits.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   {N : Std.Usize} (c : polynomial.vector_high_bits.closure.closure N)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (polynomial.vector_high_bits.closure.closure N))
+  RustM (Std.I32 × (polynomial.vector_high_bits.closure.closure N))
   := do
   let (a, i, i1) := c
   let a1 ← Array.index_usize a i
@@ -3838,7 +4254,7 @@ def
   polynomial.vector_high_bits.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   {N : Std.Usize} (c : polynomial.vector_high_bits.closure.closure N)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.vector_high_bits.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -3876,7 +4292,7 @@ def
   polynomial.vector_high_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_high_bits.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_high_bits.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_high_bits.closure N))
   := do
   let (a, i) := c
   let a1 ←
@@ -3890,7 +4306,7 @@ def
 def
   polynomial.vector_high_bits.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_high_bits.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_high_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -3928,7 +4344,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 105:0-110:1 -/
 def polynomial.vector_high_bits
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_high_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -3940,7 +4356,7 @@ def polynomial.vector_high_bits
 def polynomial.poly_infinity_norm_loop.body
   (p : Array Std.I32 256#usize) (iter : core.ops.range.Range Std.Usize)
   (max : Std.I32) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.I32) Std.I32)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.I32) Std.I32)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -3960,7 +4376,7 @@ def polynomial.poly_infinity_norm_loop.body
 def polynomial.poly_infinity_norm_loop
   (iter : core.ops.range.Range Std.Usize) (p : Array Std.I32 256#usize)
   (max : Std.I32) :
-  Result Std.I32
+  RustM Std.I32
   := do
   loop
     (fun (iter1, max1) => polynomial.poly_infinity_norm_loop.body p iter1 max1)
@@ -3970,7 +4386,7 @@ def polynomial.poly_infinity_norm_loop
     Source: 'ml-dsa/src/polynomial.rs', lines 60:0-69:1 -/
 @[reducible]
 def polynomial.poly_infinity_norm
-  (p : Array Std.I32 256#usize) : Result Std.I32 := do
+  (p : Array Std.I32 256#usize) : RustM Std.I32 := do
   polynomial.poly_infinity_norm_loop { start := 0#usize, «end» := 256#usize }
     p 0#i32
 
@@ -3980,7 +4396,7 @@ def polynomial.poly_infinity_norm
 def polynomial.vector_infinity_norm_loop.body
   {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N)
   (iter : core.ops.range.Range Std.Usize) (max : Std.I32) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.I32) Std.I32)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.I32) Std.I32)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -4000,7 +4416,7 @@ def polynomial.vector_infinity_norm_loop.body
 def polynomial.vector_infinity_norm_loop
   {N : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (v : Array (Array Std.I32 256#usize) N) (max : Std.I32) :
-  Result Std.I32
+  RustM Std.I32
   := do
   loop
     (fun (iter1, max1) => polynomial.vector_infinity_norm_loop.body v iter1
@@ -4011,9 +4427,7 @@ def polynomial.vector_infinity_norm_loop
     Source: 'ml-dsa/src/polynomial.rs', lines 72:0-81:1 -/
 @[reducible]
 def polynomial.vector_infinity_norm
-  {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) :
-  Result Std.I32
-  := do
+  {N : Std.Usize} (v : Array (Array Std.I32 256#usize) N) : RustM Std.I32 := do
   polynomial.vector_infinity_norm_loop { start := 0#usize, «end» := N } v
     0#i32
 
@@ -4023,8 +4437,7 @@ def
   polynomial.scalar_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.scalar_vector_ntt.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.scalar_vector_ntt.closure
-    N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.scalar_vector_ntt.closure N))
   := do
   let (a, a1) := c
   let a2 ← Array.index_usize a1 tupled_args
@@ -4037,7 +4450,7 @@ def
   polynomial.scalar_vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.scalar_vector_ntt.closure N) (i : Std.Usize)
   :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.scalar_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4076,7 +4489,7 @@ def
 def polynomial.scalar_vector_ntt
   {N : Std.Usize} (c : Array Std.I32 256#usize)
   (v : Array (Array Std.I32 256#usize) N) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.scalar_vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -4087,7 +4500,7 @@ def polynomial.scalar_vector_ntt
 def
   polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : polynomial.poly_sub.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × polynomial.poly_sub.closure)
+  RustM (Std.I32 × polynomial.poly_sub.closure)
   := do
   let (a, a1) := c
   let i ← Array.index_usize a tupled_args
@@ -4102,7 +4515,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 17:12-17:48 -/
 def
   polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : polynomial.poly_sub.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : polynomial.poly_sub.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
       c i
@@ -4132,7 +4545,7 @@ def polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
     Source: 'ml-dsa/src/polynomial.rs', lines 16:0-18:1 -/
 def polynomial.poly_sub
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   createi 256#usize
     polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 (a, b)
@@ -4143,7 +4556,7 @@ def
   polynomial.vector_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_sub.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_sub.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_sub.closure N))
   := do
   let (a, a1) := c
   let a2 ← Array.index_usize a tupled_args
@@ -4156,7 +4569,7 @@ def
 def
   polynomial.vector_sub.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_sub.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4193,7 +4606,7 @@ def
 def polynomial.vector_sub
   {N : Std.Usize} (a : Array (Array Std.I32 256#usize) N)
   (b : Array (Array Std.I32 256#usize) N) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -4204,7 +4617,7 @@ def polynomial.vector_sub
 def
   polynomial.poly_mod_pm.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   (c : polynomial.poly_mod_pm.closure) (tupled_args : Std.Usize) :
-  Result (Std.I32 × polynomial.poly_mod_pm.closure)
+  RustM (Std.I32 × polynomial.poly_mod_pm.closure)
   := do
   let i ← Array.index_usize c tupled_args
   let i1 ← lift (IScalar.cast .I64 i)
@@ -4225,7 +4638,7 @@ def
     Source: 'ml-dsa/src/polynomial.rs', lines 163:12-171:5 -/
 def
   polynomial.poly_mod_pm.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
-  (c : polynomial.poly_mod_pm.closure) (i : Std.Usize) : Result Std.I32 := do
+  (c : polynomial.poly_mod_pm.closure) (i : Std.Usize) : RustM Std.I32 := do
   let (i1, _) ←
     polynomial.poly_mod_pm.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
       c i
@@ -4255,7 +4668,7 @@ def polynomial.poly_mod_pm.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
 /-- [hacspec_ml_dsa::polynomial::poly_mod_pm]:
     Source: 'ml-dsa/src/polynomial.rs', lines 162:0-172:1 -/
 def polynomial.poly_mod_pm
-  (p : Array Std.I32 256#usize) : Result (Array Std.I32 256#usize) := do
+  (p : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   createi 256#usize
     polynomial.poly_mod_pm.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 p
 
@@ -4267,7 +4680,7 @@ def
   {C_TILDE_LEN : Std.Usize}
   (c : ml_dsa.try_sign_iteration.closure_1 K L SIG_SIZE W1_BYTES C_TILDE_LEN)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (ml_dsa.try_sign_iteration.closure_1 K L
+  RustM ((Array Std.I32 256#usize) × (ml_dsa.try_sign_iteration.closure_1 K L
     SIG_SIZE W1_BYTES C_TILDE_LEN))
   := do
   let a ← Array.index_usize c tupled_args
@@ -4282,7 +4695,7 @@ def
   {C_TILDE_LEN : Std.Usize}
   (c : ml_dsa.try_sign_iteration.closure_1 K L SIG_SIZE W1_BYTES C_TILDE_LEN)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     ml_dsa.try_sign_iteration.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4325,7 +4738,7 @@ def
   ml_dsa.try_sign_iteration.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut_loop.body
   {K : Std.Usize} (a : Array (Array Std.I32 256#usize) K) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (p : Array Std.I32 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.I32
     256#usize)) (Array Std.I32 256#usize))
   := do
   let (o, iter1) ←
@@ -4353,7 +4766,7 @@ def
   {K : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (a : Array (Array Std.I32 256#usize) K) (i : Std.Usize)
   (p : Array Std.I32 256#usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   loop
     (fun (iter1, p1) =>
@@ -4369,7 +4782,7 @@ def
   {C_TILDE_LEN : Std.Usize}
   (c : ml_dsa.try_sign_iteration.closure K L SIG_SIZE W1_BYTES C_TILDE_LEN)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (ml_dsa.try_sign_iteration.closure K L
+  RustM ((Array Std.I32 256#usize) × (ml_dsa.try_sign_iteration.closure K L
     SIG_SIZE W1_BYTES C_TILDE_LEN))
   := do
   let p ←
@@ -4386,7 +4799,7 @@ def
   {C_TILDE_LEN : Std.Usize}
   (c : ml_dsa.try_sign_iteration.closure K L SIG_SIZE W1_BYTES C_TILDE_LEN)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     ml_dsa.try_sign_iteration.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4433,7 +4846,7 @@ def ml_dsa.try_sign_iteration
   (t0_hat : Array (Array Std.I32 256#usize) K) (mu : Array Std.U8 64#usize)
   (rho_pp : Array Std.U8 64#usize) (kappa : Std.Usize)
   (params : parameters.MlDsaParams) :
-  Result (core.option.Option (Array Std.U8 SIG_SIZE))
+  RustM (core.option.Option (Array Std.U8 SIG_SIZE))
   := do
   let y ← sampling.expand_mask L rho_pp kappa params.gamma1
   let y_hat ← polynomial.vector_ntt y
@@ -4538,7 +4951,7 @@ def ml_dsa.sign_internal_loop.body
   (iter : core.ops.range.Range Std.I32)
   (result : core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
   (signed : Bool) (kappa : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.I32) × (core.result.Result
+  RustM (ControlFlow ((core.ops.range.Range Std.I32) × (core.result.Result
     (Array Std.U8 SIG_SIZE) error.MlDsaError) × Bool × Std.Usize)
     (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError))
   := do
@@ -4576,7 +4989,7 @@ def ml_dsa.sign_internal_loop
   (mu : Array Std.U8 64#usize) (rho_pp : Array Std.U8 64#usize)
   (result : core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
   (signed : Bool) (kappa : Std.Usize) :
-  Result (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
+  RustM (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
   := do
   loop
     (fun (iter1, result1, signed1, kappa1) => ml_dsa.sign_internal_loop.body
@@ -4591,7 +5004,7 @@ def ml_dsa.sign_internal
   (K : Std.Usize) (L : Std.Usize) (SIG_SIZE : Std.Usize) (W1_BYTES : Std.Usize)
   (C_TILDE_LEN : Std.Usize) (sk : Slice Std.U8) (m_prime : Slice Std.U8)
   (rnd : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
+  RustM (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
   := do
   let (rho, key, tr, s1, s2, t0) ← encoding.sk_decode K L sk params
   let s1_hat ← polynomial.vector_ntt s1
@@ -4612,7 +5025,7 @@ def
   polynomial.vector_use_hint.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
   {N : Std.Usize} (c : polynomial.vector_use_hint.closure.closure N)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (polynomial.vector_use_hint.closure.closure N))
+  RustM (Std.I32 × (polynomial.vector_use_hint.closure.closure N))
   := do
   let (a, i, a1, i1) := c
   let a2 ← Array.index_usize a i
@@ -4628,7 +5041,7 @@ def
   polynomial.vector_use_hint.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeI32.call_once
   {N : Std.Usize} (c : polynomial.vector_use_hint.closure.closure N)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     polynomial.vector_use_hint.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -4666,7 +5079,7 @@ def
   polynomial.vector_use_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
   {N : Std.Usize} (c : polynomial.vector_use_hint.closure N)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (polynomial.vector_use_hint.closure N))
+  RustM ((Array Std.I32 256#usize) × (polynomial.vector_use_hint.closure N))
   := do
   let (a, a1, i) := c
   let a2 ←
@@ -4680,7 +5093,7 @@ def
 def
   polynomial.vector_use_hint.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayI32256.call_once
   {N : Std.Usize} (c : polynomial.vector_use_hint.closure N) (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     polynomial.vector_use_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4718,7 +5131,7 @@ def
 def polynomial.vector_use_hint
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N)
   (r : Array (Array Std.I32 256#usize) N) (gamma2 : Std.I32) :
-  Result (Array (Array Std.I32 256#usize) N)
+  RustM (Array (Array Std.I32 256#usize) N)
   := do
   createi N
     (polynomial.vector_use_hint.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256
@@ -4731,7 +5144,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure_2 K L C_TILDE_LEN W1_BYTES)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure_2 K L
+  RustM ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure_2 K L
     C_TILDE_LEN W1_BYTES))
   := do
   let (a, a1) := c
@@ -4747,7 +5160,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure_2 K L C_TILDE_LEN W1_BYTES)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     ml_dsa.verify_internal.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4788,7 +5201,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure_1 K L C_TILDE_LEN W1_BYTES)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure_1 K L
+  RustM ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure_1 K L
     C_TILDE_LEN W1_BYTES))
   := do
   let (a, a1) := c
@@ -4803,7 +5216,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure_1 K L C_TILDE_LEN W1_BYTES)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     ml_dsa.verify_internal.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4845,7 +5258,7 @@ def
   Std.Usize}
   (c : ml_dsa.verify_internal.closure.closure K L C_TILDE_LEN W1_BYTES)
   (tupled_args : Std.Usize) :
-  Result (Std.I32 × (ml_dsa.verify_internal.closure.closure K L C_TILDE_LEN
+  RustM (Std.I32 × (ml_dsa.verify_internal.closure.closure K L C_TILDE_LEN
     W1_BYTES))
   := do
   let (a, i, i1) := c
@@ -4865,7 +5278,7 @@ def
   Std.Usize}
   (c : ml_dsa.verify_internal.closure.closure K L C_TILDE_LEN W1_BYTES)
   (i : Std.Usize) :
-  Result Std.I32
+  RustM Std.I32
   := do
   let (i1, _) ←
     ml_dsa.verify_internal.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32.call_mut
@@ -4906,7 +5319,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure K L C_TILDE_LEN W1_BYTES)
   (tupled_args : Std.Usize) :
-  Result ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure K L
+  RustM ((Array Std.I32 256#usize) × (ml_dsa.verify_internal.closure K L
     C_TILDE_LEN W1_BYTES))
   := do
   let (a, i) := c
@@ -4923,7 +5336,7 @@ def
   {K : Std.Usize} {L : Std.Usize} {C_TILDE_LEN : Std.Usize} {W1_BYTES :
   Std.Usize} (c : ml_dsa.verify_internal.closure K L C_TILDE_LEN W1_BYTES)
   (i : Std.Usize) :
-  Result (Array Std.I32 256#usize)
+  RustM (Array Std.I32 256#usize)
   := do
   let (a, _) ←
     ml_dsa.verify_internal.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayI32256.call_mut
@@ -4964,7 +5377,7 @@ def ml_dsa.verify_internal
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize) (W1_BYTES :
   Std.Usize) (pk : Slice Std.U8) (m_prime : Slice Std.U8)
   (sigma : Slice Std.U8) (params : parameters.MlDsaParams) :
-  Result (core.result.Result Unit error.MlDsaError)
+  RustM (core.result.Result Unit error.MlDsaError)
   := do
   let (rho, t1) ← encoding.pk_decode K pk
   let o ← encoding.sig_decode K L C_TILDE_LEN sigma params
@@ -5063,13 +5476,13 @@ def ml_dsa.verify_internal
     Source: 'ml-dsa/src/ml_dsa.rs', lines 417:0-417:46
     Visibility: public -/
 @[global_simps, irreducible]
-def ml_dsa.M_PRIME_BUF_LEN : Result Std.Usize := 8192#usize + 257#usize
+def ml_dsa.M_PRIME_BUF_LEN : RustM Std.Usize := 8192#usize + 257#usize
 
 /-- [hacspec_ml_dsa::ml_dsa::format_m_prime]:
     Source: 'ml-dsa/src/ml_dsa.rs', lines 424:0-433:1 -/
 def ml_dsa.format_m_prime
   (message : Slice Std.U8) (ctx : Slice Std.U8) :
-  Result ((Array Std.U8 8449#usize) × Std.Usize)
+  RustM ((Array Std.U8 8449#usize) × Std.Usize)
   := do
   let buf := Array.repeat 8449#usize 0#u8
   let buf1 ← Array.update buf 0#usize ml_dsa.M_PRIME_PREFIX_PURE
@@ -5103,7 +5516,7 @@ def ml_dsa.format_m_prime
 def ml_dsa.keygen
   (K : Std.Usize) (L : Std.Usize) (PK_SIZE : Std.Usize) (SK_SIZE : Std.Usize)
   (xi : Array Std.U8 32#usize) (params : parameters.MlDsaParams) :
-  Result ((Array Std.U8 PK_SIZE) × (Array Std.U8 SK_SIZE))
+  RustM ((Array Std.U8 PK_SIZE) × (Array Std.U8 SK_SIZE))
   := do
   ml_dsa.keygen_internal K L PK_SIZE SK_SIZE xi params
 
@@ -5115,7 +5528,7 @@ def ml_dsa.sign
   (C_TILDE_LEN : Std.Usize) (sk : Slice Std.U8) (message : Slice Std.U8)
   (ctx : Slice Std.U8) (rnd : Array Std.U8 32#usize)
   (params : parameters.MlDsaParams) :
-  Result (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
+  RustM (core.result.Result (Array Std.U8 SIG_SIZE) error.MlDsaError)
   := do
   let (buf, len) ← ml_dsa.format_m_prime message ctx
   let s ←
@@ -5133,7 +5546,7 @@ def ml_dsa.verify
   Std.Usize) (pk : Slice Std.U8) (message : Slice Std.U8)
   (sigma : Slice Std.U8) (ctx : Slice Std.U8) (params : parameters.MlDsaParams)
   :
-  Result (core.result.Result Unit error.MlDsaError)
+  RustM (core.result.Result Unit error.MlDsaError)
   := do
   let (buf, len) ← ml_dsa.format_m_prime message ctx
   let s ←
@@ -5148,8 +5561,8 @@ def ml_dsa.verify
 @[rust_loop_body]
 def ntt.bit_rev_8_loop.body
   (iter : core.ops.range.Range Std.I32) (r : Std.Usize) (v : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.I32) × Std.Usize ×
-    Std.Usize) Std.Usize)
+  RustM (ControlFlow ((core.ops.range.Range Std.I32) × Std.Usize × Std.Usize)
+    Std.Usize)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -5168,7 +5581,7 @@ def ntt.bit_rev_8_loop.body
 @[rust_loop]
 def ntt.bit_rev_8_loop
   (iter : core.ops.range.Range Std.I32) (r : Std.Usize) (v : Std.Usize) :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun (iter1, r1, v1) => ntt.bit_rev_8_loop.body iter1 r1 v1)
@@ -5177,7 +5590,7 @@ def ntt.bit_rev_8_loop
 /-- [hacspec_ml_dsa::ntt::bit_rev_8]:
     Source: 'ml-dsa/src/ntt.rs', lines 44:0-52:1 -/
 @[reducible]
-def ntt.bit_rev_8 (m : Std.Usize) : Result Std.Usize := do
+def ntt.bit_rev_8 (m : Std.Usize) : RustM Std.Usize := do
   ntt.bit_rev_8_loop { start := 0#i32, «end» := 8#i32 } 0#usize m
 
 /-- [hacspec_ml_dsa::parameters::ZETA]
@@ -5192,7 +5605,7 @@ def ntt.bit_rev_8 (m : Std.Usize) : Result Std.Usize := do
     Source: 'ml-dsa/src/parameters.rs', lines 63:0-65:1
     Visibility: public -/
 def parameters.pk_size
-  (params : parameters.MlDsaParams) : Result Std.Usize := do
+  (params : parameters.MlDsaParams) : RustM Std.Usize := do
   let i ← 32#usize * params.k
   let i1 ← i * 10#usize
   32#usize + i1
@@ -5201,7 +5614,7 @@ def parameters.pk_size
     Source: 'ml-dsa/src/parameters.rs', lines 69:0-72:1
     Visibility: public -/
 def parameters.sk_size
-  (params : parameters.MlDsaParams) : Result Std.Usize := do
+  (params : parameters.MlDsaParams) : RustM Std.Usize := do
   let eta_bits ← if params.eta = 2#usize
                    then ok 3#usize
                    else ok 4#usize
@@ -5219,7 +5632,7 @@ def parameters.sk_size
     Source: 'ml-dsa/src/parameters.rs', lines 76:0-79:1
     Visibility: public -/
 def parameters.sig_size
-  (params : parameters.MlDsaParams) : Result Std.Usize := do
+  (params : parameters.MlDsaParams) : RustM Std.Usize := do
   let i ← 1#i32 <<< 17#i32
   let gamma1_bits ← if params.gamma1 = i
                       then ok 18#usize
@@ -5235,7 +5648,7 @@ def parameters.sig_size
     Source: 'ml-dsa/src/parameters.rs', lines 82:0-92:2
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.ML_DSA_44 : Result parameters.MlDsaParams := do
+def parameters.ML_DSA_44 : RustM parameters.MlDsaParams := do
   let i ← 1#i32 <<< 17#i32
   let i1 ← parameters.Q - 1#i32
   let i2 ← i1 / 88#i32
@@ -5257,7 +5670,7 @@ def parameters.ML_DSA_44 : Result parameters.MlDsaParams := do
     Source: 'ml-dsa/src/parameters.rs', lines 95:0-105:2
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.ML_DSA_65 : Result parameters.MlDsaParams := do
+def parameters.ML_DSA_65 : RustM parameters.MlDsaParams := do
   let i ← 1#i32 <<< 19#i32
   let i1 ← parameters.Q - 1#i32
   let i2 ← i1 / 32#i32
@@ -5279,7 +5692,7 @@ def parameters.ML_DSA_65 : Result parameters.MlDsaParams := do
     Source: 'ml-dsa/src/parameters.rs', lines 108:0-118:2
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.ML_DSA_87 : Result parameters.MlDsaParams := do
+def parameters.ML_DSA_87 : RustM parameters.MlDsaParams := do
   let i ← 1#i32 <<< 19#i32
   let i1 ← parameters.Q - 1#i32
   let i2 ← i1 / 32#i32

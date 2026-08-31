@@ -5,7 +5,7 @@ import CoreModels
 import HacspecMlDsa.Extraction.TypesExternal
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -19,8 +19,53 @@ set_option maxRecDepth 2048
 
 namespace hacspec_ml_dsa
 
+/-- [hacspec_ml_dsa::parameters::bitlen::closure]
+    Source: 'ml-dsa/src/parameters.rs', lines 152:33-152:55 -/
+@[reducible]
+def parameters.bitlen.closure := Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_pack::closure#1]
+    Source: 'ml-dsa/src/encoding.rs', lines 25:37-25:61 -/
+@[reducible]
+def encoding.simple_bit_pack.closure_1 (BYTES : Std.Usize) := Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_pack::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 21:33-21:57 -/
+@[reducible]
+def encoding.simple_bit_pack.closure (BYTES : Std.Usize) := Unit
+
+/-- [hacspec_ml_dsa::encoding::bit_pack::closure#1]
+    Source: 'ml-dsa/src/encoding.rs', lines 50:37-50:61 -/
+@[reducible]
+def encoding.bit_pack.closure_1 (BYTES : Std.Usize) := Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::bit_pack::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 46:33-46:57 -/
+@[reducible]
+def encoding.bit_pack.closure (BYTES : Std.Usize) := Unit
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_unpack::closure#1]
+    Source: 'ml-dsa/src/encoding.rs', lines 73:37-73:64 -/
+@[reducible]
+def encoding.simple_bit_unpack.closure_1 := Unit
+
+/-- [hacspec_ml_dsa::encoding::simple_bit_unpack::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 69:33-69:57 -/
+@[reducible]
+def encoding.simple_bit_unpack.closure := Unit
+
+/-- [hacspec_ml_dsa::encoding::bit_unpack::closure#1]
+    Source: 'ml-dsa/src/encoding.rs', lines 101:37-101:64 -/
+@[reducible]
+def encoding.bit_unpack.closure_1 := Unit
+
+/-- [hacspec_ml_dsa::encoding::bit_unpack::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 97:33-97:57 -/
+@[reducible]
+def encoding.bit_unpack.closure := Unit
+
 /-- [hacspec_ml_dsa::encoding::pk_decode::closure]
-    Source: 'ml-dsa/src/encoding.rs', lines 213:38-216:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 218:38-221:5 -/
 @[reducible]
 def encoding.pk_decode.closure (K : Std.Usize) := Slice Std.U8
 
@@ -38,26 +83,55 @@ structure parameters.MlDsaParams where
   omega : Std.Usize
   beta : Std.I32
 
+/-- [hacspec_ml_dsa::encoding::sk_encode::closure#2]
+    Source: 'ml-dsa/src/encoding.rs', lines 280:12-280:81 -/
+def encoding.sk_encode.closure_2 (K : Std.Usize) (L : Std.Usize) (SK_SIZE :
+  Std.Usize) :=
+  Std.Usize × Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::sk_encode::closure#1]
+    Source: 'ml-dsa/src/encoding.rs', lines 262:12-262:94 -/
+def encoding.sk_encode.closure_1 (K : Std.Usize) (L : Std.Usize) (SK_SIZE :
+  Std.Usize) :=
+  Std.Usize × Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::sk_encode::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 248:33-248:86 -/
+def encoding.sk_encode.closure (K : Std.Usize) (L : Std.Usize) (SK_SIZE :
+  Std.Usize) :=
+  Std.Usize × Std.Usize
+
 /-- [hacspec_ml_dsa::encoding::sk_decode::closure#2]
-    Source: 'ml-dsa/src/encoding.rs', lines 322:38-329:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 327:38-334:5 -/
 def encoding.sk_decode.closure_2 (K : Std.Usize) (L : Std.Usize) :=
   Std.Usize × Std.Usize × Slice Std.U8 × Std.Usize
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::closure#1]
-    Source: 'ml-dsa/src/encoding.rs', lines 314:38-317:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 319:38-322:5 -/
 def encoding.sk_decode.closure_1 (K : Std.Usize) (L : Std.Usize) :=
   Std.Usize × Slice Std.U8 × Std.Usize
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::closure]
-    Source: 'ml-dsa/src/encoding.rs', lines 310:38-313:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 315:38-318:5 -/
 def encoding.sk_decode.closure (K : Std.Usize) (L : Std.Usize) :=
   Std.Usize × Slice Std.U8 × Std.Usize
 
+/-- [hacspec_ml_dsa::encoding::sig_encode::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 372:12-372:85 -/
+def encoding.sig_encode.closure (K : Std.Usize) (L : Std.Usize) (SIG_SIZE :
+  Std.Usize) :=
+  Std.Usize × Std.Usize × Std.Usize
+
 /-- [hacspec_ml_dsa::encoding::sig_decode::closure]
-    Source: 'ml-dsa/src/encoding.rs', lines 416:37-419:5 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 421:37-424:5 -/
 def encoding.sig_decode.closure (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN :
   Std.Usize) :=
   Std.Usize × Slice Std.U8 × Std.Usize
+
+/-- [hacspec_ml_dsa::encoding::w1_encode::closure]
+    Source: 'ml-dsa/src/encoding.rs', lines 450:33-450:50 -/
+@[reducible]
+def encoding.w1_encode.closure (K : Std.Usize) (W1_BYTES : Std.Usize) := Unit
 
 /-- [hacspec_ml_dsa::error::MlDsaError]
     Source: 'ml-dsa/src/error.rs', lines 7:0-36:1
@@ -162,6 +236,10 @@ def ntt.ntt_layer.closure := Std.Usize × Std.Usize × Array Std.I32 256#usize
 def sampling.expand_mask.closure (L : Std.Usize) :=
   Std.Usize × Array Std.U8 64#usize × Std.I32
 
+/-- [hacspec_ml_dsa::sampling::sample_in_ball::closure]
+    Source: 'ml-dsa/src/sampling.rs', lines 82:41-82:72 -/
+def sampling.sample_in_ball.closure := Bool × Std.Usize × Std.Usize
+
 /-- [hacspec_ml_dsa::polynomial::vector_make_hint::closure::closure]
     Source: 'ml-dsa/src/polynomial.rs', lines 145:28-145:86 -/
 def polynomial.vector_make_hint.closure.closure (N : Std.Usize) :=
@@ -173,6 +251,15 @@ def polynomial.vector_make_hint.closure.closure (N : Std.Usize) :=
 def polynomial.vector_make_hint.closure (N : Std.Usize) :=
   Array (Array Std.I32 256#usize) N × Array (Array Std.I32 256#usize) N ×
   Std.I32
+
+/-- [hacspec_ml_dsa::polynomial::count_hints::closure#1]
+    Source: 'ml-dsa/src/polynomial.rs', lines 128:37-128:68 -/
+def polynomial.count_hints.closure_1 (N : Std.Usize) := Std.Usize × Std.Usize
+
+/-- [hacspec_ml_dsa::polynomial::count_hints::closure]
+    Source: 'ml-dsa/src/polynomial.rs', lines 125:33-125:60 -/
+@[reducible]
+def polynomial.count_hints.closure (N : Std.Usize) := Std.Usize
 
 /-- [hacspec_ml_dsa::polynomial::vector_low_bits::closure::closure]
     Source: 'ml-dsa/src/polynomial.rs', lines 115:24-115:72 -/

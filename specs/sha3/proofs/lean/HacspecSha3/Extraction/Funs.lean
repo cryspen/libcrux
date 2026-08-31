@@ -6,7 +6,7 @@ import HacspecSha3.Extraction.Types
 import HacspecSha3.Extraction.FunsExternal
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -28,7 +28,7 @@ namespace hacspec_sha3
     Visibility: public -/
 def keccak_f.get
   (state : Array Std.U64 25#usize) (x : Std.Usize) (y : Std.Usize) :
-  Result Std.U64
+  RustM Std.U64
   := do
   let i ← 5#usize * y
   let i1 ← i + x
@@ -65,7 +65,7 @@ def keccak_f.RHO_OFFSETS : Array Std.U32 25#usize :=
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
-  Result (Array T N)
+  RustM (Array T N)
   := do
   core.array.from_fn N coreopsfunctionFnMutFTupleUsizeTInst f
 
@@ -73,7 +73,7 @@ def createi
     Source: 'sha3/src/keccak_f.rs', lines 82:12-82:41 -/
 def keccak_f.theta.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.theta.closure_2) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.theta.closure_2)
+  RustM (Std.U64 × keccak_f.theta.closure_2)
   := do
   let (a, a1) := c
   let i ← Array.index_usize a tupled_args
@@ -85,7 +85,7 @@ def keccak_f.theta.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::theta::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::theta::closure#2<'_0, '_1>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 82:12-82:41 -/
 def keccak_f.theta.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.theta.closure_2) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.theta.closure_2) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.theta.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c
       i
@@ -115,7 +115,7 @@ def keccak_f.theta.closure_2.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 81:30-81:80 -/
 def keccak_f.theta.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.theta.closure_1) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.theta.closure_1)
+  RustM (Std.U64 × keccak_f.theta.closure_1)
   := do
   let i ← tupled_args + 4#usize
   let i1 ← i % 5#usize
@@ -130,7 +130,7 @@ def keccak_f.theta.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::theta::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::theta::closure#1<'_0>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 81:30-81:80 -/
 def keccak_f.theta.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.theta.closure_1) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.theta.closure_1) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.theta.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c
       i
@@ -160,7 +160,7 @@ def keccak_f.theta.closure_1.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 74:30-80:5 -/
 def keccak_f.theta.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.theta.closure) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.theta.closure)
+  RustM (Std.U64 × keccak_f.theta.closure)
   := do
   let i ← keccak_f.get c tupled_args 0#usize
   let i1 ← keccak_f.get c tupled_args 1#usize
@@ -176,7 +176,7 @@ def keccak_f.theta.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::theta::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::theta::closure<'_0>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 74:30-80:5 -/
 def keccak_f.theta.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.theta.closure) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.theta.closure) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.theta.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c i
   ok i1
@@ -204,7 +204,7 @@ def keccak_f.theta.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 73:0-83:1
     Visibility: public -/
 def keccak_f.theta
-  (state : Array Std.U64 25#usize) : Result (Array Std.U64 25#usize) := do
+  (state : Array Std.U64 25#usize) : RustM (Array Std.U64 25#usize) := do
   let c ←
     createi 5#usize
       keccak_f.theta.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64 state
@@ -218,7 +218,7 @@ def keccak_f.theta
     Source: 'sha3/src/keccak_f.rs', lines 89:12-89:58 -/
 def keccak_f.rho.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.rho.closure) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.rho.closure)
+  RustM (Std.U64 × keccak_f.rho.closure)
   := do
   let i ← Array.index_usize c tupled_args
   let i1 ← Array.index_usize keccak_f.RHO_OFFSETS tupled_args
@@ -228,7 +228,7 @@ def keccak_f.rho.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::rho::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::rho::closure<'_0>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 89:12-89:58 -/
 def keccak_f.rho.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.rho.closure) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.rho.closure) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.rho.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c i
   ok i1
@@ -256,7 +256,7 @@ def keccak_f.rho.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 88:0-90:1
     Visibility: public -/
 def keccak_f.rho
-  (state : Array Std.U64 25#usize) : Result (Array Std.U64 25#usize) := do
+  (state : Array Std.U64 25#usize) : RustM (Array Std.U64 25#usize) := do
   createi 25#usize keccak_f.rho.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64
     state
 
@@ -264,7 +264,7 @@ def keccak_f.rho
     Source: 'sha3/src/keccak_f.rs', lines 96:12-100:5 -/
 def keccak_f.pi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.pi.closure) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.pi.closure)
+  RustM (Std.U64 × keccak_f.pi.closure)
   := do
   let y ← tupled_args / 5#usize
   let x ← tupled_args % 5#usize
@@ -277,7 +277,7 @@ def keccak_f.pi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::pi::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::pi::closure<'_0>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 96:12-100:5 -/
 def keccak_f.pi.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.pi.closure) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.pi.closure) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.pi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c i
   ok i1
@@ -305,7 +305,7 @@ def keccak_f.pi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 95:0-101:1
     Visibility: public -/
 def keccak_f.pi
-  (state : Array Std.U64 25#usize) : Result (Array Std.U64 25#usize) := do
+  (state : Array Std.U64 25#usize) : RustM (Array Std.U64 25#usize) := do
   createi 25#usize keccak_f.pi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64
     state
 
@@ -313,7 +313,7 @@ def keccak_f.pi
     Source: 'sha3/src/keccak_f.rs', lines 107:12-111:5 -/
 def keccak_f.chi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : keccak_f.chi.closure) (tupled_args : Std.Usize) :
-  Result (Std.U64 × keccak_f.chi.closure)
+  RustM (Std.U64 × keccak_f.chi.closure)
   := do
   let y ← tupled_args / 5#usize
   let x ← tupled_args % 5#usize
@@ -332,7 +332,7 @@ def keccak_f.chi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
 /-- [hacspec_sha3::keccak_f::chi::{impl core::ops::function::FnOnce<(usize,), u64> for hacspec_sha3::keccak_f::chi::closure<'_0>}::call_once]:
     Source: 'sha3/src/keccak_f.rs', lines 107:12-111:5 -/
 def keccak_f.chi.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
-  (c : keccak_f.chi.closure) (i : Std.Usize) : Result Std.U64 := do
+  (c : keccak_f.chi.closure) (i : Std.Usize) : RustM Std.U64 := do
   let (i1, _) ←
     keccak_f.chi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut c i
   ok i1
@@ -360,7 +360,7 @@ def keccak_f.chi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64 :
     Source: 'sha3/src/keccak_f.rs', lines 106:0-112:1
     Visibility: public -/
 def keccak_f.chi
-  (state : Array Std.U64 25#usize) : Result (Array Std.U64 25#usize) := do
+  (state : Array Std.U64 25#usize) : RustM (Array Std.U64 25#usize) := do
   createi 25#usize keccak_f.chi.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64
     state
 
@@ -369,7 +369,7 @@ def keccak_f.chi
     Visibility: public -/
 def keccak_f.iota
   (state : Array Std.U64 25#usize) (round : Std.Usize) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   let i ← Array.index_usize keccak_f.ROUND_CONSTANTS round
   let i1 ← Array.index_usize state 0#usize
@@ -382,7 +382,7 @@ def keccak_f.iota
 @[rust_loop_body]
 def keccak_f.keccak_f_loop.body
   (iter : core.ops.range.Range Std.Usize) (state : Array Std.U64 25#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
     25#usize)) (Array Std.U64 25#usize))
   := do
   let (o, iter1) ←
@@ -404,7 +404,7 @@ def keccak_f.keccak_f_loop.body
 @[rust_loop]
 def keccak_f.keccak_f_loop
   (iter : core.ops.range.Range Std.Usize) (state : Array Std.U64 25#usize) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   loop
     (fun (iter1, state1) => keccak_f.keccak_f_loop.body iter1 state1)
@@ -415,7 +415,7 @@ def keccak_f.keccak_f_loop
     Visibility: public -/
 @[reducible]
 def keccak_f.keccak_f
-  (state : Array Std.U64 25#usize) : Result (Array Std.U64 25#usize) := do
+  (state : Array Std.U64 25#usize) : RustM (Array Std.U64 25#usize) := do
   keccak_f.keccak_f_loop { start := 0#usize, «end» := 24#usize } state
 
 /-- [hacspec_sha3::sha3::SHA3_224_RATE]
@@ -455,7 +455,7 @@ def keccak_f.keccak_f
     Visibility: public -/
 def sponge.iterate_keccak_f
   (n : Std.Usize) (state : Array Std.U64 25#usize) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   if n = 0#usize
   then ok state
@@ -470,7 +470,7 @@ partial_fixpoint
 def sponge.squeeze.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
   {OUTPUT_LEN : Std.Usize} (c : sponge.squeeze.closure OUTPUT_LEN)
   (tupled_args : Std.Usize) :
-  Result (Std.U8 × (sponge.squeeze.closure OUTPUT_LEN))
+  RustM (Std.U8 × (sponge.squeeze.closure OUTPUT_LEN))
   := do
   let (i, a) := c
   let b ← tupled_args / i
@@ -489,7 +489,7 @@ def sponge.squeeze.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
 def sponge.squeeze.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {OUTPUT_LEN : Std.Usize} (c : sponge.squeeze.closure OUTPUT_LEN)
   (i : Std.Usize) :
-  Result Std.U8
+  RustM Std.U8
   := do
   let (i1, _) ←
     sponge.squeeze.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut c i
@@ -523,7 +523,7 @@ def sponge.squeeze.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8 (OUTPUT_LEN :
 def sponge.squeeze
   (OUTPUT_LEN : Std.Usize) (state : Array Std.U64 25#usize) (rate : Std.Usize)
   :
-  Result (Array Std.U8 OUTPUT_LEN)
+  RustM (Array Std.U8 OUTPUT_LEN)
   := do
   createi OUTPUT_LEN
     (sponge.squeeze.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8 OUTPUT_LEN)
@@ -535,7 +535,7 @@ def sponge.squeeze
 def sponge.pad_last_block
   (message : Slice Std.U8) (msg_offset : Std.Usize) (remaining : Std.Usize)
   (rate : Std.Usize) (delim : Std.U8) :
-  Result (Array Std.U8 200#usize)
+  RustM (Array Std.U8 200#usize)
   := do
   let buffer := Array.repeat 200#usize 0#u8
   let (s, index_mut_back) ←
@@ -561,7 +561,7 @@ def sponge.pad_last_block
 def
   sponge.xor_block_into_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
   (c : sponge.xor_block_into_state.closure) (tupled_args : Std.Usize) :
-  Result (Std.U64 × sponge.xor_block_into_state.closure)
+  RustM (Std.U64 × sponge.xor_block_into_state.closure)
   := do
   let (i, a, s) := c
   let i1 ← i / 8#usize
@@ -591,7 +591,7 @@ def
 def
   sponge.xor_block_into_state.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU64.call_once
   (c : sponge.xor_block_into_state.closure) (i : Std.Usize) :
-  Result Std.U64
+  RustM Std.U64
   := do
   let (i1, _) ←
     sponge.xor_block_into_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64.call_mut
@@ -626,7 +626,7 @@ def sponge.xor_block_into_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64
     Visibility: public -/
 def sponge.xor_block_into_state
   (state : Array Std.U64 25#usize) (block : Slice Std.U8) (rate : Std.Usize) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   createi 25#usize
     sponge.xor_block_into_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU64
@@ -637,7 +637,7 @@ def sponge.xor_block_into_state
     Visibility: public -/
 def sponge.absorb_block
   (state : Array Std.U64 25#usize) (block : Slice Std.U8) (rate : Std.Usize) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   let state1 ← sponge.xor_block_into_state state block rate
   keccak_f.keccak_f state1
@@ -649,7 +649,7 @@ def sponge.absorb_final
   (state : Array Std.U64 25#usize) (message : Slice Std.U8)
   (msg_offset : Std.Usize) (remaining : Std.Usize) (rate : Std.Usize)
   (delim : Std.U8) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   let block ← sponge.pad_last_block message msg_offset remaining rate delim
   let s ←
@@ -665,7 +665,7 @@ def sponge.absorb_final
 def sponge.absorb_rec
   (state : Array Std.U64 25#usize) (rate : Std.Usize) (delim : Std.U8)
   (message : Slice Std.U8) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   let i ← core.slice.Slice.len message
   if i < rate
@@ -688,7 +688,7 @@ partial_fixpoint
     Visibility: public -/
 def sponge.absorb
   (rate : Std.Usize) (delim : Std.U8) (message : Slice Std.U8) :
-  Result (Array Std.U64 25#usize)
+  RustM (Array Std.U64 25#usize)
   := do
   let a := Array.repeat 25#usize 0#u64
   sponge.absorb_rec a rate delim message
@@ -699,7 +699,7 @@ def sponge.absorb
 def sponge.keccak
   (OUTPUT_LEN : Std.Usize) (rate : Std.Usize) (delim : Std.U8)
   (message : Slice Std.U8) :
-  Result (Array Std.U8 OUTPUT_LEN)
+  RustM (Array Std.U8 OUTPUT_LEN)
   := do
   let a ← sponge.absorb rate delim message
   sponge.squeeze OUTPUT_LEN a rate
@@ -708,42 +708,42 @@ def sponge.keccak
     Source: 'sha3/src/sha3.rs', lines 18:0-20:1
     Visibility: public -/
 def sha3.sha3_224
-  (message : Slice Std.U8) : Result (Array Std.U8 28#usize) := do
+  (message : Slice Std.U8) : RustM (Array Std.U8 28#usize) := do
   sponge.keccak 28#usize sha3.SHA3_224_RATE sha3.SHA3_DELIM message
 
 /-- [hacspec_sha3::sha3::sha3_256]:
     Source: 'sha3/src/sha3.rs', lines 23:0-25:1
     Visibility: public -/
 def sha3.sha3_256
-  (message : Slice Std.U8) : Result (Array Std.U8 32#usize) := do
+  (message : Slice Std.U8) : RustM (Array Std.U8 32#usize) := do
   sponge.keccak 32#usize sha3.SHA3_256_RATE sha3.SHA3_DELIM message
 
 /-- [hacspec_sha3::sha3::sha3_384]:
     Source: 'sha3/src/sha3.rs', lines 28:0-30:1
     Visibility: public -/
 def sha3.sha3_384
-  (message : Slice Std.U8) : Result (Array Std.U8 48#usize) := do
+  (message : Slice Std.U8) : RustM (Array Std.U8 48#usize) := do
   sponge.keccak 48#usize sha3.SHA3_384_RATE sha3.SHA3_DELIM message
 
 /-- [hacspec_sha3::sha3::sha3_512]:
     Source: 'sha3/src/sha3.rs', lines 33:0-35:1
     Visibility: public -/
 def sha3.sha3_512
-  (message : Slice Std.U8) : Result (Array Std.U8 64#usize) := do
+  (message : Slice Std.U8) : RustM (Array Std.U8 64#usize) := do
   sponge.keccak 64#usize sha3.SHA3_512_RATE sha3.SHA3_DELIM message
 
 /-- [hacspec_sha3::sha3::shake128]:
     Source: 'sha3/src/sha3.rs', lines 43:0-45:1
     Visibility: public -/
 def sha3.shake128
-  (N : Std.Usize) (message : Slice Std.U8) : Result (Array Std.U8 N) := do
+  (N : Std.Usize) (message : Slice Std.U8) : RustM (Array Std.U8 N) := do
   sponge.keccak N sha3.SHAKE128_RATE sha3.SHAKE_DELIM message
 
 /-- [hacspec_sha3::sha3::shake256]:
     Source: 'sha3/src/sha3.rs', lines 53:0-55:1
     Visibility: public -/
 def sha3.shake256
-  (N : Std.Usize) (message : Slice Std.U8) : Result (Array Std.U8 N) := do
+  (N : Std.Usize) (message : Slice Std.U8) : RustM (Array Std.U8 N) := do
   sponge.keccak N sha3.SHAKE256_RATE sha3.SHAKE_DELIM message
 
 /-- [hacspec_sha3::sponge::squeeze_state::{impl core::ops::function::FnMut<(usize,), u8> for hacspec_sha3::sponge::squeeze_state::closure<'_0, OUTPUT_LEN>}::call_mut]:
@@ -752,7 +752,7 @@ def
   sponge.squeeze_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
   {OUTPUT_LEN : Std.Usize} (c : sponge.squeeze_state.closure OUTPUT_LEN)
   (tupled_args : Std.Usize) :
-  Result (Std.U8 × (sponge.squeeze_state.closure OUTPUT_LEN))
+  RustM (Std.U8 × (sponge.squeeze_state.closure OUTPUT_LEN))
   := do
   let i ← tupled_args / 8#usize
   let i1 ← Array.index_usize c i
@@ -767,7 +767,7 @@ def
   sponge.squeeze_state.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {OUTPUT_LEN : Std.Usize} (c : sponge.squeeze_state.closure OUTPUT_LEN)
   (i : Std.Usize) :
-  Result Std.U8
+  RustM Std.U8
   := do
   let (i1, _) ←
     sponge.squeeze_state.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
@@ -804,7 +804,7 @@ def sponge.squeeze_state
   {OUTPUT_LEN : Std.Usize} (state : Array Std.U64 25#usize)
   (output : Array Std.U8 OUTPUT_LEN) (out_offset : Std.Usize) (len : Std.Usize)
   :
-  Result (Array Std.U8 OUTPUT_LEN)
+  RustM (Array Std.U8 OUTPUT_LEN)
   := do
   let bytes ←
     createi 200#usize

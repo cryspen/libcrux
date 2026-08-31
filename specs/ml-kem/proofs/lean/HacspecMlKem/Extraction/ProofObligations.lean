@@ -7,7 +7,7 @@ import HacspecMlKem.Extraction.Funs
 import HacspecMlKem.Extraction.Specs
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -114,6 +114,13 @@ theorem compress.compress.spec.proof
   (re : Array parameters.FieldElement 256#usize)
   (bits_per_compressed_coefficient : Std.Usize) :
   compress.compress.spec re bits_per_compressed_coefficient
+  := by sorry
+
+@[spec]
+theorem compress.decompress.spec.proof
+  (re : Array parameters.FieldElement 256#usize)
+  (bits_per_compressed_coefficient : Std.Usize) :
+  compress.decompress.spec re bits_per_compressed_coefficient
   := by sorry
 
 @[spec]

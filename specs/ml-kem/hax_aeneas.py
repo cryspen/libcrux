@@ -45,11 +45,10 @@ content = re.sub(
     r"\(Array\.make \d+#usize \[ a[^\]]*\]\)\n",
     "", content, flags=re.DOTALL)
 
-# 2. `core.cmp.PartialEq` has no `ne` field in hax-lean v0.2.0 (it is a default
-#    method, not a struct field). Drop the generated `ne := …default …` field.
-content = re.sub(
-    r"\n[ \t]*ne := core\.cmp\.PartialEq\.ne\.default\n[ \t]*[^\n]+\n(\s*})",
-    r"\n\1", content)
+# NOTE: a pass here used to strip the generated `ne := core.cmp.PartialEq.ne.default`
+# field, because hax-lean v0.2.0 had no `ne` field on `core.cmp.PartialEq` (it was a
+# default method). v0.3.12 does have it, so stripping it now breaks the extraction
+# with "Fields missing: `ne`". Removed.
 
 # 3. Inside `matrix.{multiply_matrix_by_column,transpose}` the `matrix` parameter
 #    shadows the `matrix` sub-namespace, so the closure-instance reference passed
@@ -58,5 +57,42 @@ for _fn in ("multiply_matrix_by_column", "transpose"):
     content = content.replace(
         f"(matrix.{_fn}.closure",
         f"(_root_.hacspec_ml_kem.matrix.{_fn}.closure")
+
+
+# 4. aeneas emits `PartialEq`'s `ne := ...default` field but not `PartialOrd`'s
+#    `lt`/`le`/`gt`/`ge`, so every generated `core.cmp.PartialOrd` record literal
+#    is rejected with "Fields missing: `lt`, `le`, `gt`, `ge`". Fill them in with
+#    the CoreModels defaults, self-referentially, exactly as CoreModels does for
+#    its own instances (`impl_def` permits the self-reference).
+def _complete_partial_ord(text: str) -> str:
+    """Fill in the `lt`/`le`/`gt`/`ge` fields aeneas omits from `PartialOrd` records.
+
+    Anchors on the record's type line (`core.cmp.PartialOrd ... := {`), walks back
+    to the declaration it belongs to, and appends the four CoreModels defaults
+    applied to that declaration -- the idiom CoreModels itself uses. The
+    self-reference needs `impl_def`, which aeneas only emits when it fills the
+    fields in itself, so the `def` is promoted.
+    """
+    lines = text.split("\n")
+    TYPE = re.compile(r"^\s+core\.cmp\.PartialOrd\b.*:= \{$")
+    DECL = re.compile(r"^(impl_def|def) (\S+)")
+    for t, line in enumerate(lines):
+        if not TYPE.match(line):
+            continue
+        d = next((k for k in range(t - 1, max(t - 4, -1), -1) if DECL.match(lines[k])), None)
+        if d is None:
+            continue
+        name = DECL.match(lines[d]).group(2)
+        close = next((k for k in range(t + 1, min(t + 40, len(lines))) if lines[k] == "}"), None)
+        if close is None or any(l.startswith("  lt :=") for l in lines[t + 1:close]):
+            continue
+        fields = []
+        for f in ("lt", "le", "gt", "ge"):
+            fields += [f"  {f} := core.cmp.PartialOrd.{f}.default", f"    {name}"]
+        lines[close:close] = fields
+        lines[d] = re.sub(r"^def ", "impl_def ", lines[d])
+    return "\n".join(lines)
+
+content = _complete_partial_ord(content)
 
 funs_lean.write_text(content)

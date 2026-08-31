@@ -6,7 +6,7 @@ import HacspecMlKem.Extraction.Types
 import HacspecMlKem.Extraction.FunsExternal
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -29,7 +29,7 @@ namespace hacspec_ml_kem
 def parameters.createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
-  Result (Array T N)
+  RustM (Array T N)
   := do
   core.array.from_fn N coreopsfunctionFnMutFTupleUsizeTInst f
 
@@ -37,7 +37,7 @@ def parameters.createi
     Source: 'ml-kem/src/parameters.rs', lines 322:4-324:5
     Visibility: public -/
 def parameters.FieldElement.new
-  (val : Std.U16) : Result parameters.FieldElement := do
+  (val : Std.U16) : RustM parameters.FieldElement := do
   ok { val }
 
 /-- [hacspec_ml_kem::parameters::FIELD_MODULUS]
@@ -49,9 +49,8 @@ def parameters.FieldElement.new
     Source: 'ml-kem/src/compress.rs', lines 52:0-60:1 -/
 def compress.compress_d
   (fe : parameters.FieldElement) (to_bit_size : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
-  massert (to_bit_size < 12#usize)
   let i ← lift (UScalar.cast .U32 to_bit_size)
   let two_pow_bit_size ← core.num.U32.pow 2#u32 i
   let i1 ← lift (UScalar.cast .U32 fe.val)
@@ -71,7 +70,7 @@ def compress.compress_d
 def
   compress.compress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : compress.compress.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × compress.compress.closure)
+  RustM (parameters.FieldElement × compress.compress.closure)
   := do
   let (a, i) := c
   let fe ← Array.index_usize a tupled_args
@@ -83,7 +82,7 @@ def
 def
   compress.compress.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : compress.compress.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     compress.compress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -118,39 +117,108 @@ def compress.compress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
 def compress.compress
   (re : Array parameters.FieldElement 256#usize)
   (bits_per_compressed_coefficient : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     compress.compress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
     (re, bits_per_compressed_coefficient)
 
+/-- [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}::call]:
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+def compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+  (c : compress.__1.requires.closure) (tupled_args : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (a, i) := c
+  let fe ← Array.index_usize a tupled_args
+  let i1 ← 1#u16 <<< i
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < 256#usize)
+    (fe.val < i1)
+
+/-- [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}::call_mut]:
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+def
+  compress.__1.requires.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+  (state : compress.__1.requires.closure) (args : Std.Usize) :
+  RustM (hax_lib.prop.Prop × compress.__1.requires.closure)
+  := do
+  let p ←
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+      state args
+  ok (p, state)
+
+/-- [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}::call_once]:
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+def
+  compress.__1.requires.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+  (c : compress.__1.requires.closure) (i : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (p, _) ←
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+      c i
+  ok p
+
+/-- Trait implementation: [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}]
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+@[reducible]
+def compress.__1.requires.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp :
+  core.ops.function.FnOnce compress.__1.requires.closure Std.Usize
+  hax_lib.prop.Prop := {
+  call_once :=
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+}
+
+/-- Trait implementation: [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}]
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+@[reducible]
+def compress.__1.requires.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp :
+  core.ops.function.FnMut compress.__1.requires.closure Std.Usize
+  hax_lib.prop.Prop := {
+  FnOnceInst :=
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp
+  call_mut :=
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+}
+
+/-- Trait implementation: [hacspec_ml_kem::compress::_#1::requires::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::compress::_#1::requires::closure<'_0, '_1>}]
+    Source: 'ml-kem/src/compress.rs', lines 24:24-25:92 -/
+@[reducible]
+def compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp :
+  core.ops.function.Fn compress.__1.requires.closure Std.Usize
+  hax_lib.prop.Prop := {
+  FnMutInst :=
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp
+  call :=
+    compress.__1.requires.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+}
+
 /-- [hacspec_ml_kem::compress::decompress_d]:
     Source: 'ml-kem/src/compress.rs', lines 84:0-90:1 -/
 def compress.decompress_d
   (fe : parameters.FieldElement) (to_bit_size : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
-  massert (to_bit_size < 12#usize)
-  let i ← 1#u16 <<< to_bit_size
-  massert (fe.val < i)
-  let i1 ← lift (UScalar.cast .U32 to_bit_size)
-  let two_pow_bit_size ← core.num.U32.pow 2#u32 i1
-  let i2 ← lift (UScalar.cast .U32 fe.val)
-  let i3 ← 2#u32 * i2
-  let i4 ← lift (UScalar.cast .U32 parameters.FIELD_MODULUS)
-  let i5 ← i3 * i4
-  let numerator ← i5 + two_pow_bit_size
-  let i6 ← two_pow_bit_size * 2#u32
-  let decompressed ← numerator / i6
-  let i7 ← lift (UScalar.cast .U16 decompressed)
-  parameters.FieldElement.new i7
+  let i ← lift (UScalar.cast .U32 to_bit_size)
+  let two_pow_bit_size ← core.num.U32.pow 2#u32 i
+  let i1 ← lift (UScalar.cast .U32 fe.val)
+  let i2 ← 2#u32 * i1
+  let i3 ← lift (UScalar.cast .U32 parameters.FIELD_MODULUS)
+  let i4 ← i2 * i3
+  let numerator ← i4 + two_pow_bit_size
+  let i5 ← two_pow_bit_size * 2#u32
+  let decompressed ← numerator / i5
+  let i6 ← lift (UScalar.cast .U16 decompressed)
+  parameters.FieldElement.new i6
 
 /-- [hacspec_ml_kem::compress::decompress::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::compress::decompress::closure<'_0, '_1>}::call_mut]:
     Source: 'ml-kem/src/compress.rs', lines 27:12-27:68 -/
 def
   compress.decompress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : compress.decompress.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × compress.decompress.closure)
+  RustM (parameters.FieldElement × compress.decompress.closure)
   := do
   let (a, i) := c
   let fe ← Array.index_usize a tupled_args
@@ -162,7 +230,7 @@ def
 def
   compress.decompress.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : compress.decompress.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     compress.decompress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -199,7 +267,7 @@ def
 def compress.decompress
   (re : Array parameters.FieldElement 256#usize)
   (bits_per_compressed_coefficient : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     compress.decompress.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -221,23 +289,16 @@ def parameters.COEFFICIENTS_IN_RING_ELEMENT : Std.Usize := 256#usize
     Source: 'ml-kem/src/parameters.rs', lines 11:0-11:75
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.BITS_PER_RING_ELEMENT : Result Std.Usize :=
+def parameters.BITS_PER_RING_ELEMENT : RustM Std.Usize :=
   parameters.COEFFICIENTS_IN_RING_ELEMENT * 12#usize
 
 /-- [hacspec_ml_kem::parameters::BYTES_PER_RING_ELEMENT]
     Source: 'ml-kem/src/parameters.rs', lines 14:0-14:68
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.BYTES_PER_RING_ELEMENT : Result Std.Usize := do
+def parameters.BYTES_PER_RING_ELEMENT : RustM Std.Usize := do
   let i ← parameters.BITS_PER_RING_ELEMENT
   i / 8#usize
-
-/-- [hacspec_ml_kem::parameters::hash_functions::H]:
-    Source: 'ml-kem/src/parameters.rs', lines 286:4-288:5
-    Visibility: public -/
-def parameters.hash_functions.H
-  (input : Slice Std.U8) : Result (Array Std.U8 32#usize) := do
-  hacspec_sha3.sha3.sha3_256 input
 
 /-- [hacspec_ml_kem::serialize::byte_encode::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::byte_encode::closure<'_0, D32, D256>}::call_mut]:
     Source: 'ml-kem/src/serialize.rs', lines 121:36-121:48 -/
@@ -245,7 +306,7 @@ def
   serialize.byte_encode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut
   {D32 : Std.Usize} {D256 : Std.Usize}
   (c : serialize.byte_encode.closure D32 D256) (tupled_args : Std.Usize) :
-  Result (Std.U16 × (serialize.byte_encode.closure D32 D256))
+  RustM (Std.U16 × (serialize.byte_encode.closure D32 D256))
   := do
   let fe ← Array.index_usize c tupled_args
   ok (fe.val, c)
@@ -256,7 +317,7 @@ def
   serialize.byte_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU16.call_once
   {D32 : Std.Usize} {D256 : Std.Usize}
   (c : serialize.byte_encode.closure D32 D256) (i : Std.Usize) :
-  Result Std.U16
+  RustM Std.U16
   := do
   let (i1, _) ←
     serialize.byte_encode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut
@@ -293,7 +354,7 @@ def
   {N : Std.Usize} {Nd : Std.Usize}
   (c : serialize.bitvector_from_bounded_ints.closure N Nd)
   (tupled_args : Std.Usize) :
-  Result (Bool × (serialize.bitvector_from_bounded_ints.closure N Nd))
+  RustM (Bool × (serialize.bitvector_from_bounded_ints.closure N Nd))
   := do
   let (a, i) := c
   let i1 ← tupled_args / i
@@ -309,7 +370,7 @@ def
   serialize.bitvector_from_bounded_ints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
   {N : Std.Usize} {Nd : Std.Usize}
   (c : serialize.bitvector_from_bounded_ints.closure N Nd) (i : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   let (b, _) ←
     serialize.bitvector_from_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool.call_mut
@@ -346,10 +407,8 @@ def
     Visibility: public -/
 def serialize.bitvector_from_bounded_ints
   {N : Std.Usize} (Nd : Std.Usize) (input : Array Std.U16 N) (d : Std.Usize) :
-  Result (Array Bool Nd)
+  RustM (Array Bool Nd)
   := do
-  let i ← N * d
-  massert (Nd = i)
   parameters.createi Nd
     (serialize.bitvector_from_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool
     N Nd) (input, d)
@@ -360,7 +419,7 @@ def
   serialize.bits_to_bytes.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
   {N : Std.Usize} {N8 : Std.Usize} (c : serialize.bits_to_bytes.closure N N8)
   (tupled_args : Std.Usize) :
-  Result (Std.U8 × (serialize.bits_to_bytes.closure N N8))
+  RustM (Std.U8 × (serialize.bits_to_bytes.closure N N8))
   := do
   let i ← 8#usize * tupled_args
   let b ← Array.index_usize c i
@@ -408,7 +467,7 @@ def
   serialize.bits_to_bytes.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {N : Std.Usize} {N8 : Std.Usize} (c : serialize.bits_to_bytes.closure N N8)
   (i : Std.Usize) :
-  Result Std.U8
+  RustM Std.U8
   := do
   let (i1, _) ←
     serialize.bits_to_bytes.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
@@ -443,19 +502,11 @@ def serialize.bits_to_bytes.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8 (N :
     Visibility: public -/
 def serialize.bits_to_bytes
   (N : Std.Usize) {N8 : Std.Usize} (bv : Array Bool N8) :
-  Result (Array Std.U8 N)
+  RustM (Array Std.U8 N)
   := do
-  let i ← N * 8#usize
-  massert (N8 = i)
   parameters.createi N
     (serialize.bits_to_bytes.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8 N
     N8) bv
-
-/-- [hacspec_ml_kem::parameters::BITS_PER_COEFFICIENT]
-    Source: 'ml-kem/src/parameters.rs', lines 5:0-5:43
-    Visibility: public -/
-@[global_simps, irreducible]
-def parameters.BITS_PER_COEFFICIENT : Std.Usize := 12#usize
 
 /-- [hacspec_ml_kem::serialize::byte_encode]:
     Source: 'ml-kem/src/serialize.rs', lines 119:0-124:1
@@ -463,13 +514,8 @@ def parameters.BITS_PER_COEFFICIENT : Std.Usize := 12#usize
 def serialize.byte_encode
   (D32 : Std.Usize) (D256 : Std.Usize)
   (p : Array parameters.FieldElement 256#usize) (d : Std.Usize) :
-  Result (Array Std.U8 D32)
+  RustM (Array Std.U8 D32)
   := do
-  massert (d <= parameters.BITS_PER_COEFFICIENT)
-  let i ← 32#usize * d
-  massert (D32 = i)
-  let i1 ← 256#usize * d
-  massert (D256 = i1)
   let p_raw ←
     parameters.createi 256#usize
       (serialize.byte_encode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16
@@ -484,7 +530,7 @@ def
   {RANK : Std.Usize} {T_SIZE : Std.Usize}
   (c : serialize.serialize_secret_key.closure RANK T_SIZE)
   (tupled_args : Std.Usize) :
-  Result (Std.U8 × (serialize.serialize_secret_key.closure RANK T_SIZE))
+  RustM (Std.U8 × (serialize.serialize_secret_key.closure RANK T_SIZE))
   := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   let i1 ← tupled_args / i
@@ -500,7 +546,7 @@ def
   serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {RANK : Std.Usize} {T_SIZE : Std.Usize}
   (c : serialize.serialize_secret_key.closure RANK T_SIZE) (i : Std.Usize) :
-  Result Std.U8
+  RustM Std.U8
   := do
   let (i1, _) ←
     serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
@@ -538,24 +584,17 @@ def
 def serialize.serialize_secret_key
   {RANK : Std.Usize} (T_SIZE : Std.Usize)
   (vector : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array Std.U8 T_SIZE)
+  RustM (Array Std.U8 T_SIZE)
   := do
   parameters.createi T_SIZE
     (serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8
     RANK T_SIZE) vector
 
-/-- [hacspec_ml_kem::parameters::hash_functions::G]:
-    Source: 'ml-kem/src/parameters.rs', lines 279:4-281:5
-    Visibility: public -/
-def parameters.hash_functions.G
-  (input : Slice Std.U8) : Result (Array Std.U8 64#usize) := do
-  hacspec_sha3.sha3.sha3_512 input
-
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::FieldElement}::neg]:
     Source: 'ml-kem/src/parameters.rs', lines 356:4-358:5
     Visibility: public -/
 def parameters.FieldElement.neg
-  (self : parameters.FieldElement) : Result parameters.FieldElement := do
+  (self : parameters.FieldElement) : RustM parameters.FieldElement := do
   let i ← parameters.FIELD_MODULUS - self.val
   let i1 ← i % parameters.FIELD_MODULUS
   parameters.FieldElement.new i1
@@ -565,7 +604,7 @@ def parameters.FieldElement.neg
     Visibility: public -/
 def parameters.FieldElement.mul
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let i ← lift (UScalar.cast .U32 self.val)
   let i1 ← lift (UScalar.cast .U32 other.val)
@@ -580,7 +619,7 @@ def parameters.FieldElement.mul
     Visibility: public -/
 def parameters.FieldElement.add
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let i ← lift (UScalar.cast .U32 self.val)
   let i1 ← lift (UScalar.cast .U32 other.val)
@@ -595,7 +634,7 @@ def parameters.FieldElement.add
 def ntt.base_case_multiply_odd
   (a0 : parameters.FieldElement) (a1 : parameters.FieldElement)
   (b0 : parameters.FieldElement) (b1 : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let fe ← parameters.FieldElement.mul a0 b1
   let fe1 ← parameters.FieldElement.mul a1 b0
@@ -607,7 +646,7 @@ def ntt.base_case_multiply_even
   (a0 : parameters.FieldElement) (a1 : parameters.FieldElement)
   (b0 : parameters.FieldElement) (b1 : parameters.FieldElement)
   (zeta : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let fe ← parameters.FieldElement.mul a0 b0
   let fe1 ← parameters.FieldElement.mul a1 b1
@@ -620,7 +659,7 @@ def
   ntt.ntt_multiply_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {N : Std.Usize} (c : ntt.ntt_multiply_n.closure N) (tupled_args : Std.Usize)
   :
-  Result (parameters.FieldElement × (ntt.ntt_multiply_n.closure N))
+  RustM (parameters.FieldElement × (ntt.ntt_multiply_n.closure N))
   := do
   let (s, a, a1) := c
   let group ← tupled_args / 4#usize
@@ -655,7 +694,7 @@ def
 def
   ntt.ntt_multiply_n.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {N : Std.Usize} (c : ntt.ntt_multiply_n.closure N) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     ntt.ntt_multiply_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -693,7 +732,7 @@ def ntt.ntt_multiply_n
   {N : Std.Usize} (p1 : Array parameters.FieldElement N)
   (p2 : Array parameters.FieldElement N)
   (zetas : Slice parameters.FieldElement) :
-  Result (Array parameters.FieldElement N)
+  RustM (Array parameters.FieldElement N)
   := do
   parameters.createi N
     (ntt.ntt_multiply_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -703,7 +742,7 @@ def ntt.ntt_multiply_n
     Source: 'ml-kem/src/ntt.rs', lines 94:0-223:2
     Visibility: public -/
 @[global_simps, irreducible]
-def ntt.ZETAS : Result (Array parameters.FieldElement 128#usize) := do
+def ntt.ZETAS : RustM (Array parameters.FieldElement 128#usize) := do
   let fe ← parameters.FieldElement.new 1#u16
   let fe1 ← parameters.FieldElement.new 1729#u16
   let fe2 ← parameters.FieldElement.new 2580#u16
@@ -853,7 +892,7 @@ def ntt.ZETAS : Result (Array parameters.FieldElement 128#usize) := do
 def ntt.multiply_ntts
   (p1 : Array parameters.FieldElement 256#usize)
   (p2 : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let a ← ntt.ZETAS
   let s ←
@@ -868,7 +907,7 @@ def ntt.multiply_ntts
 def
   matrix.add_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : matrix.add_polynomials.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × matrix.add_polynomials.closure)
+  RustM (parameters.FieldElement × matrix.add_polynomials.closure)
   := do
   let (a, a1) := c
   let fe ← Array.index_usize a tupled_args
@@ -887,7 +926,7 @@ def
 def
   matrix.add_polynomials.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : matrix.add_polynomials.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     matrix.add_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -924,7 +963,7 @@ def
 def matrix.add_polynomials
   (p1 : Array parameters.FieldElement 256#usize)
   (p2 : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     matrix.add_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -940,7 +979,7 @@ def
   (a1 : Array (Array parameters.FieldElement 256#usize) RANK) (i : Std.Usize)
   (iter : core.ops.range.Range Std.Usize)
   (result : Array parameters.FieldElement 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
     parameters.FieldElement 256#usize)) (Array parameters.FieldElement
     256#usize))
   := do
@@ -966,7 +1005,7 @@ def
   (a : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   (a1 : Array (Array parameters.FieldElement 256#usize) RANK) (i : Std.Usize)
   (result : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   loop
     (fun (iter1, result1) =>
@@ -980,7 +1019,7 @@ def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : matrix.multiply_matrix_by_column.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK))
   := do
   let (a, a1) := c
@@ -997,7 +1036,7 @@ def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : matrix.multiply_matrix_by_column.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -1038,7 +1077,7 @@ def matrix.multiply_matrix_by_column
   {RANK : Std.Usize}
   (matrix : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   (vector : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -1050,7 +1089,7 @@ def
   matrix.add_vectors.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : matrix.add_vectors.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (matrix.add_vectors.closure RANK))
   := do
   let (a, a1) := c
@@ -1064,7 +1103,7 @@ def
 def
   matrix.add_vectors.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : matrix.add_vectors.closure RANK) (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     matrix.add_vectors.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -1103,7 +1142,7 @@ def matrix.add_vectors
   {RANK : Std.Usize}
   (v1 : Array (Array parameters.FieldElement 256#usize) RANK)
   (v2 : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (matrix.add_vectors.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -1117,19 +1156,44 @@ def matrix.compute_As_plus_e
   (a_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (s_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (error_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let product ← matrix.multiply_matrix_by_column a_as_ntt s_as_ntt
   matrix.add_vectors product error_as_ntt
+
+/-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::closure<'_0, N, Nd>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 172:37-172:73 -/
+def
+  serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {N : Std.Usize} {Nd : Std.Usize}
+  (c : serialize.bitvector_to_bounded_ints.closure.closure N Nd)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← 1#u16 <<< tupled_args
+  ok (c < i)
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::closure<'_0, N, Nd>}]
+    Source: 'ml-kem/src/serialize.rs', lines 172:37-172:73 -/
+@[reducible]
+def
+  serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (N : Std.Usize) (Nd : Std.Usize) : core.ops.function.FnOnce
+  (serialize.bitvector_to_bounded_ints.closure.closure N Nd) Std.Usize Bool
+  := {
+  call_once :=
+    serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_mut]: loop body 0:
     Source: 'ml-kem/src/serialize.rs', lines 165:8-176:9 -/
 @[rust_loop_body]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop.body
-  {Nd : Std.Usize} (i : Std.Usize) (a : Array Bool Nd) (i1 : Std.Usize)
-  (iter : core.ops.range.Range Std.Usize) (coefficient : Std.U16) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U16) Std.U16)
+  (N : Std.Usize) {Nd : Std.Usize} (i : Std.Usize) (a : Array Bool Nd)
+  (i1 : Std.Usize) (iter : core.ops.range.Range Std.Usize)
+  (coefficient : Std.U16) :
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U16) Std.U16)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -1137,6 +1201,10 @@ def
   match o with
   | core.option.Option.None => ok (done coefficient)
   | core.option.Option.Some j =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      N Nd) coefficient
     let i2 ← i1 * i
     let i3 ← i2 + j
     let b ← Array.index_usize a i3
@@ -1152,14 +1220,15 @@ def
 @[rust_loop]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop
-  {Nd : Std.Usize} (iter : core.ops.range.Range Std.Usize) (i : Std.Usize)
-  (a : Array Bool Nd) (i1 : Std.Usize) (coefficient : Std.U16) :
-  Result Std.U16
+  (N : Std.Usize) {Nd : Std.Usize} (iter : core.ops.range.Range Std.Usize)
+  (i : Std.Usize) (a : Array Bool Nd) (i1 : Std.Usize) (coefficient : Std.U16)
+  :
+  RustM Std.U16
   := do
   loop
     (fun (iter1, coefficient1) =>
       serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop.body
-      i a i1 iter1 coefficient1)
+      N i a i1 iter1 coefficient1)
     (iter, coefficient)
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_mut]:
@@ -1169,12 +1238,12 @@ def
   {N : Std.Usize} {Nd : Std.Usize}
   (c : serialize.bitvector_to_bounded_ints.closure N Nd)
   (tupled_args : Std.Usize) :
-  Result (Std.U16 × (serialize.bitvector_to_bounded_ints.closure N Nd))
+  RustM (Std.U16 × (serialize.bitvector_to_bounded_ints.closure N Nd))
   := do
   let (i, a) := c
   let coefficient ←
     serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop
-      { start := 0#usize, «end» := i } i a tupled_args 0#u16
+      N { start := 0#usize, «end» := i } i a tupled_args 0#u16
   ok (coefficient, c)
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnOnce<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_once]:
@@ -1183,7 +1252,7 @@ def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU16.call_once
   {N : Std.Usize} {Nd : Std.Usize}
   (c : serialize.bitvector_to_bounded_ints.closure N Nd) (i : Std.Usize) :
-  Result Std.U16
+  RustM Std.U16
   := do
   let (i1, _) ←
     serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut
@@ -1220,10 +1289,8 @@ def
     Visibility: public -/
 def serialize.bitvector_to_bounded_ints
   (N : Std.Usize) {Nd : Std.Usize} (input : Array Bool Nd) (d : Std.Usize) :
-  Result (Array Std.U16 N)
+  RustM (Array Std.U16 N)
   := do
-  let i ← N * d
-  massert (Nd = i)
   parameters.createi N
     (serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16
     N Nd) (d, input)
@@ -1234,7 +1301,7 @@ def
   serialize.bytes_to_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool.call_mut
   {N : Std.Usize} {N8 : Std.Usize} (c : serialize.bytes_to_bits.closure N N8)
   (tupled_args : Std.Usize) :
-  Result (Bool × (serialize.bytes_to_bits.closure N N8))
+  RustM (Bool × (serialize.bytes_to_bits.closure N N8))
   := do
   let i ← tupled_args / 8#usize
   let i1 ← Array.index_usize c i
@@ -1249,7 +1316,7 @@ def
   serialize.bytes_to_bits.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
   {N : Std.Usize} {N8 : Std.Usize} (c : serialize.bytes_to_bits.closure N N8)
   (i : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   let (b, _) ←
     serialize.bytes_to_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool.call_mut
@@ -1284,10 +1351,8 @@ def serialize.bytes_to_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool (N
     Visibility: public -/
 def serialize.bytes_to_bits
   {N : Std.Usize} (N8 : Std.Usize) (bytes : Array Std.U8 N) :
-  Result (Array Bool N8)
+  RustM (Array Bool N8)
   := do
-  let i ← N * 8#usize
-  massert (N8 = i)
   parameters.createi N8
     (serialize.bytes_to_bits.closure.Insts.CoreOpsFunctionFnMutTupleUsizeBool N
     N8) bytes
@@ -1298,15 +1363,8 @@ def serialize.bytes_to_bits
 def serialize.byte_decode_generic
   (N : Std.Usize) (N8 : Std.Usize) {Nd : Std.Usize} (Nd8 : Std.Usize)
   (b : Array Std.U8 Nd) (d : Std.Usize) :
-  Result (Array Std.U16 N8)
+  RustM (Array Std.U16 N8)
   := do
-  massert (d <= parameters.BITS_PER_COEFFICIENT)
-  let i ← N * 8#usize
-  massert (N8 = i)
-  let i1 ← N * d
-  massert (Nd = i1)
-  let i2 ← Nd * 8#usize
-  massert (Nd8 = i2)
   let bv ← serialize.bytes_to_bits Nd8 b
   serialize.bitvector_to_bounded_ints N8 bv d
 
@@ -1319,7 +1377,7 @@ def sampling.sample_ntt_loop.body
   (iter : core.ops.range.Range Std.Usize)
   (result : Array parameters.FieldElement 256#usize)
   (sampled_coefficients : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
     parameters.FieldElement 256#usize) × Std.Usize) ((Array
     parameters.FieldElement 256#usize) × Std.Usize))
   := do
@@ -1350,7 +1408,7 @@ def sampling.sample_ntt_loop
   (decoded : Array Std.U16 N8)
   (result : Array parameters.FieldElement 256#usize)
   (sampled_coefficients : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) × Std.Usize)
+  RustM ((Array parameters.FieldElement 256#usize) × Std.Usize)
   := do
   loop
     (fun (iter1, result1, sampled_coefficients1) =>
@@ -1364,7 +1422,7 @@ def sampling.sample_ntt_loop
 def sampling.sample_ntt
   (N : Std.Usize) (N8 : Std.Usize) {N12 : Std.Usize} (N96 : Std.Usize)
   (bytes : Array Std.U8 N12) :
-  Result (core.result.Result (Array parameters.FieldElement 256#usize)
+  RustM (core.result.Result (Array parameters.FieldElement 256#usize)
     sampling.BadRejectionSamplingRandomnessError)
   := do
   let decoded ← serialize.byte_decode_generic N N8 N96 bytes 12#usize
@@ -1377,13 +1435,6 @@ def sampling.sample_ntt
   then ok (core.result.Result.Ok result1)
   else ok (core.result.Result.Err ())
 
-/-- [hacspec_ml_kem::parameters::hash_functions::XOF]:
-    Source: 'ml-kem/src/parameters.rs', lines 296:4-298:5
-    Visibility: public -/
-def parameters.hash_functions.XOF
-  (LEN : Std.Usize) (input : Slice Std.U8) : Result (Array Std.U8 LEN) := do
-  hacspec_sha3.sha3.shake128 LEN input
-
 /-- [hacspec_ml_kem::matrix::sample_matrix_A]: loop body 0:
     Source: 'ml-kem/src/matrix.rs', lines 106:4-120:1
     Visibility: public -/
@@ -1392,11 +1443,10 @@ def matrix.sample_matrix_A_loop.body
   {RANK : Std.Usize} (iter : core.ops.range.Range Std.Usize) (transpose : Bool)
   (A_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (xof_input : Array Std.U8 34#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Bool × (Array
-    (Array (Array parameters.FieldElement 256#usize) RANK) RANK) × (Array
-    Std.U8 34#usize)) (core.result.Result (Array (Array (Array
-    parameters.FieldElement 256#usize) RANK) RANK)
-    sampling.BadRejectionSamplingRandomnessError))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Bool × (Array (Array
+    (Array parameters.FieldElement 256#usize) RANK) RANK) × (Array Std.U8
+    34#usize)) (core.result.Result (Array (Array (Array parameters.FieldElement
+    256#usize) RANK) RANK) sampling.BadRejectionSamplingRandomnessError))
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -1418,11 +1468,13 @@ def matrix.sample_matrix_A_loop.body
     | core.ops.control_flow.ControlFlow.Continue val =>
       if transpose
       then
+        let _ ← Array.index_usize A_as_ntt j
         let (a, index_mut_back) ← Array.index_mut_usize A_as_ntt j
         let a1 ← Array.update a i val
         let a2 := index_mut_back a1
         ok (cont (iter1, true, a2, xof_input2))
       else
+        let _ ← Array.index_usize A_as_ntt i
         let (a, index_mut_back) ← Array.index_mut_usize A_as_ntt i
         let a1 ← Array.update a j val
         let a2 := index_mut_back a1
@@ -1443,7 +1495,7 @@ def matrix.sample_matrix_A_loop
   {RANK : Std.Usize} (iter : core.ops.range.Range Std.Usize) (transpose : Bool)
   (A_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (xof_input : Array Std.U8 34#usize) :
-  Result (core.result.Result (Array (Array (Array parameters.FieldElement
+  RustM (core.result.Result (Array (Array (Array parameters.FieldElement
     256#usize) RANK) RANK) sampling.BadRejectionSamplingRandomnessError)
   := do
   loop
@@ -1456,7 +1508,7 @@ def matrix.sample_matrix_A_loop
     Visibility: public -/
 def matrix.sample_matrix_A
   (RANK : Std.Usize) (seed_for_A : Slice Std.U8) (transpose : Bool) :
-  Result (core.result.Result (Array (Array (Array parameters.FieldElement
+  RustM (core.result.Result (Array (Array (Array parameters.FieldElement
     256#usize) RANK) RANK) sampling.BadRejectionSamplingRandomnessError)
   := do
   let fe ← parameters.FieldElement.new 0#u16
@@ -1481,7 +1533,7 @@ def matrix.sample_matrix_A
     Visibility: public -/
 def parameters.FieldElement.sub
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let i ← lift (UScalar.cast .U32 self.val)
   let i1 ← lift (UScalar.cast .U32 parameters.FIELD_MODULUS)
@@ -1499,7 +1551,7 @@ def parameters.FieldElement.sub
 def ntt.butterfly
   (zeta : parameters.FieldElement) (a : parameters.FieldElement)
   (b : parameters.FieldElement) :
-  Result (parameters.FieldElement × parameters.FieldElement)
+  RustM (parameters.FieldElement × parameters.FieldElement)
   := do
   let t ← parameters.FieldElement.mul zeta b
   let fe ← parameters.FieldElement.add a t
@@ -1511,7 +1563,7 @@ def ntt.butterfly
 def
   ntt.ntt_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {N : Std.Usize} (c : ntt.ntt_layer_n.closure N) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × (ntt.ntt_layer_n.closure N))
+  RustM (parameters.FieldElement × (ntt.ntt_layer_n.closure N))
   := do
   let (i, s, a) := c
   let i1 ← 2#usize * i
@@ -1538,7 +1590,7 @@ def
 def
   ntt.ntt_layer_n.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {N : Std.Usize} (c : ntt.ntt_layer_n.closure N) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     ntt.ntt_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -1573,7 +1625,7 @@ def ntt.ntt_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement (N
 def ntt.ntt_layer_n
   {N : Std.Usize} (p : Array parameters.FieldElement N) (len : Std.Usize)
   (zetas : Slice parameters.FieldElement) :
-  Result (Array parameters.FieldElement N)
+  RustM (Array parameters.FieldElement N)
   := do
   parameters.createi N
     (ntt.ntt_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -1583,7 +1635,7 @@ def ntt.ntt_layer_n
     Source: 'ml-kem/src/ntt.rs', lines 280:0-284:1 -/
 def ntt.ntt_layer
   (p : Array parameters.FieldElement 256#usize) (layer : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let len ← 1#usize <<< layer
   let a ← ntt.ZETAS
@@ -1600,7 +1652,7 @@ def ntt.ntt_layer
     Source: 'ml-kem/src/ntt.rs', lines 286:0-295:1 -/
 def ntt.ntt
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let p1 ← ntt.ntt_layer p 7#usize
   let p2 ← ntt.ntt_layer p1 6#usize
@@ -1616,7 +1668,7 @@ def
   ntt.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : ntt.vector_ntt.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) × (ntt.vector_ntt.closure
+  RustM ((Array parameters.FieldElement 256#usize) × (ntt.vector_ntt.closure
     RANK))
   := do
   let a ← Array.index_usize c tupled_args
@@ -1628,7 +1680,7 @@ def
 def
   ntt.vector_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : ntt.vector_ntt.closure RANK) (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     ntt.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -1666,7 +1718,7 @@ def
 def ntt.vector_ntt
   {RANK : Std.Usize}
   (vector : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (ntt.vector_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -1676,7 +1728,7 @@ def ntt.vector_ntt
     Source: 'ml-kem/src/ind_cpa.rs', lines 34:0-39:1 -/
 def ind_cpa.concat_byte
   {N : Std.Usize} (N1 : Std.Usize) (a : Array Std.U8 N) (b : Std.U8) :
-  Result (Array Std.U8 N1)
+  RustM (Array Std.U8 N1)
   := do
   let result := Array.repeat N1 0#u8
   let (s, index_mut_back) ←
@@ -1689,13 +1741,30 @@ def ind_cpa.concat_byte
   let result1 := index_mut_back s2
   Array.update result1 N b
 
+/-- [hacspec_ml_kem::sampling::sum_coins::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::sum_coins::closure<'_0>}::call_once]:
+    Source: 'ml-kem/src/sampling.rs', lines 103:33-103:61 -/
+def
+  sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : sampling.sum_coins.closure) (tupled_args : Std.Usize) : RustM Bool := do
+  let i ← lift (UScalar.cast .U16 tupled_args)
+  ok (c <= i)
+
+/-- Trait implementation: [hacspec_ml_kem::sampling::sum_coins::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::sum_coins::closure<'_0>}]
+    Source: 'ml-kem/src/sampling.rs', lines 103:33-103:61 -/
+@[reducible]
+def sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
+  core.ops.function.FnOnce sampling.sum_coins.closure Std.Usize Bool := {
+  call_once :=
+    sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_kem::sampling::sum_coins]: loop body 0:
     Source: 'ml-kem/src/sampling.rs', lines 101:4-105:5 -/
 @[rust_loop_body]
 def sampling.sum_coins_loop.body
   (coins : Slice Bool) (iter : core.ops.range.Range Std.Usize) (sum : Std.U16)
   :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U16) Std.U16)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U16) Std.U16)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -1703,6 +1772,9 @@ def sampling.sum_coins_loop.body
   match o with
   | core.option.Option.None => ok (done sum)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool sum
     let b ← Slice.index_usize coins i
     let i1 ← lift (UScalar.cast_fromBool .U16 b)
     let sum1 ← sum + i1
@@ -1714,7 +1786,7 @@ def sampling.sum_coins_loop.body
 def sampling.sum_coins_loop
   (iter : core.ops.range.Range Std.Usize) (coins : Slice Bool) (sum : Std.U16)
   :
-  Result Std.U16
+  RustM Std.U16
   := do
   loop
     (fun (iter1, sum1) => sampling.sum_coins_loop.body coins iter1 sum1)
@@ -1723,10 +1795,7 @@ def sampling.sum_coins_loop
 /-- [hacspec_ml_kem::sampling::sum_coins]:
     Source: 'ml-kem/src/sampling.rs', lines 98:0-107:1 -/
 def sampling.sum_coins
-  (eta : Std.Usize) (coins : Slice Bool) : Result parameters.FieldElement := do
-  massert (eta <= 4#usize)
-  let i ← core.slice.Slice.len coins
-  massert (i = eta)
+  (eta : Std.Usize) (coins : Slice Bool) : RustM parameters.FieldElement := do
   let sum ←
     sampling.sum_coins_loop { start := 0#usize, «end» := eta } coins 0#u16
   parameters.FieldElement.new sum
@@ -1738,7 +1807,7 @@ def
   {ETA64 : Std.Usize} {ETA512 : Std.Usize}
   (c : sampling.sample_poly_cbd.closure ETA64 ETA512) (tupled_args : Std.Usize)
   :
-  Result (parameters.FieldElement × (sampling.sample_poly_cbd.closure ETA64
+  RustM (parameters.FieldElement × (sampling.sample_poly_cbd.closure ETA64
     ETA512))
   := do
   let (i, a) := c
@@ -1775,7 +1844,7 @@ def
   sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {ETA64 : Std.Usize} {ETA512 : Std.Usize}
   (c : sampling.sample_poly_cbd.closure ETA64 ETA512) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -1815,29 +1884,18 @@ def
 def sampling.sample_poly_cbd
   {ETA64 : Std.Usize} (ETA512 : Std.Usize) (eta : Std.Usize)
   (bytes : Array Std.U8 ETA64) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
-  let i ← eta * 64#usize
-  massert (ETA64 = i)
-  let i1 ← eta * 512#usize
-  massert (ETA512 = i1)
   let bits ← serialize.bytes_to_bits ETA512 bytes
   parameters.createi 256#usize
     (sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
     ETA64 ETA512) (eta, bits)
 
-/-- [hacspec_ml_kem::parameters::hash_functions::PRF]:
-    Source: 'ml-kem/src/parameters.rs', lines 291:4-293:5
-    Visibility: public -/
-def parameters.hash_functions.PRF
-  (LEN : Std.Usize) (input : Slice Std.U8) : Result (Array Std.U8 LEN) := do
-  hacspec_sha3.sha3.shake256 LEN input
-
 /-- [hacspec_ml_kem::ind_cpa::sample_secret]:
     Source: 'ml-kem/src/ind_cpa.rs', lines 19:0-31:1 -/
 def ind_cpa.sample_secret
   (eta : Std.Usize) (prf_input : Array Std.U8 33#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   match eta.val with
   | 2 =>
@@ -1857,7 +1915,7 @@ def
   ind_cpa.sample_vector_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : ind_cpa.sample_vector_cbd.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (ind_cpa.sample_vector_cbd.closure RANK))
   := do
   let (s, i, i1) := c
@@ -1878,7 +1936,7 @@ def
   ind_cpa.sample_vector_cbd.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : ind_cpa.sample_vector_cbd.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     ind_cpa.sample_vector_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -1918,7 +1976,7 @@ def
 def ind_cpa.sample_vector_cbd
   (RANK : Std.Usize) (eta : Std.Usize) (seed : Slice Std.U8)
   (domain_separator : Std.U8) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (ind_cpa.sample_vector_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -1930,7 +1988,7 @@ def ind_cpa.sample_vector_cbd
 def ind_cpa.sample_vector_cbd_then_ntt
   (RANK : Std.Usize) (eta : Std.Usize) (seed : Slice Std.U8)
   (domain_separator : Std.U8) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let a ← ind_cpa.sample_vector_cbd RANK eta seed domain_separator
   ntt.vector_ntt a
@@ -1941,13 +1999,11 @@ def ind_cpa.sample_vector_cbd_then_ntt
 def ind_cpa.generate_keypair_unpacked
   (RANK : Std.Usize) (params : parameters.MlKemParams)
   (key_generation_seed : Slice Std.U8) :
-  Result (core.result.Result ((Array (Array parameters.FieldElement 256#usize)
+  RustM (core.result.Result ((Array (Array parameters.FieldElement 256#usize)
     RANK) × (Array (Array parameters.FieldElement 256#usize) RANK) × (Array
     (Array (Array parameters.FieldElement 256#usize) RANK) RANK) × (Array
     Std.U8 32#usize)) sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← core.slice.Slice.len key_generation_seed
-  massert (i = 32#usize)
   let g_input := Array.repeat 33#usize 0#u8
   let (s, index_mut_back) ←
     core.Array.Insts.CoreOpsIndexIndexMut.index_mut
@@ -1958,8 +2014,8 @@ def ind_cpa.generate_keypair_unpacked
     core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s
       key_generation_seed
   let g_input1 := index_mut_back s1
-  let i1 ← lift (UScalar.cast .U8 RANK)
-  let g_input2 ← Array.update g_input1 32#usize i1
+  let i ← lift (UScalar.cast .U8 RANK)
+  let g_input2 ← Array.update g_input1 32#usize i
   let s2 ← lift (Array.to_slice g_input2)
   let hashed ← parameters.hash_functions.G s2
   let s3 ← lift (Array.to_slice hashed)
@@ -1972,10 +2028,10 @@ def ind_cpa.generate_keypair_unpacked
     let secret_as_ntt ←
       ind_cpa.sample_vector_cbd_then_ntt RANK params.eta1
         seed_for_secret_and_error 0#u8
-    let i2 ← lift (UScalar.cast .U8 RANK)
+    let i1 ← lift (UScalar.cast .U8 RANK)
     let error_as_ntt ←
       ind_cpa.sample_vector_cbd_then_ntt RANK params.eta1
-        seed_for_secret_and_error i2
+        seed_for_secret_and_error i1
     let t_as_ntt ← matrix.compute_As_plus_e val secret_as_ntt error_as_ntt
     let seed_for_A := Array.repeat 32#usize 0#u8
     let (s4, to_slice_mut_back) ← lift (Array.to_slice_mut seed_for_A)
@@ -1998,17 +2054,9 @@ def ind_cpa.generate_keypair_unpacked
 def ind_cpa.generate_keypair
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_PKE_SIZE : Std.Usize)
   (params : parameters.MlKemParams) (key_generation_seed : Slice Std.U8) :
-  Result (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8
+  RustM (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8
     DK_PKE_SIZE)) sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * i
-  massert (DK_PKE_SIZE = i3)
-  let i4 ← core.slice.Slice.len key_generation_seed
-  massert (i4 = 32#usize)
   let r ← ind_cpa.generate_keypair_unpacked RANK params key_generation_seed
   let cf ← core.result.Result.Insts.CoreOpsTry_traitTry.branch r
   match cf with
@@ -2048,19 +2096,9 @@ def ind_cca.keygen_internal
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_PKE_SIZE : Std.Usize) (DK_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (d : Array Std.U8 32#usize)
   (z : Array Std.U8 32#usize) :
-  Result (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8 DK_SIZE))
+  RustM (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8 DK_SIZE))
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * i
-  massert (DK_PKE_SIZE = i3)
-  let i4 ← DK_PKE_SIZE + EK_SIZE
-  let i5 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
-  let i6 ← i5 + 32#usize
-  massert (DK_SIZE = i6)
   let s ← lift (Array.to_slice d)
   let r ← ind_cpa.generate_keypair RANK EK_SIZE DK_PKE_SIZE params s
   let cf ← core.result.Result.Insts.CoreOpsTry_traitTry.branch r
@@ -2077,33 +2115,34 @@ def ind_cca.keygen_internal
     let s3 ←
       core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s1 s2
     let dk1 := index_mut_back s3
+    let i ← DK_PKE_SIZE + EK_SIZE
     let (s4, index_mut_back1) ←
       core.Array.Insts.CoreOpsIndexIndexMut.index_mut
         (core.Slice.Insts.CoreOpsIndexIndexMut
         (core.ops.range.RangeUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-        Std.U8)) dk1 { start := DK_PKE_SIZE, «end» := i4 }
+        Std.U8)) dk1 { start := DK_PKE_SIZE, «end» := i }
     let s5 ← lift (Array.to_slice ek)
     let s6 ←
       core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s4 s5
     let dk2 := index_mut_back1 s6
-    let i7 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
+    let i1 ← i + parameters.hash_functions.H_DIGEST_SIZE
     let (s7, index_mut_back2) ←
       core.Array.Insts.CoreOpsIndexIndexMut.index_mut
         (core.Slice.Insts.CoreOpsIndexIndexMut
         (core.ops.range.RangeUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-        Std.U8)) dk2 { start := i4, «end» := i7 }
+        Std.U8)) dk2 { start := i, «end» := i1 }
     let s8 ← lift (Array.to_slice ek)
     let a ← parameters.hash_functions.H s8
     let s9 ← lift (Array.to_slice a)
     let s10 ←
       core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s7 s9
     let dk3 := index_mut_back2 s10
-    let i8 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
+    let i2 ← i + parameters.hash_functions.H_DIGEST_SIZE
     let (s11, index_mut_back3) ←
       core.Array.Insts.CoreOpsIndexIndexMut.index_mut
         (core.Slice.Insts.CoreOpsIndexIndexMut
         (core.ops.range.RangeFromUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-        Std.U8)) dk3 { start := i8 }
+        Std.U8)) dk3 { start := i2 }
     let s12 ← lift (Array.to_slice z)
     let s13 ←
       core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s11 s12
@@ -2121,7 +2160,7 @@ def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {D32 : Std.Usize} {D256 : Std.Usize}
   (c : serialize.byte_decode.closure D32 D256) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × (serialize.byte_decode.closure D32 D256))
+  RustM (parameters.FieldElement × (serialize.byte_decode.closure D32 D256))
   := do
   let i ← Array.index_usize c tupled_args
   let i1 ← i % parameters.FIELD_MODULUS
@@ -2134,7 +2173,7 @@ def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {D32 : Std.Usize} {D256 : Std.Usize}
   (c : serialize.byte_decode.closure D32 D256) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     serialize.byte_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -2173,16 +2212,8 @@ def
     Visibility: public -/
 def serialize.byte_decode
   {D32 : Std.Usize} (D256 : Std.Usize) (b : Array Std.U8 D32) (d : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
-  massert (d <= parameters.BITS_PER_COEFFICIENT)
-  let s ← lift (Array.to_slice b)
-  let i ← core.slice.Slice.len s
-  let i1 ← 32#usize * d
-  massert (i = i1)
-  massert (D32 = i1)
-  let i2 ← 256#usize * d
-  massert (D256 = i2)
   let decoded ← serialize.byte_decode_generic 32#usize 256#usize D256 b d
   parameters.createi 256#usize
     (serialize.byte_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -2194,7 +2225,7 @@ def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : serialize.vector_decode_12.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (serialize.vector_decode_12.closure RANK))
   := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
@@ -2218,7 +2249,7 @@ def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : serialize.vector_decode_12.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -2257,12 +2288,8 @@ def
     Visibility: public -/
 def serialize.vector_decode_12
   (RANK : Std.Usize) (encoded : Slice Std.U8) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
-  let i ← core.slice.Slice.len encoded
-  let i1 ← parameters.BYTES_PER_RING_ELEMENT
-  let i2 ← RANK * i1
-  massert (i = i2)
   parameters.createi RANK
     (serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
     RANK) encoded
@@ -2272,7 +2299,7 @@ def serialize.vector_decode_12
     Visibility: public -/
 def serialize.deserialize_ring_elements_reduced
   (RANK : Std.Usize) (encoded : Slice Std.U8) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   serialize.vector_decode_12 RANK encoded
 
@@ -2280,7 +2307,7 @@ def serialize.deserialize_ring_elements_reduced
     Source: 'ml-kem/src/parameters.rs', lines 40:4-42:5
     Visibility: public -/
 def parameters.MlKemParams.t_as_ntt_encoded_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   self.rank * i
 
@@ -2290,12 +2317,8 @@ def parameters.MlKemParams.t_as_ntt_encoded_size
 def serialize.byte_encode_into
   (p : Array parameters.FieldElement 256#usize) (d : Std.Usize)
   (out : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
-  massert (d <= parameters.BITS_PER_COEFFICIENT)
-  let i ← core.slice.Slice.len out
-  let i1 ← 32#usize * d
-  massert (i = i1)
   match d.val with
   | 1 =>
     let a ← serialize.byte_encode 32#usize 256#usize p 1#usize
@@ -2330,13 +2353,40 @@ def serialize.byte_encode_into
 def serialize.compress_then_serialize_v
   (V_SIZE : Std.Usize) (v : Array parameters.FieldElement 256#usize)
   (dv : Std.Usize) :
-  Result (Array Std.U8 V_SIZE)
+  RustM (Array Std.U8 V_SIZE)
   := do
   let out := Array.repeat V_SIZE 0#u8
   let a ← compress.compress v dv
   let (s, to_slice_mut_back) ← lift (Array.to_slice_mut out)
   let s1 ← serialize.byte_encode_into a dv s
   ok (to_slice_mut_back s1)
+
+/-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::compress_then_serialize_u_into::closure<'_0, '_1, RANK>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 328:12-328:83 -/
+def
+  serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {RANK : Std.Usize}
+  (c : serialize.compress_then_serialize_u_into.closure RANK)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let (s, i) := c
+  let i1 ← core.slice.Slice.len s
+  let i2 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
+  let i3 ← i2 * i
+  let i4 ← i3 / 8#usize
+  ok (i1 = i4)
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::compress_then_serialize_u_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::compress_then_serialize_u_into::closure<'_0, '_1, RANK>}]
+    Source: 'ml-kem/src/serialize.rs', lines 328:12-328:83 -/
+@[reducible]
+def
+  serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (RANK : Std.Usize) : core.ops.function.FnOnce
+  (serialize.compress_then_serialize_u_into.closure RANK) Std.Usize Bool := {
+  call_once :=
+    serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into]: loop body 0:
     Source: 'ml-kem/src/serialize.rs', lines 325:4-335:5
@@ -2346,7 +2396,7 @@ def serialize.compress_then_serialize_u_into_loop.body
   {RANK : Std.Usize} (u : Array (Array parameters.FieldElement 256#usize) RANK)
   (du : Std.Usize) (du_poly_size : Std.Usize)
   (iter : core.ops.range.Range Std.Usize) (out : Slice Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
     (Slice Std.U8))
   := do
   let (o, iter1) ←
@@ -2355,6 +2405,10 @@ def serialize.compress_then_serialize_u_into_loop.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      RANK) (out, du)
     let a ← Array.index_usize u i
     let a1 ← compress.compress a du
     let i1 ← i * du_poly_size
@@ -2376,7 +2430,7 @@ def serialize.compress_then_serialize_u_into_loop
   {RANK : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (u : Array (Array parameters.FieldElement 256#usize) RANK) (du : Std.Usize)
   (out : Slice Std.U8) (du_poly_size : Std.Usize) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
   loop
     (fun (iter1, out1) => serialize.compress_then_serialize_u_into_loop.body u
@@ -2389,7 +2443,7 @@ def serialize.compress_then_serialize_u_into_loop
 def serialize.compress_then_serialize_u_into
   {RANK : Std.Usize} (u : Array (Array parameters.FieldElement 256#usize) RANK)
   (du : Std.Usize) (out : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
   let i ← parameters.COEFFICIENTS_IN_RING_ELEMENT * du
   let du_poly_size ← i / 8#usize
@@ -2402,7 +2456,7 @@ def serialize.compress_then_serialize_u_into
 def serialize.compress_then_serialize_u
   {RANK : Std.Usize} (U_SIZE : Std.Usize)
   (u : Array (Array parameters.FieldElement 256#usize) RANK) (du : Std.Usize) :
-  Result (Array Std.U8 U_SIZE)
+  RustM (Array Std.U8 U_SIZE)
   := do
   let out := Array.repeat U_SIZE 0#u8
   let (s, to_slice_mut_back) ← lift (Array.to_slice_mut out)
@@ -2414,7 +2468,7 @@ def serialize.compress_then_serialize_u
     Visibility: public -/
 def serialize.deserialize_then_decompress_message
   (serialized : Array Std.U8 32#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let a ← serialize.byte_decode 256#usize serialized 1#usize
   compress.decompress a 1#usize
@@ -2424,7 +2478,7 @@ def serialize.deserialize_then_decompress_message
 def
   invert_ntt.ntt_inverse_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : invert_ntt.ntt_inverse_layer.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × invert_ntt.ntt_inverse_layer.closure)
+  RustM (parameters.FieldElement × invert_ntt.ntt_inverse_layer.closure)
   := do
   if tupled_args < c
   then
@@ -2442,7 +2496,7 @@ def
 def
   invert_ntt.ntt_inverse_layer.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : invert_ntt.ntt_inverse_layer.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     invert_ntt.ntt_inverse_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -2479,7 +2533,7 @@ def
 def invert_ntt.inv_butterfly
   (zeta : parameters.FieldElement) (a : parameters.FieldElement)
   (b : parameters.FieldElement) :
-  Result (parameters.FieldElement × parameters.FieldElement)
+  RustM (parameters.FieldElement × parameters.FieldElement)
   := do
   let fe ← parameters.FieldElement.add a b
   let fe1 ← parameters.FieldElement.sub b a
@@ -2492,8 +2546,7 @@ def
   invert_ntt.ntt_inverse_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {N : Std.Usize} (c : invert_ntt.ntt_inverse_layer_n.closure N)
   (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × (invert_ntt.ntt_inverse_layer_n.closure
-    N))
+  RustM (parameters.FieldElement × (invert_ntt.ntt_inverse_layer_n.closure N))
   := do
   let (i, s, a) := c
   let i1 ← 2#usize * i
@@ -2521,7 +2574,7 @@ def
   invert_ntt.ntt_inverse_layer_n.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {N : Std.Usize} (c : invert_ntt.ntt_inverse_layer_n.closure N)
   (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     invert_ntt.ntt_inverse_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -2561,7 +2614,7 @@ def
 def invert_ntt.ntt_inverse_layer_n
   {N : Std.Usize} (p : Array parameters.FieldElement N) (len : Std.Usize)
   (zetas : Slice parameters.FieldElement) :
-  Result (Array parameters.FieldElement N)
+  RustM (Array parameters.FieldElement N)
   := do
   parameters.createi N
     (invert_ntt.ntt_inverse_layer_n.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -2571,7 +2624,7 @@ def invert_ntt.ntt_inverse_layer_n
     Source: 'ml-kem/src/invert_ntt.rs', lines 82:0-94:1 -/
 def invert_ntt.ntt_inverse_layer
   (p : Array parameters.FieldElement 256#usize) (layer : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let len ← 1#usize <<< layer
   let groups ← 128#usize / len
@@ -2591,7 +2644,7 @@ def invert_ntt.ntt_inverse_layer
     Visibility: public -/
 def invert_ntt.ntt_inverse_butterflies
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let p1 ← invert_ntt.ntt_inverse_layer p 1#usize
   let p2 ← invert_ntt.ntt_inverse_layer p1 2#usize
@@ -2604,7 +2657,7 @@ def invert_ntt.ntt_inverse_butterflies
 /-- [hacspec_ml_kem::invert_ntt::INVERSE_OF_128]
     Source: 'ml-kem/src/invert_ntt.rs', lines 4:0-4:61 -/
 @[global_simps, irreducible]
-def invert_ntt.INVERSE_OF_128 : Result parameters.FieldElement :=
+def invert_ntt.INVERSE_OF_128 : RustM parameters.FieldElement :=
   parameters.FieldElement.new 3303#u16
 
 /-- [hacspec_ml_kem::invert_ntt::reduce_polynomial::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::invert_ntt::reduce_polynomial::closure<'_0>}::call_mut]:
@@ -2612,7 +2665,7 @@ def invert_ntt.INVERSE_OF_128 : Result parameters.FieldElement :=
 def
   invert_ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : invert_ntt.reduce_polynomial.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × invert_ntt.reduce_polynomial.closure)
+  RustM (parameters.FieldElement × invert_ntt.reduce_polynomial.closure)
   := do
   let fe ← Array.index_usize c tupled_args
   let fe1 ← invert_ntt.INVERSE_OF_128
@@ -2624,7 +2677,7 @@ def
 def
   invert_ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : invert_ntt.reduce_polynomial.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     invert_ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -2660,7 +2713,7 @@ def
     Visibility: public -/
 def invert_ntt.reduce_polynomial
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     invert_ntt.reduce_polynomial.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -2671,7 +2724,7 @@ def invert_ntt.reduce_polynomial
     Visibility: public -/
 def invert_ntt.ntt_inverse
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let a ← invert_ntt.ntt_inverse_butterflies p
   invert_ntt.reduce_polynomial a
@@ -2682,7 +2735,7 @@ def
   matrix.compute_vector_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : matrix.compute_vector_u.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (matrix.compute_vector_u.closure RANK))
   := do
   let a ← Array.index_usize c tupled_args
@@ -2695,7 +2748,7 @@ def
   matrix.compute_vector_u.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : matrix.compute_vector_u.closure RANK) (i : Std.Usize)
   :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     matrix.compute_vector_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -2734,7 +2787,7 @@ def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : matrix.transpose.closure.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK))
   := do
   let (a, i) := c
@@ -2748,7 +2801,7 @@ def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : matrix.transpose.closure.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -2788,7 +2841,7 @@ def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK.call_mut
   {RANK : Std.Usize} (c : matrix.transpose.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array (Array parameters.FieldElement 256#usize) RANK) ×
+  RustM ((Array (Array parameters.FieldElement 256#usize) RANK) ×
     (_root_.hacspec_ml_kem.matrix.transpose.closure RANK))
   := do
   let a ←
@@ -2802,7 +2855,7 @@ def
 def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK.call_once
   {RANK : Std.Usize} (c : matrix.transpose.closure RANK) (i : Std.Usize) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let (a, _) ←
     matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK.call_mut
@@ -2841,7 +2894,7 @@ def matrix.transpose
   {RANK : Std.Usize}
   (matrix : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   :
-  Result (Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
+  RustM (Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   := do
   parameters.createi RANK
     (_root_.hacspec_ml_kem.matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
@@ -2855,7 +2908,7 @@ def matrix.compute_vector_u
   (a_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (r_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (error_1 : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let a_transpose ← matrix.transpose a_as_ntt
   let product ← matrix.multiply_matrix_by_column a_transpose r_as_ntt
@@ -2875,7 +2928,7 @@ def matrix.multiply_vectors_loop.body
   (v2 : Array (Array parameters.FieldElement 256#usize) RANK)
   (iter : core.ops.range.Range Std.Usize)
   (result : Array parameters.FieldElement 256#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
     parameters.FieldElement 256#usize)) (Array parameters.FieldElement
     256#usize))
   := do
@@ -2900,7 +2953,7 @@ def matrix.multiply_vectors_loop
   (v1 : Array (Array parameters.FieldElement 256#usize) RANK)
   (v2 : Array (Array parameters.FieldElement 256#usize) RANK)
   (result : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   loop
     (fun (iter1, result1) => matrix.multiply_vectors_loop.body v1 v2 iter1
@@ -2914,7 +2967,7 @@ def matrix.multiply_vectors
   {RANK : Std.Usize}
   (v1 : Array (Array parameters.FieldElement 256#usize) RANK)
   (v2 : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let fe ← parameters.FieldElement.new 0#u16
   let result := Array.repeat 256#usize fe
@@ -2930,7 +2983,7 @@ def matrix.compute_ring_element_v
   (r_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (error_2 : Array parameters.FieldElement 256#usize)
   (message : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let inner_product ← matrix.multiply_vectors t_as_ntt r_as_ntt
   let inner_product_inv ← invert_ntt.ntt_inverse inner_product
@@ -2946,24 +2999,13 @@ def ind_cpa.encrypt_unpacked
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (A_as_ntt : Array (Array (Array parameters.FieldElement 256#usize) RANK)
   RANK) (message : Array Std.U8 32#usize) (randomness : Slice Std.U8) :
-  Result (core.result.Result (Array Std.U8 CT_SIZE)
+  RustM (core.result.Result (Array Std.U8 CT_SIZE)
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i1 ← i * params.du
-  let i2 ← i1 / 8#usize
-  massert (U_SIZE = i2)
-  let i3 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i4 ← i3 / 8#usize
-  massert (V_SIZE = i4)
-  let i5 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i5)
-  let i6 ← core.slice.Slice.len randomness
-  massert (i6 = 32#usize)
   let r_as_ntt ←
     ind_cpa.sample_vector_cbd_then_ntt RANK params.eta1 randomness 0#u8
-  let i7 ← lift (UScalar.cast .U8 RANK)
-  let error_1 ← ind_cpa.sample_vector_cbd RANK params.eta2 randomness i7
+  let i ← lift (UScalar.cast .U8 RANK)
+  let error_1 ← ind_cpa.sample_vector_cbd RANK params.eta2 randomness i
   let prf_input := Array.repeat 33#usize 0#u8
   let (s, index_mut_back) ←
     core.Array.Insts.CoreOpsIndexIndexMut.index_mut
@@ -2972,10 +3014,10 @@ def ind_cpa.encrypt_unpacked
       Std.U8)) prf_input { «end» := 32#usize }
   let s1 ←
     core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy s randomness
-  let i8 ← RANK * 2#usize
+  let i1 ← RANK * 2#usize
   let prf_input1 := index_mut_back s1
-  let i9 ← lift (UScalar.cast .U8 i8)
-  let prf_input2 ← Array.update prf_input1 32#usize i9
+  let i2 ← lift (UScalar.cast .U8 i1)
+  let prf_input2 ← Array.update prf_input1 32#usize i2
   let error_2 ← ind_cpa.sample_secret params.eta2 prf_input2
   let u ← matrix.compute_vector_u A_as_ntt r_as_ntt error_1
   let message_as_ring_element ←
@@ -3013,25 +3055,9 @@ def ind_cpa.encrypt
   (RANK : Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) (CT_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (ek : Slice Std.U8)
   (message : Array Std.U8 32#usize) (randomness : Slice Std.U8) :
-  Result (core.result.Result (Array Std.U8 CT_SIZE)
+  RustM (core.result.Result (Array Std.U8 CT_SIZE)
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i1 ← i * params.du
-  let i2 ← i1 / 8#usize
-  massert (U_SIZE = i2)
-  let i3 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i4 ← i3 / 8#usize
-  massert (V_SIZE = i4)
-  let i5 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i5)
-  let i6 ← core.slice.Slice.len ek
-  let i7 ← parameters.BYTES_PER_RING_ELEMENT
-  let i8 ← RANK * i7
-  let i9 ← i8 + 32#usize
-  massert (i6 = i9)
-  let i10 ← core.slice.Slice.len randomness
-  massert (i10 = 32#usize)
   let t_encoded_size ← parameters.MlKemParams.t_as_ntt_encoded_size params
   let s ←
     core.Slice.Insts.CoreOpsIndexIndex.index
@@ -3059,23 +3085,9 @@ def ind_cca.encaps_internal
   (RANK : Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) (CT_SIZE :
   Std.Usize) (params : parameters.MlKemParams) (ek : Slice Std.U8)
   (m : Array Std.U8 32#usize) :
-  Result (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8
-    CT_SIZE)) sampling.BadRejectionSamplingRandomnessError)
+  RustM (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8 CT_SIZE))
+    sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i1 ← i * params.du
-  let i2 ← i1 / 8#usize
-  massert (U_SIZE = i2)
-  let i3 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i4 ← i3 / 8#usize
-  massert (V_SIZE = i4)
-  let i5 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i5)
-  let i6 ← core.slice.Slice.len ek
-  let i7 ← parameters.BYTES_PER_RING_ELEMENT
-  let i8 ← RANK * i7
-  let i9 ← i8 + 32#usize
-  massert (i6 = i9)
   let to_hash := Array.repeat 64#usize 0#u8
   let (s, index_mut_back) ←
     core.Array.Insts.CoreOpsIndexIndexMut.index_mut
@@ -3127,24 +3139,13 @@ def ind_cca.encaps_internal
       (core.convert.From.Blanket sampling.BadRejectionSamplingRandomnessError)
       residual
 
-/-- [hacspec_ml_kem::parameters::hash_functions::J]:
-    Source: 'ml-kem/src/parameters.rs', lines 301:4-303:5
-    Visibility: public -/
-def parameters.hash_functions.J
-  (LEN : Std.Usize) (input : Slice Std.U8) : Result (Array Std.U8 LEN) := do
-  hacspec_sha3.sha3.shake256 LEN input
-
 /-- [hacspec_ml_kem::serialize::byte_decode_dyn]:
     Source: 'ml-kem/src/serialize.rs', lines 264:0-275:1
     Visibility: public -/
 def serialize.byte_decode_dyn
   (b : Slice Std.U8) (d : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
-  massert (d <= parameters.BITS_PER_COEFFICIENT)
-  let i ← core.slice.Slice.len b
-  let i1 ← 32#usize * d
-  massert (i = i1)
   match d.val with
   | 1 =>
     let r ←
@@ -3202,7 +3203,7 @@ def serialize.byte_decode_dyn
     Visibility: public -/
 def serialize.deserialize_then_decompress_v
   (serialized : Slice Std.U8) (dv : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let a ← serialize.byte_decode_dyn serialized dv
   compress.decompress a dv
@@ -3213,7 +3214,7 @@ def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : serialize.deserialize_then_decompress_u.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (serialize.deserialize_then_decompress_u.closure RANK))
   := do
   let (i, s, i1) := c
@@ -3233,7 +3234,7 @@ def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : serialize.deserialize_then_decompress_u.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -3272,7 +3273,7 @@ def
     Visibility: public -/
 def serialize.deserialize_then_decompress_u
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let i ← parameters.COEFFICIENTS_IN_RING_ELEMENT * du
   let du_poly_size ← i / 8#usize
@@ -3285,7 +3286,7 @@ def serialize.deserialize_then_decompress_u
     Visibility: public -/
 def serialize.compress_then_serialize_message
   (re : Array parameters.FieldElement 256#usize) :
-  Result (Array Std.U8 32#usize)
+  RustM (Array Std.U8 32#usize)
   := do
   let a ← compress.compress re 1#usize
   serialize.byte_encode 32#usize 256#usize a 1#usize
@@ -3294,7 +3295,7 @@ def serialize.compress_then_serialize_message
     Source: 'ml-kem/src/parameters.rs', lines 52:4-54:5
     Visibility: public -/
 def parameters.MlKemParams.u_encoded_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← self.rank * parameters.COEFFICIENTS_IN_RING_ELEMENT
   let i1 ← i * self.du
   i1 / 8#usize
@@ -3304,7 +3305,7 @@ def parameters.MlKemParams.u_encoded_size
 def
   matrix.sub_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : matrix.sub_polynomials.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × matrix.sub_polynomials.closure)
+  RustM (parameters.FieldElement × matrix.sub_polynomials.closure)
   := do
   let (a, a1) := c
   let fe ← Array.index_usize a tupled_args
@@ -3325,7 +3326,7 @@ def
 def
   matrix.sub_polynomials.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : matrix.sub_polynomials.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     matrix.sub_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -3362,7 +3363,7 @@ def
 def matrix.sub_polynomials
   (p1 : Array parameters.FieldElement 256#usize)
   (p2 : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     matrix.sub_polynomials.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -3375,7 +3376,7 @@ def matrix.compute_message
   {RANK : Std.Usize} (v : Array parameters.FieldElement 256#usize)
   (secret_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (u_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let inner_product ← matrix.multiply_vectors secret_as_ntt u_as_ntt
   let inner_product_inv ← invert_ntt.ntt_inverse inner_product
@@ -3388,15 +3389,8 @@ def ind_cpa.decrypt_unpacked
   {RANK : Std.Usize} (params : parameters.MlKemParams)
   (secret_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (ciphertext : Slice Std.U8) :
-  Result (Array Std.U8 32#usize)
+  RustM (Array Std.U8 32#usize)
   := do
-  let i ← core.slice.Slice.len ciphertext
-  let i1 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i2 ← i1 * params.du
-  let i3 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i4 ← i2 + i3
-  let i5 ← i4 / 8#usize
-  massert (i = i5)
   let u_encoded_size ← parameters.MlKemParams.u_encoded_size params
   let s ←
     core.Slice.Insts.CoreOpsIndexIndex.index
@@ -3418,19 +3412,8 @@ def ind_cpa.decrypt_unpacked
 def ind_cpa.decrypt
   (RANK : Std.Usize) (params : parameters.MlKemParams) (dk : Slice Std.U8)
   (ciphertext : Slice Std.U8) :
-  Result (Array Std.U8 32#usize)
+  RustM (Array Std.U8 32#usize)
   := do
-  let i ← core.slice.Slice.len dk
-  let i1 ← parameters.BYTES_PER_RING_ELEMENT
-  let i2 ← RANK * i1
-  massert (i = i2)
-  let i3 ← core.slice.Slice.len ciphertext
-  let i4 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i5 ← i4 * params.du
-  let i6 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i7 ← i5 + i6
-  let i8 ← i7 / 8#usize
-  massert (i3 = i8)
   let secret_as_ntt ← serialize.deserialize_ring_elements_reduced RANK dk
   ind_cpa.decrypt_unpacked params secret_as_ntt ciphertext
 
@@ -3441,52 +3424,32 @@ def ind_cca.decaps_internal
   Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) {CT_SIZE : Std.Usize}
   (J_INPUT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (dk : Array Std.U8 DK_SIZE) (c : Array Std.U8 CT_SIZE) :
-  Result (core.result.Result (Array Std.U8 32#usize)
+  RustM (core.result.Result (Array Std.U8 32#usize)
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * i
-  massert (DK_PKE_SIZE = i3)
-  let i4 ← DK_PKE_SIZE + EK_SIZE
-  let i5 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
-  let i6 ← i5 + 32#usize
-  massert (DK_SIZE = i6)
-  let i7 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i8 ← i7 * params.du
-  let i9 ← i8 / 8#usize
-  massert (U_SIZE = i9)
-  let i10 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i11 ← i10 / 8#usize
-  massert (V_SIZE = i11)
-  let i12 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i12)
-  let i13 ← 32#usize + CT_SIZE
-  massert (J_INPUT_SIZE = i13)
   let dk_pke ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
       (core.ops.range.RangeToUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
       Std.U8)) dk { «end» := DK_PKE_SIZE }
+  let i ← DK_PKE_SIZE + EK_SIZE
   let ek ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
       (core.ops.range.RangeUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-      Std.U8)) dk { start := DK_PKE_SIZE, «end» := i4 }
-  let i14 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
+      Std.U8)) dk { start := DK_PKE_SIZE, «end» := i }
+  let i1 ← i + parameters.hash_functions.H_DIGEST_SIZE
   let h ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
       (core.ops.range.RangeUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-      Std.U8)) dk { start := i4, «end» := i14 }
-  let i15 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
+      Std.U8)) dk { start := i, «end» := i1 }
+  let i2 ← i + parameters.hash_functions.H_DIGEST_SIZE
   let z ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
       (core.ops.range.RangeFromUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
-      Std.U8)) dk { start := i15 }
+      Std.U8)) dk { start := i2 }
   let s ← lift (Array.to_slice c)
   let m_prime ← ind_cpa.decrypt RANK params dk_pke s
   let to_hash := Array.repeat 64#usize 0#u8
@@ -3580,19 +3543,9 @@ def ind_cca.generate_keypair
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (DK_SIZE : Std.Usize) (DK_PKE_SIZE :
   Std.Usize) (params : parameters.MlKemParams)
   (randomness : Array Std.U8 64#usize) :
-  Result (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8 DK_SIZE))
+  RustM (core.result.Result ((Array Std.U8 EK_SIZE) × (Array Std.U8 DK_SIZE))
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * i
-  massert (DK_PKE_SIZE = i3)
-  let i4 ← DK_PKE_SIZE + EK_SIZE
-  let i5 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
-  let i6 ← i5 + 32#usize
-  massert (DK_SIZE = i6)
   let s ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
@@ -3622,7 +3575,7 @@ def ind_cca.generate_keypair
 @[rust_loop_body]
 def ind_cca.public_key_modulus_check_loop.body
   (iter : core.slice.iter.ChunksExact Std.U8) (valid : Bool) :
-  Result (ControlFlow ((core.slice.iter.ChunksExact Std.U8) × Bool) Bool)
+  RustM (ControlFlow ((core.slice.iter.ChunksExact Std.U8) × Bool) Bool)
   := do
   let (o, iter1) ←
     core.slice.iter.ChunksExact.Insts.CoreIterTraitsIteratorIteratorSharedASlice.next
@@ -3653,9 +3606,7 @@ def ind_cca.public_key_modulus_check_loop.body
     Visibility: public -/
 @[rust_loop]
 def ind_cca.public_key_modulus_check_loop
-  (iter : core.slice.iter.ChunksExact Std.U8) (valid : Bool) :
-  Result Bool
-  := do
+  (iter : core.slice.iter.ChunksExact Std.U8) (valid : Bool) : RustM Bool := do
   loop
     (fun (iter1, valid1) => ind_cca.public_key_modulus_check_loop.body iter1
       valid1)
@@ -3667,7 +3618,7 @@ def ind_cca.public_key_modulus_check_loop
 def ind_cca.public_key_modulus_check
   {EK_SIZE : Std.Usize} (params : parameters.MlKemParams)
   (ek : Array Std.U8 EK_SIZE) :
-  Result Bool
+  RustM Bool
   := do
   let t_size ← parameters.MlKemParams.t_as_ntt_encoded_size params
   let encoded_ring_elements ←
@@ -3686,24 +3637,9 @@ def ind_cca.encapsulate
   (RANK : Std.Usize) {EK_SIZE : Std.Usize} (U_SIZE : Std.Usize) (V_SIZE :
   Std.Usize) (CT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (ek : Array Std.U8 EK_SIZE) (m : Array Std.U8 32#usize) :
-  Result (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8
-    CT_SIZE)) sampling.BadRejectionSamplingRandomnessError)
+  RustM (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8 CT_SIZE))
+    sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i4 ← i3 * params.du
-  let i5 ← i4 / 8#usize
-  massert (U_SIZE = i5)
-  let i6 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i7 ← i6 / 8#usize
-  massert (V_SIZE = i7)
-  let i8 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i8)
-  let b ← ind_cca.public_key_modulus_check params ek
-  massert b
   let s ← lift (Array.to_slice ek)
   ind_cca.encaps_internal RANK U_SIZE V_SIZE CT_SIZE params s m
 
@@ -3715,30 +3651,9 @@ def ind_cca.decapsulate
   Std.Usize) (U_SIZE : Std.Usize) (V_SIZE : Std.Usize) {CT_SIZE : Std.Usize}
   (J_INPUT_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (dk : Array Std.U8 DK_SIZE) (c : Array Std.U8 CT_SIZE) :
-  Result (core.result.Result (Array Std.U8 32#usize)
+  RustM (core.result.Result (Array Std.U8 32#usize)
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
-  let i3 ← RANK * i
-  massert (DK_PKE_SIZE = i3)
-  let i4 ← DK_PKE_SIZE + EK_SIZE
-  let i5 ← i4 + parameters.hash_functions.H_DIGEST_SIZE
-  let i6 ← i5 + 32#usize
-  massert (DK_SIZE = i6)
-  let i7 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i8 ← i7 * params.du
-  let i9 ← i8 / 8#usize
-  massert (U_SIZE = i9)
-  let i10 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * params.dv
-  let i11 ← i10 / 8#usize
-  massert (V_SIZE = i11)
-  let i12 ← U_SIZE + V_SIZE
-  massert (CT_SIZE = i12)
-  let i13 ← 32#usize + CT_SIZE
-  massert (J_INPUT_SIZE = i13)
   ind_cca.decaps_internal RANK EK_SIZE DK_PKE_SIZE U_SIZE V_SIZE J_INPUT_SIZE
     params dk c
 
@@ -3749,7 +3664,7 @@ def
   {RANK : Std.Usize} {EK_SIZE : Std.Usize}
   (c : serialize.serialize_public_key.closure RANK EK_SIZE)
   (tupled_args : Std.Usize) :
-  Result (Std.U8 × (serialize.serialize_public_key.closure RANK EK_SIZE))
+  RustM (Std.U8 × (serialize.serialize_public_key.closure RANK EK_SIZE))
   := do
   let (a, s) := c
   let i ← parameters.BYTES_PER_RING_ELEMENT
@@ -3774,7 +3689,7 @@ def
   serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {RANK : Std.Usize} {EK_SIZE : Std.Usize}
   (c : serialize.serialize_public_key.closure RANK EK_SIZE) (i : Std.Usize) :
-  Result Std.U8
+  RustM Std.U8
   := do
   let (i1, _) ←
     serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
@@ -3813,7 +3728,7 @@ def serialize.serialize_public_key
   {RANK : Std.Usize} (EK_SIZE : Std.Usize)
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (seed_for_A : Slice Std.U8) :
-  Result (Array Std.U8 EK_SIZE)
+  RustM (Array Std.U8 EK_SIZE)
   := do
   parameters.createi EK_SIZE
     (serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8
@@ -3825,16 +3740,12 @@ def serialize.serialize_public_key
 def ind_cca.ind_cca_unpack_generate_keypair
   (RANK : Std.Usize) (EK_SIZE : Std.Usize) (params : parameters.MlKemParams)
   (randomness : Array Std.U8 64#usize) :
-  Result (core.result.Result ((Array (Array parameters.FieldElement 256#usize)
+  RustM (core.result.Result ((Array (Array parameters.FieldElement 256#usize)
     RANK) × (Array (Array parameters.FieldElement 256#usize) RANK) × (Array
     (Array (Array parameters.FieldElement 256#usize) RANK) RANK) × (Array
     Std.U8 32#usize) × (Array Std.U8 32#usize) × (Array Std.U8 32#usize))
     sampling.BadRejectionSamplingRandomnessError)
   := do
-  let i ← parameters.BYTES_PER_RING_ELEMENT
-  let i1 ← RANK * i
-  let i2 ← i1 + 32#usize
-  massert (EK_SIZE = i2)
   let s ←
     core.Array.Insts.CoreOpsIndexIndex.index
       (core.Slice.Insts.CoreOpsIndexIndex
@@ -3894,8 +3805,8 @@ def ind_cca.ind_cca_unpack_encapsulate
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (m_A : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   (randomness : Array Std.U8 32#usize) :
-  Result (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8
-    CT_SIZE)) sampling.BadRejectionSamplingRandomnessError)
+  RustM (core.result.Result ((Array Std.U8 32#usize) × (Array Std.U8 CT_SIZE))
+    sampling.BadRejectionSamplingRandomnessError)
   := do
   let to_hash := Array.repeat 64#usize 0#u8
   let (s, index_mut_back) ←
@@ -3951,7 +3862,7 @@ def ind_cca.ind_cca_unpack_decapsulate
   (secret_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (t_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK)
   (m_A : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK) :
-  Result (core.result.Result (Array Std.U8 32#usize)
+  RustM (core.result.Result (Array Std.U8 32#usize)
     sampling.BadRejectionSamplingRandomnessError)
   := do
   let s ← lift (Array.to_slice ciphertext)
@@ -4041,7 +3952,7 @@ def
   invert_ntt.vector_inverse_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : invert_ntt.vector_inverse_ntt.closure RANK)
   (tupled_args : Std.Usize) :
-  Result ((Array parameters.FieldElement 256#usize) ×
+  RustM ((Array parameters.FieldElement 256#usize) ×
     (invert_ntt.vector_inverse_ntt.closure RANK))
   := do
   let a ← Array.index_usize c tupled_args
@@ -4054,7 +3965,7 @@ def
   invert_ntt.vector_inverse_ntt.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : invert_ntt.vector_inverse_ntt.closure RANK)
   (i : Std.Usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   let (a, _) ←
     invert_ntt.vector_inverse_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
@@ -4094,7 +4005,7 @@ def
 def invert_ntt.vector_inverse_ntt
   {RANK : Std.Usize}
   (vector_as_ntt : Array (Array parameters.FieldElement 256#usize) RANK) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (invert_ntt.vector_inverse_ntt.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -4105,7 +4016,7 @@ def invert_ntt.vector_inverse_ntt
 def
   invert_ntt.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : invert_ntt.poly_barrett_reduce.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × invert_ntt.poly_barrett_reduce.closure)
+  RustM (parameters.FieldElement × invert_ntt.poly_barrett_reduce.closure)
   := do
   let fe ← Array.index_usize c tupled_args
   let i ← fe.val % parameters.FIELD_MODULUS
@@ -4117,7 +4028,7 @@ def
 def
   invert_ntt.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : invert_ntt.poly_barrett_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     invert_ntt.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -4153,7 +4064,7 @@ def
     Visibility: public -/
 def invert_ntt.poly_barrett_reduce
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     invert_ntt.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -4162,7 +4073,7 @@ def invert_ntt.poly_barrett_reduce
 /-- [hacspec_ml_kem::ntt::ZETA]
     Source: 'ml-kem/src/ntt.rs', lines 3:0-3:49 -/
 @[global_simps, irreducible]
-def ntt.ZETA : Result parameters.FieldElement :=
+def ntt.ZETA : RustM parameters.FieldElement :=
   parameters.FieldElement.new 17#u16
 
 /-- [hacspec_ml_kem::ntt::MONTGOMERY_R]
@@ -4175,14 +4086,14 @@ def ntt.ZETA : Result parameters.FieldElement :=
     Visibility: public -/
 @[global_simps, irreducible]
 def ntt.ZETAS_TIMES_MONTGOMERY_R
-  : Result (Array parameters.FieldElement 128#usize) :=
+  : RustM (Array parameters.FieldElement 128#usize) :=
   ntt.ZETAS
 
 /-- [hacspec_ml_kem::ntt::to_standard_domain]:
     Source: 'ml-kem/src/ntt.rs', lines 27:0-29:1
     Visibility: public -/
 def ntt.to_standard_domain
-  (a : parameters.FieldElement) : Result parameters.FieldElement := do
+  (a : parameters.FieldElement) : RustM parameters.FieldElement := do
   ok a
 
 /-- [hacspec_ml_kem::ntt::montgomery_multiply_by_constant]:
@@ -4190,7 +4101,7 @@ def ntt.to_standard_domain
     Visibility: public -/
 def ntt.montgomery_multiply_by_constant
   (a : parameters.FieldElement) (c : parameters.FieldElement) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let i ← lift (UScalar.cast .U32 a.val)
   let i1 ← lift (UScalar.cast .U32 c.val)
@@ -4204,7 +4115,7 @@ def ntt.montgomery_multiply_by_constant
     Source: 'ml-kem/src/ntt.rs', lines 46:0-48:1
     Visibility: public -/
 def ntt.to_unsigned_field_modulus
-  (a : parameters.FieldElement) : Result parameters.FieldElement := do
+  (a : parameters.FieldElement) : RustM parameters.FieldElement := do
   let i ← a.val % parameters.FIELD_MODULUS
   parameters.FieldElement.new i
 
@@ -4213,7 +4124,7 @@ def ntt.to_unsigned_field_modulus
 @[rust_loop_body]
 def ntt.bit_rev_7_loop.body
   (x : Std.Usize) (iter : core.ops.range.Range Std.I32) (result : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.I32) × Std.Usize) Std.Usize)
+  RustM (ControlFlow ((core.ops.range.Range Std.I32) × Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -4236,7 +4147,7 @@ def ntt.bit_rev_7_loop.body
 @[rust_loop]
 def ntt.bit_rev_7_loop
   (iter : core.ops.range.Range Std.I32) (x : Std.Usize) (result : Std.Usize) :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun (iter1, result1) => ntt.bit_rev_7_loop.body x iter1 result1)
@@ -4245,28 +4156,34 @@ def ntt.bit_rev_7_loop
 /-- [hacspec_ml_kem::ntt::bit_rev_7]:
     Source: 'ml-kem/src/ntt.rs', lines 50:0-58:1 -/
 @[reducible]
-def ntt.bit_rev_7 (x : Std.Usize) : Result Std.Usize := do
+def ntt.bit_rev_7 (x : Std.Usize) : RustM Std.Usize := do
   ntt.bit_rev_7_loop { start := 0#i32, «end» := 7#i32 } x 0#usize
 
 /-- [hacspec_ml_kem::ntt::get_zeta]:
     Source: 'ml-kem/src/ntt.rs', lines 226:0-228:1
     Visibility: public -/
-def ntt.get_zeta (i : Std.Usize) : Result parameters.FieldElement := do
+def ntt.get_zeta (i : Std.Usize) : RustM parameters.FieldElement := do
   let a ← ntt.ZETAS
   Array.index_usize a i
+
+/-- [hacspec_ml_kem::parameters::BITS_PER_COEFFICIENT]
+    Source: 'ml-kem/src/parameters.rs', lines 5:0-5:43
+    Visibility: public -/
+@[global_simps, irreducible]
+def parameters.BITS_PER_COEFFICIENT : Std.Usize := 12#usize
 
 /-- [hacspec_ml_kem::parameters::REJECTION_SAMPLING_SEED_SIZE]
     Source: 'ml-kem/src/parameters.rs', lines 20:0-20:56
     Visibility: public -/
 @[global_simps, irreducible]
-def parameters.REJECTION_SAMPLING_SEED_SIZE : Result Std.Usize :=
+def parameters.REJECTION_SAMPLING_SEED_SIZE : RustM Std.Usize :=
   168#usize * 5#usize
 
 /-- [hacspec_ml_kem::parameters::{hacspec_ml_kem::parameters::MlKemParams}::ek_size]:
     Source: 'ml-kem/src/parameters.rs', lines 43:4-45:5
     Visibility: public -/
 def parameters.MlKemParams.ek_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.MlKemParams.t_as_ntt_encoded_size self
   i + 32#usize
 
@@ -4274,7 +4191,7 @@ def parameters.MlKemParams.ek_size
     Source: 'ml-kem/src/parameters.rs', lines 46:4-48:5
     Visibility: public -/
 def parameters.MlKemParams.dk_pke_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   self.rank * i
 
@@ -4282,7 +4199,7 @@ def parameters.MlKemParams.dk_pke_size
     Source: 'ml-kem/src/parameters.rs', lines 49:4-51:5
     Visibility: public -/
 def parameters.MlKemParams.dk_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.MlKemParams.dk_pke_size self
   let i1 ← parameters.MlKemParams.ek_size self
   let i2 ← i + i1
@@ -4293,7 +4210,7 @@ def parameters.MlKemParams.dk_size
     Source: 'ml-kem/src/parameters.rs', lines 55:4-57:5
     Visibility: public -/
 def parameters.MlKemParams.v_encoded_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.COEFFICIENTS_IN_RING_ELEMENT * self.dv
   i / 8#usize
 
@@ -4301,7 +4218,7 @@ def parameters.MlKemParams.v_encoded_size
     Source: 'ml-kem/src/parameters.rs', lines 58:4-60:5
     Visibility: public -/
 def parameters.MlKemParams.ciphertext_size
-  (self : parameters.MlKemParams) : Result Std.Usize := do
+  (self : parameters.MlKemParams) : RustM Std.Usize := do
   let i ← parameters.MlKemParams.u_encoded_size self
   let i1 ← parameters.MlKemParams.v_encoded_size self
   i + i1
@@ -4474,7 +4391,7 @@ def parameters.ML_KEM_1024_J_INPUT_SIZE : Std.Usize := 1600#usize
 /-- [hacspec_ml_kem::parameters::cpa_ciphertext_size]:
     Source: 'ml-kem/src/parameters.rs', lines 120:0-128:1
     Visibility: public -/
-def parameters.cpa_ciphertext_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.cpa_ciphertext_size (rank : Std.Usize) : RustM Std.Usize := do
   if rank = 2#usize
   then ok parameters.ML_KEM_512_CT_SIZE
   else
@@ -4486,7 +4403,7 @@ def parameters.cpa_ciphertext_size (rank : Std.Usize) : Result Std.Usize := do
     Source: 'ml-kem/src/parameters.rs', lines 137:0-145:1
     Visibility: public -/
 def parameters.rank_to_params
-  (rank : Std.Usize) : Result parameters.MlKemParams := do
+  (rank : Std.Usize) : RustM parameters.MlKemParams := do
   if rank = 2#usize
   then ok parameters.ML_KEM_512
   else
@@ -4497,7 +4414,7 @@ def parameters.rank_to_params
 /-- [hacspec_ml_kem::parameters::is_rank]:
     Source: 'ml-kem/src/parameters.rs', lines 149:0-151:1
     Visibility: public -/
-def parameters.is_rank (rank : Std.Usize) : Result Bool := do
+def parameters.is_rank (rank : Std.Usize) : RustM Bool := do
   if rank = 2#usize
   then ok true
   else if rank = 3#usize
@@ -4519,8 +4436,7 @@ def parameters.CPA_KEY_GENERATION_SEED_SIZE : Std.Usize := 32#usize
 /-- [hacspec_ml_kem::parameters::t_as_ntt_encoded_size]:
     Source: 'ml-kem/src/parameters.rs', lines 174:0-176:1
     Visibility: public -/
-def parameters.t_as_ntt_encoded_size
-  (rank : Std.Usize) : Result Std.Usize := do
+def parameters.t_as_ntt_encoded_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   rank * i
 
@@ -4528,14 +4444,14 @@ def parameters.t_as_ntt_encoded_size
     Source: 'ml-kem/src/parameters.rs', lines 181:0-183:1
     Visibility: public -/
 def parameters.ranked_bytes_per_ring_element
-  (rank : Std.Usize) : Result Std.Usize := do
+  (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   rank * i
 
 /-- [hacspec_ml_kem::parameters::cpa_public_key_size]:
     Source: 'ml-kem/src/parameters.rs', lines 187:0-189:1
     Visibility: public -/
-def parameters.cpa_public_key_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.cpa_public_key_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   let i1 ← rank * i
   i1 + 32#usize
@@ -4543,14 +4459,14 @@ def parameters.cpa_public_key_size (rank : Std.Usize) : Result Std.Usize := do
 /-- [hacspec_ml_kem::parameters::cpa_private_key_size]:
     Source: 'ml-kem/src/parameters.rs', lines 193:0-195:1
     Visibility: public -/
-def parameters.cpa_private_key_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.cpa_private_key_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.BYTES_PER_RING_ELEMENT
   rank * i
 
 /-- [hacspec_ml_kem::parameters::cca_private_key_size]:
     Source: 'ml-kem/src/parameters.rs', lines 199:0-201:1
     Visibility: public -/
-def parameters.cca_private_key_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.cca_private_key_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.cpa_private_key_size rank
   let i1 ← parameters.cpa_public_key_size rank
   let i2 ← i + i1
@@ -4561,7 +4477,7 @@ def parameters.cca_private_key_size (rank : Std.Usize) : Result Std.Usize := do
     Source: 'ml-kem/src/parameters.rs', lines 205:0-211:1
     Visibility: public -/
 def parameters.vector_u_compression_factor
-  (rank : Std.Usize) : Result Std.Usize := do
+  (rank : Std.Usize) : RustM Std.Usize := do
   if rank = 4#usize
   then ok 11#usize
   else ok 10#usize
@@ -4570,7 +4486,7 @@ def parameters.vector_u_compression_factor
     Source: 'ml-kem/src/parameters.rs', lines 215:0-221:1
     Visibility: public -/
 def parameters.vector_v_compression_factor
-  (rank : Std.Usize) : Result Std.Usize := do
+  (rank : Std.Usize) : RustM Std.Usize := do
   if rank = 4#usize
   then ok 5#usize
   else ok 4#usize
@@ -4578,7 +4494,7 @@ def parameters.vector_v_compression_factor
 /-- [hacspec_ml_kem::parameters::c1_block_size]:
     Source: 'ml-kem/src/parameters.rs', lines 225:0-227:1
     Visibility: public -/
-def parameters.c1_block_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.c1_block_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.vector_u_compression_factor rank
   let i1 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * i
   i1 / 8#usize
@@ -4586,14 +4502,14 @@ def parameters.c1_block_size (rank : Std.Usize) : Result Std.Usize := do
 /-- [hacspec_ml_kem::parameters::c1_size]:
     Source: 'ml-kem/src/parameters.rs', lines 231:0-233:1
     Visibility: public -/
-def parameters.c1_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.c1_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.c1_block_size rank
   rank * i
 
 /-- [hacspec_ml_kem::parameters::c2_size]:
     Source: 'ml-kem/src/parameters.rs', lines 237:0-239:1
     Visibility: public -/
-def parameters.c2_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.c2_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.vector_v_compression_factor rank
   let i1 ← parameters.COEFFICIENTS_IN_RING_ELEMENT * i
   i1 / 8#usize
@@ -4601,7 +4517,7 @@ def parameters.c2_size (rank : Std.Usize) : Result Std.Usize := do
 /-- [hacspec_ml_kem::parameters::eta1]:
     Source: 'ml-kem/src/parameters.rs', lines 243:0-249:1
     Visibility: public -/
-def parameters.eta1 (rank : Std.Usize) : Result Std.Usize := do
+def parameters.eta1 (rank : Std.Usize) : RustM Std.Usize := do
   if rank = 2#usize
   then ok 3#usize
   else ok 2#usize
@@ -4609,20 +4525,20 @@ def parameters.eta1 (rank : Std.Usize) : Result Std.Usize := do
 /-- [hacspec_ml_kem::parameters::eta2]:
     Source: 'ml-kem/src/parameters.rs', lines 253:0-256:1
     Visibility: public -/
-def parameters.eta2 (rank : Std.Usize) : Result Std.Usize := do
+def parameters.eta2 (rank : Std.Usize) : RustM Std.Usize := do
   ok 2#usize
 
 /-- [hacspec_ml_kem::parameters::eta1_randomness_size]:
     Source: 'ml-kem/src/parameters.rs', lines 260:0-262:1
     Visibility: public -/
-def parameters.eta1_randomness_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.eta1_randomness_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.eta1 rank
   64#usize * i
 
 /-- [hacspec_ml_kem::parameters::eta2_randomness_size]:
     Source: 'ml-kem/src/parameters.rs', lines 266:0-268:1
     Visibility: public -/
-def parameters.eta2_randomness_size (rank : Std.Usize) : Result Std.Usize := do
+def parameters.eta2_randomness_size (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.eta2 rank
   64#usize * i
 
@@ -4630,7 +4546,7 @@ def parameters.eta2_randomness_size (rank : Std.Usize) : Result Std.Usize := do
     Source: 'ml-kem/src/parameters.rs', lines 272:0-274:1
     Visibility: public -/
 def parameters.implicit_rejection_hash_input_size
-  (rank : Std.Usize) : Result Std.Usize := do
+  (rank : Std.Usize) : RustM Std.Usize := do
   let i ← parameters.cpa_ciphertext_size rank
   32#usize + i
 
@@ -4638,7 +4554,7 @@ def parameters.implicit_rejection_hash_input_size
     Source: 'ml-kem/src/parameters.rs', lines 312:36-312:41
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCloneClone.clone
-  (self : parameters.FieldElement) : Result parameters.FieldElement := do
+  (self : parameters.FieldElement) : RustM parameters.FieldElement := do
   ok self
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::clone::Clone for hacspec_ml_kem::parameters::FieldElement}]
@@ -4669,7 +4585,7 @@ def parameters.FieldElement.Insts.CoreMarkerStructuralPartialEq :
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result Bool
+  RustM Bool
   := do
   ok (self.val = other.val)
 
@@ -4679,6 +4595,8 @@ def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
 impl_def parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement :
   core.cmp.PartialEq parameters.FieldElement parameters.FieldElement := {
   eq := parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement.eq
+  ne := core.cmp.PartialEq.ne.default
+    parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::Eq for hacspec_ml_kem::parameters::FieldElement}]
@@ -4694,7 +4612,7 @@ def parameters.FieldElement.Insts.CoreCmpEq : core.cmp.Eq
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpOrd.cmp
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result core.cmp.Ordering
+  RustM core.cmp.Ordering
   := do
   core.U16.Insts.CoreCmpOrd.cmp self.val other.val
 
@@ -4703,7 +4621,7 @@ def parameters.FieldElement.Insts.CoreCmpOrd.cmp
     Visibility: public -/
 def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement.partial_cmp
   (self : parameters.FieldElement) (other : parameters.FieldElement) :
-  Result (core.option.Option core.cmp.Ordering)
+  RustM (core.option.Option core.cmp.Ordering)
   := do
   let o ← parameters.FieldElement.Insts.CoreCmpOrd.cmp self other
   ok (core.option.Option.Some o)
@@ -4711,11 +4629,19 @@ def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement.partial_cmp
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::PartialOrd<hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::parameters::FieldElement}]
     Source: 'ml-kem/src/parameters.rs', lines 312:64-312:74 -/
 @[reducible]
-def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement :
+impl_def parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement :
   core.cmp.PartialOrd parameters.FieldElement parameters.FieldElement := {
   PartialEqInst := parameters.FieldElement.Insts.CoreCmpPartialEqFieldElement
   partial_cmp :=
     parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement.partial_cmp
+  lt := core.cmp.PartialOrd.lt.default
+    parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement
+  le := core.cmp.PartialOrd.le.default
+    parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement
+  gt := core.cmp.PartialOrd.gt.default
+    parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement
+  ge := core.cmp.PartialOrd.ge.default
+    parameters.FieldElement.Insts.CoreCmpPartialOrdFieldElement
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::cmp::Ord for hacspec_ml_kem::parameters::FieldElement}]
@@ -4732,7 +4658,7 @@ def parameters.FieldElement.Insts.CoreCmpOrd : core.cmp.Ord
     Source: 'ml-kem/src/parameters.rs', lines 331:4-335:5
     Visibility: public -/
 def parameters.FieldElement.from_i16
-  (v : Std.I16) : Result parameters.FieldElement := do
+  (v : Std.I16) : RustM parameters.FieldElement := do
   let q ← lift (UScalar.hcast .I32 parameters.FIELD_MODULUS)
   let i ← lift (IScalar.cast .I32 v)
   let i1 ← i % q
@@ -4745,7 +4671,7 @@ def parameters.FieldElement.from_i16
     Source: 'ml-kem/src/polynomial.rs', lines 11:0-13:1
     Visibility: public -/
 def polynomial.poly_zero
-  : Result (Array parameters.FieldElement 256#usize) := do
+  : RustM (Array parameters.FieldElement 256#usize) := do
   let fe ← parameters.FieldElement.new 0#u16
   ok (Array.repeat 256#usize fe)
 
@@ -4754,7 +4680,7 @@ def polynomial.poly_zero
 def
   polynomial.add_to_ring_element.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.add_to_ring_element.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × polynomial.add_to_ring_element.closure)
+  RustM (parameters.FieldElement × polynomial.add_to_ring_element.closure)
   := do
   let (a, a1) := c
   let fe ← Array.index_usize a tupled_args
@@ -4773,7 +4699,7 @@ def
 def
   polynomial.add_to_ring_element.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.add_to_ring_element.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.add_to_ring_element.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -4810,7 +4736,7 @@ def
 def polynomial.add_to_ring_element
   (lhs : Array parameters.FieldElement 256#usize)
   (rhs : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.add_to_ring_element.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -4821,7 +4747,7 @@ def polynomial.add_to_ring_element
 def
   polynomial.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.poly_barrett_reduce.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × polynomial.poly_barrett_reduce.closure)
+  RustM (parameters.FieldElement × polynomial.poly_barrett_reduce.closure)
   := do
   let fe ← Array.index_usize c tupled_args
   let i ← fe.val % parameters.FIELD_MODULUS
@@ -4833,7 +4759,7 @@ def
 def
   polynomial.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.poly_barrett_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -4869,7 +4795,7 @@ def
     Visibility: public -/
 def polynomial.poly_barrett_reduce
   (p : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.poly_barrett_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -4880,7 +4806,7 @@ def polynomial.poly_barrett_reduce
 def
   polynomial.subtract_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.subtract_reduce.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × polynomial.subtract_reduce.closure)
+  RustM (parameters.FieldElement × polynomial.subtract_reduce.closure)
   := do
   let (a, a1) := c
   let fe ← Array.index_usize a tupled_args
@@ -4901,7 +4827,7 @@ def
 def
   polynomial.subtract_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.subtract_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.subtract_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -4938,7 +4864,7 @@ def
 def polynomial.subtract_reduce
   (a : Array parameters.FieldElement 256#usize)
   (b : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.subtract_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -4950,7 +4876,7 @@ def polynomial.subtract_reduce
 def polynomial.ntt_multiply
   (a : Array parameters.FieldElement 256#usize)
   (b : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   ntt.multiply_ntts a b
 
@@ -4959,7 +4885,7 @@ def polynomial.ntt_multiply
 def
   polynomial.add_message_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.add_message_error_reduce.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement ×
+  RustM (parameters.FieldElement ×
     polynomial.add_message_error_reduce.closure)
   := do
   let (a, a1, a2) := c
@@ -4982,7 +4908,7 @@ def
 def
   polynomial.add_message_error_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.add_message_error_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.add_message_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -5020,7 +4946,7 @@ def polynomial.add_message_error_reduce
   (error_2 : Array parameters.FieldElement 256#usize)
   (message : Array parameters.FieldElement 256#usize)
   (ntt_product : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.add_message_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -5031,7 +4957,7 @@ def polynomial.add_message_error_reduce
 def
   polynomial.add_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.add_error_reduce.closure) (tupled_args : Std.Usize) :
-  Result (parameters.FieldElement × polynomial.add_error_reduce.closure)
+  RustM (parameters.FieldElement × polynomial.add_error_reduce.closure)
   := do
   let (a, a1) := c
   let fe ← Array.index_usize a tupled_args
@@ -5050,7 +4976,7 @@ def
 def
   polynomial.add_error_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.add_error_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.add_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -5087,7 +5013,7 @@ def
 def polynomial.add_error_reduce
   (ntt_product : Array parameters.FieldElement 256#usize)
   (error : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.add_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -5099,7 +5025,7 @@ def
   polynomial.add_standard_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   (c : polynomial.add_standard_error_reduce.closure) (tupled_args : Std.Usize)
   :
-  Result (parameters.FieldElement ×
+  RustM (parameters.FieldElement ×
     polynomial.add_standard_error_reduce.closure)
   := do
   let (a, a1) := c
@@ -5119,7 +5045,7 @@ def
 def
   polynomial.add_standard_error_reduce.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   (c : polynomial.add_standard_error_reduce.closure) (i : Std.Usize) :
-  Result parameters.FieldElement
+  RustM parameters.FieldElement
   := do
   let (fe, _) ←
     polynomial.add_standard_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
@@ -5156,11 +5082,30 @@ def
 def polynomial.add_standard_error_reduce
   (ntt_product : Array parameters.FieldElement 256#usize)
   (error_ntt : Array parameters.FieldElement 256#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   parameters.createi 256#usize
     polynomial.add_standard_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
     (ntt_product, error_ntt)
+
+/-- [hacspec_ml_kem::sampling::rej_sample_step::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::rej_sample_step::closure<'_0>}::call_once]:
+    Source: 'ml-kem/src/sampling.rs', lines 62:33-62:54 -/
+def
+  sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  (c : sampling.rej_sample_step.closure) (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  ok (c <= tupled_args)
+
+/-- Trait implementation: [hacspec_ml_kem::sampling::rej_sample_step::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::rej_sample_step::closure<'_0>}]
+    Source: 'ml-kem/src/sampling.rs', lines 62:33-62:54 -/
+@[reducible]
+def sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  : core.ops.function.FnOnce sampling.rej_sample_step.closure Std.Usize Bool
+  := {
+  call_once :=
+    sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
 
 /-- [hacspec_ml_kem::sampling::rej_sample_step]: loop body 0:
     Source: 'ml-kem/src/sampling.rs', lines 60:4-67:5
@@ -5169,7 +5114,7 @@ def polynomial.add_standard_error_reduce
 def sampling.rej_sample_step_loop.body
   (decoded : Array Std.U16 16#usize) (iter : core.ops.range.Range Std.Usize)
   (result : Array parameters.FieldElement 16#usize) (count : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array
     parameters.FieldElement 16#usize) × Std.Usize) ((Array
     parameters.FieldElement 16#usize) × Std.Usize))
   := do
@@ -5179,6 +5124,10 @@ def sampling.rej_sample_step_loop.body
   match o with
   | core.option.Option.None => ok (done (result, count))
   | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      count
     let i1 ← Array.index_usize decoded i
     if i1 < parameters.FIELD_MODULUS
     then
@@ -5195,7 +5144,7 @@ def sampling.rej_sample_step_loop.body
 def sampling.rej_sample_step_loop
   (iter : core.ops.range.Range Std.Usize) (decoded : Array Std.U16 16#usize)
   (result : Array parameters.FieldElement 16#usize) (count : Std.Usize) :
-  Result ((Array parameters.FieldElement 16#usize) × Std.Usize)
+  RustM ((Array parameters.FieldElement 16#usize) × Std.Usize)
   := do
   loop
     (fun (iter1, result1, count1) => sampling.rej_sample_step_loop.body decoded
@@ -5207,7 +5156,7 @@ def sampling.rej_sample_step_loop
     Visibility: public -/
 def sampling.rej_sample_step
   (bytes : Array Std.U8 24#usize) :
-  Result ((Array parameters.FieldElement 16#usize) × Std.Usize)
+  RustM ((Array parameters.FieldElement 16#usize) × Std.Usize)
   := do
   let decoded ←
     serialize.byte_decode_generic 2#usize 16#usize 192#usize bytes 12#usize
@@ -5221,15 +5170,270 @@ def sampling.rej_sample_step
     Visibility: public -/
 @[global_simps, irreducible] def serialize.MAX_BYTES : Std.Usize := 16384#usize
 
+/-- [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}::call]:
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+def serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+  {N : Std.Usize} {Nd : Std.Usize} (c : serialize.__5.ensures.closure N Nd)
+  (tupled_args : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (a, i) := c
+  let i1 ← Array.index_usize a tupled_args
+  let i2 ← 1#u16 <<< i
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < N) (i1 < i2)
+
+/-- [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}::call_mut]:
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+def
+  serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+  {N : Std.Usize} {Nd : Std.Usize} (state : serialize.__5.ensures.closure N Nd)
+  (args : Std.Usize) :
+  RustM (hax_lib.prop.Prop × (serialize.__5.ensures.closure N Nd))
+  := do
+  let p ←
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+      state args
+  ok (p, state)
+
+/-- [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+def
+  serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+  {N : Std.Usize} {Nd : Std.Usize} (c : serialize.__5.ensures.closure N Nd)
+  (i : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (p, _) ←
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+      c i
+  ok p
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}]
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+@[reducible]
+def serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp (N
+  : Std.Usize) (Nd : Std.Usize) : core.ops.function.FnOnce
+  (serialize.__5.ensures.closure N Nd) Std.Usize hax_lib.prop.Prop := {
+  call_once :=
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}]
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+@[reducible]
+def serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (N :
+  Std.Usize) (Nd : Std.Usize) : core.ops.function.FnMut
+  (serialize.__5.ensures.closure N Nd) Std.Usize hax_lib.prop.Prop := {
+  FnOnceInst :=
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp N
+    Nd
+  call_mut :=
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#5::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#5::ensures::closure<'_0, '_1, N, Nd>}]
+    Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
+@[reducible]
+def serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (N :
+  Std.Usize) (Nd : Std.Usize) : core.ops.function.Fn
+  (serialize.__5.ensures.closure N Nd) Std.Usize hax_lib.prop.Prop := {
+  FnMutInst :=
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp N Nd
+  call :=
+    serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+}
+
+/-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call]:
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+  {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
+  (c : serialize.__7.ensures.closure N N8 Nd Nd8) (tupled_args : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (a, i) := c
+  let i1 ← Array.index_usize a tupled_args
+  let i2 ← 1#u16 <<< i
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < N8) (i1 < i2)
+
+/-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call_mut]:
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+def
+  serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+  {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
+  (state : serialize.__7.ensures.closure N N8 Nd Nd8) (args : Std.Usize) :
+  RustM (hax_lib.prop.Prop × (serialize.__7.ensures.closure N N8 Nd Nd8))
+  := do
+  let p ←
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+      state args
+  ok (p, state)
+
+/-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+def
+  serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+  {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
+  (c : serialize.__7.ensures.closure N N8 Nd Nd8) (i : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (p, _) ←
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+      c i
+  ok p
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+@[reducible]
+def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp (N
+  : Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
+  core.ops.function.FnOnce (serialize.__7.ensures.closure N N8 Nd Nd8)
+  Std.Usize hax_lib.prop.Prop := {
+  call_once :=
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+@[reducible]
+def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (N :
+  Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
+  core.ops.function.FnMut (serialize.__7.ensures.closure N N8 Nd Nd8) Std.Usize
+  hax_lib.prop.Prop := {
+  FnOnceInst :=
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp N
+    N8 Nd Nd8
+  call_mut :=
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
+    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+@[reducible]
+def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (N :
+  Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
+  core.ops.function.Fn (serialize.__7.ensures.closure N N8 Nd Nd8) Std.Usize
+  hax_lib.prop.Prop := {
+  FnMutInst :=
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp N N8
+    Nd Nd8
+  call :=
+    serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+}
+
+/-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call]:
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+  {D32 : Std.Usize} {D256 : Std.Usize}
+  (c : serialize.__9.ensures.closure D32 D256) (tupled_args : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (a, i) := c
+  let fe ← Array.index_usize a tupled_args
+  let i1 ← 1#u16 <<< i
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < 256#usize)
+    (fe.val < i1)
+
+/-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call_mut]:
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+def
+  serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+  {D32 : Std.Usize} {D256 : Std.Usize}
+  (state : serialize.__9.ensures.closure D32 D256) (args : Std.Usize) :
+  RustM (hax_lib.prop.Prop × (serialize.__9.ensures.closure D32 D256))
+  := do
+  let p ←
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+      state args
+  ok (p, state)
+
+/-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+def
+  serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+  {D32 : Std.Usize} {D256 : Std.Usize}
+  (c : serialize.__9.ensures.closure D32 D256) (i : Std.Usize) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (p, _) ←
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+      c i
+  ok p
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+@[reducible]
+def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp
+  (D32 : Std.Usize) (D256 : Std.Usize) : core.ops.function.FnOnce
+  (serialize.__9.ensures.closure D32 D256) Std.Usize hax_lib.prop.Prop := {
+  call_once :=
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+@[reducible]
+def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (D32
+  : Std.Usize) (D256 : Std.Usize) : core.ops.function.FnMut
+  (serialize.__9.ensures.closure D32 D256) Std.Usize hax_lib.prop.Prop := {
+  FnOnceInst :=
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp D32
+    D256
+  call_mut :=
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
+}
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
+    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+@[reducible]
+def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (D32 :
+  Std.Usize) (D256 : Std.Usize) : core.ops.function.Fn
+  (serialize.__9.ensures.closure D32 D256) Std.Usize hax_lib.prop.Prop := {
+  FnMutInst :=
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp D32
+    D256
+  call :=
+    serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
+}
+
+/-- [hacspec_ml_kem::serialize::serialize_secret_key_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::serialize_secret_key_into::closure<'_0, RANK>}::call_once]:
+    Source: 'ml-kem/src/serialize.rs', lines 230:33-230:87 -/
+def
+  serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+  {RANK : Std.Usize} (c : serialize.serialize_secret_key_into.closure RANK)
+  (tupled_args : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← core.slice.Slice.len c
+  let i1 ← parameters.BYTES_PER_RING_ELEMENT
+  let i2 ← RANK * i1
+  ok (i = i2)
+
+/-- Trait implementation: [hacspec_ml_kem::serialize::serialize_secret_key_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::serialize_secret_key_into::closure<'_0, RANK>}]
+    Source: 'ml-kem/src/serialize.rs', lines 230:33-230:87 -/
+@[reducible]
+def
+  serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+  (RANK : Std.Usize) : core.ops.function.FnOnce
+  (serialize.serialize_secret_key_into.closure RANK) Std.Usize Bool := {
+  call_once :=
+    serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
+}
+
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into]: loop body 0:
     Source: 'ml-kem/src/serialize.rs', lines 228:4-233:5
     Visibility: public -/
 @[rust_loop_body]
 def serialize.serialize_secret_key_into_loop.body
-  {RANK : Std.Usize} (i : Std.Usize)
+  {RANK : Std.Usize}
   (vector : Array (Array parameters.FieldElement 256#usize) RANK)
   (iter : core.ops.range.Range Std.Usize) (out : Slice Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
     (Slice Std.U8))
   := do
   let (o, iter1) ←
@@ -5237,12 +5441,17 @@ def serialize.serialize_secret_key_into_loop.body
       core.Usize.Insts.CoreIterRangeStep iter
   match o with
   | core.option.Option.None => ok (done out)
-  | core.option.Option.Some i1 =>
-    let a ← Array.index_usize vector i1
+  | core.option.Option.Some i =>
+    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
+      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+      (serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
+      RANK) out
+    let a ← Array.index_usize vector i
     let encoded ← serialize.byte_encode 384#usize 3072#usize a 12#usize
-    let i2 ← i1 * i
-    let i3 ← i1 + 1#usize
-    let i4 ← i3 * i
+    let i1 ← parameters.BYTES_PER_RING_ELEMENT
+    let i2 ← i * i1
+    let i3 ← i + 1#usize
+    let i4 ← i3 * i1
     let (s, index_mut_back) ←
       core.Slice.Insts.CoreOpsIndexIndexMut.index_mut
         (core.ops.range.RangeUsize.Insts.CoreSliceIndexSliceIndexSliceSlice
@@ -5258,30 +5467,27 @@ def serialize.serialize_secret_key_into_loop.body
     Visibility: public -/
 @[rust_loop]
 def serialize.serialize_secret_key_into_loop
-  {RANK : Std.Usize} (i : Std.Usize) (iter : core.ops.range.Range Std.Usize)
+  {RANK : Std.Usize} (iter : core.ops.range.Range Std.Usize)
   (vector : Array (Array parameters.FieldElement 256#usize) RANK)
   (out : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
   loop
-    (fun (iter1, out1) => serialize.serialize_secret_key_into_loop.body i
-      vector iter1 out1)
+    (fun (iter1, out1) => serialize.serialize_secret_key_into_loop.body vector
+      iter1 out1)
     (iter, out)
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into]:
     Source: 'ml-kem/src/serialize.rs', lines 226:0-234:1
     Visibility: public -/
+@[reducible]
 def serialize.serialize_secret_key_into
   {RANK : Std.Usize}
   (vector : Array (Array parameters.FieldElement 256#usize) RANK)
   (out : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
-  let i ← core.slice.Slice.len out
-  let i1 ← parameters.BYTES_PER_RING_ELEMENT
-  let i2 ← RANK * i1
-  massert (i = i2)
-  serialize.serialize_secret_key_into_loop i1
+  serialize.serialize_secret_key_into_loop
     { start := 0#usize, «end» := RANK } vector out
 
 /-- [hacspec_ml_kem::serialize::serialize_uncompressed_ring_element]:
@@ -5289,7 +5495,7 @@ def serialize.serialize_secret_key_into
     Visibility: public -/
 def serialize.serialize_uncompressed_ring_element
   (re : Array parameters.FieldElement 256#usize) :
-  Result (Array Std.U8 384#usize)
+  RustM (Array Std.U8 384#usize)
   := do
   serialize.byte_encode 384#usize 3072#usize re 12#usize
 
@@ -5298,7 +5504,7 @@ def serialize.serialize_uncompressed_ring_element
     Visibility: public -/
 def serialize.deserialize_to_uncompressed_ring_element
   (serialized : Array Std.U8 384#usize) :
-  Result (Array parameters.FieldElement 256#usize)
+  RustM (Array parameters.FieldElement 256#usize)
   := do
   serialize.byte_decode 3072#usize serialized 12#usize
 
@@ -5307,7 +5513,7 @@ def serialize.deserialize_to_uncompressed_ring_element
     Visibility: public -/
 def serialize.deserialize_then_decompress_u_then_ntt
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
-  Result (Array (Array parameters.FieldElement 256#usize) RANK)
+  RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   let a ← serialize.deserialize_then_decompress_u RANK ciphertext du
   ntt.vector_ntt a
