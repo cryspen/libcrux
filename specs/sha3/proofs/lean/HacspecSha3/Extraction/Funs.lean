@@ -61,7 +61,7 @@ def keccak_f.RHO_OFFSETS : Array Std.U32 25#usize :=
     ]
 
 /-- [hacspec_sha3::createi]:
-    Source: 'sha3/src/lib.rs', lines 31:0-33:1 -/
+    Source: 'sha3/src/lib.rs', lines 28:0-30:1 -/
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
