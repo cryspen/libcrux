@@ -1,4 +1,8 @@
-mod arithmetic;
+// Public so that libcrux-iot's ml-dsa can name the FIPS-204 rounding layer
+// (`arithmetic::{decompose, mod_q, ...}`) directly inside a
+// `#[hax_lib::ensures]`, making the generated Lean spec full functional
+// correctness against this crate rather than a panic-freedom claim.
+pub mod arithmetic;
 mod encoding;
 mod error;
 mod hash_functions;

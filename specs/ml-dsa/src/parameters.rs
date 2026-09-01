@@ -1,7 +1,7 @@
 /// ML-DSA parameters — FIPS 204, Section 4.
 
 /// Field modulus q = 2^23 - 2^13 + 1.
-pub(crate) const Q: i32 = 8380417;
+pub const Q: i32 = 8380417;
 
 /// Number of dropped bits from t — FIPS 204, Table 1.
 pub(crate) const D: usize = 13;
