@@ -42,14 +42,4 @@ axiom hash_functions.g
     Source: 'ml-dsa/src/hash_functions.rs', lines 23:0-27:1 -/
 axiom hash_functions.h2
   (N : Std.Usize) : Slice Std.U8 → Slice Std.U8 → RustM (Array Std.U8 N)
-
-/-- `hax_lib::loop_invariant!` marker. cargo-hax 0.4 emits calls to
-    `hax_lib._internal_loop_invariant`, but neither hax-lean v0.3.12 nor the
-    generated template declares it, so the extraction does not typecheck without
-    a local model. The marker carries no computational content -- it is a proof
-    hint -- so modelling it as a no-op is sound for this spec package. Drop this
-    once hax-lean ships the symbol. -/
-axiom hax_lib._internal_loop_invariant
-  {Into Inv State : Type} : Into → Inv → State → RustM Unit
-
 end

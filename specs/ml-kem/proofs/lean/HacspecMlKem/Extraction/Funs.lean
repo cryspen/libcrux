@@ -1201,10 +1201,6 @@ def
   match o with
   | core.option.Option.None => ok (done coefficient)
   | core.option.Option.Some j =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      N Nd) coefficient
     let i2 ← i1 * i
     let i3 ← i2 + j
     let b ← Array.index_usize a i3
@@ -1772,9 +1768,6 @@ def sampling.sum_coins_loop.body
   match o with
   | core.option.Option.None => ok (done sum)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool sum
     let b ← Slice.index_usize coins i
     let i1 ← lift (UScalar.cast_fromBool .U16 b)
     let sum1 ← sum + i1
@@ -2405,10 +2398,6 @@ def serialize.compress_then_serialize_u_into_loop.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      RANK) (out, du)
     let a ← Array.index_usize u i
     let a1 ← compress.compress a du
     let i1 ← i * du_poly_size
@@ -5124,10 +5113,6 @@ def sampling.rej_sample_step_loop.body
   match o with
   | core.option.Option.None => ok (done (result, count))
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      count
     let i1 ← Array.index_usize decoded i
     if i1 < parameters.FIELD_MODULUS
     then
@@ -5442,10 +5427,6 @@ def serialize.serialize_secret_key_into_loop.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      RANK) out
     let a ← Array.index_usize vector i
     let encoded ← serialize.byte_encode 384#usize 3072#usize a 12#usize
     let i1 ← parameters.BYTES_PER_RING_ELEMENT

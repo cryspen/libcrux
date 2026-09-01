@@ -51,4 +51,38 @@ for _fn in ("matrix_vector_ntt",):
         f"(matrix.{_fn}.closure",
         f"(_root_.hacspec_ml_dsa.matrix.{_fn}.closure")
 
+
+# cargo-hax 0.4 emits `hax_lib::loop_invariant!` as a call to
+# `hax_lib._internal_loop_invariant`, a marker with no computational content that
+# neither hax-lean v0.3.12 nor the generated FunsExternal template declares.
+# 0.3.7 emitted nothing for it. Erase the statements rather than modelling them:
+# a model that `mvcgen` steps through adds a binding to every affected body,
+# which shifts the generated hypothesis names that the proofs are written
+# against. Erasing keeps the body shape identical to the 0.3.7 extraction. The
+# marker is a proof hint, so dropping it loses no information about behaviour.
+def _erase_loop_invariant_markers(text: str) -> str:
+    lines = text.split("\n")
+    out, i = [], 0
+    while i < len(lines):
+        stripped = lines[i].lstrip()
+        if stripped.startswith("hax_lib._internal_loop_invariant"):
+            indent = len(lines[i]) - len(stripped)
+            i += 1
+            # swallow the call's continuation lines (strictly deeper indentation)
+            while i < len(lines):
+                nxt = lines[i]
+                if not nxt.strip():
+                    break
+                if len(nxt) - len(nxt.lstrip()) > indent:
+                    i += 1
+                else:
+                    break
+            continue
+        out.append(lines[i])
+        i += 1
+    return "\n".join(out)
+
+
+content = _erase_loop_invariant_markers(content)
+
 funs_lean.write_text(content)

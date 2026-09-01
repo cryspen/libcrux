@@ -33,6 +33,11 @@ instance : HaxToRange (CoreModels.core.ops.range.RangeFrom Usize) where
   toRange r len := { start := r.start, «end» := len }
 instance : HaxToRange (CoreModels.core.ops.range.RangeTo Usize) where
   toRange r _ := { start := 0#usize, «end» := r.«end» }
+-- `x[..]`: `RangeFull` is `Unit`, so the whole container is the range.
+-- Needed by consumers of this spec (libcrux-iot sha3 indexes with `..`), not by
+-- the spec's own extraction.
+instance : HaxToRange CoreModels.core.ops.range.RangeFull where
+  toRange _ len := { start := 0#usize, «end» := len }
 
 namespace CoreModels.core
 
@@ -41,7 +46,10 @@ def Array.Insts.CoreOpsIndexIndexMut.index_mut
   {T I : Type} {N : Usize} [HaxToRange I]
   (inst : ops.index.IndexMut (Slice T) I (Slice T))
   (arr : Array T N) (i : I) : RustM ((Slice T) × ((Slice T) → Array T N)) := do
-  let sub ← inst.IndexInst.index (Array.to_slice arr) i
+  -- via `index_mut`, not `IndexInst.index`: for `Range<usize>` the former is
+  -- `slice_slice_mut` (a plain `subslice`), while the latter routes through the
+  -- bounds-checked `get`, which no proof here wants to unfold.
+  let sub ← Prod.fst <$> inst.index_mut (Array.to_slice arr) i
   let r := HaxToRange.toRange i (Aeneas.Std.Slice.len (Array.to_slice arr))
   ok (sub, fun sub' =>
     match Aeneas.Std.Array.update_subslice arr r sub' with

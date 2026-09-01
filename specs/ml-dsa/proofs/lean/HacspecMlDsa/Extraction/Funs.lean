@@ -178,9 +178,6 @@ def parameters.bitlen_loop.body
   match o with
   | core.option.Option.None => ok (done bits)
   | core.option.Option.Some _ =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      parameters.bitlen.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool bits
     if v > 0#usize
     then
       let bits1 ← bits + 1#usize
@@ -261,10 +258,6 @@ def encoding.simple_bit_pack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some bit =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.simple_bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      BYTES) bits
     let i1 ← i * bits
     let pos ← i1 + bit
     let i2 ← val >>> bit
@@ -309,10 +302,6 @@ def encoding.simple_bit_pack_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.simple_bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      BYTES) ()
     let i1 ← Array.index_usize w i
     let val ← lift (IScalar.hcast .U32 i1)
     let out1 ←
@@ -399,10 +388,6 @@ def encoding.bit_pack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some bit =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.bit_pack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      BYTES) bits
     let i1 ← i * bits
     let pos ← i1 + bit
     let i2 ← val >>> bit
@@ -448,10 +433,6 @@ def encoding.bit_pack_loop0.body
   match o with
   | core.option.Option.None => ok (done out)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.bit_pack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      BYTES) ()
     let i1 ← lift (UScalar.hcast .I64 b)
     let i2 ← Array.index_usize w i
     let i3 ← lift (IScalar.cast .I64 i2)
@@ -548,10 +529,6 @@ def encoding.simple_bit_unpack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done val)
   | core.option.Option.Some bit =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      encoding.simple_bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      ()
     if bit < bits
     then
       let i1 ← i * bits
@@ -601,10 +578,6 @@ def encoding.simple_bit_unpack_loop0.body
   match o with
   | core.option.Option.None => ok (done w)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      encoding.simple_bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      ()
     let val ←
       encoding.simple_bit_unpack_loop0_loop0
         { start := 0#usize, «end» := 24#usize } v bits i 0#u32
@@ -682,10 +655,6 @@ def encoding.bit_unpack_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done val)
   | core.option.Option.Some bit =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      encoding.bit_unpack.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      ()
     if bit < bits
     then
       let i1 ← i * bits
@@ -735,9 +704,6 @@ def encoding.bit_unpack_loop0.body
   match o with
   | core.option.Option.None => ok (done w)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      encoding.bit_unpack.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool ()
     let val ←
       encoding.bit_unpack_loop0_loop0 { start := 0#usize, «end» := 24#usize }
         v bits i 0#u32
@@ -1283,10 +1249,6 @@ def encoding.sk_encode_loop0.body
   match o with
   | core.option.Option.None => ok (done (sk, offset))
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.sk_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K L
-      SK_SIZE) (offset, params.eta)
     if params.eta = 2#usize
     then
       let a ← Array.index_usize s1 i
@@ -1349,10 +1311,6 @@ def encoding.sk_encode_loop1.body
   match o with
   | core.option.Option.None => ok (done (sk, offset))
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.sk_encode.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
-      L SK_SIZE) (offset, params.eta)
     if params.eta = 2#usize
     then
       let a ← Array.index_usize s2 i
@@ -1415,10 +1373,6 @@ def encoding.sk_encode_loop2.body
   match o with
   | core.option.Option.None => ok (done sk)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.sk_encode.closure_2.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
-      L SK_SIZE) (offset, params.eta)
     let a ← Array.index_usize t0 i
     let i1 ← parameters.D - 1#usize
     let i2 ← 1#usize <<< i1
@@ -1776,10 +1730,6 @@ def encoding.sig_encode_loop.body
   match o with
   | core.option.Option.None => ok (done (sigma, offset))
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.sig_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
-      L SIG_SIZE) (offset, c_tilde_len, gamma1)
     let i1 ← 1#usize <<< 17#i32
     if gamma1 = i1
     then
@@ -2046,10 +1996,6 @@ def encoding.w1_encode_loop.body
   match o with
   | core.option.Option.None => ok (done encoded)
   | core.option.Option.Some i2 =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (encoding.w1_encode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool K
-      W1_BYTES) ()
     let i3 ← i / 88#i32
     if i1 = i3
     then
@@ -3766,10 +3712,6 @@ def sampling.sample_in_ball_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done (byte_offset, j, found))
   | core.option.Option.Some _ =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      sampling.sample_in_ball.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      (found, j, i)
     if found
     then ok (cont (iter1, byte_offset, j, true))
     else
@@ -4039,10 +3981,6 @@ def polynomial.count_hints_loop0_loop0.body
   match o with
   | core.option.Option.None => ok (done total)
   | core.option.Option.Some j =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (polynomial.count_hints.closure_1.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      N) (total, i)
     let a ← Array.index_usize h i
     let b ← Array.index_usize a j
     if b
@@ -4077,10 +4015,6 @@ def polynomial.count_hints_loop0.body
   match o with
   | core.option.Option.None => ok (done total)
   | core.option.Option.Some i =>
-    hax_lib._internal_loop_invariant (core.convert.Into.Blanket
-      hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-      (polynomial.count_hints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-      N) total
     let total1 ←
       polynomial.count_hints_loop0_loop0
         { start := 0#usize, «end» := 256#usize } h total i
