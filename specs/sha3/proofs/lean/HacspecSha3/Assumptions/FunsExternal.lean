@@ -49,9 +49,9 @@ def Array.Insts.CoreOpsIndexIndexMut.index_mut
   -- via `index_mut`, not `IndexInst.index`: for `Range<usize>` the former is
   -- `slice_slice_mut` (a plain `subslice`), while the latter routes through the
   -- bounds-checked `get`, which no proof here wants to unfold.
-  let sub ← Prod.fst <$> inst.index_mut (Array.to_slice arr) i
+  let p ← inst.index_mut (Array.to_slice arr) i
   let r := HaxToRange.toRange i (Aeneas.Std.Slice.len (Array.to_slice arr))
-  ok (sub, fun sub' =>
+  ok (p.1, fun sub' =>
     match Aeneas.Std.Array.update_subslice arr r sub' with
     | .ok a => a
     | _ => arr)
