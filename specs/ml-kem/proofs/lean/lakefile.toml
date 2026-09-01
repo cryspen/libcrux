@@ -11,8 +11,12 @@ git = "https://github.com/cryspen/hax-lean"
 rev = "v0.3.12"
 
 # HacspecMlKem's spec references `hacspec_sha3.sha3.*`, so it depends on the
-# HacspecSha3 spec. Local worktree path for now (same as the libcrux-iot side);
-# TODO: point at a pushed cryspen/libcrux rev once the spec migration lands.
+# HacspecSha3 spec, which lives in THIS repo. Deliberately a repo-relative path
+# rather than a `git`+`rev`: consumers pull this package via `git` + `subDir =
+# specs/ml-kem/proofs/lean`, and a relative path then resolves to
+# `specs/sha3/proofs/lean` inside that same checkout. Pinning a rev here instead
+# would make libcrux fetch itself -- a second clone, and a self-reference that
+# has to be bumped on every spec commit.
 [[require]]
 name = "HacspecSha3"
 path = "../../../sha3/proofs/lean"
