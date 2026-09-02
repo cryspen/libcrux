@@ -1,0 +1,12 @@
+(* PSQ registration (sig) — full two-message handshake + into_session, passive.
+   Non-vacuity foundation for the sig response/session analysis: the run
+   must reach InitSessSig and RespSessSig with no attacker help. *)
+set attacker = passive.
+set reconstructTrace = true.
+query i: Principal, r: Principal, ctx: bitstring, e: bitstring, k: bitstring;
+      event(InitSessSig(i, r, ctx, e, k)).
+query i: Principal, r: Principal, ctx: bitstring, e: bitstring, k: bitstring;
+      event(RespSessSig(i, r, ctx, e, k)).
+process
+    ( setup_responder(Bob) | create_sig_client(Alice)
+    | ( !sess_sig_initiator(Alice, Bob) ) | ( !sess_sig_responder(Bob) ) )
