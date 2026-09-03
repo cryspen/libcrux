@@ -11,7 +11,7 @@ edition = "2021"
 # `hax_lib_1`, and the Lean extraction breaks wholesale (CoreModels only
 # models `hax_lib`), e.g.
 #   Unknown identifier `hax_lib.Usize.Insts.Hax_lib_1IntToInt.to_int`
-hax-lib = { git = "https://github.com/cryspen/hax", rev = "4c9e2b7c75ab1e2b645a4a8361ae86c4504f9800" }
+hax-lib = { git = "https://github.com/cryspen/hax", rev = "cbce2c3bfcf50e853d3115c45cd592004d7d092f" }
 
 [dev-dependencies]
 hex = "0.4.3"

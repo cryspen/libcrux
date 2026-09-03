@@ -1,10 +1,10 @@
--- External function definitions for `hacspec_sha3` (hand-written).
--- The `CoreModels` library (cryspen/hax-lean) supplies the shared `Index`
--- instances and range bridges (as its own `slice.index.SliceIndex`, which
--- exposes only `get`/`index`). The mutable-index helpers below reconstruct the
--- write-back from the range value using aeneas's `update_subslice`, plus the
--- `unwrap` / `copy_from_slice` / `TryFromSliceError` `Debug` models. These are
--- the single source of truth, reused by libcrux-iot's proof via `import HacspecSha3`.
+-- External helpers for `hacspec_sha3` (hand-written).
+-- As of hax-lean v0.3.17 (hax v0.4.0-rc.2), CoreModels supplies every model the
+-- extraction references, including the `Array` `index_mut` and the
+-- `TryFromSliceError` `Debug` instance that used to be defined here. What
+-- remains is the `HaxToRange` bridge, a PROOF-side helper for recovering
+-- concrete `[start, end)` bounds from CoreModels range values; it is reused by
+-- libcrux-iot's proofs via `import HacspecSha3`.
 import Aeneas
 import CoreModels
 import HacspecSha3.Extraction.Types
@@ -39,29 +39,13 @@ instance : HaxToRange (CoreModels.core.ops.range.RangeTo Usize) where
 instance : HaxToRange CoreModels.core.ops.range.RangeFull where
   toRange _ len := { start := 0#usize, «end» := len }
 
-namespace CoreModels.core
-
-/-- `&mut arr[i]` on an array: analogous, via `Array.update_subslice`. -/
-def Array.Insts.CoreOpsIndexIndexMut.index_mut
-  {T I : Type} {N : Usize} [HaxToRange I]
-  (inst : ops.index.IndexMut (Slice T) I (Slice T))
-  (arr : Array T N) (i : I) : RustM ((Slice T) × ((Slice T) → Array T N)) := do
-  -- via `index_mut`, not `IndexInst.index`: for `Range<usize>` the former is
-  -- `slice_slice_mut` (a plain `subslice`), while the latter routes through the
-  -- bounds-checked `get`, which no proof here wants to unfold.
-  let p ← inst.index_mut (Array.to_slice arr) i
-  let r := HaxToRange.toRange i (Aeneas.Std.Slice.len (Array.to_slice arr))
-  ok (p.1, fun sub' =>
-    match Aeneas.Std.Array.update_subslice arr r sub' with
-    | .ok a => a
-    | _ => arr)
-
-/-- Trivial `Debug` for `array.TryFromSliceError` (= `Unit`). -/
-@[reducible]
-def array.TryFromSliceError.Insts.CoreFmtDebug :
-    CoreModels.core.fmt.Debug CoreModels.core.array.TryFromSliceError :=
-  { fmt := fun _ f => Aeneas.Std.RustM.ok (.Ok (), f) }
-
-end CoreModels.core
+-- The `Array` `index_mut` model and the `TryFromSliceError` `Debug` instance
+-- that used to be hand-written here are supplied by CoreModels natively as of
+-- hax-lean v0.3.17 (hax v0.4.0-rc.2): `Array.Insts.CoreOpsIndexIndexMut.index_mut`
+-- now routes through `array.Array.as_mut_slice` and composes the write-backs,
+-- with no `HaxToRange`/`update_subslice` detour. Redeclaring them at the same
+-- names is an error ("has already been declared"), so they are gone; only the
+-- `HaxToRange` helper class above remains, because downstream proofs
+-- (libcrux-iot sha3) still use it to STATE range facts.
 
 end
