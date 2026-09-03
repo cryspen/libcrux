@@ -39,22 +39,13 @@ def SharedAArray.Insts.CoreConvertTryFromSharedASliceTryFromSliceError.try_from
   else
     Aeneas.Std.RustM.ok (result.Result.Err ())
 
-/-- `PartialEq` not-equal for `&A` vs `&B`. Forwards to the underlying
-    `PartialEq A B` instance. -/
-def Shared1A.Insts.CoreCmpPartialEqShared0B.ne
-    {A B : Type} (inst : cmp.PartialEq A B) (a : A) (b : B) :
-    Aeneas.Std.RustM Bool := do
-  let eq ← inst.eq a b
-  Aeneas.Std.RustM.ok (!eq)
-
-/-- `Formatter::debug_struct_field1_finish`. No-op stub returning Ok. -/
-def fmt.Formatter.debug_struct_field1_finish
-    {T : Type} (f : fmt.Formatter)
-    (_name : Aeneas.Std.Slice Aeneas.Std.U8)
-    (_field : Aeneas.Std.Slice Aeneas.Std.U8)
-    (_value : T) :
-    Aeneas.Std.RustM ((result.Result Unit fmt.Error) × fmt.Formatter) :=
-  Aeneas.Std.RustM.ok (result.Result.Ok (), f)
+-- The `Shared1A...PartialEq.ne` forwarder and the
+-- `fmt.Formatter.debug_struct_field1_finish` stub that used to live here are
+-- supplied by CoreModels natively as of hax-lean v0.3.17 (hax v0.4.0-rc.2);
+-- redeclaring them at the same names is an error. The `try_from` above is NOT
+-- covered: v0.3.17 models the array `TryFrom<&[T]>` under a different
+-- instance name (`Array.Insts.CoreConvertTryFromShared0SliceTryFromSliceError`),
+-- and the rc.2 extraction still references this one 13 times.
 
 end CoreModels.core
 

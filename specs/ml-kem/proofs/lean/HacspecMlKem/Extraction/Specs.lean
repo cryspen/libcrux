@@ -12,6 +12,9 @@ open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -1740,7 +1743,7 @@ def serialize.bitvector_to_bounded_ints.spec (N : Std.Usize) {Nd : Std.Usize}
   ⦃ ⌜ True ⌝ ⦄
   serialize.bitvector_to_bounded_ints N input d
   ⦃ ⇓ res =>
-  ⌜ (serialize.bitvector_to_bounded_ints.post N input d res).holds ⌝ ⦄
+  ⌜ (serialize.bitvector_to_bounded_ints.post input d res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode_generic::pre]:
@@ -1796,7 +1799,7 @@ def
   ⦃ ⌜ True ⌝ ⦄
   serialize.byte_decode_generic N N8 Nd8 b d
   ⦃ ⇓ res =>
-  ⌜ (serialize.byte_decode_generic.post N N8 Nd8 b d res).holds ⌝ ⦄
+  ⌜ (serialize.byte_decode_generic.post N Nd8 b d res).holds ⌝ ⦄
 
 
 /-- [hacspec_ml_kem::serialize::byte_decode::pre]:

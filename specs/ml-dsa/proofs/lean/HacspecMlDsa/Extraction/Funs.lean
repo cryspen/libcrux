@@ -11,6 +11,9 @@ open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -24,11 +27,13 @@ noncomputable section
 namespace hacspec_ml_dsa
 
 /-- [hacspec_ml_dsa::parameters::Q]
-    Source: 'ml-dsa/src/parameters.rs', lines 4:0-4:34 -/
+    Source: 'ml-dsa/src/parameters.rs', lines 4:0-4:27
+    Visibility: public -/
 @[global_simps, irreducible] def parameters.Q : Std.I32 := 8380417#i32
 
 /-- [hacspec_ml_dsa::arithmetic::mod_q]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 8:0-15:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 8:0-15:1
+    Visibility: public -/
 def arithmetic.mod_q (a : Std.I64) : RustM Std.I32 := do
   let i ← lift (IScalar.cast .I64 parameters.Q)
   let i1 ← a % i
@@ -38,7 +43,8 @@ def arithmetic.mod_q (a : Std.I64) : RustM Std.I32 := do
   else ok r
 
 /-- [hacspec_ml_dsa::arithmetic::mod_pm]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 21:0-31:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 21:0-31:1
+    Visibility: public -/
 def arithmetic.mod_pm (a : Std.I32) (m : Std.I32) : RustM Std.I32 := do
   let a64 ← lift (IScalar.cast .I64 a)
   let m64 ← lift (IScalar.cast .I64 m)
@@ -56,7 +62,8 @@ def arithmetic.mod_pm (a : Std.I32) (m : Std.I32) : RustM Std.I32 := do
 @[global_simps, irreducible] def parameters.D : Std.Usize := 13#usize
 
 /-- [hacspec_ml_dsa::arithmetic::power2round]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 37:0-44:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 37:0-44:1
+    Visibility: public -/
 def arithmetic.power2round (r : Std.I32) : RustM (Std.I32 × Std.I32) := do
   let r_plus ← r % parameters.Q
   let r_plus1 ← if r_plus < 0#i32
@@ -69,7 +76,8 @@ def arithmetic.power2round (r : Std.I32) : RustM (Std.I32 × Std.I32) := do
   ok (r1, r0)
 
 /-- [hacspec_ml_dsa::arithmetic::decompose]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 53:0-64:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 53:0-64:1
+    Visibility: public -/
 def arithmetic.decompose
   (r : Std.I32) (gamma2 : Std.I32) : RustM (Std.I32 × Std.I32) := do
   let r_plus ← r % parameters.Q
@@ -87,19 +95,22 @@ def arithmetic.decompose
        ok (r1, r0)
 
 /-- [hacspec_ml_dsa::arithmetic::high_bits]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 70:0-72:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 70:0-72:1
+    Visibility: public -/
 def arithmetic.high_bits (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let (i, _) ← arithmetic.decompose r gamma2
   ok i
 
 /-- [hacspec_ml_dsa::arithmetic::low_bits]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 78:0-80:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 78:0-80:1
+    Visibility: public -/
 def arithmetic.low_bits (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let (_, i) ← arithmetic.decompose r gamma2
   ok i
 
 /-- [hacspec_ml_dsa::arithmetic::make_hint]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 86:0-90:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 86:0-90:1
+    Visibility: public -/
 def arithmetic.make_hint
   (z : Std.I32) (r : Std.I32) (gamma2 : Std.I32) : RustM Bool := do
   let r1 ← arithmetic.high_bits r gamma2
@@ -111,7 +122,8 @@ def arithmetic.make_hint
   ok (r1 != v1)
 
 /-- [hacspec_ml_dsa::arithmetic::use_hint]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 97:0-107:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 97:0-107:1
+    Visibility: public -/
 def arithmetic.use_hint
   (hint : Bool) (r : Std.I32) (gamma2 : Std.I32) : RustM Std.I32 := do
   let i ← parameters.Q - 1#i32
@@ -133,7 +145,8 @@ def arithmetic.use_hint
   else ok r1
 
 /-- [hacspec_ml_dsa::arithmetic::coeff_norm]:
-    Source: 'ml-dsa/src/arithmetic.rs', lines 112:0-119:1 -/
+    Source: 'ml-dsa/src/arithmetic.rs', lines 112:0-119:1
+    Visibility: public -/
 def arithmetic.coeff_norm (a : Std.I32) : RustM Std.I32 := do
   let i ← lift (IScalar.cast .I64 a)
   let i1 ← lift (IScalar.cast .I64 parameters.Q)
@@ -860,7 +873,6 @@ def encoding.hint_bit_unpack_loop0_loop0.body
           then ok (cont (iter1, h, index, false))
           else
             let i4 ← lift (UScalar.cast .Usize i3)
-            let _ ← Array.index_usize h i
             let (a, index_mut_back) ← Array.index_mut_usize h i
             let a1 ← Array.update a i4 true
             let index1 ← index + 1#usize
@@ -869,7 +881,6 @@ def encoding.hint_bit_unpack_loop0_loop0.body
         else
           let i1 ← Slice.index_usize y index
           let i2 ← lift (UScalar.cast .Usize i1)
-          let _ ← Array.index_usize h i
           let (a, index_mut_back) ← Array.index_mut_usize h i
           let a1 ← Array.update a i2 true
           let index1 ← index + 1#usize
@@ -1066,7 +1077,7 @@ def encoding.pk_encode
   encoding.pk_encode_loop { start := 0#usize, «end» := K } t1 pk1
 
 /-- [hacspec_ml_dsa::createi]:
-    Source: 'ml-dsa/src/lib.rs', lines 54:0-56:1 -/
+    Source: 'ml-dsa/src/lib.rs', lines 58:0-60:1 -/
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :

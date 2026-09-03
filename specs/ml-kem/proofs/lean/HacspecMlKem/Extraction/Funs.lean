@@ -11,6 +11,9 @@ open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -1075,13 +1078,13 @@ def
     Visibility: public -/
 def matrix.multiply_matrix_by_column
   {RANK : Std.Usize}
-  (matrix : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
+  (matrix1 : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   (vector : Array (Array parameters.FieldElement 256#usize) RANK) :
   RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
     (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
-    RANK) (matrix, vector)
+    RANK) (matrix1, vector)
 
 /-- [hacspec_ml_kem::matrix::add_vectors::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::matrix::add_vectors::closure<'_0, '_1, RANK>}::call_mut]:
     Source: 'ml-kem/src/matrix.rs', lines 30:12-30:47 -/
@@ -1464,13 +1467,11 @@ def matrix.sample_matrix_A_loop.body
     | core.ops.control_flow.ControlFlow.Continue val =>
       if transpose
       then
-        let _ ← Array.index_usize A_as_ntt j
         let (a, index_mut_back) ← Array.index_mut_usize A_as_ntt j
         let a1 ← Array.update a i val
         let a2 := index_mut_back a1
         ok (cont (iter1, true, a2, xof_input2))
       else
-        let _ ← Array.index_usize A_as_ntt i
         let (a, index_mut_back) ← Array.index_mut_usize A_as_ntt i
         let a1 ← Array.update a j val
         let a2 := index_mut_back a1
@@ -2881,13 +2882,13 @@ def
     Visibility: public -/
 def matrix.transpose
   {RANK : Std.Usize}
-  (matrix : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
+  (matrix1 : Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   :
   RustM (Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   := do
   parameters.createi RANK
     (_root_.hacspec_ml_kem.matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
-    RANK) matrix
+    RANK) matrix1
 
 /-- [hacspec_ml_kem::matrix::compute_vector_u]:
     Source: 'ml-kem/src/matrix.rs', lines 158:0-167:1
@@ -4549,9 +4550,11 @@ def parameters.FieldElement.Insts.CoreCloneClone.clone
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::clone::Clone for hacspec_ml_kem::parameters::FieldElement}]
     Source: 'ml-kem/src/parameters.rs', lines 312:36-312:41 -/
 @[reducible]
-def parameters.FieldElement.Insts.CoreCloneClone : core.clone.Clone
+impl_def parameters.FieldElement.Insts.CoreCloneClone : core.clone.Clone
   parameters.FieldElement := {
   clone := parameters.FieldElement.Insts.CoreCloneClone.clone
+  clone_from := core.clone.Clone.clone_from.default
+    parameters.FieldElement.Insts.CoreCloneClone
 }
 
 /-- Trait implementation: [hacspec_ml_kem::parameters::{impl core::marker::Copy for hacspec_ml_kem::parameters::FieldElement}]
