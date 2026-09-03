@@ -15,6 +15,7 @@ pub const NONCE_LEN: usize = 12;
 /// is reached, at which point the nonce must no longer be used.
 #[cfg(not(feature = "nonce-control"))]
 const NONCE_MAX: [u8; NONCE_LEN] = [0xff; NONCE_LEN];
+
 /// If using feature `nonce-control`, handshake nonces are set to this
 /// value to align them with the handshake nonce value without feature
 /// `nonce-control`. Since automatic nonce increment (without feature
