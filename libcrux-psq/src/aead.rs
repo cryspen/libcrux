@@ -10,8 +10,24 @@ use tls_codec::{
 /// Length of an AEAD nonce in bytes.
 pub const NONCE_LEN: usize = 12;
 
+/// If not using feature `nonce-control`, nonces are incremented
+/// automatically on encryption/decryption operations until this value
+/// is reached, at which point the nonce must no longer be used.
 #[cfg(not(feature = "nonce-control"))]
 const NONCE_MAX: [u8; NONCE_LEN] = [0xff; NONCE_LEN];
+
+/// If using feature `nonce-control`, handshake nonces are set to this
+/// value to align them with the handshake nonce value without feature
+/// `nonce-control`. Since automatic nonce increment (without feature
+/// `nonce-control`) happens before encryption/decryption to catch a
+/// nonce reaching the maximal value, we have to align handshake
+/// nonces to one increment above the all-zero initial value.
+#[cfg(feature = "nonce-control")]
+const ALIGNED_HANDSHAKE_NONCE: [u8; NONCE_LEN] = {
+    let mut nonce = [0u8; NONCE_LEN];
+    nonce[NONCE_LEN - 1] = 1;
+    nonce
+};
 const TAG_LEN: usize = 16;
 
 #[derive(Clone, TlsSerialize, TlsDeserialize, TlsSerializeBytes, TlsSize)]
@@ -219,6 +235,11 @@ impl AEADKeyNonce {
         payload: &T,
         aad: &[u8],
     ) -> Result<(Vec<u8>, [u8; 16]), AEADError> {
+        // We set the nonce to the same value that is used without
+        // `nonce-control`, since the nonce increment in
+        // `serialize_encrypt` is a no-op under `nonce-control`.
+        #[cfg(feature = "nonce-control")]
+        self.set_nonce(&ALIGNED_HANDSHAKE_NONCE);
         let result = self.serialize_encrypt(payload, aad)?;
         self.expire();
         Ok(result)
@@ -334,6 +355,12 @@ impl AEADKeyNonce {
         tag: &[u8; 16],
         aad: &[u8],
     ) -> Result<T, AEADError> {
+        // We set the nonce to the same value that is used without
+        // `nonce-control`, since the nonce increment in
+        // `decrypt_deserialize` is a no-op under `nonce-control`.
+        #[cfg(feature = "nonce-control")]
+        self.set_nonce(&ALIGNED_HANDSHAKE_NONCE);
+
         let result = self.decrypt_deserialize(ciphertext, tag, aad)?;
         self.expire();
         Ok(result)
