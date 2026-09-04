@@ -2255,7 +2255,8 @@ def
 }
 
 /-- [hacspec_ml_dsa::polynomial::poly_pointwise_mul]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 21:0-23:1 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 21:0-23:1
+    Visibility: public -/
 def polynomial.poly_pointwise_mul
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
   RustM (Array Std.I32 256#usize)
@@ -2311,7 +2312,8 @@ def polynomial.poly_add.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
 }
 
 /-- [hacspec_ml_dsa::polynomial::poly_add]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 11:0-13:1 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 11:0-13:1
+    Visibility: public -/
 def polynomial.poly_add
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
   RustM (Array Std.I32 256#usize)
@@ -4490,7 +4492,8 @@ def polynomial.poly_sub.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 :
 }
 
 /-- [hacspec_ml_dsa::polynomial::poly_sub]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 16:0-18:1 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 16:0-18:1
+    Visibility: public -/
 def polynomial.poly_sub
   (a : Array Std.I32 256#usize) (b : Array Std.I32 256#usize) :
   RustM (Array Std.I32 256#usize)
