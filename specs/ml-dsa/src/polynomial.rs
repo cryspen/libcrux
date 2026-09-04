@@ -57,7 +57,7 @@ pub(crate) fn scalar_vector_ntt<const N: usize>(
 }
 
 /// Infinity norm of a polynomial: max |coeff| where coefficients are centered mod q.
-pub(crate) fn poly_infinity_norm(p: &Polynomial) -> i32 {
+pub fn poly_infinity_norm(p: &Polynomial) -> i32 {
     let mut max = 0i32;
     for i in 0..256 {
         let c = crate::arithmetic::coeff_norm(p[i]);

@@ -1077,7 +1077,7 @@ def encoding.pk_encode
   encoding.pk_encode_loop { start := 0#usize, «end» := K } t1 pk1
 
 /-- [hacspec_ml_dsa::createi]:
-    Source: 'ml-dsa/src/lib.rs', lines 58:0-60:1 -/
+    Source: 'ml-dsa/src/lib.rs', lines 62:0-64:1 -/
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
@@ -4296,7 +4296,8 @@ def polynomial.vector_high_bits
     N) (v, gamma2)
 
 /-- [hacspec_ml_dsa::polynomial::poly_infinity_norm]: loop body 0:
-    Source: 'ml-dsa/src/polynomial.rs', lines 62:4-67:5 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 62:4-67:5
+    Visibility: public -/
 @[rust_loop_body]
 def polynomial.poly_infinity_norm_loop.body
   (p : Array Std.I32 256#usize) (iter : core.ops.range.Range Std.Usize)
@@ -4316,7 +4317,8 @@ def polynomial.poly_infinity_norm_loop.body
     else ok (cont (iter1, max))
 
 /-- [hacspec_ml_dsa::polynomial::poly_infinity_norm]: loop 0:
-    Source: 'ml-dsa/src/polynomial.rs', lines 62:4-67:5 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 62:4-67:5
+    Visibility: public -/
 @[rust_loop]
 def polynomial.poly_infinity_norm_loop
   (iter : core.ops.range.Range Std.Usize) (p : Array Std.I32 256#usize)
@@ -4328,7 +4330,8 @@ def polynomial.poly_infinity_norm_loop
     (iter, max)
 
 /-- [hacspec_ml_dsa::polynomial::poly_infinity_norm]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 60:0-69:1 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 60:0-69:1
+    Visibility: public -/
 @[reducible]
 def polynomial.poly_infinity_norm
   (p : Array Std.I32 256#usize) : RustM Std.I32 := do

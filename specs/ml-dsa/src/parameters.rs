@@ -14,7 +14,7 @@ pub(crate) const N: usize = 256;
 
 /// A polynomial in R_q = Z_q[X]/(X^256 + 1), represented as 256 coefficients.
 /// Coefficients are in the range [0, q-1] unless otherwise noted.
-pub(crate) type Polynomial = [i32; 256];
+pub type Polynomial = [i32; 256];
 
 /// A zero polynomial.
 pub(crate) const ZERO_POLY: Polynomial = [0i32; 256];
