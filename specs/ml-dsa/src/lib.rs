@@ -13,7 +13,9 @@ mod error;
 mod hash_functions;
 mod matrix;
 mod ml_dsa;
-mod ntt;
+// Public for the same reason as `arithmetic`/`polynomial`: libcrux-iot names
+// `ntt::{ntt, intt}` inside `#[hax_lib::ensures]` on the NTT entry points.
+pub mod ntt;
 /// FIPS 204 — Module-Lattice-Based Digital Signature Standard (ML-DSA).
 ///
 /// This is a pure functional specification of ML-DSA, intended for

@@ -1077,7 +1077,7 @@ def encoding.pk_encode
   encoding.pk_encode_loop { start := 0#usize, «end» := K } t1 pk1
 
 /-- [hacspec_ml_dsa::createi]:
-    Source: 'ml-dsa/src/lib.rs', lines 62:0-64:1 -/
+    Source: 'ml-dsa/src/lib.rs', lines 64:0-66:1 -/
 def createi
   {T : Type} {F : Type} (N : Std.Usize) (coreopsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) (f : F) :
@@ -3314,7 +3314,8 @@ def ntt.intt_layer
     ntt.intt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 (len, p, k)
 
 /-- [hacspec_ml_dsa::ntt::intt]:
-    Source: 'ml-dsa/src/ntt.rs', lines 125:0-135:1 -/
+    Source: 'ml-dsa/src/ntt.rs', lines 125:0-135:1
+    Visibility: public -/
 def ntt.intt
   (w_hat : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   let p ← ntt.intt_layer w_hat 0#usize
@@ -3464,7 +3465,8 @@ def ntt.ntt_layer
     ntt.ntt_layer.closure.Insts.CoreOpsFunctionFnMutTupleUsizeI32 (len, k, p)
 
 /-- [hacspec_ml_dsa::ntt::ntt]:
-    Source: 'ml-dsa/src/ntt.rs', lines 81:0-91:1 -/
+    Source: 'ml-dsa/src/ntt.rs', lines 81:0-91:1
+    Visibility: public -/
 def ntt.ntt
   (w : Array Std.I32 256#usize) : RustM (Array Std.I32 256#usize) := do
   let p ← ntt.ntt_layer w 7#usize
