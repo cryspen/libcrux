@@ -73,9 +73,12 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
+      # NOTE: Nonce control interoperability tests skipped, since they
+      # build test binaries internally, which doesn't work as is under
+      # ASAN.
       - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin -- --skip nonce_control_initiator_interoperates_with_default_responder --skip default_initiator_interoperates_with_nonce_control_responder
 
       # Test ...
 
