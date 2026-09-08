@@ -60,7 +60,7 @@ structure parameters.MlKemParams where
 def sampling.BadRejectionSamplingRandomnessError := Unit
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 423:12-428:5 -/
 @[reducible]
 def serialize.serialize_secret_key.closure (RANK : Std.Usize) (T_SIZE :
   Std.Usize) :=
@@ -108,15 +108,8 @@ def matrix.add_vectors.closure (RANK : Std.Usize) :=
   Array (Array parameters.FieldElement 256#usize) RANK × Array (Array
   parameters.FieldElement 256#usize) RANK
 
-/-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 172:37-172:73 -/
-@[reducible]
-def serialize.bitvector_to_bounded_ints.closure.closure (N : Std.Usize) (Nd :
-  Std.Usize) :=
-  Std.U16
-
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 163:35-178:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 163:35-179:5 -/
 def serialize.bitvector_to_bounded_ints.closure (N : Std.Usize) (Nd :
   Std.Usize) :=
   Std.Usize × Array Bool Nd
@@ -144,31 +137,21 @@ def ind_cpa.sample_vector_cbd.closure (RANK : Std.Usize) :=
   Slice Std.U8 × Std.U8 × Std.Usize
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd::closure]
-    Source: 'ml-kem/src/sampling.rs', lines 164:12-168:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 166:12-170:5 -/
 def sampling.sample_poly_cbd.closure (ETA64 : Std.Usize) (ETA512 : Std.Usize)
   :=
   Std.Usize × Array Bool ETA512
 
-/-- [hacspec_ml_kem::sampling::sum_coins::closure]
-    Source: 'ml-kem/src/sampling.rs', lines 103:33-103:61 -/
-@[reducible]
-def sampling.sum_coins.closure := Std.U16
-
 /-- [hacspec_ml_kem::serialize::vector_decode_12::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 242:12-246:5 -/
 @[reducible]
 def serialize.vector_decode_12.closure (RANK : Std.Usize) := Slice Std.U8
 
 /-- [hacspec_ml_kem::serialize::byte_decode::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 217:12-217:61 -/
 @[reducible]
 def serialize.byte_decode.closure (D32 : Std.Usize) (D256 : Std.Usize) :=
   Array Std.U16 256#usize
-
-/-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 328:12-328:83 -/
-def serialize.compress_then_serialize_u_into.closure (RANK : Std.Usize) :=
-  Slice Std.U8 × Std.Usize
 
 /-- [hacspec_ml_kem::matrix::compute_vector_u::closure]
     Source: 'ml-kem/src/matrix.rs', lines 165:44-165:71 -/
@@ -205,7 +188,7 @@ def matrix.transpose.closure (RANK : Std.Usize) :=
   Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 377:12-383:5 -/
 def serialize.deserialize_then_decompress_u.closure (RANK : Std.Usize) :=
   Std.Usize × Slice Std.U8 × Std.Usize
 
@@ -216,7 +199,7 @@ def matrix.sub_polynomials.closure :=
   256#usize
 
 /-- [hacspec_ml_kem::serialize::serialize_public_key::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 441:12-450:5 -/
 def serialize.serialize_public_key.closure (RANK : Std.Usize) (EK_SIZE :
   Std.Usize) :=
   Array (Array parameters.FieldElement 256#usize) RANK × Slice Std.U8
@@ -269,31 +252,20 @@ def polynomial.add_standard_error_reduce.closure :=
   Array parameters.FieldElement 256#usize × Array parameters.FieldElement
   256#usize
 
-/-- [hacspec_ml_kem::sampling::rej_sample_step::closure]
-    Source: 'ml-kem/src/sampling.rs', lines 62:33-62:54 -/
-@[reducible]
-def sampling.rej_sample_step.closure := Std.Usize
-
 /-- [hacspec_ml_kem::serialize::_#5::ensures::closure]
     Source: 'ml-kem/src/serialize.rs', lines 157:20-157:79 -/
 def serialize.__5.ensures.closure (N : Std.Usize) (Nd : Std.Usize) :=
   Array Std.U16 N × Std.Usize
 
 /-- [hacspec_ml_kem::serialize::_#7::ensures::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 def serialize.__7.ensures.closure (N : Std.Usize) (N8 : Std.Usize) (Nd :
   Std.Usize) (Nd8 : Std.Usize) :=
   Array Std.U16 N8 × Std.Usize
 
 /-- [hacspec_ml_kem::serialize::_#9::ensures::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 def serialize.__9.ensures.closure (D32 : Std.Usize) (D256 : Std.Usize) :=
   Array parameters.FieldElement 256#usize × Std.Usize
-
-/-- [hacspec_ml_kem::serialize::serialize_secret_key_into::closure]
-    Source: 'ml-kem/src/serialize.rs', lines 230:33-230:87 -/
-@[reducible]
-def serialize.serialize_secret_key_into.closure (RANK : Std.Usize) :=
-  Slice Std.U8
 
 end hacspec_ml_kem

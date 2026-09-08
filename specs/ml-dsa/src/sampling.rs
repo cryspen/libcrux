@@ -79,6 +79,7 @@ pub(crate) fn sample_in_ball(
             let mut found = false;
             for _scan in 0..SAMPLE_IN_BALL_BUDGET {
                 #[cfg(hax)]
+                #[cfg(not(hax_backend_lean))]
                 hax_lib::loop_invariant!(|_scan: usize| !found || j <= i);
                 if !found && byte_offset < SAMPLE_IN_BALL_BUDGET {
                     let candidate = buf[byte_offset] as usize;

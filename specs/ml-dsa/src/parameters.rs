@@ -149,6 +149,7 @@ pub(crate) fn bitlen(n: usize) -> usize {
     let mut v = n;
     for _i in 0usize..64usize {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|_i: usize| bits <= _i);
         if v > 0 {
             bits += 1;

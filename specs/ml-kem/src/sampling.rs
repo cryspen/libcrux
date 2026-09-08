@@ -59,6 +59,7 @@ pub fn rej_sample_step(bytes: [u8; 24]) -> ([FieldElement; 16], usize) {
     let mut count: usize = 0;
     for i in 0..16 {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| count <= i);
         if decoded[i] < FIELD_MODULUS {
             result[count] = FieldElement::new(decoded[i]);
@@ -100,6 +101,7 @@ fn sum_coins(eta: usize, coins: &[bool]) -> FieldElement {
     let mut sum: u16 = 0;
     for i in 0..eta {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| sum <= (i as u16));
         sum += coins[i] as u16;
     }

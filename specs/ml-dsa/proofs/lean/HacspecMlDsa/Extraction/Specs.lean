@@ -241,7 +241,7 @@ def polynomial.count_hints.spec {N : Std.Usize}
 
 
 /-- [hacspec_ml_dsa::polynomial::vector_make_hint::pre]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 138:0-138:355 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 140:0-140:355 -/
 @[reducible]
 def polynomial.vector_make_hint.pre
   {N : Std.Usize} (z : Array (Array Std.I32 256#usize) N)
@@ -260,7 +260,7 @@ def polynomial.vector_make_hint.spec {N : Std.Usize}
 
 
 /-- [hacspec_ml_dsa::polynomial::vector_use_hint::pre]:
-    Source: 'ml-dsa/src/polynomial.rs', lines 151:0-151:316 -/
+    Source: 'ml-dsa/src/polynomial.rs', lines 153:0-153:316 -/
 @[reducible]
 def polynomial.vector_use_hint.pre
   {N : Std.Usize} (h : Array (Array Bool 256#usize) N)
@@ -300,7 +300,7 @@ def encoding.simple_bit_pack.spec (BYTES : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::encoding::bit_pack::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 40:0-40:125 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 42:0-42:125 -/
 @[reducible]
 def encoding.bit_pack.pre
   (BYTES : Std.Usize) (w : Array Std.I32 256#usize) (a : Std.Usize)
@@ -334,7 +334,7 @@ def encoding.bit_pack.spec (BYTES : Std.Usize) (w : Array Std.I32 256#usize)
 
 
 /-- [hacspec_ml_dsa::encoding::bit_unpack::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 91:0-91:71 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 97:0-97:71 -/
 @[reducible]
 def encoding.bit_unpack.pre
   (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize) : RustM Bool := do
@@ -354,7 +354,7 @@ def encoding.bit_unpack.spec (v : Slice Std.U8) (a : Std.Usize) (b : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_pack::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 123:0-123:71 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 131:0-131:71 -/
 @[reducible]
 def encoding.hint_bit_pack.pre
   {K : Std.Usize} (HINT_BYTES : Std.Usize) (h : Array (Array Bool 256#usize) K)
@@ -378,7 +378,7 @@ def encoding.hint_bit_pack.spec {K : Std.Usize} (HINT_BYTES : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::encoding::hint_bit_unpack::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 146:0-146:68 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 154:0-154:68 -/
 @[reducible]
 def encoding.hint_bit_unpack.pre
   (K : Std.Usize) (y : Slice Std.U8) (omega : Std.Usize) : RustM Bool := do
@@ -400,7 +400,7 @@ def encoding.hint_bit_unpack.spec (K : Std.Usize) (y : Slice Std.U8)
 
 
 /-- [hacspec_ml_dsa::encoding::pk_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 197:0-197:55 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 205:0-205:55 -/
 @[reducible]
 def encoding.pk_encode.pre
   {K : Std.Usize} (PK_SIZE : Std.Usize) (rho : Array Std.U8 32#usize)
@@ -423,7 +423,7 @@ def encoding.pk_encode.spec {K : Std.Usize} (PK_SIZE : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::encoding::pk_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 214:0-214:56 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 222:0-222:56 -/
 @[reducible]
 def encoding.pk_decode.pre
   (K : Std.Usize) (pk : Slice Std.U8) : RustM Bool := do
@@ -443,7 +443,7 @@ def encoding.pk_decode.spec (K : Std.Usize) (pk : Slice Std.U8) : Prop :=
 
 
 /-- [hacspec_ml_dsa::encoding::sk_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 227:0-227:121 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 235:0-235:121 -/
 @[reducible]
 def encoding.sk_encode.pre
   {K : Std.Usize} {L : Std.Usize} (SK_SIZE : Std.Usize)
@@ -484,7 +484,7 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::sk_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 291:0-291:122 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 302:0-302:122 -/
 @[reducible]
 def encoding.sk_decode.pre
   (K : Std.Usize) (L : Std.Usize) (sk : Slice Std.U8)
@@ -518,7 +518,7 @@ def encoding.sk_decode.spec (K : Std.Usize) (L : Std.Usize) (sk : Slice Std.U8)
 
 
 /-- [hacspec_ml_dsa::encoding::sig_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 344:0-353:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 355:0-364:2 -/
 @[reducible]
 def encoding.sig_encode.pre
   {K : Std.Usize} {L : Std.Usize} (SIG_SIZE : Std.Usize)
@@ -797,7 +797,7 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::sig_decode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 406:0-409:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 418:0-421:2 -/
 @[reducible]
 def encoding.sig_decode.pre
   (K : Std.Usize) (L : Std.Usize) (C_TILDE_LEN : Std.Usize)
@@ -836,7 +836,7 @@ def
 
 
 /-- [hacspec_ml_dsa::encoding::w1_encode::pre]:
-    Source: 'ml-dsa/src/encoding.rs', lines 434:0-436:2 -/
+    Source: 'ml-dsa/src/encoding.rs', lines 446:0-448:2 -/
 @[reducible]
 def encoding.w1_encode.pre
   {K : Std.Usize} (W1_BYTES : Std.Usize)
@@ -2199,7 +2199,7 @@ def sampling.sample_in_ball.spec (rho : Slice Std.U8) (tau : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::sampling::expand_a::pre]:
-    Source: 'ml-dsa/src/sampling.rs', lines 163:0-163:38 -/
+    Source: 'ml-dsa/src/sampling.rs', lines 164:0-164:38 -/
 @[reducible]
 def sampling.expand_a.pre
   (K : Std.Usize) (L : Std.Usize) (rho : Array Std.U8 32#usize) :
@@ -2218,7 +2218,7 @@ def sampling.expand_a.spec (K : Std.Usize) (L : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::sampling::expand_s::pre]:
-    Source: 'ml-dsa/src/sampling.rs', lines 177:0-177:38 -/
+    Source: 'ml-dsa/src/sampling.rs', lines 178:0-178:38 -/
 @[reducible]
 def sampling.expand_s.pre
   (K : Std.Usize) (L : Std.Usize) (rho_prime : Array Std.U8 64#usize)
@@ -2238,7 +2238,7 @@ def sampling.expand_s.spec (K : Std.Usize) (L : Std.Usize)
 
 
 /-- [hacspec_ml_dsa::sampling::expand_mask::pre]:
-    Source: 'ml-dsa/src/sampling.rs', lines 198:0-201:2 -/
+    Source: 'ml-dsa/src/sampling.rs', lines 199:0-202:2 -/
 @[reducible]
 def sampling.expand_mask.pre
   (L : Std.Usize) (rho_pp : Array Std.U8 64#usize) (kappa : Std.Usize)

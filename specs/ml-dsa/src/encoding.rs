@@ -18,10 +18,12 @@ pub(crate) fn simple_bit_pack<const BYTES: usize>(w: &Polynomial, b: usize) -> [
     let mut out = [0u8; BYTES];
     for i in 0usize..256usize {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| i <= 256usize);
         let val = w[i] as u32;
         for bit in 0usize..bits {
             #[cfg(hax)]
+            #[cfg(not(hax_backend_lean))]
             hax_lib::loop_invariant!(|bit: usize| bit <= bits);
             let pos = i * bits + bit;
             if (val >> bit) & 1 == 1 {
@@ -43,10 +45,12 @@ pub(crate) fn bit_pack<const BYTES: usize>(w: &Polynomial, a: usize, b: usize) -
     let mut out = [0u8; BYTES];
     for i in 0usize..256usize {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| i <= 256usize);
         let val = (b as i64 - w[i] as i64) as u32;
         for bit in 0usize..bits {
             #[cfg(hax)]
+            #[cfg(not(hax_backend_lean))]
             hax_lib::loop_invariant!(|bit: usize| bit <= bits);
             let pos = i * bits + bit;
             if (val >> bit) & 1 == 1 {
@@ -66,10 +70,12 @@ pub(crate) fn simple_bit_unpack(v: &[u8], b: usize) -> Polynomial {
     let mut w = ZERO_POLY;
     for i in 0usize..256usize {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| i <= 256usize);
         let mut val = 0u32;
         for bit in 0usize..24usize {
             #[cfg(hax)]
+            #[cfg(not(hax_backend_lean))]
             hax_lib::loop_invariant!(|bit: usize| bit <= 24usize);
             if bit < bits {
                 let pos = i * bits + bit;
@@ -94,10 +100,12 @@ pub(crate) fn bit_unpack(v: &[u8], a: usize, b: usize) -> Polynomial {
     let mut w = ZERO_POLY;
     for i in 0usize..256usize {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| i <= 256usize);
         let mut val = 0u32;
         for bit in 0usize..24usize {
             #[cfg(hax)]
+            #[cfg(not(hax_backend_lean))]
             hax_lib::loop_invariant!(|bit: usize| bit <= 24usize);
             if bit < bits {
                 let pos = i * bits + bit;
@@ -245,6 +253,7 @@ pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
     hax_lib::fstar!("assert_norm(${bitlen} (sz 8) == sz 4)");
     for i in 0..L {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| offset == 128 + i * (bitlen(2 * eta) * 32));
         if eta == 2 {
             let encoded: [u8; 96] = bit_pack::<96>(&s1[i], eta, eta);
@@ -258,6 +267,7 @@ pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
     }
     for i in 0..K {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(
             |i: usize| offset == 128 + L * (bitlen(2 * eta) * 32) + i * (bitlen(2 * eta) * 32)
         );
@@ -276,6 +286,7 @@ pub(crate) fn sk_encode<const K: usize, const L: usize, const SK_SIZE: usize>(
     hax_lib::fstar!("assert_norm(${bitlen} (sz (4095 + 4096)) == sz 13)");
     for i in 0..K {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(
             |i: usize| offset == 128 + (L + K) * (bitlen(2 * eta) * 32) + i * 416
         );
@@ -368,6 +379,7 @@ pub(crate) fn sig_encode<const K: usize, const L: usize, const SIG_SIZE: usize>(
     hax_lib::fstar!("assert_norm(${bitlen} (sz (pow2 19 - 1 + pow2 19)) == sz 20)");
     for i in 0..L {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(
             |i: usize| offset == c_tilde_len + i * (bitlen(gamma1 - 1 + gamma1) * 32)
         );
@@ -447,6 +459,7 @@ pub(crate) fn w1_encode<const K: usize, const W1_BYTES: usize>(
     let bytes_per_poly = 32 * bitlen(w1_max);
     for i in 0..K {
         #[cfg(hax)]
+        #[cfg(not(hax_backend_lean))]
         hax_lib::loop_invariant!(|i: usize| i <= K);
         if params.gamma2 == (Q - 1) / 88 {
             let packed: [u8; 192] = simple_bit_pack::<192>(&w1[i], w1_max);

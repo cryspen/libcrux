@@ -527,7 +527,7 @@ def serialize.byte_encode
   serialize.bits_to_bytes D32 bv
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key::{impl core::ops::function::FnMut<(usize,), u8> for hacspec_ml_kem::serialize::serialize_secret_key::closure<'_0, RANK, T_SIZE>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 423:12-428:5 -/
 def
   serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
   {RANK : Std.Usize} {T_SIZE : Std.Usize}
@@ -544,7 +544,7 @@ def
   ok (i2, c)
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key::{impl core::ops::function::FnOnce<(usize,), u8> for hacspec_ml_kem::serialize::serialize_secret_key::closure<'_0, RANK, T_SIZE>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 423:12-428:5 -/
 def
   serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {RANK : Std.Usize} {T_SIZE : Std.Usize}
@@ -557,7 +557,7 @@ def
   ok i1
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::serialize_secret_key::{impl core::ops::function::FnOnce<(usize,), u8> for hacspec_ml_kem::serialize::serialize_secret_key::closure<'_0, RANK, T_SIZE>}]
-    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 423:12-428:5 -/
 @[reducible]
 def
   serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8
@@ -568,7 +568,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::serialize_secret_key::{impl core::ops::function::FnMut<(usize,), u8> for hacspec_ml_kem::serialize::serialize_secret_key::closure<'_0, RANK, T_SIZE>}]
-    Source: 'ml-kem/src/serialize.rs', lines 420:12-425:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 423:12-428:5 -/
 @[reducible]
 def
   serialize.serialize_secret_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8
@@ -582,7 +582,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key]:
-    Source: 'ml-kem/src/serialize.rs', lines 417:0-426:1
+    Source: 'ml-kem/src/serialize.rs', lines 420:0-429:1
     Visibility: public -/
 def serialize.serialize_secret_key
   {RANK : Std.Usize} (T_SIZE : Std.Usize)
@@ -1023,7 +1023,7 @@ def
   {RANK : Std.Usize} (c : matrix.multiply_matrix_by_column.closure RANK)
   (tupled_args : Std.Usize) :
   RustM ((Array parameters.FieldElement 256#usize) ×
-    (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK))
+    (matrix.multiply_matrix_by_column.closure RANK))
   := do
   let (a, a1) := c
   let fe ← parameters.FieldElement.new 0#u16
@@ -1052,7 +1052,7 @@ def
 def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnOnce
-  (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
+  (matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   call_once :=
     matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
@@ -1064,7 +1064,7 @@ def
 def
   matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnMut
-  (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
+  (matrix.multiply_matrix_by_column.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   FnOnceInst :=
     matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -1083,7 +1083,7 @@ def matrix.multiply_matrix_by_column
   RustM (Array (Array parameters.FieldElement 256#usize) RANK)
   := do
   parameters.createi RANK
-    (_root_.hacspec_ml_kem.matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
+    (matrix.multiply_matrix_by_column.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
     RANK) (matrix1, vector)
 
 /-- [hacspec_ml_kem::matrix::add_vectors::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::matrix::add_vectors::closure<'_0, '_1, RANK>}::call_mut]:
@@ -1164,38 +1164,13 @@ def matrix.compute_As_plus_e
   let product ← matrix.multiply_matrix_by_column a_as_ntt s_as_ntt
   matrix.add_vectors product error_as_ntt
 
-/-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::closure<'_0, N, Nd>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 172:37-172:73 -/
-def
-  serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-  {N : Std.Usize} {Nd : Std.Usize}
-  (c : serialize.bitvector_to_bounded_ints.closure.closure N Nd)
-  (tupled_args : Std.Usize) :
-  RustM Bool
-  := do
-  let i ← 1#u16 <<< tupled_args
-  ok (c < i)
-
-/-- Trait implementation: [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure::closure<'_0, N, Nd>}]
-    Source: 'ml-kem/src/serialize.rs', lines 172:37-172:73 -/
-@[reducible]
-def
-  serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-  (N : Std.Usize) (Nd : Std.Usize) : core.ops.function.FnOnce
-  (serialize.bitvector_to_bounded_ints.closure.closure N Nd) Std.Usize Bool
-  := {
-  call_once :=
-    serialize.bitvector_to_bounded_ints.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-}
-
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_mut]: loop body 0:
-    Source: 'ml-kem/src/serialize.rs', lines 165:8-176:9 -/
+    Source: 'ml-kem/src/serialize.rs', lines 165:8-177:9 -/
 @[rust_loop_body]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop.body
-  (N : Std.Usize) {Nd : Std.Usize} (i : Std.Usize) (a : Array Bool Nd)
-  (i1 : Std.Usize) (iter : core.ops.range.Range Std.Usize)
-  (coefficient : Std.U16) :
+  {Nd : Std.Usize} (i : Std.Usize) (a : Array Bool Nd) (i1 : Std.Usize)
+  (iter : core.ops.range.Range Std.Usize) (coefficient : Std.U16) :
   RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U16) Std.U16)
   := do
   let (o, iter1) ←
@@ -1215,23 +1190,22 @@ def
     else ok (cont (iter1, coefficient))
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_mut]: loop 0:
-    Source: 'ml-kem/src/serialize.rs', lines 165:8-176:9 -/
+    Source: 'ml-kem/src/serialize.rs', lines 165:8-177:9 -/
 @[rust_loop]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop
-  (N : Std.Usize) {Nd : Std.Usize} (iter : core.ops.range.Range Std.Usize)
-  (i : Std.Usize) (a : Array Bool Nd) (i1 : Std.Usize) (coefficient : Std.U16)
-  :
+  {Nd : Std.Usize} (iter : core.ops.range.Range Std.Usize) (i : Std.Usize)
+  (a : Array Bool Nd) (i1 : Std.Usize) (coefficient : Std.U16) :
   RustM Std.U16
   := do
   loop
     (fun (iter1, coefficient1) =>
       serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop.body
-      N i a i1 iter1 coefficient1)
+      i a i1 iter1 coefficient1)
     (iter, coefficient)
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 163:35-178:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 163:35-179:5 -/
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut
   {N : Std.Usize} {Nd : Std.Usize}
@@ -1242,11 +1216,11 @@ def
   let (i, a) := c
   let coefficient ←
     serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16.call_mut_loop
-      N { start := 0#usize, «end» := i } i a tupled_args 0#u16
+      { start := 0#usize, «end» := i } i a tupled_args 0#u16
   ok (coefficient, c)
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnOnce<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 163:35-178:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 163:35-179:5 -/
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU16.call_once
   {N : Std.Usize} {Nd : Std.Usize}
@@ -1259,7 +1233,7 @@ def
   ok i1
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnOnce<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}]
-    Source: 'ml-kem/src/serialize.rs', lines 163:35-178:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 163:35-179:5 -/
 @[reducible]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU16
@@ -1270,7 +1244,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::bitvector_to_bounded_ints::{impl core::ops::function::FnMut<(usize,), u16> for hacspec_ml_kem::serialize::bitvector_to_bounded_ints::closure<'_0, '_1, N, Nd>}]
-    Source: 'ml-kem/src/serialize.rs', lines 163:35-178:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 163:35-179:5 -/
 @[reducible]
 def
   serialize.bitvector_to_bounded_ints.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU16
@@ -1284,7 +1258,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::bitvector_to_bounded_ints]:
-    Source: 'ml-kem/src/serialize.rs', lines 158:0-191:1
+    Source: 'ml-kem/src/serialize.rs', lines 158:0-192:1
     Visibility: public -/
 def serialize.bitvector_to_bounded_ints
   (N : Std.Usize) {Nd : Std.Usize} (input : Array Bool Nd) (d : Std.Usize) :
@@ -1357,7 +1331,7 @@ def serialize.bytes_to_bits
     N8) bytes
 
 /-- [hacspec_ml_kem::serialize::byte_decode_generic]:
-    Source: 'ml-kem/src/serialize.rs', lines 197:0-206:1
+    Source: 'ml-kem/src/serialize.rs', lines 198:0-207:1
     Visibility: public -/
 def serialize.byte_decode_generic
   (N : Std.Usize) (N8 : Std.Usize) {Nd : Std.Usize} (Nd8 : Std.Usize)
@@ -1368,7 +1342,7 @@ def serialize.byte_decode_generic
   serialize.bitvector_to_bounded_ints N8 bv d
 
 /-- [hacspec_ml_kem::sampling::sample_ntt]: loop body 0:
-    Source: 'ml-kem/src/sampling.rs', lines 83:4-88:5
+    Source: 'ml-kem/src/sampling.rs', lines 84:4-89:5
     Visibility: public -/
 @[rust_loop_body]
 def sampling.sample_ntt_loop.body
@@ -1399,7 +1373,7 @@ def sampling.sample_ntt_loop.body
     else ok (cont (iter1, result, sampled_coefficients))
 
 /-- [hacspec_ml_kem::sampling::sample_ntt]: loop 0:
-    Source: 'ml-kem/src/sampling.rs', lines 83:4-88:5
+    Source: 'ml-kem/src/sampling.rs', lines 84:4-89:5
     Visibility: public -/
 @[rust_loop]
 def sampling.sample_ntt_loop
@@ -1416,7 +1390,7 @@ def sampling.sample_ntt_loop
     (iter, result, sampled_coefficients)
 
 /-- [hacspec_ml_kem::sampling::sample_ntt]:
-    Source: 'ml-kem/src/sampling.rs', lines 77:0-94:1
+    Source: 'ml-kem/src/sampling.rs', lines 78:0-95:1
     Visibility: public -/
 def sampling.sample_ntt
   (N : Std.Usize) (N8 : Std.Usize) {N12 : Std.Usize} (N96 : Std.Usize)
@@ -1738,25 +1712,8 @@ def ind_cpa.concat_byte
   let result1 := index_mut_back s2
   Array.update result1 N b
 
-/-- [hacspec_ml_kem::sampling::sum_coins::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::sum_coins::closure<'_0>}::call_once]:
-    Source: 'ml-kem/src/sampling.rs', lines 103:33-103:61 -/
-def
-  sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-  (c : sampling.sum_coins.closure) (tupled_args : Std.Usize) : RustM Bool := do
-  let i ← lift (UScalar.cast .U16 tupled_args)
-  ok (c <= i)
-
-/-- Trait implementation: [hacspec_ml_kem::sampling::sum_coins::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::sum_coins::closure<'_0>}]
-    Source: 'ml-kem/src/sampling.rs', lines 103:33-103:61 -/
-@[reducible]
-def sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool :
-  core.ops.function.FnOnce sampling.sum_coins.closure Std.Usize Bool := {
-  call_once :=
-    sampling.sum_coins.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-}
-
 /-- [hacspec_ml_kem::sampling::sum_coins]: loop body 0:
-    Source: 'ml-kem/src/sampling.rs', lines 101:4-105:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 102:4-107:5 -/
 @[rust_loop_body]
 def sampling.sum_coins_loop.body
   (coins : Slice Bool) (iter : core.ops.range.Range Std.Usize) (sum : Std.U16)
@@ -1775,7 +1732,7 @@ def sampling.sum_coins_loop.body
     ok (cont (iter1, sum1))
 
 /-- [hacspec_ml_kem::sampling::sum_coins]: loop 0:
-    Source: 'ml-kem/src/sampling.rs', lines 101:4-105:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 102:4-107:5 -/
 @[rust_loop]
 def sampling.sum_coins_loop
   (iter : core.ops.range.Range Std.Usize) (coins : Slice Bool) (sum : Std.U16)
@@ -1787,7 +1744,7 @@ def sampling.sum_coins_loop
     (iter, sum)
 
 /-- [hacspec_ml_kem::sampling::sum_coins]:
-    Source: 'ml-kem/src/sampling.rs', lines 98:0-107:1 -/
+    Source: 'ml-kem/src/sampling.rs', lines 99:0-109:1 -/
 def sampling.sum_coins
   (eta : Std.Usize) (coins : Slice Bool) : RustM parameters.FieldElement := do
   let sum ←
@@ -1795,7 +1752,7 @@ def sampling.sum_coins
   parameters.FieldElement.new sum
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::sampling::sample_poly_cbd::closure<'_0, '_1, ETA64, ETA512>}::call_mut]:
-    Source: 'ml-kem/src/sampling.rs', lines 164:12-168:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 166:12-170:5 -/
 def
   sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {ETA64 : Std.Usize} {ETA512 : Std.Usize}
@@ -1833,7 +1790,7 @@ def
   ok (fe, c)
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd::{impl core::ops::function::FnOnce<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::sampling::sample_poly_cbd::closure<'_0, '_1, ETA64, ETA512>}::call_once]:
-    Source: 'ml-kem/src/sampling.rs', lines 164:12-168:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 166:12-170:5 -/
 def
   sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {ETA64 : Std.Usize} {ETA512 : Std.Usize}
@@ -1846,7 +1803,7 @@ def
   ok fe
 
 /-- Trait implementation: [hacspec_ml_kem::sampling::sample_poly_cbd::{impl core::ops::function::FnOnce<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::sampling::sample_poly_cbd::closure<'_0, '_1, ETA64, ETA512>}]
-    Source: 'ml-kem/src/sampling.rs', lines 164:12-168:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 166:12-170:5 -/
 @[reducible]
 def
   sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement
@@ -1858,7 +1815,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::sampling::sample_poly_cbd::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::sampling::sample_poly_cbd::closure<'_0, '_1, ETA64, ETA512>}]
-    Source: 'ml-kem/src/sampling.rs', lines 164:12-168:5 -/
+    Source: 'ml-kem/src/sampling.rs', lines 166:12-170:5 -/
 @[reducible]
 def
   sampling.sample_poly_cbd.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -1873,7 +1830,7 @@ def
 }
 
 /-- [hacspec_ml_kem::sampling::sample_poly_cbd]:
-    Source: 'ml-kem/src/sampling.rs', lines 158:0-169:1
+    Source: 'ml-kem/src/sampling.rs', lines 160:0-171:1
     Visibility: public -/
 def sampling.sample_poly_cbd
   {ETA64 : Std.Usize} (ETA512 : Std.Usize) (eta : Std.Usize)
@@ -1900,8 +1857,7 @@ def ind_cpa.sample_secret
     let s ← lift (Array.to_slice prf_input)
     let out ← parameters.hash_functions.PRF 192#usize s
     sampling.sample_poly_cbd 1536#usize 3#usize out
-  | _ =>
-    fail panic
+  | _ => fail panic
 
 /-- [hacspec_ml_kem::ind_cpa::sample_vector_cbd::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::ind_cpa::sample_vector_cbd::closure<'_0, '_1, '_2, RANK>}::call_mut]:
     Source: 'ml-kem/src/ind_cpa.rs', lines 58:12-62:5 -/
@@ -2149,7 +2105,7 @@ def ind_cca.keygen_internal
       residual
 
 /-- [hacspec_ml_kem::serialize::byte_decode::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::serialize::byte_decode::closure<'_0, D32, D256>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 217:12-217:61 -/
 def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement.call_mut
   {D32 : Std.Usize} {D256 : Std.Usize}
@@ -2162,7 +2118,7 @@ def
   ok (fe, c)
 
 /-- [hacspec_ml_kem::serialize::byte_decode::{impl core::ops::function::FnOnce<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::serialize::byte_decode::closure<'_0, D32, D256>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 217:12-217:61 -/
 def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement.call_once
   {D32 : Std.Usize} {D256 : Std.Usize}
@@ -2175,7 +2131,7 @@ def
   ok fe
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::byte_decode::{impl core::ops::function::FnOnce<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::serialize::byte_decode::closure<'_0, D32, D256>}]
-    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 217:12-217:61 -/
 @[reducible]
 def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeFieldElement
@@ -2187,7 +2143,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::byte_decode::{impl core::ops::function::FnMut<(usize,), hacspec_ml_kem::parameters::FieldElement> for hacspec_ml_kem::serialize::byte_decode::closure<'_0, D32, D256>}]
-    Source: 'ml-kem/src/serialize.rs', lines 216:12-216:61 -/
+    Source: 'ml-kem/src/serialize.rs', lines 217:12-217:61 -/
 @[reducible]
 def
   serialize.byte_decode.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
@@ -2202,7 +2158,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::byte_decode]:
-    Source: 'ml-kem/src/serialize.rs', lines 211:0-217:1
+    Source: 'ml-kem/src/serialize.rs', lines 212:0-218:1
     Visibility: public -/
 def serialize.byte_decode
   {D32 : Std.Usize} (D256 : Std.Usize) (b : Array Std.U8 D32) (d : Std.Usize) :
@@ -2214,7 +2170,7 @@ def serialize.byte_decode
     D32 D256) decoded
 
 /-- [hacspec_ml_kem::serialize::vector_decode_12::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::vector_decode_12::closure<'_0, RANK>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 242:12-246:5 -/
 def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : serialize.vector_decode_12.closure RANK)
@@ -2238,7 +2194,7 @@ def
   ok (a, c)
 
 /-- [hacspec_ml_kem::serialize::vector_decode_12::{impl core::ops::function::FnOnce<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::vector_decode_12::closure<'_0, RANK>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 242:12-246:5 -/
 def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : serialize.vector_decode_12.closure RANK)
@@ -2251,7 +2207,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::vector_decode_12::{impl core::ops::function::FnOnce<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::vector_decode_12::closure<'_0, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 242:12-246:5 -/
 @[reducible]
 def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -2263,7 +2219,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::vector_decode_12::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::vector_decode_12::closure<'_0, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 240:12-244:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 242:12-246:5 -/
 @[reducible]
 def
   serialize.vector_decode_12.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -2278,7 +2234,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::vector_decode_12]:
-    Source: 'ml-kem/src/serialize.rs', lines 238:0-245:1
+    Source: 'ml-kem/src/serialize.rs', lines 240:0-247:1
     Visibility: public -/
 def serialize.vector_decode_12
   (RANK : Std.Usize) (encoded : Slice Std.U8) :
@@ -2289,7 +2245,7 @@ def serialize.vector_decode_12
     RANK) encoded
 
 /-- [hacspec_ml_kem::serialize::deserialize_ring_elements_reduced]:
-    Source: 'ml-kem/src/serialize.rs', lines 410:0-412:1
+    Source: 'ml-kem/src/serialize.rs', lines 413:0-415:1
     Visibility: public -/
 def serialize.deserialize_ring_elements_reduced
   (RANK : Std.Usize) (encoded : Slice Std.U8) :
@@ -2306,7 +2262,7 @@ def parameters.MlKemParams.t_as_ntt_encoded_size
   self.rank * i
 
 /-- [hacspec_ml_kem::serialize::byte_encode_into]:
-    Source: 'ml-kem/src/serialize.rs', lines 249:0-260:1
+    Source: 'ml-kem/src/serialize.rs', lines 251:0-262:1
     Visibility: public -/
 def serialize.byte_encode_into
   (p : Array parameters.FieldElement 256#usize) (d : Std.Usize)
@@ -2338,11 +2294,10 @@ def serialize.byte_encode_into
     let a ← serialize.byte_encode 384#usize 3072#usize p 12#usize
     let s ← lift (Array.to_slice a)
     core.slice.Slice.copy_from_slice core.U8.Insts.CoreMarkerCopy out s
-  | _ =>
-    fail panic
+  | _ => fail panic
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_v]:
-    Source: 'ml-kem/src/serialize.rs', lines 359:0-363:1
+    Source: 'ml-kem/src/serialize.rs', lines 362:0-366:1
     Visibility: public -/
 def serialize.compress_then_serialize_v
   (V_SIZE : Std.Usize) (v : Array parameters.FieldElement 256#usize)
@@ -2355,35 +2310,8 @@ def serialize.compress_then_serialize_v
   let s1 ← serialize.byte_encode_into a dv s
   ok (to_slice_mut_back s1)
 
-/-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::compress_then_serialize_u_into::closure<'_0, '_1, RANK>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 328:12-328:83 -/
-def
-  serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-  {RANK : Std.Usize}
-  (c : serialize.compress_then_serialize_u_into.closure RANK)
-  (tupled_args : Std.Usize) :
-  RustM Bool
-  := do
-  let (s, i) := c
-  let i1 ← core.slice.Slice.len s
-  let i2 ← RANK * parameters.COEFFICIENTS_IN_RING_ELEMENT
-  let i3 ← i2 * i
-  let i4 ← i3 / 8#usize
-  ok (i1 = i4)
-
-/-- Trait implementation: [hacspec_ml_kem::serialize::compress_then_serialize_u_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::compress_then_serialize_u_into::closure<'_0, '_1, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 328:12-328:83 -/
-@[reducible]
-def
-  serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-  (RANK : Std.Usize) : core.ops.function.FnOnce
-  (serialize.compress_then_serialize_u_into.closure RANK) Std.Usize Bool := {
-  call_once :=
-    serialize.compress_then_serialize_u_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-}
-
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into]: loop body 0:
-    Source: 'ml-kem/src/serialize.rs', lines 325:4-335:5
+    Source: 'ml-kem/src/serialize.rs', lines 327:4-338:5
     Visibility: public -/
 @[rust_loop_body]
 def serialize.compress_then_serialize_u_into_loop.body
@@ -2413,7 +2341,7 @@ def serialize.compress_then_serialize_u_into_loop.body
     ok (cont (iter1, out1))
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into]: loop 0:
-    Source: 'ml-kem/src/serialize.rs', lines 325:4-335:5
+    Source: 'ml-kem/src/serialize.rs', lines 327:4-338:5
     Visibility: public -/
 @[rust_loop]
 def serialize.compress_then_serialize_u_into_loop
@@ -2428,7 +2356,7 @@ def serialize.compress_then_serialize_u_into_loop
     (iter, out)
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_u_into]:
-    Source: 'ml-kem/src/serialize.rs', lines 319:0-336:1
+    Source: 'ml-kem/src/serialize.rs', lines 321:0-339:1
     Visibility: public -/
 def serialize.compress_then_serialize_u_into
   {RANK : Std.Usize} (u : Array (Array parameters.FieldElement 256#usize) RANK)
@@ -2441,7 +2369,7 @@ def serialize.compress_then_serialize_u_into
     { start := 0#usize, «end» := RANK } u du out du_poly_size
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_u]:
-    Source: 'ml-kem/src/serialize.rs', lines 346:0-353:1
+    Source: 'ml-kem/src/serialize.rs', lines 349:0-356:1
     Visibility: public -/
 def serialize.compress_then_serialize_u
   {RANK : Std.Usize} (U_SIZE : Std.Usize)
@@ -2454,7 +2382,7 @@ def serialize.compress_then_serialize_u
   ok (to_slice_mut_back s1)
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_message]:
-    Source: 'ml-kem/src/serialize.rs', lines 291:0-293:1
+    Source: 'ml-kem/src/serialize.rs', lines 293:0-295:1
     Visibility: public -/
 def serialize.deserialize_then_decompress_message
   (serialized : Array Std.U8 32#usize) :
@@ -2778,7 +2706,7 @@ def
   {RANK : Std.Usize} (c : matrix.transpose.closure.closure RANK)
   (tupled_args : Std.Usize) :
   RustM ((Array parameters.FieldElement 256#usize) ×
-    (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK))
+    (matrix.transpose.closure.closure RANK))
   := do
   let (a, i) := c
   let a1 ← Array.index_usize a tupled_args
@@ -2804,7 +2732,7 @@ def
 def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnOnce
-  (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK) Std.Usize (Array
+  (matrix.transpose.closure.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   call_once :=
     matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
@@ -2816,7 +2744,7 @@ def
 def
   matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
   (RANK : Std.Usize) : core.ops.function.FnMut
-  (_root_.hacspec_ml_kem.matrix.transpose.closure.closure RANK) Std.Usize (Array
+  (matrix.transpose.closure.closure RANK) Std.Usize (Array
   parameters.FieldElement 256#usize) := {
   FnOnceInst :=
     matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -2832,11 +2760,11 @@ def
   {RANK : Std.Usize} (c : matrix.transpose.closure RANK)
   (tupled_args : Std.Usize) :
   RustM ((Array (Array parameters.FieldElement 256#usize) RANK) ×
-    (_root_.hacspec_ml_kem.matrix.transpose.closure RANK))
+    (matrix.transpose.closure RANK))
   := do
   let a ←
     parameters.createi RANK
-      (_root_.hacspec_ml_kem.matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
+      (matrix.transpose.closure.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
       RANK) (c, tupled_args)
   ok (a, c)
 
@@ -2857,7 +2785,7 @@ def
 @[reducible]
 def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK
-  (RANK : Std.Usize) : core.ops.function.FnOnce (_root_.hacspec_ml_kem.matrix.transpose.closure RANK)
+  (RANK : Std.Usize) : core.ops.function.FnOnce (matrix.transpose.closure RANK)
   Std.Usize (Array (Array parameters.FieldElement 256#usize) RANK) := {
   call_once :=
     matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK.call_once
@@ -2868,7 +2796,7 @@ def
 @[reducible]
 def
   matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
-  (RANK : Std.Usize) : core.ops.function.FnMut (_root_.hacspec_ml_kem.matrix.transpose.closure RANK)
+  (RANK : Std.Usize) : core.ops.function.FnMut (matrix.transpose.closure RANK)
   Std.Usize (Array (Array parameters.FieldElement 256#usize) RANK) := {
   FnOnceInst :=
     matrix.transpose.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayArrayFieldElement256RANK
@@ -2887,7 +2815,7 @@ def matrix.transpose
   RustM (Array (Array (Array parameters.FieldElement 256#usize) RANK) RANK)
   := do
   parameters.createi RANK
-    (_root_.hacspec_ml_kem.matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
+    (matrix.transpose.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayArrayFieldElement256RANK
     RANK) matrix1
 
 /-- [hacspec_ml_kem::matrix::compute_vector_u]:
@@ -3130,7 +3058,7 @@ def ind_cca.encaps_internal
       residual
 
 /-- [hacspec_ml_kem::serialize::byte_decode_dyn]:
-    Source: 'ml-kem/src/serialize.rs', lines 264:0-275:1
+    Source: 'ml-kem/src/serialize.rs', lines 266:0-277:1
     Visibility: public -/
 def serialize.byte_decode_dyn
   (b : Slice Std.U8) (d : Std.Usize) :
@@ -3185,11 +3113,10 @@ def serialize.byte_decode_dyn
       core.result.Result.unwrap core.array.TryFromSliceError.Insts.CoreFmtDebug
         r
     serialize.byte_decode 3072#usize a 12#usize
-  | _ =>
-    fail panic
+  | _ => fail panic
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_v]:
-    Source: 'ml-kem/src/serialize.rs', lines 401:0-403:1
+    Source: 'ml-kem/src/serialize.rs', lines 404:0-406:1
     Visibility: public -/
 def serialize.deserialize_then_decompress_v
   (serialized : Slice Std.U8) (dv : Std.Usize) :
@@ -3199,7 +3126,7 @@ def serialize.deserialize_then_decompress_v
   compress.decompress a dv
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure<'_0, '_1, '_2, RANK>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 377:12-383:5 -/
 def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256.call_mut
   {RANK : Std.Usize} (c : serialize.deserialize_then_decompress_u.closure RANK)
@@ -3219,7 +3146,7 @@ def
   ok (a1, c)
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u::{impl core::ops::function::FnOnce<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure<'_0, '_1, '_2, RANK>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 377:12-383:5 -/
 def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256.call_once
   {RANK : Std.Usize} (c : serialize.deserialize_then_decompress_u.closure RANK)
@@ -3232,7 +3159,7 @@ def
   ok a
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::deserialize_then_decompress_u::{impl core::ops::function::FnOnce<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure<'_0, '_1, '_2, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 377:12-383:5 -/
 @[reducible]
 def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeArrayFieldElement256
@@ -3244,7 +3171,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::deserialize_then_decompress_u::{impl core::ops::function::FnMut<(usize,), [hacspec_ml_kem::parameters::FieldElement; 256usize]> for hacspec_ml_kem::serialize::deserialize_then_decompress_u::closure<'_0, '_1, '_2, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 374:12-380:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 377:12-383:5 -/
 @[reducible]
 def
   serialize.deserialize_then_decompress_u.closure.Insts.CoreOpsFunctionFnMutTupleUsizeArrayFieldElement256
@@ -3259,7 +3186,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u]:
-    Source: 'ml-kem/src/serialize.rs', lines 369:0-381:1
+    Source: 'ml-kem/src/serialize.rs', lines 372:0-384:1
     Visibility: public -/
 def serialize.deserialize_then_decompress_u
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
@@ -3272,7 +3199,7 @@ def serialize.deserialize_then_decompress_u
     RANK) (du_poly_size, ciphertext, du)
 
 /-- [hacspec_ml_kem::serialize::compress_then_serialize_message]:
-    Source: 'ml-kem/src/serialize.rs', lines 285:0-287:1
+    Source: 'ml-kem/src/serialize.rs', lines 287:0-289:1
     Visibility: public -/
 def serialize.compress_then_serialize_message
   (re : Array parameters.FieldElement 256#usize) :
@@ -3648,7 +3575,7 @@ def ind_cca.decapsulate
     params dk c
 
 /-- [hacspec_ml_kem::serialize::serialize_public_key::{impl core::ops::function::FnMut<(usize,), u8> for hacspec_ml_kem::serialize::serialize_public_key::closure<'_0, '_1, RANK, EK_SIZE>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 441:12-450:5 -/
 def
   serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8.call_mut
   {RANK : Std.Usize} {EK_SIZE : Std.Usize}
@@ -3674,7 +3601,7 @@ def
     ok (i4, c)
 
 /-- [hacspec_ml_kem::serialize::serialize_public_key::{impl core::ops::function::FnOnce<(usize,), u8> for hacspec_ml_kem::serialize::serialize_public_key::closure<'_0, '_1, RANK, EK_SIZE>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 441:12-450:5 -/
 def
   serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8.call_once
   {RANK : Std.Usize} {EK_SIZE : Std.Usize}
@@ -3687,7 +3614,7 @@ def
   ok i1
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::serialize_public_key::{impl core::ops::function::FnOnce<(usize,), u8> for hacspec_ml_kem::serialize::serialize_public_key::closure<'_0, '_1, RANK, EK_SIZE>}]
-    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 441:12-450:5 -/
 @[reducible]
 def
   serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeU8
@@ -3698,7 +3625,7 @@ def
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::serialize_public_key::{impl core::ops::function::FnMut<(usize,), u8> for hacspec_ml_kem::serialize::serialize_public_key::closure<'_0, '_1, RANK, EK_SIZE>}]
-    Source: 'ml-kem/src/serialize.rs', lines 438:12-447:5 -/
+    Source: 'ml-kem/src/serialize.rs', lines 441:12-450:5 -/
 @[reducible]
 def
   serialize.serialize_public_key.closure.Insts.CoreOpsFunctionFnMutTupleUsizeU8
@@ -3712,7 +3639,7 @@ def
 }
 
 /-- [hacspec_ml_kem::serialize::serialize_public_key]:
-    Source: 'ml-kem/src/serialize.rs', lines 434:0-448:1
+    Source: 'ml-kem/src/serialize.rs', lines 437:0-451:1
     Visibility: public -/
 def serialize.serialize_public_key
   {RANK : Std.Usize} (EK_SIZE : Std.Usize)
@@ -5080,27 +5007,8 @@ def polynomial.add_standard_error_reduce
     polynomial.add_standard_error_reduce.closure.Insts.CoreOpsFunctionFnMutTupleUsizeFieldElement
     (ntt_product, error_ntt)
 
-/-- [hacspec_ml_kem::sampling::rej_sample_step::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::rej_sample_step::closure<'_0>}::call_once]:
-    Source: 'ml-kem/src/sampling.rs', lines 62:33-62:54 -/
-def
-  sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-  (c : sampling.rej_sample_step.closure) (tupled_args : Std.Usize) :
-  RustM Bool
-  := do
-  ok (c <= tupled_args)
-
-/-- Trait implementation: [hacspec_ml_kem::sampling::rej_sample_step::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::sampling::rej_sample_step::closure<'_0>}]
-    Source: 'ml-kem/src/sampling.rs', lines 62:33-62:54 -/
-@[reducible]
-def sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-  : core.ops.function.FnOnce sampling.rej_sample_step.closure Std.Usize Bool
-  := {
-  call_once :=
-    sampling.rej_sample_step.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-}
-
 /-- [hacspec_ml_kem::sampling::rej_sample_step]: loop body 0:
-    Source: 'ml-kem/src/sampling.rs', lines 60:4-67:5
+    Source: 'ml-kem/src/sampling.rs', lines 60:4-68:5
     Visibility: public -/
 @[rust_loop_body]
 def sampling.rej_sample_step_loop.body
@@ -5126,7 +5034,7 @@ def sampling.rej_sample_step_loop.body
     else ok (cont (iter1, result, count))
 
 /-- [hacspec_ml_kem::sampling::rej_sample_step]: loop 0:
-    Source: 'ml-kem/src/sampling.rs', lines 60:4-67:5
+    Source: 'ml-kem/src/sampling.rs', lines 60:4-68:5
     Visibility: public -/
 @[rust_loop]
 def sampling.rej_sample_step_loop
@@ -5140,7 +5048,7 @@ def sampling.rej_sample_step_loop
     (iter, result, count)
 
 /-- [hacspec_ml_kem::sampling::rej_sample_step]:
-    Source: 'ml-kem/src/sampling.rs', lines 56:0-69:1
+    Source: 'ml-kem/src/sampling.rs', lines 56:0-70:1
     Visibility: public -/
 def sampling.rej_sample_step
   (bytes : Array Std.U8 24#usize) :
@@ -5234,7 +5142,7 @@ def serialize.__5.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (N :
 }
 
 /-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call]:
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
   {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
   (c : serialize.__7.ensures.closure N N8 Nd Nd8) (tupled_args : Std.Usize) :
@@ -5248,7 +5156,7 @@ def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
     hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < N8) (i1 < i2)
 
 /-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 def
   serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
   {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
@@ -5261,7 +5169,7 @@ def
   ok (p, state)
 
 /-- [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 def
   serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
   {N : Std.Usize} {N8 : Std.Usize} {Nd : Std.Usize} {Nd8 : Std.Usize}
@@ -5274,7 +5182,7 @@ def
   ok p
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 @[reducible]
 def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp (N
   : Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
@@ -5285,7 +5193,7 @@ def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp (N
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 @[reducible]
 def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (N :
   Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
@@ -5299,7 +5207,7 @@ def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (N :
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#7::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#7::ensures::closure<'_0, '_1, N, N8, Nd, Nd8>}]
-    Source: 'ml-kem/src/serialize.rs', lines 196:20-196:80 -/
+    Source: 'ml-kem/src/serialize.rs', lines 197:20-197:80 -/
 @[reducible]
 def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (N :
   Std.Usize) (N8 : Std.Usize) (Nd : Std.Usize) (Nd8 : Std.Usize) :
@@ -5313,7 +5221,7 @@ def serialize.__7.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (N :
 }
 
 /-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call]:
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
   {D32 : Std.Usize} {D256 : Std.Usize}
   (c : serialize.__9.ensures.closure D32 D256) (tupled_args : Std.Usize) :
@@ -5328,7 +5236,7 @@ def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
     (fe.val < i1)
 
 /-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call_mut]:
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 def
   serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp.call_mut
   {D32 : Std.Usize} {D256 : Std.Usize}
@@ -5341,7 +5249,7 @@ def
   ok (p, state)
 
 /-- [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 def
   serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp.call_once
   {D32 : Std.Usize} {D256 : Std.Usize}
@@ -5354,7 +5262,7 @@ def
   ok p
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnOnce<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 @[reducible]
 def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp
   (D32 : Std.Usize) (D256 : Std.Usize) : core.ops.function.FnOnce
@@ -5364,7 +5272,7 @@ def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeProp
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::FnMut<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 @[reducible]
 def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (D32
   : Std.Usize) (D256 : Std.Usize) : core.ops.function.FnMut
@@ -5377,7 +5285,7 @@ def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnMutTupleUsizeProp (D32
 }
 
 /-- Trait implementation: [hacspec_ml_kem::serialize::_#9::ensures::{impl core::ops::function::Fn<(usize,), hax_lib::prop::Prop> for hacspec_ml_kem::serialize::_#9::ensures::closure<'_0, '_1, D32, D256>}]
-    Source: 'ml-kem/src/serialize.rs', lines 210:58-210:123 -/
+    Source: 'ml-kem/src/serialize.rs', lines 211:58-211:123 -/
 @[reducible]
 def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (D32 :
   Std.Usize) (D256 : Std.Usize) : core.ops.function.Fn
@@ -5389,32 +5297,8 @@ def serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp (D32 :
     serialize.__9.ensures.closure.Insts.CoreOpsFunctionFnTupleUsizeProp.call
 }
 
-/-- [hacspec_ml_kem::serialize::serialize_secret_key_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::serialize_secret_key_into::closure<'_0, RANK>}::call_once]:
-    Source: 'ml-kem/src/serialize.rs', lines 230:33-230:87 -/
-def
-  serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-  {RANK : Std.Usize} (c : serialize.serialize_secret_key_into.closure RANK)
-  (tupled_args : Std.Usize) :
-  RustM Bool
-  := do
-  let i ← core.slice.Slice.len c
-  let i1 ← parameters.BYTES_PER_RING_ELEMENT
-  let i2 ← RANK * i1
-  ok (i = i2)
-
-/-- Trait implementation: [hacspec_ml_kem::serialize::serialize_secret_key_into::{impl core::ops::function::FnOnce<(usize,), bool> for hacspec_ml_kem::serialize::serialize_secret_key_into::closure<'_0, RANK>}]
-    Source: 'ml-kem/src/serialize.rs', lines 230:33-230:87 -/
-@[reducible]
-def
-  serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool
-  (RANK : Std.Usize) : core.ops.function.FnOnce
-  (serialize.serialize_secret_key_into.closure RANK) Std.Usize Bool := {
-  call_once :=
-    serialize.serialize_secret_key_into.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeBool.call_once
-}
-
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into]: loop body 0:
-    Source: 'ml-kem/src/serialize.rs', lines 228:4-233:5
+    Source: 'ml-kem/src/serialize.rs', lines 229:4-235:5
     Visibility: public -/
 @[rust_loop_body]
 def serialize.serialize_secret_key_into_loop.body
@@ -5447,7 +5331,7 @@ def serialize.serialize_secret_key_into_loop.body
     ok (cont (iter1, out1))
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into]: loop 0:
-    Source: 'ml-kem/src/serialize.rs', lines 228:4-233:5
+    Source: 'ml-kem/src/serialize.rs', lines 229:4-235:5
     Visibility: public -/
 @[rust_loop]
 def serialize.serialize_secret_key_into_loop
@@ -5462,7 +5346,7 @@ def serialize.serialize_secret_key_into_loop
     (iter, out)
 
 /-- [hacspec_ml_kem::serialize::serialize_secret_key_into]:
-    Source: 'ml-kem/src/serialize.rs', lines 226:0-234:1
+    Source: 'ml-kem/src/serialize.rs', lines 227:0-236:1
     Visibility: public -/
 @[reducible]
 def serialize.serialize_secret_key_into
@@ -5475,7 +5359,7 @@ def serialize.serialize_secret_key_into
     { start := 0#usize, «end» := RANK } vector out
 
 /-- [hacspec_ml_kem::serialize::serialize_uncompressed_ring_element]:
-    Source: 'ml-kem/src/serialize.rs', lines 297:0-299:1
+    Source: 'ml-kem/src/serialize.rs', lines 299:0-301:1
     Visibility: public -/
 def serialize.serialize_uncompressed_ring_element
   (re : Array parameters.FieldElement 256#usize) :
@@ -5484,7 +5368,7 @@ def serialize.serialize_uncompressed_ring_element
   serialize.byte_encode 384#usize 3072#usize re 12#usize
 
 /-- [hacspec_ml_kem::serialize::deserialize_to_uncompressed_ring_element]:
-    Source: 'ml-kem/src/serialize.rs', lines 303:0-307:1
+    Source: 'ml-kem/src/serialize.rs', lines 305:0-309:1
     Visibility: public -/
 def serialize.deserialize_to_uncompressed_ring_element
   (serialized : Array Std.U8 384#usize) :
@@ -5493,7 +5377,7 @@ def serialize.deserialize_to_uncompressed_ring_element
   serialize.byte_decode 3072#usize serialized 12#usize
 
 /-- [hacspec_ml_kem::serialize::deserialize_then_decompress_u_then_ntt]:
-    Source: 'ml-kem/src/serialize.rs', lines 390:0-395:1
+    Source: 'ml-kem/src/serialize.rs', lines 393:0-398:1
     Visibility: public -/
 def serialize.deserialize_then_decompress_u_then_ntt
   (RANK : Std.Usize) (ciphertext : Slice Std.U8) (du : Std.Usize) :
