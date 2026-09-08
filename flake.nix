@@ -13,8 +13,8 @@
     # eurydice transitively, so pinning eurydice pins all three.
     eurydice.url = "github:aeneasverif/eurydice/aaa9fa657fb6f09802edb890252040d94cd93982";
     eurydice.inputs.karamel.inputs.fstar.follows = "fstar-pinned";
-    # Pin hax 0.3.6, update if hax-lib is updated in Cargo.toml
-    hax.url = "github:cryspen/hax/87ba96831ecfeb7dbb54efcf97036fbc5f25bc71";
+    # Pin hax 0.4.0, update if hax-lib is updated in Cargo.toml
+    hax.url = "github:cryspen/hax/f8fe69339b69e48a01b8a6a6bcb2ab5e5c5e424d";
     # Pin F* to the version CI uses for hax lax/prove (see .github/workflows/mlkem-hax.yml).
     fstar-pinned.url = "github:FStarLang/FStar/v2025.10.06";
     googletest = {
