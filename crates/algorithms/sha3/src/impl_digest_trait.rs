@@ -10,10 +10,12 @@ const SHA3_512_LEN: usize = 64;
 macro_rules! impl_hash_traits {
     ($type:ident, $hasher:ident, $len:expr, $rate:expr, $method:expr) => {
         /// A struct that implements [`libcrux_traits::digest`] traits.
+        #[cfg_attr(hax, hax_lib::exclude)]
         pub struct $type {
             state: KeccakXofState<1, $rate, u64>,
         }
 
+        #[cfg_attr(hax, hax_lib::exclude)]
         impl InitializeDigestState for $type {
             fn new() -> Self {
                 Self {
@@ -22,6 +24,7 @@ macro_rules! impl_hash_traits {
             }
         }
 
+        #[cfg_attr(hax, hax_lib::exclude)]
         impl DigestIncrementalBase for $type {
             type IncrementalState = Self;
 
@@ -38,9 +41,11 @@ macro_rules! impl_hash_traits {
             }
         }
         #[doc = concat!("A hasher for [`",stringify!($type), "`].")]
+        #[cfg_attr(hax, hax_lib::exclude)]
         pub type $hasher = libcrux_traits::digest::Hasher<$len, $type>;
 
         // Squeeze is only implemented for the correct digest lengths.
+        #[cfg_attr(hax, hax_lib::exclude)]
         impl libcrux_traits::digest::arrayref::DigestIncremental<$len> for $type {
             fn finish(mut state: Self::IncrementalState, digest: &mut [u8; $len]) {
                 state.state.absorb_final::<0x06u8>(&[&[]]);
@@ -48,6 +53,7 @@ macro_rules! impl_hash_traits {
             }
         }
 
+        #[cfg_attr(hax, hax_lib::exclude)]
         impl libcrux_traits::digest::arrayref::Hash<$len> for $type {
             #[inline(always)]
             fn hash(
